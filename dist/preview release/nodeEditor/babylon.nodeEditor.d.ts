@@ -402,16 +402,50 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    class ListLineOption {
+        label: string;
+        value: number | string;
+    }
+    interface IOptionsLineComponentProps {
+        label: string;
+        target: any;
+        className?: string;
+        propertyName?: string;
+        options: ListLineOption[];
+        noDirectUpdate?: boolean;
+        onSelect?: (value: number | string) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        valuesAreStrings?: boolean;
+        defaultIfNull?: number;
+        getSelection?: (target: any) => number;
+    }
+    export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
+        value: number | string;
+    }> {
+        private _localChange;
+        private _getValue;
+        constructor(props: IOptionsLineComponentProps);
+        shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
+            value: number;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: number | string, previousValue: number | string): void;
+        updateValue(valueString: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     interface ITexturePropertyTabComponentProps {
         globalState: GlobalState;
         node: TextureNodeModel | ReflectionTextureNodeModel;
     }
     export class TexturePropertyTabComponent extends React.Component<ITexturePropertyTabComponentProps, {
         isEmbedded: boolean;
+        loadAsCubeTexture: boolean;
     }> {
         constructor(props: ITexturePropertyTabComponentProps);
         UNSAFE_componentWillUpdate(nextProps: ITexturePropertyTabComponentProps, nextState: {
             isEmbedded: boolean;
+            loadAsCubeTexture: boolean;
         }): void;
         private _generateRandomForCache;
         updateAfterTextureLoad(): void;
@@ -612,38 +646,6 @@ declare module NODEEDITOR {
         inputBlock: BABYLON.InputBlock;
     }
     export class Vector3PropertyTabComponent extends React.Component<IVector3PropertyTabComponentProps> {
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    class ListLineOption {
-        label: string;
-        value: number | string;
-    }
-    interface IOptionsLineComponentProps {
-        label: string;
-        target: any;
-        className?: string;
-        propertyName?: string;
-        options: ListLineOption[];
-        noDirectUpdate?: boolean;
-        onSelect?: (value: number | string) => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-        valuesAreStrings?: boolean;
-        defaultIfNull?: number;
-        getSelection?: (target: any) => number;
-    }
-    export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
-        value: number | string;
-    }> {
-        private _localChange;
-        private _getValue;
-        constructor(props: IOptionsLineComponentProps);
-        shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
-            value: number;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: number | string, previousValue: number | string): void;
-        updateValue(valueString: string): void;
         render(): JSX.Element;
     }
 }

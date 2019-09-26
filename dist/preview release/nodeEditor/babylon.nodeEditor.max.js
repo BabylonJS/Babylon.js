@@ -71352,15 +71352,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../sharedComponents/fileButtonLineComponent */ "./sharedComponents/fileButtonLineComponent.tsx");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _textureNodeModel__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./textureNodeModel */ "./components/diagram/texture/textureNodeModel.tsx");
-/* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
-/* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
-/* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
-/* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
-/* harmony import */ var _sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../sharedComponents/sliderLineComponent */ "./sharedComponents/sliderLineComponent.tsx");
-/* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
-/* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
-/* harmony import */ var _reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../reflectionTexture/reflectionTextureNodeModel */ "./components/diagram/reflectionTexture/reflectionTextureNodeModel.tsx");
+/* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
+/* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
+/* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
+/* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
+/* harmony import */ var _sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../sharedComponents/sliderLineComponent */ "./sharedComponents/sliderLineComponent.tsx");
+/* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
+/* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
+/* harmony import */ var _reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../reflectionTexture/reflectionTextureNodeModel */ "./components/diagram/reflectionTexture/reflectionTextureNodeModel.tsx");
+/* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
 
 
 
@@ -71381,13 +71381,14 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
     function TexturePropertyTabComponent(props) {
         var _this = _super.call(this, props) || this;
         var texture = _this.props.node.texture;
-        _this.state = { isEmbedded: !texture || texture.name.substring(0, 4) !== "http" };
+        _this.state = { isEmbedded: !texture || texture.name.substring(0, 4) !== "http", loadAsCubeTexture: texture && texture.isCube };
         return _this;
     }
     TexturePropertyTabComponent.prototype.UNSAFE_componentWillUpdate = function (nextProps, nextState) {
         if (nextProps.node !== this.props.node) {
             var texture = nextProps.node.texture;
             nextState.isEmbedded = !texture || texture.name.substring(0, 4) !== "http";
+            nextState.loadAsCubeTexture = texture && texture.isCube;
         }
     };
     TexturePropertyTabComponent.prototype._generateRandomForCache = function () {
@@ -71399,6 +71400,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
     TexturePropertyTabComponent.prototype.updateAfterTextureLoad = function () {
         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+        this.forceUpdate();
     };
     /**
      * Replaces the texture of the node
@@ -71410,10 +71412,15 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
             return;
         }
         var texture = this.props.node.texture;
+        if (texture && texture.isCube !== this.state.loadAsCubeTexture) {
+            texture.dispose();
+            texture = null;
+        }
         if (!texture) {
-            if (this.props.node instanceof _textureNodeModel__WEBPACK_IMPORTED_MODULE_4__["TextureNodeModel"]) {
+            if (!this.state.loadAsCubeTexture) {
                 this.props.node.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"](null, this.props.globalState.nodeMaterial.getScene(), false, false);
                 texture = this.props.node.texture;
+                texture.coordinatesMode = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].EQUIRECTANGULAR_MODE;
             }
             else {
                 this.props.node.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["CubeTexture"]("", this.props.globalState.nodeMaterial.getScene());
@@ -71427,19 +71434,14 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
             reader.readAsDataURL(blob);
             reader.onloadend = function () {
                 var base64data = reader.result;
-                if (texture.isCube || _this.props.node instanceof _reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_12__["ReflectionTextureNodeModel"]) {
-                    var extension = undefined;
-                    if (file.name.toLowerCase().indexOf(".dds") > 0) {
-                        extension = ".dds";
-                    }
-                    else if (file.name.toLowerCase().indexOf(".env") > 0) {
-                        extension = ".env";
-                    }
-                    texture.updateURL(base64data, extension, function () { return _this.updateAfterTextureLoad(); });
+                var extension = undefined;
+                if (file.name.toLowerCase().indexOf(".dds") > 0) {
+                    extension = ".dds";
                 }
-                else {
-                    texture.updateURL(base64data, null, function () { return _this.updateAfterTextureLoad(); });
+                else if (file.name.toLowerCase().indexOf(".env") > 0) {
+                    extension = ".env";
                 }
+                texture.updateURL(base64data, extension, function () { return _this.updateAfterTextureLoad(); });
             };
         }, undefined, true);
     };
@@ -71452,7 +71454,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
             });
             return;
         }
-        if (texture.isCube || this.props.node instanceof _reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_12__["ReflectionTextureNodeModel"]) {
+        if (texture.isCube || this.props.node instanceof _reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_11__["ReflectionTextureNodeModel"]) {
             var extension = undefined;
             if (url.toLowerCase().indexOf(".dds") > 0) {
                 extension = ".dds";
@@ -71474,70 +71476,106 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
             url = texture.name;
         }
         url = url.replace(/\?nocache=\d+/, "");
-        var isInReflectionMode = this.props.node instanceof _reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_12__["ReflectionTextureNodeModel"];
+        var isInReflectionMode = this.props.node instanceof _reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_11__["ReflectionTextureNodeModel"];
+        var reflectionModeOptions = [
+            {
+                label: "Cubic", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CUBIC_MODE
+            },
+            {
+                label: "Equirectangular", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].EQUIRECTANGULAR_MODE
+            },
+            {
+                label: "Explicit", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].EXPLICIT_MODE
+            },
+            {
+                label: "Fixed equirectangular", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].FIXED_EQUIRECTANGULAR_MODE
+            },
+            {
+                label: "Fixed mirrored equirectangular", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].FIXED_EQUIRECTANGULAR_MIRRORED_MODE
+            },
+            {
+                label: "Planar", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].PLANAR_MODE
+            },
+            {
+                label: "Projection", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].PROJECTION_MODE
+            },
+            {
+                label: "Skybox", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].SKYBOX_MODE
+            },
+            {
+                label: "Spherical", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].SPHERICAL_MODE
+            },
+        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_6__["LineContainerComponent"], { title: "GENERAL" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Type", value: "Texture" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: this.props.node.block, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(); } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_6__["LineContainerComponent"], { title: "PROPERTIES" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Auto select UV", propertyName: "autoSelectUV", target: this.props.node.block, onValueChanged: function () {
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Type", value: this.props.node.block.getClassName() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: this.props.node.block, onChange: function () { return _this.props.globalState.onUpdateRequiredObservable.notifyObservers(); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { title: "PROPERTIES" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Auto select UV", propertyName: "autoSelectUV", target: this.props.node.block, onValueChanged: function () {
                         _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                     } }),
-                " ",
-                texture && !isInReflectionMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Gamma space", propertyName: "gammaSpace", target: texture, onValueChanged: function () {
+                texture && isInReflectionMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_12__["OptionsLineComponent"], { label: "Reflection mode", options: reflectionModeOptions, target: texture, propertyName: "coordinatesMode", onSelect: function (value) {
+                            texture.coordinatesMode = value;
+                            _this.forceUpdate();
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
                 texture && !isInReflectionMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Clamp U", isSelected: function () { return texture.wrapU === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Gamma space", propertyName: "gammaSpace", target: texture, onValueChanged: function () {
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        } }),
+                texture && !isInReflectionMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Clamp U", isSelected: function () { return texture.wrapU === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
                             texture.wrapU = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
                 texture && !isInReflectionMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Clamp V", isSelected: function () { return texture.wrapV === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Clamp V", isSelected: function () { return texture.wrapV === babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE; }, onSelect: function (value) {
                             texture.wrapV = value ? babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CLAMP_ADDRESSMODE : babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].WRAP_ADDRESSMODE;
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
                 texture && !isInReflectionMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { label: "Offset U", target: texture, propertyName: "uOffset", onChange: function () {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { label: "Offset U", target: texture, propertyName: "uOffset", onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
                 texture && !isInReflectionMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { label: "Offset V", target: texture, propertyName: "vOffset", onChange: function () {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { label: "Offset V", target: texture, propertyName: "vOffset", onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
                 texture && !isInReflectionMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { label: "Scale U", target: texture, propertyName: "uScale", onChange: function () {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { label: "Scale U", target: texture, propertyName: "uScale", onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
                 texture && !isInReflectionMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_10__["FloatLineComponent"], { label: "Scale V", target: texture, propertyName: "vScale", onChange: function () {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { label: "Scale V", target: texture, propertyName: "vScale", onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
                 texture && !isInReflectionMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_9__["SliderLineComponent"], { label: "Rotation U", target: texture, propertyName: "uAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_8__["SliderLineComponent"], { label: "Rotation U", target: texture, propertyName: "uAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
                 texture && !isInReflectionMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_9__["SliderLineComponent"], { label: "Rotation V", target: texture, propertyName: "vAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_8__["SliderLineComponent"], { label: "Rotation V", target: texture, propertyName: "vAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
                 texture && !isInReflectionMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_9__["SliderLineComponent"], { label: "Rotation W", target: texture, propertyName: "wAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_8__["SliderLineComponent"], { label: "Rotation W", target: texture, propertyName: "wAng", minimum: 0, maximum: Math.PI * 2, useEuler: true, step: 0.1, onChange: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_6__["LineContainerComponent"], { title: "SOURCE" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Embed texture", isSelected: function () { return _this.state.isEmbedded; }, onSelect: function (value) {
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { title: "SOURCE" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Embed texture", isSelected: function () { return _this.state.isEmbedded; }, onSelect: function (value) {
                         _this.setState({ isEmbedded: value });
                         _this.props.node.texture = null;
                         _this.updateAfterTextureLoad();
                     } }),
+                isInReflectionMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Load as cube texture", isSelected: function () { return _this.state.loadAsCubeTexture; }, onSelect: function (value) { return _this.setState({ loadAsCubeTexture: value }); } }),
                 this.state.isEmbedded &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["FileButtonLineComponent"], { label: "Upload", onClick: function (file) { return _this.replaceTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }),
                 !this.state.isEmbedded &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextInputLineComponent"], { label: "Link", globalState: this.props.globalState, value: url, onChange: function (newUrl) { return _this.replaceTextureWithUrl(newUrl); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { label: "Link", globalState: this.props.globalState, value: url, onChange: function (newUrl) { return _this.replaceTextureWithUrl(newUrl); } }),
                 !this.state.isEmbedded && url &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_11__["ButtonLineComponent"], { label: "Refresh", onClick: function () { return _this.replaceTextureWithUrl(url + "?nocache=" + _this._generateRandomForCache()); } }))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Refresh", onClick: function () { return _this.replaceTextureWithUrl(url + "?nocache=" + _this._generateRandomForCache()); } }))));
     };
     return TexturePropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -72217,7 +72255,11 @@ var PreviewManager = /** @class */ (function () {
             this._engine.releaseEffects();
             switch (this._globalState.previewMeshType) {
                 case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Box:
-                    this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateBox("dummy-box", 2, this._scene));
+                    babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("https://models.babylonjs.com/", "roundedCube.glb", this._scene).then(function () {
+                        var _a;
+                        (_a = _this._meshes).push.apply(_a, _this._scene.meshes);
+                        _this._prepareMeshes();
+                    });
                     break;
                 case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Sphere:
                     this._meshes.push(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Mesh"].CreateSphere("dummy-sphere", 32, 2, this._scene));

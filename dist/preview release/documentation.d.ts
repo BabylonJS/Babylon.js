@@ -8357,6 +8357,20 @@ declare module BABYLON {
     };
 }
 declare module BABYLON {
+        interface ThinEngine {
+            /**
+             * Creates a new render target texture
+             * @param size defines the size of the texture
+             * @param options defines the options used to create the texture
+             * @returns a new render target texture stored in an InternalTexture
+             */
+            createRenderTargetTexture(size: number | {
+                width: number;
+                height: number;
+            }, options: boolean | RenderTargetCreationOptions): InternalTexture;
+        }
+}
+declare module BABYLON {
     /** Defines supported spaces */
     export enum Space {
         /** Local (object) space */
@@ -31800,16 +31814,6 @@ declare module BABYLON {
          */
         updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset?: number): void;
         /**
-         * Creates a new render target texture
-         * @param size defines the size of the texture
-         * @param options defines the options used to create the texture
-         * @returns a new render target texture stored in an InternalTexture
-         */
-        createRenderTargetTexture(size: number | {
-            width: number;
-            height: number;
-        }, options: boolean | RenderTargetCreationOptions): InternalTexture;
-        /**
          * Updates the sample count of a render target texture
          * @see http://doc.babylonjs.com/features/webgl2#multisample-render-targets
          * @param texture defines the texture to update
@@ -52452,7 +52456,7 @@ declare module BABYLON {
         /**
          * Defines the engine instance to use the texture with. It is not mandatory if you define a scene.
          */
-        engine: Nullable<Engine>;
+        engine: Nullable<ThinEngine>;
         /**
          * Defines the scene the texture belongs to. It is not mandatory if you define an engine.
          */
@@ -55521,7 +55525,7 @@ declare module BABYLON {
          * @param engine the engine to use for rendering
          * @param options defines the options of the effect renderer
          */
-        constructor(engine: Engine, options?: IEffectRendererOptions);
+        constructor(engine: ThinEngine, options?: IEffectRendererOptions);
         /**
          * Sets the current viewport in normalized coordinates 0-1
          * @param viewport Defines the viewport to set (defaults to 0 0 1 1)
@@ -55561,7 +55565,7 @@ declare module BABYLON {
         /**
          * Engine to use to create the effect
          */
-        engine: Engine;
+        engine: ThinEngine;
         /**
          * Fragment shader for the effect
          */
