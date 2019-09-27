@@ -33,6 +33,7 @@ import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 declare type Observer<T> = import("../Misc/observable").Observer<T>;
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
+declare type Texture = import("../Materials/Textures/texture").Texture;
 
 /**
  * Defines the interface used by objects working like Scene
@@ -127,14 +128,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-alpha.22";
+        return "babylonjs@4.1.0-alpha.23";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-alpha.22";
+        return "4.1.0-alpha.23";
     }
 
     /**
@@ -430,6 +431,11 @@ export class ThinEngine {
      * Defines whether the engine has been created with the premultipliedAlpha option on or not.
      */
     public readonly premultipliedAlpha: boolean = true;
+
+    /**
+     * Observable event triggered before each texture is initialized
+     */
+    public onBeforeTextureInitObservable = new Observable<Texture>();
 
     /**
      * Creates a new engine
@@ -3773,6 +3779,11 @@ export class ThinEngine {
      */
     public dispose(): void {
         this.stopRenderLoop();
+
+        // Clear observables
+        if (this.onBeforeTextureInitObservable) {
+            this.onBeforeTextureInitObservable.clear();
+        }
 
         // Empty texture
         if (this._emptyTexture) {

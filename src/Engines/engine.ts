@@ -22,7 +22,6 @@ import { PerfCounter } from '../Misc/perfCounter';
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
-declare type Texture = import("../Materials/Textures/texture").Texture;
 
 /**
  * Defines the interface used by display changed events
@@ -368,11 +367,6 @@ export class Engine extends ThinEngine {
      * Observable event triggered each time the canvas receives pointerout event
      */
     public onCanvasPointerOutObservable = new Observable<PointerEvent>();
-
-    /**
-     * Observable event triggered before each texture is initialized
-     */
-    public onBeforeTextureInitObservable = new Observable<Texture>();
 
     /**
      * Observable raised when the engine begins a new frame

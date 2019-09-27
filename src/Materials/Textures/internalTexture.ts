@@ -1,6 +1,5 @@
 import { Observable } from "../../Misc/observable";
 import { Nullable, int } from "../../types";
-import { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 import { RenderTargetCreationOptions } from "../../Materials/Textures/renderTargetCreationOptions";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { Constants } from "../../Engines/constants";
@@ -9,6 +8,7 @@ import { Engine } from '../../Engines/engine';
 
 declare type ThinEngine = import("../../Engines/thinEngine").ThinEngine;
 declare type BaseTexture = import("../../Materials/Textures/baseTexture").BaseTexture;
+declare type SphericalPolynomial = import("../../Maths/sphericalPolynomial").SphericalPolynomial;
 
 /**
  * Defines the source of the internal texture

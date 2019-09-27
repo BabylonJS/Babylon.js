@@ -179,7 +179,10 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                     {
                         inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&
                         <CheckBoxLineComponent label="IsConstant" target={inputBlock} propertyName="isConstant"
-                            onValueChanged={() => this.props.globalState.onRebuildRequiredObservable.notifyObservers()}
+                            onValueChanged={() => {
+                                this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                                this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            }}
                         />
                     }                             
                     <OptionsLineComponent label="Mode" options={modeOptions} target={inputBlock} 
