@@ -34,6 +34,7 @@ import { IEffectFallbacks } from '../Materials/iEffectFallbacks';
 declare type Observer<T> = import("../Misc/observable").Observer<T>;
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
+declare type Texture = import("../Materials/Textures/texture").Texture;
 
 /**
  * Defines the interface used by objects working like Scene
@@ -434,6 +435,11 @@ export class ThinEngine {
      * Defines whether the engine has been created with the premultipliedAlpha option on or not.
      */
     public readonly premultipliedAlpha: boolean = true;
+
+    /**
+     * Observable event triggered before each texture is initialized
+     */
+    public onBeforeTextureInitObservable = new Observable<Texture>();
 
     /**
      * Creates a new engine
@@ -3770,6 +3776,11 @@ export class ThinEngine {
      */
     public dispose(): void {
         this.stopRenderLoop();
+
+        // Clear observables
+        if (this.onBeforeTextureInitObservable) {
+            this.onBeforeTextureInitObservable.clear();
+        }
 
         // Empty texture
         if (this._emptyTexture) {

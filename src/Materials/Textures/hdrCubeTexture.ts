@@ -9,8 +9,10 @@ import { HDRTools } from "../../Misc/HighDynamicRange/hdr";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { _TypeStore } from '../../Misc/typeStore';
 import { Tools } from '../../Misc/tools';
-import "../../Engines/Extensions/engine.rawTexture";
 import { ToGammaSpace } from '../../Maths/math.constants';
+
+import "../../Engines/Extensions/engine.rawTexture";
+import "../../Materials/Textures/baseTexture.polynomial";
 
 /**
  * This represents a texture coming from an HDR input.
