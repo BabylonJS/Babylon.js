@@ -4,7 +4,7 @@ import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import { VertexBuffer } from "../Meshes/buffer";
-import { InternalTexture } from "../Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Effect } from "../Materials/effect";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { Constants } from "./constants";
@@ -565,7 +565,7 @@ export class NullEngine extends Engine {
     public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<ArrayBuffer | HTMLImageElement> = null, fallBack?: InternalTexture, format?: number): InternalTexture {
-        var texture = new InternalTexture(this, InternalTexture.DATASOURCE_URL);
+        var texture = new InternalTexture(this, InternalTextureSource.Url);
         var url = String(urlArg);
 
         texture.url = url;
@@ -613,7 +613,7 @@ export class NullEngine extends Engine {
             fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
             fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
         }
-        var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
+        var texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
 
         var width = size.width || size;
         var height = size.height || size;
