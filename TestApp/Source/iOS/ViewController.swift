@@ -12,8 +12,6 @@ class ViewController: UIViewController {
             let height = screenBounds.size.height
             //let scale = UIScreen.main.scale
             
-            //let view = self.view as! NativeViewerView
-            
             // Swift doesn't understand void* pointers, rather it encapsulates them in a specialized pointer class
             let rawMetalLayerPtr: UnsafeMutableRawPointer = Unmanaged.passUnretained(self.view).toOpaque()
             
