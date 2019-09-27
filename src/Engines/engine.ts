@@ -1,5 +1,5 @@
 import { Observable } from "../Misc/observable";
-import { Nullable } from "../types";
+import { Nullable, IndicesArray } from "../types";
 import { Scene } from "../scene";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { _TimeToken } from "../Instrumentation/timeToken";
@@ -15,10 +15,10 @@ import { ICustomAnimationFrameRequester } from '../Misc/customAnimationFrameRequ
 import { ThinEngine, EngineOptions } from './thinEngine';
 import { Constants } from './constants';
 import { IViewportLike, IColor4Like } from '../Maths/math.like';
-import { RenderTargetCreationOptions } from '../Materials/Textures/renderTargetCreationOptions';
 import { RenderTargetTexture } from '../Materials/Textures/renderTargetTexture';
 import { PerformanceMonitor } from '../Misc/performanceMonitor';
-import { Logger } from '../Misc/logger';
+import { DataBuffer } from '../Meshes/dataBuffer';
+import { PerfCounter } from '../Misc/perfCounter';
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -439,6 +439,10 @@ export class Engine extends ThinEngine {
     // FPS
     private _fps = 60;
     private _deltaTime = 0;
+
+    /** @hidden */
+    public _drawCalls = new PerfCounter();
+
     /**
      * Turn this value on if you want to pause FPS computation when in background
      */
@@ -1173,6 +1177,10 @@ export class Engine extends ThinEngine {
         gl.disable(gl.SCISSOR_TEST);
     }
 
+    protected _reportDrawCall() {
+        this._drawCalls.addCount(1, false);
+    }
+
     /**
      * Initializes a webVR display and starts listening to display change events
      * The onVRDisplayChangedObservable will be notified upon these changes
@@ -1694,96 +1702,60 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Creates a new render target texture
-     * @param size defines the size of the texture
-     * @param options defines the options used to create the texture
-     * @returns a new render target texture stored in an InternalTexture
+     * Sets the frame buffer Depth / Stencil attachement of the render target to the defined depth stencil texture.
+     * @param renderTarget The render target to set the frame buffer for
      */
-    public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): InternalTexture {
-        let fullOptions = new RenderTargetCreationOptions();
-
-        if (options !== undefined && typeof options === "object") {
-            fullOptions.generateMipMaps = options.generateMipMaps;
-            fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
-            fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
-            fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
-            fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
-            fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
-        } else {
-            fullOptions.generateMipMaps = <boolean>options;
-            fullOptions.generateDepthBuffer = true;
-            fullOptions.generateStencilBuffer = false;
-            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
-            fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
-            fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
-        }
-
-        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
-            // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-        }
-        else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
-            // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-        }
-        var gl = this._gl;
-
-        var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
-        this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
-
-        var width = (<{ width: number, height: number }>size).width || <number>size;
-        var height = (<{ width: number, height: number }>size).height || <number>size;
-
-        var filters = this._getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false);
-
-        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
-            Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
-        }
-
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-        gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(fullOptions.type, fullOptions.format), width, height, 0, this._getInternalFormat(fullOptions.format), this._getWebGLTextureType(fullOptions.type), null);
-
+    public setFrameBufferDepthStencilTexture(renderTarget: RenderTargetTexture): void {
         // Create the framebuffer
-        var currentFrameBuffer = this._currentFramebuffer;
-        var framebuffer = gl.createFramebuffer();
-        this._bindUnboundFramebuffer(framebuffer);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._webGLTexture, 0);
-
-        texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer ? true : false, fullOptions.generateDepthBuffer, width, height);
-
-        if (fullOptions.generateMipMaps) {
-            this._gl.generateMipmap(this._gl.TEXTURE_2D);
+        var internalTexture = renderTarget.getInternalTexture();
+        if (!internalTexture || !internalTexture._framebuffer || !renderTarget.depthStencilTexture) {
+            return;
         }
 
-        // Unbind
-        this._bindTextureDirectly(gl.TEXTURE_2D, null);
-        gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-        this._bindUnboundFramebuffer(currentFrameBuffer);
+        var gl = this._gl;
+        var depthStencilTexture = renderTarget.depthStencilTexture;
 
-        texture._framebuffer = framebuffer;
-        texture.baseWidth = width;
-        texture.baseHeight = height;
-        texture.width = width;
-        texture.height = height;
-        texture.isReady = true;
-        texture.samples = 1;
-        texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
-        texture.samplingMode = fullOptions.samplingMode;
-        texture.type = fullOptions.type;
-        texture.format = fullOptions.format;
-        texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
-        texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
+        this._bindUnboundFramebuffer(internalTexture._framebuffer);
+        if (depthStencilTexture.isCube) {
+            if (depthStencilTexture._generateStencilBuffer) {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture._webGLTexture, 0);
+            }
+            else {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture._webGLTexture, 0);
+            }
+        }
+        else {
+            if (depthStencilTexture._generateStencilBuffer) {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture._webGLTexture, 0);
+            }
+            else {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture._webGLTexture, 0);
+            }
+        }
+        this._bindUnboundFramebuffer(null);
+    }
 
-        // this.resetTextureCache();
+    /**
+     * Update a dynamic index buffer
+     * @param indexBuffer defines the target index buffer
+     * @param indices defines the data to update
+     * @param offset defines the offset in the target index buffer where update should start
+     */
+    public updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
+        // Force cache update
+        this._currentBoundBuffer[this._gl.ELEMENT_ARRAY_BUFFER] = null;
+        this.bindIndexBuffer(indexBuffer);
+        var arrayBuffer;
 
-        this._internalTexturesCache.push(texture);
+        if (indices instanceof Uint16Array || indices instanceof Uint32Array) {
+            arrayBuffer = indices;
+        } else {
+            arrayBuffer = indexBuffer.is32Bits ? new Uint32Array(indices) : new Uint16Array(indices);
+        }
 
-        return texture;
+        this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, this._gl.DYNAMIC_DRAW);
+
+        this._resetIndexBufferBinding();
     }
 
     /**
