@@ -49,7 +49,8 @@ class MenuPG {
         // Handle quit of menus
         for (var i = 0; i < this.allToDisplay.length; i++) {
             this.allToDisplay[i].addEventListener('mouseleave', function () {
-                this.removeAllOptions();
+                if(this.isMobileVersion) return;
+                else this.removeAllOptions();
             }.bind(this));
         }
 
@@ -203,6 +204,13 @@ class MenuPG {
                 this.removeAllOptions();
                 toDisplay.style.display = 'block';
             }
+            
+            // Avoid an iPhone bug making the subitems disappear.
+            // Was previously done with "overflow-y : auto"
+            if(toDisplay.clientHeight < toDisplay.scrollHeight)
+                toDisplay.style.overflowY = "auto";
+            else
+                toDisplay.style.overflowY = "visible";
         }
         toDisplay = evt.target.parentNode.querySelector('.toDisplayBig');
         if (toDisplay) {

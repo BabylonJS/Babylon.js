@@ -6,7 +6,6 @@ import { IShaderProcessor } from './Processors/iShaderProcessor';
 import { UniformBuffer } from '../Materials/uniformBuffer';
 import { Nullable, DataArray, IndicesArray } from '../types';
 import { EngineCapabilities } from './engineCapabilities';
-import { PerfCounter } from '../Misc/perfCounter';
 import { Observable } from '../Misc/observable';
 import { DepthCullingState } from '../States/depthCullingState';
 import { StencilState } from '../States/stencilState';
@@ -24,12 +23,12 @@ import { IPipelineContext } from './IPipelineContext';
 import { WebGLPipelineContext } from './WebGL/webGLPipelineContext';
 import { VertexBuffer } from '../Meshes/buffer';
 import { InstancingAttributeInfo } from './instancingAttributeInfo';
-import { WebRequest } from '../Misc/webRequest';
 import { FileTools } from '../Misc/fileTools';
 import { DepthTextureCreationOptions } from './depthTextureCreationOptions';
 import { BaseTexture } from '../Materials/Textures/baseTexture';
 import { IOfflineProvider } from '../Offline/IOfflineProvider';
 import { IEffectFallbacks } from '../Materials/iEffectFallbacks';
+import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 
 declare type Observer<T> = import("../Misc/observable").Observer<T>;
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
@@ -253,9 +252,6 @@ export class ThinEngine {
     public _caps: EngineCapabilities;
     private _isStencilEnable: boolean;
     protected _colorWrite = true;
-
-    /** @hidden */
-    public _drawCalls = new PerfCounter();
 
     private _glVersion: string;
     private _glRenderer: string;
@@ -1879,7 +1875,8 @@ export class ThinEngine {
         // Apply states
         this.applyStates();
 
-        this._drawCalls.addCount(1, false);
+        this._reportDrawCall();
+
         // Render
 
         const drawMode = this._drawMode(fillMode);
@@ -1902,7 +1899,8 @@ export class ThinEngine {
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {
         // Apply states
         this.applyStates();
-        this._drawCalls.addCount(1, false);
+
+        this._reportDrawCall();
 
         const drawMode = this._drawMode(fillMode);
         if (instancesCount) {
@@ -1937,6 +1935,11 @@ export class ThinEngine {
             default:
                 return this._gl.TRIANGLES;
         }
+    }
+
+    /** @hidden */
+    protected _reportDrawCall() {
+        // Will be implemented by children
     }
 
     // Shaders
@@ -2832,7 +2835,7 @@ export class ThinEngine {
             };
 
             if (!buffer) {
-                this._loadFile(url, callback, undefined, scene ? scene.offlineProvider : undefined, true, (request?: WebRequest, exception?: any) => {
+                this._loadFile(url, callback, undefined, scene ? scene.offlineProvider : undefined, true, (request?: IWebRequest, exception?: any) => {
                     onInternalError("Unable to load " + (request ? request.responseURL : url, exception));
                 });
             } else {
@@ -4202,7 +4205,8 @@ export class ThinEngine {
     }
 
     /** @hidden */
-    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest {
+    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void,
+    offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: IWebRequest, exception?: any) => void): IFileRequest {
         let request = FileTools.LoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
