@@ -26,8 +26,9 @@ add_compile_definitions(BGFX_CONFIG_MULTITHREADED=0)
 add_compile_definitions(BGFX_CONFIG_MAX_VERTEX_STREAMS=32)
 add_compile_definitions(BGFX_CONFIG_MAX_COMMAND_BUFFER_SIZE=12582912)
 if(BABYLON_NATIVE_PLATFORM STREQUAL "Apple")
-    # no Vulkan on Apple
+    # no Vulkan on Apple but Metal
     add_compile_definitions(BGFX_CONFIG_RENDERER_VULKAN=0)
+    add_compile_definitions(BGFX_CONFIG_RENDERER_METAL=1)
 endif()
 set(BGFX_BUILD_EXAMPLES OFF CACHE BOOL "Build the BGFX examples.")
 set(BGFX_BUILD_TOOLS OFF CACHE BOOL "Build the BGFX tools.")
@@ -166,6 +167,11 @@ endif()
 
 if(WINDOWS_STORE)
     target_link_libraries(Library PRIVATE arcana)
+endif()
+
+if(APPLE)
+    target_link_libraries(Library
+        PRIVATE spirv-cross-msl)
 endif()
 
 if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")

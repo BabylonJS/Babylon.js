@@ -417,7 +417,22 @@ namespace babylon
                 {
                     const uint32_t location = compiler.get_decoration(stageInput.id, spv::DecorationLocation);
                     AppendBytes(vertexBytes, bgfx::attribToId(static_cast<bgfx::Attrib::Enum>(location)));
-                    attributeLocations[stageInput.name] = location;
+                    
+                    std::string attributeName = stageInput.name;
+                    if (attributeName == "a_position")
+                        attributeName = "position";
+                    else if (attributeName == "a_normal")
+                        attributeName = "normal";
+                    else if (attributeName == "a_tangent")
+                        attributeName = "tangent";
+                    else if (attributeName == "a_color")
+                        attributeName = "color";
+                    else if (attributeName == "a_index")
+                        attributeName = "matricesIndices";
+                    else if (attributeName == "a_weight")
+                        attributeName = "matricesWeights";
+                    
+                    attributeLocations[attributeName] = location;
                 }
 
                 AppendBytes(vertexBytes, static_cast<uint16_t>(compiler.get_declared_struct_size(compiler.get_type(uniformBuffer.base_type_id))));
@@ -1078,3 +1093,4 @@ namespace babylon
         m_impl->UpdateRenderTarget();
     }
 }
+
