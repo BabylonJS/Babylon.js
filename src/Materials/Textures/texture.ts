@@ -1,14 +1,13 @@
 import { serialize, SerializationHelper } from "../../Misc/decorators";
 import { Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
-import { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { _TypeStore } from '../../Misc/typeStore';
 import { _DevTools } from '../../Misc/devTools';
 import { IInspectable } from '../../Misc/iInspectable';
-import { Engine } from '../../Engines/engine';
+import { ThinEngine } from '../../Engines/thinEngine';
 import { TimingTools } from '../../Misc/timingTools';
 import { InstantiationTools } from '../../Misc/instantiationTools';
 import { Plane } from '../../Maths/math.plane';
@@ -17,6 +16,7 @@ import { StringTools } from '../../Misc/stringTools';
 declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
 declare type MirrorTexture = import("../../Materials/Textures/mirrorTexture").MirrorTexture;
 declare type RenderTargetTexture = import("../../Materials/Textures/renderTargetTexture").RenderTargetTexture;
+declare type Scene = import("../../scene").Scene;
 
 /**
  * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
@@ -275,7 +275,7 @@ export class Texture extends BaseTexture {
      * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
      * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
      */
-    constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | Engine>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob> = null, deleteBuffer: boolean = false, format?: number) {
+    constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob> = null, deleteBuffer: boolean = false, format?: number) {
         super((sceneOrEngine && sceneOrEngine.getClassName() === "Scene") ? (sceneOrEngine as Scene) : null);
 
         this.name = url || "";
@@ -290,11 +290,12 @@ export class Texture extends BaseTexture {
         }
 
         var scene = this.getScene();
-        var engine = (sceneOrEngine && (sceneOrEngine as Engine).getCaps) ? (sceneOrEngine as Engine) : (scene ? scene.getEngine() : null);
+        var engine = (sceneOrEngine && (sceneOrEngine as ThinEngine).getCaps) ? (sceneOrEngine as ThinEngine) : (scene ? scene.getEngine() : null);
 
         if (!engine) {
             return;
         }
+
         engine.onBeforeTextureInitObservable.notifyObservers(this);
 
         let load = () => {

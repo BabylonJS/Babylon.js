@@ -134,6 +134,7 @@ export class Effect implements IDisposable {
     private _samplers: { [key: string]: number } = {};
     private _isReady = false;
     private _compilationError = "";
+    private _allFallbacksProcessed = false;
     private _attributesNames: string[];
     private _attributes: number[];
     private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> } = {};
@@ -391,6 +392,14 @@ export class Effect implements IDisposable {
      */
     public getCompilationError(): string {
         return this._compilationError;
+    }
+
+    /**
+     * Gets a boolean indicating that all fallbacks were used during compilation
+     * @returns true if all fallbacks were used
+     */
+    public allFallbacksProcessed(): boolean {
+        return this._allFallbacksProcessed;
     }
 
     /**
@@ -686,11 +695,12 @@ export class Effect implements IDisposable {
         if (fallbacks) {
             this._pipelineContext = null;
             if (fallbacks.hasMoreFallbacks) {
+                this._allFallbacksProcessed = false;
                 Logger.Error("Trying next fallback.");
                 this.defines = fallbacks.reduce(this.defines, this);
                 this._prepareEffect();
             } else { // Sorry we did everything we can
-
+                this._allFallbacksProcessed = true;
                 if (this.onError) {
                     this.onError(this, this._compilationError);
                 }
@@ -702,6 +712,8 @@ export class Effect implements IDisposable {
                     this._fallbacks.unBindMesh();
                 }
             }
+        } else {
+            this._allFallbacksProcessed = true;
         }
     }
 
