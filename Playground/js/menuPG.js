@@ -203,6 +203,13 @@ class MenuPG {
                 this.removeAllOptions();
                 toDisplay.style.display = 'block';
             }
+            
+            // Avoid an iPhone bug making the subitems disappear.
+            // Was previously done with "overflow-y : auto"
+            if(toDisplay.clientHeight < toDisplay.scrollHeight)
+                toDisplay.style.overflowY = "auto";
+            else
+                toDisplay.style.overflowY = "visible";
         }
         toDisplay = evt.target.parentNode.querySelector('.toDisplayBig');
         if (toDisplay) {
