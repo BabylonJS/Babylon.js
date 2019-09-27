@@ -134,10 +134,12 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString(this._tangentSpaceParameterName, "vec2");
 
+        let replaceForBumpInfos = this.strength.isConnectedToInputBlock && this.strength.connectInputBlock!.isConstant ? `${state._emitFloat(1.0 / this.strength.connectInputBlock!.value)}` : `1.0 / ${this.strength.associatedVariableName}`;
+
         state._emitExtension("bump", "#extension GL_OES_standard_derivatives : enable");
         state._emitFunctionFromInclude("bumpFragmentFunctions", comments, {
             replaceStrings: [
-                { search: /vBumpInfos.y/g, replace: `1.0 / ${this.strength.associatedVariableName}`},
+                { search: /vBumpInfos.y/g, replace: replaceForBumpInfos},
                 { search: /vTangentSpaceParams/g, replace: this._tangentSpaceParameterName},
                 { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"},
                 { search: /defined\(TANGENT\)/g, replace: "defined(IGNORE)" }
@@ -147,7 +149,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         state.compilationString += state._emitCodeFromInclude("bumpFragment", comments, {
             replaceStrings: [
                 { search: /perturbNormal\(TBN,vBumpUV\+uvOffset\)/g, replace: `perturbNormal(TBN, ${this.normalMapColor.associatedVariableName})` },
-                { search: /vBumpInfos.y/g, replace: `1.0 / ${this.strength.associatedVariableName}`},
+                { search: /vBumpInfos.y/g, replace: replaceForBumpInfos},
                 { search: /vBumpUV/g, replace: uv.associatedVariableName},
                 { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"},
                 { search: /normalW=/g, replace: this.output.associatedVariableName + ".xyz = " },
