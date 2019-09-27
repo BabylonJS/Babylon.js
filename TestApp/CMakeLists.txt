@@ -41,6 +41,7 @@ elseif(BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
         "Source/UWP/App.h")
 
 elseif(APPLE)
+    find_library(JSCORE_LIBRARY JavaScriptCore)
     if(IOS)
         set(PLIST_FILE "${CMAKE_CURRENT_LIST_DIR}/Source/iOS/Info.plist")
 
@@ -68,8 +69,9 @@ elseif(APPLE)
             "Source/macOS/AppDelegate.h"
             "Source/macOS/ViewController.mm"
             "Source/macOS/ViewController.h")
-            ${JSCORE_LIBRARY}
     endif()
+
+    set(ADDITIONAL_LIBRARIES ${ADDITIONAL_LIBRARIES} ${JSCORE_LIBRARY})
     set(JSSCRIPT "${CMAKE_CURRENT_LIST_DIR}/Scripts/babylon.glTF2FileLoader.js"
         "${CMAKE_CURRENT_LIST_DIR}/Scripts/babylon.max.js"
         "${CMAKE_CURRENT_LIST_DIR}/Scripts/experience.js"
@@ -84,10 +86,6 @@ else()
     add_executable(TestApp ${SOURCES} ${RESOURCE_FILES})
 endif()
 
-
-if(APPLE)
-    find_library(JSCORE_LIBRARY JavaScriptCore)
-endif()
 
 set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT TestApp)
 
