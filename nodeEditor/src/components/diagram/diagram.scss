@@ -54,7 +54,7 @@
         }
 
         &.Float {
-            background: #ca9e27;
+            background: #cb9e27;
         }
 
         &.Vector2 {
@@ -116,7 +116,7 @@
     }
 
     &.constant {
-        background: gray !important;
+        background: #646464 !important;
     }
 
     &.output {
@@ -295,6 +295,7 @@
         display: grid;
         grid-template-rows: 30px auto 1fr;
         grid-template-columns: calc(100% - 60px) 60px;
+        background: #323232;
 
         .inputs {
             grid-column: 1;

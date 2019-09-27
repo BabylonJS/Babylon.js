@@ -8912,7 +8912,7 @@ declare module BABYLON {
          * @param defines The defines helping in the list generation
          * @param maxSimultaneousLights The maximum number of simultanous light allowed in the effect
          */
-        static PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | EffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights?: number): void;
+        static PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | IEffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights?: number): void;
         /**
          * This helps decreasing rank by rank the shadow quality (0 being the highest rank and quality)
          * @param defines The defines to update while falling back
@@ -27950,7 +27950,7 @@ declare module BABYLON {
     /**
      * Options to be used when creating an effect.
      */
-    export class EffectCreationOptions {
+    export interface IEffectCreationOptions {
         /**
          * Atrributes that will be used in the shader.
          */
@@ -28090,7 +28090,7 @@ declare module BABYLON {
          * @param onError Callback that will be called if an error occurs during shader compilation.
          * @param indexParameters Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
          */
-        constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: Nullable<string[]>, engine?: ThinEngine, defines?: Nullable<string>, fallbacks?: Nullable<IEffectFallbacks>, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any);
+        constructor(baseName: any, attributesNamesOrOptions: string[] | IEffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: Nullable<string[]>, engine?: ThinEngine, defines?: Nullable<string>, fallbacks?: Nullable<IEffectFallbacks>, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any);
         private _useFinalCode;
         /**
          * Unique key for this effect
@@ -28167,12 +28167,7 @@ declare module BABYLON {
          */
         executeWhenCompiled(func: (effect: Effect) => void): void;
         private _checkIsReady;
-        /** @hidden */
-        _loadVertexShader(vertex: any, callback: (data: any) => void): void;
-        /** @hidden */
-        _loadFragmentShader(fragment: any, callback: (data: any) => void): void;
-        /** @hidden */
-        _dumpShadersSource(vertexCode: string, fragmentCode: string, defines: string): void;
+        private _loadShader;
         /**
          * Recompiles the webGL program
          * @param vertexSourceCode The source code for the vertex shader.
@@ -29451,7 +29446,7 @@ declare module BABYLON {
         /**
          * Create a new effect (used to store vertex/fragment shaders)
          * @param baseName defines the base name of the effect (The name of file without .fragment.fx or .vertex.fx)
-         * @param attributesNamesOrOptions defines either a list of attribute names or an EffectCreationOptions object
+         * @param attributesNamesOrOptions defines either a list of attribute names or an IEffectCreationOptions object
          * @param uniformsNamesOrEngine defines either a list of uniform names or the engine to use
          * @param samplers defines an array of string used to represent textures
          * @param defines defines the string containing the defines to use to compile the shaders
@@ -29461,7 +29456,7 @@ declare module BABYLON {
          * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
          * @returns the new Effect
          */
-        createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: string[], defines?: string, fallbacks?: IEffectFallbacks, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect;
+        createEffect(baseName: any, attributesNamesOrOptions: string[] | IEffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: string[], defines?: string, fallbacks?: IEffectFallbacks, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect;
         protected static _ConcatenateShader(source: string, defines: Nullable<string>, shaderVersion?: string): string;
         private _compileShader;
         private _compileRawShader;
@@ -37342,6 +37337,11 @@ declare module BABYLON {
          * This is the threshold from when moving starts to be accounted for for to prevent jittering.
          */
         gamepadMoveSensibility: number;
+        private _yAxisScale;
+        /**
+         * Gets or sets a boolean indicating that Yaxis (for right stick) should be inverted
+         */
+        invertYAxis: boolean;
         private _onGamepadConnectedObserver;
         private _onGamepadDisconnectedObserver;
         /**
@@ -38342,6 +38342,11 @@ declare module BABYLON {
          * This is the threshold from when moving starts to be accounted for for to prevent jittering.
          */
         gamepadMoveSensibility: number;
+        private _yAxisScale;
+        /**
+         * Gets or sets a boolean indicating that Yaxis (for right stick) should be inverted
+         */
+        invertYAxis: boolean;
         private _onGamepadConnectedObserver;
         private _onGamepadDisconnectedObserver;
         private _cameraTransform;

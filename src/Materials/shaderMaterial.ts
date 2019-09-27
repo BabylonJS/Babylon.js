@@ -8,7 +8,7 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { MaterialHelper } from "./materialHelper";
-import { EffectCreationOptions } from "./effect";
+import { IEffectCreationOptions } from "./effect";
 import { Material } from "./material";
 import { _TypeStore } from '../Misc/typeStore';
 import { Color3, Color4 } from '../Maths/math.color';
@@ -515,7 +515,7 @@ export class ShaderMaterial extends Material {
         var previousEffect = this._effect;
         var join = defines.join("\n");
 
-        this._effect = engine.createEffect(this._shaderPath, <EffectCreationOptions>{
+        this._effect = engine.createEffect(this._shaderPath, <IEffectCreationOptions>{
             attributes: attribs,
             uniformsNames: this._options.uniforms,
             uniformBuffersNames: this._options.uniformBuffers,
