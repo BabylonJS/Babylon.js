@@ -393,7 +393,7 @@ export class PointsCloudSystem implements IDisposable {
                             if (hasTexture && pointsGroup._groupImageData !== null) {
                                 width = pointsGroup._groupImgWidth;
                                 height = pointsGroup._groupImgHeight;
-                                pointColors = this._getColorIndicesForCoord(pointsGroup, Math.floor(uvPoint.x * width), Math.round((1 - uvPoint.y) * height), width);
+                                pointColors = this._getColorIndicesForCoord(pointsGroup, Math.round(uvPoint.x * width), Math.round(uvPoint.y * height), width);
                                 particle.color = pointColors;
                                 this._colors.push(pointColors.r, pointColors.g, pointColors.b, pointColors.a);
                             }
