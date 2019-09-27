@@ -22,6 +22,7 @@ import { Logger } from "../Misc/logger";
 import { Constants } from './constants';
 import { ThinEngine } from './thinEngine';
 import { EngineCapabilities } from './engineCapabilities';
+import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 
 interface INativeEngine {
     requestAnimationFrame(callback: () => void): void;
@@ -1042,7 +1043,7 @@ export class NativeEngine extends Engine {
                 throw new Error(`Multi-file loading not yet supported.`);
             }
             else {
-                let onInternalError = (request?: WebRequest, exception?: any) => {
+                let onInternalError = (request?: IWebRequest, exception?: any) => {
                     if (onError && request) {
                         onError(request.status + " " + request.statusText, exception);
                     }

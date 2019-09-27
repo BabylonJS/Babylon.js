@@ -135,8 +135,6 @@
         min-height: 100px;
         max-height: calc(100% - 40px);
         text-align: left;
-        overflow-y: auto;
-        overflow-x: hidden;
     }
     .navbar .select .toDisplay.languageJS .option {
         background-color: #3f3461;

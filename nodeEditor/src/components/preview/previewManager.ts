@@ -178,7 +178,10 @@ export class PreviewManager {
         
             switch (this._globalState.previewMeshType) {
                 case PreviewMeshType.Box:
-                    this._meshes.push(Mesh.CreateBox("dummy-box", 2, this._scene));
+                    SceneLoader.AppendAsync("https://models.babylonjs.com/", "roundedCube.glb", this._scene).then(() => {     
+                        this._meshes.push(...this._scene.meshes);
+                        this._prepareMeshes();
+                    });     
                     break;
                 case PreviewMeshType.Sphere:
                     this._meshes.push(Mesh.CreateSphere("dummy-sphere", 32, 2, this._scene));
