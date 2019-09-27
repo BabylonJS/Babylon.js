@@ -111,7 +111,8 @@
 - Added `StackPanel.ignoreLayoutWarnings` to disable console warnings when controls with percentage size are added to a StackPanel ([Deltakosh](https://github.com/deltakosh/))
 - Added `_getSVGAttribs` functionality for loading multiple svg icons from an external svg file via icon id.([lockphase](https://github.com/lockphase/))
 
-
+### Particles
+- Added the feature `expandable` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 
 ### Navigation Mesh
 - Added moveAlong function to cast a segment on mavmesh ([CedricGuillemet](https://github.com/CedricGuillemet/))
