@@ -49,7 +49,8 @@ class MenuPG {
         // Handle quit of menus
         for (var i = 0; i < this.allToDisplay.length; i++) {
             this.allToDisplay[i].addEventListener('mouseleave', function () {
-                this.removeAllOptions();
+                if(this.isMobileVersion) return;
+                else this.removeAllOptions();
             }.bind(this));
         }
 
