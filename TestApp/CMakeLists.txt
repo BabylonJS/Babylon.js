@@ -40,7 +40,7 @@ elseif(BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
         "Source/UWP/App.cpp"
         "Source/UWP/App.h")
 
-elseif(BABYLON_NATIVE_PLATFORM STREQUAL "Apple")
+elseif(APPLE)
     if(IOS)
         set(PLIST_FILE "${CMAKE_CURRENT_LIST_DIR}/Source/iOS/Info.plist")
 
@@ -94,7 +94,7 @@ target_include_directories(TestApp PRIVATE "Source")
 
 target_link_libraries(TestApp PRIVATE Library ${ADDITIONAL_LIBRARIES})
 
-if(BABYLON_NATIVE_PLATFORM STREQUAL "Apple")
+if(APPLE)
 
     if(IOS)
         set_target_properties(TestApp PROPERTIES
