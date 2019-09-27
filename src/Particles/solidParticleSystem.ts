@@ -102,6 +102,7 @@ export class SolidParticleSystem implements IDisposable {
     private _isVisibilityBoxLocked = false;
     private _alwaysVisible: boolean = false;
     private _depthSort: boolean = false;
+    private _expandable: boolean = false;
     private _shapeCounter: number = 0;
     private _copy: SolidParticle = new SolidParticle(0, 0, 0, null, 0, 0, this);
     private _color: Color4 = new Color4(0, 0, 0, 0);
@@ -124,17 +125,19 @@ export class SolidParticleSystem implements IDisposable {
      * * updatable (optional boolean, default true) : if the SPS must be updatable or immutable.
      * * isPickable (optional boolean, default false) : if the solid particles must be pickable.
      * * enableDepthSort (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.
+     * * expandable (optional boolean, default false) : if particles can still be added after the initial SPS mesh creation.  
      * * particleIntersection (optional boolean, default false) : if the solid particle intersections must be computed.
      * * boundingSphereOnly (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
      * * bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance.
      * @example bSphereRadiusFactor = 1.0 / Math.sqrt(3.0) => the bounding sphere exactly matches a spherical mesh.
      */
-    constructor(name: string, scene: Scene, options?: { updatable?: boolean; isPickable?: boolean; enableDepthSort?: boolean; particleIntersection?: boolean; boundingSphereOnly?: boolean; bSphereRadiusFactor?: number }) {
+    constructor(name: string, scene: Scene, options?: { updatable?: boolean; isPickable?: boolean; enableDepthSort?: boolean; particleIntersection?: boolean; boundingSphereOnly?: boolean; bSphereRadiusFactor?: number; expandable?: boolean }) {
         this.name = name;
         this._scene = scene || EngineStore.LastCreatedScene;
         this._camera = <TargetCamera>scene.activeCamera;
         this._pickable = options ? <boolean>options.isPickable : false;
         this._depthSort = options ? <boolean>options.enableDepthSort : false;
+        this._expandable = options ? <boolean>options.expandable : false;
         this._particlesIntersect = options ? <boolean>options.particleIntersection : false;
         this._bSphereOnly = options ? <boolean>options.boundingSphereOnly : false;
         this._bSphereRadiusFactor = (options && options.bSphereRadiusFactor) ? options.bSphereRadiusFactor : 1.0;
@@ -186,25 +189,28 @@ export class SolidParticleSystem implements IDisposable {
         if (this._colors32.length > 0) {
             vertexData.set(this._colors32, VertexBuffer.ColorKind);
         }
-        var mesh = new Mesh(this.name, this._scene);
-        vertexData.applyToMesh(mesh, this._updatable);
-        this.mesh = mesh;
+        if (!this.mesh) {       // in case it's expanded
+            var mesh = new Mesh(this.name, this._scene);
+            this.mesh = mesh;
+        }
+        vertexData.applyToMesh(this.mesh, this._updatable);
         this.mesh.isPickable = this._pickable;
 
-        // free memory
-        if (!this._depthSort) {
-            (<any>this._indices) = null;
-        }
-        (<any>this._positions) = null;
-        (<any>this._normals) = null;
-        (<any>this._uvs) = null;
-        (<any>this._colors) = null;
+        if (!this._expandable) {
+            // free memory
+            if (!this._depthSort) {
+                (<any>this._indices) = null;
+            }
+            (<any>this._positions) = null;
+            (<any>this._normals) = null;
+            (<any>this._uvs) = null;
+            (<any>this._colors) = null;
 
-        if (!this._updatable) {
-            this.particles.length = 0;
+            if (!this._updatable) {
+                this.particles.length = 0;
+            }
         }
-
-        return mesh;
+        return this.mesh;
     }
 
     /**
@@ -1152,6 +1158,13 @@ export class SolidParticleSystem implements IDisposable {
      */
     public get depthSortParticles(): boolean {
         return this._depthSortParticles;
+    }
+    /**
+     * Gets if the SPS is created as expandable at construction time.
+     * Default : `false`
+     */
+    public get expandable(): boolean {
+        return this._expandable;
     }
 
     // =======================================================================
