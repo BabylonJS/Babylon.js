@@ -52,6 +52,34 @@
         .outputs {
             transform: translateY(5px);
         }
+
+        &.Float {
+            background: #ca9e27;
+        }
+
+        &.Vector2 {
+            background: #16bcb1;
+        }      
+        
+        &.Vector3 {
+            background: #b786cb;
+        }          
+
+        &.Color3 {
+            background: #b786cb;
+        }          
+
+        &.Vector4 {
+            background: #be5126;
+        }          
+
+        &.Color4 {
+            background: #be5126;
+        }          
+
+        &.Matrix {
+            background: #591990;
+        }
     }
 
     &.trigonometry {
@@ -88,7 +116,7 @@
     }
 
     &.constant {
-        background: gray;
+        background: gray !important;
     }
 
     &.output {

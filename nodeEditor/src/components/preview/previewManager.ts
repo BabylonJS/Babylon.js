@@ -15,6 +15,7 @@ import { TransformNode } from 'babylonjs/Meshes/transformNode';
 import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
 import { FramingBehavior } from 'babylonjs/Behaviors/Cameras/framingBehavior';
 import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
+import { LogEntry } from '../log/logComponent';
 
 export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
@@ -127,6 +128,8 @@ export class PreviewManager {
     }
 
     private _prepareMeshes() {
+        this._engine.hideLoadingUI();
+
         this._prepareLights();
 
         // Framing
@@ -175,6 +178,10 @@ export class PreviewManager {
             }
 
             this._engine.releaseEffects();
+
+            SceneLoader.ShowLoadingScreen = false;
+
+            this._engine.displayLoadingUI();
         
             switch (this._globalState.previewMeshType) {
                 case PreviewMeshType.Box:
@@ -240,6 +247,8 @@ export class PreviewManager {
                     }      
         
                     this._material = tempMaterial;  
+                }).catch(reason => {
+                    this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Shader compilation error:\r\n" + reason, true));
                 });
             } else {
                 this._material = tempMaterial;    

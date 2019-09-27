@@ -130,7 +130,7 @@ export class InputNodeWidget extends React.Component<IInputNodeWidgetProps> {
         }
 
         return (
-            <div className={"diagramBlock input" + (inputBlock && inputBlock.isAttribute ? " attribute" : "")+ (inputBlock && inputBlock.isConstant ? " constant" : "")} style={{
+            <div className={"diagramBlock input" + (inputBlock ? " " + NodeMaterialBlockConnectionPointTypes[inputBlock.type] : "")+ (inputBlock && inputBlock.isConstant ? " constant" : "")} style={{
                 background: color
             }}>
                 <div className="header">

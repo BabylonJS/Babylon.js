@@ -74,7 +74,7 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
         if (!texture) {
 
             if (!this.state.loadAsCubeTexture) {
-                this.props.node.texture = new Texture(null, this.props.globalState.nodeMaterial.getScene(), false, false);
+                this.props.node.texture = new Texture(null, this.props.globalState.nodeMaterial.getScene(), false, this.props.node instanceof ReflectionTextureNodeModel);
                 texture = this.props.node.texture;
                 texture.coordinatesMode = Texture.EQUIRECTANGULAR_MODE;
             } else {
