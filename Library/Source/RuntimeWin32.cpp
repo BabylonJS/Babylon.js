@@ -1,5 +1,8 @@
 #include <Babylon/RuntimeWin32.h>
 #include "RuntimeImpl.h"
+
+#include "XrPlugin.h"
+
 #include <filesystem>
 
 namespace babylon
@@ -26,6 +29,11 @@ namespace babylon
         HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
         assert(SUCCEEDED(hr));
         auto coInitializeScopeGuard = gsl::finally([] { CoUninitialize(); });
+
+        Execute([](RuntimeImpl& runtime)
+        {
+            InitializeXrPlugin(runtime.Env());
+        });
 
         RuntimeImpl::BaseThreadProcedure();
     }

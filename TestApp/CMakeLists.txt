@@ -56,6 +56,7 @@ elseif(APPLE)
             "Source/iOS/LibNativeBridge.mm")
     else()
         set(PLIST_FILE "${CMAKE_CURRENT_LIST_DIR}/Source/macOS/Info.plist")
+        set(STORYBOARD "${CMAKE_CURRENT_LIST_DIR}/Source/macOS/Base.lproj/Main.storyboard")
 
         set(STORYBOARD "${CMAKE_CURRENT_LIST_DIR}/Source/macOS/Base.lproj/Main.storyboard")
         set(RESOURCE_FILES ${STORYBOARD})
@@ -67,7 +68,13 @@ elseif(APPLE)
             "Source/macOS/AppDelegate.h"
             "Source/macOS/ViewController.mm"
             "Source/macOS/ViewController.h")
+            ${JSCORE_LIBRARY}
     endif()
+    set(JSSCRIPT "${CMAKE_CURRENT_LIST_DIR}/Scripts/babylon.glTF2FileLoader.js"
+        "${CMAKE_CURRENT_LIST_DIR}/Scripts/babylon.max.js"
+        "${CMAKE_CURRENT_LIST_DIR}/Scripts/experience.js"
+        "${CMAKE_CURRENT_LIST_DIR}/Scripts/playground_runner.js")
+    set(RESOURCE_FILES ${STORYBOARD} ${JSSCRIPT})
 endif()
 
 if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
@@ -77,6 +84,10 @@ else()
     add_executable(TestApp ${SOURCES} ${RESOURCE_FILES})
 endif()
 
+
+if(APPLE)
+    find_library(JSCORE_LIBRARY JavaScriptCore)
+endif()
 
 set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT TestApp)
 
@@ -95,7 +106,6 @@ target_include_directories(TestApp PRIVATE "Source")
 target_link_libraries(TestApp PRIVATE Library ${ADDITIONAL_LIBRARIES})
 
 if(APPLE)
-
     if(IOS)
         set_target_properties(TestApp PROPERTIES
             MACOSX_BUNDLE true
