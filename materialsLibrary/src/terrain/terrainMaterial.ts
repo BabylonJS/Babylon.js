@@ -5,7 +5,7 @@ import { Color3 } from "babylonjs/Maths/math.color";
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
-import { EffectCreationOptions } from "babylonjs/Materials/effect";
+import { IEffectCreationOptions } from "babylonjs/Materials/effect";
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -249,7 +249,7 @@ export class TerrainMaterial extends PushMaterial {
 
             var uniformBuffers = new Array<string>();
 
-            MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
+            MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
@@ -258,7 +258,7 @@ export class TerrainMaterial extends PushMaterial {
             });
 
             subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                <EffectCreationOptions>{
+                <IEffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
