@@ -1,7 +1,7 @@
 import { Nullable, IndicesArray, DataArray } from "../types";
 import { Engine } from "../Engines/engine";
 import { VertexBuffer } from "../Meshes/buffer";
-import { InternalTexture } from "../Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import { Texture } from "../Materials/Textures/texture";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -22,6 +22,7 @@ import { Logger } from "../Misc/logger";
 import { Constants } from './constants';
 import { ThinEngine } from './thinEngine';
 import { EngineCapabilities } from './engineCapabilities';
+import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 
 interface INativeEngine {
     requestAnimationFrame(callback: () => void): void;
@@ -800,7 +801,7 @@ export class NativeEngine extends Engine {
         var fromBlob = url.substr(0, 5) === "blob:";
         var isBase64 = fromData && url.indexOf("base64") !== -1;
 
-        let texture = fallback ? fallback : new InternalTexture(this, InternalTexture.DATASOURCE_URL);
+        let texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Url);
 
         // establish the file extension, if possible
         var lastDot = url.lastIndexOf('.');
@@ -988,7 +989,7 @@ export class NativeEngine extends Engine {
         lodOffset: number = 0,
         fallback: Nullable<InternalTexture> = null): InternalTexture
     {
-        var texture = fallback ? fallback : new InternalTexture(this, InternalTexture.DATASOURCE_CUBE);
+        var texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Cube);
         texture.isCube = true;
         texture.url = rootUrl;
         texture.generateMipMaps = !noMipmap;
@@ -1042,7 +1043,7 @@ export class NativeEngine extends Engine {
                 throw new Error(`Multi-file loading not yet supported.`);
             }
             else {
-                let onInternalError = (request?: WebRequest, exception?: any) => {
+                let onInternalError = (request?: IWebRequest, exception?: any) => {
                     if (onError && request) {
                         onError(request.status + " " + request.statusText, exception);
                     }
@@ -1131,7 +1132,7 @@ export class NativeEngine extends Engine {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
             fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
-        var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
+        var texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
 
         var width = (<{ width: number, height: number }>size).width || <number>size;
         var height = (<{ width: number, height: number }>size).height || <number>size;

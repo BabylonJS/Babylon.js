@@ -406,9 +406,28 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Interface used to define the mechanism to get data from the network
+     */
+    export interface IWebRequest {
+        /**
+         * Returns client's response url
+         */
+        responseURL: string;
+        /**
+         * Returns client's status
+         */
+        status: number;
+        /**
+         * Returns client's status as a text
+         */
+        statusText: string;
+    }
+}
+declare module BABYLON {
+    /**
      * Extended version of XMLHttpRequest with support for customizations (headers, ...)
      */
-    export class WebRequest {
+    export class WebRequest implements IWebRequest {
         private _xhr;
         /**
          * Custom HTTP Request Headers to be sent with XMLHttpRequests
@@ -8284,6 +8303,20 @@ declare module BABYLON {
         name: string;
         shader: string;
     };
+}
+declare module BABYLON {
+        interface ThinEngine {
+            /**
+             * Creates a new render target texture
+             * @param size defines the size of the texture
+             * @param options defines the options used to create the texture
+             * @returns a new render target texture stored in an InternalTexture
+             */
+            createRenderTargetTexture(size: number | {
+                width: number;
+                height: number;
+            }, options: boolean | RenderTargetCreationOptions): InternalTexture;
+        }
 }
 declare module BABYLON {
     /** Defines supported spaces */
@@ -28298,86 +28331,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * This class is used to track a performance counter which is number based.
-     * The user has access to many properties which give statistics of different nature.
-     *
-     * The implementer can track two kinds of Performance Counter: time and count.
-     * For time you can optionally call fetchNewFrame() to notify the start of a new frame to monitor, then call beginMonitoring() to start and endMonitoring() to record the lapsed time. endMonitoring takes a newFrame parameter for you to specify if the monitored time should be set for a new frame or accumulated to the current frame being monitored.
-     * For count you first have to call fetchNewFrame() to notify the start of a new frame to monitor, then call addCount() how many time required to increment the count value you monitor.
-     */
-    export class PerfCounter {
-        /**
-         * Gets or sets a global boolean to turn on and off all the counters
-         */
-        static Enabled: boolean;
-        /**
-         * Returns the smallest value ever
-         */
-        readonly min: number;
-        /**
-         * Returns the biggest value ever
-         */
-        readonly max: number;
-        /**
-         * Returns the average value since the performance counter is running
-         */
-        readonly average: number;
-        /**
-         * Returns the average value of the last second the counter was monitored
-         */
-        readonly lastSecAverage: number;
-        /**
-         * Returns the current value
-         */
-        readonly current: number;
-        /**
-         * Gets the accumulated total
-         */
-        readonly total: number;
-        /**
-         * Gets the total value count
-         */
-        readonly count: number;
-        /**
-         * Creates a new counter
-         */
-        constructor();
-        /**
-         * Call this method to start monitoring a new frame.
-         * This scenario is typically used when you accumulate monitoring time many times for a single frame, you call this method at the start of the frame, then beginMonitoring to start recording and endMonitoring(false) to accumulated the recorded time to the PerfCounter or addCount() to accumulate a monitored count.
-         */
-        fetchNewFrame(): void;
-        /**
-         * Call this method to monitor a count of something (e.g. mesh drawn in viewport count)
-         * @param newCount the count value to add to the monitored count
-         * @param fetchResult true when it's the last time in the frame you add to the counter and you wish to update the statistics properties (min/max/average), false if you only want to update statistics.
-         */
-        addCount(newCount: number, fetchResult: boolean): void;
-        /**
-         * Start monitoring this performance counter
-         */
-        beginMonitoring(): void;
-        /**
-         * Compute the time lapsed since the previous beginMonitoring() call.
-         * @param newFrame true by default to fetch the result and monitor a new frame, if false the time monitored will be added to the current frame counter
-         */
-        endMonitoring(newFrame?: boolean): void;
-        private _fetchResult;
-        private _startMonitoringTime;
-        private _min;
-        private _max;
-        private _average;
-        private _current;
-        private _totalValueCount;
-        private _totalAccumulated;
-        private _lastSecAverage;
-        private _lastSecAccumulated;
-        private _lastSecTime;
-        private _lastSecValueCount;
-    }
-}
-declare module BABYLON {
-    /**
      * @hidden
      **/
     export class DepthCullingState {
@@ -28790,7 +28743,6 @@ declare module BABYLON {
         /** @hidden */private _caps: EngineCapabilities;
         private _isStencilEnable;
         protected _colorWrite: boolean;
-        /** @hidden */private _drawCalls: PerfCounter;
         private _glVersion;
         private _glRenderer;
         private _glVendor;
@@ -28849,7 +28801,7 @@ declare module BABYLON {
         protected _cachedEffectForVertexBuffers: Nullable<Effect>;
         /** @hidden */private _currentRenderTarget: Nullable<InternalTexture>;
         private _uintIndicesCurrentlySet;
-        private _currentBoundBuffer;
+        protected _currentBoundBuffer: Nullable<WebGLBuffer>[];
         /** @hidden */
         protected _currentFramebuffer: Nullable<WebGLFramebuffer>;
         private _currentBufferPointers;
@@ -29082,13 +29034,6 @@ declare module BABYLON {
          */
         createDynamicVertexBuffer(data: DataArray): DataBuffer;
         /**
-         * Update a dynamic index buffer
-         * @param indexBuffer defines the target index buffer
-         * @param indices defines the data to update
-         * @param offset defines the offset in the target index buffer where update should start
-         */
-        updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset?: number): void;
-        /**
          * Updates a dynamic vertex buffer.
          * @param vertexBuffer the vertex buffer to update
          * @param data the data used to update the vertex buffer
@@ -29096,7 +29041,7 @@ declare module BABYLON {
          * @param byteLength the byte length of the data
          */
         updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void;
-        private _resetIndexBufferBinding;
+        protected _resetIndexBufferBinding(): void;
         /**
          * Creates a new index buffer
          * @param indices defines the content of the index buffer
@@ -29110,7 +29055,7 @@ declare module BABYLON {
          * @param buffer defines the buffer to bind
          */
         bindArrayBuffer(buffer: Nullable<DataBuffer>): void;
-        private bindIndexBuffer;
+        protected bindIndexBuffer(buffer: Nullable<DataBuffer>): void;
         private bindBuffer;
         /**
          * update the bound buffer with the given data
@@ -29230,6 +29175,8 @@ declare module BABYLON {
          */
         drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void;
         private _drawMode;
+        /** @hidden */
+        protected _reportDrawCall(): void;
         /** @hidden */private _releaseEffect(effect: Effect): void;
         /** @hidden */private _deletePipelineContext(pipelineContext: IPipelineContext): void;
         /**
@@ -29577,12 +29524,6 @@ declare module BABYLON {
          * @returns The texture
          */
         private _createDepthStencilTexture;
-        /**
-         * Sets the frame buffer Depth / Stencil attachement of the render target to the defined depth stencil texture.
-         * @param renderTarget The render target to set the frame buffer for
-         */
-        setFrameBufferDepthStencilTexture(renderTarget: RenderTargetTexture): void;
-        /** @hidden */private _setupFramebufferDepthAttachments(generateStencilBuffer: boolean, generateDepthBuffer: boolean, width: number, height: number, samples?: number): Nullable<WebGLRenderbuffer>;
         /** @hidden */private _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex?: number, lod?: number): void;
         /** @hidden */private _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number, babylonInternalFormat?: number, useTextureWidthAndHeight?: boolean): void;
         /** @hidden */private _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number): void;
@@ -29592,6 +29533,7 @@ declare module BABYLON {
          */private _setCubeMapTextureParams(loadMipmap: boolean): void;
         protected _prepareWebGLTextureContinuation(texture: InternalTexture, scene: Nullable<ISceneLike>, noMipmap: boolean, isCompressed: boolean, samplingMode: number): void;
         private _prepareWebGLTexture;
+        /** @hidden */private _setupFramebufferDepthAttachments(generateStencilBuffer: boolean, generateDepthBuffer: boolean, width: number, height: number, samples?: number): Nullable<WebGLRenderbuffer>;
         /** @hidden */private _releaseFramebufferObjects(texture: InternalTexture): void;
         /** @hidden */private _releaseTexture(texture: InternalTexture): void;
         protected _deleteTexture(texture: Nullable<WebGLTexture>): void;
@@ -29666,7 +29608,7 @@ declare module BABYLON {
         /** @hidden */private _getInternalFormat(format: number): number;
         /** @hidden */private _getRGBABufferInternalSizedFormat(type: number, format?: number): number;
         /** @hidden */private _getRGBAMultiSampleBufferFormat(type: number): number;
-        /** @hidden */private _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
+        /** @hidden */private _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: IWebRequest, exception?: any) => void): IFileRequest;
         /**
          * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
          * @returns true if the engine can be created
@@ -29710,63 +29652,68 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Defines the source of the internal texture
+     */
+    export enum InternalTextureSource {
+        /**
+         * The source of the texture data is unknown
+         */
+        Unknown = 0,
+        /**
+        * Texture data comes from an URL
+        */
+        Url = 1,
+        /**
+         * Texture data is only used for temporary storage
+         */
+        Temp = 2,
+        /**
+         * Texture data comes from raw data (ArrayBuffer)
+         */
+        Raw = 3,
+        /**
+         * Texture content is dynamic (video or dynamic texture)
+         */
+        Dynamic = 4,
+        /**
+         * Texture content is generated by rendering to it
+         */
+        RenderTarget = 5,
+        /**
+         * Texture content is part of a multi render target process
+         */
+        MultiRenderTarget = 6,
+        /**
+         * Texture data comes from a cube data file
+         */
+        Cube = 7,
+        /**
+         * Texture data comes from a raw cube data
+         */
+        CubeRaw = 8,
+        /**
+         * Texture data come from a prefiltered cube data file
+         */
+        CubePrefiltered = 9,
+        /**
+         * Texture content is raw 3D data
+         */
+        Raw3D = 10,
+        /**
+         * Texture content is a depth texture
+         */
+        Depth = 11,
+        /**
+         * Texture data comes from a raw cube data encoded with RGBD
+         */
+        CubeRawRGBD = 12
+    }
+    /**
      * Class used to store data associated with WebGL texture data for the engine
      * This class should not be used directly
      */
     export class InternalTexture {
         /** @hidden */private static _UpdateRGBDAsync: (internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number) => Promise<void>;
-        /**
-         * The source of the texture data is unknown
-         */
-        static DATASOURCE_UNKNOWN: number;
-        /**
-         * Texture data comes from an URL
-         */
-        static DATASOURCE_URL: number;
-        /**
-         * Texture data is only used for temporary storage
-         */
-        static DATASOURCE_TEMP: number;
-        /**
-         * Texture data comes from raw data (ArrayBuffer)
-         */
-        static DATASOURCE_RAW: number;
-        /**
-         * Texture content is dynamic (video or dynamic texture)
-         */
-        static DATASOURCE_DYNAMIC: number;
-        /**
-         * Texture content is generated by rendering to it
-         */
-        static DATASOURCE_RENDERTARGET: number;
-        /**
-         * Texture content is part of a multi render target process
-         */
-        static DATASOURCE_MULTIRENDERTARGET: number;
-        /**
-         * Texture data comes from a cube data file
-         */
-        static DATASOURCE_CUBE: number;
-        /**
-         * Texture data comes from a raw cube data
-         */
-        static DATASOURCE_CUBERAW: number;
-        /**
-         * Texture data come from a prefiltered cube data file
-         */
-        static DATASOURCE_CUBEPREFILTERED: number;
-        /**
-         * Texture content is raw 3D data
-         */
-        static DATASOURCE_RAW3D: number;
-        /**
-         * Texture content is a depth texture
-         */
-        static DATASOURCE_DEPTHTEXTURE: number;
-        /**
-         * Texture data comes from a raw cube data encoded with RGBD
-         */
-        static DATASOURCE_CUBERAW_RGBD: number;
         /**
          * Defines if the texture is ready
          */
@@ -29841,7 +29788,7 @@ declare module BABYLON {
         invertY: boolean;
         /** @hidden */private _invertVScale: boolean;
         /** @hidden */private _associatedChannel: number;
-        /** @hidden */private _dataSource: number;
+        /** @hidden */private _source: InternalTextureSource;
         /** @hidden */private _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>;
         /** @hidden */private _bufferView: Nullable<ArrayBufferView>;
         /** @hidden */private _bufferViewArray: Nullable<ArrayBufferView[]>;
@@ -29886,16 +29833,16 @@ declare module BABYLON {
          */
         getEngine(): ThinEngine;
         /**
-         * Gets the data source type of the texture (can be one of the InternalTexture.DATASOURCE_XXXX)
+         * Gets the data source type of the texture
          */
-        readonly dataSource: number;
+        readonly source: InternalTextureSource;
         /**
          * Creates a new InternalTexture
          * @param engine defines the engine to use
-         * @param dataSource defines the type of data that will be used
+         * @param source defines the type of data that will be used
          * @param delayAllocation if the texture allocation should be delayed (default: false)
          */
-        constructor(engine: ThinEngine, dataSource: number, delayAllocation?: boolean);
+        constructor(engine: ThinEngine, source: InternalTextureSource, delayAllocation?: boolean);
         /**
          * Increments the number of references (ie. the number of Texture that point to it)
          */
@@ -30372,6 +30319,86 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * This class is used to track a performance counter which is number based.
+     * The user has access to many properties which give statistics of different nature.
+     *
+     * The implementer can track two kinds of Performance Counter: time and count.
+     * For time you can optionally call fetchNewFrame() to notify the start of a new frame to monitor, then call beginMonitoring() to start and endMonitoring() to record the lapsed time. endMonitoring takes a newFrame parameter for you to specify if the monitored time should be set for a new frame or accumulated to the current frame being monitored.
+     * For count you first have to call fetchNewFrame() to notify the start of a new frame to monitor, then call addCount() how many time required to increment the count value you monitor.
+     */
+    export class PerfCounter {
+        /**
+         * Gets or sets a global boolean to turn on and off all the counters
+         */
+        static Enabled: boolean;
+        /**
+         * Returns the smallest value ever
+         */
+        readonly min: number;
+        /**
+         * Returns the biggest value ever
+         */
+        readonly max: number;
+        /**
+         * Returns the average value since the performance counter is running
+         */
+        readonly average: number;
+        /**
+         * Returns the average value of the last second the counter was monitored
+         */
+        readonly lastSecAverage: number;
+        /**
+         * Returns the current value
+         */
+        readonly current: number;
+        /**
+         * Gets the accumulated total
+         */
+        readonly total: number;
+        /**
+         * Gets the total value count
+         */
+        readonly count: number;
+        /**
+         * Creates a new counter
+         */
+        constructor();
+        /**
+         * Call this method to start monitoring a new frame.
+         * This scenario is typically used when you accumulate monitoring time many times for a single frame, you call this method at the start of the frame, then beginMonitoring to start recording and endMonitoring(false) to accumulated the recorded time to the PerfCounter or addCount() to accumulate a monitored count.
+         */
+        fetchNewFrame(): void;
+        /**
+         * Call this method to monitor a count of something (e.g. mesh drawn in viewport count)
+         * @param newCount the count value to add to the monitored count
+         * @param fetchResult true when it's the last time in the frame you add to the counter and you wish to update the statistics properties (min/max/average), false if you only want to update statistics.
+         */
+        addCount(newCount: number, fetchResult: boolean): void;
+        /**
+         * Start monitoring this performance counter
+         */
+        beginMonitoring(): void;
+        /**
+         * Compute the time lapsed since the previous beginMonitoring() call.
+         * @param newFrame true by default to fetch the result and monitor a new frame, if false the time monitored will be added to the current frame counter
+         */
+        endMonitoring(newFrame?: boolean): void;
+        private _fetchResult;
+        private _startMonitoringTime;
+        private _min;
+        private _max;
+        private _average;
+        private _current;
+        private _totalValueCount;
+        private _totalAccumulated;
+        private _lastSecAverage;
+        private _lastSecAccumulated;
+        private _lastSecTime;
+        private _lastSecValueCount;
+    }
+}
+declare module BABYLON {
+    /**
      * Defines the interface used by display changed events
      */
     export interface IDisplayChangedEventArgs {
@@ -30708,6 +30735,7 @@ declare module BABYLON {
         protected readonly _supportsHardwareTextureRescaling: boolean;
         private _fps;
         private _deltaTime;
+        /** @hidden */private _drawCalls: PerfCounter;
         /**
          * Turn this value on if you want to pause FPS computation when in background
          */
@@ -31008,6 +31036,7 @@ declare module BABYLON {
          * Disable previously set scissor test rectangle
          */
         disableScissor(): void;
+        protected _reportDrawCall(): void;
         /**
          * Initializes a webVR display and starts listening to display change events
          * The onVRDisplayChangedObservable will be notified upon these changes
@@ -31153,15 +31182,17 @@ declare module BABYLON {
         getDeltaTime(): number;
         private _measureFps;
         /**
-         * Creates a new render target texture
-         * @param size defines the size of the texture
-         * @param options defines the options used to create the texture
-         * @returns a new render target texture stored in an InternalTexture
+         * Sets the frame buffer Depth / Stencil attachement of the render target to the defined depth stencil texture.
+         * @param renderTarget The render target to set the frame buffer for
          */
-        createRenderTargetTexture(size: number | {
-            width: number;
-            height: number;
-        }, options: boolean | RenderTargetCreationOptions): InternalTexture;
+        setFrameBufferDepthStencilTexture(renderTarget: RenderTargetTexture): void;
+        /**
+         * Update a dynamic index buffer
+         * @param indexBuffer defines the target index buffer
+         * @param indices defines the data to update
+         * @param offset defines the offset in the target index buffer where update should start
+         */
+        updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset?: number): void;
         /**
          * Updates the sample count of a render target texture
          * @see http://doc.babylonjs.com/features/webgl2#multisample-render-targets
@@ -51628,7 +51659,7 @@ declare module BABYLON {
         /**
          * Defines the engine instance to use the texture with. It is not mandatory if you define a scene.
          */
-        engine: Nullable<Engine>;
+        engine: Nullable<ThinEngine>;
         /**
          * Defines the scene the texture belongs to. It is not mandatory if you define an engine.
          */
@@ -54649,7 +54680,7 @@ declare module BABYLON {
          * @param engine the engine to use for rendering
          * @param options defines the options of the effect renderer
          */
-        constructor(engine: Engine, options?: IEffectRendererOptions);
+        constructor(engine: ThinEngine, options?: IEffectRendererOptions);
         /**
          * Sets the current viewport in normalized coordinates 0-1
          * @param viewport Defines the viewport to set (defaults to 0 0 1 1)
@@ -54689,7 +54720,7 @@ declare module BABYLON {
         /**
          * Engine to use to create the effect
          */
-        engine: Engine;
+        engine: ThinEngine;
         /**
          * Fragment shader for the effect
          */
