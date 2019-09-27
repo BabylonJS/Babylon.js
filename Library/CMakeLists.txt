@@ -25,9 +25,10 @@ add_compile_definitions(BGFX_CONFIG_DEBUG_UNIFORM=0)
 add_compile_definitions(BGFX_CONFIG_MULTITHREADED=0)
 add_compile_definitions(BGFX_CONFIG_MAX_VERTEX_STREAMS=32)
 add_compile_definitions(BGFX_CONFIG_MAX_COMMAND_BUFFER_SIZE=12582912)
-if(BABYLON_NATIVE_PLATFORM STREQUAL "Apple")
+if(APPLE)
     # no Vulkan on Apple
     add_compile_definitions(BGFX_CONFIG_RENDERER_VULKAN=0)
+    add_compile_definitions(BGFX_CONFIG_RENDERER_METAL=1)
 endif()
 set(BGFX_BUILD_EXAMPLES OFF CACHE BOOL "Build the BGFX examples.")
 set(BGFX_BUILD_TOOLS OFF CACHE BOOL "Build the BGFX tools.")
@@ -45,7 +46,7 @@ set_property(TARGET bgfx PROPERTY FOLDER Dependencies/bgfx)
 set_property(TARGET bimg PROPERTY FOLDER Dependencies/bgfx)
 set_property(TARGET bx PROPERTY FOLDER Dependencies/bgfx)
 
-if(BABYLON_NATIVE_PLATFORM STREQUAL "Apple")
+if(APPLE)
     set(CURL_CA_BUNDLE "none" CACHE FILEPATH "Path to SSL CA Certificate Bundle")
     set(CURL_CA_PATH "none" CACHE PATH "Path to SSL CA Certificate Directory")
     set(CMAKE_USE_SECTRANSP ON CACHE BOOL "enable Apple OS native SSL/TLS")
@@ -96,7 +97,7 @@ if(BABYLON_NATIVE_PLATFORM STREQUAL "Android")
         "Source/ShaderCompilerOpenGL.cpp")
 endif()
 
-if(BABYLON_NATIVE_PLATFORM STREQUAL "Apple")
+if(APPLE)
     set(SOURCES ${SOURCES}
         "Source/ShaderCompilerMetal.cpp")
 endif()
@@ -150,6 +151,11 @@ target_link_libraries(Library
 
 if(WINDOWS_STORE)
     target_link_libraries(Library PRIVATE arcana)
+endif()
+
+if(APPLE)
+    target_link_libraries(Library
+        PRIVATE spirv-cross-msl)
 endif()
 
 if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
