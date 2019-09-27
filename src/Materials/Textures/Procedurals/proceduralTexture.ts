@@ -16,6 +16,7 @@ import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTex
 import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneComponent";
 
 import "../../../Engines/Extensions/engine.renderTarget";
+import "../../../Engines/Extensions/engine.renderTargetCube";
 import "../../../Shaders/procedural.vertex";
 import { DataBuffer } from '../../../Meshes/dataBuffer';
 
