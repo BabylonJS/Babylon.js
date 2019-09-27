@@ -16,3 +16,6 @@
 [submodule "bgfx.cmake"]
 	path = Library/Dependencies/bgfx.cmake
 	url = https://github.com/BabylonJS/bgfx.cmake
+[submodule "Library/Dependencies/ios-cmake"]
+	path = Library/Dependencies/ios-cmake
+	url = https://github.com/leetal/ios-cmake.git
