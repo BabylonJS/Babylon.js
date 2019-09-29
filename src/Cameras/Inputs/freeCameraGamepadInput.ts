@@ -35,6 +35,19 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
     @serialize()
     public gamepadMoveSensibility = 40;
 
+    private _yAxisScale = 1.0;
+
+    /**
+     * Gets or sets a boolean indicating that Yaxis (for right stick) should be inverted
+     */
+    public get invertYAxis() {
+        return this._yAxisScale !== 1.0;
+    }
+
+    public set invertYAxis(value: boolean) {
+        this._yAxisScale = value ? -1.0 : 1.0;
+    }
+
     // private members
     private _onGamepadConnectedObserver: Nullable<Observer<Gamepad>>;
     private _onGamepadDisconnectedObserver: Nullable<Observer<Gamepad>>;
@@ -94,7 +107,7 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
             var RSValues = this.gamepad.rightStick;
             if (RSValues) {
                 var normalizedRX = RSValues.x / this.gamepadAngularSensibility;
-                var normalizedRY = RSValues.y / this.gamepadAngularSensibility;
+                var normalizedRY = (RSValues.y / this.gamepadAngularSensibility) * this._yAxisScale;
                 RSValues.x = Math.abs(normalizedRX) > 0.001 ? 0 + normalizedRX : 0;
                 RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;
             }

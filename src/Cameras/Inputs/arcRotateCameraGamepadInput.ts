@@ -33,6 +33,19 @@ export class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera
     @serialize()
     public gamepadMoveSensibility = 40;
 
+    private _yAxisScale = 1.0;
+
+    /**
+     * Gets or sets a boolean indicating that Yaxis (for right stick) should be inverted
+     */
+    public get invertYAxis() {
+        return this._yAxisScale !== 1.0;
+    }
+
+    public set invertYAxis(value: boolean) {
+        this._yAxisScale = value ? -1.0 : 1.0;
+    }
+
     private _onGamepadConnectedObserver: Nullable<Observer<Gamepad>>;
     private _onGamepadDisconnectedObserver: Nullable<Observer<Gamepad>>;
 
@@ -89,7 +102,7 @@ export class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera
                 }
 
                 if (RSValues.y != 0) {
-                    var normalizedRY = RSValues.y / this.gamepadRotationSensibility;
+                    var normalizedRY = (RSValues.y / this.gamepadRotationSensibility) * this._yAxisScale;
                     if (normalizedRY != 0 && Math.abs(normalizedRY) > 0.005) {
                         camera.inertialBetaOffset += normalizedRY;
                     }

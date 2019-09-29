@@ -511,6 +511,1053 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Define options used to create a render target texture
+     */
+    export class RenderTargetCreationOptions {
+        /**
+         * Specifies is mipmaps must be generated
+         */
+        generateMipMaps?: boolean;
+        /** Specifies whether or not a depth should be allocated in the texture (true by default) */
+        generateDepthBuffer?: boolean;
+        /** Specifies whether or not a stencil should be allocated in the texture (false by default)*/
+        generateStencilBuffer?: boolean;
+        /** Defines texture type (int by default) */
+        type?: number;
+        /** Defines sampling mode (trilinear by default) */
+        samplingMode?: number;
+        /** Defines format (RGBA by default) */
+        format?: number;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     **/
+    export class _TimeToken {private _startTimeQuery: Nullable<WebGLQuery>;private _endTimeQuery: Nullable<WebGLQuery>;private _timeElapsedQuery: Nullable<WebGLQuery>;private _timeElapsedQueryEnded: boolean;
+    }
+}
+declare module BABYLON {
+    /** Defines the cross module used constants to avoid circular dependncies */
+    export class Constants {
+        /** Defines that alpha blending is disabled */
+        static readonly ALPHA_DISABLE: number;
+        /** Defines that alpha blending to SRC ALPHA * SRC + DEST */
+        static readonly ALPHA_ADD: number;
+        /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
+        static readonly ALPHA_COMBINE: number;
+        /** Defines that alpha blending to DEST - SRC * DEST */
+        static readonly ALPHA_SUBTRACT: number;
+        /** Defines that alpha blending to SRC * DEST */
+        static readonly ALPHA_MULTIPLY: number;
+        /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC) * DEST */
+        static readonly ALPHA_MAXIMIZED: number;
+        /** Defines that alpha blending to SRC + DEST */
+        static readonly ALPHA_ONEONE: number;
+        /** Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST */
+        static readonly ALPHA_PREMULTIPLIED: number;
+        /**
+         * Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST
+         * Alpha will be set to (1 - SRC ALPHA) * DEST ALPHA
+         */
+        static readonly ALPHA_PREMULTIPLIED_PORTERDUFF: number;
+        /** Defines that alpha blending to CST * SRC + (1 - CST) * DEST */
+        static readonly ALPHA_INTERPOLATE: number;
+        /**
+         * Defines that alpha blending to SRC + (1 - SRC) * DEST
+         * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
+         */
+        static readonly ALPHA_SCREENMODE: number;
+        /**
+         * Defines that alpha blending to SRC + DST
+         * Alpha will be set to SRC ALPHA + DST ALPHA
+         */
+        static readonly ALPHA_ONEONE_ONEONE: number;
+        /**
+         * Defines that alpha blending to SRC * DST ALPHA + DST
+         * Alpha will be set to 0
+         */
+        static readonly ALPHA_ALPHATOCOLOR: number;
+        /**
+         * Defines that alpha blending to SRC * (1 - DST) + DST * (1 - SRC)
+         */
+        static readonly ALPHA_REVERSEONEMINUS: number;
+        /**
+         * Defines that alpha blending to SRC + DST * (1 - SRC ALPHA)
+         * Alpha will be set to SRC ALPHA + DST ALPHA * (1 - SRC ALPHA)
+         */
+        static readonly ALPHA_SRC_DSTONEMINUSSRCALPHA: number;
+        /**
+         * Defines that alpha blending to SRC + DST
+         * Alpha will be set to SRC ALPHA
+         */
+        static readonly ALPHA_ONEONE_ONEZERO: number;
+        /** Defines that alpha blending equation a SUM */
+        static readonly ALPHA_EQUATION_ADD: number;
+        /** Defines that alpha blending equation a SUBSTRACTION */
+        static readonly ALPHA_EQUATION_SUBSTRACT: number;
+        /** Defines that alpha blending equation a REVERSE SUBSTRACTION */
+        static readonly ALPHA_EQUATION_REVERSE_SUBTRACT: number;
+        /** Defines that alpha blending equation a MAX operation */
+        static readonly ALPHA_EQUATION_MAX: number;
+        /** Defines that alpha blending equation a MIN operation */
+        static readonly ALPHA_EQUATION_MIN: number;
+        /**
+         * Defines that alpha blending equation a DARKEN operation:
+         * It takes the min of the src and sums the alpha channels.
+         */
+        static readonly ALPHA_EQUATION_DARKEN: number;
+        /** Defines that the ressource is not delayed*/
+        static readonly DELAYLOADSTATE_NONE: number;
+        /** Defines that the ressource was successfully delay loaded */
+        static readonly DELAYLOADSTATE_LOADED: number;
+        /** Defines that the ressource is currently delay loading */
+        static readonly DELAYLOADSTATE_LOADING: number;
+        /** Defines that the ressource is delayed and has not started loading */
+        static readonly DELAYLOADSTATE_NOTLOADED: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn */
+        static readonly NEVER: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
+        static readonly ALWAYS: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value */
+        static readonly LESS: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value */
+        static readonly EQUAL: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value */
+        static readonly LEQUAL: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value */
+        static readonly GREATER: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value */
+        static readonly GEQUAL: number;
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value */
+        static readonly NOTEQUAL: number;
+        /** Passed to stencilOperation to specify that stencil value must be kept */
+        static readonly KEEP: number;
+        /** Passed to stencilOperation to specify that stencil value must be replaced */
+        static readonly REPLACE: number;
+        /** Passed to stencilOperation to specify that stencil value must be incremented */
+        static readonly INCR: number;
+        /** Passed to stencilOperation to specify that stencil value must be decremented */
+        static readonly DECR: number;
+        /** Passed to stencilOperation to specify that stencil value must be inverted */
+        static readonly INVERT: number;
+        /** Passed to stencilOperation to specify that stencil value must be incremented with wrapping */
+        static readonly INCR_WRAP: number;
+        /** Passed to stencilOperation to specify that stencil value must be decremented with wrapping */
+        static readonly DECR_WRAP: number;
+        /** Texture is not repeating outside of 0..1 UVs */
+        static readonly TEXTURE_CLAMP_ADDRESSMODE: number;
+        /** Texture is repeating outside of 0..1 UVs */
+        static readonly TEXTURE_WRAP_ADDRESSMODE: number;
+        /** Texture is repeating and mirrored */
+        static readonly TEXTURE_MIRROR_ADDRESSMODE: number;
+        /** ALPHA */
+        static readonly TEXTUREFORMAT_ALPHA: number;
+        /** LUMINANCE */
+        static readonly TEXTUREFORMAT_LUMINANCE: number;
+        /** LUMINANCE_ALPHA */
+        static readonly TEXTUREFORMAT_LUMINANCE_ALPHA: number;
+        /** RGB */
+        static readonly TEXTUREFORMAT_RGB: number;
+        /** RGBA */
+        static readonly TEXTUREFORMAT_RGBA: number;
+        /** RED */
+        static readonly TEXTUREFORMAT_RED: number;
+        /** RED (2nd reference) */
+        static readonly TEXTUREFORMAT_R: number;
+        /** RG */
+        static readonly TEXTUREFORMAT_RG: number;
+        /** RED_INTEGER */
+        static readonly TEXTUREFORMAT_RED_INTEGER: number;
+        /** RED_INTEGER (2nd reference) */
+        static readonly TEXTUREFORMAT_R_INTEGER: number;
+        /** RG_INTEGER */
+        static readonly TEXTUREFORMAT_RG_INTEGER: number;
+        /** RGB_INTEGER */
+        static readonly TEXTUREFORMAT_RGB_INTEGER: number;
+        /** RGBA_INTEGER */
+        static readonly TEXTUREFORMAT_RGBA_INTEGER: number;
+        /** UNSIGNED_BYTE */
+        static readonly TEXTURETYPE_UNSIGNED_BYTE: number;
+        /** UNSIGNED_BYTE (2nd reference) */
+        static readonly TEXTURETYPE_UNSIGNED_INT: number;
+        /** FLOAT */
+        static readonly TEXTURETYPE_FLOAT: number;
+        /** HALF_FLOAT */
+        static readonly TEXTURETYPE_HALF_FLOAT: number;
+        /** BYTE */
+        static readonly TEXTURETYPE_BYTE: number;
+        /** SHORT */
+        static readonly TEXTURETYPE_SHORT: number;
+        /** UNSIGNED_SHORT */
+        static readonly TEXTURETYPE_UNSIGNED_SHORT: number;
+        /** INT */
+        static readonly TEXTURETYPE_INT: number;
+        /** UNSIGNED_INT */
+        static readonly TEXTURETYPE_UNSIGNED_INTEGER: number;
+        /** UNSIGNED_SHORT_4_4_4_4 */
+        static readonly TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4: number;
+        /** UNSIGNED_SHORT_5_5_5_1 */
+        static readonly TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1: number;
+        /** UNSIGNED_SHORT_5_6_5 */
+        static readonly TEXTURETYPE_UNSIGNED_SHORT_5_6_5: number;
+        /** UNSIGNED_INT_2_10_10_10_REV */
+        static readonly TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV: number;
+        /** UNSIGNED_INT_24_8 */
+        static readonly TEXTURETYPE_UNSIGNED_INT_24_8: number;
+        /** UNSIGNED_INT_10F_11F_11F_REV */
+        static readonly TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV: number;
+        /** UNSIGNED_INT_5_9_9_9_REV */
+        static readonly TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV: number;
+        /** FLOAT_32_UNSIGNED_INT_24_8_REV */
+        static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV: number;
+        /** nearest is mag = nearest and min = nearest and mip = linear */
+        static readonly TEXTURE_NEAREST_SAMPLINGMODE: number;
+        /** Bilinear is mag = linear and min = linear and mip = nearest */
+        static readonly TEXTURE_BILINEAR_SAMPLINGMODE: number;
+        /** Trilinear is mag = linear and min = linear and mip = linear */
+        static readonly TEXTURE_TRILINEAR_SAMPLINGMODE: number;
+        /** nearest is mag = nearest and min = nearest and mip = linear */
+        static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR: number;
+        /** Bilinear is mag = linear and min = linear and mip = nearest */
+        static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST: number;
+        /** Trilinear is mag = linear and min = linear and mip = linear */
+        static readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR: number;
+        /** mag = nearest and min = nearest and mip = nearest */
+        static readonly TEXTURE_NEAREST_NEAREST_MIPNEAREST: number;
+        /** mag = nearest and min = linear and mip = nearest */
+        static readonly TEXTURE_NEAREST_LINEAR_MIPNEAREST: number;
+        /** mag = nearest and min = linear and mip = linear */
+        static readonly TEXTURE_NEAREST_LINEAR_MIPLINEAR: number;
+        /** mag = nearest and min = linear and mip = none */
+        static readonly TEXTURE_NEAREST_LINEAR: number;
+        /** mag = nearest and min = nearest and mip = none */
+        static readonly TEXTURE_NEAREST_NEAREST: number;
+        /** mag = linear and min = nearest and mip = nearest */
+        static readonly TEXTURE_LINEAR_NEAREST_MIPNEAREST: number;
+        /** mag = linear and min = nearest and mip = linear */
+        static readonly TEXTURE_LINEAR_NEAREST_MIPLINEAR: number;
+        /** mag = linear and min = linear and mip = none */
+        static readonly TEXTURE_LINEAR_LINEAR: number;
+        /** mag = linear and min = nearest and mip = none */
+        static readonly TEXTURE_LINEAR_NEAREST: number;
+        /** Explicit coordinates mode */
+        static readonly TEXTURE_EXPLICIT_MODE: number;
+        /** Spherical coordinates mode */
+        static readonly TEXTURE_SPHERICAL_MODE: number;
+        /** Planar coordinates mode */
+        static readonly TEXTURE_PLANAR_MODE: number;
+        /** Cubic coordinates mode */
+        static readonly TEXTURE_CUBIC_MODE: number;
+        /** Projection coordinates mode */
+        static readonly TEXTURE_PROJECTION_MODE: number;
+        /** Skybox coordinates mode */
+        static readonly TEXTURE_SKYBOX_MODE: number;
+        /** Inverse Cubic coordinates mode */
+        static readonly TEXTURE_INVCUBIC_MODE: number;
+        /** Equirectangular coordinates mode */
+        static readonly TEXTURE_EQUIRECTANGULAR_MODE: number;
+        /** Equirectangular Fixed coordinates mode */
+        static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MODE: number;
+        /** Equirectangular Fixed Mirrored coordinates mode */
+        static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE: number;
+        /** Defines that texture rescaling will use a floor to find the closer power of 2 size */
+        static readonly SCALEMODE_FLOOR: number;
+        /** Defines that texture rescaling will look for the nearest power of 2 size */
+        static readonly SCALEMODE_NEAREST: number;
+        /** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
+        static readonly SCALEMODE_CEILING: number;
+        /**
+         * The dirty texture flag value
+         */
+        static readonly MATERIAL_TextureDirtyFlag: number;
+        /**
+         * The dirty light flag value
+         */
+        static readonly MATERIAL_LightDirtyFlag: number;
+        /**
+         * The dirty fresnel flag value
+         */
+        static readonly MATERIAL_FresnelDirtyFlag: number;
+        /**
+         * The dirty attribute flag value
+         */
+        static readonly MATERIAL_AttributesDirtyFlag: number;
+        /**
+         * The dirty misc flag value
+         */
+        static readonly MATERIAL_MiscDirtyFlag: number;
+        /**
+         * The all dirty flag value
+         */
+        static readonly MATERIAL_AllDirtyFlag: number;
+        /**
+         * Returns the triangle fill mode
+         */
+        static readonly MATERIAL_TriangleFillMode: number;
+        /**
+         * Returns the wireframe mode
+         */
+        static readonly MATERIAL_WireFrameFillMode: number;
+        /**
+         * Returns the point fill mode
+         */
+        static readonly MATERIAL_PointFillMode: number;
+        /**
+         * Returns the point list draw mode
+         */
+        static readonly MATERIAL_PointListDrawMode: number;
+        /**
+         * Returns the line list draw mode
+         */
+        static readonly MATERIAL_LineListDrawMode: number;
+        /**
+         * Returns the line loop draw mode
+         */
+        static readonly MATERIAL_LineLoopDrawMode: number;
+        /**
+         * Returns the line strip draw mode
+         */
+        static readonly MATERIAL_LineStripDrawMode: number;
+        /**
+         * Returns the triangle strip draw mode
+         */
+        static readonly MATERIAL_TriangleStripDrawMode: number;
+        /**
+         * Returns the triangle fan draw mode
+         */
+        static readonly MATERIAL_TriangleFanDrawMode: number;
+        /**
+         * Stores the clock-wise side orientation
+         */
+        static readonly MATERIAL_ClockWiseSideOrientation: number;
+        /**
+         * Stores the counter clock-wise side orientation
+         */
+        static readonly MATERIAL_CounterClockWiseSideOrientation: number;
+        /**
+         * Nothing
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly ACTION_NothingTrigger: number;
+        /**
+         * On pick
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly ACTION_OnPickTrigger: number;
+        /**
+         * On left pick
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly ACTION_OnLeftPickTrigger: number;
+        /**
+         * On right pick
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly ACTION_OnRightPickTrigger: number;
+        /**
+         * On center pick
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly ACTION_OnCenterPickTrigger: number;
+        /**
+         * On pick down
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly ACTION_OnPickDownTrigger: number;
+        /**
+         * On double pick
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly ACTION_OnDoublePickTrigger: number;
+        /**
+         * On pick up
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly ACTION_OnPickUpTrigger: number;
+        /**
+         * On pick out.
+         * This trigger will only be raised if you also declared a OnPickDown
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly ACTION_OnPickOutTrigger: number;
+        /**
+         * On long press
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly ACTION_OnLongPressTrigger: number;
+        /**
+         * On pointer over
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly ACTION_OnPointerOverTrigger: number;
+        /**
+         * On pointer out
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly ACTION_OnPointerOutTrigger: number;
+        /**
+         * On every frame
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly ACTION_OnEveryFrameTrigger: number;
+        /**
+         * On intersection enter
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly ACTION_OnIntersectionEnterTrigger: number;
+        /**
+         * On intersection exit
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly ACTION_OnIntersectionExitTrigger: number;
+        /**
+         * On key down
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly ACTION_OnKeyDownTrigger: number;
+        /**
+         * On key up
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly ACTION_OnKeyUpTrigger: number;
+        /**
+         * Billboard mode will only apply to Y axis
+         */
+        static readonly PARTICLES_BILLBOARDMODE_Y: number;
+        /**
+         * Billboard mode will apply to all axes
+         */
+        static readonly PARTICLES_BILLBOARDMODE_ALL: number;
+        /**
+         * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
+         */
+        static readonly PARTICLES_BILLBOARDMODE_STRETCHED: number;
+        /**
+         * Gets or sets base Assets URL
+         */
+        static PARTICLES_BaseAssetsUrl: string;
+        /** Default culling strategy : this is an exclusion test and it's the more accurate.
+         *  Test order :
+         *  Is the bounding sphere outside the frustum ?
+         *  If not, are the bounding box vertices outside the frustum ?
+         *  It not, then the cullable object is in the frustum.
+         */
+        static readonly MESHES_CULLINGSTRATEGY_STANDARD: number;
+        /** Culling strategy : Bounding Sphere Only.
+         *  This is an exclusion test. It's faster than the standard strategy because the bounding box is not tested.
+         *  It's also less accurate than the standard because some not visible objects can still be selected.
+         *  Test : is the bounding sphere outside the frustum ?
+         *  If not, then the cullable object is in the frustum.
+         */
+        static readonly MESHES_CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY: number;
+        /** Culling strategy : Optimistic Inclusion.
+         *  This in an inclusion test first, then the standard exclusion test.
+         *  This can be faster when a cullable object is expected to be almost always in the camera frustum.
+         *  This could also be a little slower than the standard test when the tested object center is not the frustum but one of its bounding box vertex is still inside.
+         *  Anyway, it's as accurate as the standard strategy.
+         *  Test :
+         *  Is the cullable object bounding sphere center in the frustum ?
+         *  If not, apply the default culling strategy.
+         */
+        static readonly MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION: number;
+        /** Culling strategy : Optimistic Inclusion then Bounding Sphere Only.
+         *  This in an inclusion test first, then the bounding sphere only exclusion test.
+         *  This can be the fastest test when a cullable object is expected to be almost always in the camera frustum.
+         *  This could also be a little slower than the BoundingSphereOnly strategy when the tested object center is not in the frustum but its bounding sphere still intersects it.
+         *  It's less accurate than the standard strategy and as accurate as the BoundingSphereOnly strategy.
+         *  Test :
+         *  Is the cullable object bounding sphere center in the frustum ?
+         *  If not, apply the Bounding Sphere Only strategy. No Bounding Box is tested here.
+         */
+        static readonly MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY: number;
+        /**
+         * No logging while loading
+         */
+        static readonly SCENELOADER_NO_LOGGING: number;
+        /**
+         * Minimal logging while loading
+         */
+        static readonly SCENELOADER_MINIMAL_LOGGING: number;
+        /**
+         * Summary logging while loading
+         */
+        static readonly SCENELOADER_SUMMARY_LOGGING: number;
+        /**
+         * Detailled logging while loading
+         */
+        static readonly SCENELOADER_DETAILED_LOGGING: number;
+    }
+}
+declare module BABYLON {
+    /**
+     * This represents the required contract to create a new type of texture loader.
+     */
+    export interface IInternalTextureLoader {
+        /**
+         * Defines wether the loader supports cascade loading the different faces.
+         */
+        supportCascades: boolean;
+        /**
+         * This returns if the loader support the current file information.
+         * @param extension defines the file extension of the file being loaded
+         * @param textureFormatInUse defines the current compressed format in use iun the engine
+         * @param fallback defines the fallback internal texture if any
+         * @param isBase64 defines whether the texture is encoded as a base64
+         * @param isBuffer defines whether the texture data are stored as a buffer
+         * @returns true if the loader can load the specified file
+         */
+        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
+        /**
+         * Transform the url before loading if required.
+         * @param rootUrl the url of the texture
+         * @param textureFormatInUse defines the current compressed format in use iun the engine
+         * @returns the transformed texture
+         */
+        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
+        /**
+         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
+         * @param rootUrl the url of the texture
+         * @param textureFormatInUse defines the current compressed format in use iun the engine
+         * @returns the fallback texture
+         */
+        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
+        /**
+         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param createPolynomials will be true if polynomials have been requested
+         * @param onLoad defines the callback to trigger once the texture is ready
+         * @param onError defines the callback to trigger in case of error
+         */
+        loadCubeData(data: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
+        /**
+         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
+         * @param data contains the texture data
+         * @param texture defines the BabylonJS internal texture
+         * @param callback defines the method to call once ready to upload
+         */
+        loadData(data: ArrayBuffer, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed?: boolean) => void): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store and describe the pipeline context associated with an effect
+     */
+    export interface IPipelineContext {
+        /**
+         * Gets a boolean indicating that this pipeline context is supporting asynchronous creating
+         */
+        isAsync: boolean;
+        /**
+         * Gets a boolean indicating that the context is ready to be used (like shaders / pipelines are compiled and ready for instance)
+         */
+        isReady: boolean;
+        /** @hidden */private _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store gfx data (like WebGLBuffer)
+     */
+    export class DataBuffer {
+        /**
+         * Gets or sets the number of objects referencing this buffer
+         */
+        references: number;
+        /** Gets or sets the size of the underlying buffer */
+        capacity: number;
+        /**
+         * Gets or sets a boolean indicating if the buffer contains 32bits indices
+         */
+        is32Bits: boolean;
+        /**
+         * Gets the underlying buffer
+         */
+        readonly underlyingResource: any;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export interface IShaderProcessor {
+        attributeProcessor?: (attribute: string) => string;
+        varyingProcessor?: (varying: string, isFragment: boolean) => string;
+        uniformProcessor?: (uniform: string, isFragment: boolean) => string;
+        uniformBufferProcessor?: (uniformBuffer: string, isFragment: boolean) => string;
+        endOfUniformBufferProcessor?: (closingBracketLine: string, isFragment: boolean) => string;
+        lineProcessor?: (line: string, isFragment: boolean) => string;
+        preProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
+        postProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export interface ProcessingOptions {
+        defines: string[];
+        indexParameters: any;
+        isFragment: boolean;
+        shouldUseHighPrecisionShader: boolean;
+        supportsUniformBuffers: boolean;
+        shadersRepository: string;
+        includesShadersStore: {
+            [key: string]: string;
+        };
+        processor?: IShaderProcessor;
+        version: string;
+        platformName: string;
+        lookForClosingBracketForUniformBuffer?: boolean;
+    }
+}
+declare module BABYLON {
+    /**
+     * Helper to manipulate strings
+     */
+    export class StringTools {
+        /**
+         * Checks for a matching suffix at the end of a string (for ES5 and lower)
+         * @param str Source string
+         * @param suffix Suffix to search for in the source string
+         * @returns Boolean indicating whether the suffix was found (true) or not (false)
+         */
+        static EndsWith(str: string, suffix: string): boolean;
+        /**
+         * Checks for a matching suffix at the beginning of a string (for ES5 and lower)
+         * @param str Source string
+         * @param suffix Suffix to search for in the source string
+         * @returns Boolean indicating whether the suffix was found (true) or not (false)
+         */
+        static StartsWith(str: string, suffix: string): boolean;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class ShaderCodeNode {
+        line: string;
+        children: ShaderCodeNode[];
+        additionalDefineKey?: string;
+        additionalDefineValue?: string;
+        isValid(preprocessors: {
+            [key: string]: string;
+        }): boolean;
+        process(preprocessors: {
+            [key: string]: string;
+        }, options: ProcessingOptions): string;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class ShaderCodeCursor {
+        private _lines;
+        lineIndex: number;
+        readonly currentLine: string;
+        readonly canRead: boolean;
+        lines: string[];
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class ShaderCodeConditionNode extends ShaderCodeNode {
+        process(preprocessors: {
+            [key: string]: string;
+        }, options: ProcessingOptions): string;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class ShaderDefineExpression {
+        isTrue(preprocessors: {
+            [key: string]: string;
+        }): boolean;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class ShaderCodeTestNode extends ShaderCodeNode {
+        testExpression: ShaderDefineExpression;
+        isValid(preprocessors: {
+            [key: string]: string;
+        }): boolean;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class ShaderDefineIsDefinedOperator extends ShaderDefineExpression {
+        define: string;
+        not: boolean;
+        constructor(define: string, not?: boolean);
+        isTrue(preprocessors: {
+            [key: string]: string;
+        }): boolean;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class ShaderDefineOrOperator extends ShaderDefineExpression {
+        leftOperand: ShaderDefineExpression;
+        rightOperand: ShaderDefineExpression;
+        isTrue(preprocessors: {
+            [key: string]: string;
+        }): boolean;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class ShaderDefineAndOperator extends ShaderDefineExpression {
+        leftOperand: ShaderDefineExpression;
+        rightOperand: ShaderDefineExpression;
+        isTrue(preprocessors: {
+            [key: string]: string;
+        }): boolean;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class ShaderDefineArithmeticOperator extends ShaderDefineExpression {
+        define: string;
+        operand: string;
+        testValue: string;
+        constructor(define: string, operand: string, testValue: string);
+        isTrue(preprocessors: {
+            [key: string]: string;
+        }): boolean;
+    }
+}
+declare module BABYLON {
+    /**
+     * @ignore
+     * Application error to support additional information when loading a file
+     */
+    export class LoadFileError extends Error {
+        /** defines the optional web request */
+        request?: WebRequest | undefined;
+        private static _setPrototypeOf;
+        /**
+         * Creates a new LoadFileError
+         * @param message defines the message of the error
+         * @param request defines the optional web request
+         */
+        constructor(message: string, 
+        /** defines the optional web request */
+        request?: WebRequest | undefined);
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to enable access to offline support
+     * @see http://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
+     */
+    export interface IOfflineProvider {
+        /**
+         * Gets a boolean indicating if scene must be saved in the database
+         */
+        enableSceneOffline: boolean;
+        /**
+         * Gets a boolean indicating if textures must be saved in the database
+         */
+        enableTexturesOffline: boolean;
+        /**
+         * Open the offline support and make it available
+         * @param successCallback defines the callback to call on success
+         * @param errorCallback defines the callback to call on error
+         */
+        open(successCallback: () => void, errorCallback: () => void): void;
+        /**
+         * Loads an image from the offline support
+         * @param url defines the url to load from
+         * @param image defines the target DOM image
+         */
+        loadImage(url: string, image: HTMLImageElement): void;
+        /**
+         * Loads a file from offline support
+         * @param url defines the URL to load from
+         * @param sceneLoaded defines a callback to call on success
+         * @param progressCallBack defines a callback to call when progress changed
+         * @param errorCallback defines a callback to call on error
+         * @param useArrayBuffer defines a boolean to use array buffer instead of text string
+         */
+        loadFile(url: string, sceneLoaded: (data: any) => void, progressCallBack?: (data: any) => void, errorCallback?: () => void, useArrayBuffer?: boolean): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to help managing file picking and drag'n'drop
+     * File Storage
+     */
+    export class FilesInputStore {
+        /**
+         * List of files ready to be loaded
+         */
+        static FilesToLoad: {
+            [key: string]: File;
+        };
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to define a retry strategy when error happens while loading assets
+     */
+    export class RetryStrategy {
+        /**
+         * Function used to defines an exponential back off strategy
+         * @param maxRetries defines the maximum number of retries (3 by default)
+         * @param baseInterval defines the interval between retries
+         * @returns the strategy function to use
+         */
+        static ExponentialBackoff(maxRetries?: number, baseInterval?: number): (url: string, request: WebRequest, retryIndex: number) => number;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     */
+    export class FileTools {
+        /**
+         * Gets or sets the retry strategy to apply when an error happens while loading an asset
+         */
+        static DefaultRetryStrategy: (url: string, request: WebRequest, retryIndex: number) => number;
+        /**
+         * Gets or sets the base URL to use to load assets
+         */
+        static BaseUrl: string;
+        /**
+         * Default behaviour for cors in the application.
+         * It can be a string if the expected behavior is identical in the entire app.
+         * Or a callback to be able to set it per url or on a group of them (in case of Video source for instance)
+         */
+        static CorsBehavior: string | ((url: string | string[]) => string);
+        /**
+         * Gets or sets a function used to pre-process url before using them to load assets
+         */
+        static PreprocessUrl: (url: string) => string;
+        /**
+         * Removes unwanted characters from an url
+         * @param url defines the url to clean
+         * @returns the cleaned url
+         */
+        private static _CleanUrl;
+        /**
+         * Sets the cors behavior on a dom element. This will add the required Tools.CorsBehavior to the element.
+         * @param url define the url we are trying
+         * @param element define the dom element where to configure the cors policy
+         */
+        static SetCorsBehavior(url: string | string[], element: {
+            crossOrigin: string | null;
+        }): void;
+        /**
+         * Loads an image as an HTMLImageElement.
+         * @param input url string, ArrayBuffer, or Blob to load
+         * @param onLoad callback called when the image successfully loads
+         * @param onError callback called when the image fails to load
+         * @param offlineProvider offline provider for caching
+         * @returns the HTMLImageElement of the loaded image
+         */
+        static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>): HTMLImageElement;
+        /**
+         * Loads a file
+         * @param fileToLoad defines the file to load
+         * @param callback defines the callback to call when data is loaded
+         * @param progressCallBack defines the callback to call during loading process
+         * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
+         * @returns a file request object
+         */
+        static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): IFileRequest;
+        /**
+         * Loads a file
+         * @param url url string, ArrayBuffer, or Blob to load
+         * @param onSuccess callback called when the file successfully loads
+         * @param onProgress callback called while file is loading (if the server supports this mode)
+         * @param offlineProvider defines the offline provider for caching
+         * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+         * @param onError callback called when the file fails to load
+         * @returns a file request object
+         */
+        static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
+        /**
+         * Checks if the loaded document was accessed via `file:`-Protocol.
+         * @returns boolean
+         */
+        static IsFileURL(): boolean;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class ShaderProcessor {
+        static Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void): void;
+        private static _ProcessPrecision;
+        private static _ExtractOperation;
+        private static _BuildSubExpression;
+        private static _BuildExpression;
+        private static _MoveCursorWithinIf;
+        private static _MoveCursor;
+        private static _EvaluatePreProcessors;
+        private static _PreparePreProcessors;
+        private static _ProcessShaderConversion;
+        private static _ProcessIncludes;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     */
+    export interface IColor4Like {
+        r: float;
+        g: float;
+        b: float;
+        a: float;
+    }
+    /**
+     * @hidden
+     */
+    export interface IColor3Like {
+        r: float;
+        g: float;
+        b: float;
+    }
+    /**
+     * @hidden
+     */
+    export interface IVector4Like {
+        x: float;
+        y: float;
+        z: float;
+        w: float;
+    }
+    /**
+     * @hidden
+     */
+    export interface IVector3Like {
+        x: float;
+        y: float;
+        z: float;
+    }
+    /**
+     * @hidden
+     */
+    export interface IVector2Like {
+        x: float;
+        y: float;
+    }
+    /**
+     * @hidden
+     */
+    export interface IMatrixLike {
+        toArray(): DeepImmutable<Float32Array>;
+        updateFlag: int;
+    }
+    /**
+     * @hidden
+     */
+    export interface IViewportLike {
+        x: float;
+        y: float;
+        width: float;
+        height: float;
+    }
+    /**
+     * @hidden
+     */
+    export interface IPlaneLike {
+        normal: IVector3Like;
+        d: float;
+        normalize(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Interface used to define common properties for effect fallbacks
+     */
+    export interface IEffectFallbacks {
+        /**
+         * Removes the defines that should be removed when falling back.
+         * @param currentDefines defines the current define statements for the shader.
+         * @param effect defines the current effect we try to compile
+         * @returns The resulting defines with defines of the current rank removed.
+         */
+        reduce(currentDefines: string, effect: Effect): string;
+        /**
+         * Removes the fallback from the bound mesh.
+         */
+        unBindMesh(): void;
+        /**
+         * Checks to see if more fallbacks are still availible.
+         */
+        hasMoreFallbacks: boolean;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to evalaute queries containing `and` and `or` operators
+     */
+    export class AndOrNotEvaluator {
+        /**
+         * Evaluate a query
+         * @param query defines the query to evaluate
+         * @param evaluateCallback defines the callback used to filter result
+         * @returns true if the query matches
+         */
+        static Eval(query: string, evaluateCallback: (val: any) => boolean): boolean;
+        private static _HandleParenthesisContent;
+        private static _SimplifyNegation;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store custom tags
+     */
+    export class Tags {
+        /**
+         * Adds support for tags on the given object
+         * @param obj defines the object to use
+         */
+        static EnableFor(obj: any): void;
+        /**
+         * Removes tags support
+         * @param obj defines the object to use
+         */
+        static DisableFor(obj: any): void;
+        /**
+         * Gets a boolean indicating if the given object has tags
+         * @param obj defines the object to use
+         * @returns a boolean
+         */
+        static HasTags(obj: any): boolean;
+        /**
+         * Gets the tags available on a given object
+         * @param obj defines the object to use
+         * @param asString defines if the tags must be returned as a string instead of an array of strings
+         * @returns the tags
+         */
+        static GetTags(obj: any, asString?: boolean): any;
+        /**
+         * Adds tags to an object
+         * @param obj defines the object to use
+         * @param tagsString defines the tag string. The tags 'true' and 'false' are reserved and cannot be used as tags.
+         * A tag cannot start with '||', '&&', and '!'. It cannot contain whitespaces
+         */
+        static AddTagsTo(obj: any, tagsString: string): void;
+        /**
+         * @hidden
+         */private static _AddTagTo(obj: any, tag: string): void;
+        /**
+         * Removes specific tags from a specific object
+         * @param obj defines the object to use
+         * @param tagsString defines the tags to remove
+         */
+        static RemoveTagsFrom(obj: any, tagsString: string): void;
+        /**
+         * @hidden
+         */private static _RemoveTagFrom(obj: any, tag: string): void;
+        /**
+         * Defines if tags hosted on an object match a given query
+         * @param obj defines the object to use
+         * @param tagsQuery defines the tag query
+         * @returns a boolean
+         */
+        static MatchesQuery(obj: any, tagsQuery: string): boolean;
+    }
+}
+declare module BABYLON {
+    /**
      * Scalar computation library
      */
     export class Scalar {
@@ -781,73 +1828,6 @@ declare module BABYLON {
          * @returns a new array filled with new objects
          */
         static BuildArray<T>(size: number, itemBuilder: () => T): Array<T>;
-    }
-}
-declare module BABYLON {
-    /**
-     * @hidden
-     */
-    export interface IColor4Like {
-        r: float;
-        g: float;
-        b: float;
-        a: float;
-    }
-    /**
-     * @hidden
-     */
-    export interface IColor3Like {
-        r: float;
-        g: float;
-        b: float;
-    }
-    /**
-     * @hidden
-     */
-    export interface IVector4Like {
-        x: float;
-        y: float;
-        z: float;
-        w: float;
-    }
-    /**
-     * @hidden
-     */
-    export interface IVector3Like {
-        x: float;
-        y: float;
-        z: float;
-    }
-    /**
-     * @hidden
-     */
-    export interface IVector2Like {
-        x: float;
-        y: float;
-    }
-    /**
-     * @hidden
-     */
-    export interface IMatrixLike {
-        toArray(): DeepImmutable<Float32Array>;
-        updateFlag: int;
-    }
-    /**
-     * @hidden
-     */
-    export interface IViewportLike {
-        x: float;
-        y: float;
-        width: float;
-        height: float;
-    }
-    /**
-     * @hidden
-     */
-    export interface IPlaneLike {
-        normal: IVector3Like;
-        d: float;
-        normalize(): void;
     }
 }
 declare module BABYLON {
@@ -3520,6 +4500,563 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Defines potential orientation for back face culling
+     */
+    export enum Orientation {
+        /**
+         * Clockwise
+         */
+        CW = 0,
+        /** Counter clockwise */
+        CCW = 1
+    }
+    /** Class used to represent a Bezier curve */
+    export class BezierCurve {
+        /**
+         * Returns the cubic Bezier interpolated value (float) at "t" (float) from the given x1, y1, x2, y2 floats
+         * @param t defines the time
+         * @param x1 defines the left coordinate on X axis
+         * @param y1 defines the left coordinate on Y axis
+         * @param x2 defines the right coordinate on X axis
+         * @param y2 defines the right coordinate on Y axis
+         * @returns the interpolated value
+         */
+        static Interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number;
+    }
+    /**
+     * Defines angle representation
+     */
+    export class Angle {
+        private _radians;
+        /**
+         * Creates an Angle object of "radians" radians (float).
+         * @param radians the angle in radians
+         */
+        constructor(radians: number);
+        /**
+         * Get value in degrees
+         * @returns the Angle value in degrees (float)
+         */
+        degrees(): number;
+        /**
+         * Get value in radians
+         * @returns the Angle value in radians (float)
+         */
+        radians(): number;
+        /**
+         * Gets a new Angle object valued with the angle value in radians between the two given vectors
+         * @param a defines first vector
+         * @param b defines second vector
+         * @returns a new Angle
+         */
+        static BetweenTwoPoints(a: DeepImmutable<Vector2>, b: DeepImmutable<Vector2>): Angle;
+        /**
+         * Gets a new Angle object from the given float in radians
+         * @param radians defines the angle value in radians
+         * @returns a new Angle
+         */
+        static FromRadians(radians: number): Angle;
+        /**
+         * Gets a new Angle object from the given float in degrees
+         * @param degrees defines the angle value in degrees
+         * @returns a new Angle
+         */
+        static FromDegrees(degrees: number): Angle;
+    }
+    /**
+     * This represents an arc in a 2d space.
+     */
+    export class Arc2 {
+        /** Defines the start point of the arc */
+        startPoint: Vector2;
+        /** Defines the mid point of the arc */
+        midPoint: Vector2;
+        /** Defines the end point of the arc */
+        endPoint: Vector2;
+        /**
+         * Defines the center point of the arc.
+         */
+        centerPoint: Vector2;
+        /**
+         * Defines the radius of the arc.
+         */
+        radius: number;
+        /**
+         * Defines the angle of the arc (from mid point to end point).
+         */
+        angle: Angle;
+        /**
+         * Defines the start angle of the arc (from start point to middle point).
+         */
+        startAngle: Angle;
+        /**
+         * Defines the orientation of the arc (clock wise/counter clock wise).
+         */
+        orientation: Orientation;
+        /**
+         * Creates an Arc object from the three given points : start, middle and end.
+         * @param startPoint Defines the start point of the arc
+         * @param midPoint Defines the midlle point of the arc
+         * @param endPoint Defines the end point of the arc
+         */
+        constructor(
+        /** Defines the start point of the arc */
+        startPoint: Vector2, 
+        /** Defines the mid point of the arc */
+        midPoint: Vector2, 
+        /** Defines the end point of the arc */
+        endPoint: Vector2);
+    }
+    /**
+     * Represents a 2D path made up of multiple 2D points
+     */
+    export class Path2 {
+        private _points;
+        private _length;
+        /**
+         * If the path start and end point are the same
+         */
+        closed: boolean;
+        /**
+         * Creates a Path2 object from the starting 2D coordinates x and y.
+         * @param x the starting points x value
+         * @param y the starting points y value
+         */
+        constructor(x: number, y: number);
+        /**
+         * Adds a new segment until the given coordinates (x, y) to the current Path2.
+         * @param x the added points x value
+         * @param y the added points y value
+         * @returns the updated Path2.
+         */
+        addLineTo(x: number, y: number): Path2;
+        /**
+         * Adds _numberOfSegments_ segments according to the arc definition (middle point coordinates, end point coordinates, the arc start point being the current Path2 last point) to the current Path2.
+         * @param midX middle point x value
+         * @param midY middle point y value
+         * @param endX end point x value
+         * @param endY end point y value
+         * @param numberOfSegments (default: 36)
+         * @returns the updated Path2.
+         */
+        addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments?: number): Path2;
+        /**
+         * Closes the Path2.
+         * @returns the Path2.
+         */
+        close(): Path2;
+        /**
+         * Gets the sum of the distance between each sequential point in the path
+         * @returns the Path2 total length (float).
+         */
+        length(): number;
+        /**
+         * Gets the points which construct the path
+         * @returns the Path2 internal array of points.
+         */
+        getPoints(): Vector2[];
+        /**
+         * Retreives the point at the distance aways from the starting point
+         * @param normalizedLengthPosition the length along the path to retreive the point from
+         * @returns a new Vector2 located at a percentage of the Path2 total length on this path.
+         */
+        getPointAtLengthPosition(normalizedLengthPosition: number): Vector2;
+        /**
+         * Creates a new path starting from an x and y position
+         * @param x starting x value
+         * @param y starting y value
+         * @returns a new Path2 starting at the coordinates (x, y).
+         */
+        static StartingAt(x: number, y: number): Path2;
+    }
+    /**
+     * Represents a 3D path made up of multiple 3D points
+     */
+    export class Path3D {
+        /**
+         * an array of Vector3, the curve axis of the Path3D
+         */
+        path: Vector3[];
+        private _curve;
+        private _distances;
+        private _tangents;
+        private _normals;
+        private _binormals;
+        private _raw;
+        /**
+        * new Path3D(path, normal, raw)
+        * Creates a Path3D. A Path3D is a logical math object, so not a mesh.
+        * please read the description in the tutorial : https://doc.babylonjs.com/how_to/how_to_use_path3d
+        * @param path an array of Vector3, the curve axis of the Path3D
+        * @param firstNormal (options) Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
+        * @param raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
+        */
+        constructor(
+        /**
+         * an array of Vector3, the curve axis of the Path3D
+         */
+        path: Vector3[], firstNormal?: Nullable<Vector3>, raw?: boolean);
+        /**
+         * Returns the Path3D array of successive Vector3 designing its curve.
+         * @returns the Path3D array of successive Vector3 designing its curve.
+         */
+        getCurve(): Vector3[];
+        /**
+         * Returns an array populated with tangent vectors on each Path3D curve point.
+         * @returns an array populated with tangent vectors on each Path3D curve point.
+         */
+        getTangents(): Vector3[];
+        /**
+         * Returns an array populated with normal vectors on each Path3D curve point.
+         * @returns an array populated with normal vectors on each Path3D curve point.
+         */
+        getNormals(): Vector3[];
+        /**
+         * Returns an array populated with binormal vectors on each Path3D curve point.
+         * @returns an array populated with binormal vectors on each Path3D curve point.
+         */
+        getBinormals(): Vector3[];
+        /**
+         * Returns an array populated with distances (float) of the i-th point from the first curve point.
+         * @returns an array populated with distances (float) of the i-th point from the first curve point.
+         */
+        getDistances(): number[];
+        /**
+         * Forces the Path3D tangent, normal, binormal and distance recomputation.
+         * @param path path which all values are copied into the curves points
+         * @param firstNormal which should be projected onto the curve
+         * @returns the same object updated.
+         */
+        update(path: Vector3[], firstNormal?: Nullable<Vector3>): Path3D;
+        private _compute;
+        private _getFirstNonNullVector;
+        private _getLastNonNullVector;
+        private _normalVector;
+    }
+    /**
+     * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
+     * A Curve3 is designed from a series of successive Vector3.
+     * @see https://doc.babylonjs.com/how_to/how_to_use_curve3
+     */
+    export class Curve3 {
+        private _points;
+        private _length;
+        /**
+         * Returns a Curve3 object along a Quadratic Bezier curve : https://doc.babylonjs.com/how_to/how_to_use_curve3#quadratic-bezier-curve
+         * @param v0 (Vector3) the origin point of the Quadratic Bezier
+         * @param v1 (Vector3) the control point
+         * @param v2 (Vector3) the end point of the Quadratic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         * @returns the created Curve3
+         */
+        static CreateQuadraticBezier(v0: DeepImmutable<Vector3>, v1: DeepImmutable<Vector3>, v2: DeepImmutable<Vector3>, nbPoints: number): Curve3;
+        /**
+         * Returns a Curve3 object along a Cubic Bezier curve : https://doc.babylonjs.com/how_to/how_to_use_curve3#cubic-bezier-curve
+         * @param v0 (Vector3) the origin point of the Cubic Bezier
+         * @param v1 (Vector3) the first control point
+         * @param v2 (Vector3) the second control point
+         * @param v3 (Vector3) the end point of the Cubic Bezier
+         * @param nbPoints (integer) the wanted number of points in the curve
+         * @returns the created Curve3
+         */
+        static CreateCubicBezier(v0: DeepImmutable<Vector3>, v1: DeepImmutable<Vector3>, v2: DeepImmutable<Vector3>, v3: DeepImmutable<Vector3>, nbPoints: number): Curve3;
+        /**
+         * Returns a Curve3 object along a Hermite Spline curve : https://doc.babylonjs.com/how_to/how_to_use_curve3#hermite-spline
+         * @param p1 (Vector3) the origin point of the Hermite Spline
+         * @param t1 (Vector3) the tangent vector at the origin point
+         * @param p2 (Vector3) the end point of the Hermite Spline
+         * @param t2 (Vector3) the tangent vector at the end point
+         * @param nbPoints (integer) the wanted number of points in the curve
+         * @returns the created Curve3
+         */
+        static CreateHermiteSpline(p1: DeepImmutable<Vector3>, t1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, t2: DeepImmutable<Vector3>, nbPoints: number): Curve3;
+        /**
+         * Returns a Curve3 object along a CatmullRom Spline curve :
+         * @param points (array of Vector3) the points the spline must pass through. At least, four points required
+         * @param nbPoints (integer) the wanted number of points between each curve control points
+         * @param closed (boolean) optional with default false, when true forms a closed loop from the points
+         * @returns the created Curve3
+         */
+        static CreateCatmullRomSpline(points: DeepImmutable<Vector3[]>, nbPoints: number, closed?: boolean): Curve3;
+        /**
+         * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
+         * A Curve3 is designed from a series of successive Vector3.
+         * Tuto : https://doc.babylonjs.com/how_to/how_to_use_curve3#curve3-object
+         * @param points points which make up the curve
+         */
+        constructor(points: Vector3[]);
+        /**
+         * @returns the Curve3 stored array of successive Vector3
+         */
+        getPoints(): Vector3[];
+        /**
+         * @returns the computed length (float) of the curve.
+         */
+        length(): number;
+        /**
+         * Returns a new instance of Curve3 object : var curve = curveA.continue(curveB);
+         * This new Curve3 is built by translating and sticking the curveB at the end of the curveA.
+         * curveA and curveB keep unchanged.
+         * @param curve the curve to continue from this curve
+         * @returns the newly constructed curve
+         */
+        continue(curve: DeepImmutable<Curve3>): Curve3;
+        private _computeLength;
+    }
+}
+declare module BABYLON {
+    /**
+     * This represents the main contract an easing function should follow.
+     * Easing functions are used throughout the animation system.
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export interface IEasingFunction {
+        /**
+         * Given an input gradient between 0 and 1, this returns the corrseponding value
+         * of the easing function.
+         * The link below provides some of the most common examples of easing functions.
+         * @see https://easings.net/
+         * @param gradient Defines the value between 0 and 1 we want the easing value for
+         * @returns the corresponding value on the curve defined by the easing function
+         */
+        ease(gradient: number): number;
+    }
+    /**
+     * Base class used for every default easing function.
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class EasingFunction implements IEasingFunction {
+        /**
+         * Interpolation follows the mathematical formula associated with the easing function.
+         */
+        static readonly EASINGMODE_EASEIN: number;
+        /**
+         * Interpolation follows 100% interpolation minus the output of the formula associated with the easing function.
+         */
+        static readonly EASINGMODE_EASEOUT: number;
+        /**
+         * Interpolation uses EaseIn for the first half of the animation and EaseOut for the second half.
+         */
+        static readonly EASINGMODE_EASEINOUT: number;
+        private _easingMode;
+        /**
+         * Sets the easing mode of the current function.
+         * @param easingMode Defines the willing mode (EASINGMODE_EASEIN, EASINGMODE_EASEOUT or EASINGMODE_EASEINOUT)
+         */
+        setEasingMode(easingMode: number): void;
+        /**
+         * Gets the current easing mode.
+         * @returns the easing mode
+         */
+        getEasingMode(): number;
+        /**
+         * @hidden
+         */
+        easeInCore(gradient: number): number;
+        /**
+         * Given an input gradient between 0 and 1, this returns the corresponding value
+         * of the easing function.
+         * @param gradient Defines the value between 0 and 1 we want the easing value for
+         * @returns the corresponding value on the curve defined by the easing function
+         */
+        ease(gradient: number): number;
+    }
+    /**
+     * Easing function with a circle shape (see link below).
+     * @see https://easings.net/#easeInCirc
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class CircleEase extends EasingFunction implements IEasingFunction {
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with a ease back shape (see link below).
+     * @see https://easings.net/#easeInBack
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class BackEase extends EasingFunction implements IEasingFunction {
+        /** Defines the amplitude of the function */
+        amplitude: number;
+        /**
+         * Instantiates a back ease easing
+         * @see https://easings.net/#easeInBack
+         * @param amplitude Defines the amplitude of the function
+         */
+        constructor(
+        /** Defines the amplitude of the function */
+        amplitude?: number);
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with a bouncing shape (see link below).
+     * @see https://easings.net/#easeInBounce
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class BounceEase extends EasingFunction implements IEasingFunction {
+        /** Defines the number of bounces */
+        bounces: number;
+        /** Defines the amplitude of the bounce */
+        bounciness: number;
+        /**
+         * Instantiates a bounce easing
+         * @see https://easings.net/#easeInBounce
+         * @param bounces Defines the number of bounces
+         * @param bounciness Defines the amplitude of the bounce
+         */
+        constructor(
+        /** Defines the number of bounces */
+        bounces?: number, 
+        /** Defines the amplitude of the bounce */
+        bounciness?: number);
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with a power of 3 shape (see link below).
+     * @see https://easings.net/#easeInCubic
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class CubicEase extends EasingFunction implements IEasingFunction {
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with an elastic shape (see link below).
+     * @see https://easings.net/#easeInElastic
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class ElasticEase extends EasingFunction implements IEasingFunction {
+        /** Defines the number of oscillations*/
+        oscillations: number;
+        /** Defines the amplitude of the oscillations*/
+        springiness: number;
+        /**
+         * Instantiates an elastic easing function
+         * @see https://easings.net/#easeInElastic
+         * @param oscillations Defines the number of oscillations
+         * @param springiness Defines the amplitude of the oscillations
+         */
+        constructor(
+        /** Defines the number of oscillations*/
+        oscillations?: number, 
+        /** Defines the amplitude of the oscillations*/
+        springiness?: number);
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with an exponential shape (see link below).
+     * @see https://easings.net/#easeInExpo
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class ExponentialEase extends EasingFunction implements IEasingFunction {
+        /** Defines the exponent of the function */
+        exponent: number;
+        /**
+         * Instantiates an exponential easing function
+         * @see https://easings.net/#easeInExpo
+         * @param exponent Defines the exponent of the function
+         */
+        constructor(
+        /** Defines the exponent of the function */
+        exponent?: number);
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with a power shape (see link below).
+     * @see https://easings.net/#easeInQuad
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class PowerEase extends EasingFunction implements IEasingFunction {
+        /** Defines the power of the function */
+        power: number;
+        /**
+         * Instantiates an power base easing function
+         * @see https://easings.net/#easeInQuad
+         * @param power Defines the power of the function
+         */
+        constructor(
+        /** Defines the power of the function */
+        power?: number);
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with a power of 2 shape (see link below).
+     * @see https://easings.net/#easeInQuad
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class QuadraticEase extends EasingFunction implements IEasingFunction {
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with a power of 4 shape (see link below).
+     * @see https://easings.net/#easeInQuart
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class QuarticEase extends EasingFunction implements IEasingFunction {
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with a power of 5 shape (see link below).
+     * @see https://easings.net/#easeInQuint
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class QuinticEase extends EasingFunction implements IEasingFunction {
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with a sin shape (see link below).
+     * @see https://easings.net/#easeInSine
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class SineEase extends EasingFunction implements IEasingFunction {
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+    /**
+     * Easing function with a bezier shape (see link below).
+     * @see http://cubic-bezier.com/#.17,.67,.83,.67
+     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+     */
+    export class BezierCurveEase extends EasingFunction implements IEasingFunction {
+        /** Defines the x component of the start tangent in the bezier curve */
+        x1: number;
+        /** Defines the y component of the start tangent in the bezier curve */
+        y1: number;
+        /** Defines the x component of the end tangent in the bezier curve */
+        x2: number;
+        /** Defines the y component of the end tangent in the bezier curve */
+        y2: number;
+        /**
+         * Instantiates a bezier function
+         * @see http://cubic-bezier.com/#.17,.67,.83,.67
+         * @param x1 Defines the x component of the start tangent in the bezier curve
+         * @param y1 Defines the y component of the start tangent in the bezier curve
+         * @param x2 Defines the x component of the end tangent in the bezier curve
+         * @param y2 Defines the y component of the end tangent in the bezier curve
+         */
+        constructor(
+        /** Defines the x component of the start tangent in the bezier curve */
+        x1?: number, 
+        /** Defines the y component of the start tangent in the bezier curve */
+        y1?: number, 
+        /** Defines the x component of the end tangent in the bezier curve */
+        x2?: number, 
+        /** Defines the y component of the end tangent in the bezier curve */
+        y2?: number);
+        /** @hidden */
+        easeInCore(gradient: number): number;
+    }
+}
+declare module BABYLON {
+    /**
      * Class used to hold a RBG color
      */
     export class Color3 {
@@ -4102,1712 +5639,6 @@ declare module BABYLON {
     export class TmpColors {
         static Color3: Color3[];
         static Color4: Color4[];
-    }
-}
-declare module BABYLON {
-    /**
-     * Class representing spherical harmonics coefficients to the 3rd degree
-     */
-    export class SphericalHarmonics {
-        /**
-         * Defines whether or not the harmonics have been prescaled for rendering.
-         */
-        preScaled: boolean;
-        /**
-         * The l0,0 coefficients of the spherical harmonics
-         */
-        l00: Vector3;
-        /**
-         * The l1,-1 coefficients of the spherical harmonics
-         */
-        l1_1: Vector3;
-        /**
-         * The l1,0 coefficients of the spherical harmonics
-         */
-        l10: Vector3;
-        /**
-         * The l1,1 coefficients of the spherical harmonics
-         */
-        l11: Vector3;
-        /**
-         * The l2,-2 coefficients of the spherical harmonics
-         */
-        l2_2: Vector3;
-        /**
-         * The l2,-1 coefficients of the spherical harmonics
-         */
-        l2_1: Vector3;
-        /**
-         * The l2,0 coefficients of the spherical harmonics
-         */
-        l20: Vector3;
-        /**
-         * The l2,1 coefficients of the spherical harmonics
-         */
-        l21: Vector3;
-        /**
-         * The l2,2 coefficients of the spherical harmonics
-         */
-        l22: Vector3;
-        /**
-         * Adds a light to the spherical harmonics
-         * @param direction the direction of the light
-         * @param color the color of the light
-         * @param deltaSolidAngle the delta solid angle of the light
-         */
-        addLight(direction: Vector3, color: Color3, deltaSolidAngle: number): void;
-        /**
-         * Scales the spherical harmonics by the given amount
-         * @param scale the amount to scale
-         */
-        scaleInPlace(scale: number): void;
-        /**
-         * Convert from incident radiance (Li) to irradiance (E) by applying convolution with the cosine-weighted hemisphere.
-         *
-         * ```
-         * E_lm = A_l * L_lm
-         * ```
-         *
-         * In spherical harmonics this convolution amounts to scaling factors for each frequency band.
-         * This corresponds to equation 5 in "An Efficient Representation for Irradiance Environment Maps", where
-         * the scaling factors are given in equation 9.
-         */
-        convertIncidentRadianceToIrradiance(): void;
-        /**
-         * Convert from irradiance to outgoing radiance for Lambertian BDRF, suitable for efficient shader evaluation.
-         *
-         * ```
-         * L = (1/pi) * E * rho
-         * ```
-         *
-         * This is done by an additional scale by 1/pi, so is a fairly trivial operation but important conceptually.
-         */
-        convertIrradianceToLambertianRadiance(): void;
-        /**
-         * Integrates the reconstruction coefficients directly in to the SH preventing further
-         * required operations at run time.
-         *
-         * This is simply done by scaling back the SH with Ylm constants parameter.
-         * The trigonometric part being applied by the shader at run time.
-         */
-        preScaleForRendering(): void;
-        /**
-         * Constructs a spherical harmonics from an array.
-         * @param data defines the 9x3 coefficients (l00, l1-1, l10, l11, l2-2, l2-1, l20, l21, l22)
-         * @returns the spherical harmonics
-         */
-        static FromArray(data: ArrayLike<ArrayLike<number>>): SphericalHarmonics;
-        /**
-         * Gets the spherical harmonics from polynomial
-         * @param polynomial the spherical polynomial
-         * @returns the spherical harmonics
-         */
-        static FromPolynomial(polynomial: SphericalPolynomial): SphericalHarmonics;
-    }
-    /**
-     * Class representing spherical polynomial coefficients to the 3rd degree
-     */
-    export class SphericalPolynomial {
-        private _harmonics;
-        /**
-         * The spherical harmonics used to create the polynomials.
-         */
-        readonly preScaledHarmonics: SphericalHarmonics;
-        /**
-         * The x coefficients of the spherical polynomial
-         */
-        x: Vector3;
-        /**
-         * The y coefficients of the spherical polynomial
-         */
-        y: Vector3;
-        /**
-         * The z coefficients of the spherical polynomial
-         */
-        z: Vector3;
-        /**
-         * The xx coefficients of the spherical polynomial
-         */
-        xx: Vector3;
-        /**
-         * The yy coefficients of the spherical polynomial
-         */
-        yy: Vector3;
-        /**
-         * The zz coefficients of the spherical polynomial
-         */
-        zz: Vector3;
-        /**
-         * The xy coefficients of the spherical polynomial
-         */
-        xy: Vector3;
-        /**
-         * The yz coefficients of the spherical polynomial
-         */
-        yz: Vector3;
-        /**
-         * The zx coefficients of the spherical polynomial
-         */
-        zx: Vector3;
-        /**
-         * Adds an ambient color to the spherical polynomial
-         * @param color the color to add
-         */
-        addAmbient(color: Color3): void;
-        /**
-         * Scales the spherical polynomial by the given amount
-         * @param scale the amount to scale
-         */
-        scaleInPlace(scale: number): void;
-        /**
-         * Gets the spherical polynomial from harmonics
-         * @param harmonics the spherical harmonics
-         * @returns the spherical polynomial
-         */
-        static FromHarmonics(harmonics: SphericalHarmonics): SphericalPolynomial;
-        /**
-         * Constructs a spherical polynomial from an array.
-         * @param data defines the 9x3 coefficients (x, y, z, xx, yy, zz, yz, zx, xy)
-         * @returns the spherical polynomial
-         */
-        static FromArray(data: ArrayLike<ArrayLike<number>>): SphericalPolynomial;
-    }
-}
-declare module BABYLON {
-    /**
-     * Define options used to create a render target texture
-     */
-    export class RenderTargetCreationOptions {
-        /**
-         * Specifies is mipmaps must be generated
-         */
-        generateMipMaps?: boolean;
-        /** Specifies whether or not a depth should be allocated in the texture (true by default) */
-        generateDepthBuffer?: boolean;
-        /** Specifies whether or not a stencil should be allocated in the texture (false by default)*/
-        generateStencilBuffer?: boolean;
-        /** Defines texture type (int by default) */
-        type?: number;
-        /** Defines sampling mode (trilinear by default) */
-        samplingMode?: number;
-        /** Defines format (RGBA by default) */
-        format?: number;
-    }
-}
-declare module BABYLON {
-    /**
-     * @hidden
-     **/
-    export class _TimeToken {private _startTimeQuery: Nullable<WebGLQuery>;private _endTimeQuery: Nullable<WebGLQuery>;private _timeElapsedQuery: Nullable<WebGLQuery>;private _timeElapsedQueryEnded: boolean;
-    }
-}
-declare module BABYLON {
-    /** Defines the cross module used constants to avoid circular dependncies */
-    export class Constants {
-        /** Defines that alpha blending is disabled */
-        static readonly ALPHA_DISABLE: number;
-        /** Defines that alpha blending to SRC ALPHA * SRC + DEST */
-        static readonly ALPHA_ADD: number;
-        /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
-        static readonly ALPHA_COMBINE: number;
-        /** Defines that alpha blending to DEST - SRC * DEST */
-        static readonly ALPHA_SUBTRACT: number;
-        /** Defines that alpha blending to SRC * DEST */
-        static readonly ALPHA_MULTIPLY: number;
-        /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC) * DEST */
-        static readonly ALPHA_MAXIMIZED: number;
-        /** Defines that alpha blending to SRC + DEST */
-        static readonly ALPHA_ONEONE: number;
-        /** Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST */
-        static readonly ALPHA_PREMULTIPLIED: number;
-        /**
-         * Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST
-         * Alpha will be set to (1 - SRC ALPHA) * DEST ALPHA
-         */
-        static readonly ALPHA_PREMULTIPLIED_PORTERDUFF: number;
-        /** Defines that alpha blending to CST * SRC + (1 - CST) * DEST */
-        static readonly ALPHA_INTERPOLATE: number;
-        /**
-         * Defines that alpha blending to SRC + (1 - SRC) * DEST
-         * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
-         */
-        static readonly ALPHA_SCREENMODE: number;
-        /**
-         * Defines that alpha blending to SRC + DST
-         * Alpha will be set to SRC ALPHA + DST ALPHA
-         */
-        static readonly ALPHA_ONEONE_ONEONE: number;
-        /**
-         * Defines that alpha blending to SRC * DST ALPHA + DST
-         * Alpha will be set to 0
-         */
-        static readonly ALPHA_ALPHATOCOLOR: number;
-        /**
-         * Defines that alpha blending to SRC * (1 - DST) + DST * (1 - SRC)
-         */
-        static readonly ALPHA_REVERSEONEMINUS: number;
-        /**
-         * Defines that alpha blending to SRC + DST * (1 - SRC ALPHA)
-         * Alpha will be set to SRC ALPHA + DST ALPHA * (1 - SRC ALPHA)
-         */
-        static readonly ALPHA_SRC_DSTONEMINUSSRCALPHA: number;
-        /**
-         * Defines that alpha blending to SRC + DST
-         * Alpha will be set to SRC ALPHA
-         */
-        static readonly ALPHA_ONEONE_ONEZERO: number;
-        /** Defines that alpha blending equation a SUM */
-        static readonly ALPHA_EQUATION_ADD: number;
-        /** Defines that alpha blending equation a SUBSTRACTION */
-        static readonly ALPHA_EQUATION_SUBSTRACT: number;
-        /** Defines that alpha blending equation a REVERSE SUBSTRACTION */
-        static readonly ALPHA_EQUATION_REVERSE_SUBTRACT: number;
-        /** Defines that alpha blending equation a MAX operation */
-        static readonly ALPHA_EQUATION_MAX: number;
-        /** Defines that alpha blending equation a MIN operation */
-        static readonly ALPHA_EQUATION_MIN: number;
-        /**
-         * Defines that alpha blending equation a DARKEN operation:
-         * It takes the min of the src and sums the alpha channels.
-         */
-        static readonly ALPHA_EQUATION_DARKEN: number;
-        /** Defines that the ressource is not delayed*/
-        static readonly DELAYLOADSTATE_NONE: number;
-        /** Defines that the ressource was successfully delay loaded */
-        static readonly DELAYLOADSTATE_LOADED: number;
-        /** Defines that the ressource is currently delay loading */
-        static readonly DELAYLOADSTATE_LOADING: number;
-        /** Defines that the ressource is delayed and has not started loading */
-        static readonly DELAYLOADSTATE_NOTLOADED: number;
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn */
-        static readonly NEVER: number;
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
-        static readonly ALWAYS: number;
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value */
-        static readonly LESS: number;
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value */
-        static readonly EQUAL: number;
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value */
-        static readonly LEQUAL: number;
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value */
-        static readonly GREATER: number;
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value */
-        static readonly GEQUAL: number;
-        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value */
-        static readonly NOTEQUAL: number;
-        /** Passed to stencilOperation to specify that stencil value must be kept */
-        static readonly KEEP: number;
-        /** Passed to stencilOperation to specify that stencil value must be replaced */
-        static readonly REPLACE: number;
-        /** Passed to stencilOperation to specify that stencil value must be incremented */
-        static readonly INCR: number;
-        /** Passed to stencilOperation to specify that stencil value must be decremented */
-        static readonly DECR: number;
-        /** Passed to stencilOperation to specify that stencil value must be inverted */
-        static readonly INVERT: number;
-        /** Passed to stencilOperation to specify that stencil value must be incremented with wrapping */
-        static readonly INCR_WRAP: number;
-        /** Passed to stencilOperation to specify that stencil value must be decremented with wrapping */
-        static readonly DECR_WRAP: number;
-        /** Texture is not repeating outside of 0..1 UVs */
-        static readonly TEXTURE_CLAMP_ADDRESSMODE: number;
-        /** Texture is repeating outside of 0..1 UVs */
-        static readonly TEXTURE_WRAP_ADDRESSMODE: number;
-        /** Texture is repeating and mirrored */
-        static readonly TEXTURE_MIRROR_ADDRESSMODE: number;
-        /** ALPHA */
-        static readonly TEXTUREFORMAT_ALPHA: number;
-        /** LUMINANCE */
-        static readonly TEXTUREFORMAT_LUMINANCE: number;
-        /** LUMINANCE_ALPHA */
-        static readonly TEXTUREFORMAT_LUMINANCE_ALPHA: number;
-        /** RGB */
-        static readonly TEXTUREFORMAT_RGB: number;
-        /** RGBA */
-        static readonly TEXTUREFORMAT_RGBA: number;
-        /** RED */
-        static readonly TEXTUREFORMAT_RED: number;
-        /** RED (2nd reference) */
-        static readonly TEXTUREFORMAT_R: number;
-        /** RG */
-        static readonly TEXTUREFORMAT_RG: number;
-        /** RED_INTEGER */
-        static readonly TEXTUREFORMAT_RED_INTEGER: number;
-        /** RED_INTEGER (2nd reference) */
-        static readonly TEXTUREFORMAT_R_INTEGER: number;
-        /** RG_INTEGER */
-        static readonly TEXTUREFORMAT_RG_INTEGER: number;
-        /** RGB_INTEGER */
-        static readonly TEXTUREFORMAT_RGB_INTEGER: number;
-        /** RGBA_INTEGER */
-        static readonly TEXTUREFORMAT_RGBA_INTEGER: number;
-        /** UNSIGNED_BYTE */
-        static readonly TEXTURETYPE_UNSIGNED_BYTE: number;
-        /** UNSIGNED_BYTE (2nd reference) */
-        static readonly TEXTURETYPE_UNSIGNED_INT: number;
-        /** FLOAT */
-        static readonly TEXTURETYPE_FLOAT: number;
-        /** HALF_FLOAT */
-        static readonly TEXTURETYPE_HALF_FLOAT: number;
-        /** BYTE */
-        static readonly TEXTURETYPE_BYTE: number;
-        /** SHORT */
-        static readonly TEXTURETYPE_SHORT: number;
-        /** UNSIGNED_SHORT */
-        static readonly TEXTURETYPE_UNSIGNED_SHORT: number;
-        /** INT */
-        static readonly TEXTURETYPE_INT: number;
-        /** UNSIGNED_INT */
-        static readonly TEXTURETYPE_UNSIGNED_INTEGER: number;
-        /** UNSIGNED_SHORT_4_4_4_4 */
-        static readonly TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4: number;
-        /** UNSIGNED_SHORT_5_5_5_1 */
-        static readonly TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1: number;
-        /** UNSIGNED_SHORT_5_6_5 */
-        static readonly TEXTURETYPE_UNSIGNED_SHORT_5_6_5: number;
-        /** UNSIGNED_INT_2_10_10_10_REV */
-        static readonly TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV: number;
-        /** UNSIGNED_INT_24_8 */
-        static readonly TEXTURETYPE_UNSIGNED_INT_24_8: number;
-        /** UNSIGNED_INT_10F_11F_11F_REV */
-        static readonly TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV: number;
-        /** UNSIGNED_INT_5_9_9_9_REV */
-        static readonly TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV: number;
-        /** FLOAT_32_UNSIGNED_INT_24_8_REV */
-        static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV: number;
-        /** nearest is mag = nearest and min = nearest and mip = linear */
-        static readonly TEXTURE_NEAREST_SAMPLINGMODE: number;
-        /** Bilinear is mag = linear and min = linear and mip = nearest */
-        static readonly TEXTURE_BILINEAR_SAMPLINGMODE: number;
-        /** Trilinear is mag = linear and min = linear and mip = linear */
-        static readonly TEXTURE_TRILINEAR_SAMPLINGMODE: number;
-        /** nearest is mag = nearest and min = nearest and mip = linear */
-        static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR: number;
-        /** Bilinear is mag = linear and min = linear and mip = nearest */
-        static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST: number;
-        /** Trilinear is mag = linear and min = linear and mip = linear */
-        static readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR: number;
-        /** mag = nearest and min = nearest and mip = nearest */
-        static readonly TEXTURE_NEAREST_NEAREST_MIPNEAREST: number;
-        /** mag = nearest and min = linear and mip = nearest */
-        static readonly TEXTURE_NEAREST_LINEAR_MIPNEAREST: number;
-        /** mag = nearest and min = linear and mip = linear */
-        static readonly TEXTURE_NEAREST_LINEAR_MIPLINEAR: number;
-        /** mag = nearest and min = linear and mip = none */
-        static readonly TEXTURE_NEAREST_LINEAR: number;
-        /** mag = nearest and min = nearest and mip = none */
-        static readonly TEXTURE_NEAREST_NEAREST: number;
-        /** mag = linear and min = nearest and mip = nearest */
-        static readonly TEXTURE_LINEAR_NEAREST_MIPNEAREST: number;
-        /** mag = linear and min = nearest and mip = linear */
-        static readonly TEXTURE_LINEAR_NEAREST_MIPLINEAR: number;
-        /** mag = linear and min = linear and mip = none */
-        static readonly TEXTURE_LINEAR_LINEAR: number;
-        /** mag = linear and min = nearest and mip = none */
-        static readonly TEXTURE_LINEAR_NEAREST: number;
-        /** Explicit coordinates mode */
-        static readonly TEXTURE_EXPLICIT_MODE: number;
-        /** Spherical coordinates mode */
-        static readonly TEXTURE_SPHERICAL_MODE: number;
-        /** Planar coordinates mode */
-        static readonly TEXTURE_PLANAR_MODE: number;
-        /** Cubic coordinates mode */
-        static readonly TEXTURE_CUBIC_MODE: number;
-        /** Projection coordinates mode */
-        static readonly TEXTURE_PROJECTION_MODE: number;
-        /** Skybox coordinates mode */
-        static readonly TEXTURE_SKYBOX_MODE: number;
-        /** Inverse Cubic coordinates mode */
-        static readonly TEXTURE_INVCUBIC_MODE: number;
-        /** Equirectangular coordinates mode */
-        static readonly TEXTURE_EQUIRECTANGULAR_MODE: number;
-        /** Equirectangular Fixed coordinates mode */
-        static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MODE: number;
-        /** Equirectangular Fixed Mirrored coordinates mode */
-        static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE: number;
-        /** Defines that texture rescaling will use a floor to find the closer power of 2 size */
-        static readonly SCALEMODE_FLOOR: number;
-        /** Defines that texture rescaling will look for the nearest power of 2 size */
-        static readonly SCALEMODE_NEAREST: number;
-        /** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
-        static readonly SCALEMODE_CEILING: number;
-        /**
-         * The dirty texture flag value
-         */
-        static readonly MATERIAL_TextureDirtyFlag: number;
-        /**
-         * The dirty light flag value
-         */
-        static readonly MATERIAL_LightDirtyFlag: number;
-        /**
-         * The dirty fresnel flag value
-         */
-        static readonly MATERIAL_FresnelDirtyFlag: number;
-        /**
-         * The dirty attribute flag value
-         */
-        static readonly MATERIAL_AttributesDirtyFlag: number;
-        /**
-         * The dirty misc flag value
-         */
-        static readonly MATERIAL_MiscDirtyFlag: number;
-        /**
-         * The all dirty flag value
-         */
-        static readonly MATERIAL_AllDirtyFlag: number;
-        /**
-         * Returns the triangle fill mode
-         */
-        static readonly MATERIAL_TriangleFillMode: number;
-        /**
-         * Returns the wireframe mode
-         */
-        static readonly MATERIAL_WireFrameFillMode: number;
-        /**
-         * Returns the point fill mode
-         */
-        static readonly MATERIAL_PointFillMode: number;
-        /**
-         * Returns the point list draw mode
-         */
-        static readonly MATERIAL_PointListDrawMode: number;
-        /**
-         * Returns the line list draw mode
-         */
-        static readonly MATERIAL_LineListDrawMode: number;
-        /**
-         * Returns the line loop draw mode
-         */
-        static readonly MATERIAL_LineLoopDrawMode: number;
-        /**
-         * Returns the line strip draw mode
-         */
-        static readonly MATERIAL_LineStripDrawMode: number;
-        /**
-         * Returns the triangle strip draw mode
-         */
-        static readonly MATERIAL_TriangleStripDrawMode: number;
-        /**
-         * Returns the triangle fan draw mode
-         */
-        static readonly MATERIAL_TriangleFanDrawMode: number;
-        /**
-         * Stores the clock-wise side orientation
-         */
-        static readonly MATERIAL_ClockWiseSideOrientation: number;
-        /**
-         * Stores the counter clock-wise side orientation
-         */
-        static readonly MATERIAL_CounterClockWiseSideOrientation: number;
-        /**
-         * Nothing
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly ACTION_NothingTrigger: number;
-        /**
-         * On pick
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly ACTION_OnPickTrigger: number;
-        /**
-         * On left pick
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly ACTION_OnLeftPickTrigger: number;
-        /**
-         * On right pick
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly ACTION_OnRightPickTrigger: number;
-        /**
-         * On center pick
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly ACTION_OnCenterPickTrigger: number;
-        /**
-         * On pick down
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly ACTION_OnPickDownTrigger: number;
-        /**
-         * On double pick
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly ACTION_OnDoublePickTrigger: number;
-        /**
-         * On pick up
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly ACTION_OnPickUpTrigger: number;
-        /**
-         * On pick out.
-         * This trigger will only be raised if you also declared a OnPickDown
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly ACTION_OnPickOutTrigger: number;
-        /**
-         * On long press
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly ACTION_OnLongPressTrigger: number;
-        /**
-         * On pointer over
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly ACTION_OnPointerOverTrigger: number;
-        /**
-         * On pointer out
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly ACTION_OnPointerOutTrigger: number;
-        /**
-         * On every frame
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly ACTION_OnEveryFrameTrigger: number;
-        /**
-         * On intersection enter
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly ACTION_OnIntersectionEnterTrigger: number;
-        /**
-         * On intersection exit
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly ACTION_OnIntersectionExitTrigger: number;
-        /**
-         * On key down
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly ACTION_OnKeyDownTrigger: number;
-        /**
-         * On key up
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly ACTION_OnKeyUpTrigger: number;
-        /**
-         * Billboard mode will only apply to Y axis
-         */
-        static readonly PARTICLES_BILLBOARDMODE_Y: number;
-        /**
-         * Billboard mode will apply to all axes
-         */
-        static readonly PARTICLES_BILLBOARDMODE_ALL: number;
-        /**
-         * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
-         */
-        static readonly PARTICLES_BILLBOARDMODE_STRETCHED: number;
-        /**
-         * Gets or sets base Assets URL
-         */
-        static PARTICLES_BaseAssetsUrl: string;
-        /** Default culling strategy : this is an exclusion test and it's the more accurate.
-         *  Test order :
-         *  Is the bounding sphere outside the frustum ?
-         *  If not, are the bounding box vertices outside the frustum ?
-         *  It not, then the cullable object is in the frustum.
-         */
-        static readonly MESHES_CULLINGSTRATEGY_STANDARD: number;
-        /** Culling strategy : Bounding Sphere Only.
-         *  This is an exclusion test. It's faster than the standard strategy because the bounding box is not tested.
-         *  It's also less accurate than the standard because some not visible objects can still be selected.
-         *  Test : is the bounding sphere outside the frustum ?
-         *  If not, then the cullable object is in the frustum.
-         */
-        static readonly MESHES_CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY: number;
-        /** Culling strategy : Optimistic Inclusion.
-         *  This in an inclusion test first, then the standard exclusion test.
-         *  This can be faster when a cullable object is expected to be almost always in the camera frustum.
-         *  This could also be a little slower than the standard test when the tested object center is not the frustum but one of its bounding box vertex is still inside.
-         *  Anyway, it's as accurate as the standard strategy.
-         *  Test :
-         *  Is the cullable object bounding sphere center in the frustum ?
-         *  If not, apply the default culling strategy.
-         */
-        static readonly MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION: number;
-        /** Culling strategy : Optimistic Inclusion then Bounding Sphere Only.
-         *  This in an inclusion test first, then the bounding sphere only exclusion test.
-         *  This can be the fastest test when a cullable object is expected to be almost always in the camera frustum.
-         *  This could also be a little slower than the BoundingSphereOnly strategy when the tested object center is not in the frustum but its bounding sphere still intersects it.
-         *  It's less accurate than the standard strategy and as accurate as the BoundingSphereOnly strategy.
-         *  Test :
-         *  Is the cullable object bounding sphere center in the frustum ?
-         *  If not, apply the Bounding Sphere Only strategy. No Bounding Box is tested here.
-         */
-        static readonly MESHES_CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY: number;
-        /**
-         * No logging while loading
-         */
-        static readonly SCENELOADER_NO_LOGGING: number;
-        /**
-         * Minimal logging while loading
-         */
-        static readonly SCENELOADER_MINIMAL_LOGGING: number;
-        /**
-         * Summary logging while loading
-         */
-        static readonly SCENELOADER_SUMMARY_LOGGING: number;
-        /**
-         * Detailled logging while loading
-         */
-        static readonly SCENELOADER_DETAILED_LOGGING: number;
-    }
-}
-declare module BABYLON {
-    /**
-     * This represents the required contract to create a new type of texture loader.
-     */
-    export interface IInternalTextureLoader {
-        /**
-         * Defines wether the loader supports cascade loading the different faces.
-         */
-        supportCascades: boolean;
-        /**
-         * This returns if the loader support the current file information.
-         * @param extension defines the file extension of the file being loaded
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @param fallback defines the fallback internal texture if any
-         * @param isBase64 defines whether the texture is encoded as a base64
-         * @param isBuffer defines whether the texture data are stored as a buffer
-         * @returns true if the loader can load the specified file
-         */
-        canLoad(extension: string, textureFormatInUse: Nullable<string>, fallback: Nullable<InternalTexture>, isBase64: boolean, isBuffer: boolean): boolean;
-        /**
-         * Transform the url before loading if required.
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the transformed texture
-         */
-        transformUrl(rootUrl: string, textureFormatInUse: Nullable<string>): string;
-        /**
-         * Gets the fallback url in case the load fail. This can return null to allow the default fallback mecanism to work
-         * @param rootUrl the url of the texture
-         * @param textureFormatInUse defines the current compressed format in use iun the engine
-         * @returns the fallback texture
-         */
-        getFallbackTextureUrl(rootUrl: string, textureFormatInUse: Nullable<string>): Nullable<string>;
-        /**
-         * Uploads the cube texture data to the WebGl Texture. It has alreday been bound.
-         * @param data contains the texture data
-         * @param texture defines the BabylonJS internal texture
-         * @param createPolynomials will be true if polynomials have been requested
-         * @param onLoad defines the callback to trigger once the texture is ready
-         * @param onError defines the callback to trigger in case of error
-         */
-        loadCubeData(data: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
-        /**
-         * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
-         * @param data contains the texture data
-         * @param texture defines the BabylonJS internal texture
-         * @param callback defines the method to call once ready to upload
-         */
-        loadData(data: ArrayBuffer, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed?: boolean) => void): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to store and describe the pipeline context associated with an effect
-     */
-    export interface IPipelineContext {
-        /**
-         * Gets a boolean indicating that this pipeline context is supporting asynchronous creating
-         */
-        isAsync: boolean;
-        /**
-         * Gets a boolean indicating that the context is ready to be used (like shaders / pipelines are compiled and ready for instance)
-         */
-        isReady: boolean;
-        /** @hidden */private _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to store gfx data (like WebGLBuffer)
-     */
-    export class DataBuffer {
-        /**
-         * Gets or sets the number of objects referencing this buffer
-         */
-        references: number;
-        /** Gets or sets the size of the underlying buffer */
-        capacity: number;
-        /**
-         * Gets or sets a boolean indicating if the buffer contains 32bits indices
-         */
-        is32Bits: boolean;
-        /**
-         * Gets the underlying buffer
-         */
-        readonly underlyingResource: any;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export interface IShaderProcessor {
-        attributeProcessor?: (attribute: string) => string;
-        varyingProcessor?: (varying: string, isFragment: boolean) => string;
-        uniformProcessor?: (uniform: string, isFragment: boolean) => string;
-        uniformBufferProcessor?: (uniformBuffer: string, isFragment: boolean) => string;
-        endOfUniformBufferProcessor?: (closingBracketLine: string, isFragment: boolean) => string;
-        lineProcessor?: (line: string, isFragment: boolean) => string;
-        preProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
-        postProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export interface ProcessingOptions {
-        defines: string[];
-        indexParameters: any;
-        isFragment: boolean;
-        shouldUseHighPrecisionShader: boolean;
-        supportsUniformBuffers: boolean;
-        shadersRepository: string;
-        includesShadersStore: {
-            [key: string]: string;
-        };
-        processor?: IShaderProcessor;
-        version: string;
-        platformName: string;
-        lookForClosingBracketForUniformBuffer?: boolean;
-    }
-}
-declare module BABYLON {
-    /**
-     * Helper to manipulate strings
-     */
-    export class StringTools {
-        /**
-         * Checks for a matching suffix at the end of a string (for ES5 and lower)
-         * @param str Source string
-         * @param suffix Suffix to search for in the source string
-         * @returns Boolean indicating whether the suffix was found (true) or not (false)
-         */
-        static EndsWith(str: string, suffix: string): boolean;
-        /**
-         * Checks for a matching suffix at the beginning of a string (for ES5 and lower)
-         * @param str Source string
-         * @param suffix Suffix to search for in the source string
-         * @returns Boolean indicating whether the suffix was found (true) or not (false)
-         */
-        static StartsWith(str: string, suffix: string): boolean;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class ShaderCodeNode {
-        line: string;
-        children: ShaderCodeNode[];
-        additionalDefineKey?: string;
-        additionalDefineValue?: string;
-        isValid(preprocessors: {
-            [key: string]: string;
-        }): boolean;
-        process(preprocessors: {
-            [key: string]: string;
-        }, options: ProcessingOptions): string;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class ShaderCodeCursor {
-        private _lines;
-        lineIndex: number;
-        readonly currentLine: string;
-        readonly canRead: boolean;
-        lines: string[];
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class ShaderCodeConditionNode extends ShaderCodeNode {
-        process(preprocessors: {
-            [key: string]: string;
-        }, options: ProcessingOptions): string;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class ShaderDefineExpression {
-        isTrue(preprocessors: {
-            [key: string]: string;
-        }): boolean;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class ShaderCodeTestNode extends ShaderCodeNode {
-        testExpression: ShaderDefineExpression;
-        isValid(preprocessors: {
-            [key: string]: string;
-        }): boolean;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class ShaderDefineIsDefinedOperator extends ShaderDefineExpression {
-        define: string;
-        not: boolean;
-        constructor(define: string, not?: boolean);
-        isTrue(preprocessors: {
-            [key: string]: string;
-        }): boolean;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class ShaderDefineOrOperator extends ShaderDefineExpression {
-        leftOperand: ShaderDefineExpression;
-        rightOperand: ShaderDefineExpression;
-        isTrue(preprocessors: {
-            [key: string]: string;
-        }): boolean;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class ShaderDefineAndOperator extends ShaderDefineExpression {
-        leftOperand: ShaderDefineExpression;
-        rightOperand: ShaderDefineExpression;
-        isTrue(preprocessors: {
-            [key: string]: string;
-        }): boolean;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class ShaderDefineArithmeticOperator extends ShaderDefineExpression {
-        define: string;
-        operand: string;
-        testValue: string;
-        constructor(define: string, operand: string, testValue: string);
-        isTrue(preprocessors: {
-            [key: string]: string;
-        }): boolean;
-    }
-}
-declare module BABYLON {
-    /**
-     * @ignore
-     * Application error to support additional information when loading a file
-     */
-    export class LoadFileError extends Error {
-        /** defines the optional web request */
-        request?: WebRequest | undefined;
-        private static _setPrototypeOf;
-        /**
-         * Creates a new LoadFileError
-         * @param message defines the message of the error
-         * @param request defines the optional web request
-         */
-        constructor(message: string, 
-        /** defines the optional web request */
-        request?: WebRequest | undefined);
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to enable access to offline support
-     * @see http://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
-     */
-    export interface IOfflineProvider {
-        /**
-         * Gets a boolean indicating if scene must be saved in the database
-         */
-        enableSceneOffline: boolean;
-        /**
-         * Gets a boolean indicating if textures must be saved in the database
-         */
-        enableTexturesOffline: boolean;
-        /**
-         * Open the offline support and make it available
-         * @param successCallback defines the callback to call on success
-         * @param errorCallback defines the callback to call on error
-         */
-        open(successCallback: () => void, errorCallback: () => void): void;
-        /**
-         * Loads an image from the offline support
-         * @param url defines the url to load from
-         * @param image defines the target DOM image
-         */
-        loadImage(url: string, image: HTMLImageElement): void;
-        /**
-         * Loads a file from offline support
-         * @param url defines the URL to load from
-         * @param sceneLoaded defines a callback to call on success
-         * @param progressCallBack defines a callback to call when progress changed
-         * @param errorCallback defines a callback to call on error
-         * @param useArrayBuffer defines a boolean to use array buffer instead of text string
-         */
-        loadFile(url: string, sceneLoaded: (data: any) => void, progressCallBack?: (data: any) => void, errorCallback?: () => void, useArrayBuffer?: boolean): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to help managing file picking and drag'n'drop
-     * File Storage
-     */
-    export class FilesInputStore {
-        /**
-         * List of files ready to be loaded
-         */
-        static FilesToLoad: {
-            [key: string]: File;
-        };
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to define a retry strategy when error happens while loading assets
-     */
-    export class RetryStrategy {
-        /**
-         * Function used to defines an exponential back off strategy
-         * @param maxRetries defines the maximum number of retries (3 by default)
-         * @param baseInterval defines the interval between retries
-         * @returns the strategy function to use
-         */
-        static ExponentialBackoff(maxRetries?: number, baseInterval?: number): (url: string, request: WebRequest, retryIndex: number) => number;
-    }
-}
-declare module BABYLON {
-    /**
-     * @hidden
-     */
-    export class FileTools {
-        /**
-         * Gets or sets the retry strategy to apply when an error happens while loading an asset
-         */
-        static DefaultRetryStrategy: (url: string, request: WebRequest, retryIndex: number) => number;
-        /**
-         * Gets or sets the base URL to use to load assets
-         */
-        static BaseUrl: string;
-        /**
-         * Default behaviour for cors in the application.
-         * It can be a string if the expected behavior is identical in the entire app.
-         * Or a callback to be able to set it per url or on a group of them (in case of Video source for instance)
-         */
-        static CorsBehavior: string | ((url: string | string[]) => string);
-        /**
-         * Gets or sets a function used to pre-process url before using them to load assets
-         */
-        static PreprocessUrl: (url: string) => string;
-        /**
-         * Removes unwanted characters from an url
-         * @param url defines the url to clean
-         * @returns the cleaned url
-         */
-        private static _CleanUrl;
-        /**
-         * Sets the cors behavior on a dom element. This will add the required Tools.CorsBehavior to the element.
-         * @param url define the url we are trying
-         * @param element define the dom element where to configure the cors policy
-         */
-        static SetCorsBehavior(url: string | string[], element: {
-            crossOrigin: string | null;
-        }): void;
-        /**
-         * Loads an image as an HTMLImageElement.
-         * @param input url string, ArrayBuffer, or Blob to load
-         * @param onLoad callback called when the image successfully loads
-         * @param onError callback called when the image fails to load
-         * @param offlineProvider offline provider for caching
-         * @returns the HTMLImageElement of the loaded image
-         */
-        static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>): HTMLImageElement;
-        /**
-         * Loads a file
-         * @param fileToLoad defines the file to load
-         * @param callback defines the callback to call when data is loaded
-         * @param progressCallBack defines the callback to call during loading process
-         * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
-         * @returns a file request object
-         */
-        static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): IFileRequest;
-        /**
-         * Loads a file
-         * @param url url string, ArrayBuffer, or Blob to load
-         * @param onSuccess callback called when the file successfully loads
-         * @param onProgress callback called while file is loading (if the server supports this mode)
-         * @param offlineProvider defines the offline provider for caching
-         * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
-         * @param onError callback called when the file fails to load
-         * @returns a file request object
-         */
-        static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
-        /**
-         * Checks if the loaded document was accessed via `file:`-Protocol.
-         * @returns boolean
-         */
-        static IsFileURL(): boolean;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export class ShaderProcessor {
-        static Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void): void;
-        private static _ProcessPrecision;
-        private static _ExtractOperation;
-        private static _BuildSubExpression;
-        private static _BuildExpression;
-        private static _MoveCursorWithinIf;
-        private static _MoveCursor;
-        private static _EvaluatePreProcessors;
-        private static _PreparePreProcessors;
-        private static _ProcessShaderConversion;
-        private static _ProcessIncludes;
-    }
-}
-declare module BABYLON {
-    /**
-     * Interface used to define common properties for effect fallbacks
-     */
-    export interface IEffectFallbacks {
-        /**
-         * Removes the defines that should be removed when falling back.
-         * @param currentDefines defines the current define statements for the shader.
-         * @param effect defines the current effect we try to compile
-         * @returns The resulting defines with defines of the current rank removed.
-         */
-        reduce(currentDefines: string, effect: Effect): string;
-        /**
-         * Removes the fallback from the bound mesh.
-         */
-        unBindMesh(): void;
-        /**
-         * Checks to see if more fallbacks are still availible.
-         */
-        hasMoreFallbacks: boolean;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to evalaute queries containing `and` and `or` operators
-     */
-    export class AndOrNotEvaluator {
-        /**
-         * Evaluate a query
-         * @param query defines the query to evaluate
-         * @param evaluateCallback defines the callback used to filter result
-         * @returns true if the query matches
-         */
-        static Eval(query: string, evaluateCallback: (val: any) => boolean): boolean;
-        private static _HandleParenthesisContent;
-        private static _SimplifyNegation;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to store custom tags
-     */
-    export class Tags {
-        /**
-         * Adds support for tags on the given object
-         * @param obj defines the object to use
-         */
-        static EnableFor(obj: any): void;
-        /**
-         * Removes tags support
-         * @param obj defines the object to use
-         */
-        static DisableFor(obj: any): void;
-        /**
-         * Gets a boolean indicating if the given object has tags
-         * @param obj defines the object to use
-         * @returns a boolean
-         */
-        static HasTags(obj: any): boolean;
-        /**
-         * Gets the tags available on a given object
-         * @param obj defines the object to use
-         * @param asString defines if the tags must be returned as a string instead of an array of strings
-         * @returns the tags
-         */
-        static GetTags(obj: any, asString?: boolean): any;
-        /**
-         * Adds tags to an object
-         * @param obj defines the object to use
-         * @param tagsString defines the tag string. The tags 'true' and 'false' are reserved and cannot be used as tags.
-         * A tag cannot start with '||', '&&', and '!'. It cannot contain whitespaces
-         */
-        static AddTagsTo(obj: any, tagsString: string): void;
-        /**
-         * @hidden
-         */private static _AddTagTo(obj: any, tag: string): void;
-        /**
-         * Removes specific tags from a specific object
-         * @param obj defines the object to use
-         * @param tagsString defines the tags to remove
-         */
-        static RemoveTagsFrom(obj: any, tagsString: string): void;
-        /**
-         * @hidden
-         */private static _RemoveTagFrom(obj: any, tag: string): void;
-        /**
-         * Defines if tags hosted on an object match a given query
-         * @param obj defines the object to use
-         * @param tagsQuery defines the tag query
-         * @returns a boolean
-         */
-        static MatchesQuery(obj: any, tagsQuery: string): boolean;
-    }
-}
-declare module BABYLON {
-    /**
-     * Defines potential orientation for back face culling
-     */
-    export enum Orientation {
-        /**
-         * Clockwise
-         */
-        CW = 0,
-        /** Counter clockwise */
-        CCW = 1
-    }
-    /** Class used to represent a Bezier curve */
-    export class BezierCurve {
-        /**
-         * Returns the cubic Bezier interpolated value (float) at "t" (float) from the given x1, y1, x2, y2 floats
-         * @param t defines the time
-         * @param x1 defines the left coordinate on X axis
-         * @param y1 defines the left coordinate on Y axis
-         * @param x2 defines the right coordinate on X axis
-         * @param y2 defines the right coordinate on Y axis
-         * @returns the interpolated value
-         */
-        static Interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number;
-    }
-    /**
-     * Defines angle representation
-     */
-    export class Angle {
-        private _radians;
-        /**
-         * Creates an Angle object of "radians" radians (float).
-         * @param radians the angle in radians
-         */
-        constructor(radians: number);
-        /**
-         * Get value in degrees
-         * @returns the Angle value in degrees (float)
-         */
-        degrees(): number;
-        /**
-         * Get value in radians
-         * @returns the Angle value in radians (float)
-         */
-        radians(): number;
-        /**
-         * Gets a new Angle object valued with the angle value in radians between the two given vectors
-         * @param a defines first vector
-         * @param b defines second vector
-         * @returns a new Angle
-         */
-        static BetweenTwoPoints(a: DeepImmutable<Vector2>, b: DeepImmutable<Vector2>): Angle;
-        /**
-         * Gets a new Angle object from the given float in radians
-         * @param radians defines the angle value in radians
-         * @returns a new Angle
-         */
-        static FromRadians(radians: number): Angle;
-        /**
-         * Gets a new Angle object from the given float in degrees
-         * @param degrees defines the angle value in degrees
-         * @returns a new Angle
-         */
-        static FromDegrees(degrees: number): Angle;
-    }
-    /**
-     * This represents an arc in a 2d space.
-     */
-    export class Arc2 {
-        /** Defines the start point of the arc */
-        startPoint: Vector2;
-        /** Defines the mid point of the arc */
-        midPoint: Vector2;
-        /** Defines the end point of the arc */
-        endPoint: Vector2;
-        /**
-         * Defines the center point of the arc.
-         */
-        centerPoint: Vector2;
-        /**
-         * Defines the radius of the arc.
-         */
-        radius: number;
-        /**
-         * Defines the angle of the arc (from mid point to end point).
-         */
-        angle: Angle;
-        /**
-         * Defines the start angle of the arc (from start point to middle point).
-         */
-        startAngle: Angle;
-        /**
-         * Defines the orientation of the arc (clock wise/counter clock wise).
-         */
-        orientation: Orientation;
-        /**
-         * Creates an Arc object from the three given points : start, middle and end.
-         * @param startPoint Defines the start point of the arc
-         * @param midPoint Defines the midlle point of the arc
-         * @param endPoint Defines the end point of the arc
-         */
-        constructor(
-        /** Defines the start point of the arc */
-        startPoint: Vector2, 
-        /** Defines the mid point of the arc */
-        midPoint: Vector2, 
-        /** Defines the end point of the arc */
-        endPoint: Vector2);
-    }
-    /**
-     * Represents a 2D path made up of multiple 2D points
-     */
-    export class Path2 {
-        private _points;
-        private _length;
-        /**
-         * If the path start and end point are the same
-         */
-        closed: boolean;
-        /**
-         * Creates a Path2 object from the starting 2D coordinates x and y.
-         * @param x the starting points x value
-         * @param y the starting points y value
-         */
-        constructor(x: number, y: number);
-        /**
-         * Adds a new segment until the given coordinates (x, y) to the current Path2.
-         * @param x the added points x value
-         * @param y the added points y value
-         * @returns the updated Path2.
-         */
-        addLineTo(x: number, y: number): Path2;
-        /**
-         * Adds _numberOfSegments_ segments according to the arc definition (middle point coordinates, end point coordinates, the arc start point being the current Path2 last point) to the current Path2.
-         * @param midX middle point x value
-         * @param midY middle point y value
-         * @param endX end point x value
-         * @param endY end point y value
-         * @param numberOfSegments (default: 36)
-         * @returns the updated Path2.
-         */
-        addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments?: number): Path2;
-        /**
-         * Closes the Path2.
-         * @returns the Path2.
-         */
-        close(): Path2;
-        /**
-         * Gets the sum of the distance between each sequential point in the path
-         * @returns the Path2 total length (float).
-         */
-        length(): number;
-        /**
-         * Gets the points which construct the path
-         * @returns the Path2 internal array of points.
-         */
-        getPoints(): Vector2[];
-        /**
-         * Retreives the point at the distance aways from the starting point
-         * @param normalizedLengthPosition the length along the path to retreive the point from
-         * @returns a new Vector2 located at a percentage of the Path2 total length on this path.
-         */
-        getPointAtLengthPosition(normalizedLengthPosition: number): Vector2;
-        /**
-         * Creates a new path starting from an x and y position
-         * @param x starting x value
-         * @param y starting y value
-         * @returns a new Path2 starting at the coordinates (x, y).
-         */
-        static StartingAt(x: number, y: number): Path2;
-    }
-    /**
-     * Represents a 3D path made up of multiple 3D points
-     */
-    export class Path3D {
-        /**
-         * an array of Vector3, the curve axis of the Path3D
-         */
-        path: Vector3[];
-        private _curve;
-        private _distances;
-        private _tangents;
-        private _normals;
-        private _binormals;
-        private _raw;
-        /**
-        * new Path3D(path, normal, raw)
-        * Creates a Path3D. A Path3D is a logical math object, so not a mesh.
-        * please read the description in the tutorial : https://doc.babylonjs.com/how_to/how_to_use_path3d
-        * @param path an array of Vector3, the curve axis of the Path3D
-        * @param firstNormal (options) Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
-        * @param raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
-        */
-        constructor(
-        /**
-         * an array of Vector3, the curve axis of the Path3D
-         */
-        path: Vector3[], firstNormal?: Nullable<Vector3>, raw?: boolean);
-        /**
-         * Returns the Path3D array of successive Vector3 designing its curve.
-         * @returns the Path3D array of successive Vector3 designing its curve.
-         */
-        getCurve(): Vector3[];
-        /**
-         * Returns an array populated with tangent vectors on each Path3D curve point.
-         * @returns an array populated with tangent vectors on each Path3D curve point.
-         */
-        getTangents(): Vector3[];
-        /**
-         * Returns an array populated with normal vectors on each Path3D curve point.
-         * @returns an array populated with normal vectors on each Path3D curve point.
-         */
-        getNormals(): Vector3[];
-        /**
-         * Returns an array populated with binormal vectors on each Path3D curve point.
-         * @returns an array populated with binormal vectors on each Path3D curve point.
-         */
-        getBinormals(): Vector3[];
-        /**
-         * Returns an array populated with distances (float) of the i-th point from the first curve point.
-         * @returns an array populated with distances (float) of the i-th point from the first curve point.
-         */
-        getDistances(): number[];
-        /**
-         * Forces the Path3D tangent, normal, binormal and distance recomputation.
-         * @param path path which all values are copied into the curves points
-         * @param firstNormal which should be projected onto the curve
-         * @returns the same object updated.
-         */
-        update(path: Vector3[], firstNormal?: Nullable<Vector3>): Path3D;
-        private _compute;
-        private _getFirstNonNullVector;
-        private _getLastNonNullVector;
-        private _normalVector;
-    }
-    /**
-     * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
-     * A Curve3 is designed from a series of successive Vector3.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_curve3
-     */
-    export class Curve3 {
-        private _points;
-        private _length;
-        /**
-         * Returns a Curve3 object along a Quadratic Bezier curve : https://doc.babylonjs.com/how_to/how_to_use_curve3#quadratic-bezier-curve
-         * @param v0 (Vector3) the origin point of the Quadratic Bezier
-         * @param v1 (Vector3) the control point
-         * @param v2 (Vector3) the end point of the Quadratic Bezier
-         * @param nbPoints (integer) the wanted number of points in the curve
-         * @returns the created Curve3
-         */
-        static CreateQuadraticBezier(v0: DeepImmutable<Vector3>, v1: DeepImmutable<Vector3>, v2: DeepImmutable<Vector3>, nbPoints: number): Curve3;
-        /**
-         * Returns a Curve3 object along a Cubic Bezier curve : https://doc.babylonjs.com/how_to/how_to_use_curve3#cubic-bezier-curve
-         * @param v0 (Vector3) the origin point of the Cubic Bezier
-         * @param v1 (Vector3) the first control point
-         * @param v2 (Vector3) the second control point
-         * @param v3 (Vector3) the end point of the Cubic Bezier
-         * @param nbPoints (integer) the wanted number of points in the curve
-         * @returns the created Curve3
-         */
-        static CreateCubicBezier(v0: DeepImmutable<Vector3>, v1: DeepImmutable<Vector3>, v2: DeepImmutable<Vector3>, v3: DeepImmutable<Vector3>, nbPoints: number): Curve3;
-        /**
-         * Returns a Curve3 object along a Hermite Spline curve : https://doc.babylonjs.com/how_to/how_to_use_curve3#hermite-spline
-         * @param p1 (Vector3) the origin point of the Hermite Spline
-         * @param t1 (Vector3) the tangent vector at the origin point
-         * @param p2 (Vector3) the end point of the Hermite Spline
-         * @param t2 (Vector3) the tangent vector at the end point
-         * @param nbPoints (integer) the wanted number of points in the curve
-         * @returns the created Curve3
-         */
-        static CreateHermiteSpline(p1: DeepImmutable<Vector3>, t1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, t2: DeepImmutable<Vector3>, nbPoints: number): Curve3;
-        /**
-         * Returns a Curve3 object along a CatmullRom Spline curve :
-         * @param points (array of Vector3) the points the spline must pass through. At least, four points required
-         * @param nbPoints (integer) the wanted number of points between each curve control points
-         * @param closed (boolean) optional with default false, when true forms a closed loop from the points
-         * @returns the created Curve3
-         */
-        static CreateCatmullRomSpline(points: DeepImmutable<Vector3[]>, nbPoints: number, closed?: boolean): Curve3;
-        /**
-         * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
-         * A Curve3 is designed from a series of successive Vector3.
-         * Tuto : https://doc.babylonjs.com/how_to/how_to_use_curve3#curve3-object
-         * @param points points which make up the curve
-         */
-        constructor(points: Vector3[]);
-        /**
-         * @returns the Curve3 stored array of successive Vector3
-         */
-        getPoints(): Vector3[];
-        /**
-         * @returns the computed length (float) of the curve.
-         */
-        length(): number;
-        /**
-         * Returns a new instance of Curve3 object : var curve = curveA.continue(curveB);
-         * This new Curve3 is built by translating and sticking the curveB at the end of the curveA.
-         * curveA and curveB keep unchanged.
-         * @param curve the curve to continue from this curve
-         * @returns the newly constructed curve
-         */
-        continue(curve: DeepImmutable<Curve3>): Curve3;
-        private _computeLength;
-    }
-}
-declare module BABYLON {
-    /**
-     * This represents the main contract an easing function should follow.
-     * Easing functions are used throughout the animation system.
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export interface IEasingFunction {
-        /**
-         * Given an input gradient between 0 and 1, this returns the corrseponding value
-         * of the easing function.
-         * The link below provides some of the most common examples of easing functions.
-         * @see https://easings.net/
-         * @param gradient Defines the value between 0 and 1 we want the easing value for
-         * @returns the corresponding value on the curve defined by the easing function
-         */
-        ease(gradient: number): number;
-    }
-    /**
-     * Base class used for every default easing function.
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class EasingFunction implements IEasingFunction {
-        /**
-         * Interpolation follows the mathematical formula associated with the easing function.
-         */
-        static readonly EASINGMODE_EASEIN: number;
-        /**
-         * Interpolation follows 100% interpolation minus the output of the formula associated with the easing function.
-         */
-        static readonly EASINGMODE_EASEOUT: number;
-        /**
-         * Interpolation uses EaseIn for the first half of the animation and EaseOut for the second half.
-         */
-        static readonly EASINGMODE_EASEINOUT: number;
-        private _easingMode;
-        /**
-         * Sets the easing mode of the current function.
-         * @param easingMode Defines the willing mode (EASINGMODE_EASEIN, EASINGMODE_EASEOUT or EASINGMODE_EASEINOUT)
-         */
-        setEasingMode(easingMode: number): void;
-        /**
-         * Gets the current easing mode.
-         * @returns the easing mode
-         */
-        getEasingMode(): number;
-        /**
-         * @hidden
-         */
-        easeInCore(gradient: number): number;
-        /**
-         * Given an input gradient between 0 and 1, this returns the corresponding value
-         * of the easing function.
-         * @param gradient Defines the value between 0 and 1 we want the easing value for
-         * @returns the corresponding value on the curve defined by the easing function
-         */
-        ease(gradient: number): number;
-    }
-    /**
-     * Easing function with a circle shape (see link below).
-     * @see https://easings.net/#easeInCirc
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class CircleEase extends EasingFunction implements IEasingFunction {
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with a ease back shape (see link below).
-     * @see https://easings.net/#easeInBack
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class BackEase extends EasingFunction implements IEasingFunction {
-        /** Defines the amplitude of the function */
-        amplitude: number;
-        /**
-         * Instantiates a back ease easing
-         * @see https://easings.net/#easeInBack
-         * @param amplitude Defines the amplitude of the function
-         */
-        constructor(
-        /** Defines the amplitude of the function */
-        amplitude?: number);
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with a bouncing shape (see link below).
-     * @see https://easings.net/#easeInBounce
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class BounceEase extends EasingFunction implements IEasingFunction {
-        /** Defines the number of bounces */
-        bounces: number;
-        /** Defines the amplitude of the bounce */
-        bounciness: number;
-        /**
-         * Instantiates a bounce easing
-         * @see https://easings.net/#easeInBounce
-         * @param bounces Defines the number of bounces
-         * @param bounciness Defines the amplitude of the bounce
-         */
-        constructor(
-        /** Defines the number of bounces */
-        bounces?: number, 
-        /** Defines the amplitude of the bounce */
-        bounciness?: number);
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with a power of 3 shape (see link below).
-     * @see https://easings.net/#easeInCubic
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class CubicEase extends EasingFunction implements IEasingFunction {
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with an elastic shape (see link below).
-     * @see https://easings.net/#easeInElastic
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class ElasticEase extends EasingFunction implements IEasingFunction {
-        /** Defines the number of oscillations*/
-        oscillations: number;
-        /** Defines the amplitude of the oscillations*/
-        springiness: number;
-        /**
-         * Instantiates an elastic easing function
-         * @see https://easings.net/#easeInElastic
-         * @param oscillations Defines the number of oscillations
-         * @param springiness Defines the amplitude of the oscillations
-         */
-        constructor(
-        /** Defines the number of oscillations*/
-        oscillations?: number, 
-        /** Defines the amplitude of the oscillations*/
-        springiness?: number);
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with an exponential shape (see link below).
-     * @see https://easings.net/#easeInExpo
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class ExponentialEase extends EasingFunction implements IEasingFunction {
-        /** Defines the exponent of the function */
-        exponent: number;
-        /**
-         * Instantiates an exponential easing function
-         * @see https://easings.net/#easeInExpo
-         * @param exponent Defines the exponent of the function
-         */
-        constructor(
-        /** Defines the exponent of the function */
-        exponent?: number);
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with a power shape (see link below).
-     * @see https://easings.net/#easeInQuad
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class PowerEase extends EasingFunction implements IEasingFunction {
-        /** Defines the power of the function */
-        power: number;
-        /**
-         * Instantiates an power base easing function
-         * @see https://easings.net/#easeInQuad
-         * @param power Defines the power of the function
-         */
-        constructor(
-        /** Defines the power of the function */
-        power?: number);
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with a power of 2 shape (see link below).
-     * @see https://easings.net/#easeInQuad
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class QuadraticEase extends EasingFunction implements IEasingFunction {
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with a power of 4 shape (see link below).
-     * @see https://easings.net/#easeInQuart
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class QuarticEase extends EasingFunction implements IEasingFunction {
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with a power of 5 shape (see link below).
-     * @see https://easings.net/#easeInQuint
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class QuinticEase extends EasingFunction implements IEasingFunction {
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with a sin shape (see link below).
-     * @see https://easings.net/#easeInSine
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class SineEase extends EasingFunction implements IEasingFunction {
-        /** @hidden */
-        easeInCore(gradient: number): number;
-    }
-    /**
-     * Easing function with a bezier shape (see link below).
-     * @see http://cubic-bezier.com/#.17,.67,.83,.67
-     * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
-     */
-    export class BezierCurveEase extends EasingFunction implements IEasingFunction {
-        /** Defines the x component of the start tangent in the bezier curve */
-        x1: number;
-        /** Defines the y component of the start tangent in the bezier curve */
-        y1: number;
-        /** Defines the x component of the end tangent in the bezier curve */
-        x2: number;
-        /** Defines the y component of the end tangent in the bezier curve */
-        y2: number;
-        /**
-         * Instantiates a bezier function
-         * @see http://cubic-bezier.com/#.17,.67,.83,.67
-         * @param x1 Defines the x component of the start tangent in the bezier curve
-         * @param y1 Defines the y component of the start tangent in the bezier curve
-         * @param x2 Defines the x component of the end tangent in the bezier curve
-         * @param y2 Defines the y component of the end tangent in the bezier curve
-         */
-        constructor(
-        /** Defines the x component of the start tangent in the bezier curve */
-        x1?: number, 
-        /** Defines the y component of the start tangent in the bezier curve */
-        y1?: number, 
-        /** Defines the x component of the end tangent in the bezier curve */
-        x2?: number, 
-        /** Defines the y component of the end tangent in the bezier curve */
-        y2?: number);
-        /** @hidden */
-        easeInCore(gradient: number): number;
     }
 }
 declare module BABYLON {
@@ -9006,7 +8837,7 @@ declare module BABYLON {
          * @param defines The defines helping in the list generation
          * @param maxSimultaneousLights The maximum number of simultanous light allowed in the effect
          */
-        static PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | EffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights?: number): void;
+        static PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | IEffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights?: number): void;
         /**
          * This helps decreasing rank by rank the shadow quality (0 being the highest rank and quality)
          * @param defines The defines to update while falling back
@@ -15730,7 +15561,7 @@ declare module BABYLON {
          * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
          * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
          */
-        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | Engine>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>, deleteBuffer?: boolean, format?: number);
+        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>, deleteBuffer?: boolean, format?: number);
         /**
          * Update the url (and optional buffer) of this texture if url was null during construction.
          * @param url the url of the texture
@@ -20420,10 +20251,11 @@ declare module BABYLON {
          * @param mesh defines the mesh associated with this material
          * @param onCompiled defines a function to execute once the material is compiled
          * @param options defines the options to configure the compilation
+         * @param onError defines a function to execute if the material fails compiling
          */
         forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<{
             clipPlane: boolean;
-        }>): void;
+        }>, onError?: (reason: string) => void): void;
         /**
          * Force shader compilation
          * @param mesh defines the mesh that will use this material
@@ -27272,113 +27104,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * CubeMap information grouping all the data for each faces as well as the cubemap size.
-     */
-    export interface CubeMapInfo {
-        /**
-         * The pixel array for the front face.
-         * This is stored in format, left to right, up to down format.
-         */
-        front: Nullable<ArrayBufferView>;
-        /**
-         * The pixel array for the back face.
-         * This is stored in format, left to right, up to down format.
-         */
-        back: Nullable<ArrayBufferView>;
-        /**
-         * The pixel array for the left face.
-         * This is stored in format, left to right, up to down format.
-         */
-        left: Nullable<ArrayBufferView>;
-        /**
-         * The pixel array for the right face.
-         * This is stored in format, left to right, up to down format.
-         */
-        right: Nullable<ArrayBufferView>;
-        /**
-         * The pixel array for the up face.
-         * This is stored in format, left to right, up to down format.
-         */
-        up: Nullable<ArrayBufferView>;
-        /**
-         * The pixel array for the down face.
-         * This is stored in format, left to right, up to down format.
-         */
-        down: Nullable<ArrayBufferView>;
-        /**
-         * The size of the cubemap stored.
-         *
-         * Each faces will be size * size pixels.
-         */
-        size: number;
-        /**
-         * The format of the texture.
-         *
-         * RGBA, RGB.
-         */
-        format: number;
-        /**
-         * The type of the texture data.
-         *
-         * UNSIGNED_INT, FLOAT.
-         */
-        type: number;
-        /**
-         * Specifies whether the texture is in gamma space.
-         */
-        gammaSpace: boolean;
-    }
-    /**
-     * Helper class useful to convert panorama picture to their cubemap representation in 6 faces.
-     */
-    export class PanoramaToCubeMapTools {
-        private static FACE_FRONT;
-        private static FACE_BACK;
-        private static FACE_RIGHT;
-        private static FACE_LEFT;
-        private static FACE_DOWN;
-        private static FACE_UP;
-        /**
-         * Converts a panorma stored in RGB right to left up to down format into a cubemap (6 faces).
-         *
-         * @param float32Array The source data.
-         * @param inputWidth The width of the input panorama.
-         * @param inputHeight The height of the input panorama.
-         * @param size The willing size of the generated cubemap (each faces will be size * size pixels)
-         * @return The cubemap data
-         */
-        static ConvertPanoramaToCubemap(float32Array: Float32Array, inputWidth: number, inputHeight: number, size: number): CubeMapInfo;
-        private static CreateCubemapTexture;
-        private static CalcProjectionSpherical;
-    }
-}
-declare module BABYLON {
-    /**
-     * Helper class dealing with the extraction of spherical polynomial dataArray
-     * from a cube map.
-     */
-    export class CubeMapToSphericalPolynomialTools {
-        private static FileFaces;
-        /**
-         * Converts a texture to the according Spherical Polynomial data.
-         * This extracts the first 3 orders only as they are the only one used in the lighting.
-         *
-         * @param texture The texture to extract the information from.
-         * @return The Spherical Polynomial data.
-         */
-        static ConvertCubeMapTextureToSphericalPolynomial(texture: BaseTexture): Nullable<SphericalPolynomial>;
-        /**
-         * Converts a cubemap to the according Spherical Polynomial data.
-         * This extracts the first 3 orders only as they are the only one used in the lighting.
-         *
-         * @param cubeInfo The Cube map to extract the information from.
-         * @return The Spherical Polynomial data.
-         */
-        static ConvertCubeMapToSphericalPolynomial(cubeInfo: CubeMapInfo): SphericalPolynomial;
-    }
-}
-declare module BABYLON {
-    /**
      * Class used to manipulate GUIDs
      */
     export class GUID {
@@ -27702,12 +27427,6 @@ declare module BABYLON {
          * Release and destroy the underlying lower level texture aka internalTexture.
          */
         releaseInternalTexture(): void;
-        /**
-         * Get the polynomial representation of the texture data.
-         * This is mainly use as a fast way to recover IBL Diffuse irradiance data.
-         * @see https://learnopengl.com/PBR/IBL/Diffuse-irradiance
-         */
-        sphericalPolynomial: Nullable<SphericalPolynomial>;
         /** @hidden */protected readonly _lodTextureHigh: Nullable<BaseTexture>;
         /** @hidden */protected readonly _lodTextureMid: Nullable<BaseTexture>;
         /** @hidden */protected readonly _lodTextureLow: Nullable<BaseTexture>;
@@ -27732,7 +27451,7 @@ declare module BABYLON {
     /**
      * Options to be used when creating an effect.
      */
-    export class EffectCreationOptions {
+    export interface IEffectCreationOptions {
         /**
          * Atrributes that will be used in the shader.
          */
@@ -27833,6 +27552,7 @@ declare module BABYLON {
         private _samplers;
         private _isReady;
         private _compilationError;
+        private _allFallbacksProcessed;
         private _attributesNames;
         private _attributes;
         private _uniforms;
@@ -27867,7 +27587,7 @@ declare module BABYLON {
          * @param onError Callback that will be called if an error occurs during shader compilation.
          * @param indexParameters Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
          */
-        constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: Nullable<string[]>, engine?: ThinEngine, defines?: Nullable<string>, fallbacks?: Nullable<IEffectFallbacks>, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any);
+        constructor(baseName: any, attributesNamesOrOptions: string[] | IEffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: Nullable<string[]>, engine?: ThinEngine, defines?: Nullable<string>, fallbacks?: Nullable<IEffectFallbacks>, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any);
         private _useFinalCode;
         /**
          * Unique key for this effect
@@ -27934,14 +27654,17 @@ declare module BABYLON {
          */
         getCompilationError(): string;
         /**
+         * Gets a boolean indicating that all fallbacks were used during compilation
+         * @returns true if all fallbacks were used
+         */
+        allFallbacksProcessed(): boolean;
+        /**
          * Adds a callback to the onCompiled observable and call the callback imediatly if already ready.
          * @param func The callback to be used.
          */
         executeWhenCompiled(func: (effect: Effect) => void): void;
         private _checkIsReady;
-        /** @hidden */private _loadVertexShader(vertex: any, callback: (data: any) => void): void;
-        /** @hidden */private _loadFragmentShader(fragment: any, callback: (data: any) => void): void;
-        /** @hidden */private _dumpShadersSource(vertexCode: string, fragmentCode: string, defines: string): void;
+        private _loadShader;
         /**
          * Recompiles the webGL program
          * @param vertexSourceCode The source code for the vertex shader.
@@ -28852,6 +28575,10 @@ declare module BABYLON {
          */
         readonly premultipliedAlpha: boolean;
         /**
+         * Observable event triggered before each texture is initialized
+         */
+        onBeforeTextureInitObservable: Observable<Texture>;
+        /**
          * Creates a new engine
          * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which alreay used the WebGL context
          * @param antialias defines enable antialiasing (default: false)
@@ -29182,7 +28909,7 @@ declare module BABYLON {
         /**
          * Create a new effect (used to store vertex/fragment shaders)
          * @param baseName defines the base name of the effect (The name of file without .fragment.fx or .vertex.fx)
-         * @param attributesNamesOrOptions defines either a list of attribute names or an EffectCreationOptions object
+         * @param attributesNamesOrOptions defines either a list of attribute names or an IEffectCreationOptions object
          * @param uniformsNamesOrEngine defines either a list of uniform names or the engine to use
          * @param samplers defines an array of string used to represent textures
          * @param defines defines the string containing the defines to use to compile the shaders
@@ -29192,7 +28919,7 @@ declare module BABYLON {
          * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
          * @returns the new Effect
          */
-        createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: string[], defines?: string, fallbacks?: IEffectFallbacks, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect;
+        createEffect(baseName: any, attributesNamesOrOptions: string[] | IEffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: string[], defines?: string, fallbacks?: IEffectFallbacks, onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect;
         protected static _ConcatenateShader(source: string, defines: Nullable<string>, shaderVersion?: string): string;
         private _compileShader;
         private _compileRawShader;
@@ -29648,6 +29375,175 @@ declare module BABYLON {
          * @returns frame number
          */
         static QueueNewFrame(func: () => void, requester?: any): number;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class representing spherical harmonics coefficients to the 3rd degree
+     */
+    export class SphericalHarmonics {
+        /**
+         * Defines whether or not the harmonics have been prescaled for rendering.
+         */
+        preScaled: boolean;
+        /**
+         * The l0,0 coefficients of the spherical harmonics
+         */
+        l00: Vector3;
+        /**
+         * The l1,-1 coefficients of the spherical harmonics
+         */
+        l1_1: Vector3;
+        /**
+         * The l1,0 coefficients of the spherical harmonics
+         */
+        l10: Vector3;
+        /**
+         * The l1,1 coefficients of the spherical harmonics
+         */
+        l11: Vector3;
+        /**
+         * The l2,-2 coefficients of the spherical harmonics
+         */
+        l2_2: Vector3;
+        /**
+         * The l2,-1 coefficients of the spherical harmonics
+         */
+        l2_1: Vector3;
+        /**
+         * The l2,0 coefficients of the spherical harmonics
+         */
+        l20: Vector3;
+        /**
+         * The l2,1 coefficients of the spherical harmonics
+         */
+        l21: Vector3;
+        /**
+         * The l2,2 coefficients of the spherical harmonics
+         */
+        l22: Vector3;
+        /**
+         * Adds a light to the spherical harmonics
+         * @param direction the direction of the light
+         * @param color the color of the light
+         * @param deltaSolidAngle the delta solid angle of the light
+         */
+        addLight(direction: Vector3, color: Color3, deltaSolidAngle: number): void;
+        /**
+         * Scales the spherical harmonics by the given amount
+         * @param scale the amount to scale
+         */
+        scaleInPlace(scale: number): void;
+        /**
+         * Convert from incident radiance (Li) to irradiance (E) by applying convolution with the cosine-weighted hemisphere.
+         *
+         * ```
+         * E_lm = A_l * L_lm
+         * ```
+         *
+         * In spherical harmonics this convolution amounts to scaling factors for each frequency band.
+         * This corresponds to equation 5 in "An Efficient Representation for Irradiance Environment Maps", where
+         * the scaling factors are given in equation 9.
+         */
+        convertIncidentRadianceToIrradiance(): void;
+        /**
+         * Convert from irradiance to outgoing radiance for Lambertian BDRF, suitable for efficient shader evaluation.
+         *
+         * ```
+         * L = (1/pi) * E * rho
+         * ```
+         *
+         * This is done by an additional scale by 1/pi, so is a fairly trivial operation but important conceptually.
+         */
+        convertIrradianceToLambertianRadiance(): void;
+        /**
+         * Integrates the reconstruction coefficients directly in to the SH preventing further
+         * required operations at run time.
+         *
+         * This is simply done by scaling back the SH with Ylm constants parameter.
+         * The trigonometric part being applied by the shader at run time.
+         */
+        preScaleForRendering(): void;
+        /**
+         * Constructs a spherical harmonics from an array.
+         * @param data defines the 9x3 coefficients (l00, l1-1, l10, l11, l2-2, l2-1, l20, l21, l22)
+         * @returns the spherical harmonics
+         */
+        static FromArray(data: ArrayLike<ArrayLike<number>>): SphericalHarmonics;
+        /**
+         * Gets the spherical harmonics from polynomial
+         * @param polynomial the spherical polynomial
+         * @returns the spherical harmonics
+         */
+        static FromPolynomial(polynomial: SphericalPolynomial): SphericalHarmonics;
+    }
+    /**
+     * Class representing spherical polynomial coefficients to the 3rd degree
+     */
+    export class SphericalPolynomial {
+        private _harmonics;
+        /**
+         * The spherical harmonics used to create the polynomials.
+         */
+        readonly preScaledHarmonics: SphericalHarmonics;
+        /**
+         * The x coefficients of the spherical polynomial
+         */
+        x: Vector3;
+        /**
+         * The y coefficients of the spherical polynomial
+         */
+        y: Vector3;
+        /**
+         * The z coefficients of the spherical polynomial
+         */
+        z: Vector3;
+        /**
+         * The xx coefficients of the spherical polynomial
+         */
+        xx: Vector3;
+        /**
+         * The yy coefficients of the spherical polynomial
+         */
+        yy: Vector3;
+        /**
+         * The zz coefficients of the spherical polynomial
+         */
+        zz: Vector3;
+        /**
+         * The xy coefficients of the spherical polynomial
+         */
+        xy: Vector3;
+        /**
+         * The yz coefficients of the spherical polynomial
+         */
+        yz: Vector3;
+        /**
+         * The zx coefficients of the spherical polynomial
+         */
+        zx: Vector3;
+        /**
+         * Adds an ambient color to the spherical polynomial
+         * @param color the color to add
+         */
+        addAmbient(color: Color3): void;
+        /**
+         * Scales the spherical polynomial by the given amount
+         * @param scale the amount to scale
+         */
+        scaleInPlace(scale: number): void;
+        /**
+         * Gets the spherical polynomial from harmonics
+         * @param harmonics the spherical harmonics
+         * @returns the spherical polynomial
+         */
+        static FromHarmonics(harmonics: SphericalHarmonics): SphericalPolynomial;
+        /**
+         * Constructs a spherical polynomial from an array.
+         * @param data defines the 9x3 coefficients (x, y, z, xx, yy, zz, yz, zx, xy)
+         * @returns the spherical polynomial
+         */
+        static FromArray(data: ArrayLike<ArrayLike<number>>): SphericalPolynomial;
     }
 }
 declare module BABYLON {
@@ -30682,10 +30578,6 @@ declare module BABYLON {
          * Observable event triggered each time the canvas receives pointerout event
          */
         onCanvasPointerOutObservable: Observable<PointerEvent>;
-        /**
-         * Observable event triggered before each texture is initialized
-         */
-        onBeforeTextureInitObservable: Observable<Texture>;
         /**
          * Observable raised when the engine begins a new frame
          */
@@ -36741,6 +36633,11 @@ declare module BABYLON {
          * This is the threshold from when moving starts to be accounted for for to prevent jittering.
          */
         gamepadMoveSensibility: number;
+        private _yAxisScale;
+        /**
+         * Gets or sets a boolean indicating that Yaxis (for right stick) should be inverted
+         */
+        invertYAxis: boolean;
         private _onGamepadConnectedObserver;
         private _onGamepadDisconnectedObserver;
         /**
@@ -37728,6 +37625,11 @@ declare module BABYLON {
          * This is the threshold from when moving starts to be accounted for for to prevent jittering.
          */
         gamepadMoveSensibility: number;
+        private _yAxisScale;
+        /**
+         * Gets or sets a boolean indicating that Yaxis (for right stick) should be inverted
+         */
+        invertYAxis: boolean;
         private _onGamepadConnectedObserver;
         private _onGamepadDisconnectedObserver;
         private _cameraTransform;
@@ -43604,6 +43506,123 @@ declare module BABYLON {
              * @returns the effective sample count (could be 0 if multisample render targets are not supported)
              */
             updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number): number;
+        }
+}
+declare module BABYLON {
+    /**
+     * CubeMap information grouping all the data for each faces as well as the cubemap size.
+     */
+    export interface CubeMapInfo {
+        /**
+         * The pixel array for the front face.
+         * This is stored in format, left to right, up to down format.
+         */
+        front: Nullable<ArrayBufferView>;
+        /**
+         * The pixel array for the back face.
+         * This is stored in format, left to right, up to down format.
+         */
+        back: Nullable<ArrayBufferView>;
+        /**
+         * The pixel array for the left face.
+         * This is stored in format, left to right, up to down format.
+         */
+        left: Nullable<ArrayBufferView>;
+        /**
+         * The pixel array for the right face.
+         * This is stored in format, left to right, up to down format.
+         */
+        right: Nullable<ArrayBufferView>;
+        /**
+         * The pixel array for the up face.
+         * This is stored in format, left to right, up to down format.
+         */
+        up: Nullable<ArrayBufferView>;
+        /**
+         * The pixel array for the down face.
+         * This is stored in format, left to right, up to down format.
+         */
+        down: Nullable<ArrayBufferView>;
+        /**
+         * The size of the cubemap stored.
+         *
+         * Each faces will be size * size pixels.
+         */
+        size: number;
+        /**
+         * The format of the texture.
+         *
+         * RGBA, RGB.
+         */
+        format: number;
+        /**
+         * The type of the texture data.
+         *
+         * UNSIGNED_INT, FLOAT.
+         */
+        type: number;
+        /**
+         * Specifies whether the texture is in gamma space.
+         */
+        gammaSpace: boolean;
+    }
+    /**
+     * Helper class useful to convert panorama picture to their cubemap representation in 6 faces.
+     */
+    export class PanoramaToCubeMapTools {
+        private static FACE_FRONT;
+        private static FACE_BACK;
+        private static FACE_RIGHT;
+        private static FACE_LEFT;
+        private static FACE_DOWN;
+        private static FACE_UP;
+        /**
+         * Converts a panorma stored in RGB right to left up to down format into a cubemap (6 faces).
+         *
+         * @param float32Array The source data.
+         * @param inputWidth The width of the input panorama.
+         * @param inputHeight The height of the input panorama.
+         * @param size The willing size of the generated cubemap (each faces will be size * size pixels)
+         * @return The cubemap data
+         */
+        static ConvertPanoramaToCubemap(float32Array: Float32Array, inputWidth: number, inputHeight: number, size: number): CubeMapInfo;
+        private static CreateCubemapTexture;
+        private static CalcProjectionSpherical;
+    }
+}
+declare module BABYLON {
+    /**
+     * Helper class dealing with the extraction of spherical polynomial dataArray
+     * from a cube map.
+     */
+    export class CubeMapToSphericalPolynomialTools {
+        private static FileFaces;
+        /**
+         * Converts a texture to the according Spherical Polynomial data.
+         * This extracts the first 3 orders only as they are the only one used in the lighting.
+         *
+         * @param texture The texture to extract the information from.
+         * @return The Spherical Polynomial data.
+         */
+        static ConvertCubeMapTextureToSphericalPolynomial(texture: BaseTexture): Nullable<SphericalPolynomial>;
+        /**
+         * Converts a cubemap to the according Spherical Polynomial data.
+         * This extracts the first 3 orders only as they are the only one used in the lighting.
+         *
+         * @param cubeInfo The Cube map to extract the information from.
+         * @return The Spherical Polynomial data.
+         */
+        static ConvertCubeMapToSphericalPolynomial(cubeInfo: CubeMapInfo): SphericalPolynomial;
+    }
+}
+declare module BABYLON {
+        interface BaseTexture {
+            /**
+             * Get the polynomial representation of the texture data.
+             * This is mainly use as a fast way to recover IBL Diffuse irradiance data.
+             * @see https://learnopengl.com/PBR/IBL/Diffuse-irradiance
+             */
+            sphericalPolynomial: Nullable<SphericalPolynomial>;
         }
 }
 declare module BABYLON {
