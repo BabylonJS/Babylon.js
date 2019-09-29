@@ -1,6 +1,6 @@
 import { EngineStore } from './engineStore';
 import { IInternalTextureLoader } from '../Materials/Textures/internalTextureLoader';
-import { Effect, EffectCreationOptions } from '../Materials/effect';
+import { Effect, IEffectCreationOptions } from '../Materials/effect';
 import { _DevTools } from '../Misc/devTools';
 import { IShaderProcessor } from './Processors/iShaderProcessor';
 import { UniformBuffer } from '../Materials/uniformBuffer';
@@ -33,6 +33,7 @@ import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 declare type Observer<T> = import("../Misc/observable").Observer<T>;
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
+declare type Texture = import("../Materials/Textures/texture").Texture;
 
 /**
  * Defines the interface used by objects working like Scene
@@ -127,14 +128,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-alpha.22";
+        return "babylonjs@4.1.0-alpha.23";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-alpha.22";
+        return "4.1.0-alpha.23";
     }
 
     /**
@@ -430,6 +431,11 @@ export class ThinEngine {
      * Defines whether the engine has been created with the premultipliedAlpha option on or not.
      */
     public readonly premultipliedAlpha: boolean = true;
+
+    /**
+     * Observable event triggered before each texture is initialized
+     */
+    public onBeforeTextureInitObservable = new Observable<Texture>();
 
     /**
      * Creates a new engine
@@ -1960,7 +1966,7 @@ export class ThinEngine {
     /**
      * Create a new effect (used to store vertex/fragment shaders)
      * @param baseName defines the base name of the effect (The name of file without .fragment.fx or .vertex.fx)
-     * @param attributesNamesOrOptions defines either a list of attribute names or an EffectCreationOptions object
+     * @param attributesNamesOrOptions defines either a list of attribute names or an IEffectCreationOptions object
      * @param uniformsNamesOrEngine defines either a list of uniform names or the engine to use
      * @param samplers defines an array of string used to represent textures
      * @param defines defines the string containing the defines to use to compile the shaders
@@ -1970,13 +1976,13 @@ export class ThinEngine {
      * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
      * @returns the new Effect
      */
-    public createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: string[], defines?: string,
+    public createEffect(baseName: any, attributesNamesOrOptions: string[] | IEffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: string[], defines?: string,
         fallbacks?: IEffectFallbacks,
         onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect {
         var vertex = baseName.vertexElement || baseName.vertex || baseName;
         var fragment = baseName.fragmentElement || baseName.fragment || baseName;
 
-        var name = vertex + "+" + fragment + "@" + (defines ? defines : (<EffectCreationOptions>attributesNamesOrOptions).defines);
+        var name = vertex + "+" + fragment + "@" + (defines ? defines : (<IEffectCreationOptions>attributesNamesOrOptions).defines);
         if (this._compiledEffects[name]) {
             var compiledEffect = <Effect>this._compiledEffects[name];
             if (onCompiled && compiledEffect.isReady()) {
@@ -3773,6 +3779,11 @@ export class ThinEngine {
      */
     public dispose(): void {
         this.stopRenderLoop();
+
+        // Clear observables
+        if (this.onBeforeTextureInitObservable) {
+            this.onBeforeTextureInitObservable.clear();
+        }
 
         // Empty texture
         if (this._emptyTexture) {

@@ -20,51 +20,51 @@ declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 /**
  * Options to be used when creating an effect.
  */
-export class EffectCreationOptions {
+export interface IEffectCreationOptions {
     /**
      * Atrributes that will be used in the shader.
      */
-    public attributes: string[];
+    attributes: string[];
     /**
      * Uniform varible names that will be set in the shader.
      */
-    public uniformsNames: string[];
+    uniformsNames: string[];
     /**
      * Uniform buffer varible names that will be set in the shader.
      */
-    public uniformBuffersNames: string[];
+    uniformBuffersNames: string[];
     /**
      * Sampler texture variable names that will be set in the shader.
      */
-    public samplers: string[];
+    samplers: string[];
     /**
      * Define statements that will be set in the shader.
      */
-    public defines: any;
+    defines: any;
     /**
      * Possible fallbacks for this effect to improve performance when needed.
      */
-    public fallbacks: Nullable<IEffectFallbacks>;
+    fallbacks: Nullable<IEffectFallbacks>;
     /**
      * Callback that will be called when the shader is compiled.
      */
-    public onCompiled: Nullable<(effect: Effect) => void>;
+    onCompiled: Nullable<(effect: Effect) => void>;
     /**
      * Callback that will be called if an error occurs during shader compilation.
      */
-    public onError: Nullable<(effect: Effect, errors: string) => void>;
+    onError: Nullable<(effect: Effect, errors: string) => void>;
     /**
      * Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
      */
-    public indexParameters?: any;
+    indexParameters?: any;
     /**
      * Max number of lights that can be used in the shader.
      */
-    public maxSimultaneousLights?: number;
+    maxSimultaneousLights?: number;
     /**
      * See https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/transformFeedbackVaryings
      */
-    public transformFeedbackVaryings?: Nullable<string[]>;
+    transformFeedbackVaryings?: Nullable<string[]>;
 }
 
 /**
@@ -134,6 +134,7 @@ export class Effect implements IDisposable {
     private _samplers: { [key: string]: number } = {};
     private _isReady = false;
     private _compilationError = "";
+    private _allFallbacksProcessed = false;
     private _attributesNames: string[];
     private _attributes: number[];
     private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> } = {};
@@ -171,13 +172,13 @@ export class Effect implements IDisposable {
      * @param onError Callback that will be called if an error occurs during shader compilation.
      * @param indexParameters Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
      */
-    constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers: Nullable<string[]> = null,
+    constructor(baseName: any, attributesNamesOrOptions: string[] | IEffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers: Nullable<string[]> = null,
         engine?: ThinEngine, defines: Nullable<string> = null,
         fallbacks: Nullable<IEffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any) {
         this.name = baseName;
 
-        if ((<EffectCreationOptions>attributesNamesOrOptions).attributes) {
-            var options = <EffectCreationOptions>attributesNamesOrOptions;
+        if ((<IEffectCreationOptions>attributesNamesOrOptions).attributes) {
+            var options = <IEffectCreationOptions>attributesNamesOrOptions;
             this._engine = <Engine>uniformsNamesOrEngine;
 
             this._attributesNames = options.attributes;
@@ -251,8 +252,8 @@ export class Effect implements IDisposable {
             platformName: this._engine.webGLVersion >= 2 ? "WEBGL2" : "WEBGL1"
         };
 
-        this._loadVertexShader(vertexSource, (vertexCode) => {
-            this._loadFragmentShader(fragmentSource, (fragmentCode) => {
+        this._loadShader(vertexSource, "Vertex", "", (vertexCode) => {
+            this._loadShader(fragmentSource, "Fragment", "Pixel", (fragmentCode) => {
                 ShaderProcessor.Process(vertexCode, processorOptions, (migratedVertexCode) => {
                     processorOptions.isFragment = true;
                     ShaderProcessor.Process(fragmentCode, processorOptions, (migratedFragmentCode) => {
@@ -394,6 +395,14 @@ export class Effect implements IDisposable {
     }
 
     /**
+     * Gets a boolean indicating that all fallbacks were used during compilation
+     * @returns true if all fallbacks were used
+     */
+    public allFallbacksProcessed(): boolean {
+        return this._allFallbacksProcessed;
+    }
+
+    /**
      * Adds a callback to the onCompiled observable and call the callback imediatly if already ready.
      * @param func The callback to be used.
      */
@@ -429,123 +438,50 @@ export class Effect implements IDisposable {
         }, 16);
     }
 
-    /** @hidden */
-    public _loadVertexShader(vertex: any, callback: (data: any) => void): void {
+    private _loadShader(shader: any, key: string, optionalKey: string, callback: (data: any) => void): void {
         if (typeof(HTMLElement) !== "undefined") {
             // DOM element ?
-            if (vertex instanceof HTMLElement) {
-                var vertexCode = DomManagement.GetDOMTextContent(vertex);
-                callback(vertexCode);
+            if (shader instanceof HTMLElement) {
+                var shaderCode = DomManagement.GetDOMTextContent(shader);
+                callback(shaderCode);
                 return;
             }
         }
 
         // Direct source ?
-        if (vertex.substr(0, 7) === "source:") {
-            callback(vertex.substr(7));
+        if (shader.substr(0, 7) === "source:") {
+            callback(shader.substr(7));
             return;
         }
 
         // Base64 encoded ?
-        if (vertex.substr(0, 7) === "base64:") {
-            var vertexBinary = window.atob(vertex.substr(7));
-            callback(vertexBinary);
+        if (shader.substr(0, 7) === "base64:") {
+            var shaderBinary = window.atob(shader.substr(7));
+            callback(shaderBinary);
             return;
         }
 
         // Is in local store ?
-        if (Effect.ShadersStore[vertex + "VertexShader"]) {
-            callback(Effect.ShadersStore[vertex + "VertexShader"]);
+        if (Effect.ShadersStore[shader + key + "Shader"]) {
+            callback(Effect.ShadersStore[shader + key + "Shader"]);
             return;
         }
 
-        var vertexShaderUrl;
+        if (optionalKey && Effect.ShadersStore[shader + optionalKey + "Shader"]) {
+            callback(Effect.ShadersStore[shader + optionalKey + "Shader"]);
+            return;
+        }
 
-        if (vertex[0] === "." || vertex[0] === "/" || vertex.indexOf("http") > -1) {
-            vertexShaderUrl = vertex;
+        var shaderUrl;
+
+        if (shader[0] === "." || shader[0] === "/" || shader.indexOf("http") > -1) {
+            shaderUrl = shader;
         } else {
-            vertexShaderUrl = Effect.ShadersRepository + vertex;
+            shaderUrl = Effect.ShadersRepository + shader;
         }
 
         // Vertex shader
-        this._engine._loadFile(vertexShaderUrl + ".vertex.fx", callback);
-    }
-
-    /** @hidden */
-    public _loadFragmentShader(fragment: any, callback: (data: any) => void): void {
-        if (typeof(HTMLElement) !== "undefined") {
-            // DOM element ?
-            if (fragment instanceof HTMLElement) {
-                var fragmentCode = DomManagement.GetDOMTextContent(fragment);
-                callback(fragmentCode);
-                return;
-            }
-        }
-
-        // Direct source ?
-        if (fragment.substr(0, 7) === "source:") {
-            callback(fragment.substr(7));
-            return;
-        }
-
-        // Base64 encoded ?
-        if (fragment.substr(0, 7) === "base64:") {
-            var fragmentBinary = window.atob(fragment.substr(7));
-            callback(fragmentBinary);
-            return;
-        }
-
-        // Is in local store ?
-        if (Effect.ShadersStore[fragment + "PixelShader"]) {
-            callback(Effect.ShadersStore[fragment + "PixelShader"]);
-            return;
-        }
-
-        if (Effect.ShadersStore[fragment + "FragmentShader"]) {
-            callback(Effect.ShadersStore[fragment + "FragmentShader"]);
-            return;
-        }
-
-        var fragmentShaderUrl;
-
-        if (fragment[0] === "." || fragment[0] === "/" || fragment.indexOf("http") > -1) {
-            fragmentShaderUrl = fragment;
-        } else {
-            fragmentShaderUrl = Effect.ShadersRepository + fragment;
-        }
-
-        // Fragment shader
-        this._engine._loadFile(fragmentShaderUrl + ".fragment.fx", callback);
-    }
-
-    /** @hidden */
-    public _dumpShadersSource(vertexCode: string, fragmentCode: string, defines: string): void {
-        // Rebuild shaders source code
-        var shaderVersion = (this._engine.webGLVersion > 1) ? "#version 300 es\n#define WEBGL2 \n" : "";
-        var prefix = shaderVersion + (defines ? defines + "\n" : "");
-        vertexCode = prefix + vertexCode;
-        fragmentCode = prefix + fragmentCode;
-
-        // Number lines of shaders source code
-        var i = 2;
-        var regex = /\n/gm;
-        var formattedVertexCode = "\n1\t" + vertexCode.replace(regex, function() { return "\n" + (i++) + "\t"; });
-        i = 2;
-        var formattedFragmentCode = "\n1\t" + fragmentCode.replace(regex, function() { return "\n" + (i++) + "\t"; });
-
-        // Dump shaders name and formatted source code
-        if (this.name.vertexElement) {
-            Logger.Error("Vertex shader: " + this.name.vertexElement + formattedVertexCode);
-            Logger.Error("Fragment shader: " + this.name.fragmentElement + formattedFragmentCode);
-        }
-        else if (this.name.vertex) {
-            Logger.Error("Vertex shader: " + this.name.vertex + formattedVertexCode);
-            Logger.Error("Fragment shader: " + this.name.fragment + formattedFragmentCode);
-        }
-        else {
-            Logger.Error("Vertex shader: " + this.name + formattedVertexCode);
-            Logger.Error("Fragment shader: " + this.name + formattedFragmentCode);
-        }
+        this._engine._loadFile(shaderUrl + "." + key.toLowerCase() + ".fx", callback);
     }
 
     /**
@@ -686,11 +622,12 @@ export class Effect implements IDisposable {
         if (fallbacks) {
             this._pipelineContext = null;
             if (fallbacks.hasMoreFallbacks) {
+                this._allFallbacksProcessed = false;
                 Logger.Error("Trying next fallback.");
                 this.defines = fallbacks.reduce(this.defines, this);
                 this._prepareEffect();
             } else { // Sorry we did everything we can
-
+                this._allFallbacksProcessed = true;
                 if (this.onError) {
                     this.onError(this, this._compilationError);
                 }
@@ -702,6 +639,8 @@ export class Effect implements IDisposable {
                     this._fallbacks.unBindMesh();
                 }
             }
+        } else {
+            this._allFallbacksProcessed = true;
         }
     }
 
