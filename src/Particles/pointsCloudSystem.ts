@@ -95,9 +95,8 @@ export class PointsCloudSystem implements IDisposable {
      * @param name (String) is the PCS name, this will be the underlying mesh name
      * @param pointSize (number) is the size for each point
      * @param scene (Scene) is the scene in which the PCS is added
-     * @param options defines the options of the sps e.g.
+     * @param options defines the options of the PCS e.g.
      * * updatable (optional boolean, default true) : if the PCS must be updatable or immutable
-     * * particleIntersection (optional boolean, default false) : if the particle intersections must be computed
      */
     constructor(name: string, pointSize: number, scene: Scene, options?: { updatable?: boolean}) {
         this.name = name;
