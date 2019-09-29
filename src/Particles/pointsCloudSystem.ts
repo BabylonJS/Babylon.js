@@ -15,16 +15,16 @@ import { StandardMaterial } from "../Materials/standardMaterial";
 import { Texture } from "./../Materials/Textures/texture";
 import { Scalar } from "../Maths/math.scalar";
 
-/** Defines the 3 color options */
-export class PointColor {
+/** Defines the 4 color options */
+export enum PointColor {
     /** color value */
-    public static COLOR: number = 2;
+    COLOR = 2,
     /** uv value */
-    public static UV: number = 1;
+    UV = 1,
     /** random value */
-    public static RANDOM: number = 0;
-    /** color value */
-    public static STATED: number = 3;
+    RANDOM = 0,
+    /** stated value */
+    STATED = 3
 }
 
 /**
