@@ -2,7 +2,7 @@ import { Logger } from "../../Misc/logger";
 import { Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
 import { IDisposable, Scene } from "../../scene";
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 /**
  * Manages an XRSession to work with Babylon's engine
@@ -173,7 +173,7 @@ export class WebXRSessionManager implements IDisposable {
             throw "no layer";
         }
         // Create internal texture
-        var internalTexture = new InternalTexture(scene.getEngine(), InternalTexture.DATASOURCE_UNKNOWN, true);
+        var internalTexture = new InternalTexture(scene.getEngine(), InternalTextureSource.Unknown, true);
         internalTexture.width = baseLayer.framebufferWidth;
         internalTexture.height = baseLayer.framebufferHeight;
         internalTexture._framebuffer = baseLayer.framebuffer;

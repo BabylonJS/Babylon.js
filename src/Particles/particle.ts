@@ -190,9 +190,7 @@ export class Particle {
             var emitterMesh = (<AbstractMesh>subEmitter.particleSystem.emitter);
             emitterMesh.position.copyFrom(this.position);
             if (subEmitter.inheritDirection) {
-                emitterMesh.position.subtractToRef(this.direction, TmpVectors.Vector3[0]);
-                // Look at using Y as forward
-                emitterMesh.lookAt(TmpVectors.Vector3[0], 0, Math.PI / 2);
+                emitterMesh.setDirection(this.direction.normalize(), 0, Math.PI / 2);
             }
         } else {
             var emitterPosition = (<Vector3>subEmitter.particleSystem.emitter);

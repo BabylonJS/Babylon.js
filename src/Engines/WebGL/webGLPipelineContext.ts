@@ -1,15 +1,15 @@
 import { IPipelineContext } from '../IPipelineContext';
-import { Engine } from '../engine';
 import { Nullable } from '../../types';
 import { Effect } from '../../Materials/effect';
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../../Maths/math.like';
+import { ThinEngine } from "../thinEngine";
 
 /** @hidden */
 export class WebGLPipelineContext implements IPipelineContext {
     private _valueCache: { [key: string]: any } = {};
     private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> };
 
-    public engine: Engine;
+    public engine: ThinEngine;
     public program: Nullable<WebGLProgram>;
     public context?: WebGLRenderingContext;
     public vertexShader?: WebGLShader;

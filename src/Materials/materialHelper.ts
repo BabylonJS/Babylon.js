@@ -10,11 +10,12 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { Light } from "../Lights/light";
 
 import { UniformBuffer } from "./uniformBuffer";
-import { Effect, EffectFallbacks, EffectCreationOptions } from "./effect";
+import { Effect, IEffectCreationOptions } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { WebVRFreeCamera } from '../Cameras/VR/webVRCamera';
 import { MaterialDefines } from "./materialDefines";
 import { Color3, TmpColors } from '../Maths/math.color';
+import { EffectFallbacks } from './effectFallbacks';
 
 /**
  * "Static Class" containing the most commonly used helper while dealing with material for
@@ -477,17 +478,17 @@ export class MaterialHelper {
      * @param defines The defines helping in the list generation
      * @param maxSimultaneousLights The maximum number of simultanous light allowed in the effect
      */
-    public static PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | EffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights = 4): void {
+    public static PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | IEffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights = 4): void {
         let uniformsList: string[];
         let uniformBuffersList: Nullable<string[]> = null;
 
-        if ((<EffectCreationOptions>uniformsListOrOptions).uniformsNames) {
-            var options = <EffectCreationOptions>uniformsListOrOptions;
+        if ((<IEffectCreationOptions>uniformsListOrOptions).uniformsNames) {
+            var options = <IEffectCreationOptions>uniformsListOrOptions;
             uniformsList = options.uniformsNames;
             uniformBuffersList = options.uniformBuffersNames;
             samplersList = options.samplers;
             defines = options.defines;
-            maxSimultaneousLights = options.maxSimultaneousLights;
+            maxSimultaneousLights = options.maxSimultaneousLights || 0;
         } else {
             uniformsList = <string[]>uniformsListOrOptions;
             if (!samplersList) {

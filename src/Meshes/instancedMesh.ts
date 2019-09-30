@@ -23,6 +23,9 @@ export class InstancedMesh extends AbstractMesh {
     private _currentLOD: Mesh;
 
     /** @hidden */
+    public _actAsRegularMesh = false;
+
+    /** @hidden */
     public _indexInSourceMeshInstanceArray = -1;
 
     constructor(name: string, source: Mesh) {
@@ -286,6 +289,13 @@ export class InstancedMesh extends AbstractMesh {
         }
 
         if (this._currentLOD) {
+
+            if (this._currentLOD._getWorldMatrixDeterminant() !== this._getWorldMatrixDeterminant()) {
+                this._actAsRegularMesh = true;
+                return true;
+            }
+            this._actAsRegularMesh = false;
+
             this._currentLOD._registerInstanceForRenderId(this, renderId);
 
             if (intermediateRendering) {

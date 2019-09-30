@@ -28,6 +28,46 @@ export class Constants {
      * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
      */
     public static readonly ALPHA_SCREENMODE = 10;
+    /**
+     * Defines that alpha blending to SRC + DST
+     * Alpha will be set to SRC ALPHA + DST ALPHA
+     */
+    public static readonly ALPHA_ONEONE_ONEONE = 11;
+    /**
+     * Defines that alpha blending to SRC * DST ALPHA + DST
+     * Alpha will be set to 0
+     */
+    public static readonly ALPHA_ALPHATOCOLOR = 12;
+    /**
+     * Defines that alpha blending to SRC * (1 - DST) + DST * (1 - SRC)
+     */
+    public static readonly ALPHA_REVERSEONEMINUS = 13;
+    /**
+     * Defines that alpha blending to SRC + DST * (1 - SRC ALPHA)
+     * Alpha will be set to SRC ALPHA + DST ALPHA * (1 - SRC ALPHA)
+     */
+    public static readonly ALPHA_SRC_DSTONEMINUSSRCALPHA = 14;
+    /**
+     * Defines that alpha blending to SRC + DST
+     * Alpha will be set to SRC ALPHA
+     */
+    public static readonly ALPHA_ONEONE_ONEZERO = 15;
+
+    /** Defines that alpha blending equation a SUM */
+    public static readonly ALPHA_EQUATION_ADD = 0;
+    /** Defines that alpha blending equation a SUBSTRACTION */
+    public static readonly ALPHA_EQUATION_SUBSTRACT = 1;
+    /** Defines that alpha blending equation a REVERSE SUBSTRACTION */
+    public static readonly ALPHA_EQUATION_REVERSE_SUBTRACT = 2;
+    /** Defines that alpha blending equation a MAX operation */
+    public static readonly ALPHA_EQUATION_MAX = 3;
+    /** Defines that alpha blending equation a MIN operation */
+    public static readonly ALPHA_EQUATION_MIN = 4;
+    /**
+     * Defines that alpha blending equation a DARKEN operation:
+     * It takes the min of the src and sums the alpha channels.
+     */
+    public static readonly ALPHA_EQUATION_DARKEN = 5;
 
     /** Defines that the ressource is not delayed*/
     public static readonly DELAYLOADSTATE_NONE = 0;

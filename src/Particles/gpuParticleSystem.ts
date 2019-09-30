@@ -13,7 +13,7 @@ import { ParticleSystem } from "./particleSystem";
 import { Engine } from "../Engines/engine";
 import { BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
 import { Scene, IDisposable } from "../scene";
-import { Effect, EffectCreationOptions } from "../Materials/effect";
+import { Effect, IEffectCreationOptions } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
@@ -69,7 +69,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _randomTexture2: RawTexture;
 
     private _attributesStrideSize: number;
-    private _updateEffectOptions: EffectCreationOptions;
+    private _updateEffectOptions: IEffectCreationOptions;
 
     private _randomTextureSize: number;
     private _actualFrame = 0;
@@ -1494,10 +1494,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         result.noiseTexture = this.noiseTexture;
-        result.emitter = newEmitter;
-        if (this.particleTexture) {
-            result.particleTexture = new Texture(this.particleTexture.url, this._scene);
-        }
 
         // Clone gradients
         if (this._colorGradients) {

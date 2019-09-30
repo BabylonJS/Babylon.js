@@ -15,7 +15,6 @@ import { Mesh } from "../Meshes/mesh";
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration";
 import { ColorCurves } from "./colorCurves";
 import { FresnelParameters } from "./fresnelParameters";
-import { EffectFallbacks, EffectCreationOptions } from "./effect";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { PushMaterial } from "./pushMaterial";
 import { MaterialHelper } from "./materialHelper";
@@ -30,6 +29,8 @@ import { MaterialFlags } from "./materialFlags";
 import "../Shaders/default.fragment";
 import "../Shaders/default.vertex";
 import { Constants } from "../Engines/constants";
+import { EffectFallbacks } from './effectFallbacks';
+import { IEffectCreationOptions } from './effect';
 
 /** @hidden */
 export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
@@ -1138,7 +1139,7 @@ export class StandardMaterial extends PushMaterial {
                 ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
             }
 
-            MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
+            MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
@@ -1153,7 +1154,7 @@ export class StandardMaterial extends PushMaterial {
             var join = defines.toString();
 
             let previousEffect = subMesh.effect;
-            let effect = scene.getEngine().createEffect(shaderName, <EffectCreationOptions>{
+            let effect = scene.getEngine().createEffect(shaderName, <IEffectCreationOptions>{
                 attributes: attribs,
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,

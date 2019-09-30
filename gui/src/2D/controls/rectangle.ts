@@ -1,5 +1,6 @@
 import { Container } from "./container";
 import { Measure } from "../measure";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /** Class used to create rectangle container */
 export class Rectangle extends Container {
@@ -133,3 +134,4 @@ export class Rectangle extends Container {
         }
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.Rectangle"] = Rectangle;

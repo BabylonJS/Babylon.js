@@ -9,6 +9,8 @@ import { StringTools } from '../../stringTools';
 import { FileButtonLineComponent } from '../../sharedComponents/fileButtonLineComponent';
 import { Tools } from 'babylonjs/Misc/tools';
 import { SerializationTools } from '../../serializationTools';
+import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
+import { DataStorage } from '../../dataStorage';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -40,6 +42,15 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     save() {
         let json = SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState);
         StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "nodeMaterial.json");
+    }
+
+    customSave() {
+        this.props.globalState.onLogRequiredObservable.notifyObservers({message: "Saving your material to Babylon.js snippet server...", isError: false});
+        this.props.globalState.customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState)).then(() => {
+            this.props.globalState.onLogRequiredObservable.notifyObservers({message: "Material saved successfully", isError: false});
+        }).catch(err => {
+            this.props.globalState.onLogRequiredObservable.notifyObservers({message: err, isError: true});
+        });
     }
 
     render() {
@@ -80,6 +91,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             this.props.globalState.onReOrganizedRequiredObservable.notifyObservers();
                         }} />
                     </LineContainerComponent>
+                    <LineContainerComponent title="OPTIONS">
+                        <CheckBoxLineComponent label="Embed textures when saving" 
+                            isSelected={() => DataStorage.ReadBoolean("EmbedTextures", true)}
+                            onSelect={(value: boolean) => {
+                                DataStorage.StoreBoolean("EmbedTextures", value);
+                            }}
+                        />
+                    </LineContainerComponent>
                     <LineContainerComponent title="FILE">                        
                         <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
                         <ButtonLineComponent label="Save" onClick={() => {
@@ -88,7 +107,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         {
                             this.props.globalState.customSave && 
                             <ButtonLineComponent label={this.props.globalState.customSave!.label} onClick={() => {
-                                this.props.globalState.customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeMaterial, this.props.globalState));
+                                this.customSave();
                             }} />
                         }
                         <ButtonLineComponent label="Generate code" onClick={() => {

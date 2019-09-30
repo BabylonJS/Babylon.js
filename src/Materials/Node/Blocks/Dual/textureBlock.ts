@@ -1,9 +1,8 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
-import { BaseTexture } from '../../../Textures/baseTexture';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { InputBlock } from '../Input/inputBlock';
@@ -14,11 +13,14 @@ import { _TypeStore } from '../../../../Misc/typeStore';
 import { Texture } from '../../../Textures/texture';
 import { Scene } from '../../../../scene';
 
+import "../../../../Shaders/ShadersInclude/helperFunctions";
+
 /**
  * Block used to read a texture from a sampler
  */
 export class TextureBlock extends NodeMaterialBlock {
     private _defineName: string;
+    private _linearDefineName: string;
     private _samplerName: string;
     private _transformedUVName: string;
     private _textureTransformName: string;
@@ -29,7 +31,7 @@ export class TextureBlock extends NodeMaterialBlock {
     /**
      * Gets or sets the texture associated with the node
      */
-    public texture: Nullable<BaseTexture>;
+    public texture: Nullable<Texture>;
 
     /**
      * Create a new TextureBlock
@@ -173,14 +175,19 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         if (!this.texture || !this.texture.getTextureMatrix) {
+            defines.setValue(this._defineName, false);
+            defines.setValue(this._mainUVDefineName, true);
             return;
         }
 
-        if (!this.texture.getTextureMatrix().isIdentityAs3x2()) {
-            defines.setValue(this._defineName, true);
-        } else {
-            defines.setValue(this._defineName, false);
-            defines.setValue(this._mainUVDefineName, true);
+        defines.setValue(this._linearDefineName, !this.texture.gammaSpace);
+        if (this._isMixed) {
+            if (!this.texture.getTextureMatrix().isIdentityAs3x2()) {
+                defines.setValue(this._defineName, true);
+            } else {
+                defines.setValue(this._defineName, false);
+                defines.setValue(this._mainUVDefineName, true);
+            }
         }
     }
 
@@ -213,7 +220,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
         // Inject code in vertex
         this._defineName = state._getFreeDefineName("UVTRANSFORM");
-        this._mainUVDefineName = state._getFreeDefineName("vMain" + uvInput.associatedVariableName);
+        this._mainUVDefineName = "VMAIN" + uvInput.associatedVariableName.toUpperCase();
 
         if (uvInput.connectedPoint!.ownerBlock.isInput) {
             let uvInputOwnerBlock = uvInput.connectedPoint!.ownerBlock as InputBlock;
@@ -253,7 +260,11 @@ export class TextureBlock extends NodeMaterialBlock {
         state.compilationString += `#ifdef ${this._defineName}\r\n`;
         state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${this._transformedUVName}).${swizzle}${complement};\r\n`;
         state.compilationString += `#else\r\n`;
-        state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${"vMain" + uvInput.associatedVariableName}).${swizzle}${complement};\r\n`;
+        state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${this._mainUVName}).${swizzle}${complement};\r\n`;
+        state.compilationString += `#endif\r\n`;
+
+        state.compilationString += `#ifdef ${this._linearDefineName}\r\n`;
+        state.compilationString += `${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});\r\n`;
         state.compilationString += `#endif\r\n`;
     }
 
@@ -274,9 +285,14 @@ export class TextureBlock extends NodeMaterialBlock {
         state._samplerDeclaration += `uniform sampler2D ${this._samplerName};\r\n`;
 
         // Fragment
+        this._linearDefineName = state._getFreeDefineName("ISLINEAR");
+        state.sharedData.blocksWithDefines.push(this);
         state.sharedData.bindableBlocks.push(this);
+
+        let comments = `//${this.name}`;
+        state._emitFunctionFromInclude("helperFunctions", comments);
+
         if (this._isMixed) {
-            state.sharedData.blocksWithDefines.push(this);
             state._emitUniformFromString(this._textureInfoName, "float");
         }
 
@@ -295,6 +311,16 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         var codeString = `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}");\r\n`;
+        codeString += `${this._codeVariableName}.texture.wrapU = ${this.texture.wrapU};\r\n`;
+        codeString += `${this._codeVariableName}.texture.wrapV = ${this.texture.wrapV};\r\n`;
+        codeString += `${this._codeVariableName}.texture.uAng = ${this.texture.uAng};\r\n`;
+        codeString += `${this._codeVariableName}.texture.vAng = ${this.texture.vAng};\r\n`;
+        codeString += `${this._codeVariableName}.texture.wAng = ${this.texture.wAng};\r\n`;
+        codeString += `${this._codeVariableName}.texture.uOffset = ${this.texture.uOffset};\r\n`;
+        codeString += `${this._codeVariableName}.texture.vOffset = ${this.texture.vOffset};\r\n`;
+        codeString += `${this._codeVariableName}.texture.uScale = ${this.texture.uScale};\r\n`;
+        codeString += `${this._codeVariableName}.texture.vScale = ${this.texture.vScale};\r\n`;
+        codeString += `${this._codeVariableName}.texture.gammaSpace = ${this.texture.gammaSpace};\r\n`;
 
         return codeString;
     }
@@ -313,7 +339,7 @@ export class TextureBlock extends NodeMaterialBlock {
         super._deserialize(serializationObject, scene, rootUrl);
 
         if (serializationObject.texture) {
-            this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl);
+            this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
         }
     }
 }

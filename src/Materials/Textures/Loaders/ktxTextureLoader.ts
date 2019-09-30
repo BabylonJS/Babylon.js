@@ -4,7 +4,6 @@ import { Engine } from "../../../Engines/engine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
 import { _TimeToken } from "../../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../../States/index";
 /**
  * Implementation of the KTX Texture Loader.
  * @hidden
@@ -87,6 +86,12 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
 
         engine._setCubeMapTextureParams(loadMipmap);
         texture.isReady = true;
+        texture.onLoadedObservable.notifyObservers(texture);
+        texture.onLoadedObservable.clear();
+
+        if (onLoad) {
+            onLoad();
+        }
     }
 
     /**

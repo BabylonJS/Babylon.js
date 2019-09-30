@@ -1,5 +1,5 @@
-import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
+import { NodeMaterialBlockConnectionPointTypes } from './Enums/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
 import { NodeMaterialBuildStateSharedData } from './nodeMaterialBuildStateSharedData';
 import { Effect } from '../effect';
 import { StringTools } from '../../Misc/stringTools';
@@ -18,6 +18,10 @@ export class NodeMaterialBuildState {
      * Gets the list of emitted uniforms
      */
     public uniforms = new Array<string>();
+    /**
+    * Gets the list of emitted constants
+    */
+    public constants = new Array<string>();
     /**
      * Gets the list of emitted uniform buffers
      */
@@ -57,6 +61,8 @@ export class NodeMaterialBuildState {
     /** @hidden */
     public _uniformDeclaration = "";
     /** @hidden */
+    public _constantDeclaration = "";
+    /** @hidden */
     public _samplerDeclaration = "";
     /** @hidden */
     public _varyingTransfer = "";
@@ -79,6 +85,10 @@ export class NodeMaterialBuildState {
         let isFragmentMode = (this.target === NodeMaterialBlockTargets.Fragment);
 
         this.compilationString = `\r\n${emitComments ? "//Entry point\r\n" : ""}void main(void) {\r\n${this.compilationString}`;
+
+        if (this._constantDeclaration) {
+            this.compilationString = `\r\n${emitComments ? "//Constants\r\n" : ""}${this._constantDeclaration}\r\n${this.compilationString}`;
+        }
 
         let functionCode = "";
         for (var functionName in this.functions) {
@@ -340,5 +350,14 @@ export class NodeMaterialBuildState {
         if (define) {
             this._uniformDeclaration += `#endif\r\n`;
         }
+    }
+
+    /** @hidden */
+    public _emitFloat(value: number) {
+        if (value.toString() === value.toFixed(0)) {
+            return `${value}.0`;
+        }
+
+        return value.toString();
     }
 }

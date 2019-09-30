@@ -9,7 +9,7 @@ import { SmartArray } from "babylonjs/Misc/smartArray";
 import { Observer } from 'babylonjs/Misc/observable';
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { RenderTargetTexture } from "babylonjs/Materials/Textures/renderTargetTexture";
-import { EffectFallbacks, EffectCreationOptions } from "babylonjs/Materials/effect";
+import { IEffectCreationOptions } from "babylonjs/Materials/effect";
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { IImageProcessingConfigurationDefines, ImageProcessingConfiguration } from "babylonjs/Materials/imageProcessingConfiguration";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
@@ -25,6 +25,7 @@ import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 import "./water.fragment";
 import "./water.vertex";
+import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
 
 class WaterMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public BUMP = false;
@@ -455,7 +456,7 @@ export class WaterMaterial extends PushMaterial {
                 ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
             }
 
-            MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
+            MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
@@ -463,7 +464,7 @@ export class WaterMaterial extends PushMaterial {
                 maxSimultaneousLights: this.maxSimultaneousLights
             });
             subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                <EffectCreationOptions>{
+                <IEffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,

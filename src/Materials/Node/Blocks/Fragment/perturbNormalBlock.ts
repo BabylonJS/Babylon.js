@@ -1,7 +1,7 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { _TypeStore } from '../../../../Misc/typeStore';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
@@ -10,6 +10,9 @@ import { InputBlock } from '../Input/inputBlock';
 import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { Scene } from '../../../../scene';
+
+import "../../../../Shaders/ShadersInclude/bumpFragmentFunctions";
+import "../../../../Shaders/ShadersInclude/bumpFragment";
 
 /**
  * Block used to pertub normals based on a normal map
@@ -131,23 +134,27 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString(this._tangentSpaceParameterName, "vec2");
 
+        let replaceForBumpInfos = this.strength.isConnectedToInputBlock && this.strength.connectInputBlock!.isConstant ? `${state._emitFloat(1.0 / this.strength.connectInputBlock!.value)}` : `1.0 / ${this.strength.associatedVariableName}`;
+
         state._emitExtension("bump", "#extension GL_OES_standard_derivatives : enable");
         state._emitFunctionFromInclude("bumpFragmentFunctions", comments, {
             replaceStrings: [
-                { search: /vBumpInfos.y/g, replace: `1.0 / ${this.strength.associatedVariableName}`},
+                { search: /vBumpInfos.y/g, replace: replaceForBumpInfos},
                 { search: /vTangentSpaceParams/g, replace: this._tangentSpaceParameterName},
-                { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"}
+                { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"},
+                { search: /defined\(TANGENT\)/g, replace: "defined(IGNORE)" }
             ]
         });
         state.compilationString += this._declareOutput(this.output, state) + " = vec4(0.);\r\n";
         state.compilationString += state._emitCodeFromInclude("bumpFragment", comments, {
             replaceStrings: [
                 { search: /perturbNormal\(TBN,vBumpUV\+uvOffset\)/g, replace: `perturbNormal(TBN, ${this.normalMapColor.associatedVariableName})` },
-                { search: /vBumpInfos.y/g, replace: `1.0 / ${this.strength.associatedVariableName}`},
+                { search: /vBumpInfos.y/g, replace: replaceForBumpInfos},
                 { search: /vBumpUV/g, replace: uv.associatedVariableName},
                 { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"},
                 { search: /normalW=/g, replace: this.output.associatedVariableName + ".xyz = " },
-                { search: /normalW/g, replace: worldNormal.associatedVariableName + ".xyz" }
+                { search: /normalW/g, replace: worldNormal.associatedVariableName + ".xyz" },
+                { search: /defined\(TANGENT\)/g, replace: "defined(IGNORE)" }
             ]
         });
 

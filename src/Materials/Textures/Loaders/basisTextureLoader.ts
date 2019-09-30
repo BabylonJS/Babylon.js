@@ -3,7 +3,6 @@ import { Engine } from "../../../Engines/engine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
 import { _TimeToken } from "../../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../../States/index";
 import { BasisTools } from "../../../Misc/basis";
 import { Tools } from '../../../Misc/tools';
 
@@ -75,6 +74,11 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
             BasisTools.LoadTextureFromTranscodeResult(texture, result);
             texture.getEngine()._setCubeMapTextureParams(hasMipmap);
             texture.isReady = true;
+            texture.onLoadedObservable.notifyObservers(texture);
+            texture.onLoadedObservable.clear();
+            if (onLoad) {
+              onLoad();
+            }
         }).catch((err) => {
             Tools.Warn("Failed to transcode Basis file, transcoding may not be supported on this device");
             texture.isReady = true;

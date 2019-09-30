@@ -852,8 +852,9 @@ export class Material implements IAnimatable {
      * @param mesh defines the mesh associated with this material
      * @param onCompiled defines a function to execute once the material is compiled
      * @param options defines the options to configure the compilation
+     * @param onError defines a function to execute if the material fails compiling
      */
-    public forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<{ clipPlane: boolean }>): void {
+    public forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<{ clipPlane: boolean }>, onError?: (reason: string) => void): void {
         let localOptions = {
             clipPlane: false,
             ...options
@@ -884,7 +885,13 @@ export class Material implements IAnimatable {
                     }
                 }
                 else {
-                    setTimeout(checkReady, 16);
+                    if (subMesh.effect && subMesh.effect.getCompilationError() && subMesh.effect.allFallbacksProcessed()) {
+                        if (onError) {
+                            onError(subMesh.effect.getCompilationError());
+                        }
+                    } else {
+                        setTimeout(checkReady, 16);
+                    }
                 }
             } else {
                 if (this.isReady()) {
@@ -912,10 +919,12 @@ export class Material implements IAnimatable {
      * @returns a promise that resolves when the compilation completes
      */
     public forceCompilationAsync(mesh: AbstractMesh, options?: Partial<{ clipPlane: boolean }>): Promise<void> {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             this.forceCompilation(mesh, () => {
                 resolve();
-            }, options);
+            }, options, (reason) => {
+                reject(reason);
+            });
         });
     }
 
