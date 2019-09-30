@@ -20,7 +20,7 @@ jobs:
     inputs:
         workingDirectory: 'TestApp/Source/Android'
         gradleWrapperFile: 'TestApp/Source/Android/gradlew'
-        gradleOptions: '-Xmx3072m'
+        gradleOptions: '-Xmx1536m'
         publishJUnitResults: false
         tasks: 'assembleDebug'
     displayName: 'Build androidJNI'
