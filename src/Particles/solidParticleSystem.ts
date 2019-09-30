@@ -189,7 +189,7 @@ export class SolidParticleSystem implements IDisposable {
         if (this._colors32.length > 0) {
             vertexData.set(this._colors32, VertexBuffer.ColorKind);
         }
-        if (!this.mesh && this._expandable) {       // in case it's expanded
+        if (!this.mesh) {       // in case it's already expanded
             var mesh = new Mesh(this.name, this._scene);
             this.mesh = mesh;
         }
