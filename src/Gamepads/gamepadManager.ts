@@ -3,8 +3,6 @@ import { DomManagement } from "../Misc/domManagement";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
-
 import { PoseEnabledControllerHelper } from "../Gamepads/Controllers/poseEnabledController";
 import { Xbox360Pad } from "./xboxGamepad";
 import { Gamepad, GenericPad } from "./gamepad";
@@ -90,6 +88,7 @@ export class GamepadManager {
                     disconnectedGamepad._isConnected = false;
 
                     this.onGamepadDisconnectedObservable.notifyObservers(disconnectedGamepad);
+                    disconnectedGamepad.dispose && disconnectedGamepad.dispose();
                     break;
                 }
             }

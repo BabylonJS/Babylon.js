@@ -1,8 +1,8 @@
 import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../Misc/typeStore';
 import { Scene } from '../../../scene';
 
@@ -26,6 +26,26 @@ export enum TrigonometryBlockOperations {
     Floor,
     /** Ceiling */
     Ceiling,
+    /** Square root */
+    Sqrt,
+    /** Log */
+    Log,
+    /** Tangent */
+    Tan,
+    /** Arc tangent */
+    ArcTan,
+    /** Arc cosinus */
+    ArcCos,
+    /** Arc sinus */
+    ArcSin,
+    /** Fraction */
+    Fract,
+    /** Sign */
+    Sign,
+    /** To radians (from degrees) */
+    Radians,
+    /** To degrees (from radians) */
+    Degrees
 }
 
 /**
@@ -108,6 +128,46 @@ export class TrigonometryBlock extends NodeMaterialBlock {
             }
             case TrigonometryBlockOperations.Ceiling: {
                 operation = "ceil";
+                break;
+            }
+            case TrigonometryBlockOperations.Sqrt: {
+                operation = "sqrt";
+                break;
+            }
+            case TrigonometryBlockOperations.Log: {
+                operation = "log";
+                break;
+            }
+            case TrigonometryBlockOperations.Tan: {
+                operation = "tan";
+                break;
+            }
+            case TrigonometryBlockOperations.ArcTan: {
+                operation = "atan";
+                break;
+            }
+            case TrigonometryBlockOperations.ArcCos: {
+                operation = "acos";
+                break;
+            }
+            case TrigonometryBlockOperations.ArcSin: {
+                operation = "asin";
+                break;
+            }
+            case TrigonometryBlockOperations.Fract: {
+                operation = "fract";
+                break;
+            }
+            case TrigonometryBlockOperations.Sign: {
+                operation = "sign";
+                break;
+            }
+            case TrigonometryBlockOperations.Radians: {
+                operation = "radians";
+                break;
+            }
+            case TrigonometryBlockOperations.Degrees: {
+                operation = "degrees";
                 break;
             }
         }

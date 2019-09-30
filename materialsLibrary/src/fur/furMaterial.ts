@@ -7,7 +7,7 @@ import { Tags } from "babylonjs/Misc/tags";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { DynamicTexture } from "babylonjs/Materials/Textures/dynamicTexture";
-import { EffectFallbacks, EffectCreationOptions } from "babylonjs/Materials/effect";
+import { IEffectCreationOptions } from "babylonjs/Materials/effect";
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -18,6 +18,7 @@ import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
 
 import "./fur.fragment";
 import "./fur.vertex";
@@ -274,7 +275,7 @@ export class FurMaterial extends PushMaterial {
 
             var uniformBuffers = new Array<string>();
 
-            MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
+            MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
@@ -283,7 +284,7 @@ export class FurMaterial extends PushMaterial {
             });
 
             subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                <EffectCreationOptions>{
+                <IEffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,

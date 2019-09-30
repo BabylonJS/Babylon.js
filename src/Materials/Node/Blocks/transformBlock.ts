@@ -1,7 +1,7 @@
 import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { _TypeStore } from '../../../Misc/typeStore';
 import { Scene } from '../../../scene';
@@ -72,6 +72,7 @@ export class TransformBlock extends NodeMaterialBlock {
             switch (vector.connectedPoint.type) {
                 case NodeMaterialBlockConnectionPointTypes.Vector2:
                     state.compilationString += this._declareOutput(output, state) + ` = ${transform.associatedVariableName} * vec4(${vector.associatedVariableName}, ${this._writeFloat(this.complementZ)}, ${this._writeFloat(this.complementW)});\r\n`;
+                    break;
                 case NodeMaterialBlockConnectionPointTypes.Vector3:
                     state.compilationString += this._declareOutput(output, state) + ` = ${transform.associatedVariableName} * vec4(${vector.associatedVariableName}, ${this._writeFloat(this.complementW)});\r\n`;
                     break;

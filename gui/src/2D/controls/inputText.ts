@@ -8,6 +8,7 @@ import { Control } from "./control";
 import { IFocusableControl } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
 import { VirtualKeyboard } from "./virtualKeyboard";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Class used to create input text control
@@ -1028,3 +1029,4 @@ export class InputText extends Control implements IFocusableControl {
         this.onKeyboardEventProcessedObservable.clear();
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.InputText"] = InputText;

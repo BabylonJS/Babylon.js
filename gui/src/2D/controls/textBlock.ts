@@ -2,6 +2,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { Measure } from "../measure";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Enum that determines the text-wrapping mode to use.
@@ -462,3 +463,4 @@ export class TextBlock extends Control {
         this.onTextChangedObservable.clear();
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.TextBlock"] = TextBlock;

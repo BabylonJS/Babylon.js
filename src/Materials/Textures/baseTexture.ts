@@ -1,14 +1,11 @@
-import { serialize, SerializationHelper, serializeAsTexture } from "../../Misc/decorators";
+import { serialize, SerializationHelper, serializeAsTexture, expandToProperty } from "../../Misc/decorators";
 import { Observer, Observable } from "../../Misc/observable";
-import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Matrix } from "../../Maths/math.vector";
-import { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 import { EngineStore } from "../../Engines/engineStore";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { _TimeToken } from "../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
 import { IAnimatable } from '../../Animations/animatable.interface';
 import { GUID } from '../../Misc/guid';
@@ -206,6 +203,7 @@ export class BaseTexture implements IAnimatable {
      * This only impacts the PBR and Background materials
      */
     @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public gammaSpace = true;
 
     /**
@@ -596,6 +594,19 @@ export class BaseTexture implements IAnimatable {
     }
 
     /**
+     * Indicates that textures need to be re-calculated for all materials
+     */
+    protected _markAllSubMeshesAsTexturesDirty() {
+        let scene = this.getScene();
+
+        if (!scene) {
+            return;
+        }
+
+        scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
+    /**
      * Reads the pixels stored in the webgl texture and returns them as an ArrayBuffer.
      * This will returns an RGBA array buffer containing either in values (0-255) or
      * float values (0-1) depending of the underlying buffer type.
@@ -642,30 +653,6 @@ export class BaseTexture implements IAnimatable {
         if (this._texture) {
             this._texture.dispose();
             this._texture = null;
-        }
-    }
-
-    /**
-     * Get the polynomial representation of the texture data.
-     * This is mainly use as a fast way to recover IBL Diffuse irradiance data.
-     * @see https://learnopengl.com/PBR/IBL/Diffuse-irradiance
-     */
-    public get sphericalPolynomial(): Nullable<SphericalPolynomial> {
-        if (!this._texture || !CubeMapToSphericalPolynomialTools || !this.isReady()) {
-            return null;
-        }
-
-        if (!this._texture._sphericalPolynomial) {
-            this._texture._sphericalPolynomial =
-                CubeMapToSphericalPolynomialTools.ConvertCubeMapTextureToSphericalPolynomial(this);
-        }
-
-        return this._texture._sphericalPolynomial;
-    }
-
-    public set sphericalPolynomial(value: Nullable<SphericalPolynomial>) {
-        if (this._texture) {
-            this._texture._sphericalPolynomial = value;
         }
     }
 

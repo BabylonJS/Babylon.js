@@ -4,7 +4,6 @@ import { Engine } from "../../../Engines/engine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
 import { _TimeToken } from "../../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../../States/index";
 /**
  * Implementation of the ENV Texture Loader.
  * @hidden
@@ -70,6 +69,8 @@ export class _ENVTextureLoader implements IInternalTextureLoader {
             EnvironmentTextureTools.UploadEnvSpherical(texture, info);
             EnvironmentTextureTools.UploadEnvLevelsAsync(texture, data, info).then(() => {
                 texture.isReady = true;
+                texture.onLoadedObservable.notifyObservers(texture);
+                texture.onLoadedObservable.clear();
                 if (onLoad) {
                     onLoad();
                 }

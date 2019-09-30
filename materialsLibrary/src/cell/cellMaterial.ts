@@ -3,7 +3,7 @@ import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, Ser
 import { Matrix } from "babylonjs/Maths/math.vector";
 import { Color3 } from "babylonjs/Maths/math.color";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { EffectFallbacks, EffectCreationOptions } from "babylonjs/Materials/effect";
+import { IEffectCreationOptions } from "babylonjs/Materials/effect";
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -18,6 +18,7 @@ import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 
 import "./cell.fragment";
 import "./cell.vertex";
+import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
 
 class CellMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;
@@ -192,7 +193,7 @@ export class CellMaterial extends PushMaterial {
             var samplers = ["diffuseSampler"];
             var uniformBuffers = new Array<string>();
 
-            MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
+            MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
@@ -200,7 +201,7 @@ export class CellMaterial extends PushMaterial {
                 maxSimultaneousLights: this.maxSimultaneousLights
             });
             subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                <EffectCreationOptions>{
+                <IEffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,

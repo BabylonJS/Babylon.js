@@ -10,6 +10,8 @@ import { IInspectable } from '../Misc/iInspectable';
 import { Engine } from '../Engines/engine';
 import { Color4 } from '../Maths/math.color';
 
+import "../Engines/Extensions/engine.renderTarget";
+
 declare type Scene = import("../scene").Scene;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
 declare type WebVRFreeCamera = import("../Cameras/VR/webVRCamera").WebVRFreeCamera;
@@ -98,7 +100,7 @@ export class PostProcess {
      * | 3     | SCALEMODE_CEILING                   | [engine.scalemode_ceiling](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
      *
      */
-    public scaleMode = Engine.SCALEMODE_FLOOR;
+    public scaleMode = Constants.SCALEMODE_FLOOR;
     /**
     * Force textures to be a power of two (default: false)
     */

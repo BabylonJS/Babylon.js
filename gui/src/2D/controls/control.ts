@@ -13,6 +13,7 @@ import { ValueAndUnit } from "../valueAndUnit";
 import { Measure } from "../measure";
 import { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Root class used for all 2D controls
@@ -1967,3 +1968,4 @@ export class Control {
         context.translate(-x, -y);
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.Control"] = Control;

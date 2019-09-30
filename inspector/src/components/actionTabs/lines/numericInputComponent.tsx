@@ -5,6 +5,7 @@ interface INumericInputComponentProps {
     value: number;
     step?: number;
     onChange: (value: number) => void;
+    precision?: number;
 }
 
 export class NumericInputComponent extends React.Component<INumericInputComponentProps, { value: string }> {
@@ -17,7 +18,7 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
     constructor(props: INumericInputComponentProps) {
         super(props);
 
-        this.state = { value: this.props.value.toFixed(3) }
+        this.state = { value: this.props.value.toFixed(this.props.precision !== undefined ? this.props.precision : 3) }
     }
 
     shouldComponentUpdate(nextProps: INumericInputComponentProps, nextState: { value: string }) {
@@ -27,7 +28,7 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
         }
 
         if (nextProps.value.toString() !== nextState.value) {
-            nextState.value = nextProps.value.toFixed(3);
+            nextState.value = nextProps.value.toFixed(this.props.precision !== undefined ? this.props.precision : 3);
             return true;
         }
         return false;
@@ -51,7 +52,6 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
 
         this.props.onChange(valueAsNumber);
     }
-
 
     render() {
         return (

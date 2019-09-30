@@ -1,11 +1,14 @@
 import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
-import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
+import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { _TypeStore } from '../../../Misc/typeStore';
 import { InputBlock } from './Input/inputBlock';
 import { NodeMaterial } from '../nodeMaterial';
+
+import "../../../Shaders/ShadersInclude/fresnelFunction";
+import { ViewDirectionBlock } from './viewDirectionBlock';
 
 /**
  * Block used to compute fresnel value
@@ -71,6 +74,12 @@ export class FresnelBlock extends NodeMaterialBlock {
     }
 
     public autoConfigure(material: NodeMaterial) {
+        if (!this.viewDirection.isConnected) {
+            let viewDirectionInput = new ViewDirectionBlock("View direction");
+            viewDirectionInput.output.connectTo(this.viewDirection);
+            viewDirectionInput.autoConfigure(material);
+        }
+
         if (!this.bias.isConnected) {
             let biasInput = new InputBlock("bias");
             biasInput.value = 0;

@@ -3,7 +3,7 @@ import { Tools } from "./tools";
 import { Vector3 } from "../Maths/math.vector";
 import { Scalar } from "../Maths/math.scalar";
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
-import { InternalTexture } from "../Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { Constants } from "../Engines/constants";
@@ -11,10 +11,12 @@ import { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Logger } from "../Misc/logger";
 
-import "../Engines/Extensions/engine.renderTarget";
+import "../Engines/Extensions/engine.renderTargetCube";
+import "../Materials/Textures/baseTexture.polynomial";
 
 import "../Shaders/rgbdEncode.fragment";
 import "../Shaders/rgbdDecode.fragment";
+import { Engine } from '../Engines/engine';
 
 /**
  * Raw texture data and descriptor sufficient for WebGL texture upload
@@ -153,7 +155,7 @@ export class EnvironmentTextureTools {
             return Promise.reject("The cube texture is invalid (not prefiltered).");
         }
 
-        let engine = internalTexture.getEngine();
+        let engine = internalTexture.getEngine() as Engine;
         if (engine && engine.premultipliedAlpha) {
             return Promise.reject("Env texture can only be created when the engine is created with the premultipliedAlpha option set to false.");
         }
@@ -393,7 +395,7 @@ export class EnvironmentTextureTools {
         const mipmapsCount = Math.round(Scalar.Log2(texture.width)) + 1;
 
         // Gets everything ready.
-        let engine = texture.getEngine();
+        let engine = texture.getEngine() as Engine;
         let expandTexture = false;
         let generateNonLODTextures = false;
         let rgbdPostProcess: Nullable<PostProcess> = null;
@@ -464,7 +466,7 @@ export class EnvironmentTextureTools {
                     let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
                     let mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
 
-                    let glTextureFromLod = new InternalTexture(engine, InternalTexture.DATASOURCE_TEMP);
+                    let glTextureFromLod = new InternalTexture(engine, InternalTextureSource.Temp);
                     glTextureFromLod.isCube = true;
                     glTextureFromLod.invertY = true;
                     glTextureFromLod.generateMipMaps = false;
@@ -633,7 +635,7 @@ export class EnvironmentTextureTools {
 
     /** @hidden */
     public static _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void> {
-        internalTexture._dataSource = InternalTexture.DATASOURCE_CUBERAW_RGBD;
+        internalTexture._source = InternalTextureSource.CubeRawRGBD;
         internalTexture._bufferViewArrayArray = data;
         internalTexture._lodGenerationScale = lodScale;
         internalTexture._lodGenerationOffset = lodOffset;

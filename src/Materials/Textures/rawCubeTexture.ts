@@ -3,10 +3,11 @@ import { EnvironmentTextureTools } from "../../Misc/environmentTextureTools";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
-import { InternalTexture } from "./internalTexture";
+import { InternalTexture, InternalTextureSource } from "./internalTexture";
 import { CubeTexture } from "./cubeTexture";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
+import { Engine } from '../../Engines/engine';
 
 /**
  * Raw cube texture where the raw buffers are passed in
@@ -43,7 +44,7 @@ export class RawCubeTexture extends CubeTexture {
      * @param level defines which level of the texture to update
      */
     public update(data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string> = null): void {
-        this._texture!.getEngine().updateRawCubeTexture(this._texture!, data, format, type, invertY, compression);
+        (this._texture!.getEngine() as Engine).updateRawCubeTexture(this._texture!, data, format, type, invertY, compression);
     }
 
     /**
@@ -70,7 +71,7 @@ export class RawCubeTexture extends CubeTexture {
             const texture = new RawCubeTexture(scene, internalTexture._bufferViewArray!, internalTexture.width, internalTexture.format, internalTexture.type,
                 internalTexture.generateMipMaps, internalTexture.invertY, internalTexture.samplingMode, internalTexture._compression);
 
-            if (internalTexture.dataSource === InternalTexture.DATASOURCE_CUBERAW_RGBD) {
+            if (internalTexture.source === InternalTextureSource.CubeRawRGBD) {
                 texture.updateRGBDAsync(internalTexture._bufferViewArrayArray!, internalTexture._sphericalPolynomial, internalTexture._lodGenerationScale, internalTexture._lodGenerationOffset);
             }
 
@@ -80,7 +81,7 @@ export class RawCubeTexture extends CubeTexture {
 
     /** @hidden */
     public static _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void> {
-        internalTexture._dataSource = InternalTexture.DATASOURCE_CUBERAW_RGBD;
+        internalTexture._source = InternalTextureSource.CubeRawRGBD;
         internalTexture._bufferViewArrayArray = data;
         internalTexture._lodGenerationScale = lodScale;
         internalTexture._lodGenerationOffset = lodOffset;

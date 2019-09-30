@@ -5,6 +5,9 @@ import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Engine } from "../../Engines/engine";
 import { Texture } from "../../Materials/Textures/texture";
+
+import "../../Engines/Extensions/engine.videoTexture";
+
 /**
  * Settings for finer control over video usage
  */

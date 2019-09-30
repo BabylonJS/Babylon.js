@@ -4,7 +4,6 @@ import { Engine } from "../../../Engines/engine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
 import { _TimeToken } from "../../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../../States/index";
 import { DDSTools, DDSInfo } from "../../../Misc/dds";
 /**
  * Implementation of the DDS Texture Loader.
@@ -76,7 +75,7 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
                 DDSTools.UploadDDSLevels(engine, texture, data, info, loadMipmap, 6, -1, index);
 
                 if (!info.isFourCC && info.mipmapCount === 1) {
-                    engine.generateMipMapsForCubemap(texture);
+                    (engine as Engine).generateMipMapsForCubemap(texture);
                 }
             }
         }
@@ -97,12 +96,14 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
             DDSTools.UploadDDSLevels(engine, texture, data, info, loadMipmap, 6);
 
             if (!info.isFourCC && info.mipmapCount === 1) {
-                engine.generateMipMapsForCubemap(texture);
+                (engine as Engine).generateMipMapsForCubemap(texture);
             }
         }
 
         engine._setCubeMapTextureParams(loadMipmap);
         texture.isReady = true;
+        texture.onLoadedObservable.notifyObservers(texture);
+        texture.onLoadedObservable.clear();
 
         if (onLoad) {
             onLoad({ isDDS: true, width: texture.width, info, data: imgs, texture });

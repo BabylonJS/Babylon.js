@@ -311,6 +311,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/numericInputComp
         value: number;
         step?: number;
         onChange: (value: number) => void;
+        precision?: number;
     }
     export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
         value: string;
@@ -544,6 +545,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/textureLinkLineC
         onSelectionChangedObservable?: Observable<any>;
         onDebugSelectionChangeObservable?: Observable<BaseTexture>;
         propertyName?: string;
+        onTextureCreated?: (texture: BaseTexture) => void;
         customDebugAction?: (state: boolean) => void;
     }
     export class TextureLinkLineComponent extends React.Component<ITextureLinkLineComponentProps, {
@@ -577,6 +579,17 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         private _onDebugSelectionChangeObservable;
         constructor(props: IStandardMaterialPropertyGridComponentProps);
         renderTextures(): JSX.Element;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/lines/buttonLineComponent" {
+    import * as React from "react";
+    export interface IButtonLineComponentProps {
+        label: string;
+        onClick: () => void;
+    }
+    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
+        constructor(props: IButtonLineComponentProps);
         render(): JSX.Element;
     }
 }
@@ -722,6 +735,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         constructor(props: IPBRMaterialPropertyGridComponentProps);
         switchAmbientMode(state: boolean): void;
         switchMetallicMode(state: boolean): void;
+        switchRoughnessMode(state: boolean): void;
         renderTextures(onDebugSelectionChangeObservable: Observable<BaseTexture>): JSX.Element;
         render(): JSX.Element;
     }
@@ -763,17 +777,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/fog
         mode: number;
     }> {
         constructor(props: IFogPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-inspector/components/actionTabs/lines/buttonLineComponent" {
-    import * as React from "react";
-    export interface IButtonLineComponentProps {
-        label: string;
-        onClick: () => void;
-    }
-    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
-        constructor(props: IButtonLineComponentProps);
         render(): JSX.Element;
     }
 }
@@ -1775,10 +1778,13 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/toolsTabComponent
     import { Node } from "babylonjs/node";
     export class ToolsTabComponent extends PaneComponent {
         private _videoRecorder;
+        private _screenShotSize;
+        private _useWidthHeight;
         constructor(props: IPaneComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;
         captureScreenshot(): void;
+        captureRender(): void;
         recordVideo(): void;
         shouldExport(node: Node): boolean;
         exportGLTF(): void;
@@ -2586,6 +2592,7 @@ declare module INSPECTOR {
         value: number;
         step?: number;
         onChange: (value: number) => void;
+        precision?: number;
     }
     export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
         value: string;
@@ -2779,6 +2786,7 @@ declare module INSPECTOR {
         onSelectionChangedObservable?: BABYLON.Observable<any>;
         onDebugSelectionChangeObservable?: BABYLON.Observable<BABYLON.BaseTexture>;
         propertyName?: string;
+        onTextureCreated?: (texture: BABYLON.BaseTexture) => void;
         customDebugAction?: (state: boolean) => void;
     }
     export class TextureLinkLineComponent extends React.Component<ITextureLinkLineComponentProps, {
@@ -2806,6 +2814,16 @@ declare module INSPECTOR {
         private _onDebugSelectionChangeObservable;
         constructor(props: IStandardMaterialPropertyGridComponentProps);
         renderTextures(): JSX.Element;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export interface IButtonLineComponentProps {
+        label: string;
+        onClick: () => void;
+    }
+    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
+        constructor(props: IButtonLineComponentProps);
         render(): JSX.Element;
     }
 }
@@ -2927,6 +2945,7 @@ declare module INSPECTOR {
         constructor(props: IPBRMaterialPropertyGridComponentProps);
         switchAmbientMode(state: boolean): void;
         switchMetallicMode(state: boolean): void;
+        switchRoughnessMode(state: boolean): void;
         renderTextures(onDebugSelectionChangeObservable: BABYLON.Observable<BABYLON.BaseTexture>): JSX.Element;
         render(): JSX.Element;
     }
@@ -2960,16 +2979,6 @@ declare module INSPECTOR {
         mode: number;
     }> {
         constructor(props: IFogPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    export interface IButtonLineComponentProps {
-        label: string;
-        onClick: () => void;
-    }
-    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
-        constructor(props: IButtonLineComponentProps);
         render(): JSX.Element;
     }
 }
@@ -3684,10 +3693,13 @@ declare module INSPECTOR {
 declare module INSPECTOR {
     export class ToolsTabComponent extends PaneComponent {
         private _videoRecorder;
+        private _screenShotSize;
+        private _useWidthHeight;
         constructor(props: IPaneComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;
         captureScreenshot(): void;
+        captureRender(): void;
         recordVideo(): void;
         shouldExport(node: BABYLON.Node): boolean;
         exportGLTF(): void;

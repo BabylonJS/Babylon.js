@@ -3,7 +3,7 @@ import { Nullable } from "../types";
 /**
  * @hidden
  **/
-export class _AlphaState {
+export class AlphaState {
     public _blendFunctionParameters = new Array<Nullable<number>>(4);
     public _blendEquationParameters = new Array<Nullable<number>>(2);
     public _blendConstants = new Array<Nullable<number>>(4);

@@ -1,14 +1,14 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBlockConnectionPointMode } from '../../NodeMaterialBlockConnectionPointMode';
-import { NodeMaterialSystemValues } from '../../nodeMaterialSystemValues';
+import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointMode } from '../../Enums/nodeMaterialBlockConnectionPointMode';
+import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
 import { Nullable } from '../../../../types';
 import { Effect } from '../../../../Materials/effect';
 import { Matrix, Vector2, Vector3, Vector4 } from '../../../../Maths/math.vector';
 import { Scene } from '../../../../scene';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../../Misc/typeStore';
 import { Color3, Color4 } from '../../../../Maths/math';
 import { AnimatedInputBlockTypes } from './animatedInputBlockTypes';
@@ -24,11 +24,23 @@ export class InputBlock extends NodeMaterialBlock {
     private _type: NodeMaterialBlockConnectionPointTypes;
     private _animationType = AnimatedInputBlockTypes.None;
 
+    /** Gets or set a value used to limit the range of float values */
+    public min: number = 0;
+
+    /** Gets or set a value used to limit the range of float values */
+    public max: number = 0;
+
+    /** Gets or sets a value used by the Node Material editor to determine how to configure the current value if it is a matrix */
+    public matrixMode: number = 0;
+
     /** @hidden */
     public _systemValue: Nullable<NodeMaterialSystemValues> = null;
 
     /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
     public visibleInInspector = false;
+
+    /** Gets or sets a boolean indicating that the value of this input will not change after a build */
+    public isConstant = false;
 
     /**
      * Gets or sets the connection point type (default is float)
@@ -100,6 +112,9 @@ export class InputBlock extends NodeMaterialBlock {
                         return this._type;
                     case NodeMaterialSystemValues.FogColor:
                         this._type = NodeMaterialBlockConnectionPointTypes.Color3;
+                        return this._type;
+                    case NodeMaterialSystemValues.DeltaTime:
+                        this._type = NodeMaterialBlockConnectionPointTypes.Float;
                         return this._type;
                 }
             }
@@ -299,6 +314,10 @@ export class InputBlock extends NodeMaterialBlock {
         return `#ifdef ${define}\r\n`;
     }
 
+    public initialize(state: NodeMaterialBuildState) {
+        this.associatedVariableName = "";
+    }
+
     /**
      * Set the input block to its default value (based on its type)
      */
@@ -328,37 +347,22 @@ export class InputBlock extends NodeMaterialBlock {
         }
     }
 
-    protected _dumpPropertiesCode() {
-        if (this.isAttribute) {
-            return `${this._codeVariableName}.setAsAttribute("${this.name}");\r\n`;
+    private _emitConstant(state: NodeMaterialBuildState) {
+        switch (this.type) {
+            case NodeMaterialBlockConnectionPointTypes.Float:
+                return `${state._emitFloat(this.value)}`;
+            case NodeMaterialBlockConnectionPointTypes.Vector2:
+                return `vec2(${this.value.x}, ${this.value.y})`;
+            case NodeMaterialBlockConnectionPointTypes.Vector3:
+                return `vec3(${this.value.x}, ${this.value.y}, ${this.value.z})`;
+            case NodeMaterialBlockConnectionPointTypes.Vector4:
+                return `vec4(${this.value.x}, ${this.value.y}, ${this.value.z}, ${this.value.w})`;
+            case NodeMaterialBlockConnectionPointTypes.Color3:
+                return `vec3(${this.value.r}, ${this.value.g}, ${this.value.b})`;
+            case NodeMaterialBlockConnectionPointTypes.Color4:
+                return `vec4(${this.value.r}, ${this.value.g}, ${this.value.b}, ${this.value.a})`;
         }
-        if (this.isSystemValue) {
-            return `${this._codeVariableName}.setAsSystemValue(BABYLON.NodeMaterialSystemValues.${NodeMaterialSystemValues[this._systemValue!]});\r\n`;
-        }
-        if (this.isUniform) {
-            let valueString = "";
-            switch (this.type) {
-                case NodeMaterialBlockConnectionPointTypes.Float:
-                    valueString = this.value.toString();
-                    break;
-                case NodeMaterialBlockConnectionPointTypes.Vector2:
-                    valueString = `new BABYLON.Vector2(${this.value.x}, ${this.value.y})`;
-                    break;
-                case NodeMaterialBlockConnectionPointTypes.Vector3:
-                    valueString = `new BABYLON.Vector3(${this.value.x}, ${this.value.y}, ${this.value.z})`;
-                    break;
-                case NodeMaterialBlockConnectionPointTypes.Vector4:
-                    valueString = `new BABYLON.Vector4(${this.value.x}, ${this.value.y}, ${this.value.z}, ${this.value.w})`;
-                    break;
-                case NodeMaterialBlockConnectionPointTypes.Color3:
-                    valueString = `new BABYLON.Color3(${this.value.r}, ${this.value.g}, ${this.value.b})`;
-                    break;
-                case NodeMaterialBlockConnectionPointTypes.Color4:
-                    valueString = `new BABYLON.Color4(${this.value.r}, ${this.value.g}, ${this.value.b}, ${this.value.a})`;
-                    break;
-            }
-            return `${this._codeVariableName}.value = ${valueString};\r\n`;
-        }
+
         return "";
     }
 
@@ -367,6 +371,15 @@ export class InputBlock extends NodeMaterialBlock {
         if (this.isUniform) {
             if (!this.associatedVariableName) {
                 this.associatedVariableName = state._getFreeVariableName("u_" + this.name);
+            }
+
+            if (this.isConstant) {
+                if (state.constants.indexOf(this.associatedVariableName) !== -1) {
+                    return;
+                }
+                state.constants.push(this.associatedVariableName);
+                state._constantDeclaration += this._declareOutput(this.output, state) + ` = ${this._emitConstant(state)};\r\n`;
+                return;
             }
 
             if (state.uniforms.indexOf(this.associatedVariableName) !== -1) {
@@ -474,6 +487,8 @@ export class InputBlock extends NodeMaterialBlock {
                 case NodeMaterialSystemValues.FogColor:
                     effect.setColor3(variableName, scene.fogColor);
                     break;
+                case NodeMaterialSystemValues.DeltaTime:
+                    effect.setFloat(variableName, scene.deltaTime / 1000.0);
             }
             return;
         }
@@ -522,6 +537,49 @@ export class InputBlock extends NodeMaterialBlock {
         this._emit(state);
     }
 
+    protected _dumpPropertiesCode() {
+        if (this.isAttribute) {
+            return `${this._codeVariableName}.setAsAttribute("${this.name}");\r\n`;
+        }
+        if (this.isSystemValue) {
+            return `${this._codeVariableName}.setAsSystemValue(BABYLON.NodeMaterialSystemValues.${NodeMaterialSystemValues[this._systemValue!]});\r\n`;
+        }
+        if (this.isUniform) {
+            let valueString = "";
+            switch (this.type) {
+                case NodeMaterialBlockConnectionPointTypes.Float:
+                    let returnValue = `${this._codeVariableName}.value = ${this.value};\r\n`;
+
+                    returnValue += `${this._codeVariableName}.min = ${this.min};\r\n`;
+                    returnValue += `${this._codeVariableName}.max = ${this.max};\r\n`;
+                    returnValue += `${this._codeVariableName}.matrixMode = ${this.matrixMode};\r\n`;
+
+                    return returnValue;
+                case NodeMaterialBlockConnectionPointTypes.Vector2:
+                    valueString = `new BABYLON.Vector2(${this.value.x}, ${this.value.y})`;
+                    break;
+                case NodeMaterialBlockConnectionPointTypes.Vector3:
+                    valueString = `new BABYLON.Vector3(${this.value.x}, ${this.value.y}, ${this.value.z})`;
+                    break;
+                case NodeMaterialBlockConnectionPointTypes.Vector4:
+                    valueString = `new BABYLON.Vector4(${this.value.x}, ${this.value.y}, ${this.value.z}, ${this.value.w})`;
+                    break;
+                case NodeMaterialBlockConnectionPointTypes.Color3:
+                    valueString = `new BABYLON.Color3(${this.value.r}, ${this.value.g}, ${this.value.b})`;
+                    break;
+                case NodeMaterialBlockConnectionPointTypes.Color4:
+                    valueString = `new BABYLON.Color4(${this.value.r}, ${this.value.g}, ${this.value.b}, ${this.value.a})`;
+                    break;
+            }
+            let finalOutput = `${this._codeVariableName}.value = ${valueString};\r\n`;
+            finalOutput += `${this._codeVariableName}.isConstant = ${this.isConstant ? "true" : "false"};\r\n`;
+            finalOutput += `${this._codeVariableName}.visibleInInspector = ${this.visibleInInspector ? "true" : "false"};\r\n`;
+
+            return finalOutput;
+        }
+        return "";
+    }
+
     public serialize(): any {
         let serializationObject = super.serialize();
 
@@ -530,6 +588,10 @@ export class InputBlock extends NodeMaterialBlock {
         serializationObject.systemValue = this._systemValue;
         serializationObject.animationType = this._animationType;
         serializationObject.visibleInInspector = this.visibleInInspector;
+        serializationObject.min = this.min;
+        serializationObject.max = this.max;
+        serializationObject.matrixMode = this.matrixMode;
+        serializationObject.isConstant = this.isConstant;
 
         if (this._storedValue != null && this._mode === NodeMaterialBlockConnectionPointMode.Uniform) {
             if (this._storedValue.asArray) {
@@ -552,6 +614,10 @@ export class InputBlock extends NodeMaterialBlock {
         this._systemValue = serializationObject.systemValue || serializationObject.wellKnownValue;
         this._animationType = serializationObject.animationType;
         this.visibleInInspector = serializationObject.visibleInInspector;
+        this.min = serializationObject.min || 0;
+        this.max = serializationObject.max || 0;
+        this.matrixMode = serializationObject.matrixMode || 0;
+        this.isConstant = !!serializationObject.isConstant;
 
         if (!serializationObject.valueType) {
             return;

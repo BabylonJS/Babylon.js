@@ -3,43 +3,43 @@
 }
 
 .srd-node--selected {
-    .input-port-border {
-        border-color: rgb(0, 192, 255) !important;
+    .diagramBlock {
+        border-color: rgb(255, 255, 255) !important;
     }
-
-    .output-port-border {
-        border-color: rgb(0, 192, 255) !important;
-    }    
 }
 
 .srd-default-link--path-selected {
     animation: 0s !important;
+    stroke: #ffffff !important;
 }
       
 .srd-port {
     grid-column: 1;
     grid-row: 1;
     background: #2796B2;
-    border-radius: 10px;
+    border-radius: 20px;
     transform: scale(1);
+    width: 20px;
+    height: 20px;
 
     &.connected {
         background: #CAB422;
     }
 
     &:hover {
-        background: greenyellow !important;
+        background: #DDDDDD !important;
     }
 }
 
 .diagramBlock {
-    background: white;
+    background: gray;
     width: 100%;
     border: 4px solid black;
-    border-radius: 20px;
+    border-radius: 12px;
     display: grid;
     grid-template-rows: 30px auto;
-    grid-template-columns: 50% 50%;
+    grid-template-columns: 50% 50%;    
+    color:white;
 
     &.input {
         background: #40866E;
@@ -51,6 +51,34 @@
 
         .outputs {
             transform: translateY(5px);
+        }
+
+        &.Float {
+            background: #cb9e27;
+        }
+
+        &.Vector2 {
+            background: #16bcb1;
+        }      
+        
+        &.Vector3 {
+            background: #b786cb;
+        }          
+
+        &.Color3 {
+            background: #b786cb;
+        }          
+
+        &.Vector4 {
+            background: #be5126;
+        }          
+
+        &.Color4 {
+            background: #be5126;
+        }          
+
+        &.Matrix {
+            background: #591990;
         }
     }
 
@@ -68,7 +96,7 @@
         background: #4086BB;
 
         .value {
-            grid-row: 2;
+            grid-row: 3;
         }
 
         .outputs, .inputs {
@@ -76,8 +104,19 @@
         }        
     }
 
+    &.gradient {
+        .outputs, .inputs {
+            transform: translateY(5px);
+        }        
+        height: 70px;
+    }
+
     &.attribute {
         background: #40866E;
+    }
+
+    &.constant {
+        background: #646464 !important;
     }
 
     &.output {
@@ -93,8 +132,8 @@
         grid-row: 1;
         grid-column: 1 / span 2;
         border: 4px solid black;
-        border-top-right-radius: 16px;
-        border-top-left-radius: 16px;
+        border-top-right-radius: 7px;
+        border-top-left-radius: 7px;
         font-size: 16px;
         text-align: center;
         margin-top: -1px;    
@@ -130,7 +169,7 @@
 
         .input-port {
             display: grid;
-            grid-template-columns: 10px calc(100% - 10px);
+            grid-template-columns: 12px calc(100% - 12px);
             grid-template-rows: 100%;
 
             .input-port-plug {
@@ -138,7 +177,7 @@
                 grid-row: 1;
                 display: grid;
                 align-content: center;
-                margin-left: -8px;
+                margin-left: -11px;
                 position: relative;
 
                 &:hover {           
@@ -158,29 +197,15 @@
                     transform: scale(1);
 
                     img {
-                        width: 12px;
+                        width: 20px;
                     }
-                }
-
-                .input-port-border {
-                    pointer-events: none;
-                    grid-column: 1;
-                    grid-row: 1;     
-                    border: 4px solid black;
-                    width: 4px;
-                    height: 7px;
-                    border-right: 0;
-                    position: absolute;
-                    border-bottom-left-radius: 10px;
-                    border-top-left-radius: 10px;      
-                    transform: translateX(-2px) scale(1.2);
                 }
             }
 
             .input-port-label {
                 grid-column: 2;
                 grid-row: 1;         
-                margin-bottom: 2px;    
+                margin-bottom: 4px;    
                 overflow: hidden;
                 white-space: nowrap;
                 text-overflow: ellipsis;   
@@ -195,7 +220,7 @@
 
         .output-port {
             display: grid;
-            grid-template-columns: calc(100% - 10px) 10px;
+            grid-template-columns: calc(100% - 12px) 12px;
             grid-template-rows: 100%;
 
             .output-port-plug {
@@ -204,7 +229,7 @@
                 display: grid;
                 align-content: center;
                 position: relative;    
-                margin-left: 3px;
+                margin-left: 4px;
 
                 &:hover {           
                     .output-port-connection {
@@ -222,21 +247,8 @@
                     transform: scale(1);
 
                     img {
-                        width: 12px;
+                        width: 20px;
                     }
-                }
-
-                .output-port-border {
-                    pointer-events: none;
-                    grid-column: 1;
-                    grid-row: 1;     
-                    border: 4px solid black;
-                    width: 4px;
-                    border-left: 0;
-                    border-left: 0;
-                    transform: translateX(9px) scale(1.2);
-                    border-bottom-right-radius: 10px;
-                    border-top-right-radius: 10px;
                 }
             }
 
@@ -244,7 +256,7 @@
                 text-align: right;
                 grid-column: 1;
                 grid-row: 1;                        
-                margin-bottom: 2px;   
+                margin-bottom: 4px;   
                 overflow: hidden;
                 white-space: nowrap;
                 text-overflow: ellipsis;   
@@ -256,6 +268,8 @@
         display: grid;
         grid-template-rows: 30px auto 1fr;
         grid-template-columns: calc(100% - 60px) 60px;
+        background: #323232;
+        color: white;
 
         .inputs {
             grid-column: 1;
@@ -272,7 +286,7 @@
             grid-column: 1;
             grid-row: 3;     
             overflow: hidden;
-            border-bottom-left-radius: 16px;
+            border-bottom-left-radius: 7px;
             border: black 4px solid;
             border-left: 0px;
             border-bottom: 0px;

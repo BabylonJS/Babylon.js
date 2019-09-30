@@ -1,15 +1,15 @@
 import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../Misc/typeStore';
 /**
- * Block used to get the opposite of a value
+ * Block used to get the reciprocal (1 / x) of a value
  */
-export class OppositeBlock extends NodeMaterialBlock {
+export class ReciprocalBlock extends NodeMaterialBlock {
     /**
-     * Creates a new OppositeBlock
+     * Creates a new ReciprocalBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -19,6 +19,7 @@ export class OppositeBlock extends NodeMaterialBlock {
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
+        this._outputs[0].excludedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Matrix);
     }
 
     /**
@@ -26,7 +27,7 @@ export class OppositeBlock extends NodeMaterialBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "OppositeBlock";
+        return "ReciprocalBlock";
     }
 
     /**
@@ -48,10 +49,10 @@ export class OppositeBlock extends NodeMaterialBlock {
 
         let output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = 1. - ${this.input.associatedVariableName};\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = 1. / ${this.input.associatedVariableName};\r\n`;
 
         return this;
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.OppositeBlock"] = OppositeBlock;
+_TypeStore.RegisteredTypes["BABYLON.ReciprocalBlock"] = ReciprocalBlock;

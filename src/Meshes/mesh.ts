@@ -496,20 +496,22 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     // Methods
-    public instantiateHierarychy(newParent: Nullable<TransformNode> = null): Nullable<TransformNode> {
-        let instance = this.createInstance("instance of " + (this.name || this.id));
+    public instantiateHierarchy(newParent: Nullable<TransformNode> = null): Nullable<TransformNode> {
+        let instance = this.getTotalVertices() > 0 ? this.createInstance("instance of " + (this.name || this.id)) :  this.clone("Clone of " +  (this.name || this.id), newParent || this.parent, true);
 
-        instance.parent = newParent || this.parent;
-        instance.position = this.position.clone();
-        instance.scaling = this.scaling.clone();
-        if (this.rotationQuaternion)  {
-            instance.rotationQuaternion = this.rotationQuaternion.clone();
-        } else {
-            instance.rotation = this.rotation.clone();
+        if (instance) {
+            instance.parent = newParent || this.parent;
+            instance.position = this.position.clone();
+            instance.scaling = this.scaling.clone();
+            if (this.rotationQuaternion)  {
+                instance.rotationQuaternion = this.rotationQuaternion.clone();
+            } else {
+                instance.rotation = this.rotation.clone();
+            }
         }
 
         for (var child of this.getChildTransformNodes(true)) {
-            child.instantiateHierarychy(instance);
+            child.instantiateHierarchy(instance);
         }
 
         return instance;
@@ -1466,7 +1468,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 batchCache.visibleInstances[subMeshId] = visibleInstances[defaultRenderId];
             }
         }
-        batchCache.hardwareInstancedRendering[subMeshId] = this._instanceDataStorage.hardwareInstancedRendering && (batchCache.visibleInstances[subMeshId] !== null) && (batchCache.visibleInstances[subMeshId] !== undefined);
+        batchCache.hardwareInstancedRendering[subMeshId] =
+                        this._instanceDataStorage.hardwareInstancedRendering
+                        && (batchCache.visibleInstances[subMeshId] !== null)
+                        && (batchCache.visibleInstances[subMeshId] !== undefined);
         this._instanceDataStorage.previousBatch = batchCache;
         return batchCache;
     }
@@ -1607,9 +1612,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
      * @param subMesh defines the subMesh to render
      * @param enableAlphaMode defines if alpha mode can be changed
+     * @param effectiveMeshReplacement defines an optional mesh used to provide info for the rendering
      * @returns the current mesh
      */
-    public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
+    public render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
         var scene = this.getScene();
 
         if (scene._isInIntermediateRendering()) {
@@ -1682,16 +1688,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        const effectiveMesh = this._effectiveMesh;
+        const effectiveMesh = effectiveMeshReplacement || this._effectiveMesh;
 
         var sideOrientation: Nullable<number>;
 
-        if (!instanceDataStorage.isFrozen) {
+        if (!instanceDataStorage.isFrozen && this._effectiveMaterial.backFaceCulling) {
+            let mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
             sideOrientation = this.overrideMaterialSideOrientation;
             if (sideOrientation == null) {
                 sideOrientation = this._effectiveMaterial.sideOrientation;
             }
-            if (effectiveMesh._getWorldMatrixDeterminant() < 0) {
+            if (mainDeterminant < 0) {
                 sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
             }
             instanceDataStorage.sideOrientation = sideOrientation!;

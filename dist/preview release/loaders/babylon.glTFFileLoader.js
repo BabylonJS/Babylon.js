@@ -1740,22 +1740,22 @@ var GLTFLoaderBase = /** @class */ (function () {
             var blendFunc = functions.blendFuncSeparate;
             if (blendFunc) {
                 if (blendFunc[0] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].SRC_ALPHA && blendFunc[1] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE_MINUS_SRC_ALPHA && blendFunc[2] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE && blendFunc[3] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE) {
-                    shaderMaterial.alphaMode = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Engine"].ALPHA_COMBINE;
+                    shaderMaterial.alphaMode = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_COMBINE;
                 }
                 else if (blendFunc[0] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE && blendFunc[1] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE && blendFunc[2] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ZERO && blendFunc[3] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE) {
-                    shaderMaterial.alphaMode = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Engine"].ALPHA_ONEONE;
+                    shaderMaterial.alphaMode = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_ONEONE;
                 }
                 else if (blendFunc[0] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].SRC_ALPHA && blendFunc[1] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE && blendFunc[2] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ZERO && blendFunc[3] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE) {
-                    shaderMaterial.alphaMode = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Engine"].ALPHA_ADD;
+                    shaderMaterial.alphaMode = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_ADD;
                 }
                 else if (blendFunc[0] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ZERO && blendFunc[1] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE_MINUS_SRC_COLOR && blendFunc[2] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE && blendFunc[3] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE) {
-                    shaderMaterial.alphaMode = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Engine"].ALPHA_SUBTRACT;
+                    shaderMaterial.alphaMode = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_SUBTRACT;
                 }
                 else if (blendFunc[0] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].DST_COLOR && blendFunc[1] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ZERO && blendFunc[2] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE && blendFunc[3] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE) {
-                    shaderMaterial.alphaMode = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Engine"].ALPHA_MULTIPLY;
+                    shaderMaterial.alphaMode = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_MULTIPLY;
                 }
                 else if (blendFunc[0] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].SRC_ALPHA && blendFunc[1] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE_MINUS_SRC_COLOR && blendFunc[2] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE && blendFunc[3] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE) {
-                    shaderMaterial.alphaMode = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Engine"].ALPHA_MAXIMIZED;
+                    shaderMaterial.alphaMode = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_MAXIMIZED;
                 }
             }
         }
@@ -4694,10 +4694,12 @@ var GLTFLoader = /** @class */ (function () {
         else if (primitive.targets.length !== node._numMorphTargets) {
             throw new Error(context + ": Primitives do not have the same number of targets");
         }
+        var targetNames = mesh.extras ? mesh.extras.targetNames : null;
         babylonMesh.morphTargetManager = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["MorphTargetManager"](babylonMesh.getScene());
         for (var index = 0; index < primitive.targets.length; index++) {
             var weight = node.weights ? node.weights[index] : mesh.weights ? mesh.weights[index] : 0;
-            babylonMesh.morphTargetManager.addTarget(new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["MorphTarget"]("morphTarget" + index, weight, babylonMesh.getScene()));
+            var name_4 = targetNames ? targetNames[index] : "morphTarget" + index;
+            babylonMesh.morphTargetManager.addTarget(new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["MorphTarget"](name_4, weight, babylonMesh.getScene()));
             // TODO: tell the target whether it has positions, normals, tangents
         }
     };
@@ -5843,8 +5845,8 @@ var GLTFLoader = /** @class */ (function () {
     };
     GLTFLoader.prototype._forEachExtensions = function (action) {
         for (var _i = 0, _a = GLTFLoader._ExtensionNames; _i < _a.length; _i++) {
-            var name_4 = _a[_i];
-            var extension = this._extensions[name_4];
+            var name_5 = _a[_i];
+            var extension = this._extensions[name_5];
             if (extension.enabled) {
                 action(extension);
             }
@@ -5852,10 +5854,10 @@ var GLTFLoader = /** @class */ (function () {
     };
     GLTFLoader.prototype._applyExtensions = function (property, functionName, actionAsync) {
         for (var _i = 0, _a = GLTFLoader._ExtensionNames; _i < _a.length; _i++) {
-            var name_5 = _a[_i];
-            var extension = this._extensions[name_5];
+            var name_6 = _a[_i];
+            var extension = this._extensions[name_6];
             if (extension.enabled) {
-                var id = name_5 + "." + functionName;
+                var id = name_6 + "." + functionName;
                 var loaderProperty = property;
                 loaderProperty._activeLoaderExtensionFunctions = loaderProperty._activeLoaderExtensionFunctions || {};
                 var activeLoaderExtensionFunctions = loaderProperty._activeLoaderExtensionFunctions;

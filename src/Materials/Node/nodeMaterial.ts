@@ -7,10 +7,10 @@ import { Color4 } from '../../Maths/math.color';
 import { Mesh } from '../../Meshes/mesh';
 import { Engine } from '../../Engines/engine';
 import { NodeMaterialBuildState } from './nodeMaterialBuildState';
-import { EffectCreationOptions, EffectFallbacks } from '../effect';
+import { IEffectCreationOptions } from '../effect';
 import { BaseTexture } from '../../Materials/Textures/baseTexture';
 import { Observable, Observer } from '../../Misc/observable';
-import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
 import { NodeMaterialBuildStateSharedData } from './nodeMaterialBuildStateSharedData';
 import { SubMesh } from '../../Meshes/subMesh';
 import { MaterialDefines } from '../../Materials/materialDefines';
@@ -28,6 +28,7 @@ import { SerializationHelper } from '../../Misc/decorators';
 import { TextureBlock } from './Blocks/Dual/textureBlock';
 import { ReflectionTextureBlock } from './Blocks/Dual/reflectionTextureBlock';
 import { FileTools } from '../../Misc/fileTools';
+import { EffectFallbacks } from '../effectFallbacks';
 
 // declare NODEEDITOR namespace for compilation issue
 declare var NODEEDITOR: any;
@@ -467,9 +468,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         for (var input of node.inputs) {
-            if (!node.isInput) {
-                input.associatedVariableName = "";
-            }
+            input.associatedVariableName = "";
 
             let connectedPoint = input.connectedPoint;
             if (connectedPoint) {
@@ -539,6 +538,7 @@ export class NodeMaterial extends PushMaterial {
         this._sharedData.buildId = this._buildId;
         this._sharedData.emitComments = this._options.emitComments;
         this._sharedData.verbose = verbose;
+        this._sharedData.scene = this.getScene();
 
         // Initialize blocks
         let vertexNodes: NodeMaterialBlock[] = [];
@@ -565,6 +565,7 @@ export class NodeMaterial extends PushMaterial {
         // Fragment
         this._fragmentCompilationState.uniforms = this._vertexCompilationState.uniforms.slice(0);
         this._fragmentCompilationState._uniformDeclaration = this._vertexCompilationState._uniformDeclaration;
+        this._fragmentCompilationState._constantDeclaration = this._vertexCompilationState._constantDeclaration;
         this._fragmentCompilationState._vertexState = this._vertexCompilationState;
 
         for (var fragmentOutputNode of fragmentNodes) {
@@ -761,7 +762,7 @@ export class NodeMaterial extends PushMaterial {
                 fragment: "nodeMaterial" + this._buildId,
                 vertexSource: this._vertexCompilationState.compilationString,
                 fragmentSource: this._fragmentCompilationState.compilationString
-            }, <EffectCreationOptions>{
+            }, <IEffectCreationOptions>{
                 attributes: this._vertexCompilationState.attributes,
                 uniformsNames: mergedUniforms,
                 uniformBuffersNames: mergedUniformBuffers,
@@ -887,7 +888,7 @@ export class NodeMaterial extends PushMaterial {
             return [];
         }
 
-        return this._sharedData.textureBlocks.filter((tb) => tb.texture);
+        return this._sharedData.textureBlocks;
     }
 
     /**
@@ -1218,6 +1219,7 @@ export class NodeMaterial extends PushMaterial {
         let nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(source.name, scene), source, scene, rootUrl);
 
         nodeMaterial.loadFromSerialization(source, rootUrl);
+        nodeMaterial.build();
 
         return nodeMaterial;
     }
