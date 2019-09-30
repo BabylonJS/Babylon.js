@@ -18,7 +18,7 @@ cmake_minimum_required(VERSION 3.12)
 #                    with the right header and lib files. No need to use ES3 dynamic
 #                    detection.
 #   [24, infinite)   ES2 & ES3 & Vulkan
-
+project(BabylonNative)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 set(BABYLON_NATIVE_PLATFORM "Android")
 set(OPENGL_LIB GLESv3)
