@@ -4,7 +4,7 @@ trigger:
 jobs:
 - job: androidJNI
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'macOS-10.14'
     
   steps:
   - script: |
