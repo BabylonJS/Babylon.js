@@ -566,6 +566,7 @@ declare module "babylonjs-node-editor/components/diagram/texture/textureProperty
         }): void;
         private _generateRandomForCache;
         updateAfterTextureLoad(): void;
+        removeTexture(): void;
         /**
          * Replaces the texture of the node
          * @param file the file of the texture to use
@@ -2287,6 +2288,7 @@ declare module NODEEDITOR {
         }): void;
         private _generateRandomForCache;
         updateAfterTextureLoad(): void;
+        removeTexture(): void;
         /**
          * Replaces the texture of the node
          * @param file the file of the texture to use

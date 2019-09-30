@@ -42135,7 +42135,12 @@ var TextureLinkLineComponent = /** @class */ (function (_super) {
             var blob = new Blob([data], { type: "octet/stream" });
             var url = URL.createObjectURL(blob);
             var texture = new babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__["Texture"](url, material.getScene(), false, false);
-            material[_this.props.propertyName] = texture;
+            if (_this.props.propertyName) {
+                material[_this.props.propertyName] = texture;
+            }
+            else if (_this.props.onTextureCreated) {
+                _this.props.onTextureCreated(texture);
+            }
             _this.forceUpdate();
         }, undefined, true);
     };
@@ -42143,7 +42148,7 @@ var TextureLinkLineComponent = /** @class */ (function (_super) {
         var _this = this;
         var texture = this.props.texture;
         if (!texture) {
-            if (this.props.propertyName) {
+            if (this.props.propertyName || this.props.onTextureCreated) {
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_6__["FileButtonLineComponent"], { label: "Add " + this.props.label + " texture", onClick: function (file) { return _this.updateTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }));
             }
             return null;
@@ -45130,7 +45135,7 @@ var NodeMaterialPropertyGridComponent = /** @class */ (function (_super) {
             return null;
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TEXTURES" }, textureBlocks.map(function (textureBlock, i) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextureLinkLineComponent"], { label: textureBlock.name, key: textureBlock.texture.uniqueId + i, texture: textureBlock.texture, material: material, onSelectionChangedObservable: _this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }));
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextureLinkLineComponent"], { label: textureBlock.name, key: i, texture: textureBlock.texture, material: material, onTextureCreated: function (texture) { return textureBlock.texture = texture; }, onSelectionChangedObservable: _this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }));
         })));
     };
     NodeMaterialPropertyGridComponent.prototype.renderInputValues = function () {
