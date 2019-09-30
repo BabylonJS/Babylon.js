@@ -888,7 +888,7 @@ export class NodeMaterial extends PushMaterial {
             return [];
         }
 
-        return this._sharedData.textureBlocks.filter((tb) => tb.texture);
+        return this._sharedData.textureBlocks;
     }
 
     /**
