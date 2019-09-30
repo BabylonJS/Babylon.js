@@ -3,6 +3,7 @@ import { IInternalTextureLoader } from '../Materials/Textures/internalTextureLoa
 import { Effect, IEffectCreationOptions } from '../Materials/effect';
 import { _DevTools } from '../Misc/devTools';
 import { IShaderProcessor } from './Processors/iShaderProcessor';
+import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { UniformBuffer } from '../Materials/uniformBuffer';
 import { Nullable, DataArray, IndicesArray } from '../types';
 import { EngineCapabilities } from './engineCapabilities';
@@ -171,7 +172,7 @@ export class ThinEngine {
     // Public members
 
     /** @hidden */
-    public _shaderProcessor: IShaderProcessor;
+    public _shaderProcessor: Nullable<IShaderProcessor>;
 
     /**
      * Gets or sets a boolean that indicates if textures must be forced to power of 2 size even if not required
@@ -247,7 +248,7 @@ export class ThinEngine {
     /** @hidden */
     public _badDesktopOS = false;
 
-    private _hardwareScalingLevel: number;
+    protected _hardwareScalingLevel: number;
     /** @hidden */
     public _caps: EngineCapabilities;
     private _isStencilEnable: boolean;
@@ -437,6 +438,24 @@ export class ThinEngine {
      */
     public onBeforeTextureInitObservable = new Observable<Texture>();
 
+    /** @hidden */
+    protected _isWebGPU: boolean = false;
+    /**
+     * Gets a boolean indicating if the engine runs in WebGPU or not.
+     */
+    public get isWebGPU(): boolean {
+        return this._isWebGPU;
+    }
+
+    /** @hidden */
+    protected _shaderPlatformName: string;
+    /**
+     * Gets the shader platfrom name used by the effects.
+     */
+    public get shaderPlatformName(): string {
+        return this._shaderPlatformName;
+    }
+
     /**
      * Creates a new engine
      * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which alreay used the WebGL context
@@ -568,10 +587,12 @@ export class ThinEngine {
                     this._gl = <any>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
                     if (this._gl) {
                         this._webGLVersion = 2.0;
+                        this._shaderPlatformName = "WEBGL2";
 
                         // Prevent weird browsers to lie :-)
                         if (!this._gl.deleteQuery) {
                             this._webGLVersion = 1.0;
+                            this._shaderPlatformName = "WEBGL1";
                         }
                     }
                 } catch (e) {
@@ -599,6 +620,10 @@ export class ThinEngine {
 
             if (this._gl.renderbufferStorageMultisample) {
                 this._webGLVersion = 2.0;
+                this._shaderPlatformName = "WEBGL2";
+            }
+            else {
+                this._shaderPlatformName = "WEBGL1";
             }
 
             const attributes = this._gl.getContextAttributes();
@@ -641,6 +666,35 @@ export class ThinEngine {
         this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
         console.log(`Babylon.js v${ThinEngine.Version} - ${this.description}`);
+    }
+
+    /**
+     * Shared initialization across engines types.
+     * @param canvas The canvas associated with this instance of the engine.
+     * @param doNotHandleTouchAction Defines that engine should ignore modifying touch action attribute and style
+     * @param audioEngine Defines if an audio engine should be created by default
+     */
+    protected _sharedInit(canvas: HTMLCanvasElement, doNotHandleTouchAction: boolean, audioEngine: boolean) {
+        this._renderingCanvas = canvas;
+
+        // Shader processor
+        this._shaderProcessor = this._getShaderProcessor();
+    }
+
+    /**
+     * Gets a shader processor implementation fitting with the current engine type.
+     * @returns The shader processor implementation.
+     */
+    protected _getShaderProcessor(): Nullable<IShaderProcessor> {
+        if (this.webGLVersion > 1) {
+            return new WebGL2ShaderProcessor();
+        }
+        return null;
+    }
+
+    /** @hidden */
+    public _getShaderProcessingContext(): Nullable<ShaderProcessingContext> {
+        return null;
     }
 
     private _rebuildInternalTextures(): void {
@@ -1991,8 +2045,7 @@ export class ThinEngine {
 
             return compiledEffect;
         }
-        var effect = new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters);
-        effect._key = name;
+        var effect = new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters, name);
         this._compiledEffects[name] = effect;
 
         return effect;
@@ -2060,9 +2113,10 @@ export class ThinEngine {
 
     /**
      * Creates a new pipeline context
+     * @param shaderProcessingContext defines the shader processing context used during the processing if available
      * @returns the new pipeline
      */
-    public createPipelineContext(): IPipelineContext {
+    public createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
         var pipelineContext = new WebGLPipelineContext();
         pipelineContext.engine = this;
 
@@ -2157,7 +2211,8 @@ export class ThinEngine {
     public _preparePipelineContext(pipelineContext: IPipelineContext, vertexSourceCode: string, fragmentSourceCode: string, createAsRaw: boolean,
         rebuildRebind: any,
         defines: Nullable<string>,
-        transformFeedbackVaryings: Nullable<string[]>) {
+        transformFeedbackVaryings: Nullable<string[]>,
+        key: string) {
         let webGLRenderingState = pipelineContext as WebGLPipelineContext;
 
         if (createAsRaw) {
@@ -3521,8 +3576,9 @@ export class ThinEngine {
      * @param channel The texture channel
      * @param uniform The uniform to set
      * @param texture The texture to apply
+     * @param name The name of the uniform in the effect
      */
-    public setTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>): void {
+    public setTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>, name: string): void {
         if (channel === undefined) {
             return;
         }
