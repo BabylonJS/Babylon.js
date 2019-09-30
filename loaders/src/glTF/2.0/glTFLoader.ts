@@ -866,10 +866,13 @@ export class GLTFLoader implements IGLTFLoader {
             throw new Error(`${context}: Primitives do not have the same number of targets`);
         }
 
+        const targetNames = mesh.extras ? mesh.extras.targetNames : null;
+
         babylonMesh.morphTargetManager = new MorphTargetManager(babylonMesh.getScene());
         for (let index = 0; index < primitive.targets.length; index++) {
             const weight = node.weights ? node.weights[index] : mesh.weights ? mesh.weights[index] : 0;
-            babylonMesh.morphTargetManager.addTarget(new MorphTarget(`morphTarget${index}`, weight, babylonMesh.getScene()));
+            const name = targetNames ? targetNames[index] : `morphTarget${index}`;
+            babylonMesh.morphTargetManager.addTarget(new MorphTarget(name, weight, babylonMesh.getScene()));
             // TODO: tell the target whether it has positions, normals, tangents
         }
     }
