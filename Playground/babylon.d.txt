@@ -24822,6 +24822,7 @@ declare module BABYLON {
         private _isVisibilityBoxLocked;
         private _alwaysVisible;
         private _depthSort;
+        private _expandable;
         private _shapeCounter;
         private _copy;
         private _color;
@@ -24843,6 +24844,7 @@ declare module BABYLON {
          * * updatable (optional boolean, default true) : if the SPS must be updatable or immutable.
          * * isPickable (optional boolean, default false) : if the solid particles must be pickable.
          * * enableDepthSort (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.
+         * * expandable (optional boolean, default false) : if particles can still be added after the initial SPS mesh creation.
          * * particleIntersection (optional boolean, default false) : if the solid particle intersections must be computed.
          * * boundingSphereOnly (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
          * * bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance.
@@ -24855,6 +24857,7 @@ declare module BABYLON {
             particleIntersection?: boolean;
             boundingSphereOnly?: boolean;
             bSphereRadiusFactor?: number;
+            expandable?: boolean;
         });
         /**
          * Builds the SPS underlying mesh. Returns a standard Mesh.
@@ -25004,6 +25007,11 @@ declare module BABYLON {
         * Default : `true`
         */
         depthSortParticles: boolean;
+        /**
+         * Gets if the SPS is created as expandable at construction time.
+         * Default : `false`
+         */
+        readonly expandable: boolean;
         /**
          * This function does nothing. It may be overwritten to set all the particle first values.
          * The SPS doesn't call this function, you may have to call it by your own.
