@@ -29,14 +29,14 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
 
         let texture = this.props.node.texture as BaseTexture;
 
-        this.state = {isEmbedded: !texture || texture.name.substring(0, 4) !== "http", loadAsCubeTexture: texture && texture.isCube};
+        this.state = {isEmbedded: !texture || texture.name.substring(0, 4) === "data", loadAsCubeTexture: texture && texture.isCube};
     }
 
     UNSAFE_componentWillUpdate(nextProps: ITexturePropertyTabComponentProps, nextState: {isEmbedded: boolean, loadAsCubeTexture: boolean}) {
         if (nextProps.node !== this.props.node) {
             let texture = nextProps.node.texture as BaseTexture;
 
-            nextState.isEmbedded = !texture || texture.name.substring(0, 4) !== "http";
+            nextState.isEmbedded = !texture || texture.name.substring(0, 4) === "data";
             nextState.loadAsCubeTexture = texture && texture.isCube;
         }
     }
@@ -53,6 +53,18 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
         this.forceUpdate();
+    }
+
+    removeTexture() {
+        let texture = this.props.node.texture as BaseTexture;
+
+        if (texture) {
+            texture.dispose();
+            (texture as any) = null;
+            this.props.node.texture = null;
+        }
+
+        this.updateAfterTextureLoad();
     }
 
 	/**
@@ -263,7 +275,7 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
                     }
                 </LineContainerComponent>
                 <LineContainerComponent title="SOURCE">
-                    <CheckBoxLineComponent label="Embed texture" isSelected={() => this.state.isEmbedded} onSelect={value => {
+                    <CheckBoxLineComponent label="Embed static texture" isSelected={() => this.state.isEmbedded} onSelect={value => {
                         this.setState({isEmbedded: value});
                         this.props.node.texture = null;
                         this.updateAfterTextureLoad();
@@ -284,6 +296,10 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
                     {
                         !this.state.isEmbedded && url &&
                         <ButtonLineComponent label="Refresh" onClick={() => this.replaceTextureWithUrl(url + "?nocache=" + this._generateRandomForCache())}/>
+                    }
+                    {
+                        texture &&
+                        <ButtonLineComponent label="Remove" onClick={() => this.removeTexture()}/>
                     }
                 </LineContainerComponent>
             </div>
