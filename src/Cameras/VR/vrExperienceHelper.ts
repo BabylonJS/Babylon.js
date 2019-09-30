@@ -916,6 +916,8 @@ export class VRExperienceHelper {
             if (!this._useCustomVRButton && this._btnVR) {
                 this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
                 this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
+                // make sure the button is visible after setting its position
+                this.updateButtonVisibility();
             }
         }
     }
