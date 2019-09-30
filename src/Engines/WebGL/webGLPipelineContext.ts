@@ -66,7 +66,9 @@ export class WebGLPipelineContext implements IPipelineContext {
             samplers[name] = index;
         });
 
-        attributes.push(...engine.getAttributes(this, attributesNames));
+        for (let attr of engine.getAttributes(this, attributesNames)) {
+            attributes.push(attr);
+        }
     }
 
     /**

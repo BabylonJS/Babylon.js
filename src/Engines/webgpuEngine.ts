@@ -3,12 +3,14 @@ import { Nullable, DataArray, IndicesArray, FloatArray } from "../types";
 import { Scene } from "../scene";
 import { Color4 } from "../Maths/math";
 import { Scalar } from "../Maths/math.scalar";
-import { Engine, EngineCapabilities, InstancingAttributeInfo } from "../Engines/engine";
+import { Engine } from "../Engines/engine";
+import { EngineCapabilities } from "../Engines/engineCapabilities";
+import { InstancingAttributeInfo } from "../Engines/instancingAttributeInfo";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
-import { InternalTexture } from "../Materials/Textures/internalTexture";
-import { EffectCreationOptions, EffectFallbacks, Effect } from "../Materials/effect";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
+import { IEffectCreationOptions, Effect } from "../Materials/effect";
+import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Constants } from "./constants";
 import { WebGPUConstants } from "./WebGPU/webgpuConstants";
 import { VertexBuffer } from "../Meshes/buffer";
@@ -761,12 +763,12 @@ export class WebGPUEngine extends Engine {
     //                              Effects
     //------------------------------------------------------------------------------
 
-    public createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks,
+    public createEffect(baseName: any, attributesNamesOrOptions: string[] | IEffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks,
         onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect {
         const vertex = baseName.vertexElement || baseName.vertex || baseName;
         const fragment = baseName.fragmentElement || baseName.fragment || baseName;
 
-        const name = vertex + "+" + fragment + "@" + (defines ? defines : (<EffectCreationOptions>attributesNamesOrOptions).defines);
+        const name = vertex + "+" + fragment + "@" + (defines ? defines : (<IEffectCreationOptions>attributesNamesOrOptions).defines);
         const shader = this._compiledShaders[name];
         if (shader) {
             return new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters, name, shader.sources);
@@ -1140,7 +1142,7 @@ export class WebGPUEngine extends Engine {
     }
 
     public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null, buffer: Nullable<ArrayBuffer | HTMLImageElement> = null, fallBack?: InternalTexture, format?: number): InternalTexture {
-        const texture = new InternalTexture(this, InternalTexture.DATASOURCE_URL);
+        const texture = new InternalTexture(this, InternalTextureSource.Url);
         const url = String(urlArg);
 
         // TODO WEBGPU. Find a better way.
@@ -1217,7 +1219,7 @@ export class WebGPUEngine extends Engine {
     }
 
     public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0, fallback: Nullable<InternalTexture> = null, excludeLoaders: Array<IInternalTextureLoader> = []): InternalTexture {
-        var texture = fallback ? fallback : new InternalTexture(this, InternalTexture.DATASOURCE_CUBE);
+        var texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Cube);
         texture.isCube = true;
         texture.url = rootUrl;
         texture.generateMipMaps = !noMipmap;
@@ -1393,7 +1395,7 @@ export class WebGPUEngine extends Engine {
             fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
             fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
         }
-        var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
+        var texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
 
         var width = size.width || size;
         var height = size.height || size;
@@ -2020,7 +2022,6 @@ export class WebGPUEngine extends Engine {
                         visibility: WebGPUConstants.GPUShaderStageBit_VERTEX | WebGPUConstants.GPUShaderStageBit_FRAGMENT,
                         type: WebGPUConstants.GPUBindingType_sampler
                     });
-                    console.log(bindingDefinition.textureDimension, bindingDefinition.name);
                 }
                 else {
                     bindings.push({
