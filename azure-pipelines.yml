@@ -14,7 +14,7 @@ jobs:
   - task: Gradle@2
     inputs:
         workingDirectory: 'TestApp/Source/Android'
-        gradleWrapperFile: 'gradlew'
+        gradleWrapperFile: 'TestApp/Source/Android/gradlew'
         gradleOptions: '-Xmx3072m'
         publishJUnitResults: false
         tasks: 'assembleDebug'
