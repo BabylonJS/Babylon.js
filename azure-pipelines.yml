@@ -10,12 +10,8 @@ jobs:
   - script: |
       git submodule update --init --recursive
     displayName: 'Checkout dependencies'
-  - script: |
-      set -eu
-      curl -Ls https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-mac.zip -o ninja-mac.zip
-      unzip ninja-mac.zip
-      sudo cp -v ninja /usr/local/bin/
-    displayName: 'Prepare System'
+  - script: choco install ninja
+    displayName: Install Ninja
   - task: Gradle@2
     inputs:
         workingDirectory: 'TestApp/Source/Android'
