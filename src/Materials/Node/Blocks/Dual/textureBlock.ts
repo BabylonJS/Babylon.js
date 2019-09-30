@@ -175,6 +175,8 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         if (!this.texture || !this.texture.getTextureMatrix) {
+            defines.setValue(this._defineName, false);
+            defines.setValue(this._mainUVDefineName, true);
             return;
         }
 
