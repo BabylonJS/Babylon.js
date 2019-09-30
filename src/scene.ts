@@ -54,6 +54,7 @@ import { Color4, Color3 } from './Maths/math.color';
 import { Plane } from './Maths/math.plane';
 import { Frustum } from './Maths/math.frustum';
 import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
+import { InstancedMesh } from './Meshes/instancedMesh';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -3374,7 +3375,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             // Switch to current LOD
-            const meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
+            let meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
             if (meshToRender === undefined || meshToRender === null) {
                 continue;
             }
@@ -3397,6 +3398,10 @@ export class Scene extends AbstractScene implements IAnimatable {
                 if (mesh._activate(this._renderId, false)) {
                     if (!mesh.isAnInstance) {
                         meshToRender._internalAbstractMeshDataInfo._onlyForInstances = false;
+                    } else {
+                        if ((mesh as InstancedMesh)._actAsRegularMesh) {
+                            meshToRender = mesh;
+                        }
                     }
                     meshToRender._internalAbstractMeshDataInfo._isActive = true;
                     this._activeMesh(mesh, meshToRender);
