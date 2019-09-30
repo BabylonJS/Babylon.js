@@ -25,19 +25,19 @@ import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingCo
 import { Tools } from "../Misc/tools";
 
 /**
- * Options to load the associated Shaderc library
+ * Options to load the associated Glslang library
  */
-export interface ShadercOptions {
+export interface GlslangOptions {
     /**
-     * Defines an existing instance of shaderC (usefull in modules who do not access the global instance).
+     * Defines an existing instance of Glslang (usefull in modules who do not access the global instance).
      */
-    shaderc?: any;
+    glslang?: any;
     /**
-     * Defines the URL of the shaderc JS File.
+     * Defines the URL of the glslang JS File.
      */
     jsPath?: string;
     /**
-     * Defines the URL of the shaderc WASM File.
+     * Defines the URL of the glslang WASM File.
      */
     wasmPath?: string;
 }
@@ -97,10 +97,10 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
  * The web GPU engine class provides support for WebGPU version of babylon.js.
  */
 export class WebGPUEngine extends Engine {
-    // Default shaderc options.
-    private static readonly _shadercDefaultOptions: ShadercOptions = {
-        jsPath: "https://preview.babylonjs.com/shaderc/shaderc.js",
-        wasmPath: "https://preview.babylonjs.com/shaderc/shaderc.wasm"
+    // Default glslang options.
+    private static readonly _glslangDefaultOptions: GlslangOptions = {
+        jsPath: "https://preview.babylonjs.com/glslang/glslang.js",
+        wasmPath: "https://preview.babylonjs.com/glslang/glslang.wasm"
     };
 
     // Page Life cycle and constants
@@ -113,7 +113,7 @@ export class WebGPUEngine extends Engine {
     // Engine Life Cycle
     private _canvas: HTMLCanvasElement;
     private _options: WebGPUEngineOptions;
-    private _shaderc: any = null;
+    private _glslang: any = null;
     private _adapter: GPUAdapter;
     private _device: GPUDevice;
     private _context: GPUCanvasContext;
@@ -234,13 +234,13 @@ export class WebGPUEngine extends Engine {
 
     /**
      * Initializes the WebGPU context and dependencies.
-     * @param shadercOptions Defines the ShaderC compiler options if necessary
+     * @param glslangOptions Defines the GLSLang compiler options if necessary
      * @returns a promise notifying the readiness of the engine.
      */
-    public initAsync(shadercOptions?: ShadercOptions): Promise<void> {
-        return this._initShaderc(shadercOptions)
-            .then((shaderc: any) => {
-                this._shaderc = shaderc;
+    public initAsync(glslangOptions?: GlslangOptions): Promise<void> {
+        return this._initGlslang(glslangOptions)
+            .then((glslang: any) => {
+                this._glslang = glslang;
                 return navigator.gpu!.requestAdapter(this._options);
             })
             .then((adapter: GPUAdapter) => {
@@ -261,33 +261,29 @@ export class WebGPUEngine extends Engine {
             });
     }
 
-    private _initShaderc(shadercOptions?: ShadercOptions): Promise<any> {
-        shadercOptions = shadercOptions || { };
-        shadercOptions = {
-            ...WebGPUEngine._shadercDefaultOptions,
-            ...shadercOptions
+    private _initGlslang(glslangOptions?: GlslangOptions): Promise<any> {
+        glslangOptions = glslangOptions || { };
+        glslangOptions = {
+            ...WebGPUEngine._glslangDefaultOptions,
+            ...glslangOptions
         };
 
-        if (shadercOptions.shaderc) {
-            return Promise.resolve(shadercOptions.shaderc);
+        if (glslangOptions.glslang) {
+            return Promise.resolve(glslangOptions.glslang);
         }
 
-        const wasmOptions = {
-            wasmBinaryFile: shadercOptions!.wasmPath
-        };
-
-        if ((window as any).Shaderc) {
-            return (window as any).Shaderc(wasmOptions);
+        if ((window as any).glslang) {
+            return (window as any).glslang(glslangOptions!.wasmPath);
         }
 
-        if (shadercOptions.jsPath && shadercOptions.wasmPath) {
-            return Tools.LoadScriptAsync(shadercOptions.jsPath)
+        if (glslangOptions.jsPath && glslangOptions.wasmPath) {
+            return Tools.LoadScriptAsync(glslangOptions.jsPath)
                 .then(() => {
-                    return (window as any).Shaderc(wasmOptions);
+                    return (window as any).glslang(glslangOptions!.wasmPath);
                 });
         }
 
-        return Promise.reject("shaderc is not available.");
+        return Promise.reject("gslang is not available.");
     }
 
     private _initializeLimits(): void {
@@ -781,20 +777,7 @@ export class WebGPUEngine extends Engine {
     }
 
     private _compileRawShaderToSpirV(source: string, type: string): Uint32Array {
-        const Shaderc = this._shaderc;
-        const compiler = new Shaderc.Compiler();
-        const opts = new Shaderc.CompileOptions();
-        const result = compiler.CompileGlslToSpv(source,
-            type === "fragment" ? Shaderc.shader_kind.fragment :
-                type === "vertex" ? Shaderc.shader_kind.vertex :
-                    type === "compute" ? Shaderc.shader_kind.compute : null,
-            "tempCompilation.glsl", "main", opts);
-        const error = result.GetErrorMessage();
-        if (error) {
-            Logger.Error(error);
-            throw new Error("Something went wrong while compile the shader.");
-        }
-        return result.GetBinary().slice();
+        return this._glslang.compileGLSL(source, type);
     }
 
     private _compileShaderToSpirV(source: string, type: string, defines: Nullable<string>, shaderVersion: string): Uint32Array {
@@ -2028,12 +2011,16 @@ export class WebGPUEngine extends Engine {
                         binding: j,
                         visibility: WebGPUConstants.GPUShaderStageBit_VERTEX | WebGPUConstants.GPUShaderStageBit_FRAGMENT,
                         type: WebGPUConstants.GPUBindingType_sampledTexture,
+                        textureDimension: bindingDefinition.textureDimension,
+                        // TODO WEBGPU. Handle texture component type properly.
+                        // textureComponentType?: GPUTextureComponentType,
                     }, {
                         // TODO WEBGPU. No Magic + 1 (coming from current 1 texture 1 sampler startegy).
                         binding: j + 1,
                         visibility: WebGPUConstants.GPUShaderStageBit_VERTEX | WebGPUConstants.GPUShaderStageBit_FRAGMENT,
                         type: WebGPUConstants.GPUBindingType_sampler
                     });
+                    console.log(bindingDefinition.textureDimension, bindingDefinition.name);
                 }
                 else {
                     bindings.push({

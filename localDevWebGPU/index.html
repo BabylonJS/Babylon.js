@@ -127,17 +127,17 @@
                         });
                     }
 
-                    var shadercOptions = { 
-                        jsPath: "/dist/preview release/shaderc/shaderc.js",
-                        wasmPath: "/dist/preview release/shaderc/shaderc.wasm"
+                    var glslangOptions = { 
+                        jsPath: "/dist/preview release/glslang/glslang.js",
+                        wasmPath: "/dist/preview release/glslang/glslang.wasm"
                     };
 
                     if (typeof createEngine !== "undefined") {
                         engine = createEngine();
-                        engine.initAsync(shadercOptions).then(() => onLoad(engine));
+                        engine.initAsync(glslangOptions).then(() => onLoad(engine));
                     } else {
                         engine = new BABYLON.WebGPUEngine(canvas);
-                        engine.initAsync(shadercOptions).then(() => onLoad(engine));
+                        engine.initAsync(glslangOptions).then(() => onLoad(engine));
                     }
 
                     BABYLONDEVTOOLS.Loader.debugShortcut(engine);
