@@ -71917,8 +71917,12 @@ var LogComponent = /** @class */ (function (_super) {
         logConsole.scrollTop = logConsole.scrollHeight;
     };
     LogComponent.prototype.render = function () {
+        var today = new Date();
+        var h = today.getHours();
+        var m = today.getMinutes();
+        var s = today.getSeconds();
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "log-console", ref: "log-console" }, this.state.logs.map(function (l, i) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: i, className: "log" + (l.isError ? " error" : "") }, l.message));
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: i, className: "log" + (l.isError ? " error" : "") }, h + ":" + m + ":" + s + ": " + l.message));
         })));
     };
     return LogComponent;

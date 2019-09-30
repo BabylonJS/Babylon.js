@@ -48783,8 +48783,8 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
                     if (!this._posDragEnd) {
                         // Record movement for generating replay code
                         this._posDragEnd = manager.gizmos.positionGizmo.onDragEndObservable.add(function () {
-                            if (manager.gizmos.positionGizmo && manager.gizmos.positionGizmo.attachedMesh && manager.gizmos.positionGizmo.attachedMesh.reservedDataStore) {
-                                var lightGizmo = manager.gizmos.positionGizmo.attachedMesh.reservedDataStore.lightGizmo;
+                            if (manager.gizmos.positionGizmo && manager.gizmos.positionGizmo.attachedMesh) {
+                                var lightGizmo = manager.gizmos.positionGizmo.attachedMesh.reservedDataStore ? manager.gizmos.positionGizmo.attachedMesh.reservedDataStore.lightGizmo : null;
                                 var obj = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.positionGizmo.attachedMesh;
                                 if (obj.position) {
                                     var e = new _components_propertyChangedEvent__WEBPACK_IMPORTED_MODULE_6__["PropertyChangedEvent"]();
@@ -48803,7 +48803,7 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
                         // Record movement for generating replay code
                         this._rotateDragEnd = manager.gizmos.rotationGizmo.onDragEndObservable.add(function () {
                             if (manager.gizmos.rotationGizmo && manager.gizmos.rotationGizmo.attachedMesh) {
-                                var lightGizmo = manager.gizmos.rotationGizmo.attachedMesh.reservedDataStore.lightGizmo;
+                                var lightGizmo = manager.gizmos.rotationGizmo.attachedMesh.reservedDataStore ? manager.gizmos.rotationGizmo.attachedMesh.reservedDataStore.lightGizmo : null;
                                 var obj = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.rotationGizmo.attachedMesh;
                                 if (obj.rotationQuaternion) {
                                     var e = new _components_propertyChangedEvent__WEBPACK_IMPORTED_MODULE_6__["PropertyChangedEvent"]();
@@ -48836,7 +48836,7 @@ var SceneTreeItemComponent = /** @class */ (function (_super) {
                         // Record movement for generating replay code
                         this._scaleDragEnd = manager.gizmos.scaleGizmo.onDragEndObservable.add(function () {
                             if (manager.gizmos.scaleGizmo && manager.gizmos.scaleGizmo.attachedMesh) {
-                                var lightGizmo = manager.gizmos.scaleGizmo.attachedMesh.reservedDataStore.lightGizmo;
+                                var lightGizmo = manager.gizmos.scaleGizmo.attachedMesh.reservedDataStore ? manager.gizmos.scaleGizmo.attachedMesh.reservedDataStore.lightGizmo : null;
                                 var obj = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.scaleGizmo.attachedMesh;
                                 if (obj.scaling) {
                                     var e = new _components_propertyChangedEvent__WEBPACK_IMPORTED_MODULE_6__["PropertyChangedEvent"]();
