@@ -18,13 +18,13 @@ import { Scalar } from "../Maths/math.scalar";
 /** Defines the 4 color options */
 export enum PointColor {
     /** color value */
-    COLOR = 2,
+    Color = 2,
     /** uv value */
     UV = 1,
     /** random value */
-    RANDOM = 0,
+    Random = 0,
     /** stated value */
-    STATED = 3
+    Stated = 3
 }
 
 /**
@@ -620,9 +620,9 @@ export class PointsCloudSystem implements IDisposable {
      * @returns the number of groups in the system
      */
     public addSurfacePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4, range?: number): number {
-        var colored = colorWith ? colorWith : PointColor.RANDOM;
+        var colored = colorWith ? colorWith : PointColor.Random;
         if (isNaN(colored) ||  colored < 0 || colored > 3) {
-            colored = PointColor.RANDOM ;
+            colored = PointColor.Random ;
         }
         color = color ? color : new Color4(1, 1, 1, 1);
         var meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
@@ -633,16 +633,16 @@ export class PointsCloudSystem implements IDisposable {
 
         pointsGroup._groupDensity = this._calculateDensity(nb, meshPos, meshInd);
         switch (colored) {
-            case PointColor.COLOR:
+            case PointColor.Color:
                 this._colorFromTexture(mesh, pointsGroup, false);
                 break;
             case PointColor.UV:
                 this._setPointsColorOrUV(mesh, pointsGroup, false, false, false);
                 break;
-            case PointColor.RANDOM:
+            case PointColor.Random:
                 this._setPointsColorOrUV(mesh, pointsGroup, false);
                 break;
-            case PointColor.STATED:
+            case PointColor.Stated:
                 this._setPointsColorOrUV(mesh, pointsGroup, false, undefined, undefined, color, range);
                 break;
         }
@@ -661,9 +661,9 @@ export class PointsCloudSystem implements IDisposable {
      * @returns the number of groups in the system
      */
     public addVolumePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4, range?: number): number {
-        var colored = colorWith ? colorWith : PointColor.RANDOM;
+        var colored = colorWith ? colorWith : PointColor.Random;
         if (isNaN(colored) ||  colored < 0 || colored > 3) {
-            colored = PointColor.RANDOM;
+            colored = PointColor.Random;
         }
         color = color ? color : new Color4(1, 1, 1, 1);
 
@@ -675,16 +675,16 @@ export class PointsCloudSystem implements IDisposable {
 
         pointsGroup._groupDensity = this._calculateDensity(nb, meshPos, meshInd);
         switch (colored) {
-            case PointColor.COLOR:
+            case PointColor.Color:
                 this._colorFromTexture(mesh, pointsGroup, true);
                 break;
             case PointColor.UV:
                 this._setPointsColorOrUV(mesh, pointsGroup, true, false, false);
             break;
-            case PointColor.RANDOM:
+            case PointColor.Random:
                 this._setPointsColorOrUV(mesh, pointsGroup, true);
                 break;
-            case PointColor.STATED:
+            case PointColor.Stated:
                 this._setPointsColorOrUV(mesh, pointsGroup, true, undefined, undefined, color, range);
                 break;
         }
