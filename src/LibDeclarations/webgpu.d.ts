@@ -1,4 +1,4 @@
-// https://github.com/gpuweb/gpuweb/blob/767e515eba9306840ce3fdf57ef9d73ae5d24296/spec/index.bs
+// https://github.com/gpuweb/gpuweb/blob/0a2bb28a584aa1c6adabaec1f841ed29de400626/spec/index.bs
 // except #280 setSubData (TODO)
 
 interface GPUColorDict {
@@ -233,7 +233,7 @@ interface GPUBindGroupLayoutBinding {
   textureDimension?: GPUTextureViewDimension;
   textureComponentType?: GPUTextureComponentType;
   multisampled?: boolean;
-  dynamic?: boolean;
+  hasDynamicOffset?: boolean;
 }
 
 interface GPUBindGroupLayoutDescriptor
@@ -341,6 +341,13 @@ interface GPUVertexInputDescriptor {
 
 interface GPULimits {
   maxBindGroups?: number;
+  maxDynamicUniformBuffersPerPipelineLayout?: number;
+  maxDynamicStorageBuffersPerPipelineLayout?: number;
+  maxSampledTexturesPerShaderStage?: number;
+  maxSamplersPerShaderStage?: number;
+  maxStorageBuffersPerPipelineLayout?: number;
+  maxStorageTexturesPerShaderStage?: number;
+  maxUniformBuffersPerShaderStage?: number;
 }
 
 interface GPUPipelineDescriptorBase {
@@ -668,7 +675,9 @@ interface GPURenderBundleDescriptor extends GPUObjectDescriptorBase {}
 
 interface GPURenderBundle extends GPUObjectBase {}
 
-interface GPURenderBundleEncoder extends GPURenderEncoderBase {}
+interface GPURenderBundleEncoder extends GPURenderEncoderBase {
+  finish(descriptor?: GPURenderBundleDescriptor): GPURenderBundle;
+}
 
 interface GPURenderBundleEncoderDescriptor
   extends GPUObjectDescriptorBase {

@@ -47,7 +47,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
     public availableSamplers: { [key: string]: { setIndex: number, bindingIndex: number} };
 
     public orderedAttributes: string[];
-    public orderedUBOsAndSamplers: { name: string, isSampler: boolean }[][];
+    public orderedUBOsAndSamplers: { name: string, isSampler: boolean, textureDimension?: GPUTextureViewDimension }[][];
 
     public leftOverUniforms: { name: string, type: string, length: number }[];
     public leftOverUniformsByName: { [name: string]: string };

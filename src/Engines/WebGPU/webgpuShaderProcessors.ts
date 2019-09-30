@@ -2,6 +2,7 @@ import { Nullable } from '../../types';
 import { IShaderProcessor } from '../Processors/iShaderProcessor';
 import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
+import { WebGPUConstants } from './webgpuConstants';
 
 const _knownUBOs: { [key: string]: { setIndex: number, bindingIndex: number} } = {
     "Scene": { setIndex: 0, bindingIndex: 0 },
@@ -31,6 +32,11 @@ const _textureTypeByWebGLSamplerType: { [key: string]: string } = {
     "texture2D": "texture2D",
     "sampler2D": "texture2D",
     "samplerCube": "textureCube"
+};
+
+const _gpuTextureViewDimensionByWebGPUTextureType: { [key: string]: GPUTextureViewDimension } = {
+    "textureCube": WebGPUConstants.GPUTextureViewDimension_cube,
+    "texture2D": WebGPUConstants.GPUTextureViewDimension_2d,
 };
 
 /** @hidden */
@@ -98,6 +104,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                 const samplerBindingIndex = samplerInfo.bindingIndex + 1;
                 const samplerFunction = _samplerFunctionByWebGLSamplerType[uniformType];
                 const textureType = _textureTypeByWebGLSamplerType[uniformType];
+                const textureDimension = _gpuTextureViewDimensionByWebGPUTextureType[textureType];
 
                 // Manage textures and samplers.
                 uniform = `layout(set = ${setIndex}, binding = ${textureBindingIndex}) uniform ${textureType} ${name}Texture;
@@ -108,7 +115,11 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                 if (!webgpuProcessingContext.orderedUBOsAndSamplers[setIndex]) {
                     webgpuProcessingContext.orderedUBOsAndSamplers[setIndex] = [];
                 }
-                webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][textureBindingIndex] = { isSampler: true, name };
+                webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][textureBindingIndex] = {
+                    isSampler: true,
+                    textureDimension,
+                    name,
+                };
             }
             else {
                 // Check the size of the uniform array in case of array.
