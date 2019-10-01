@@ -15,7 +15,7 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Fragment);
+        super(name, NodeMaterialBlockTargets.Neutral);
 
         this.registerInput("xyzw", NodeMaterialBlockConnectionPointTypes.Vector4, true);
         this.registerInput("xyz ", NodeMaterialBlockConnectionPointTypes.Vector3, true);

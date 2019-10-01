@@ -426,6 +426,15 @@ export class NodeMaterialBlock {
             return true;
         }
 
+        if (!this.isInput) {
+            /** Prepare outputs */
+            for (var output of this._outputs) {
+                if (!output.associatedVariableName) {
+                    output.associatedVariableName = state._getFreeVariableName(output.name);
+                }
+            }
+        }
+
         // Check if "parent" blocks are compiled
         for (var input of this._inputs) {
             if (!input.connectedPoint) {
@@ -458,24 +467,6 @@ export class NodeMaterialBlock {
         // Logs
         if (state.sharedData.verbose) {
             console.log(`${state.target === NodeMaterialBlockTargets.Vertex ? "Vertex shader" : "Fragment shader"}: Building ${this.name} [${this.getClassName()}]`);
-        }
-
-        if (!this.isInput) {
-            /** Prepare outputs */
-            for (var output of this._outputs) {
-                if (this.target !== NodeMaterialBlockTargets.Neutral) {
-                    if ((output.target & this.target!) === 0) {
-                        continue;
-                    }
-                    if ((output.target & state.target!) === 0) {
-                        continue;
-                    }
-                }
-
-                if (!output.associatedVariableName) {
-                    output.associatedVariableName = state._getFreeVariableName(output.name);
-                }
-            }
         }
 
         // Checks final outputs
