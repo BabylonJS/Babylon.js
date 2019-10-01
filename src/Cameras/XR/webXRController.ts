@@ -4,6 +4,7 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Matrix, Quaternion, Vector3 } from '../../Maths/math.vector';
 import { Ray } from '../../Culling/ray';
 import { Scene } from '../../scene';
+import { WebVRController } from '../../Gamepads';
 /**
  * Represents an XR input
  */
@@ -16,6 +17,9 @@ export class WebXRController {
      * Pointer which can be used to select objects or attach a visible laser to
      */
     public pointer: AbstractMesh;
+
+    private _gamepadMode = false;
+    public gamepadController?: WebVRController;
 
     /**
      * Event that fires when the controller is removed/disposed
@@ -48,6 +52,8 @@ export class WebXRController {
             if (this.parentContainer) {
                 this.parentContainer.addChild(this.grip);
             }
+        } else if (this.inputSource.gamepad) {
+            this._gamepadMode = true;
         }
     }
 
@@ -85,6 +91,12 @@ export class WebXRController {
                 this._tmpMatrix.decompose(this.grip.scaling, this.grip.rotationQuaternion!, this.grip.position);
             }
         }
+        if (this.gamepadController) {
+            // either update buttons only or also position, if in gamepad mode
+            this.gamepadController.isXR = !this._gamepadMode;
+            this.gamepadController.update();
+            this.gamepadController.isXR = true;
+        }
     }
 
     /**
@@ -103,11 +115,21 @@ export class WebXRController {
     }
 
     /**
+     * Get the scene associated with this controller
+     */
+    public getScene() {
+        return this.scene;
+    }
+
+    /**
      * Disposes of the object
      */
     dispose() {
         if (this.grip) {
             this.grip.dispose();
+        }
+        if (this.gamepadController && this._gamepadMode) {
+            this.gamepadController.dispose();
         }
         this.pointer.dispose();
         this.onDisposeObservable.notifyObservers({});
