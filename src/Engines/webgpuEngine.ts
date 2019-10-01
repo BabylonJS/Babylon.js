@@ -1170,7 +1170,7 @@ export class WebGPUEngine extends Engine {
             texture.height = height;
             texture.baseWidth = width;
             texture.baseHeight = height;
-            texture._isRGBD = webglEngineTexture._isRGBD;
+            texture._isRGBD = texture._isRGBD || webglEngineTexture._isRGBD;
             texture._sphericalPolynomial = webglEngineTexture._sphericalPolynomial;
 
             let mipMaps = Scalar.Log2(Math.max(width, height));
@@ -1249,7 +1249,7 @@ export class WebGPUEngine extends Engine {
             texture.baseHeight = height;
             texture.depth = depth;
             texture.baseDepth = depth;
-            texture._isRGBD = webglEngineTexture._isRGBD;
+            texture._isRGBD = texture._isRGBD || webglEngineTexture._isRGBD;
             texture._sphericalPolynomial = webglEngineTexture._sphericalPolynomial;
 
             let mipMaps = Scalar.Log2(width);
