@@ -82,6 +82,7 @@ interface INativeEngine {
     deleteTexture(texture: Nullable<WebGLTexture>): void;
 
     createFrameBuffer(texture: WebGLTexture, width: number, height: number, format: number, samplingMode: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMipMaps: boolean): WebGLFramebuffer;
+    deleteFrameBuffer(frameBuffer: WebGLFramebuffer): void;
     bindFrameBuffer(frameBuffer: WebGLFramebuffer): void;
     unbindFrameBuffer(frameBuffer: WebGLFramebuffer): void;
 
@@ -240,8 +241,12 @@ export class NativeEngine extends Engine {
      * Can be used to override the current requestAnimationFrame requester.
      * @hidden
      */
-    protected _queueNewFrame(bindedRenderFunction: any, requester: any): number {
-        this._native.requestAnimationFrame(bindedRenderFunction);
+    protected _queueNewFrame(bindedRenderFunction: any, requester?: any): number {
+        if (requester.requestAnimationFrame) {
+            requester.requestAnimationFrame(bindedRenderFunction);
+        } else {
+            this._native.requestAnimationFrame(bindedRenderFunction);
+        }
         return 0;
     }
 
