@@ -9,7 +9,6 @@ import { Constants } from "../Engines/constants";
 import { DataBuffer } from './dataBuffer';
 import { extractMinAndMaxIndexed } from '../Maths/math.functions';
 import { Plane } from '../Maths/math.plane';
-import { InstancedMesh } from './instancedMesh';
 
 declare type Collider = import("../Collisions/collider").Collider;
 declare type Material = import("../Materials/material").Material;

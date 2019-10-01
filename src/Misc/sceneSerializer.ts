@@ -248,7 +248,9 @@ export class SceneSerializer {
         // Transform nodes
         serializationObject.transformNodes = [];
         for (index = 0; index < scene.transformNodes.length; index++) {
-            serializationObject.transformNodes.push(scene.transformNodes[index].serialize());
+            if (!scene.transformNodes[index].doNotSerialize) {
+                serializationObject.transformNodes.push(scene.transformNodes[index].serialize());
+            }
         }
 
         // Geometries
