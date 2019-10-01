@@ -1060,6 +1060,7 @@ declare module NODEEDITOR {
         private _material;
         private _globalState;
         private _currentType;
+        private _lightParent;
         constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
         private _handleAnimations;
         private _prepareLights;
@@ -1469,6 +1470,8 @@ declare module NODEEDITOR {
         blockKeyboardEvents: boolean;
         hemisphericLight: boolean;
         directionalLight0: boolean;
+        directionalLight1: boolean;
+        controlCamera: boolean;
         customSave?: {
             label: string;
             action: (data: string) => Promise<void>;

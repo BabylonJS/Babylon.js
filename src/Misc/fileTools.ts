@@ -69,6 +69,16 @@ export class FileTools {
         }
     }
 
+    private static _ArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView) {
+        var binary = '';
+        var bytes = (buffer as ArrayBufferView).buffer ? new Uint8Array((buffer as ArrayBufferView).buffer) : new Uint8Array(buffer as ArrayBuffer);
+        var len = bytes.byteLength;
+        for (var i = 0; i < len; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return window.btoa(binary);
+    }
+
     /**
      * Loads an image as an HTMLImageElement.
      * @param input url string, ArrayBuffer, or Blob to load
@@ -84,10 +94,10 @@ export class FileTools {
 
         if (input instanceof ArrayBuffer || ArrayBuffer.isView(input)) {
             if (typeof Blob !== 'undefined') {
-                url = URL.createObjectURL(new Blob([input]));
+               url = URL.createObjectURL(new Blob([input]));
                 usingObjectURL = true;
             } else {
-                url = `data:${mimeType || "image/jpg"};base64,` + btoa(String.fromCharCode.apply(null, input));
+                url = `data:${mimeType || "image/jpg"};base64,` + this._ArrayBufferToBase64(input);
             }
         }
         else if (input instanceof Blob) {

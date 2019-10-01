@@ -71482,7 +71482,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         var _this = this;
         var url = "";
         var texture = this.props.node.texture;
-        if (texture && texture.name && texture.name.substring(0, 4) === "http") {
+        if (texture && texture.name && texture.name.substring(0, 4) !== "data") {
             url = texture.name;
         }
         url = url.replace(/\?nocache=\d+/, "");
@@ -72120,6 +72120,13 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
                         _this.props.globalState.onLightUpdated.notifyObservers();
                         _this.forceUpdate();
                     }, className: "button" + (this.props.globalState.directionalLight0 ? " selected" : "") },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faLocationArrow"] })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn on/off direction light #1", onClick: function () {
+                        _this.props.globalState.directionalLight1 = !_this.props.globalState.directionalLight1;
+                        _dataStorage__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].StoreBoolean("DirectionalLight1", _this.props.globalState.directionalLight1);
+                        _this.props.globalState.onLightUpdated.notifyObservers();
+                        _this.forceUpdate();
+                    }, className: "button" + (this.props.globalState.directionalLight1 ? " selected" : "") },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faLocationArrow"] })))));
     };
     return PreviewAreaComponent;
@@ -72143,6 +72150,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _previewMeshType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./previewMeshType */ "./components/preview/previewMeshType.ts");
 /* harmony import */ var _log_logComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../log/logComponent */ "./components/log/logComponent.tsx");
+
+
+
 
 
 
@@ -72194,10 +72204,44 @@ var PreviewManager = /** @class */ (function () {
         this._camera.wheelPrecision = 20;
         this._camera.minZ = 0.1;
         this._camera.attachControl(targetCanvas, false);
+        this._lightParent = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["TransformNode"]("LightParent", this._scene);
         this._refreshPreviewMesh();
         this._engine.runRenderLoop(function () {
             _this._engine.resize();
             _this._scene.render();
+        });
+        var cameraLastRotation = 0;
+        var lastOffsetX = undefined;
+        var lightRotationParallaxSpeed = 0.5;
+        var lightRotationSpeed = 0.01;
+        this._scene.onPointerObservable.add(function (evt) {
+            if (_this._globalState.controlCamera) {
+                return;
+            }
+            if (evt.type === babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERUP) {
+                lastOffsetX = undefined;
+                return;
+            }
+            if (evt.event.buttons !== 1) {
+                return;
+            }
+            if (lastOffsetX === undefined) {
+                lastOffsetX = evt.event.offsetX;
+            }
+            var rotateLighting = (lastOffsetX - evt.event.offsetX) * lightRotationSpeed;
+            _this._lightParent.rotation.y += rotateLighting;
+            lastOffsetX = evt.event.offsetX;
+        });
+        this._scene.registerBeforeRender(function () {
+            if (_this._camera.alpha === cameraLastRotation) {
+                return;
+            }
+            if (!_this._globalState.controlCamera) {
+                return;
+            }
+            var rotateLighting = (_this._camera.alpha - cameraLastRotation) * lightRotationParallaxSpeed;
+            _this._lightParent.rotate(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Up(), rotateLighting);
+            cameraLastRotation = _this._camera.alpha;
         });
     }
     PreviewManager.prototype._handleAnimations = function () {
@@ -72228,7 +72272,18 @@ var PreviewManager = /** @class */ (function () {
             new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["HemisphericLight"]("Hemispheric light", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0, 1, 0), this._scene);
         }
         if (this._globalState.directionalLight0) {
-            new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["DirectionalLight"]("Directional light #0", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](-1, -1, 0), this._scene);
+            var dir0 = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["DirectionalLight"]("Directional light #0", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0.841626576496605, -0.2193391004130599, -0.49351298337996535), this._scene);
+            dir0.intensity = 0.9;
+            dir0.diffuse = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"](0.9294117647058824, 0.9725490196078431, 0.996078431372549);
+            dir0.specular = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"](0.9294117647058824, 0.9725490196078431, 0.996078431372549);
+            dir0.parent = this._lightParent;
+        }
+        if (this._globalState.directionalLight1) {
+            var dir1 = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["DirectionalLight"]("Directional light #1", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](-0.9519937437504213, -0.24389315636999764, -0.1849974057546125), this._scene);
+            dir1.intensity = 1.2;
+            dir1.specular = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"](0.9803921568627451, 0.9529411764705882, 0.7725490196078432);
+            dir1.diffuse = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"](0.9803921568627451, 0.9529411764705882, 0.7725490196078432);
+            dir1.parent = this._lightParent;
         }
     };
     PreviewManager.prototype._prepareMeshes = function () {
@@ -72958,7 +73013,9 @@ var GlobalState = /** @class */ (function () {
         this.backFaceCulling = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("BackFaceCulling", true);
         this.depthPrePass = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("DepthPrePass", false);
         this.hemisphericLight = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("HemisphericLight", true);
-        this.directionalLight0 = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("DirectionalLight0", true);
+        this.directionalLight0 = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("DirectionalLight0", false);
+        this.directionalLight1 = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("DirectionalLight1", false);
+        this.controlCamera = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("ControlCamera", true);
         var r = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("BackgroundColorR", 0.37);
         var g = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("BackgroundColorG", 0.37);
         var b = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("BackgroundColorB", 0.37);
