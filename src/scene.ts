@@ -3399,7 +3399,7 @@ export class Scene extends AbstractScene implements IAnimatable {
                     if (!mesh.isAnInstance) {
                         meshToRender._internalAbstractMeshDataInfo._onlyForInstances = false;
                     } else {
-                        if ((mesh as InstancedMesh)._actAsRegularMesh) {
+                        if (mesh._internalAbstractMeshDataInfo._actAsRegularMesh) {
                             meshToRender = mesh;
                         }
                     }
