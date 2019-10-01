@@ -69,18 +69,20 @@ export class WebXRCamera extends FreeCamera {
             return false;
         }
         var pose = xrSessionManager.currentFrame.getViewerPose(xrSessionManager.referenceSpace);
-        if (!pose || !pose.transform || !pose.transform.matrix) {
+        if (!pose) {
             return false;
         }
-
-        // Update the parent cameras matrix
-        Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, WebXRCamera._TmpMatrix);
-        if (!this._scene.useRightHandedSystem) {
-            WebXRCamera._TmpMatrix.toggleModelMatrixHandInPlace();
+        if (pose && pose.transform && pose.transform.matrix) {
+            // Update the parent cameras matrix
+            Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, WebXRCamera._TmpMatrix);
+            if (!this._scene.useRightHandedSystem) {
+                WebXRCamera._TmpMatrix.toggleModelMatrixHandInPlace();
+            }
         }
         WebXRCamera._TmpMatrix.getTranslationToRef(this.position);
         WebXRCamera._TmpMatrix.getRotationMatrixToRef(WebXRCamera._TmpMatrix);
         Quaternion.FromRotationMatrixToRef(WebXRCamera._TmpMatrix, this.rotationQuaternion);
+
         this.computeWorldMatrix();
 
         // Update camera rigs
@@ -108,6 +110,7 @@ export class WebXRCamera extends FreeCamera {
             // Set cameras to render to the session's render target
             this.rigCameras[i].outputRenderTarget = xrSessionManager._sessionRenderTargetTexture;
         });
+        this._updateForDualEyeDebugging();
         return true;
     }
 }
