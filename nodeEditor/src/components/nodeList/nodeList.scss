@@ -44,6 +44,10 @@
                     outline: none;
                     background-position: 0 0;
                 }
+
+                input::placeholder {
+                    color: gray;
+                }
             }
 
             .list-container {
