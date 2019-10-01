@@ -255,10 +255,6 @@ body {
     color: #BB464B;
 }
 
-.wrapper #jsEditor {
-    padding-top: 5px;
-}
-
 .wrapper #jsEditor.light {
     background-color: white;
 }
