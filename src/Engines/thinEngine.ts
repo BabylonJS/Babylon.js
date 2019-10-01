@@ -2738,12 +2738,13 @@ export class ThinEngine {
      * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
      * @param forcedExtension defines the extension to use to pick the right loader
      * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (default: empty array)
+     * @param mimeType defines an optional mime type
      * @returns a InternalTexture for assignment back into BABYLON.Texture
      */
     public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
-        forcedExtension: Nullable<string> = null, excludeLoaders: Array<IInternalTextureLoader> = []): InternalTexture {
+        forcedExtension: Nullable<string> = null, excludeLoaders: Array<IInternalTextureLoader> = [], mimeType?: string): InternalTexture {
         var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
         var fromData = url.substr(0, 5) === "data:";
         var fromBlob = url.substr(0, 5) === "blob:";
@@ -2907,11 +2908,11 @@ export class ThinEngine {
                 if (buffer instanceof HTMLImageElement) {
                     onload(buffer);
                 } else {
-                    FileTools.LoadImage(url, onload, onInternalError, scene ? scene.offlineProvider : null);
+                    FileTools.LoadImage(url, onload, onInternalError, scene ? scene.offlineProvider : null, mimeType);
                 }
             }
             else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || ArrayBuffer.isView(buffer) || buffer instanceof Blob) {
-                FileTools.LoadImage(buffer, onload, onInternalError, scene ? scene.offlineProvider : null);
+                FileTools.LoadImage(buffer, onload, onInternalError, scene ? scene.offlineProvider : null, mimeType);
             }
             else if (buffer) {
                 onload(<HTMLImageElement>buffer);

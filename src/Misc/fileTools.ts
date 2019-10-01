@@ -75,10 +75,10 @@ export class FileTools {
      * @param onLoad callback called when the image successfully loads
      * @param onError callback called when the image fails to load
      * @param offlineProvider offline provider for caching
-     * @param mimeType optional 
+     * @param mimeType optional mime type
      * @returns the HTMLImageElement of the loaded image
      */
-    public static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType: string): HTMLImageElement {
+    public static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): HTMLImageElement {
         let url: string;
         let usingObjectURL = false;
 
