@@ -1349,9 +1349,10 @@ declare module BABYLON {
          * @param onLoad callback called when the image successfully loads
          * @param onError callback called when the image fails to load
          * @param offlineProvider offline provider for caching
+         * @param mimeType optional mime type
          * @returns the HTMLImageElement of the loaded image
          */
-        static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>): HTMLImageElement;
+        static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): HTMLImageElement;
         /**
          * Loads a file
          * @param fileToLoad defines the file to load
@@ -7394,8 +7395,8 @@ declare module BABYLON {
             createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number): InternalTexture;
             /** @hidden */private _partialLoadFile(url: string, index: number, loadedFiles: (string | ArrayBuffer)[], onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>): void;
             /** @hidden */private _cascadeLoadFiles(scene: Nullable<Scene>, onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>): void;
-            /** @hidden */private _cascadeLoadImgs(scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>): void;
-            /** @hidden */private _partialLoadImg(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>): void;
+            /** @hidden */private _cascadeLoadImgs(scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>, mimeType?: string): void;
+            /** @hidden */private _partialLoadImg(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>, mimeType?: string): void;
         }
 }
 declare module BABYLON {
@@ -15528,6 +15529,7 @@ declare module BABYLON {
         protected _format: Nullable<number>;
         private _delayedOnLoad;
         private _delayedOnError;
+        private _mimeType?;
         /**
          * Observable triggered once the texture has been loaded.
          */
@@ -15550,18 +15552,19 @@ declare module BABYLON {
          * Instantiates a new texture.
          * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
          * @see http://doc.babylonjs.com/babylon101/materials#texture
-         * @param url define the url of the picture to load as a texture
-         * @param scene define the scene or engine the texture will belong to
-         * @param noMipmap define if the texture will require mip maps or not
-         * @param invertY define if the texture needs to be inverted on the y axis during loading
-         * @param samplingMode define the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
-         * @param onLoad define a callback triggered when the texture has been loaded
-         * @param onError define a callback triggered when an error occurred during the loading session
-         * @param buffer define the buffer to load the texture from in case the texture is loaded from a buffer representation
-         * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
-         * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
+         * @param url defines the url of the picture to load as a texture
+         * @param scene defines the scene or engine the texture will belong to
+         * @param noMipmap defines if the texture will require mip maps or not
+         * @param invertY defines if the texture needs to be inverted on the y axis during loading
+         * @param samplingMode defines the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
+         * @param onLoad defines a callback triggered when the texture has been loaded
+         * @param onError defines a callback triggered when an error occurred during the loading session
+         * @param buffer defines the buffer to load the texture from in case the texture is loaded from a buffer representation
+         * @param deleteBuffer defines if the buffer we are loading the texture from should be deleted after load
+         * @param format defines the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
+         * @param mimeType defines an optional mime type information
          */
-        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>, deleteBuffer?: boolean, format?: number);
+        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>, deleteBuffer?: boolean, format?: number, mimeType?: string);
         /**
          * Update the url (and optional buffer) of this texture if url was null during construction.
          * @param url the url of the texture
@@ -29166,9 +29169,10 @@ declare module BABYLON {
          * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
          * @param forcedExtension defines the extension to use to pick the right loader
          * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (default: empty array)
+         * @param mimeType defines an optional mime type
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, excludeLoaders?: Array<IInternalTextureLoader>): InternalTexture;
+        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, excludeLoaders?: Array<IInternalTextureLoader>, mimeType?: string): InternalTexture;
         /**
          * @hidden
          */private _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void;
@@ -31392,9 +31396,10 @@ declare module BABYLON {
         * @param onLoad callback called when the image successfully loads
         * @param onError callback called when the image fails to load
         * @param offlineProvider offline provider for caching
+        * @param mimeType optional mime type
         * @returns the HTMLImageElement of the loaded image
         */
-        static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>): HTMLImageElement;
+        static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): HTMLImageElement;
         /**
          * Loads a file
          * @param url url string, ArrayBuffer, or Blob to load

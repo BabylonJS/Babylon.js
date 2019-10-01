@@ -82,10 +82,10 @@ declare module "../../Engines/thinEngine" {
         _cascadeLoadFiles(scene: Nullable<Scene>, onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>): void;
 
         /** @hidden */
-        _cascadeLoadImgs(scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>): void;
+        _cascadeLoadImgs(scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>, mimeType?: string): void;
 
         /** @hidden */
-        _partialLoadImg(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>): void;
+        _partialLoadImg(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>, mimeType?: string): void;
     }
 }
 
@@ -155,18 +155,18 @@ ThinEngine.prototype._cascadeLoadFiles = function(scene: Nullable<Scene>, onfini
 };
 
 ThinEngine.prototype._cascadeLoadImgs = function(scene: Nullable<Scene>,
-    onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null) {
+    onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null, mimeType?: string) {
 
     var loadedImages: HTMLImageElement[] = [];
     (<any>loadedImages)._internalCount = 0;
 
     for (let index = 0; index < 6; index++) {
-        this._partialLoadImg(files[index], index, loadedImages, scene, onfinish, onError);
+        this._partialLoadImg(files[index], index, loadedImages, scene, onfinish, onError, mimeType);
     }
 };
 
 ThinEngine.prototype._partialLoadImg = function(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>,
-    onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null) {
+    onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null, mimeType?: string) {
 
     var img: HTMLImageElement;
 
@@ -193,7 +193,7 @@ ThinEngine.prototype._partialLoadImg = function(url: string, index: number, load
         }
     };
 
-    img = FileTools.LoadImage(url, onload, onerror, scene ? scene.offlineProvider : null);
+    img = FileTools.LoadImage(url, onload, onerror, scene ? scene.offlineProvider : null, mimeType);
     if (scene) {
         scene._addPendingData(img);
     }
