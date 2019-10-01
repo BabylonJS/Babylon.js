@@ -360,10 +360,11 @@ export class Tools {
     * @param onLoad callback called when the image successfully loads
     * @param onError callback called when the image fails to load
     * @param offlineProvider offline provider for caching
+    * @param mimeType optional mime type
     * @returns the HTMLImageElement of the loaded image
     */
-    public static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>): HTMLImageElement {
-        return FileTools.LoadImage(input, onLoad, onError, offlineProvider);
+    public static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): HTMLImageElement {
+        return FileTools.LoadImage(input, onLoad, onError, offlineProvider, mimeType);
     }
 
     /**

@@ -75,15 +75,20 @@ export class FileTools {
      * @param onLoad callback called when the image successfully loads
      * @param onError callback called when the image fails to load
      * @param offlineProvider offline provider for caching
+     * @param mimeType optional mime type
      * @returns the HTMLImageElement of the loaded image
      */
-    public static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>): HTMLImageElement {
+    public static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): HTMLImageElement {
         let url: string;
         let usingObjectURL = false;
 
         if (input instanceof ArrayBuffer || ArrayBuffer.isView(input)) {
-            url = URL.createObjectURL(new Blob([input]));
-            usingObjectURL = true;
+            if (typeof Blob !== 'undefined') {
+                url = URL.createObjectURL(new Blob([input]));
+                usingObjectURL = true;
+            } else {
+                url = `data:${mimeType || "image/jpg"};base64,` + btoa(String.fromCharCode.apply(null, input));
+            }
         }
         else if (input instanceof Blob) {
             url = URL.createObjectURL(input);
