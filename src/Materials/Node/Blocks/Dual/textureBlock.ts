@@ -245,10 +245,24 @@ export class TextureBlock extends NodeMaterialBlock {
         state.compilationString += `#else\r\n`;
         state.compilationString += `${this._mainUVName} = ${uvInput.associatedVariableName}.xy;\r\n`;
         state.compilationString += `#endif\r\n`;
+
+        for (var output of this._outputs) {
+            if (output.hasEndpoints) {
+                this._writeOutput(state, output, output.name, true);
+            }
+        }
     }
 
-    private _writeOutput(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string) {
+    private _writeOutput(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string, vertexMode = false) {
         let uvInput = this.uv;
+
+        if (vertexMode) {
+            if (state.target === NodeMaterialBlockTargets.Fragment) {
+                return;
+            }
+
+            return;
+        }
 
         if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
             state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${uvInput.associatedVariableName}).${swizzle};\r\n`;

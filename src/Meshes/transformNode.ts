@@ -442,7 +442,7 @@ export class TransformNode extends Node {
      */
     public freezeWorldMatrix(newWorldMatrix: Nullable<Matrix> = null): TransformNode {
         if (newWorldMatrix) {
-            this._worldMatrix = this._worldMatrix;
+            this._worldMatrix = newWorldMatrix;
         } else {
             this._isWorldMatrixFrozen = false;  // no guarantee world is not already frozen, switch off temporarily
             this.computeWorldMatrix(true);
