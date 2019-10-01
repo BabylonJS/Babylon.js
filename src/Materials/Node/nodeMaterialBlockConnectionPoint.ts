@@ -167,6 +167,56 @@ export class NodeMaterialConnectionPoint {
         return this._endpoints && this._endpoints.length > 0;
     }
 
+    /** Gets a boolean indicating that this connection will be used in the vertex shader */
+    public get isConnectedInVertexShader(): boolean {
+        if (this.target === NodeMaterialBlockTargets.Vertex) {
+            return true;
+        }
+
+        if (!this.hasEndpoints) {
+            return false;
+        }
+
+        for (var endpoint of this._endpoints) {
+            if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Vertex) {
+                return true;
+            }
+
+            if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Neutral || endpoint.ownerBlock.target === NodeMaterialBlockTargets.VertexAndFragment) {
+                if (endpoint.ownerBlock.outputs.some((o) => o.isConnectedInVertexShader)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /** Gets a boolean indicating that this connection will be used in the fragment shader */
+    public get isConnectedInFragmentShader(): boolean {
+        if (this.target === NodeMaterialBlockTargets.Fragment) {
+            return true;
+        }
+
+        if (!this.hasEndpoints) {
+            return false;
+        }
+
+        for (var endpoint of this._endpoints) {
+            if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
+                return true;
+            }
+
+            if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Neutral || endpoint.ownerBlock.target === NodeMaterialBlockTargets.VertexAndFragment) {
+                if (endpoint.ownerBlock.outputs.some((o) => o.isConnectedInFragmentShader)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Creates a new connection point
      * @param name defines the connection point name

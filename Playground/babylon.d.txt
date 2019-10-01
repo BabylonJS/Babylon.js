@@ -52986,6 +52986,10 @@ declare module BABYLON {
         readonly endpoints: NodeMaterialConnectionPoint[];
         /** Gets a boolean indicating if that output point is connected to at least one input */
         readonly hasEndpoints: boolean;
+        /** Gets a boolean indicating that this connection will be used in the vertex shader */
+        readonly isConnectedInVertexShader: boolean;
+        /** Gets a boolean indicating that this connection will be used in the fragment shader */
+        readonly isConnectedInFragmentShader: boolean;
         /**
          * Creates a new connection point
          * @param name defines the connection point name
