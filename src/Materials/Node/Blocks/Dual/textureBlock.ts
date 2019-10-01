@@ -295,12 +295,14 @@ export class TextureBlock extends NodeMaterialBlock {
 
         state.sharedData.blockingBlocks.push(this);
         state.sharedData.textureBlocks.push(this);
-
-        this._samplerName = state._getFreeVariableName(this.name + "Sampler");
-        state.samplers.push(this._samplerName);
-        state._samplerDeclaration += `uniform sampler2D ${this._samplerName};\r\n`;
+        state.sharedData.blocksWithDefines.push(this);
+        state.sharedData.bindableBlocks.push(this);
 
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
+            this._samplerName = state._getFreeVariableName(this.name + "Sampler");
+            state._samplerDeclaration += `uniform sampler2D ${this._samplerName};\r\n`;
+            state.samplers.push(this._samplerName);
+
             // Vertex
             this._injectVertexCode(state);
             return;
@@ -311,9 +313,9 @@ export class TextureBlock extends NodeMaterialBlock {
             return;
         }
 
+        state._samplerDeclaration += `uniform sampler2D ${this._samplerName};\r\n`;
+        state.samplers.push(this._samplerName);
         this._linearDefineName = state._getFreeDefineName("ISLINEAR");
-        state.sharedData.blocksWithDefines.push(this);
-        state.sharedData.bindableBlocks.push(this);
 
         let comments = `//${this.name}`;
         state._emitFunctionFromInclude("helperFunctions", comments);
