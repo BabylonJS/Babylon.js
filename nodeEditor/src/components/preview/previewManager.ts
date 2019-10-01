@@ -16,6 +16,8 @@ import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
 import { FramingBehavior } from 'babylonjs/Behaviors/Cameras/framingBehavior';
 import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
 import { LogEntry } from '../log/logComponent';
+import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { Color3 } from 'babylonjs/Maths/math.color';
 
 export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
@@ -34,6 +36,7 @@ export class PreviewManager {
     private _material: NodeMaterial;
     private _globalState: GlobalState;   
     private _currentType: number; 
+    private _lightParent: TransformNode;
 
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
         this._nodeMaterial = globalState.nodeMaterial;
@@ -83,11 +86,53 @@ export class PreviewManager {
         this._camera.minZ = 0.1;
         this._camera.attachControl(targetCanvas, false);
 
+        this._lightParent = new TransformNode("LightParent", this._scene);
+
         this._refreshPreviewMesh();
 
         this._engine.runRenderLoop(() => {
             this._engine.resize();
             this._scene.render();
+        });
+
+        let cameraLastRotation = 0;
+        let lastOffsetX:number | undefined = undefined; 
+        const lightRotationParallaxSpeed = 0.5;        
+        const lightRotationSpeed = 0.01;        
+
+        this._scene.onPointerObservable.add(evt => {
+            if (this._globalState.controlCamera) {
+                return;
+            }
+
+            if (evt.type === PointerEventTypes.POINTERUP) {
+                lastOffsetX = undefined;
+                return;
+            }
+
+            if (evt.event.buttons !== 1) {
+                return;
+            }
+
+            if (lastOffsetX === undefined) {
+                lastOffsetX = evt.event.offsetX;
+            }
+
+            var rotateLighting = (lastOffsetX - evt.event.offsetX) * lightRotationSpeed; 
+            this._lightParent.rotation.y += rotateLighting;
+            lastOffsetX = evt.event.offsetX;
+        });
+
+        this._scene.registerBeforeRender(() => {
+            if (this._camera.alpha === cameraLastRotation) {
+                return;
+            }
+            if (!this._globalState.controlCamera) {
+                return;
+            }
+            var rotateLighting = (this._camera.alpha - cameraLastRotation) * lightRotationParallaxSpeed; 
+            this._lightParent.rotate(Vector3.Up(), rotateLighting);
+            cameraLastRotation = this._camera.alpha;
         });
     }
 
@@ -123,7 +168,19 @@ export class PreviewManager {
         }
 
         if (this._globalState.directionalLight0) {
-            new DirectionalLight("Directional light #0", new Vector3(-1, -1, 0), this._scene);            
+            let dir0 = new DirectionalLight("Directional light #0", new Vector3(0.841626576496605, -0.2193391004130599, -0.49351298337996535), this._scene);
+            dir0.intensity = 0.9;
+            dir0.diffuse = new Color3(0.9294117647058824, 0.9725490196078431, 0.996078431372549);
+            dir0.specular = new Color3(0.9294117647058824, 0.9725490196078431, 0.996078431372549);      
+            dir0.parent = this._lightParent;
+        }
+
+        if (this._globalState.directionalLight1) {
+            let dir1 = new DirectionalLight("Directional light #1", new Vector3(-0.9519937437504213, -0.24389315636999764, -0.1849974057546125), this._scene);
+            dir1.intensity = 1.2;
+            dir1.specular = new Color3(0.9803921568627451, 0.9529411764705882, 0.7725490196078432);
+            dir1.diffuse = new Color3(0.9803921568627451, 0.9529411764705882, 0.7725490196078432);        
+            dir1.parent = this._lightParent;                 
         }
     }
 

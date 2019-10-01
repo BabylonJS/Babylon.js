@@ -143,7 +143,7 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
         let url = "";
 
         let texture = this.props.node.texture as BaseTexture;
-        if (texture && texture.name && texture.name.substring(0, 4) === "http") {
+        if (texture && texture.name && texture.name.substring(0, 4) !== "data") {
             url = texture.name;
         }
 

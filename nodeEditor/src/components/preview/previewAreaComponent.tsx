@@ -93,7 +93,17 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponent>
                             this.forceUpdate();
                         }} className={"button" + (this.props.globalState.directionalLight0 ? " selected" : "")}>
                         <FontAwesomeIcon icon={faLocationArrow} />
-                    </div>                  
+                    </div>      
+                    <div
+                        title="Turn on/off direction light #1"  
+                        onClick={() => {
+                            this.props.globalState.directionalLight1 = !this.props.globalState.directionalLight1;                       
+                            DataStorage.StoreBoolean("DirectionalLight1", this.props.globalState.directionalLight1);
+                            this.props.globalState.onLightUpdated.notifyObservers();
+                            this.forceUpdate();
+                        }} className={"button" + (this.props.globalState.directionalLight1 ? " selected" : "")}>
+                        <FontAwesomeIcon icon={faLocationArrow} />
+                    </div>               
                 </div>
             </>
         );
