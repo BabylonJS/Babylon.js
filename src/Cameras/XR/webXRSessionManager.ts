@@ -4,6 +4,24 @@ import { Nullable } from "../../types";
 import { IDisposable, Scene } from "../../scene";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import { WebXROutputTarget } from './webXROutputTarget';
+
+interface IRenderTargetProvider {
+    getRenderTargetForEye(eye: XREye): RenderTargetTexture;
+}
+
+class RenderTargetProvider implements IRenderTargetProvider {
+    private _texture: RenderTargetTexture;
+
+    public constructor(texture: RenderTargetTexture) {
+        this._texture = texture;
+    }
+
+    public getRenderTargetForEye(eye: XREye): RenderTargetTexture {
+        return this._texture;
+    }
+}
+
 /**
  * Manages an XRSession to work with Babylon's engine
  * @see https://doc.babylonjs.com/how_to/webxr
@@ -28,15 +46,14 @@ export class WebXRSessionManager implements IDisposable {
      */
     public referenceSpace: XRReferenceSpace;
 
-    /** @hidden */
-    public _sessionRenderTargetTexture: Nullable<RenderTargetTexture> = null;
-
     /**
      * Current XR frame
      */
     public currentFrame: Nullable<XRFrame>;
+
     private _xrNavigator: any;
     private baseLayer: Nullable<XRWebGLLayer> = null;
+    private _rttProvider: Nullable<IRenderTargetProvider>;
 
     /**
      * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
@@ -73,7 +90,7 @@ export class WebXRSessionManager implements IDisposable {
             // handle when the session is ended (By calling session.end or device ends its own session eg. pressing home button on phone)
             this.session.addEventListener("end", () => {
                 // Remove render target texture and notify frame obervers
-                this._sessionRenderTargetTexture = null;
+                this._rttProvider = null;
 
                 // Restore frame buffer to avoid clear on xr framebuffer after session end
                 this.scene.getEngine().restoreDefaultFramebuffer();
@@ -124,13 +141,27 @@ export class WebXRSessionManager implements IDisposable {
                 this.scene.getEngine()._renderLoop();
             }
         };
-        // Create render target texture from xr's webgl render target
-        this._sessionRenderTargetTexture = WebXRSessionManager._CreateRenderTargetTextureFromSession(this.session, this.scene, this.baseLayer!);
+
+        if (this.baseLayer) {
+            // Create render target texture from xr's webgl render target
+            this._rttProvider = new RenderTargetProvider(WebXRSessionManager._CreateRenderTargetTextureFromSession(this.session, this.scene, this.baseLayer!));
+        } else {
+            this._rttProvider = this._xrNavigator.xr.getNativeRenderTargetProvider(this.session);
+        }
 
         // Stop window's animation frame and trigger sessions animation frame
         window.cancelAnimationFrame(this.scene.getEngine()._frameHandler);
         this.scene.getEngine()._renderLoop();
         return Promise.resolve();
+    }
+
+    /**
+     * Gets the correct render target texture to be rendered this frame for this eye
+     * @param eye the eye for which to get the render target
+     * @returns the render target for the specified eye
+     */
+    public getRenderTargetTextureForEye(eye: XREye) : RenderTargetTexture {
+        return this._rttProvider!.getRenderTargetForEye(eye);
     }
 
     /**
@@ -152,7 +183,7 @@ export class WebXRSessionManager implements IDisposable {
     public supportsSessionAsync(sessionMode: XRSessionMode) {
         if (!(navigator as any).xr || !(navigator as any).xr.supportsSession) {
             return Promise.resolve(false);
-        }else {
+        } else {
             return (navigator as any).xr.supportsSession(sessionMode).then(() => {
                 return Promise.resolve(true);
             }).catch((e: any) => {
@@ -160,6 +191,18 @@ export class WebXRSessionManager implements IDisposable {
                 return Promise.resolve(false);
             });
         }
+    }
+
+    /**
+     * Checks whether the getWebXRNativeOutputTarget() API is supported
+     * @returns true if getWebXRNativeOutputTarget() can be called, false otherwise
+     */
+    public supportsWebXRNativeOutputTarget() : boolean {
+        return this._xrNavigator.xr.native;
+    }
+
+    public getWebXRNativeOutputTarget() : WebXROutputTarget {
+        return this._xrNavigator.xr.getWebXROutputTarget(this.scene.getEngine());
     }
 
     /**

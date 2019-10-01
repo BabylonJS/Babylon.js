@@ -6,7 +6,7 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Camera } from "../../Cameras/camera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { WebXRCamera } from "./webXRCamera";
-import { WebXRManagedOutputCanvas } from './webXRManagedOutputCanvas';
+import { WebXROutputTarget } from './webXROutputTarget';
 /**
  * States of the webXR experience
  */
@@ -110,10 +110,10 @@ export class WebXRExperienceHelper implements IDisposable {
      * Enters XR mode (This must be done within a user interaction in most browsers eg. button click)
      * @param sessionCreationOptions options for the XR session
      * @param referenceSpaceType frame of reference of the XR session
-     * @param outputCanvas the output canvas that will be used to enter XR mode
+     * @param outputTarget the output canvas that will be used to enter XR mode
      * @returns promise that resolves after xr mode has entered
      */
-    public enterXRAsync(sessionCreationOptions: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, outputCanvas: WebXRManagedOutputCanvas) {
+    public enterXRAsync(sessionCreationOptions: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, outputTarget: WebXROutputTarget) {
         if (!this._supported) {
             throw "XR session not supported by this browser";
         }
@@ -121,9 +121,9 @@ export class WebXRExperienceHelper implements IDisposable {
         return this.sessionManager.initializeSessionAsync(sessionCreationOptions).then(() => {
             return this.sessionManager.setReferenceSpaceAsync(referenceSpaceType);
         }).then(() => {
-            return outputCanvas.initializeXRLayerAsync(this.sessionManager.session);
+            return outputTarget.initializeXRLayerAsync(this.sessionManager.session);
         }).then(() => {
-            return this.sessionManager.updateRenderStateAsync({ depthFar: this.camera.maxZ, depthNear: this.camera.minZ, baseLayer: outputCanvas.xrLayer! });
+            return this.sessionManager.updateRenderStateAsync({ depthFar: this.camera.maxZ, depthNear: this.camera.minZ, baseLayer: outputTarget.xrLayer! });
         }).then(() => {
             return this.sessionManager.startRenderingToXRAsync();
         }).then(() => {

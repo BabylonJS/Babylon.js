@@ -85,7 +85,7 @@ export class WebXRCamera extends FreeCamera {
 
         // Update camera rigs
         this._updateNumberOfRigCameras(pose.views.length);
-        pose.views.forEach((view: any, i: number) => {
+        pose.views.forEach((view: XRView, i: number) => {
             // Update view/projection matrix
             Matrix.FromFloat32ArrayToRefScaled(view.transform.matrix, 0, 1, this.rigCameras[i]._computedViewMatrix);
             Matrix.FromFloat32ArrayToRefScaled(view.projectionMatrix, 0, 1, this.rigCameras[i]._projectionMatrix);
@@ -106,7 +106,7 @@ export class WebXRCamera extends FreeCamera {
             }
 
             // Set cameras to render to the session's render target
-            this.rigCameras[i].outputRenderTarget = xrSessionManager._sessionRenderTargetTexture;
+            this.rigCameras[i].outputRenderTarget = xrSessionManager.getRenderTargetTextureForEye(view.eye);
         });
         return true;
     }

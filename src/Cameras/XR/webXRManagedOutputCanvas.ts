@@ -1,10 +1,11 @@
 import { Nullable } from "../../types";
-import { IDisposable } from "../../scene";
 import { WebXRExperienceHelper, WebXRState } from "./webXRExperienceHelper";
+import { WebXROutputTarget } from "./webXROutputTarget";
+
 /**
  * Creates a canvas that is added/removed from the webpage when entering/exiting XR
  */
-export class WebXRManagedOutputCanvas implements IDisposable {
+export class WebXRManagedOutputCanvas implements WebXROutputTarget {
     private _canvas: Nullable<HTMLCanvasElement> = null;
     /**
      * xrpresent context of the canvas which can be used to display/mirror xr content
