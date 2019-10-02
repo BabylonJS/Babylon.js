@@ -24,18 +24,17 @@ layout(std140, column_major) uniform;
 // }
 
 
-uniform Scene
-{
+uniform Scene {
     mat4 viewProjection;
 #ifdef MULTIVIEW
 	mat4 viewProjectionR;
 #endif 
     mat4 view;
+    vec4 viewPosition;
 };
 
 
-uniform Material
-{
+uniform Material {
     vec2 vAlbedoInfos;
     vec4 vAmbientInfos;
     vec2 vOpacityInfos;
@@ -64,7 +63,6 @@ uniform Material
     float pointSize;
     vec4 vReflectivityColor;
     vec3 vEmissiveColor;
-    vec4 vEyePosition;
     vec3 vAmbientColor;
 
     vec2 vDebugMode;

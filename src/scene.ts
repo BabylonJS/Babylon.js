@@ -63,6 +63,7 @@ declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationGroup = import("./Animations/animationGroup").AnimationGroup;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
 declare type Collider = import("./Collisions/collider").Collider;
+declare type WebGPUEngine = import("./Engines/webgpuEngine").WebGPUEngine;
 
 /**
  * Define an interface for all classes that will hold resources
@@ -1331,6 +1332,8 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     private geometriesByUniqueId: Nullable<{ [uniqueId: string]: number | undefined }> = null;
 
+    private _renderBundles: Nullable<GPURenderBundle[]> = null;
+
     /**
      * Creates a new Scene
      * @param engine defines the engine to use to render this scene
@@ -1604,6 +1607,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         this._sceneUbo = new UniformBuffer(this._engine, undefined, true);
         this._sceneUbo.addUniform("viewProjection", 16);
         this._sceneUbo.addUniform("view", 16);
+        this._sceneUbo.addUniform("viewPosition", 4);
     }
 
     /**
@@ -1970,6 +1974,15 @@ export class Scene extends AbstractScene implements IAnimatable {
         } else if (this._sceneUbo.useUbo) {
             this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
             this._sceneUbo.updateMatrix("view", this._viewMatrix);
+
+            const eyePosition = this._forcedViewPosition ? this._forcedViewPosition : (this._mirroredCameraPosition ? this._mirroredCameraPosition : (this.activeCamera!).globalPosition);
+            const invertNormal = (this.useRightHandedSystem === (this._mirroredCameraPosition != null));
+            this._sceneUbo.updateFloat4("viewPosition",
+                eyePosition.x,
+                eyePosition.y,
+                eyePosition.z,
+                invertNormal ? -1 : 1);
+
             this._sceneUbo.update();
         }
     }
@@ -3825,18 +3838,37 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.onBeforeRenderObservable.notifyObservers(this);
 
         var engine = this.getEngine();
-        if (engine._shouldOnlyUpdateCameras()) {
-            if (this.activeCameras.length) {
-                for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
-                    const camera = this.activeCameras[cameraIndex];
+        if (engine.isWebGPU) {
+            const webgpuEngine = (engine as WebGPUEngine);
+            if (this._activeMeshesFrozen) {
+                if (this.activeCameras.length) {
+                    for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
+                        const camera = this.activeCameras[cameraIndex];
+                        this.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
+                    }
+                }
+                else {
+                    const camera = this.activeCamera!;
                     this.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
                 }
+
+                if (this._renderBundles) {
+                    webgpuEngine.executeBundles(this._renderBundles);
+                    return;
+                }
+
+                webgpuEngine.startRecordBundle();
+                webgpuEngine.onEndFrameObservable.addOnce(() => {
+                    this._renderBundles = [ webgpuEngine.stopRecordBundle() ];
+                    // TODO. WEBGPU. Frame lost.
+                    // webgpuEngine.executeBundles(this._renderBundles);
+                });
             }
             else {
-                const camera = this.activeCamera!;
-                this.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
+                if (this._renderBundles) {
+                    this._renderBundles = null;
+                }
             }
-            return;
         }
 
         // Customs render targets
@@ -3967,6 +3999,8 @@ export class Scene extends AbstractScene implements IAnimatable {
      * Releases all held ressources
      */
     public dispose(): void {
+        this._renderBundles = null;
+
         this.beforeRender = null;
         this.afterRender = null;
 

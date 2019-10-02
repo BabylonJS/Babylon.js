@@ -9,7 +9,6 @@ uniform vec3 vEmissiveColor;
 
 uniform float visibility;
 
-uniform vec4 vEyePosition;
 uniform vec3 vAmbientColor;
 
 // Samplers
