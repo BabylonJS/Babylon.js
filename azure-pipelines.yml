@@ -4,14 +4,26 @@ trigger:
 jobs:
 - job: androidJNI
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'macOS-10.14'
     
   steps:
   - script: |
       git submodule update --init --recursive
     displayName: 'Checkout dependencies'
-  - script: choco install ninja
-    displayName: Install Ninja
+  - script: |
+      set -eu
+      curl -Ls https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-mac.zip -o ninja-mac.zip
+      unzip ninja-mac.zip
+      sudo cp -v ninja /usr/local/bin/
+    displayName: 'Install Ninja'
+  - script: |
+      npm install v8-android@7.5.1
+      unxz node_modules/v8-android/dist/lib.unstripped/v8-android/7.5.1/libs.tar.xz
+      tar -xf libs.tar
+      mkdir Library/Dependencies/v8
+      mkdir Library/Dependencies/v8/include
+      cp -r node_modules/v8-android/dist/include Library/Dependencies/v8/include
+    displayName: 'Install V8 npm'    
   - task: Gradle@2
     inputs:
         workingDirectory: 'TestApp/Source/Android'
