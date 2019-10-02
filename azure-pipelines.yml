@@ -23,11 +23,11 @@ jobs:
       mkdir Library/Dependencies/v8
       mkdir Library/Dependencies/v8/include
       mkdir TestApp/Source/Android/app/src/main/jniLibs
-      cp -r node_modules/v8-android/dist/include Library/Dependencies/v8/include
-      cp -r arm64-v8a TestApp/Source/Android/app/src/main/jniLibs/arm64-v8a
-      cp -r armeabi-v7a TestApp/Source/Android/app/src/main/jniLibs/armeabi-v7a
-      cp -r x86 TestApp/Source/Android/app/src/main/jniLibs/x86
-      cp -r x86_64 TestApp/Source/Android/app/src/main/jniLibs/x86_64
+      cp -r node_modules/v8-android/dist/include Library/Dependencies/v8
+      cp -r arm64-v8a TestApp/Source/Android/app/src/main/jniLibs
+      cp -r armeabi-v7a TestApp/Source/Android/app/src/main/jniLibs
+      cp -r x86 TestApp/Source/Android/app/src/main/jniLibs
+      cp -r x86_64 TestApp/Source/Android/app/src/main/jniLibs
       ls Library/Dependencies
       ls Library/Dependencies/v8
       ls Library/Dependencies/v8/include
