@@ -1397,6 +1397,11 @@ export class GLTFLoader implements IGLTFLoader {
      * @returns A promise that resolves with the loaded data when the load is complete
      */
     public loadBufferViewAsync(context: string, bufferView: IBufferView): Promise<ArrayBufferView> {
+        const extensionPromise = this._extensionsLoadBufferViewAsync(context, bufferView);
+        if (extensionPromise) {
+            return extensionPromise;
+        }
+
         if (bufferView._data) {
             return bufferView._data;
         }
@@ -2272,6 +2277,10 @@ export class GLTFLoader implements IGLTFLoader {
 
     private _extensionsLoadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>> {
         return this._applyExtensions(property, "loadUri", (extension) => extension._loadUriAsync && extension._loadUriAsync(context, property, uri));
+    }
+
+    private _extensionsLoadBufferViewAsync(context: string, bufferView: IBufferView): Nullable<Promise<ArrayBufferView>> {
+        return this._applyExtensions(bufferView, "loadBufferView", (extension) => extension.loadBufferViewAsync && extension.loadBufferViewAsync(context, bufferView));
     }
 
     /**
