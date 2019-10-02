@@ -44,7 +44,6 @@ android {
         cmake {
             version '3.13.2+'
             path 'CMakeLists.txt'
-
         }
     }
 }
