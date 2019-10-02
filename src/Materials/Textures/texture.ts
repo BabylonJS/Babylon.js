@@ -218,7 +218,7 @@ export class Texture extends BaseTexture {
     protected _initialSamplingMode = Texture.BILINEAR_SAMPLINGMODE;
 
     /** @hidden */
-    public _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob> = null;
+    public _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null;
     private _deleteBuffer: boolean = false;
     protected _format: Nullable<number> = null;
     private _delayedOnLoad: Nullable<() => void> = null;
@@ -277,7 +277,7 @@ export class Texture extends BaseTexture {
      * @param format defines the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
      * @param mimeType defines an optional mime type information
      */
-    constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob> = null, deleteBuffer: boolean = false, format?: number, mimeType?: string) {
+    constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, deleteBuffer: boolean = false, format?: number, mimeType?: string) {
         super((sceneOrEngine && sceneOrEngine.getClassName() === "Scene") ? (sceneOrEngine as Scene) : null);
 
         this.name = url || "";

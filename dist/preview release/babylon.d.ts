@@ -29207,7 +29207,7 @@ declare module BABYLON {
          * Gets host window
          * @returns the host window object
          */
-        getHostWindow(): Window;
+        getHostWindow(): Nullable<Window>;
         /**
          * Gets the current render width
          * @param useScreen defines if screen size must be used (or the current render target if any)

@@ -168,14 +168,16 @@ ThinEngine.prototype._cascadeLoadImgs = function(scene: Nullable<Scene>,
 ThinEngine.prototype._partialLoadImg = function(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>,
     onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null, mimeType?: string) {
 
-    var img: HTMLImageElement;
+    var img: Nullable<HTMLImageElement>;
 
     var onload = () => {
-        loadedImages[index] = img;
-        (<any>loadedImages)._internalCount++;
+        if (img) {
+            loadedImages[index] = img;
+            (<any>loadedImages)._internalCount++;
 
-        if (scene) {
-            scene._removePendingData(img);
+            if (scene) {
+                scene._removePendingData(img);
+            }
         }
 
         if ((<any>loadedImages)._internalCount === 6) {
@@ -194,7 +196,7 @@ ThinEngine.prototype._partialLoadImg = function(url: string, index: number, load
     };
 
     img = FileTools.LoadImage(url, onload, onerror, scene ? scene.offlineProvider : null, mimeType);
-    if (scene) {
+    if (scene && img) {
         scene._addPendingData(img);
     }
 };
