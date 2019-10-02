@@ -17,6 +17,7 @@ jobs:
       sudo cp -v ninja /usr/local/bin/
     displayName: 'Install Ninja'
   - script: |
+      npm install npm@latest -g
       npm config set registry "https://registry.npmjs.com/"
       npm install v8-android@7.5.1
       unxz node_modules/v8-android/dist/lib.unstripped/v8-android/7.5.1/libs.tar.xz
