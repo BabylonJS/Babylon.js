@@ -46,13 +46,17 @@ set_property(TARGET bgfx PROPERTY FOLDER Dependencies/bgfx)
 set_property(TARGET bimg PROPERTY FOLDER Dependencies/bgfx)
 set_property(TARGET bx PROPERTY FOLDER Dependencies/bgfx)
 
-if(BABYLON_NATIVE_PLATFORM STREQUAL "Apple")
+if(APPLE OR ANDROID)
     set(CURL_CA_BUNDLE "none" CACHE FILEPATH "Path to SSL CA Certificate Bundle")
     set(CURL_CA_PATH "none" CACHE PATH "Path to SSL CA Certificate Directory")
+endif()    
+
+if(APPLE)
     set(CMAKE_USE_SECTRANSP ON CACHE BOOL "enable Apple OS native SSL/TLS")
 else()
     set(CMAKE_USE_WINSSL ON CACHE BOOL "Set cURL to use WinSSL by default.")
 endif()
+
 add_subdirectory(Dependencies/curl EXCLUDE_FROM_ALL)
 set_property(TARGET libcurl PROPERTY FOLDER Dependencies/curl)
 
