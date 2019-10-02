@@ -166,7 +166,7 @@ var processDTSFiles = function(libraries, settings, cb) {
 /**
  * Dynamic module creation In Serie for WebPack leaks.
  */
-function buildExternalLibraries(settings) {
+function buildExternalLibraries(settings, fast) {
     // Creates the required tasks.
     var tasks = [];
 
@@ -182,7 +182,11 @@ function buildExternalLibraries(settings) {
         appendLoseDTS.push(function() { return appendLoseDTSFiles(settings, false) });
     }
 
-    tasks.push(cleanup, shaders, buildMin, buildMax, buildAMDDTS, processDTS, ...appendLoseDTS);
+    if (fast) {
+        tasks.push(cleanup, shaders, buildMax);
+    } else {
+        tasks.push(cleanup, shaders, buildMin, buildMax, buildAMDDTS, processDTS, ...appendLoseDTS);
+    }
 
     return gulp.series.apply(this, tasks);
 }
@@ -200,6 +204,12 @@ config.modules.map(function(module) {
  * Back Compat Only, now name core as it is a lib
  */
 gulp.task("typescript", gulp.series("core"));
+
+/**
+ * Build the releasable files.
+ * Back Compat Only, now name core as it is a lib
+ */
+gulp.task("core-workers", buildExternalLibraries(config["core"], true));
 
 /**
  * Build all libs.

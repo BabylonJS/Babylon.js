@@ -88,13 +88,13 @@ export class FileTools {
      * @param mimeType optional mime type
      * @returns the HTMLImageElement of the loaded image
      */
-    public static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): HTMLImageElement {
+    public static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement> {
         let url: string;
         let usingObjectURL = false;
 
         if (input instanceof ArrayBuffer || ArrayBuffer.isView(input)) {
             if (typeof Blob !== 'undefined') {
-               url = URL.createObjectURL(new Blob([input]));
+                url = URL.createObjectURL(new Blob([input]));
                 usingObjectURL = true;
             } else {
                 url = `data:${mimeType || "image/jpg"};base64,` + this._ArrayBufferToBase64(input);
@@ -107,6 +107,24 @@ export class FileTools {
         else {
             url = this._CleanUrl(input);
             url = this.PreprocessUrl(input);
+        }
+
+        if (typeof Image === "undefined") {
+            this.LoadFile(url, data => {
+                createImageBitmap(new Blob([data])).then(imgBmp => {
+                    onLoad(imgBmp);
+                }).catch(reason => {
+                    if (onError) {
+                        onError("Error while trying to load image: " + input, reason);
+                    }    
+                })
+            }, undefined, offlineProvider || undefined, true, (request, exception) => {
+                if (onError) {
+                    onError("Error while trying to load image: " + input, exception);
+                }
+            });
+
+            return null;
         }
 
         var img = new Image();

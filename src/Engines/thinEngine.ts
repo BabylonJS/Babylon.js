@@ -29,6 +29,7 @@ import { BaseTexture } from '../Materials/Textures/baseTexture';
 import { IOfflineProvider } from '../Offline/IOfflineProvider';
 import { IEffectFallbacks } from '../Materials/iEffectFallbacks';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
+import { CanvasGenerator } from '../Misc/canvasGenerator';
 
 declare type Observer<T> = import("../Misc/observable").Observer<T>;
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
@@ -339,9 +340,9 @@ export class ThinEngine {
     private _textureUnits: Int32Array;
 
     /** @hidden */
-    public _workingCanvas: Nullable<HTMLCanvasElement>;
+    public _workingCanvas: Nullable<HTMLCanvasElement | OffscreenCanvas>;
     /** @hidden */
-    public _workingContext: Nullable<CanvasRenderingContext2D>;
+    public _workingContext: Nullable<CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D>;
 
     /** @hidden */
     public _bindedRenderFunction: any;
@@ -910,7 +911,7 @@ export class ThinEngine {
             return;
         }
 
-        this._workingCanvas = document.createElement("canvas");
+        this._workingCanvas = CanvasGenerator.CreateCanvas(1, 1);
         let context = this._workingCanvas.getContext("2d");
 
         if (context) {
@@ -1040,7 +1041,11 @@ export class ThinEngine {
      * Gets host window
      * @returns the host window object
      */
-    public getHostWindow(): Window {
+    public getHostWindow(): Nullable<Window> {
+        if (!DomManagement.IsWindowObjectExist()) {
+            return null;
+        }
+
         if (this._renderingCanvas && this._renderingCanvas.ownerDocument && this._renderingCanvas.ownerDocument.defaultView) {
             return this._renderingCanvas.ownerDocument.defaultView;
         }
@@ -1180,8 +1185,16 @@ export class ThinEngine {
      * Resize the view according to the canvas' size
      */
     public resize(): void {
-        var width = this._renderingCanvas ? this._renderingCanvas.clientWidth : window.innerWidth;
-        var height = this._renderingCanvas ? this._renderingCanvas.clientHeight : window.innerHeight;
+        let width: number;
+        let height: number;
+
+        if (DomManagement.IsWindowObjectExist()) {
+            width = this._renderingCanvas ? this._renderingCanvas.clientWidth : window.innerWidth;
+            height = this._renderingCanvas ? this._renderingCanvas.clientHeight : window.innerHeight;
+        } else {
+            width = this._renderingCanvas ? this._renderingCanvas.width : 100;
+            height = this._renderingCanvas ? this._renderingCanvas.height : 100;
+        }
 
         this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
     }
@@ -2743,7 +2756,7 @@ export class ThinEngine {
      */
     public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
-        buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
+        buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
         forcedExtension: Nullable<string> = null, excludeLoaders: Array<IInternalTextureLoader> = [], mimeType?: string): InternalTexture {
         var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
         var fromData = url.substr(0, 5) === "data:";
@@ -2851,7 +2864,7 @@ export class ThinEngine {
                 }
             }
         } else {
-            var onload = (img: HTMLImageElement) => {
+            var onload = (img: HTMLImageElement | ImageBitmap) => {
                 if (fromBlob && !this._doNotHandleContextLost) {
                     // We need to store the image if we need to rebuild the texture
                     // in case of a webgl context lost
@@ -2905,8 +2918,8 @@ export class ThinEngine {
             };
 
             if (!fromData || isBase64) {
-                if (buffer instanceof HTMLImageElement) {
-                    onload(buffer);
+                if (buffer && (<HTMLImageElement>buffer).decoding) {
+                    onload(<HTMLImageElement>buffer);
                 } else {
                     FileTools.LoadImage(url, onload, onInternalError, scene ? scene.offlineProvider : null, mimeType);
                 }
@@ -4225,8 +4238,8 @@ export class ThinEngine {
      */
     public static isSupported(): boolean {
         try {
-            var tempcanvas = document.createElement("canvas");
-            var gl = tempcanvas.getContext("webgl") || tempcanvas.getContext("experimental-webgl");
+            var tempcanvas = CanvasGenerator.CreateCanvas(1, 1);
+            var gl = tempcanvas.getContext("webgl") || (tempcanvas as any).getContext("experimental-webgl");
 
             return gl != null && !!window.WebGLRenderingContext;
         } catch (e) {
@@ -4309,6 +4322,10 @@ export class ThinEngine {
      */
     public static QueueNewFrame(func: () => void, requester?: any): number {
         if (!DomManagement.IsWindowObjectExist()) {
+            if (typeof requestAnimationFrame !== "undefined") {
+                return requestAnimationFrame(func);
+            }
+
             return setTimeout(func, 16);
         }
 
