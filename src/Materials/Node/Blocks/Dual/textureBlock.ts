@@ -293,16 +293,19 @@ export class TextureBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        state.sharedData.blockingBlocks.push(this);
-        state.sharedData.textureBlocks.push(this);
-        state.sharedData.blocksWithDefines.push(this);
-        state.sharedData.bindableBlocks.push(this);
+        if (!this._isMixed && state.target === NodeMaterialBlockTargets.Fragment || this._isMixed && state.target === NodeMaterialBlockTargets.Vertex) {
+            this._samplerName = state._getFreeVariableName(this.name + "Sampler");
+
+            state._emit2DSampler(this._samplerName);
+
+            // Declarations
+            state.sharedData.blockingBlocks.push(this);
+            state.sharedData.textureBlocks.push(this);
+            state.sharedData.blocksWithDefines.push(this);
+            state.sharedData.bindableBlocks.push(this);
+        }
 
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
-            this._samplerName = state._getFreeVariableName(this.name + "Sampler");
-            state._samplerDeclaration += `uniform sampler2D ${this._samplerName};\r\n`;
-            state.samplers.push(this._samplerName);
-
             // Vertex
             this._injectVertexCode(state);
             return;
@@ -313,8 +316,11 @@ export class TextureBlock extends NodeMaterialBlock {
             return;
         }
 
-        state._samplerDeclaration += `uniform sampler2D ${this._samplerName};\r\n`;
-        state.samplers.push(this._samplerName);
+        if (this._isMixed) {
+            // Reexport the sampler
+            state._emit2DSampler(this._samplerName);
+        }
+
         this._linearDefineName = state._getFreeDefineName("ISLINEAR");
 
         let comments = `//${this.name}`;

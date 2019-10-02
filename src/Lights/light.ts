@@ -402,7 +402,9 @@ export abstract class Light extends Node {
     /** @hidden */
     protected _syncParentEnabledState() {
         super._syncParentEnabledState();
-        this._resyncMeshes();
+        if (!this.isDisposed()) {
+            this._resyncMeshes();
+        }
     }
 
     /**
