@@ -18,7 +18,7 @@ jobs:
     displayName: 'Install Ninja'
   - script: |
       npm install --prefix . v8-android@7.5.1
-      dir
+      ls
       unxz node_modules/v8-android/dist/lib.unstripped/v8-android/7.5.1/libs.tar.xz
       tar -xf libs.tar
       mkdir Library/Dependencies/v8
