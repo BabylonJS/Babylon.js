@@ -1436,53 +1436,18 @@ export class WebGPUEngine extends Engine {
         this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
     }
 
-    private _freezeCommands: boolean = false;
-    private _frozenCommands: Nullable<GPUCommandBuffer[]> = null;
-
-    public _shouldOnlyUpdateCameras(): boolean {
-        return this._frozenCommands !== null;
-    }
-
     /**
      * End the current frame
      */
     public endFrame(): void {
         this._endRenderPass();
 
-        if (this._freezeCommands && this._frozenCommands) {
-            this._commandBuffers[0] = this._frozenCommands[0];
-            this._commandBuffers[1] = this._frozenCommands[1];
-        }
-        else {
-            this._commandBuffers[0] = this._uploadEncoder.finish();
-            this._commandBuffers[1] = this._renderEncoder.finish();
-        }
-
-        if (this._freezeCommands && !this._frozenCommands) {
-            this._frozenCommands = [ ];
-            this._frozenCommands[0] = this._commandBuffers[0];
-            this._frozenCommands[1] = this._commandBuffers[1];
-        }
+        this._commandBuffers[0] = this._uploadEncoder.finish();
+        this._commandBuffers[1] = this._renderEncoder.finish();
 
         this._device.getQueue().submit(this._commandBuffers);
 
         super.endFrame();
-    }
-
-    /**
-     * Freezes the current list of commands to speed up rendering of sub sequent frames.
-     */
-    public freezeCommands(): void {
-        this._freezeCommands  = true;
-        this._frozenCommands = null;
-    }
-
-    /**
-     * Freezes the current list of commands to speed up rendering of sub sequent frames.
-     */
-    public unFreezeCommands(): void {
-        this._freezeCommands = false;
-        this._frozenCommands = null;
     }
 
     //------------------------------------------------------------------------------
@@ -2221,7 +2186,7 @@ export class WebGPUEngine extends Engine {
     }
 
     private _bindVertexInputs(vertexInputs: IWebGPUPipelineContextVertexInputsCache): void {
-        const renderPass = this._currentRenderPass!;
+        const renderPass = this._bundleEncoder || this._currentRenderPass!;
 
         if (vertexInputs.indexBuffer) {
             // TODO WEBGPU. Check if cache would be worth it.
@@ -2229,20 +2194,22 @@ export class WebGPUEngine extends Engine {
         }
 
         // TODO WEBGPU. Optimize buffer reusability and types as more are now allowed.
-        this._currentRenderPass!.setVertexBuffers(vertexInputs.vertexStartSlot, vertexInputs.vertexBuffers, vertexInputs.vertexOffsets);
+        renderPass.setVertexBuffers(vertexInputs.vertexStartSlot, vertexInputs.vertexBuffers, vertexInputs.vertexOffsets);
     }
 
     private _setRenderBindGroups(bindGroups: GPUBindGroup[]): void {
         // TODO WEBGPU. Only set groups if changes happened.
-        const renderPass = this._currentRenderPass!;
+        const renderPass = this._bundleEncoder || this._currentRenderPass!;
         for (let i = 0; i < bindGroups.length; i++) {
             renderPass.setBindGroup(i, bindGroups[i]);
         }
     }
 
     private _setRenderPipeline(fillMode: number): void {
+        const renderPass = this._bundleEncoder || this._currentRenderPass!;
+
         const pipeline = this._getRenderPipeline(fillMode);
-        this._currentRenderPass!.setPipeline(pipeline);
+        renderPass.setPipeline(pipeline);
 
         const vertexInputs = this._getVertexInputsToRender();
         this._bindVertexInputs(vertexInputs);
@@ -2251,22 +2218,27 @@ export class WebGPUEngine extends Engine {
         this._setRenderBindGroups(bindGroups);
 
         if (this._alphaState.alphaBlend && this._alphaState._isBlendConstantsDirty) {
+            // TODO WebGPU. should use renderPass.
             this._currentRenderPass!.setBlendColor(this._alphaState._blendConstants as any);
         }
     }
 
     public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount: number = 1): void {
+        const renderPass = this._bundleEncoder || this._currentRenderPass!;
+
         this._setRenderPipeline(fillMode);
 
-        this._currentRenderPass!.drawIndexed(indexCount, instancesCount, indexStart, 0, 0);
+        renderPass.drawIndexed(indexCount, instancesCount, indexStart, 0, 0);
     }
 
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount: number = 1): void {
+        const renderPass = this._bundleEncoder || this._currentRenderPass!;
+
         this._currentIndexBuffer = null;
 
         this._setRenderPipeline(fillMode);
 
-        this._currentRenderPass!.draw(verticesCount, instancesCount, verticesStart, 0);
+        renderPass.draw(verticesCount, instancesCount, verticesStart, 0);
     }
 
     /**
@@ -2277,6 +2249,46 @@ export class WebGPUEngine extends Engine {
     public setSize(width: number, height: number): void {
         super.setSize(width, height);
         this._initializeMainAttachments();
+    }
+
+    //------------------------------------------------------------------------------
+    //                              Render Bundle
+    //------------------------------------------------------------------------------
+
+    private _bundleEncoder: Nullable<GPURenderBundleEncoder>;
+
+    /**
+     * Start recording all the gpu calls into a bundle.
+     */
+    public startRecordBundle(): void {
+        // TODO. WebGPU. options should be dynamic.
+        this._bundleEncoder = this._device.createRenderBundleEncoder({
+            colorFormats: [ WebGPUConstants.GPUTextureFormat_bgra8unorm ],
+            depthStencilFormat: WebGPUConstants.GPUTextureFormat_depth24plusStencil8,
+            sampleCount: this._mainPassSampleCount,
+        });
+    }
+
+    /**
+     * Stops recording the bundle.
+     * @returns the recorded bundle
+     */
+    public stopRecordBundle(): GPURenderBundle {
+        const bundle = this._bundleEncoder!.finish();
+        this._bundleEncoder = null;
+        return bundle;
+    }
+
+    /**
+     * Execute the previously recorded bundle.
+     * @param bundles defines the bundle to replay
+     */
+    public executeBundles(bundles: GPURenderBundle[]): void {
+        if (!this._currentRenderPass) {
+            this._startMainRenderPass();
+        }
+
+        this._currentRenderPass!.executeBundles(bundles);
     }
 
     //------------------------------------------------------------------------------

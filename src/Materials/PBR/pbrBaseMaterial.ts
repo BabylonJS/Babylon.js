@@ -4,7 +4,6 @@ import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
 import { BRDFTextureTools } from "../../Misc/brdfTextureTools";
 import { Nullable } from "../../types";
-import { Camera } from "../../Cameras/camera";
 import { Scene } from "../../scene";
 import { Matrix, Vector4 } from "../../Maths/math.vector";
 import { VertexBuffer } from "../../Meshes/buffer";
@@ -1183,7 +1182,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         var shaderName = "pbr";
 
-        var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "visibility", "vReflectionColor",
+        var uniforms = ["world", "view", "viewProjection", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "visibility", "vReflectionColor",
             "vFogInfos", "vFogColor", "pointSize",
             "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vReflectionPosition", "vReflectionSize", "vEmissiveInfos", "vReflectivityInfos",
             "vMicroSurfaceSamplerInfos", "vBumpInfos", "vLightmapInfos",
@@ -1593,7 +1592,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         ubo.addUniform("pointSize", 1);
         ubo.addUniform("vReflectivityColor", 4);
         ubo.addUniform("vEmissiveColor", 3);
-        ubo.addUniform("vEyePosition", 4);
         ubo.addUniform("vAmbientColor", 3);
 
         ubo.addUniform("vDebugMode", 2);
@@ -1842,13 +1840,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 // Colors
                 scene.ambientColor.multiplyToRef(this._ambientColor, this._globalAmbientColor);
 
-                var eyePosition = scene._forcedViewPosition ? scene._forcedViewPosition : (scene._mirroredCameraPosition ? scene._mirroredCameraPosition : (<Camera>scene.activeCamera).globalPosition);
-                var invertNormal = (scene.useRightHandedSystem === (scene._mirroredCameraPosition != null));
-                ubo.updateFloat4("vEyePosition",
-                    eyePosition.x,
-                    eyePosition.y,
-                    eyePosition.z,
-                    invertNormal ? -1 : 1);
                 ubo.updateColor3("vAmbientColor", this._globalAmbientColor);
 
                 ubo.updateFloat2("vDebugMode", this.debugLimit, this.debugFactor);

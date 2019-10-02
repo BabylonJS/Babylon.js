@@ -595,11 +595,6 @@ export class Engine extends ThinEngine {
         }
     }
 
-    /** @hidden */
-    public _shouldOnlyUpdateCameras(): boolean {
-        return false;
-    }
-
     /**
      * Gets current aspect ratio
      * @param viewportOwner defines the camera to use to get the aspect ratio

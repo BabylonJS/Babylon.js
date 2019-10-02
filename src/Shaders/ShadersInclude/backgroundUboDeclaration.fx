@@ -30,4 +30,5 @@ uniform Scene {
 	mat4 viewProjectionR;
 #endif 
 	mat4 view;
+    vec4 viewPosition;
 };
