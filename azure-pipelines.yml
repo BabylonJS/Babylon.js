@@ -28,6 +28,9 @@ jobs:
       cp -r armeabi-v7a TestApp/Source/Android/app/src/main/jniLibs/armeabi-v7a
       cp -r x86 TestApp/Source/Android/app/src/main/jniLibs/x86
       cp -r x86_64 TestApp/Source/Android/app/src/main/jniLibs/x86_64
+      ls Library/Dependencies
+      ls Library/Dependencies/v8
+      ls Library/Dependencies/v8/include
     displayName: 'Install V8 npm'    
   - task: Gradle@2
     inputs:

@@ -69,7 +69,7 @@ endif()
 
 # V8 android build until we figured out how to deal with custom V8 nugget
 if (ANDROID)
-target_include_directories(napi PUBLIC "../v8/include")
+    target_include_directories(napi PUBLIC "../v8/include")
 endif()
 
 target_include_directories(napi PUBLIC "include")
