@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.12)
+# cmake 3.15.3+ because of a c++ regression when swift is enable
+cmake_minimum_required(VERSION 3.15.3)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 project(BabylonNative)
