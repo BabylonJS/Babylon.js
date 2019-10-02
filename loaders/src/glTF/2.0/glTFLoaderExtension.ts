@@ -138,7 +138,7 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
     /**
      * Define this method to modify the default behavior when loading buffer views.
      * @param context The context when loading the asset
-     * @param primitive The glTF buffer view property
+     * @param bufferView The glTF buffer view property
      * @returns A promise that resolves with the loaded buffer view when the load is complete or null if not handled
      */
     loadBufferViewAsync?(context: string, bufferView: IBufferView): Nullable<Promise<ArrayBufferView>>;
