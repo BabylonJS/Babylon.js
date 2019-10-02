@@ -6,12 +6,20 @@ import { faPlay, faStop, faPalette, faCheckDouble, faSun, faLocationArrow, faClo
 import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 import { DataStorage } from '../../dataStorage';
 
-interface IPreviewAreaComponent {
+interface IPreviewAreaComponentProps {
     globalState: GlobalState;
     width: number;
 }
 
-export class PreviewAreaComponent extends React.Component<IPreviewAreaComponent> {
+export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, {isLoading: boolean}> {
+
+    constructor(props: IPreviewAreaComponentProps) {
+        super(props);
+
+        this.state = {isLoading: true};
+
+        this.props.globalState.onIsLoadingChanged.add(state => this.setState({isLoading: state}));
+    }
 
     changeAnimation() {
         this.props.globalState.rotatePreview = !this.props.globalState.rotatePreview;
@@ -49,6 +57,11 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponent>
             <>
                 <div id="preview" style={{height: this.props.width + "px"}}>
                     <canvas id="preview-canvas"/>
+                    {                        
+                        <div className={"waitPanel" + (this.state.isLoading ? "" : " hidden")}>
+                            Please wait, loading...
+                        </div>
+                    }
                 </div>                
                 <div id="preview-config-bar">
                     <div                     

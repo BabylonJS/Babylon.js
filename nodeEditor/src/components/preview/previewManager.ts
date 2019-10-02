@@ -185,8 +185,6 @@ export class PreviewManager {
     }
 
     private _prepareMeshes() {
-        this._engine.hideLoadingUI();
-
         this._prepareLights();
 
         // Framing
@@ -238,7 +236,7 @@ export class PreviewManager {
 
             SceneLoader.ShowLoadingScreen = false;
 
-            this._engine.displayLoadingUI();
+            this._globalState.onIsLoadingChanged.notifyObservers(true);
         
             switch (this._globalState.previewMeshType) {
                 case PreviewMeshType.Box:
@@ -304,8 +302,10 @@ export class PreviewManager {
                     }      
         
                     this._material = tempMaterial;  
+                    this._globalState.onIsLoadingChanged.notifyObservers(false);
                 }).catch(reason => {
                     this._globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Shader compilation error:\r\n" + reason, true));
+                    this._globalState.onIsLoadingChanged.notifyObservers(false);
                 });
             } else {
                 this._material = tempMaterial;    
