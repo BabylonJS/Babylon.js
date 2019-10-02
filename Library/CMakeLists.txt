@@ -54,7 +54,7 @@ endif()
 if(APPLE)
     set(CMAKE_USE_SECTRANSP ON CACHE BOOL "enable Apple OS native SSL/TLS")
 else()
-    set(CMAKE_USE_WINSSL ON CACHE BOOL "Set cURL to use WinSSL by default.")
+    set(CMAKE_USE_WINSSL OFF CACHE BOOL "Set cURL to use WinSSL by default.")
 endif()
 
 add_subdirectory(Dependencies/curl EXCLUDE_FROM_ALL)

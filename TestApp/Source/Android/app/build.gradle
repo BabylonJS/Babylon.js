@@ -5,7 +5,7 @@ android {
     compileSdkVersion 28
 
     defaultConfig {
-        applicationId 'com.android.appviewer'
+        applicationId 'com.android.testapp'
         minSdkVersion "${platformVersion}"
         targetSdkVersion 28
         externalNativeBuild {
