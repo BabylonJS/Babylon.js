@@ -24,10 +24,11 @@ jobs:
       mkdir Library/Dependencies/v8/include
       cp -r node_modules/v8-android/dist/include Library/Dependencies/v8/include
       mkdir TestApp/Source/Android/app/src/main/jniLibs
-      cp -r node_modules/v8-android/dist/lib.unstripped/v8-android/7.5.1/arm64-v8a TestApp/Source/Android/app/src/main/jniLibs/arm64-v8a
-      cp -r node_modules/v8-android/dist/lib.unstripped/v8-android/7.5.1/armeabi-v7a TestApp/Source/Android/app/src/main/jniLibs/armeabi-v7a
-      cp -r node_modules/v8-android/dist/lib.unstripped/v8-android/7.5.1/x86 TestApp/Source/Android/app/src/main/jniLibs/x86
-      cp -r node_modules/v8-android/dist/lib.unstripped/v8-android/7.5.1/x86_64 TestApp/Source/Android/app/src/main/jniLibs/x86_64
+      ls node_modules/v8-android/dist/lib.unstripped/v8-android/7.5.1/
+      cp -r node_modules/v8-android/dist/lib.unstripped/v8-android/7.5.1/libs.tar/arm64-v8a TestApp/Source/Android/app/src/main/jniLibs/arm64-v8a
+      cp -r node_modules/v8-android/dist/lib.unstripped/v8-android/7.5.1/libs.tar/armeabi-v7a TestApp/Source/Android/app/src/main/jniLibs/armeabi-v7a
+      cp -r node_modules/v8-android/dist/lib.unstripped/v8-android/7.5.1/libs.tar/x86 TestApp/Source/Android/app/src/main/jniLibs/x86
+      cp -r node_modules/v8-android/dist/lib.unstripped/v8-android/7.5.1/libs.tar/x86_64 TestApp/Source/Android/app/src/main/jniLibs/x86_64
     displayName: 'Install V8 npm'    
   - task: Gradle@2
     inputs:
