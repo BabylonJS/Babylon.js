@@ -18,12 +18,16 @@ jobs:
     displayName: 'Install Ninja'
   - script: |
       npm install --prefix . v8-android@7.5.1
-      ls
       unxz node_modules/v8-android/dist/lib.unstripped/v8-android/7.5.1/libs.tar.xz
-      tar -xf libs.tar
+      tar -xf node_modules/v8-android/dist/lib.unstripped/v8-android/7.5.1/libs.tar
       mkdir Library/Dependencies/v8
       mkdir Library/Dependencies/v8/include
       cp -r node_modules/v8-android/dist/include Library/Dependencies/v8/include
+      mkdir TestApp/Source/Android/app/src/main/jniLibs
+      cp -r node_modules/v8-android/dist/lib.unstripped/v8-android/7.5.1/arm64-v8a TestApp/Source/Android/app/src/main/jniLibs/arm64-v8a
+      cp -r node_modules/v8-android/dist/lib.unstripped/v8-android/7.5.1/armeabi-v7a TestApp/Source/Android/app/src/main/jniLibs/armeabi-v7a
+      cp -r node_modules/v8-android/dist/lib.unstripped/v8-android/7.5.1/x86 TestApp/Source/Android/app/src/main/jniLibs/x86
+      cp -r node_modules/v8-android/dist/lib.unstripped/v8-android/7.5.1/x86_64 TestApp/Source/Android/app/src/main/jniLibs/x86_64
     displayName: 'Install V8 npm'    
   - task: Gradle@2
     inputs:
