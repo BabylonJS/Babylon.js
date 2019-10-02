@@ -22,6 +22,7 @@ export class GlobalState {
     onReOrganizedRequiredObservable = new Observable<void>();
     onLogRequiredObservable = new Observable<LogEntry>();
     onErrorMessageDialogRequiredObservable = new Observable<string>();
+    onIsLoadingChanged = new Observable<boolean>();
     onPreviewCommandActivated = new Observable<void>();
     onLightUpdated = new Observable<void>();
     onPreviewBackgroundChanged = new Observable<void>();
@@ -39,7 +40,7 @@ export class GlobalState {
     hemisphericLight: boolean;
     directionalLight0: boolean;
     directionalLight1: boolean;
-    controlCamera: boolean;
+    controlCamera: boolean;    
     
     customSave?: {label: string, action: (data: string) => Promise<void>};
 
