@@ -1257,11 +1257,14 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    interface IPreviewAreaComponent {
+    interface IPreviewAreaComponentProps {
         globalState: GlobalState;
         width: number;
     }
-    export class PreviewAreaComponent extends React.Component<IPreviewAreaComponent> {
+    export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, {
+        isLoading: boolean;
+    }> {
+        constructor(props: IPreviewAreaComponentProps);
         changeAnimation(): void;
         changeBackground(value: string): void;
         changeBackFaceCulling(value: boolean): void;
@@ -1454,6 +1457,7 @@ declare module NODEEDITOR {
         onReOrganizedRequiredObservable: BABYLON.Observable<void>;
         onLogRequiredObservable: BABYLON.Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: BABYLON.Observable<string>;
+        onIsLoadingChanged: BABYLON.Observable<boolean>;
         onPreviewCommandActivated: BABYLON.Observable<void>;
         onLightUpdated: BABYLON.Observable<void>;
         onPreviewBackgroundChanged: BABYLON.Observable<void>;

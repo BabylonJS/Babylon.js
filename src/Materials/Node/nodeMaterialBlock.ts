@@ -321,8 +321,9 @@ export class NodeMaterialBlock {
      * @param state defines the state to update
      * @param nodeMaterial defines the node material requesting the update
      * @param defines defines the material defines to update
+     * @param uniformBuffers defines the list of uniform buffer names
      */
-    public updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]) {
         // Do nothing
     }
 

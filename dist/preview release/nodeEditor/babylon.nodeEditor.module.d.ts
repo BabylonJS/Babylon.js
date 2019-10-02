@@ -1527,11 +1527,14 @@ declare module "babylonjs-node-editor/components/diagram/lightInformation/lightI
 declare module "babylonjs-node-editor/components/preview/previewAreaComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
-    interface IPreviewAreaComponent {
+    interface IPreviewAreaComponentProps {
         globalState: GlobalState;
         width: number;
     }
-    export class PreviewAreaComponent extends React.Component<IPreviewAreaComponent> {
+    export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, {
+        isLoading: boolean;
+    }> {
+        constructor(props: IPreviewAreaComponentProps);
         changeAnimation(): void;
         changeBackground(value: string): void;
         changeBackFaceCulling(value: boolean): void;
@@ -1773,6 +1776,7 @@ declare module "babylonjs-node-editor/globalState" {
         onReOrganizedRequiredObservable: Observable<void>;
         onLogRequiredObservable: Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: Observable<string>;
+        onIsLoadingChanged: Observable<boolean>;
         onPreviewCommandActivated: Observable<void>;
         onLightUpdated: Observable<void>;
         onPreviewBackgroundChanged: Observable<void>;
@@ -3099,11 +3103,14 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    interface IPreviewAreaComponent {
+    interface IPreviewAreaComponentProps {
         globalState: GlobalState;
         width: number;
     }
-    export class PreviewAreaComponent extends React.Component<IPreviewAreaComponent> {
+    export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, {
+        isLoading: boolean;
+    }> {
+        constructor(props: IPreviewAreaComponentProps);
         changeAnimation(): void;
         changeBackground(value: string): void;
         changeBackFaceCulling(value: boolean): void;
@@ -3296,6 +3303,7 @@ declare module NODEEDITOR {
         onReOrganizedRequiredObservable: BABYLON.Observable<void>;
         onLogRequiredObservable: BABYLON.Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: BABYLON.Observable<string>;
+        onIsLoadingChanged: BABYLON.Observable<boolean>;
         onPreviewCommandActivated: BABYLON.Observable<void>;
         onLightUpdated: BABYLON.Observable<void>;
         onPreviewBackgroundChanged: BABYLON.Observable<void>;
