@@ -10,6 +10,10 @@ struct Filepath : public std::string
         return *this;
     }
 };
+#elif __ANDROID__
+struct Filepath : public std::string
+{
+};
 #else
 #include <filesystem>
 typedef std::filesystem::path Filepath;
