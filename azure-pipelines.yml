@@ -99,7 +99,6 @@ jobs:
       msbuildArgs: '/p:AppxPackageSigningEnabled=false'
     displayName: 'Build UWP'
     
-jobs:
 - job: androidJNI
   pool:
     vmImage: 'macOS-10.14'
