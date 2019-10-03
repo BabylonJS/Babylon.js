@@ -1204,7 +1204,7 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoaderExtension" {
     import { Mesh } from "babylonjs/Meshes/mesh";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { IDisposable } from "babylonjs/scene";
-    import { IScene, INode, IMesh, ISkin, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
+    import { IScene, INode, IMesh, ISkin, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation, IBufferView } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension as IGLTFBaseLoaderExtension } from "babylonjs-loaders/glTF/glTFFileLoader";
     import { IProperty } from 'babylonjs-gltf2interface';
     /**
@@ -1315,6 +1315,13 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoaderExtension" {
          * @returns A promise that resolves with the loaded data when the load is complete or null if not handled
          */
         _loadUriAsync?(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>>;
+        /**
+         * Define this method to modify the default behavior when loading buffer views.
+         * @param context The context when loading the asset
+         * @param bufferView The glTF buffer view property
+         * @returns A promise that resolves with the loaded buffer view when the load is complete or null if not handled
+         */
+        loadBufferViewAsync?(context: string, bufferView: IBufferView): Nullable<Promise<ArrayBufferView>>;
     }
 }
 declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
@@ -1602,6 +1609,7 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
         private _extensionsLoadAnimationAsync;
         private _extensionsLoadSkinAsync;
         private _extensionsLoadUriAsync;
+        private _extensionsLoadBufferViewAsync;
         /**
          * Helper method called by a loader extension to load an glTF extension.
          * @param context The context when loading the asset
@@ -3580,6 +3588,13 @@ declare module BABYLON.GLTF2 {
          * @returns A promise that resolves with the loaded data when the load is complete or null if not handled
          */
         _loadUriAsync?(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>>;
+        /**
+         * Define this method to modify the default behavior when loading buffer views.
+         * @param context The context when loading the asset
+         * @param bufferView The glTF buffer view property
+         * @returns A promise that resolves with the loaded buffer view when the load is complete or null if not handled
+         */
+        loadBufferViewAsync?(context: string, bufferView: IBufferView): Nullable<Promise<ArrayBufferView>>;
     }
 }
 declare module BABYLON.GLTF2 {
@@ -3850,6 +3865,7 @@ declare module BABYLON.GLTF2 {
         private _extensionsLoadAnimationAsync;
         private _extensionsLoadSkinAsync;
         private _extensionsLoadUriAsync;
+        private _extensionsLoadBufferViewAsync;
         /**
          * Helper method called by a loader extension to load an glTF extension.
          * @param context The context when loading the asset

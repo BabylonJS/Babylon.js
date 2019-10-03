@@ -779,14 +779,14 @@ declare module 'babylonjs-viewer/model/modelAnimation' {
     /**
         * Animation play mode enum - is the animation looping or playing once
         */
-    export const enum AnimationPlayMode {
+    export enum AnimationPlayMode {
             ONCE = 0,
             LOOP = 1
     }
     /**
         * An enum representing the current state of an animation object
         */
-    export const enum AnimationState {
+    export enum AnimationState {
             INIT = 0,
             PLAYING = 1,
             PAUSED = 2,
@@ -796,7 +796,7 @@ declare module 'babylonjs-viewer/model/modelAnimation' {
     /**
         * The different type of easing functions available
         */
-    export const enum EasingFunction {
+    export enum EasingFunction {
             Linear = 0,
             CircleEase = 1,
             BackEase = 2,
