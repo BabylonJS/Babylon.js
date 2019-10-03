@@ -1612,9 +1612,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
      * @param subMesh defines the subMesh to render
      * @param enableAlphaMode defines if alpha mode can be changed
+     * @param effectiveMeshReplacement defines an optional mesh used to provide info for the rendering
      * @returns the current mesh
      */
-    public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
+    public render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
         var scene = this.getScene();
 
         if (scene._isInIntermediateRendering()) {
@@ -1687,7 +1688,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        const effectiveMesh = this._effectiveMesh;
+        const effectiveMesh = effectiveMeshReplacement || this._effectiveMesh;
 
         var sideOrientation: Nullable<number>;
 
@@ -1701,17 +1702,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
             }
             instanceDataStorage.sideOrientation = sideOrientation!;
-
-            let visibleInstances = batch.visibleInstances[subMesh._id];
-            if (visibleInstances) {
-                for (var instance of visibleInstances) {
-                    if (mainDeterminant !== instance._getWorldMatrixDeterminant()) {
-                        this._effectiveMaterial.backFaceCulling = false; // Turn off back face culling as one of the instance is having an incompatible world matrix
-                        break;
-                    }
-                }
-            }
-
         } else {
             sideOrientation = instanceDataStorage.sideOrientation;
         }

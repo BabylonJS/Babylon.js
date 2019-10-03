@@ -69,21 +69,36 @@ export class FileTools {
         }
     }
 
+    private static _ArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView) {
+        var binary = '';
+        var bytes = (buffer as ArrayBufferView).buffer ? new Uint8Array((buffer as ArrayBufferView).buffer) : new Uint8Array(buffer as ArrayBuffer);
+        var len = bytes.byteLength;
+        for (var i = 0; i < len; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return window.btoa(binary);
+    }
+
     /**
      * Loads an image as an HTMLImageElement.
      * @param input url string, ArrayBuffer, or Blob to load
      * @param onLoad callback called when the image successfully loads
      * @param onError callback called when the image fails to load
      * @param offlineProvider offline provider for caching
+     * @param mimeType optional mime type
      * @returns the HTMLImageElement of the loaded image
      */
-    public static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>): HTMLImageElement {
+    public static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): HTMLImageElement {
         let url: string;
         let usingObjectURL = false;
 
         if (input instanceof ArrayBuffer || ArrayBuffer.isView(input)) {
-            url = URL.createObjectURL(new Blob([input]));
-            usingObjectURL = true;
+            if (typeof Blob !== 'undefined') {
+               url = URL.createObjectURL(new Blob([input]));
+                usingObjectURL = true;
+            } else {
+                url = `data:${mimeType || "image/jpg"};base64,` + this._ArrayBufferToBase64(input);
+            }
         }
         else if (input instanceof Blob) {
             url = URL.createObjectURL(input);

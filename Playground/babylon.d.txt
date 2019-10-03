@@ -1343,15 +1343,17 @@ declare module BABYLON {
         static SetCorsBehavior(url: string | string[], element: {
             crossOrigin: string | null;
         }): void;
+        private static _ArrayBufferToBase64;
         /**
          * Loads an image as an HTMLImageElement.
          * @param input url string, ArrayBuffer, or Blob to load
          * @param onLoad callback called when the image successfully loads
          * @param onError callback called when the image fails to load
          * @param offlineProvider offline provider for caching
+         * @param mimeType optional mime type
          * @returns the HTMLImageElement of the loaded image
          */
-        static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>): HTMLImageElement;
+        static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): HTMLImageElement;
         /**
          * Loads a file
          * @param fileToLoad defines the file to load
@@ -7394,8 +7396,8 @@ declare module BABYLON {
             createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number): InternalTexture;
             /** @hidden */private _partialLoadFile(url: string, index: number, loadedFiles: (string | ArrayBuffer)[], onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>): void;
             /** @hidden */private _cascadeLoadFiles(scene: Nullable<Scene>, onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>): void;
-            /** @hidden */private _cascadeLoadImgs(scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>): void;
-            /** @hidden */private _partialLoadImg(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>): void;
+            /** @hidden */private _cascadeLoadImgs(scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>, mimeType?: string): void;
+            /** @hidden */private _partialLoadImg(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>, mimeType?: string): void;
         }
 }
 declare module BABYLON {
@@ -15528,6 +15530,7 @@ declare module BABYLON {
         protected _format: Nullable<number>;
         private _delayedOnLoad;
         private _delayedOnError;
+        private _mimeType?;
         /**
          * Observable triggered once the texture has been loaded.
          */
@@ -15550,18 +15553,19 @@ declare module BABYLON {
          * Instantiates a new texture.
          * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
          * @see http://doc.babylonjs.com/babylon101/materials#texture
-         * @param url define the url of the picture to load as a texture
-         * @param scene define the scene or engine the texture will belong to
-         * @param noMipmap define if the texture will require mip maps or not
-         * @param invertY define if the texture needs to be inverted on the y axis during loading
-         * @param samplingMode define the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
-         * @param onLoad define a callback triggered when the texture has been loaded
-         * @param onError define a callback triggered when an error occurred during the loading session
-         * @param buffer define the buffer to load the texture from in case the texture is loaded from a buffer representation
-         * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
-         * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
+         * @param url defines the url of the picture to load as a texture
+         * @param scene defines the scene or engine the texture will belong to
+         * @param noMipmap defines if the texture will require mip maps or not
+         * @param invertY defines if the texture needs to be inverted on the y axis during loading
+         * @param samplingMode defines the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
+         * @param onLoad defines a callback triggered when the texture has been loaded
+         * @param onError defines a callback triggered when an error occurred during the loading session
+         * @param buffer defines the buffer to load the texture from in case the texture is loaded from a buffer representation
+         * @param deleteBuffer defines if the buffer we are loading the texture from should be deleted after load
+         * @param format defines the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
+         * @param mimeType defines an optional mime type information
          */
-        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>, deleteBuffer?: boolean, format?: number);
+        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>, deleteBuffer?: boolean, format?: number, mimeType?: string);
         /**
          * Update the url (and optional buffer) of this texture if url was null during construction.
          * @param url the url of the texture
@@ -23636,9 +23640,10 @@ declare module BABYLON {
          * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
          * @param subMesh defines the subMesh to render
          * @param enableAlphaMode defines if alpha mode can be changed
+         * @param effectiveMeshReplacement defines an optional mesh used to provide info for the rendering
          * @returns the current mesh
          */
-        render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh;
+        render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh;
         private _onBeforeDraw;
         /**
          *   Renormalize the mesh and patch it up if there are no weights
@@ -25318,7 +25323,7 @@ declare module BABYLON {
     }
     /**
      * @hidden
-     **/private class _InternalAbstractMeshDataInfo {private _hasVertexAlpha: boolean;private _useVertexColors: boolean;private _numBoneInfluencers: number;private _applyFog: boolean;private _receiveShadows: boolean;private _facetData: _FacetDataStorage;private _visibility: number;private _skeleton: Nullable<Skeleton>;private _layerMask: number;private _computeBonesUsingShaders: boolean;private _isActive: boolean;private _onlyForInstances: boolean;private _isActiveIntermediate: boolean;private _onlyForInstancesIntermediate: boolean;
+     **/private class _InternalAbstractMeshDataInfo {private _hasVertexAlpha: boolean;private _useVertexColors: boolean;private _numBoneInfluencers: number;private _applyFog: boolean;private _receiveShadows: boolean;private _facetData: _FacetDataStorage;private _visibility: number;private _skeleton: Nullable<Skeleton>;private _layerMask: number;private _computeBonesUsingShaders: boolean;private _isActive: boolean;private _onlyForInstances: boolean;private _isActiveIntermediate: boolean;private _onlyForInstancesIntermediate: boolean;private _actAsRegularMesh: boolean;
     }
     /**
      * Class used to store all common mesh properties
@@ -29165,9 +29170,10 @@ declare module BABYLON {
          * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
          * @param forcedExtension defines the extension to use to pick the right loader
          * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (default: empty array)
+         * @param mimeType defines an optional mime type
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, excludeLoaders?: Array<IInternalTextureLoader>): InternalTexture;
+        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, excludeLoaders?: Array<IInternalTextureLoader>, mimeType?: string): InternalTexture;
         /**
          * @hidden
          */private _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void;
@@ -31391,9 +31397,10 @@ declare module BABYLON {
         * @param onLoad callback called when the image successfully loads
         * @param onError callback called when the image fails to load
         * @param offlineProvider offline provider for caching
+        * @param mimeType optional mime type
         * @returns the HTMLImageElement of the loaded image
         */
-        static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>): HTMLImageElement;
+        static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): HTMLImageElement;
         /**
          * Loads a file
          * @param url url string, ArrayBuffer, or Blob to load
@@ -52497,10 +52504,6 @@ declare module BABYLON {
         */
         constants: string[];
         /**
-         * Gets the list of emitted uniform buffers
-         */
-        uniformBuffers: string[];
-        /**
          * Gets the list of emitted samplers
          */
         samplers: string[];
@@ -52551,6 +52554,7 @@ declare module BABYLON {
         /** @hidden */private _getFreeVariableName(prefix: string): string;
         /** @hidden */private _getFreeDefineName(prefix: string): string;
         /** @hidden */private _excludeVariableName(name: string): void;
+        /** @hidden */private _emit2DSampler(name: string): void;
         /** @hidden */private _getGLType(type: NodeMaterialBlockConnectionPointTypes): string;
         /** @hidden */private _emitExtension(name: string, extension: string): void;
         /** @hidden */private _emitFunction(name: string, code: string, comments: string): void;
@@ -52714,8 +52718,9 @@ declare module BABYLON {
          * @param state defines the state to update
          * @param nodeMaterial defines the node material requesting the update
          * @param defines defines the material defines to update
+         * @param uniformBuffers defines the list of uniform buffer names
          */
-        updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]): void;
         /**
          * Add potential fallbacks if shader compilation fails
          * @param mesh defines the mesh to be rendered
@@ -52985,6 +52990,10 @@ declare module BABYLON {
         readonly endpoints: NodeMaterialConnectionPoint[];
         /** Gets a boolean indicating if that output point is connected to at least one input */
         readonly hasEndpoints: boolean;
+        /** Gets a boolean indicating that this connection will be used in the vertex shader */
+        readonly isConnectedInVertexShader: boolean;
+        /** Gets a boolean indicating that this connection will be used in the fragment shader */
+        readonly isConnectedInFragmentShader: boolean;
         /**
          * Creates a new connection point
          * @param name defines the connection point name
@@ -53432,7 +53441,7 @@ declare module BABYLON {
         readonly specularOutput: NodeMaterialConnectionPoint;
         autoConfigure(material: NodeMaterial): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
-        updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         private _injectVertexCode;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
@@ -57409,6 +57418,396 @@ declare module BABYLON {
      * @hidden
      */
     export var _IDoNeedToBeInTheBuild: number;
+}
+declare module BABYLON {
+    /** Defines the 4 color options */
+    export enum PointColor {
+        /** color value */
+        Color = 2,
+        /** uv value */
+        UV = 1,
+        /** random value */
+        Random = 0,
+        /** stated value */
+        Stated = 3
+    }
+    /**
+     * The PointCloudSystem (PCS) is a single updatable mesh. The points corresponding to the vertices of this big mesh.
+     * As it is just a mesh, the PointCloudSystem has all the same properties as any other BJS mesh : not more, not less. It can be scaled, rotated, translated, enlighted, textured, moved, etc.
+     * The PointCloudSytem is also a particle system, with each point being a particle. It provides some methods to manage the particles.
+     * However it is behavior agnostic. This means it has no emitter, no particle physics, no particle recycler. You have to implement your own behavior.
+     *
+     * Full documentation here : TO BE ENTERED
+     */
+    export class PointsCloudSystem implements IDisposable {
+        /**
+         *  The PCS array of cloud point objects. Just access each particle as with any classic array.
+         *  Example : var p = SPS.particles[i];
+         */
+        particles: CloudPoint[];
+        /**
+         * The PCS total number of particles. Read only. Use PCS.counter instead if you need to set your own value.
+         */
+        nbParticles: number;
+        /**
+         * This a counter for your own usage. It's not set by any SPS functions.
+         */
+        counter: number;
+        /**
+         * The PCS name. This name is also given to the underlying mesh.
+         */
+        name: string;
+        /**
+         * The PCS mesh. It's a standard BJS Mesh, so all the methods from the Mesh class are avalaible.
+         */
+        mesh: Mesh;
+        /**
+         * This empty object is intended to store some PCS specific or temporary values in order to lower the Garbage Collector activity.
+         * Please read :
+         */
+        vars: any;
+        /**
+         * @hidden
+         */private _size: number;
+        private _scene;
+        private _promises;
+        private _positions;
+        private _indices;
+        private _normals;
+        private _colors;
+        private _uvs;
+        private _indices32;
+        private _positions32;
+        private _colors32;
+        private _uvs32;
+        private _updatable;
+        private _isVisibilityBoxLocked;
+        private _alwaysVisible;
+        private _groups;
+        private _groupCounter;
+        private _computeParticleColor;
+        private _computeParticleTexture;
+        private _computeParticleRotation;
+        private _computeBoundingBox;
+        private _isReady;
+        /**
+         * Creates a PCS (Points Cloud System) object
+         * @param name (String) is the PCS name, this will be the underlying mesh name
+         * @param pointSize (number) is the size for each point
+         * @param scene (Scene) is the scene in which the PCS is added
+         * @param options defines the options of the PCS e.g.
+         * * updatable (optional boolean, default true) : if the PCS must be updatable or immutable
+         */
+        constructor(name: string, pointSize: number, scene: Scene, options?: {
+            updatable?: boolean;
+        });
+        /**
+         * Builds the PCS underlying mesh. Returns a standard Mesh.
+         * If no points were added to the PCS, the returned mesh is just a single point.
+         * @returns a promise for the created mesh
+         */
+        buildMeshAsync(): Promise<Mesh>;
+        /**
+         * @hidden
+         */
+        private _buildMesh;
+        private _addParticle;
+        private _randomUnitVector;
+        private _getColorIndicesForCoord;
+        private _setPointsColorOrUV;
+        private _colorFromTexture;
+        private _calculateDensity;
+        /**
+         * Adds points to the PCS in random positions within a unit sphere
+         * @param nb (positive integer) the number of particles to be created from this model
+         * @param pointFunction is an optional javascript function to be called for each particle on PCS creation
+         * @returns the number of groups in the system
+         */
+        addPoints(nb: number, pointFunction?: any): number;
+        /**
+         * Adds points to the PCS from the surface of the model shape
+         * @param mesh is any Mesh object that will be used as a surface model for the points
+         * @param nb (positive integer) the number of particles to be created from this model
+         * @param colorWith determines whether a point is colored using color (default), uv, random, stated or none (invisible)
+         * @param color (color3) to be used when colorWith is stated
+         * @param range (number from 0 to 1) to determine the variation in shape and tone for a stated color
+         * @returns the number of groups in the system
+         */
+        addSurfacePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4, range?: number): number;
+        /**
+         * Adds points to the PCS inside the model shape
+         * @param mesh is any Mesh object that will be used as a surface model for the points
+         * @param nb (positive integer) the number of particles to be created from this model
+         * @param colorWith determines whether a point is colored using color (default), uv, random, stated or none (invisible),
+         * @param color (color4) to be used when colorWith is stated
+         * @param range (number from 0 to 1) to determine the variation in shape and tone for a stated color
+         * @returns the number of groups in the system
+         */
+        addVolumePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4, range?: number): number;
+        /**
+         *  Sets all the particles : this method actually really updates the mesh according to the particle positions, rotations, colors, textures, etc.
+         *  This method calls `updateParticle()` for each particle of the SPS.
+         *  For an animated SPS, it is usually called within the render loop.
+         * @param start The particle index in the particle array where to start to compute the particle property values _(default 0)_
+         * @param end The particle index in the particle array where to stop to compute the particle property values _(default nbParticle - 1)_
+         * @param update If the mesh must be finally updated on this call after all the particle computations _(default true)_
+         * @returns the PCS.
+         */
+        setParticles(start?: number, end?: number, update?: boolean): PointsCloudSystem;
+        /**
+        * Disposes the PCS.
+        */
+        dispose(): void;
+        /**
+         * Visibilty helper : Recomputes the visible size according to the mesh bounding box
+         * doc :
+         * @returns the PCS.
+         */
+        refreshVisibleSize(): PointsCloudSystem;
+        /**
+         * Visibility helper : Sets the size of a visibility box, this sets the underlying mesh bounding box.
+         * @param size the size (float) of the visibility box
+         * note : this doesn't lock the PCS mesh bounding box.
+         * doc :
+         */
+        setVisibilityBox(size: number): void;
+        /**
+         * Gets whether the PCS is always visible or not
+         * doc :
+         */
+        /**
+        * Sets the PCS as always visible or not
+        * doc :
+        */
+        isAlwaysVisible: boolean;
+        /**
+         * Tells to `setParticles()` to compute the particle rotations or not
+         * Default value : false. The PCS is faster when it's set to false
+         * Note : particle rotations are only applied to parent particles
+         * Note : the particle rotations aren't stored values, so setting `computeParticleRotation` to false will prevents the particle to rotate
+         */
+        computeParticleRotation: boolean;
+        /**
+         * Tells to `setParticles()` to compute the particle colors or not.
+         * Default value : true. The PCS is faster when it's set to false.
+         * Note : the particle colors are stored values, so setting `computeParticleColor` to false will keep yet the last colors set.
+         */
+        /**
+        * Gets if `setParticles()` computes the particle colors or not.
+        * Default value : false. The PCS is faster when it's set to false.
+        * Note : the particle colors are stored values, so setting `computeParticleColor` to false will keep yet the last colors set.
+        */
+        computeParticleColor: boolean;
+        /**
+        * Gets if `setParticles()` computes the particle textures or not.
+        * Default value : false. The PCS is faster when it's set to false.
+        * Note : the particle textures are stored values, so setting `computeParticleTexture` to false will keep yet the last colors set.
+        */
+        computeParticleTexture: boolean;
+        /**
+         * Tells to `setParticles()` to compute or not the mesh bounding box when computing the particle positions.
+         */
+        /**
+        * Gets if `setParticles()` computes or not the mesh bounding box when computing the particle positions.
+        */
+        computeBoundingBox: boolean;
+        /**
+         * This function does nothing. It may be overwritten to set all the particle first values.
+         * The PCS doesn't call this function, you may have to call it by your own.
+         * doc :
+         */
+        initParticles(): void;
+        /**
+         * This function does nothing. It may be overwritten to recycle a particle
+         * The PCS doesn't call this function, you can to call it
+         * doc :
+         * @param particle The particle to recycle
+         * @returns the recycled particle
+         */
+        recycleParticle(particle: CloudPoint): CloudPoint;
+        /**
+         * Updates a particle : this function should  be overwritten by the user.
+         * It is called on each particle by `setParticles()`. This is the place to code each particle behavior.
+         * doc :
+         * @example : just set a particle position or velocity and recycle conditions
+         * @param particle The particle to update
+         * @returns the updated particle
+         */
+        updateParticle(particle: CloudPoint): CloudPoint;
+        /**
+         * This will be called before any other treatment by `setParticles()` and will be passed three parameters.
+         * This does nothing and may be overwritten by the user.
+         * @param start the particle index in the particle array where to start to iterate, same than the value passed to setParticle()
+         * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+         * @param update the boolean update value actually passed to setParticles()
+         */
+        beforeUpdateParticles(start?: number, stop?: number, update?: boolean): void;
+        /**
+         * This will be called  by `setParticles()` after all the other treatments and just before the actual mesh update.
+         * This will be passed three parameters.
+         * This does nothing and may be overwritten by the user.
+         * @param start the particle index in the particle array where to start to iterate, same than the value passed to setParticle()
+         * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+         * @param update the boolean update value actually passed to setParticles()
+         */
+        afterUpdateParticles(start?: number, stop?: number, update?: boolean): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Represents one particle of a points cloud system.
+     */
+    export class CloudPoint {
+        /**
+         * particle global index
+         */
+        idx: number;
+        /**
+         * The color of the particle
+         */
+        color: Nullable<Color4>;
+        /**
+         * The world space position of the particle.
+         */
+        position: Vector3;
+        /**
+         * The world space rotation of the particle. (Not use if rotationQuaternion is set)
+         */
+        rotation: Vector3;
+        /**
+         * The world space rotation quaternion of the particle.
+         */
+        rotationQuaternion: Nullable<Quaternion>;
+        /**
+         * The uv of the particle.
+         */
+        uv: Nullable<Vector2>;
+        /**
+         * The current speed of the particle.
+         */
+        velocity: Vector3;
+        /**
+         * The pivot point in the particle local space.
+         */
+        pivot: Vector3;
+        /**
+         * Must the particle be translated from its pivot point in its local space ?
+         * In this case, the pivot point is set at the origin of the particle local space and the particle is translated.
+         * Default : false
+         */
+        translateFromPivot: boolean;
+        /**
+         * Index of this particle in the global "positions" array (Internal use)
+         * @hidden
+         */private _pos: number;
+        /**
+         * @hidden Index of this particle in the global "indices" array (Internal use)
+         */private _ind: number;
+        /**
+         * Group this particle belongs to
+         */private _group: PointsGroup;
+        /**
+         * Group id of this particle
+         */
+        groupId: number;
+        /**
+         * Index of the particle in its group id (Internal use)
+         */
+        idxInGroup: number;
+        /**
+         * @hidden Particle BoundingInfo object (Internal use)
+         */private _boundingInfo: BoundingInfo;
+        /**
+         * @hidden Reference to the PCS that the particle belongs to (Internal use)
+         */private _pcs: PointsCloudSystem;
+        /**
+         * @hidden Still set as invisible in order to skip useless computations (Internal use)
+         */private _stillInvisible: boolean;
+        /**
+         * @hidden Last computed particle rotation matrix
+         */private _rotationMatrix: number[];
+        /**
+         * Parent particle Id, if any.
+         * Default null.
+         */
+        parentId: Nullable<number>;
+        /**
+         * @hidden Internal global position in the PCS.
+         */private _globalPosition: Vector3;
+        /**
+         * Creates a Point Cloud object.
+         * Don't create particles manually, use instead the PCS internal tools like _addParticle()
+         * @param particleIndex (integer) is the particle index in the PCS pool. It's also the particle identifier.
+         * @param group (PointsGroup) is the group the particle belongs to
+         * @param groupId (integer) is the group identifier in the PCS.
+         * @param idxInGroup (integer) is the index of the particle in the current point group (ex: the 10th point of addPoints(30))
+         * @param pcs defines the PCS it is associated to
+         */
+        constructor(particleIndex: number, group: PointsGroup, groupId: number, idxInGroup: number, pcs: PointsCloudSystem);
+        /**
+         * get point size
+         */
+        /**
+        * Set point size
+        */
+        size: Vector3;
+        /**
+         * Legacy support, changed quaternion to rotationQuaternion
+         */
+        /**
+        * Legacy support, changed quaternion to rotationQuaternion
+        */
+        quaternion: Nullable<Quaternion>;
+        /**
+         * Returns a boolean. True if the particle intersects another particle or another mesh, else false.
+         * The intersection is computed on the particle bounding sphere and Axis Aligned Bounding Box (AABB)
+         * @param target is the object (point or mesh) what the intersection is computed against.
+         * @returns true if it intersects
+         */
+        intersectsMesh(target: Mesh | CloudPoint): boolean;
+        /**
+         * get the rotation matrix of the particle
+         * @hidden
+         */
+        getRotationMatrix(m: Matrix): void;
+    }
+    /**
+     * Represents a group of points in a points cloud system
+     *  * PCS internal tool, don't use it manually.
+     */
+    export class PointsGroup {
+        /**
+         * The group id
+         * @hidden
+         */
+        groupID: number;
+        /**
+         * image data for group (internal use)
+         * @hidden
+         */private _groupImageData: Nullable<ArrayBufferView>;
+        /**
+         * Image Width (internal use)
+         * @hidden
+         */private _groupImgWidth: number;
+        /**
+         * Image Height (internal use)
+         * @hidden
+         */private _groupImgHeight: number;
+        /**
+         * Custom position function (internal use)
+         * @hidden
+         */private _positionFunction: Nullable<(particle: CloudPoint, i?: number, s?: number) => void>;
+        /**
+         * density per facet for surface points
+         * @hidden
+         */private _groupDensity: number[];
+        /**
+         * Creates a points group object. This is an internal reference to produce particles for the PCS.
+         * PCS internal tool, don't use it manually.
+         * @hidden
+         */
+        constructor(id: number, posFunction: Nullable<(particle: CloudPoint, i?: number, s?: number) => void>);
+    }
 }
 declare module BABYLON {
         interface Scene {
@@ -67711,6 +68110,13 @@ declare module BABYLON.GLTF2 {
          * @param uri The uri to load
          * @returns A promise that resolves with the loaded data when the load is complete or null if not handled
          */private _loadUriAsync?(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>>;
+        /**
+         * Define this method to modify the default behavior when loading buffer views.
+         * @param context The context when loading the asset
+         * @param bufferView The glTF buffer view property
+         * @returns A promise that resolves with the loaded buffer view when the load is complete or null if not handled
+         */
+        loadBufferViewAsync?(context: string, bufferView: IBufferView): Nullable<Promise<ArrayBufferView>>;
     }
 }
 declare module BABYLON.GLTF2 {
@@ -67977,6 +68383,7 @@ declare module BABYLON.GLTF2 {
         private _extensionsLoadAnimationAsync;
         private _extensionsLoadSkinAsync;
         private _extensionsLoadUriAsync;
+        private _extensionsLoadBufferViewAsync;
         /**
          * Helper method called by a loader extension to load an glTF extension.
          * @param context The context when loading the asset
