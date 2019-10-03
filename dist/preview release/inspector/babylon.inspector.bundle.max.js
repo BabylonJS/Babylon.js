@@ -40569,7 +40569,7 @@ __webpack_require__.r(__webpack_exports__);
 
 __webpack_require__(/*! ./actionTabs.scss */ "./components/actionTabs/actionTabs.scss");
 var ActionTabsComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ActionTabsComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ActionTabsComponent, _super);
     function ActionTabsComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._once = true;
@@ -40688,7 +40688,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var LineContainerComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LineContainerComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LineContainerComponent, _super);
     function LineContainerComponent(props) {
         var _this = _super.call(this, props) || this;
         var initialState;
@@ -40791,7 +40791,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var BooleanLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](BooleanLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(BooleanLineComponent, _super);
     function BooleanLineComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -40825,7 +40825,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ButtonLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ButtonLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ButtonLineComponent, _super);
     function ButtonLineComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -40857,7 +40857,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var CheckBoxLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CheckBoxLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CheckBoxLineComponent, _super);
     function CheckBoxLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -40947,7 +40947,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Color3LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Color3LineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Color3LineComponent, _super);
     function Color3LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -41073,7 +41073,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var FileButtonLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FileButtonLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FileButtonLineComponent, _super);
     function FileButtonLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._id = FileButtonLineComponent._IDGenerator++;
@@ -41121,7 +41121,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var FloatLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FloatLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FloatLineComponent, _super);
     function FloatLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -41233,7 +41233,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var MessageLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MessageLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MessageLineComponent, _super);
     function MessageLineComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -41270,7 +41270,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var NumericInputComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](NumericInputComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(NumericInputComponent, _super);
     function NumericInputComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -41339,7 +41339,7 @@ var ListLineOption = /** @class */ (function () {
     return ListLineOption;
 }());
 var OptionsLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](OptionsLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(OptionsLineComponent, _super);
     function OptionsLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -41425,7 +41425,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var QuaternionLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](QuaternionLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(QuaternionLineComponent, _super);
     function QuaternionLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -41555,7 +41555,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var RadioButtonLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RadioButtonLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RadioButtonLineComponent, _super);
     function RadioButtonLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { isSelected: _this.props.isSelected() };
@@ -41611,7 +41611,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var SliderLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SliderLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SliderLineComponent, _super);
     function SliderLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -41712,7 +41712,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TextInputLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextInputLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextInputLineComponent, _super);
     function TextInputLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -41788,7 +41788,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TextLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextLineComponent, _super);
     function TextLineComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -41849,7 +41849,7 @@ var ChannelToDisplay;
     ChannelToDisplay[ChannelToDisplay["All"] = 4] = "All";
 })(ChannelToDisplay || (ChannelToDisplay = {}));
 var TextureLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextureLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextureLineComponent, _super);
     function TextureLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {
@@ -42036,7 +42036,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TextureLinkLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextureLinkLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextureLinkLineComponent, _super);
     function TextureLinkLineComponent(props) {
         var _this = _super.call(this, props) || this;
         var material = _this.props.material;
@@ -42182,7 +42182,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ValueLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ValueLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ValueLineComponent, _super);
     function ValueLineComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -42222,7 +42222,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector2LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector2LineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector2LineComponent, _super);
     function Vector2LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -42322,7 +42322,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector3LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector3LineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector3LineComponent, _super);
     function Vector3LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -42435,7 +42435,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector4LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector4LineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector4LineComponent, _super);
     function Vector4LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -42538,7 +42538,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var PaneComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PaneComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PaneComponent, _super);
     function PaneComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -42580,7 +42580,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var DebugTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DebugTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DebugTabComponent, _super);
     function DebugTabComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._physicsViewersEnabled = false;
@@ -42765,7 +42765,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var PropertyGridTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PropertyGridTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PropertyGridTabComponent, _super);
     function PropertyGridTabComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._lockObject = new _propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_20__["LockObject"]();
@@ -42995,7 +42995,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var AnimationGroupGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AnimationGroupGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AnimationGroupGridComponent, _super);
     function AnimationGroupGridComponent(props) {
         var _this = _super.call(this, props) || this;
         var animationGroup = _this.props.animationGroup;
@@ -43128,7 +43128,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var AnimationGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AnimationGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AnimationGridComponent, _super);
     function AnimationGridComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._animations = null;
@@ -43285,7 +43285,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ArcRotateCameraPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ArcRotateCameraPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ArcRotateCameraPropertyGridComponent, _super);
     function ArcRotateCameraPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -43358,7 +43358,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var CommonCameraPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CommonCameraPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommonCameraPropertyGridComponent, _super);
     function CommonCameraPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { mode: _this.props.camera.mode };
@@ -43425,7 +43425,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var FreeCameraPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FreeCameraPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FreeCameraPropertyGridComponent, _super);
     function FreeCameraPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -43484,7 +43484,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var CustomPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CustomPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CustomPropertyGridComponent, _super);
     function CustomPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { mode: 0 };
@@ -43549,7 +43549,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var FogPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FogPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FogPropertyGridComponent, _super);
     function FogPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { mode: _this.props.scene.fogMode };
@@ -43606,7 +43606,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var CheckboxPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CheckboxPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CheckboxPropertyGridComponent, _super);
     function CheckboxPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -43647,7 +43647,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ColorPickerPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ColorPickerPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ColorPickerPropertyGridComponent, _super);
     function ColorPickerPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -43696,7 +43696,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var CommonControlPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CommonControlPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommonControlPropertyGridComponent, _super);
     function CommonControlPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -43795,7 +43795,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ControlPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ControlPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ControlPropertyGridComponent, _super);
     function ControlPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -43835,7 +43835,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var EllipsePropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](EllipsePropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(EllipsePropertyGridComponent, _super);
     function EllipsePropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -43876,7 +43876,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var GridPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GridPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GridPropertyGridComponent, _super);
     function GridPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -43945,7 +43945,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ImageBasedSliderPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ImageBasedSliderPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ImageBasedSliderPropertyGridComponent, _super);
     function ImageBasedSliderPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -43999,7 +43999,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ImagePropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ImagePropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ImagePropertyGridComponent, _super);
     function ImagePropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -44062,7 +44062,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var InputTextPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputTextPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputTextPropertyGridComponent, _super);
     function InputTextPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -44116,7 +44116,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var LinePropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LinePropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LinePropertyGridComponent, _super);
     function LinePropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -44178,7 +44178,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var RadioButtonPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RadioButtonPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RadioButtonPropertyGridComponent, _super);
     function RadioButtonPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -44223,7 +44223,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var RectanglePropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RectanglePropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RectanglePropertyGridComponent, _super);
     function RectanglePropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -44267,7 +44267,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ScrollViewerPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ScrollViewerPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ScrollViewerPropertyGridComponent, _super);
     function ScrollViewerPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -44317,7 +44317,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var SliderPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SliderPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SliderPropertyGridComponent, _super);
     function SliderPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -44366,7 +44366,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var StackPanelPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](StackPanelPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(StackPanelPropertyGridComponent, _super);
     function StackPanelPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -44417,7 +44417,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TextBlockPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextBlockPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextBlockPropertyGridComponent, _super);
     function TextBlockPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -44482,7 +44482,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var CommonLightPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CommonLightPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommonLightPropertyGridComponent, _super);
     function CommonLightPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -44534,7 +44534,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var CommonShadowLightPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CommonShadowLightPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommonShadowLightPropertyGridComponent, _super);
     function CommonShadowLightPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -44637,7 +44637,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var DirectionalLightPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DirectionalLightPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DirectionalLightPropertyGridComponent, _super);
     function DirectionalLightPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -44683,7 +44683,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var HemisphericLightPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](HemisphericLightPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(HemisphericLightPropertyGridComponent, _super);
     function HemisphericLightPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -44729,7 +44729,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var PointLightPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PointLightPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PointLightPropertyGridComponent, _super);
     function PointLightPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -44778,7 +44778,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var SpotLightPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SpotLightPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SpotLightPropertyGridComponent, _super);
     function SpotLightPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -44861,7 +44861,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var BackgroundMaterialPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](BackgroundMaterialPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(BackgroundMaterialPropertyGridComponent, _super);
     function BackgroundMaterialPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
@@ -44931,7 +44931,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var CommonMaterialPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CommonMaterialPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommonMaterialPropertyGridComponent, _super);
     function CommonMaterialPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -45004,7 +45004,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var MaterialPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MaterialPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MaterialPropertyGridComponent, _super);
     function MaterialPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -45042,7 +45042,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var MultiMaterialPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MultiMaterialPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MultiMaterialPropertyGridComponent, _super);
     function MultiMaterialPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -45117,7 +45117,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var NodeMaterialPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](NodeMaterialPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(NodeMaterialPropertyGridComponent, _super);
     function NodeMaterialPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
@@ -45224,7 +45224,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PBRMaterialPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PBRMaterialPropertyGridComponent, _super);
     function PBRMaterialPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
@@ -45451,7 +45451,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var PBRMetallicRoughnessMaterialPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PBRMetallicRoughnessMaterialPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PBRMetallicRoughnessMaterialPropertyGridComponent, _super);
     function PBRMetallicRoughnessMaterialPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
@@ -45516,7 +45516,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var PBRSpecularGlossinessMaterialPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PBRSpecularGlossinessMaterialPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PBRSpecularGlossinessMaterialPropertyGridComponent, _super);
     function PBRSpecularGlossinessMaterialPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
@@ -45582,7 +45582,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var StandardMaterialPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](StandardMaterialPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(StandardMaterialPropertyGridComponent, _super);
     function StandardMaterialPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._onDebugSelectionChangeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
@@ -45686,7 +45686,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TexturePropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TexturePropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TexturePropertyGridComponent, _super);
     function TexturePropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
         var texture = _this.props.texture;
@@ -45852,7 +45852,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var BonePropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](BonePropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(BonePropertyGridComponent, _super);
     function BonePropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -45923,7 +45923,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var MeshPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MeshPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MeshPropertyGridComponent, _super);
     function MeshPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {
@@ -46242,7 +46242,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var SkeletonPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SkeletonPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SkeletonPropertyGridComponent, _super);
     function SkeletonPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._skeletonViewersEnabled = false;
@@ -46352,7 +46352,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TransformNodePropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TransformNodePropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TransformNodePropertyGridComponent, _super);
     function TransformNodePropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -46406,7 +46406,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var CommonPostProcessPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CommonPostProcessPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommonPostProcessPropertyGridComponent, _super);
     function CommonPostProcessPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -46455,7 +46455,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var CommonRenderingPipelinePropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CommonRenderingPipelinePropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommonRenderingPipelinePropertyGridComponent, _super);
     function CommonRenderingPipelinePropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -46508,7 +46508,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var DefaultRenderingPipelinePropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DefaultRenderingPipelinePropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DefaultRenderingPipelinePropertyGridComponent, _super);
     function DefaultRenderingPipelinePropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -46618,7 +46618,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var LensRenderingPipelinePropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LensRenderingPipelinePropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LensRenderingPipelinePropertyGridComponent, _super);
     function LensRenderingPipelinePropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -46665,7 +46665,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var PostProcessPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PostProcessPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PostProcessPropertyGridComponent, _super);
     function PostProcessPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -46699,7 +46699,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var RenderingPipelinePropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RenderingPipelinePropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RenderingPipelinePropertyGridComponent, _super);
     function RenderingPipelinePropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -46737,7 +46737,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var SSAO2RenderingPipelinePropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SSAO2RenderingPipelinePropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SSAO2RenderingPipelinePropertyGridComponent, _super);
     function SSAO2RenderingPipelinePropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -46782,7 +46782,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var SSAORenderingPipelinePropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SSAORenderingPipelinePropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SSAORenderingPipelinePropertyGridComponent, _super);
     function SSAORenderingPipelinePropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -46831,7 +46831,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var RenderGridPropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RenderGridPropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RenderGridPropertyGridComponent, _super);
     function RenderGridPropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { isEnabled: false };
@@ -46938,7 +46938,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ScenePropertyGridComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ScenePropertyGridComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ScenePropertyGridComponent, _super);
     function ScenePropertyGridComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._renderingModeGroupObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Observable"]();
@@ -47087,7 +47087,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var SettingsTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SettingsTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SettingsTabComponent, _super);
     function SettingsTabComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -47136,7 +47136,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var StatisticsTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](StatisticsTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(StatisticsTabComponent, _super);
     function StatisticsTabComponent(props) {
         var _this = _super.call(this, props) || this;
         var scene = _this.props.scene;
@@ -47269,7 +47269,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var GLTFComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GLTFComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GLTFComponent, _super);
     function GLTFComponent(props) {
         var _this = _super.call(this, props) || this;
         var extensionStates = _this.props.globalState.glTFLoaderExtensionDefaults;
@@ -47419,7 +47419,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ToolsTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ToolsTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ToolsTabComponent, _super);
     function ToolsTabComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._screenShotSize = { precision: 1 };
@@ -47582,7 +47582,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TabsComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TabsComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TabsComponent, _super);
     function TabsComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -47668,7 +47668,7 @@ __webpack_require__.r(__webpack_exports__);
 var Split = __webpack_require__(/*! split.js */ "../../node_modules/split.js/dist/split.es.js").default;
 __webpack_require__(/*! ./embedHost.scss */ "./components/embedHost/embedHost.scss");
 var EmbedHostComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](EmbedHostComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(EmbedHostComponent, _super);
     function EmbedHostComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._once = true;
@@ -47867,7 +47867,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var HeaderComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](HeaderComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(HeaderComponent, _super);
     function HeaderComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._backStack = new Array();
@@ -48061,7 +48061,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var AnimationGroupItemComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AnimationGroupItemComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AnimationGroupItemComponent, _super);
     function AnimationGroupItemComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -48101,7 +48101,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var BoneTreeItemComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](BoneTreeItemComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(BoneTreeItemComponent, _super);
     function BoneTreeItemComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -48143,7 +48143,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var CameraTreeItemComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CameraTreeItemComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CameraTreeItemComponent, _super);
     function CameraTreeItemComponent(props) {
         var _this = _super.call(this, props) || this;
         var camera = _this.props.camera;
@@ -48218,7 +48218,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var AdvancedDynamicTextureTreeItemComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AdvancedDynamicTextureTreeItemComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AdvancedDynamicTextureTreeItemComponent, _super);
     function AdvancedDynamicTextureTreeItemComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { isInPickingMode: false };
@@ -48290,7 +48290,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ControlTreeItemComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ControlTreeItemComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ControlTreeItemComponent, _super);
     function ControlTreeItemComponent(props) {
         var _this = _super.call(this, props) || this;
         var control = _this.props.control;
@@ -48352,7 +48352,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var LightTreeItemComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightTreeItemComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightTreeItemComponent, _super);
     function LightTreeItemComponent(props) {
         var _this = _super.call(this, props) || this;
         var light = _this.props.light;
@@ -48417,7 +48417,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var MaterialTreeItemComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MaterialTreeItemComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MaterialTreeItemComponent, _super);
     function MaterialTreeItemComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -48460,7 +48460,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var MeshTreeItemComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MeshTreeItemComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MeshTreeItemComponent, _super);
     function MeshTreeItemComponent(props) {
         var _this = _super.call(this, props) || this;
         var mesh = _this.props.mesh;
@@ -48517,7 +48517,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var PostProcessItemComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PostProcessItemComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PostProcessItemComponent, _super);
     function PostProcessItemComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -48556,7 +48556,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var RenderingPipelineItemComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RenderingPipelineItemComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RenderingPipelineItemComponent, _super);
     function RenderingPipelineItemComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -48603,7 +48603,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var SceneTreeItemComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SceneTreeItemComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SceneTreeItemComponent, _super);
     function SceneTreeItemComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._posDragEnd = null;
@@ -48923,7 +48923,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var SkeletonTreeItemComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SkeletonTreeItemComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SkeletonTreeItemComponent, _super);
     function SkeletonTreeItemComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -48963,7 +48963,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TextureTreeItemComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextureTreeItemComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextureTreeItemComponent, _super);
     function TextureTreeItemComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -49002,7 +49002,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TransformNodeItemComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TransformNodeItemComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TransformNodeItemComponent, _super);
     function TransformNodeItemComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -49040,7 +49040,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ExtensionsComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ExtensionsComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ExtensionsComponent, _super);
     function ExtensionsComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { popupVisible: false };
@@ -49158,7 +49158,7 @@ __webpack_require__.r(__webpack_exports__);
 
 __webpack_require__(/*! ./sceneExplorer.scss */ "./components/sceneExplorer/sceneExplorer.scss");
 var SceneExplorerFilterComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SceneExplorerFilterComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SceneExplorerFilterComponent, _super);
     function SceneExplorerFilterComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -49171,7 +49171,7 @@ var SceneExplorerFilterComponent = /** @class */ (function (_super) {
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 var SceneExplorerComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SceneExplorerComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SceneExplorerComponent, _super);
     function SceneExplorerComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._once = true;
@@ -49466,7 +49466,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TreeItemExpandableHeaderComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TreeItemExpandableHeaderComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TreeItemExpandableHeaderComponent, _super);
     function TreeItemExpandableHeaderComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -49486,7 +49486,7 @@ var TreeItemExpandableHeaderComponent = /** @class */ (function (_super) {
     return TreeItemExpandableHeaderComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 var TreeItemRootHeaderComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TreeItemRootHeaderComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TreeItemRootHeaderComponent, _super);
     function TreeItemRootHeaderComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -49500,7 +49500,7 @@ var TreeItemRootHeaderComponent = /** @class */ (function (_super) {
     return TreeItemRootHeaderComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 var TreeItemComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TreeItemComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TreeItemComponent, _super);
     function TreeItemComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { isExpanded: false, mustExpand: false };
@@ -49597,7 +49597,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TreeItemLabelComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TreeItemLabelComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TreeItemLabelComponent, _super);
     function TreeItemLabelComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -49648,7 +49648,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TreeItemSelectableComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TreeItemSelectableComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TreeItemSelectableComponent, _super);
     function TreeItemSelectableComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._wasSelected = false;
@@ -49805,7 +49805,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TreeItemSpecializedComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TreeItemSpecializedComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TreeItemSpecializedComponent, _super);
     function TreeItemSpecializedComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -50156,7 +50156,7 @@ var Inspector = /** @class */ (function () {
         }
     };
     Inspector.Show = function (scene, userOptions) {
-        var options = tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"]({ original: true, popup: false, overlay: false, showExplorer: true, showInspector: true, embedMode: false, enableClose: true, handleResize: true, enablePopup: true }, userOptions);
+        var options = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({ original: true, popup: false, overlay: false, showExplorer: true, showInspector: true, embedMode: false, enableClose: true, handleResize: true, enablePopup: true }, userOptions);
         // Prepare state
         if (!this._GlobalState.onPropertyChangedObservable) {
             this._GlobalState.init(this.OnPropertyChangedObservable);

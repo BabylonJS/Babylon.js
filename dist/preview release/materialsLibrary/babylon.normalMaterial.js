@@ -497,7 +497,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var NormalMaterialDefines = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](NormalMaterialDefines, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(NormalMaterialDefines, _super);
     function NormalMaterialDefines() {
         var _this = _super.call(this) || this;
         _this.DIFFUSE = false;
@@ -563,7 +563,7 @@ var NormalMaterialDefines = /** @class */ (function (_super) {
     return NormalMaterialDefines;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialDefines"]));
 var NormalMaterial = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](NormalMaterial, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(NormalMaterial, _super);
     function NormalMaterial(name, scene) {
         var _this = _super.call(this, name, scene) || this;
         _this.diffuseColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](1, 1, 1);
@@ -777,25 +777,25 @@ var NormalMaterial = /** @class */ (function (_super) {
     NormalMaterial.Parse = function (source, scene, rootUrl) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Parse(function () { return new NormalMaterial(source.name, scene); }, source, scene, rootUrl);
     };
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsTexture"])("diffuseTexture")
     ], NormalMaterial.prototype, "_diffuseTexture", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["expandToProperty"])("_markAllSubMeshesAsTexturesDirty")
     ], NormalMaterial.prototype, "diffuseTexture", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor3"])()
     ], NormalMaterial.prototype, "diffuseColor", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])("disableLighting")
     ], NormalMaterial.prototype, "_disableLighting", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["expandToProperty"])("_markAllSubMeshesAsLightsDirty")
     ], NormalMaterial.prototype, "disableLighting", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])("maxSimultaneousLights")
     ], NormalMaterial.prototype, "_maxSimultaneousLights", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["expandToProperty"])("_markAllSubMeshesAsLightsDirty")
     ], NormalMaterial.prototype, "maxSimultaneousLights", void 0);
     return NormalMaterial;
