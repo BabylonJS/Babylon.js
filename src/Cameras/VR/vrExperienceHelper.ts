@@ -784,6 +784,9 @@ export class VRExperienceHelper {
         // Window events
 
         let hostWindow = this._scene.getEngine().getHostWindow();
+        if (!hostWindow) {
+            return;
+        }
 
         hostWindow.addEventListener("resize", this._onResize);
         document.addEventListener("fullscreenchange", this._onFullscreenChange, false);
