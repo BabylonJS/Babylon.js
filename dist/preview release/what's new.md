@@ -6,12 +6,13 @@
 - WIP: WebGPU support (NEED DOC OR SAMPLES) ([Sebavan](https://github.com/sebavan/))
 - .basis texture file format support [Doc](https://doc.babylonjs.com/resources/multi-platform_compressed_textures#basis-file-format) ([TrevorDev](https://github.com/TrevorDev))
 - WIP: Recast navigation mesh and crowd of moving agents [Demo](https://www.babylonjs-playground.com/#AJTRIL) ([CedricGuillemet](https://github.com/CedricGuillemet))
-- Added Point Cloud Particle System ([JohnK](https://github.com/BabylonJSGuide/))
+- Added Points Cloud Particle System ([JohnK](https://github.com/BabylonJSGuide/))
 - Classes decoupling ending up with smaller bundle sizes [Blog](https://medium.com/@babylonjs/size-matters-e0e94dad01a7) ([Deltakosh](https://github.com/deltakosh/))
 - Babylon.js controls [Doc](https://doc.babylonjs.com/features/controls) ([Sebavan](https://github.com/sebavan/) / [Deltakosh](https://github.com/deltakosh/))
 - WebXR updates:
   - WebXR updated to spec as of July 10th ([TrevorDev](https://github.com/TrevorDev))
   - WebXR webVR parity helpers (Vive, WMR, Oculus Rift) ([TrevorDev](https://github.com/TrevorDev))
+- Added support for Offscreen canvas [Doc]() ([Deltakosh](https://github.com/deltakosh/)
 
 ## Updates
 
