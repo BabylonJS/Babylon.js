@@ -142,13 +142,13 @@ export class WebXRSessionManager implements IDisposable {
             }
         };
 
-        if (this.baseLayer) {
+        if (this._xrNavigator.xr.native) {
+            this._rttProvider = this._xrNavigator.xr.getNativeRenderTargetProvider(this.session, (width: number, height: number) => {
+                return this.scene.getEngine().createRenderTargetTexture({ width: width, height: height }, false);
+            });
+        } else {
             // Create render target texture from xr's webgl render target
             this._rttProvider = new RenderTargetProvider(WebXRSessionManager._CreateRenderTargetTextureFromSession(this.session, this.scene, this.baseLayer!));
-        } else {
-            this._rttProvider = this._xrNavigator.xr.getNativeRenderTargetProvider(this.session, (width: number, height: number) => {
-                this.scene.getEngine().createRenderTargetTexture({ width: width, height: height }, false);
-            });
         }
 
         // Stop window's animation frame and trigger sessions animation frame
