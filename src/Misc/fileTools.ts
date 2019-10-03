@@ -110,14 +110,17 @@ export class FileTools {
         }
 
         if (typeof Image === "undefined") {
-            this.LoadFile(url, data => {
-                createImageBitmap(new Blob([data])).then(imgBmp => {
+            this.LoadFile(url, (data) => {
+                createImageBitmap(new Blob([data])).then((imgBmp) => {
                     onLoad(imgBmp);
-                }).catch(reason => {
+                    if (usingObjectURL) {
+                        URL.revokeObjectURL(url);
+                    }
+                }).catch((reason) => {
                     if (onError) {
                         onError("Error while trying to load image: " + input, reason);
-                    }    
-                })
+                    }
+                });
             }, undefined, offlineProvider || undefined, true, (request, exception) => {
                 if (onError) {
                     onError("Error while trying to load image: " + input, exception);

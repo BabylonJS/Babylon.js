@@ -28,7 +28,6 @@ onmessage = function(evt) {
                         if (scene.activeCamera) {
                             scene.render();
                         }
-                        // divFps.innerHTML = engine.getFps().toFixed() + " fps";
                     });
                 }
             }
@@ -40,7 +39,6 @@ onmessage = function(evt) {
                     var processCurrentScene = function(scene) {
                         engine.runRenderLoop(function() {
                             scene.render();
-                            //divFps.innerHTML = engine.getFps().toFixed() + " fps";
                         });
                     }
 
