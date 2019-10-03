@@ -381,6 +381,50 @@ export class EnvironmentTextureTools {
         return EnvironmentTextureTools.UploadLevelsAsync(texture, imageData);
     }
 
+    private static _OnImageReadyAsync(image: HTMLImageElement | ImageBitmap, engine: Engine, expandTexture: boolean,
+        rgbdPostProcess:  Nullable<PostProcess>, url: string, face: number, i: number, generateNonLODTextures: boolean,
+        lodTextures: Nullable<{ [lod: number]: BaseTexture }>, cubeRtt: Nullable<InternalTexture>, texture: InternalTexture
+        ): Promise<void> {
+            return new Promise((resolve, reject) => {
+                if (expandTexture) {
+                    let tempTexture = engine.createTexture(null, true, true, null, Constants.TEXTURE_NEAREST_SAMPLINGMODE, null,
+                        (message) => {
+                            reject(message);
+                        },
+                        image);
+
+                    rgbdPostProcess!.getEffect().executeWhenCompiled(() => {
+                        // Uncompress the data to a RTT
+                        rgbdPostProcess!.onApply = (effect) => {
+                            effect._bindTexture("textureSampler", tempTexture);
+                            effect.setFloat2("scale", 1, 1);
+                        };
+
+                        engine.scenes[0].postProcessManager.directRender([rgbdPostProcess!], cubeRtt, true, face, i);
+
+                        // Cleanup
+                        engine.restoreDefaultFramebuffer();
+                        tempTexture.dispose();
+                        URL.revokeObjectURL(url);
+                        resolve();
+                    });
+                }
+                else {
+                    engine._uploadImageToTexture(texture, image, face, i);
+
+                    // Upload the face to the non lod texture support
+                    if (generateNonLODTextures) {
+                        let lodTexture = lodTextures![i];
+                        if (lodTexture) {
+                            engine._uploadImageToTexture(lodTexture._texture!, image, face, 0);
+                        }
+                    }
+                    resolve();
+                }
+            }
+        );
+    }
+
     /**
      * Uploads the levels of image data to the GPU.
      * @param texture defines the internal texture to upload to
@@ -502,52 +546,30 @@ export class EnvironmentTextureTools {
                 let bytes = imageData[i][face];
                 let blob = new Blob([bytes], { type: 'image/png' });
                 let url = URL.createObjectURL(blob);
-                let image = new Image();
-                image.src = url;
+                let promise: Promise<void>;
 
-                // Enqueue promise to upload to the texture.
-                let promise = new Promise<void>((resolve, reject) => {
-                    image.onload = () => {
-                        if (expandTexture) {
-                            let tempTexture = engine.createTexture(null, true, true, null, Constants.TEXTURE_NEAREST_SAMPLINGMODE, null,
-                                (message) => {
-                                    reject(message);
-                                },
-                                image);
+                if (typeof Image === "undefined") {
+                    promise = createImageBitmap(blob).then((img) => {
+                        return this._OnImageReadyAsync(img, engine, expandTexture, rgbdPostProcess, url, face, i, generateNonLODTextures, lodTextures, cubeRtt, texture);
+                    });
+                } else {
+                    let image = new Image();
+                    image.src = url;
 
-                            rgbdPostProcess!.getEffect().executeWhenCompiled(() => {
-                                // Uncompress the data to a RTT
-                                rgbdPostProcess!.onApply = (effect) => {
-                                    effect._bindTexture("textureSampler", tempTexture);
-                                    effect.setFloat2("scale", 1, 1);
-                                };
-
-                                engine.scenes[0].postProcessManager.directRender([rgbdPostProcess!], cubeRtt, true, face, i);
-
-                                // Cleanup
-                                engine.restoreDefaultFramebuffer();
-                                tempTexture.dispose();
-                                window.URL.revokeObjectURL(url);
-                                resolve();
+                    // Enqueue promise to upload to the texture.
+                    promise = new Promise<void>((resolve, reject) => {
+                        image.onload = () => {
+                            this._OnImageReadyAsync(image, engine, expandTexture, rgbdPostProcess, url, face, i, generateNonLODTextures, lodTextures, cubeRtt, texture)
+                            .then(() => resolve())
+                            .catch((reason) => {
+                                reject(reason);
                             });
-                        }
-                        else {
-                            engine._uploadImageToTexture(texture, image, face, i);
-
-                            // Upload the face to the non lod texture support
-                            if (generateNonLODTextures) {
-                                let lodTexture = lodTextures![i];
-                                if (lodTexture) {
-                                    engine._uploadImageToTexture(lodTexture._texture!, image, face, 0);
-                                }
-                            }
-                            resolve();
-                        }
-                    };
-                    image.onerror = (error) => {
-                        reject(error);
-                    };
-                });
+                        };
+                        image.onerror = (error) => {
+                            reject(error);
+                        };
+                    });
+                }
                 promises.push(promise);
             }
         }
