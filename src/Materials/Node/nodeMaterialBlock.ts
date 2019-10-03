@@ -321,8 +321,9 @@ export class NodeMaterialBlock {
      * @param state defines the state to update
      * @param nodeMaterial defines the node material requesting the update
      * @param defines defines the material defines to update
+     * @param uniformBuffers defines the list of uniform buffer names
      */
-    public updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]) {
         // Do nothing
     }
 
@@ -426,6 +427,15 @@ export class NodeMaterialBlock {
             return true;
         }
 
+        if (!this.isInput) {
+            /** Prepare outputs */
+            for (var output of this._outputs) {
+                if (!output.associatedVariableName) {
+                    output.associatedVariableName = state._getFreeVariableName(output.name);
+                }
+            }
+        }
+
         // Check if "parent" blocks are compiled
         for (var input of this._inputs) {
             if (!input.connectedPoint) {
@@ -458,24 +468,6 @@ export class NodeMaterialBlock {
         // Logs
         if (state.sharedData.verbose) {
             console.log(`${state.target === NodeMaterialBlockTargets.Vertex ? "Vertex shader" : "Fragment shader"}: Building ${this.name} [${this.getClassName()}]`);
-        }
-
-        if (!this.isInput) {
-            /** Prepare outputs */
-            for (var output of this._outputs) {
-                if (this.target !== NodeMaterialBlockTargets.Neutral) {
-                    if ((output.target & this.target!) === 0) {
-                        continue;
-                    }
-                    if ((output.target & state.target!) === 0) {
-                        continue;
-                    }
-                }
-
-                if (!output.associatedVariableName) {
-                    output.associatedVariableName = state._getFreeVariableName(output.name);
-                }
-            }
         }
 
         // Checks final outputs

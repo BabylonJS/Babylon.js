@@ -384,7 +384,7 @@ __webpack_require__.r(__webpack_exports__);
  * This is used later on in the postprocess.
  */
 var AsciiArtFontTexture = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AsciiArtFontTexture, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AsciiArtFontTexture, _super);
     /**
      * Create a new instance of the Ascii Art FontTexture class
      * @param name the name of the texture
@@ -510,10 +510,10 @@ var AsciiArtFontTexture = /** @class */ (function (_super) {
         var texture = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Parse(function () { return new AsciiArtFontTexture(source.name, source.font, source.text, scene); }, source, scene, null);
         return texture;
     };
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])("font")
     ], AsciiArtFontTexture.prototype, "_font", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])("text")
     ], AsciiArtFontTexture.prototype, "_text", void 0);
     return AsciiArtFontTexture;
@@ -526,7 +526,7 @@ var AsciiArtFontTexture = /** @class */ (function (_super) {
  * Example usage: var pp = new AsciiArtPostProcess("myAscii", "20px Monospace", camera);
  */
 var AsciiArtPostProcess = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AsciiArtPostProcess, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AsciiArtPostProcess, _super);
     /**
      * Instantiates a new Ascii Art Post Process.
      * @param name the name to give to the postprocess
@@ -649,7 +649,7 @@ __webpack_require__.r(__webpack_exports__);
  * This is used later on in the postprocess.
  */
 var DigitalRainFontTexture = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DigitalRainFontTexture, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DigitalRainFontTexture, _super);
     /**
      * Create a new instance of the Digital Rain FontTexture class
      * @param name the name of the texture
@@ -774,10 +774,10 @@ var DigitalRainFontTexture = /** @class */ (function (_super) {
         var texture = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Parse(function () { return new DigitalRainFontTexture(source.name, source.font, source.text, scene); }, source, scene, null);
         return texture;
     };
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])("font")
     ], DigitalRainFontTexture.prototype, "_font", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])("text")
     ], DigitalRainFontTexture.prototype, "_text", void 0);
     return DigitalRainFontTexture;
@@ -790,7 +790,7 @@ var DigitalRainFontTexture = /** @class */ (function (_super) {
  * Example usage: var pp = new DigitalRainPostProcess("digitalRain", "20px Monospace", camera);
  */
 var DigitalRainPostProcess = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DigitalRainPostProcess, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DigitalRainPostProcess, _super);
     /**
      * Instantiates a new Digital Rain Post Process.
      * @param name the name to give to the postprocess
@@ -1027,7 +1027,7 @@ __webpack_require__.r(__webpack_exports__);
  *  pp.refractionEnabled = true;
  */
 var OceanPostProcess = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](OceanPostProcess, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(OceanPostProcess, _super);
     /**
      * Instantiates a new Ocean Post Process.
      * @param name the name to give to the postprocess.

@@ -31,7 +31,8 @@ export class SerializationTools {
         return JSON.stringify(serializationObject, undefined, 2);
     }
 
-    public static Deserialize(serializationObject:any, globalState: GlobalState) {        
+    public static Deserialize(serializationObject:any, globalState: GlobalState) {       
+        globalState.onIsLoadingChanged.notifyObservers(true); 
         globalState.nodeMaterial!.loadFromSerialization(serializationObject, "");
 
         // Check for id mapping

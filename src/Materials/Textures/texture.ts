@@ -223,6 +223,7 @@ export class Texture extends BaseTexture {
     protected _format: Nullable<number> = null;
     private _delayedOnLoad: Nullable<() => void> = null;
     private _delayedOnError: Nullable<() => void> = null;
+    private _mimeType?: string;
 
     /**
      * Observable triggered once the texture has been loaded.
@@ -264,18 +265,19 @@ export class Texture extends BaseTexture {
      * Instantiates a new texture.
      * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
      * @see http://doc.babylonjs.com/babylon101/materials#texture
-     * @param url define the url of the picture to load as a texture
-     * @param scene define the scene or engine the texture will belong to
-     * @param noMipmap define if the texture will require mip maps or not
-     * @param invertY define if the texture needs to be inverted on the y axis during loading
-     * @param samplingMode define the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
-     * @param onLoad define a callback triggered when the texture has been loaded
-     * @param onError define a callback triggered when an error occurred during the loading session
-     * @param buffer define the buffer to load the texture from in case the texture is loaded from a buffer representation
-     * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
-     * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
+     * @param url defines the url of the picture to load as a texture
+     * @param scene defines the scene or engine the texture will belong to
+     * @param noMipmap defines if the texture will require mip maps or not
+     * @param invertY defines if the texture needs to be inverted on the y axis during loading
+     * @param samplingMode defines the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
+     * @param onLoad defines a callback triggered when the texture has been loaded
+     * @param onError defines a callback triggered when an error occurred during the loading session
+     * @param buffer defines the buffer to load the texture from in case the texture is loaded from a buffer representation
+     * @param deleteBuffer defines if the buffer we are loading the texture from should be deleted after load
+     * @param format defines the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
+     * @param mimeType defines an optional mime type information
      */
-    constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob> = null, deleteBuffer: boolean = false, format?: number) {
+    constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob> = null, deleteBuffer: boolean = false, format?: number, mimeType?: string) {
         super((sceneOrEngine && sceneOrEngine.getClassName() === "Scene") ? (sceneOrEngine as Scene) : null);
 
         this.name = url || "";
@@ -285,6 +287,7 @@ export class Texture extends BaseTexture {
         this._initialSamplingMode = samplingMode;
         this._buffer = buffer;
         this._deleteBuffer = deleteBuffer;
+        this._mimeType = mimeType;
         if (format) {
             this._format = format;
         }
@@ -342,7 +345,7 @@ export class Texture extends BaseTexture {
 
         if (!this._texture) {
             if (!scene || !scene.useDelayedTextureLoading) {
-                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format);
+                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, undefined, mimeType);
                 if (deleteBuffer) {
                     delete this._buffer;
                 }
@@ -403,7 +406,7 @@ export class Texture extends BaseTexture {
         this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode, this._invertY);
 
         if (!this._texture) {
-            this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this.samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format);
+            this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this.samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format, null, undefined, this._mimeType);
             if (this._deleteBuffer) {
                 delete this._buffer;
             }

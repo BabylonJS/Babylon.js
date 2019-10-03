@@ -5563,7 +5563,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "#nodeList {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  width: 100%;\n  overflow: hidden; }\n  #nodeList .panes {\n    overflow: hidden; }\n    #nodeList .panes .pane {\n      color: white;\n      overflow: hidden;\n      height: 100%;\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none; }\n      #nodeList .panes .pane .filter {\n        display: flex;\n        align-items: stretch; }\n        #nodeList .panes .pane .filter input {\n          width: 100%;\n          margin: 10px 10px 5px 10px;\n          display: block;\n          border: none;\n          padding: 0;\n          border-bottom: solid 1px #337ab7;\n          background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n          background-position: -1000px 0;\n          background-size: 1000px 100%;\n          background-repeat: no-repeat;\n          color: white; }\n        #nodeList .panes .pane .filter input:focus {\n          box-shadow: none;\n          outline: none;\n          background-position: 0 0; }\n      #nodeList .panes .pane .list-container {\n        overflow-x: hidden;\n        overflow-y: auto;\n        height: calc(100% - 32px); }\n        #nodeList .panes .pane .list-container .underline {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n        #nodeList .panes .pane .list-container .draggableLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch;\n          background: #222222;\n          cursor: grab;\n          text-align: center;\n          margin: 0;\n          box-sizing: border-box; }\n          #nodeList .panes .pane .list-container .draggableLine:hover {\n            background: #337ab7;\n            color: white; }\n        #nodeList .panes .pane .list-container .buttonLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch; }\n          #nodeList .panes .pane .list-container .buttonLine button {\n            background: #222222;\n            margin: 5px 10px 5px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9; }\n          #nodeList .panes .pane .list-container .buttonLine button:hover {\n            opacity: 1.0; }\n          #nodeList .panes .pane .list-container .buttonLine button:active {\n            background: #282828; }\n          #nodeList .panes .pane .list-container .buttonLine button:focus {\n            outline: 0px; }\n        #nodeList .panes .pane .list-container .paneContainer {\n          margin-top: 3px;\n          display: grid;\n          grid-template-rows: 100%;\n          grid-template-columns: 100%; }\n          #nodeList .panes .pane .list-container .paneContainer .paneContainer-content {\n            grid-row: 1;\n            grid-column: 1; }\n            #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header {\n              display: grid;\n              grid-template-columns: 1fr auto;\n              background: #555555;\n              height: 30px;\n              padding-right: 5px;\n              cursor: pointer; }\n              #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .title {\n                border-left: 3px solid transparent;\n                padding-left: 5px;\n                grid-column: 1;\n                display: flex;\n                align-items: center; }\n              #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .collapse {\n                grid-column: 2;\n                display: flex;\n                align-items: center;\n                justify-items: center;\n                transform-origin: center; }\n                #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .collapse.closed {\n                  transform: rotate(180deg); }\n            #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n              border-bottom: 1px solid rgba(255, 255, 255, 0.3); }\n", ""]);
+exports.push([module.i, "#nodeList {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  width: 100%;\n  overflow: hidden; }\n  #nodeList .panes {\n    overflow: hidden; }\n    #nodeList .panes .pane {\n      color: white;\n      overflow: hidden;\n      height: 100%;\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none; }\n      #nodeList .panes .pane .filter {\n        display: flex;\n        align-items: stretch; }\n        #nodeList .panes .pane .filter input {\n          width: 100%;\n          margin: 10px 10px 5px 10px;\n          display: block;\n          border: none;\n          padding: 0;\n          border-bottom: solid 1px #337ab7;\n          background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n          background-position: -1000px 0;\n          background-size: 1000px 100%;\n          background-repeat: no-repeat;\n          color: white; }\n        #nodeList .panes .pane .filter input:focus {\n          box-shadow: none;\n          outline: none;\n          background-position: 0 0; }\n        #nodeList .panes .pane .filter input::placeholder {\n          color: gray; }\n      #nodeList .panes .pane .list-container {\n        overflow-x: hidden;\n        overflow-y: auto;\n        height: calc(100% - 32px); }\n        #nodeList .panes .pane .list-container .underline {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n        #nodeList .panes .pane .list-container .draggableLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch;\n          background: #222222;\n          cursor: grab;\n          text-align: center;\n          margin: 0;\n          box-sizing: border-box; }\n          #nodeList .panes .pane .list-container .draggableLine:hover {\n            background: #337ab7;\n            color: white; }\n        #nodeList .panes .pane .list-container .buttonLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch; }\n          #nodeList .panes .pane .list-container .buttonLine button {\n            background: #222222;\n            margin: 5px 10px 5px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9; }\n          #nodeList .panes .pane .list-container .buttonLine button:hover {\n            opacity: 1.0; }\n          #nodeList .panes .pane .list-container .buttonLine button:active {\n            background: #282828; }\n          #nodeList .panes .pane .list-container .buttonLine button:focus {\n            outline: 0px; }\n        #nodeList .panes .pane .list-container .paneContainer {\n          margin-top: 3px;\n          display: grid;\n          grid-template-rows: 100%;\n          grid-template-columns: 100%; }\n          #nodeList .panes .pane .list-container .paneContainer .paneContainer-content {\n            grid-row: 1;\n            grid-column: 1; }\n            #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header {\n              display: grid;\n              grid-template-columns: 1fr auto;\n              background: #555555;\n              height: 30px;\n              padding-right: 5px;\n              cursor: pointer; }\n              #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .title {\n                border-left: 3px solid transparent;\n                padding-left: 5px;\n                grid-column: 1;\n                display: flex;\n                align-items: center; }\n              #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .collapse {\n                grid-column: 2;\n                display: flex;\n                align-items: center;\n                justify-items: center;\n                transform-origin: center; }\n                #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .collapse.closed {\n                  transform: rotate(180deg); }\n            #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n              border-bottom: 1px solid rgba(255, 255, 255, 0.3); }\n", ""]);
 
 // exports
 
@@ -5601,7 +5601,7 @@ exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader
 
 
 // module
-exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n\n#nodeList {\n  grid-row: 1 / span 2;\n  grid-column: 1; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 4;\n  cursor: ew-resize; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 3;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  display: grid;\n  grid-template-rows: 1fr 30px auto 30px;\n  grid-template-columns: 100%;\n  height: 100%;\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: 30px;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n  .right-panel #preview-mesh-bar {\n    grid-row: 2;\n    grid-column: 1;\n    display: flex;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-mesh-bar #file-picker {\n      display: none; }\n    .right-panel #preview-mesh-bar #file-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview-config-bar {\n    grid-row: 4;\n    grid-column: 1;\n    display: flex;\n    flex-direction: row-reverse;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-config-bar .button {\n      width: 60px; }\n    .right-panel #preview-config-bar #color-picker {\n      display: none; }\n    .right-panel #preview-config-bar #color-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview {\n    border-top: 1px solid #555555;\n    grid-row: 3;\n    grid-column: 1;\n    width: 100%;\n    display: grid;\n    outline: 0 !important; }\n    .right-panel #preview #preview-canvas {\n      width: 100%;\n      height: 100%;\n      outline: 0 !important; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 3; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
+exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n\n#nodeList {\n  grid-row: 1 / span 2;\n  grid-column: 1; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 4;\n  cursor: ew-resize; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 3;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  display: grid;\n  grid-template-rows: 1fr 30px auto 30px;\n  grid-template-columns: 100%;\n  height: 100%;\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: 30px;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n  .right-panel #preview-mesh-bar {\n    grid-row: 2;\n    grid-column: 1;\n    display: flex;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-mesh-bar #file-picker {\n      display: none; }\n    .right-panel #preview-mesh-bar #file-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview-config-bar {\n    grid-row: 4;\n    grid-column: 1;\n    display: flex;\n    flex-direction: row-reverse;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-config-bar .button {\n      width: 60px; }\n    .right-panel #preview-config-bar #color-picker {\n      display: none; }\n    .right-panel #preview-config-bar #color-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview {\n    border-top: 1px solid #555555;\n    grid-row: 3;\n    grid-column: 1;\n    width: 100%;\n    display: grid;\n    outline: 0 !important; }\n    .right-panel #preview #preview-canvas {\n      width: 100%;\n      height: 100%;\n      outline: 0 !important;\n      grid-row: 1;\n      grid-column: 1; }\n    .right-panel #preview .waitPanel {\n      width: 100%;\n      height: 100%;\n      grid-row: 1;\n      grid-column: 1;\n      color: white;\n      font-size: 18px;\n      align-content: center;\n      justify-content: center;\n      background: rgba(20, 20, 20, 0.95);\n      z-index: 10;\n      display: grid;\n      transition: opacity 250ms; }\n      .right-panel #preview .waitPanel.hidden {\n        opacity: 0;\n        pointer-events: none; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 3; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
 
 // exports
 
@@ -68782,7 +68782,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ClampNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ClampNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ClampNodeFactory, _super);
     function ClampNodeFactory(globalState) {
         var _this = _super.call(this, "clamp") || this;
         _this._globalState = globalState;
@@ -68821,7 +68821,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ClampNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ClampNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ClampNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -68869,7 +68869,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ClampPropertyTabComponentProps = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ClampPropertyTabComponentProps, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ClampPropertyTabComponentProps, _super);
     function ClampPropertyTabComponentProps(props) {
         return _super.call(this, props) || this;
     }
@@ -68913,7 +68913,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ClampNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ClampNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ClampNodeWidget, _super);
     function ClampNodeWidget(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {};
@@ -68971,7 +68971,7 @@ __webpack_require__.r(__webpack_exports__);
  * Generic node model which stores information about a node editor block
  */
 var DefaultNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DefaultNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DefaultNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -69086,7 +69086,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var GenericNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GenericNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GenericNodeFactory, _super);
     /**
      * Constructs a GenericNodeFactory
      */
@@ -69147,7 +69147,7 @@ __webpack_require__.r(__webpack_exports__);
  * Generic node model which stores information about a node editor block
  */
 var GenericNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GenericNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GenericNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -69225,7 +69225,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var GenericNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GenericNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GenericNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -69287,7 +69287,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var GradientNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GradientNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GradientNodeFactory, _super);
     function GradientNodeFactory(globalState) {
         var _this = _super.call(this, "gradient") || this;
         _this._globalState = globalState;
@@ -69326,7 +69326,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var GradientNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GradientNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GradientNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -69380,7 +69380,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var GradientPropertyTabComponentProps = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GradientPropertyTabComponentProps, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GradientPropertyTabComponentProps, _super);
     function GradientPropertyTabComponentProps(props) {
         return _super.call(this, props) || this;
     }
@@ -69442,7 +69442,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var GradientNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GradientNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GradientNodeWidget, _super);
     function GradientNodeWidget(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {};
@@ -69506,7 +69506,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var GradientStepComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GradientStepComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GradientStepComponent, _super);
     function GradientStepComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { gradient: props.step.step };
@@ -69567,7 +69567,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var InputNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputNodeFactory, _super);
     /**
      * Constructs a GenericNodeFactory
      */
@@ -69622,7 +69622,7 @@ __webpack_require__.r(__webpack_exports__);
  * Generic node model which stores information about a node editor block
  */
 var InputNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -69695,7 +69695,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var InputPropertyTabComponentProps = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputPropertyTabComponentProps, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputPropertyTabComponentProps, _super);
     function InputPropertyTabComponentProps(props) {
         return _super.call(this, props) || this;
     }
@@ -69898,7 +69898,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var InputNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -70040,7 +70040,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var LightNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightNodeFactory, _super);
     /**
      * Constructs a LightNodeFactory
      */
@@ -70095,7 +70095,7 @@ __webpack_require__.r(__webpack_exports__);
  * Light node model which stores information about a node editor block
  */
 var LightNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -70150,7 +70150,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var LightNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -70208,7 +70208,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var LightPropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightPropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightPropertyTabComponent, _super);
     function LightPropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -70268,7 +70268,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var LightInformationNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightInformationNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightInformationNodeFactory, _super);
     /**
      * Constructs a LightNodeFactory
      */
@@ -70320,7 +70320,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var LightInformationNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightInformationNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightInformationNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -70375,7 +70375,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var LightInformationNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightInformationNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightInformationNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -70433,7 +70433,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var LightInformationPropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightInformationPropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightInformationPropertyTabComponent, _super);
     function LightInformationPropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -70484,7 +70484,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var AdvancedLinkFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AdvancedLinkFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AdvancedLinkFactory, _super);
     function AdvancedLinkFactory() {
         var _this = _super.call(this) || this;
         _this.type = "advanced";
@@ -70523,7 +70523,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var AdvancedLinkModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AdvancedLinkModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AdvancedLinkModel, _super);
     function AdvancedLinkModel() {
         return _super.call(this, "advanced") || this;
     }
@@ -70555,7 +70555,7 @@ __webpack_require__.r(__webpack_exports__);
  * Port model
  */
 var DefaultPortModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DefaultPortModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DefaultPortModel, _super);
     function DefaultPortModel(name, type) {
         if (type === void 0) { type = "input"; }
         var _this = _super.call(this, name, "generic") || this;
@@ -70636,7 +70636,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var DefaultPortWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DefaultPortWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DefaultPortWidget, _super);
     function DefaultPortWidget(props) {
         var _this = _super.call(this, "srd-port", props) || this;
         _this.state = {
@@ -70649,7 +70649,7 @@ var DefaultPortWidget = /** @class */ (function (_super) {
     };
     DefaultPortWidget.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"]({ style: this.props.style }, this.getProps(), { onMouseEnter: function () {
+        return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({ style: this.props.style }, this.getProps(), { onMouseEnter: function () {
                 _this.setState({ selected: true });
             }, onMouseLeave: function () {
                 _this.setState({ selected: false });
@@ -70784,7 +70784,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var ReflectionTextureNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ReflectionTextureNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ReflectionTextureNodeFactory, _super);
     /**
      * Constructs a TextureNodeFactory
      */
@@ -70839,7 +70839,7 @@ __webpack_require__.r(__webpack_exports__);
  * Texture node model which stores information about a node editor block
  */
 var ReflectionTextureNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ReflectionTextureNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ReflectionTextureNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -70896,7 +70896,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var ReflectionTextureNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ReflectionTextureNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ReflectionTextureNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -70958,7 +70958,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var RemapNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RemapNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RemapNodeFactory, _super);
     /**
      * Constructs a GenericNodeFactory
      */
@@ -71013,7 +71013,7 @@ __webpack_require__.r(__webpack_exports__);
  * Generic node model which stores information about a node editor block
  */
 var RemapNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RemapNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RemapNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -71061,7 +71061,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var RemapPropertyTabComponentProps = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RemapPropertyTabComponentProps, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RemapPropertyTabComponentProps, _super);
     function RemapPropertyTabComponentProps(props) {
         return _super.call(this, props) || this;
     }
@@ -71108,7 +71108,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var RemapNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RemapNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RemapNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -71189,7 +71189,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var TextureNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextureNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextureNodeFactory, _super);
     /**
      * Constructs a TextureNodeFactory
      */
@@ -71244,7 +71244,7 @@ __webpack_require__.r(__webpack_exports__);
  * Texture node model which stores information about a node editor block
  */
 var TextureNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextureNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextureNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -71301,7 +71301,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var TextureNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextureNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextureNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -71378,17 +71378,17 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TexturePropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TexturePropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TexturePropertyTabComponent, _super);
     function TexturePropertyTabComponent(props) {
         var _this = _super.call(this, props) || this;
         var texture = _this.props.node.texture;
-        _this.state = { isEmbedded: !texture || texture.name.substring(0, 4) !== "http", loadAsCubeTexture: texture && texture.isCube };
+        _this.state = { isEmbedded: !texture || texture.name.substring(0, 4) === "data", loadAsCubeTexture: texture && texture.isCube };
         return _this;
     }
     TexturePropertyTabComponent.prototype.UNSAFE_componentWillUpdate = function (nextProps, nextState) {
         if (nextProps.node !== this.props.node) {
             var texture = nextProps.node.texture;
-            nextState.isEmbedded = !texture || texture.name.substring(0, 4) !== "http";
+            nextState.isEmbedded = !texture || texture.name.substring(0, 4) === "data";
             nextState.loadAsCubeTexture = texture && texture.isCube;
         }
     };
@@ -71402,6 +71402,15 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
         this.forceUpdate();
+    };
+    TexturePropertyTabComponent.prototype.removeTexture = function () {
+        var texture = this.props.node.texture;
+        if (texture) {
+            texture.dispose();
+            texture = null;
+            this.props.node.texture = null;
+        }
+        this.updateAfterTextureLoad();
     };
     /**
      * Replaces the texture of the node
@@ -71473,7 +71482,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         var _this = this;
         var url = "";
         var texture = this.props.node.texture;
-        if (texture && texture.name && texture.name.substring(0, 4) === "http") {
+        if (texture && texture.name && texture.name.substring(0, 4) !== "data") {
             url = texture.name;
         }
         url = url.replace(/\?nocache=\d+/, "");
@@ -71564,7 +71573,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__["LineContainerComponent"], { title: "SOURCE" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Embed texture", isSelected: function () { return _this.state.isEmbedded; }, onSelect: function (value) {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Embed static texture", isSelected: function () { return _this.state.isEmbedded; }, onSelect: function (value) {
                         _this.setState({ isEmbedded: value });
                         _this.props.node.texture = null;
                         _this.updateAfterTextureLoad();
@@ -71576,7 +71585,9 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
                 !this.state.isEmbedded &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { label: "Link", globalState: this.props.globalState, value: url, onChange: function (newUrl) { return _this.replaceTextureWithUrl(newUrl); } }),
                 !this.state.isEmbedded && url &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Refresh", onClick: function () { return _this.replaceTextureWithUrl(url + "?nocache=" + _this._generateRandomForCache()); } }))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Refresh", onClick: function () { return _this.replaceTextureWithUrl(url + "?nocache=" + _this._generateRandomForCache()); } }),
+                texture &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Remove", onClick: function () { return _this.removeTexture(); } }))));
     };
     return TexturePropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -71611,7 +71622,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var TrigonometryNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TrigonometryNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TrigonometryNodeFactory, _super);
     /**
      * Constructs a GenericNodeFactory
      */
@@ -71666,7 +71677,7 @@ __webpack_require__.r(__webpack_exports__);
  * Generic node model which stores information about a node editor block
  */
 var TrigonometryNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TrigonometryNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TrigonometryNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -71717,7 +71728,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TrigonometryPropertyTabComponentProps = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TrigonometryPropertyTabComponentProps, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TrigonometryPropertyTabComponentProps, _super);
     function TrigonometryPropertyTabComponentProps(props) {
         return _super.call(this, props) || this;
     }
@@ -71789,7 +71800,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var TrigonometryNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TrigonometryNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TrigonometryNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -71884,7 +71895,7 @@ var LogEntry = /** @class */ (function () {
 }());
 
 var LogComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LogComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LogComponent, _super);
     function LogComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { logs: [] };
@@ -71906,8 +71917,12 @@ var LogComponent = /** @class */ (function (_super) {
         logConsole.scrollTop = logConsole.scrollHeight;
     };
     LogComponent.prototype.render = function () {
+        var today = new Date();
+        var h = today.getHours();
+        var m = today.getMinutes();
+        var s = today.getSeconds();
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "log-console", ref: "log-console" }, this.state.logs.map(function (l, i) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: i, className: "log" + (l.isError ? " error" : "") }, l.message));
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: i, className: "log" + (l.isError ? " error" : "") }, h + ":" + m + ":" + s + ": " + l.message));
         })));
     };
     return LogComponent;
@@ -71968,7 +71983,7 @@ __webpack_require__.r(__webpack_exports__);
 
 __webpack_require__(/*! ./nodeList.scss */ "./components/nodeList/nodeList.scss");
 var NodeListComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](NodeListComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(NodeListComponent, _super);
     function NodeListComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { filter: "" };
@@ -72047,9 +72062,12 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var PreviewAreaComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PreviewAreaComponent, _super);
-    function PreviewAreaComponent() {
-        return _super !== null && _super.apply(this, arguments) || this;
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PreviewAreaComponent, _super);
+    function PreviewAreaComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = { isLoading: true };
+        _this.props.globalState.onIsLoadingChanged.add(function (state) { return _this.setState({ isLoading: state }); });
+        return _this;
     }
     PreviewAreaComponent.prototype.changeAnimation = function () {
         this.props.globalState.rotatePreview = !this.props.globalState.rotatePreview;
@@ -72080,7 +72098,8 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview", style: { height: this.props.width + "px" } },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "preview-canvas" })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "preview-canvas" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "waitPanel" + (this.state.isLoading ? "" : " hidden") }, "Please wait, loading...")),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-config-bar" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn-table animation", onClick: function () { return _this.changeAnimation(); }, className: "button" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: this.props.globalState.rotatePreview ? _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faStop"] : _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faPlay"] })),
@@ -72105,6 +72124,13 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
                         _this.props.globalState.onLightUpdated.notifyObservers();
                         _this.forceUpdate();
                     }, className: "button" + (this.props.globalState.directionalLight0 ? " selected" : "") },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faLocationArrow"] })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn on/off direction light #1", onClick: function () {
+                        _this.props.globalState.directionalLight1 = !_this.props.globalState.directionalLight1;
+                        _dataStorage__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].StoreBoolean("DirectionalLight1", _this.props.globalState.directionalLight1);
+                        _this.props.globalState.onLightUpdated.notifyObservers();
+                        _this.forceUpdate();
+                    }, className: "button" + (this.props.globalState.directionalLight1 ? " selected" : "") },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faLocationArrow"] })))));
     };
     return PreviewAreaComponent;
@@ -72128,6 +72154,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _previewMeshType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./previewMeshType */ "./components/preview/previewMeshType.ts");
 /* harmony import */ var _log_logComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../log/logComponent */ "./components/log/logComponent.tsx");
+
+
+
 
 
 
@@ -72179,10 +72208,44 @@ var PreviewManager = /** @class */ (function () {
         this._camera.wheelPrecision = 20;
         this._camera.minZ = 0.1;
         this._camera.attachControl(targetCanvas, false);
+        this._lightParent = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["TransformNode"]("LightParent", this._scene);
         this._refreshPreviewMesh();
         this._engine.runRenderLoop(function () {
             _this._engine.resize();
             _this._scene.render();
+        });
+        var cameraLastRotation = 0;
+        var lastOffsetX = undefined;
+        var lightRotationParallaxSpeed = 0.5;
+        var lightRotationSpeed = 0.01;
+        this._scene.onPointerObservable.add(function (evt) {
+            if (_this._globalState.controlCamera) {
+                return;
+            }
+            if (evt.type === babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERUP) {
+                lastOffsetX = undefined;
+                return;
+            }
+            if (evt.event.buttons !== 1) {
+                return;
+            }
+            if (lastOffsetX === undefined) {
+                lastOffsetX = evt.event.offsetX;
+            }
+            var rotateLighting = (lastOffsetX - evt.event.offsetX) * lightRotationSpeed;
+            _this._lightParent.rotation.y += rotateLighting;
+            lastOffsetX = evt.event.offsetX;
+        });
+        this._scene.registerBeforeRender(function () {
+            if (_this._camera.alpha === cameraLastRotation) {
+                return;
+            }
+            if (!_this._globalState.controlCamera) {
+                return;
+            }
+            var rotateLighting = (_this._camera.alpha - cameraLastRotation) * lightRotationParallaxSpeed;
+            _this._lightParent.rotate(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Up(), rotateLighting);
+            cameraLastRotation = _this._camera.alpha;
         });
     }
     PreviewManager.prototype._handleAnimations = function () {
@@ -72213,11 +72276,21 @@ var PreviewManager = /** @class */ (function () {
             new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["HemisphericLight"]("Hemispheric light", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0, 1, 0), this._scene);
         }
         if (this._globalState.directionalLight0) {
-            new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["DirectionalLight"]("Directional light #0", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](-1, -1, 0), this._scene);
+            var dir0 = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["DirectionalLight"]("Directional light #0", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0.841626576496605, -0.2193391004130599, -0.49351298337996535), this._scene);
+            dir0.intensity = 0.9;
+            dir0.diffuse = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"](0.9294117647058824, 0.9725490196078431, 0.996078431372549);
+            dir0.specular = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"](0.9294117647058824, 0.9725490196078431, 0.996078431372549);
+            dir0.parent = this._lightParent;
+        }
+        if (this._globalState.directionalLight1) {
+            var dir1 = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["DirectionalLight"]("Directional light #1", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](-0.9519937437504213, -0.24389315636999764, -0.1849974057546125), this._scene);
+            dir1.intensity = 1.2;
+            dir1.specular = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"](0.9803921568627451, 0.9529411764705882, 0.7725490196078432);
+            dir1.diffuse = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"](0.9803921568627451, 0.9529411764705882, 0.7725490196078432);
+            dir1.parent = this._lightParent;
         }
     };
     PreviewManager.prototype._prepareMeshes = function () {
-        this._engine.hideLoadingUI();
         this._prepareLights();
         // Framing
         this._camera.useFramingBehavior = true;
@@ -72258,7 +72331,7 @@ var PreviewManager = /** @class */ (function () {
             }
             this._engine.releaseEffects();
             babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].ShowLoadingScreen = false;
-            this._engine.displayLoadingUI();
+            this._globalState.onIsLoadingChanged.notifyObservers(true);
             switch (this._globalState.previewMeshType) {
                 case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Box:
                     babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("https://models.babylonjs.com/", "roundedCube.glb", this._scene).then(function () {
@@ -72321,8 +72394,10 @@ var PreviewManager = /** @class */ (function () {
                         _this._material.dispose();
                     }
                     _this._material = tempMaterial_1;
+                    _this._globalState.onIsLoadingChanged.notifyObservers(false);
                 }).catch(function (reason) {
                     _this._globalState.onLogRequiredObservable.notifyObservers(new _log_logComponent__WEBPACK_IMPORTED_MODULE_2__["LogEntry"]("Shader compilation error:\r\n" + reason, true));
+                    _this._globalState.onIsLoadingChanged.notifyObservers(false);
                 });
             }
             else {
@@ -72384,7 +72459,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var PreviewMeshControlComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PreviewMeshControlComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PreviewMeshControlComponent, _super);
     function PreviewMeshControlComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -72477,7 +72552,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Color3PropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Color3PropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Color3PropertyTabComponent, _super);
     function Color3PropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -72512,7 +72587,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var FloatPropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FloatPropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FloatPropertyTabComponent, _super);
     function FloatPropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -72547,7 +72622,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var MatrixPropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MatrixPropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MatrixPropertyTabComponent, _super);
     function MatrixPropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -72584,7 +72659,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector2PropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector2PropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector2PropertyTabComponent, _super);
     function Vector2PropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -72619,7 +72694,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector3PropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector3PropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector3PropertyTabComponent, _super);
     function Vector3PropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -72654,7 +72729,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector4PropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector4PropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector4PropertyTabComponent, _super);
     function Vector4PropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -72735,7 +72810,7 @@ __webpack_require__.r(__webpack_exports__);
 
 __webpack_require__(/*! ./propertyTab.scss */ "./components/propertyTab/propertyTab.scss");
 var PropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PropertyTabComponent, _super);
     function PropertyTabComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { currentNode: null };
@@ -72932,6 +73007,7 @@ var GlobalState = /** @class */ (function () {
         this.onReOrganizedRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onLogRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onErrorMessageDialogRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onIsLoadingChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onPreviewCommandActivated = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onLightUpdated = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onPreviewBackgroundChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -72943,7 +73019,9 @@ var GlobalState = /** @class */ (function () {
         this.backFaceCulling = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("BackFaceCulling", true);
         this.depthPrePass = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("DepthPrePass", false);
         this.hemisphericLight = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("HemisphericLight", true);
-        this.directionalLight0 = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("DirectionalLight0", true);
+        this.directionalLight0 = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("DirectionalLight0", false);
+        this.directionalLight1 = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("DirectionalLight1", false);
+        this.controlCamera = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("ControlCamera", true);
         var r = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("BackgroundColorR", 0.37);
         var g = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("BackgroundColorG", 0.37);
         var b = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("BackgroundColorB", 0.37);
@@ -73063,7 +73141,7 @@ var NodeCreationOptions = /** @class */ (function () {
 }());
 
 var GraphEditor = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GraphEditor, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GraphEditor, _super);
     function GraphEditor(props) {
         var _this = _super.call(this, props) || this;
         _this.NodeWidth = 100;
@@ -73634,7 +73712,7 @@ var GraphHelper = /** @class */ (function () {
                 width: node.width | 200,
                 height: node.height | 100
             };
-            output.push({ id: node.id, metadata: tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"]({}, size, { id: node.id }) });
+            output.push({ id: node.id, metadata: Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, size), { id: node.id }) });
         }
         return output;
     };
@@ -73831,7 +73909,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Portal = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Portal, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Portal, _super);
     function Portal() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -73884,6 +73962,7 @@ var SerializationTools = /** @class */ (function () {
         return JSON.stringify(serializationObject, undefined, 2);
     };
     SerializationTools.Deserialize = function (serializationObject, globalState) {
+        globalState.onIsLoadingChanged.notifyObservers(true);
         globalState.nodeMaterial.loadFromSerialization(serializationObject, "");
         // Check for id mapping
         if (serializationObject.locations && serializationObject.map) {
@@ -73919,7 +73998,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ButtonLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ButtonLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ButtonLineComponent, _super);
     function ButtonLineComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -73951,7 +74030,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var CheckBoxLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CheckBoxLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CheckBoxLineComponent, _super);
     function CheckBoxLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74041,7 +74120,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Color3LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Color3LineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Color3LineComponent, _super);
     function Color3LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74175,7 +74254,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var DraggableLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DraggableLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DraggableLineComponent, _super);
     function DraggableLineComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -74208,7 +74287,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var FileButtonLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FileButtonLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FileButtonLineComponent, _super);
     function FileButtonLineComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -74248,7 +74327,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var FloatLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FloatLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FloatLineComponent, _super);
     function FloatLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74341,7 +74420,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var LineContainerComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LineContainerComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LineContainerComponent, _super);
     function LineContainerComponent(props) {
         var _this = _super.call(this, props) || this;
         var initialState = _dataStorage__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean(_this.props.title, !_this.props.closed);
@@ -74403,7 +74482,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var MatrixLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MatrixLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MatrixLineComponent, _super);
     function MatrixLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74536,7 +74615,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var MessageDialogComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MessageDialogComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MessageDialogComponent, _super);
     function MessageDialogComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { message: "", isError: false };
@@ -74579,7 +74658,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var NumericInputComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](NumericInputComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(NumericInputComponent, _super);
     function NumericInputComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74648,7 +74727,7 @@ var ListLineOption = /** @class */ (function () {
     return ListLineOption;
 }());
 var OptionsLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](OptionsLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(OptionsLineComponent, _super);
     function OptionsLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74818,7 +74897,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var SliderLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SliderLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SliderLineComponent, _super);
     function SliderLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74919,7 +74998,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TextInputLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextInputLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextInputLineComponent, _super);
     function TextInputLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -75002,7 +75081,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TextLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextLineComponent, _super);
     function TextLineComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -75053,7 +75132,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TextureLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextureLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextureLineComponent, _super);
     function TextureLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {
@@ -75224,7 +75303,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector2LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector2LineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector2LineComponent, _super);
     function Vector2LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -75319,7 +75398,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector3LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector3LineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector3LineComponent, _super);
     function Vector3LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -75420,7 +75499,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector4LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector4LineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector4LineComponent, _super);
     function Vector4LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;

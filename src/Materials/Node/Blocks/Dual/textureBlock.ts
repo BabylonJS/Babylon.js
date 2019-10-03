@@ -42,12 +42,12 @@ export class TextureBlock extends NodeMaterialBlock {
 
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, false, NodeMaterialBlockTargets.VertexAndFragment);
 
-        this.registerOutput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Fragment);
-        this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
-        this.registerOutput("r", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
-        this.registerOutput("g", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
-        this.registerOutput("b", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
-        this.registerOutput("a", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Neutral);
+        this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Neutral);
+        this.registerOutput("r", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
+        this.registerOutput("g", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
+        this.registerOutput("b", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
+        this.registerOutput("a", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
 
         this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
         this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
@@ -175,6 +175,8 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         if (!this.texture || !this.texture.getTextureMatrix) {
+            defines.setValue(this._defineName, false);
+            defines.setValue(this._mainUVDefineName, true);
             return;
         }
 
@@ -240,13 +242,34 @@ export class TextureBlock extends NodeMaterialBlock {
 
         state.compilationString += `#ifdef ${this._defineName}\r\n`;
         state.compilationString += `${this._transformedUVName} = vec2(${this._textureTransformName} * vec4(${uvInput.associatedVariableName}.xy, 1.0, 0.0));\r\n`;
-        state.compilationString += `#else\r\n`;
+        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef ${this._mainUVDefineName}\r\n`;
         state.compilationString += `${this._mainUVName} = ${uvInput.associatedVariableName}.xy;\r\n`;
         state.compilationString += `#endif\r\n`;
+
+        if (!this._outputs.some((o) => o.isConnectedInVertexShader)) {
+            return;
+        }
+
+        for (var output of this._outputs) {
+            if (output.hasEndpoints) {
+                this._writeOutput(state, output, output.name, true);
+            }
+        }
     }
 
-    private _writeOutput(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string) {
+    private _writeOutput(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string, vertexMode = false) {
         let uvInput = this.uv;
+
+        if (vertexMode) {
+            if (state.target === NodeMaterialBlockTargets.Fragment) {
+                return;
+            }
+
+            state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${uvInput.associatedVariableName}).${swizzle};\r\n`;
+
+            return;
+        }
 
         if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
             state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${uvInput.associatedVariableName}).${swizzle};\r\n`;
@@ -257,7 +280,8 @@ export class TextureBlock extends NodeMaterialBlock {
 
         state.compilationString += `#ifdef ${this._defineName}\r\n`;
         state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${this._transformedUVName}).${swizzle}${complement};\r\n`;
-        state.compilationString += `#else\r\n`;
+        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef ${this._mainUVDefineName}\r\n`;
         state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${this._mainUVName}).${swizzle}${complement};\r\n`;
         state.compilationString += `#endif\r\n`;
 
@@ -269,23 +293,35 @@ export class TextureBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
+        if (!this._isMixed && state.target === NodeMaterialBlockTargets.Fragment || this._isMixed && state.target === NodeMaterialBlockTargets.Vertex) {
+            this._samplerName = state._getFreeVariableName(this.name + "Sampler");
+
+            state._emit2DSampler(this._samplerName);
+
+            // Declarations
+            state.sharedData.blockingBlocks.push(this);
+            state.sharedData.textureBlocks.push(this);
+            state.sharedData.blocksWithDefines.push(this);
+            state.sharedData.bindableBlocks.push(this);
+        }
+
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
             // Vertex
             this._injectVertexCode(state);
             return;
         }
 
-        state.sharedData.blockingBlocks.push(this);
-        state.sharedData.textureBlocks.push(this);
-
-        this._samplerName = state._getFreeVariableName(this.name + "Sampler");
-        state.samplers.push(this._samplerName);
-        state._samplerDeclaration += `uniform sampler2D ${this._samplerName};\r\n`;
-
         // Fragment
+        if (!this._outputs.some((o) => o.isConnectedInFragmentShader)) {
+            return;
+        }
+
+        if (this._isMixed) {
+            // Reexport the sampler
+            state._emit2DSampler(this._samplerName);
+        }
+
         this._linearDefineName = state._getFreeDefineName("ISLINEAR");
-        state.sharedData.blocksWithDefines.push(this);
-        state.sharedData.bindableBlocks.push(this);
 
         let comments = `//${this.name}`;
         state._emitFunctionFromInclude("helperFunctions", comments);

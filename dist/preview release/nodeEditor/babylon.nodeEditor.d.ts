@@ -449,6 +449,7 @@ declare module NODEEDITOR {
         }): void;
         private _generateRandomForCache;
         updateAfterTextureLoad(): void;
+        removeTexture(): void;
         /**
          * Replaces the texture of the node
          * @param file the file of the texture to use
@@ -1059,6 +1060,7 @@ declare module NODEEDITOR {
         private _material;
         private _globalState;
         private _currentType;
+        private _lightParent;
         constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
         private _handleAnimations;
         private _prepareLights;
@@ -1255,11 +1257,14 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    interface IPreviewAreaComponent {
+    interface IPreviewAreaComponentProps {
         globalState: GlobalState;
         width: number;
     }
-    export class PreviewAreaComponent extends React.Component<IPreviewAreaComponent> {
+    export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, {
+        isLoading: boolean;
+    }> {
+        constructor(props: IPreviewAreaComponentProps);
         changeAnimation(): void;
         changeBackground(value: string): void;
         changeBackFaceCulling(value: boolean): void;
@@ -1452,6 +1457,7 @@ declare module NODEEDITOR {
         onReOrganizedRequiredObservable: BABYLON.Observable<void>;
         onLogRequiredObservable: BABYLON.Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: BABYLON.Observable<string>;
+        onIsLoadingChanged: BABYLON.Observable<boolean>;
         onPreviewCommandActivated: BABYLON.Observable<void>;
         onLightUpdated: BABYLON.Observable<void>;
         onPreviewBackgroundChanged: BABYLON.Observable<void>;
@@ -1468,6 +1474,8 @@ declare module NODEEDITOR {
         blockKeyboardEvents: boolean;
         hemisphericLight: boolean;
         directionalLight0: boolean;
+        directionalLight1: boolean;
+        controlCamera: boolean;
         customSave?: {
             label: string;
             action: (data: string) => Promise<void>;

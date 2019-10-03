@@ -115,7 +115,9 @@ if (BABYLON.Engine.isSupported()) {
     var canvas = document.createElement("canvas");
     var engine = new BABYLON.Engine(canvas, false, {disableWebGL2Support: true});
     var scene = new BABYLON.Scene(engine);    
-    var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+    var light0 = new BABYLON.HemisphericLight("light #0", new BABYLON.Vector3(0, 1, 0), scene);
+    var light1 = new BABYLON.HemisphericLight("light #1", new BABYLON.Vector3(0, 1, 0), scene);
+    var light2 = new BABYLON.HemisphericLight("light #2", new BABYLON.Vector3(0, 1, 0), scene);
 
     nodeMaterial = new BABYLON.NodeMaterial("node");
 

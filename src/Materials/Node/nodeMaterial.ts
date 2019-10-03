@@ -712,8 +712,9 @@ export class NodeMaterial extends PushMaterial {
             });
 
             // Uniforms
+            let uniformBuffers: string[] = [];
             this._sharedData.dynamicUniformBlocks.forEach((b) => {
-                b.updateUniformsAndSamples(this._vertexCompilationState, this, defines);
+                b.updateUniformsAndSamples(this._vertexCompilationState, this, defines, uniformBuffers);
             });
 
             let mergedUniforms = this._vertexCompilationState.uniforms;
@@ -723,17 +724,6 @@ export class NodeMaterial extends PushMaterial {
 
                 if (index === -1) {
                     mergedUniforms.push(u);
-                }
-            });
-
-            // Uniform buffers
-            let mergedUniformBuffers = this._vertexCompilationState.uniformBuffers;
-
-            this._fragmentCompilationState.uniformBuffers.forEach((u) => {
-                let index = mergedUniformBuffers.indexOf(u);
-
-                if (index === -1) {
-                    mergedUniformBuffers.push(u);
                 }
             });
 
@@ -765,7 +755,7 @@ export class NodeMaterial extends PushMaterial {
             }, <IEffectCreationOptions>{
                 attributes: this._vertexCompilationState.attributes,
                 uniformsNames: mergedUniforms,
-                uniformBuffersNames: mergedUniformBuffers,
+                uniformBuffersNames: uniformBuffers,
                 samplers: mergedSamplers,
                 defines: join,
                 fallbacks: fallbacks,
@@ -888,7 +878,7 @@ export class NodeMaterial extends PushMaterial {
             return [];
         }
 
-        return this._sharedData.textureBlocks.filter((tb) => tb.texture);
+        return this._sharedData.textureBlocks;
     }
 
     /**

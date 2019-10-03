@@ -2605,6 +2605,10 @@ var GLTFLoader = /** @class */ (function () {
      * @returns A promise that resolves with the loaded data when the load is complete
      */
     GLTFLoader.prototype.loadBufferViewAsync = function (context, bufferView) {
+        var extensionPromise = this._extensionsLoadBufferViewAsync(context, bufferView);
+        if (extensionPromise) {
+            return extensionPromise;
+        }
         if (bufferView._data) {
             return bufferView._data;
         }
@@ -3358,6 +3362,9 @@ var GLTFLoader = /** @class */ (function () {
     };
     GLTFLoader.prototype._extensionsLoadUriAsync = function (context, property, uri) {
         return this._applyExtensions(property, "loadUri", function (extension) { return extension._loadUriAsync && extension._loadUriAsync(context, property, uri); });
+    };
+    GLTFLoader.prototype._extensionsLoadBufferViewAsync = function (context, bufferView) {
+        return this._applyExtensions(bufferView, "loadBufferView", function (extension) { return extension.loadBufferViewAsync && extension.loadBufferViewAsync(context, bufferView); });
     };
     /**
      * Helper method called by a loader extension to load an glTF extension.

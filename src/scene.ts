@@ -3374,7 +3374,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             // Switch to current LOD
-            const meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
+            let meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
             if (meshToRender === undefined || meshToRender === null) {
                 continue;
             }
@@ -3397,6 +3397,10 @@ export class Scene extends AbstractScene implements IAnimatable {
                 if (mesh._activate(this._renderId, false)) {
                     if (!mesh.isAnInstance) {
                         meshToRender._internalAbstractMeshDataInfo._onlyForInstances = false;
+                    } else {
+                        if (mesh._internalAbstractMeshDataInfo._actAsRegularMesh) {
+                            meshToRender = mesh;
+                        }
                     }
                     meshToRender._internalAbstractMeshDataInfo._isActive = true;
                     this._activeMesh(mesh, meshToRender);

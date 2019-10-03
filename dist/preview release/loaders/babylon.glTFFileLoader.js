@@ -378,7 +378,7 @@ __webpack_require__.r(__webpack_exports__);
 var BinaryExtensionBufferName = "binary_glTF";
 /** @hidden */
 var GLTFBinaryExtension = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GLTFBinaryExtension, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GLTFBinaryExtension, _super);
     function GLTFBinaryExtension() {
         return _super.call(this, "KHR_binary_glTF") || this;
     }
@@ -2520,7 +2520,7 @@ __webpack_require__.r(__webpack_exports__);
 
 /** @hidden */
 var GLTFMaterialsCommonExtension = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GLTFMaterialsCommonExtension, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GLTFMaterialsCommonExtension, _super);
     function GLTFMaterialsCommonExtension() {
         return _super.call(this, "KHR_materials_common") || this;
     }
@@ -5165,6 +5165,10 @@ var GLTFLoader = /** @class */ (function () {
      * @returns A promise that resolves with the loaded data when the load is complete
      */
     GLTFLoader.prototype.loadBufferViewAsync = function (context, bufferView) {
+        var extensionPromise = this._extensionsLoadBufferViewAsync(context, bufferView);
+        if (extensionPromise) {
+            return extensionPromise;
+        }
         if (bufferView._data) {
             return bufferView._data;
         }
@@ -5918,6 +5922,9 @@ var GLTFLoader = /** @class */ (function () {
     };
     GLTFLoader.prototype._extensionsLoadUriAsync = function (context, property, uri) {
         return this._applyExtensions(property, "loadUri", function (extension) { return extension._loadUriAsync && extension._loadUriAsync(context, property, uri); });
+    };
+    GLTFLoader.prototype._extensionsLoadBufferViewAsync = function (context, bufferView) {
+        return this._applyExtensions(bufferView, "loadBufferView", function (extension) { return extension.loadBufferViewAsync && extension.loadBufferViewAsync(context, bufferView); });
     };
     /**
      * Helper method called by a loader extension to load an glTF extension.
