@@ -6,7 +6,7 @@ namespace babylon
 {
 
     RuntimeAndroid::RuntimeAndroid(ANativeWindow* nativeWindowPtr)
-        : RuntimeAndroid{nativeWindowPtr, GetUrlFromPath(".") } // todo : GetModulePath().parent_path() std::fs experimental not available with ndk
+        : RuntimeAndroid{nativeWindowPtr, "." } // todo : GetModulePath().parent_path() std::fs experimental not available with ndk
     {
     }
 

@@ -98,3 +98,40 @@ jobs:
       configuration: 'Release'
       msbuildArgs: '/p:AppxPackageSigningEnabled=false'
     displayName: 'Build UWP'
+    
+- job: androidJNI
+  pool:
+    vmImage: 'macOS-10.14'
+    
+  steps:
+  - script: |
+      git submodule update --init --recursive
+    displayName: 'Checkout dependencies'
+  - script: |
+      set -eu
+      curl -Ls https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-mac.zip -o ninja-mac.zip
+      unzip ninja-mac.zip
+      sudo cp -v ninja /usr/local/bin/
+    displayName: 'Install Ninja'
+  - script: |
+      npm install --prefix . v8-android@7.5.1
+      unxz node_modules/v8-android/dist/lib.unstripped/v8-android/7.5.1/libs.tar.xz
+      tar -xf node_modules/v8-android/dist/lib.unstripped/v8-android/7.5.1/libs.tar
+      mkdir Library/Dependencies/v8
+      mkdir Library/Dependencies/v8/include
+      mkdir TestApp/Source/Android/app/src/main/jniLibs
+      cp -r node_modules/v8-android/dist/include Library/Dependencies/v8
+      cp -r arm64-v8a TestApp/Source/Android/app/src/main/jniLibs
+      cp -r armeabi-v7a TestApp/Source/Android/app/src/main/jniLibs
+      cp -r x86 TestApp/Source/Android/app/src/main/jniLibs
+      cp -r x86_64 TestApp/Source/Android/app/src/main/jniLibs
+    displayName: 'Install V8 npm'    
+  - task: Gradle@2
+    inputs:
+        workingDirectory: 'TestApp/Source/Android'
+        gradleWrapperFile: 'TestApp/Source/Android/gradlew'
+        gradleOptions: '-Xmx1536m'
+        publishJUnitResults: false
+        tasks: 'assembleDebug'
+    displayName: 'Build androidJNI'
+    
