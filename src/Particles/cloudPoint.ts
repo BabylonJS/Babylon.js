@@ -138,43 +138,40 @@ export class CloudPoint {
     }
 
     /**
-     * Returns a boolean. True if the particle intersects another particle or another mesh, else false.
-     * The intersection is computed on the particle bounding sphere and Axis Aligned Bounding Box (AABB)
-     * @param target is the object (point or mesh) what the intersection is computed against.
+     * Returns a boolean. True if the particle intersects a mesh, else false
+     * The intersection is computed on the particle position and Axis Aligned Bounding Box (AABB) or Sphere
+     * @param target is the object (point or mesh) what the intersection is computed against
+     * @param isSphere is boolean flag when false (default) bounding box of mesh is used, when true the bouding sphere is used
      * @returns true if it intersects
      */
-    public intersectsMesh(target: Mesh | CloudPoint): boolean {
-        if (!(target instanceof CloudPoint) || !target._boundingInfo) {
+    public intersectsMesh(target: Mesh, isSphere: boolean): boolean {
+        if (!target._boundingInfo) {
             return false;
         }
-        const radius = this._pcs._size;
-        let maxX: number = 0;
-        let minX: number = 0;
-        let maxY: number = 0;
-        let minY: number = 0;
-        let maxZ: number = 0;
-        let minZ: number = 0;
-        if (target instanceof CloudPoint) {
-            maxX = target.position.x + radius;
-            minX = target.position.x - radius;
-            maxY = target.position.y + radius;
-            minY = target.position.y - radius;
-            maxZ = target.position.z + radius;
-            minZ = target.position.z - radius;
-        }
+        isSphere = isSphere ? isSphere : false;
 
-        if (target._boundingInfo) {
-            maxX = target._boundingInfo.maximum.x;
-            minX = target._boundingInfo.minimum.x;
-            maxY = target._boundingInfo.maximum.y;
-            minY = target._boundingInfo.minimum.y;
-            maxZ = target._boundingInfo.maximum.z;
-            minZ = target._boundingInfo.minimum.z;
+        if (isSphere) {
+            return target.getBoundingInfo().boundingSphere.intersectsPoint(this.position.add(this._pcs.mesh.position));
         }
-        const x = this.position.x;
-        const y = this.position.y;
-        const z = this.position.z;
-        return (minX <= x + radius || maxX >= x - radius) && (minY <= y + radius || maxY >= y - radius) && (minZ <= z + radius || maxZ >= z - radius);
+        else {
+            let maxX = 0;
+            let minX = 0;
+            let maxY = 0;
+            let minY = 0;
+            let maxZ = 0;
+            let minZ = 0;
+            maxX = target.getBoundingInfo().boundingBox.maximumWorld.x;
+            minX = target.getBoundingInfo().boundingBox.minimumWorld.x;
+            maxY = target.getBoundingInfo().boundingBox.maximumWorld.y;
+            minY = target.getBoundingInfo().boundingBox.minimumWorld.y;
+            maxZ = target.getBoundingInfo().boundingBox.maximumWorld.z;
+            minZ = target.getBoundingInfo().boundingBox.minimumWorld.z;
+
+            let x = this.position.x + this._pcs.mesh.position.x;
+            let y = this.position.y + this._pcs.mesh.position.y;
+            let z = this.position.z + this._pcs.mesh.position.z;
+            return minX <= x  &&  x <= maxX && minY <= y && y <= maxY && minZ <= z && z <= maxZ;
+        }
     }
 
     /**
