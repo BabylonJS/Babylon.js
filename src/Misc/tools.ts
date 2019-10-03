@@ -363,7 +363,7 @@ export class Tools {
     * @param mimeType optional mime type
     * @returns the HTMLImageElement of the loaded image
     */
-    public static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): HTMLImageElement {
+    public static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement> {
         return FileTools.LoadImage(input, onLoad, onError, offlineProvider, mimeType);
     }
 
