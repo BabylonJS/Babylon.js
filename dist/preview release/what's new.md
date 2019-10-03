@@ -12,7 +12,7 @@
 - WebXR updates:
   - WebXR updated to spec as of July 10th ([TrevorDev](https://github.com/TrevorDev))
   - WebXR webVR parity helpers (Vive, WMR, Oculus Rift) ([TrevorDev](https://github.com/TrevorDev))
-- Added support for Offscreen canvas [Doc]() ([Deltakosh](https://github.com/deltakosh/)
+- Added support for Offscreen canvas [Doc](https://doc.babylonjs.com/how_to/using_offscreen_canvas) ([Deltakosh](https://github.com/deltakosh/)
 
 ## Updates
 
