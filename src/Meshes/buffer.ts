@@ -58,7 +58,7 @@ export class Buffer {
      * @param size defines the size in floats of attributes (position is 3 for instance)
      * @param stride defines the stride size in floats in the buffer (the offset to apply to reach next value when data is interleaved)
      * @param instanced defines if the vertex buffer contains indexed data
-     * @param useBytes defines if the offset and stride are in bytes     * 
+     * @param useBytes defines if the offset and stride are in bytes     *
      * @param divisor sets an optional divisor for instances (1 by default)
      * @returns the new vertex buffer
      */
@@ -280,7 +280,7 @@ export class VertexBuffer {
      * @param useBytes set to true if stride and offset are in bytes (optional)
      * @param divisor defines the instance divisor to use (1 by default)
      */
-    constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, 
+    constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number,
         instanced?: boolean, offset?: number, size?: number, type?: number, normalized = false, useBytes = false, divisor = 1) {
         if (data instanceof Buffer) {
             this._buffer = data;
