@@ -171,17 +171,21 @@ export class InputManager {
         canvas.tabIndex = 1;
 
         // Restore pointer
-        canvas.style.cursor = scene.defaultCursor;
+        if (!scene.doNotHandleCursors) {
+            canvas.style.cursor = scene.defaultCursor;
+        }
 
         var isMeshPicked = (pickResult && pickResult.hit && pickResult.pickedMesh) ? true : false;
         if (isMeshPicked) {
             scene.setPointerOverMesh(pickResult!.pickedMesh);
 
             if (this._pointerOverMesh && this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
-                if (this._pointerOverMesh.actionManager.hoverCursor) {
-                    canvas.style.cursor = this._pointerOverMesh.actionManager.hoverCursor;
-                } else {
-                    canvas.style.cursor = scene.hoverCursor;
+                if (!scene.doNotHandleCursors) {
+                    if (this._pointerOverMesh.actionManager.hoverCursor) {
+                        canvas.style.cursor = this._pointerOverMesh.actionManager.hoverCursor;
+                    } else {
+                        canvas.style.cursor = scene.hoverCursor;
+                    }
                 }
             }
         } else {
@@ -840,7 +844,9 @@ export class InputManager {
         canvas.removeEventListener("keyup", this._onKeyUp);
 
         // Cursor
-        canvas.style.cursor = this._scene.defaultCursor;
+        if (!this._scene.doNotHandleCursors) {
+            canvas.style.cursor = this._scene.defaultCursor;
+        }
     }
 
     /**
