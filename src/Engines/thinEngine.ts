@@ -2918,7 +2918,7 @@ export class ThinEngine {
             };
 
             if (!fromData || isBase64) {
-                if (buffer && (<HTMLImageElement>buffer).decoding) {
+                if (buffer && ((<HTMLImageElement>buffer).decoding || (<ImageBitmap>buffer).close)) {
                     onload(<HTMLImageElement>buffer);
                 } else {
                     FileTools.LoadImage(url, onload, onInternalError, scene ? scene.offlineProvider : null, mimeType);
@@ -3239,7 +3239,7 @@ export class ThinEngine {
     }
 
     /** @hidden */
-    public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex: number = 0, lod: number = 0) {
+    public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex: number = 0, lod: number = 0) {
         var gl = this._gl;
 
         var textureType = this._getWebGLTextureType(texture.type);

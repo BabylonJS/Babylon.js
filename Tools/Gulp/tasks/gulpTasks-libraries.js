@@ -183,7 +183,7 @@ function buildExternalLibraries(settings, fast) {
     }
 
     if (fast) {
-        tasks.push(cleanup, shaders, buildMax);
+        tasks.push(buildMax);
     } else {
         tasks.push(cleanup, shaders, buildMin, buildMax, buildAMDDTS, processDTS, ...appendLoseDTS);
     }
