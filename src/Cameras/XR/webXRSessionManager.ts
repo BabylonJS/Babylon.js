@@ -5,6 +5,8 @@ import { IDisposable, Scene } from "../../scene";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { WebXROutputTarget } from './webXROutputTarget';
+import { WebXRExperienceHelper } from '../../Legacy/legacy';
+import { WebXRManagedOutputCanvas } from './webXRManagedOutputCanvas';
 
 interface IRenderTargetProvider {
     getRenderTargetForEye(eye: XREye): RenderTargetTexture;
@@ -185,7 +187,8 @@ export class WebXRSessionManager implements IDisposable {
     public supportsSessionAsync(sessionMode: XRSessionMode) {
         if (!(navigator as any).xr || !(navigator as any).xr.supportsSession) {
             return Promise.resolve(false);
-        } else {
+        }
+        else {
             return (navigator as any).xr.supportsSession(sessionMode).then(() => {
                 return Promise.resolve(true);
             }).catch((e: any) => {
@@ -196,15 +199,17 @@ export class WebXRSessionManager implements IDisposable {
     }
 
     /**
-     * Checks whether the getWebXRNativeOutputTarget() API is supported
-     * @returns true if getWebXRNativeOutputTarget() can be called, false otherwise
+     * Creates a WebXROutputTarget object for the XR session
+     * @param xrHelper optional, helper class for event management, used only for Web scenarios
+     * @returns a WebXR output target to which the session can render
      */
-    public supportsWebXRNativeOutputTarget() : boolean {
-        return this._xrNavigator.xr.native;
-    }
-
-    public getWebXRNativeOutputTarget() : WebXROutputTarget {
-        return this._xrNavigator.xr.getWebXROutputTarget(this.scene.getEngine());
+    public getWebXROutputTarget(xrHelper?: WebXRExperienceHelper) : WebXROutputTarget {
+        if (this._xrNavigator.xr.native) {
+            return this._xrNavigator.xr.getWebXROutputTarget(this.scene.getEngine());
+        }
+        else {
+            return new WebXRManagedOutputCanvas(xrHelper!, this.scene.getEngine().getRenderingCanvas() as HTMLCanvasElement);
+        }
     }
 
     /**
