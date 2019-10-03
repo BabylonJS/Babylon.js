@@ -68782,7 +68782,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ClampNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ClampNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ClampNodeFactory, _super);
     function ClampNodeFactory(globalState) {
         var _this = _super.call(this, "clamp") || this;
         _this._globalState = globalState;
@@ -68821,7 +68821,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ClampNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ClampNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ClampNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -68869,7 +68869,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ClampPropertyTabComponentProps = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ClampPropertyTabComponentProps, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ClampPropertyTabComponentProps, _super);
     function ClampPropertyTabComponentProps(props) {
         return _super.call(this, props) || this;
     }
@@ -68913,7 +68913,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ClampNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ClampNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ClampNodeWidget, _super);
     function ClampNodeWidget(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {};
@@ -68971,7 +68971,7 @@ __webpack_require__.r(__webpack_exports__);
  * Generic node model which stores information about a node editor block
  */
 var DefaultNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DefaultNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DefaultNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -69086,7 +69086,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var GenericNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GenericNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GenericNodeFactory, _super);
     /**
      * Constructs a GenericNodeFactory
      */
@@ -69147,7 +69147,7 @@ __webpack_require__.r(__webpack_exports__);
  * Generic node model which stores information about a node editor block
  */
 var GenericNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GenericNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GenericNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -69225,7 +69225,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var GenericNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GenericNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GenericNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -69287,7 +69287,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var GradientNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GradientNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GradientNodeFactory, _super);
     function GradientNodeFactory(globalState) {
         var _this = _super.call(this, "gradient") || this;
         _this._globalState = globalState;
@@ -69326,7 +69326,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var GradientNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GradientNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GradientNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -69380,7 +69380,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var GradientPropertyTabComponentProps = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GradientPropertyTabComponentProps, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GradientPropertyTabComponentProps, _super);
     function GradientPropertyTabComponentProps(props) {
         return _super.call(this, props) || this;
     }
@@ -69442,7 +69442,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var GradientNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GradientNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GradientNodeWidget, _super);
     function GradientNodeWidget(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {};
@@ -69506,7 +69506,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var GradientStepComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GradientStepComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GradientStepComponent, _super);
     function GradientStepComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { gradient: props.step.step };
@@ -69567,7 +69567,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var InputNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputNodeFactory, _super);
     /**
      * Constructs a GenericNodeFactory
      */
@@ -69622,7 +69622,7 @@ __webpack_require__.r(__webpack_exports__);
  * Generic node model which stores information about a node editor block
  */
 var InputNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -69695,7 +69695,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var InputPropertyTabComponentProps = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputPropertyTabComponentProps, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputPropertyTabComponentProps, _super);
     function InputPropertyTabComponentProps(props) {
         return _super.call(this, props) || this;
     }
@@ -69898,7 +69898,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var InputNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -70040,7 +70040,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var LightNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightNodeFactory, _super);
     /**
      * Constructs a LightNodeFactory
      */
@@ -70095,7 +70095,7 @@ __webpack_require__.r(__webpack_exports__);
  * Light node model which stores information about a node editor block
  */
 var LightNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -70150,7 +70150,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var LightNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -70208,7 +70208,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var LightPropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightPropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightPropertyTabComponent, _super);
     function LightPropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -70268,7 +70268,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var LightInformationNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightInformationNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightInformationNodeFactory, _super);
     /**
      * Constructs a LightNodeFactory
      */
@@ -70320,7 +70320,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var LightInformationNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightInformationNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightInformationNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -70375,7 +70375,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var LightInformationNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightInformationNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightInformationNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -70433,7 +70433,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var LightInformationPropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightInformationPropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightInformationPropertyTabComponent, _super);
     function LightInformationPropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -70484,7 +70484,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var AdvancedLinkFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AdvancedLinkFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AdvancedLinkFactory, _super);
     function AdvancedLinkFactory() {
         var _this = _super.call(this) || this;
         _this.type = "advanced";
@@ -70523,7 +70523,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var AdvancedLinkModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AdvancedLinkModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AdvancedLinkModel, _super);
     function AdvancedLinkModel() {
         return _super.call(this, "advanced") || this;
     }
@@ -70555,7 +70555,7 @@ __webpack_require__.r(__webpack_exports__);
  * Port model
  */
 var DefaultPortModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DefaultPortModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DefaultPortModel, _super);
     function DefaultPortModel(name, type) {
         if (type === void 0) { type = "input"; }
         var _this = _super.call(this, name, "generic") || this;
@@ -70636,7 +70636,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var DefaultPortWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DefaultPortWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DefaultPortWidget, _super);
     function DefaultPortWidget(props) {
         var _this = _super.call(this, "srd-port", props) || this;
         _this.state = {
@@ -70649,7 +70649,7 @@ var DefaultPortWidget = /** @class */ (function (_super) {
     };
     DefaultPortWidget.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"]({ style: this.props.style }, this.getProps(), { onMouseEnter: function () {
+        return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({ style: this.props.style }, this.getProps(), { onMouseEnter: function () {
                 _this.setState({ selected: true });
             }, onMouseLeave: function () {
                 _this.setState({ selected: false });
@@ -70784,7 +70784,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var ReflectionTextureNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ReflectionTextureNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ReflectionTextureNodeFactory, _super);
     /**
      * Constructs a TextureNodeFactory
      */
@@ -70839,7 +70839,7 @@ __webpack_require__.r(__webpack_exports__);
  * Texture node model which stores information about a node editor block
  */
 var ReflectionTextureNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ReflectionTextureNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ReflectionTextureNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -70896,7 +70896,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var ReflectionTextureNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ReflectionTextureNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ReflectionTextureNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -70958,7 +70958,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var RemapNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RemapNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RemapNodeFactory, _super);
     /**
      * Constructs a GenericNodeFactory
      */
@@ -71013,7 +71013,7 @@ __webpack_require__.r(__webpack_exports__);
  * Generic node model which stores information about a node editor block
  */
 var RemapNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RemapNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RemapNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -71061,7 +71061,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var RemapPropertyTabComponentProps = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RemapPropertyTabComponentProps, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RemapPropertyTabComponentProps, _super);
     function RemapPropertyTabComponentProps(props) {
         return _super.call(this, props) || this;
     }
@@ -71108,7 +71108,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var RemapNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RemapNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RemapNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -71189,7 +71189,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var TextureNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextureNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextureNodeFactory, _super);
     /**
      * Constructs a TextureNodeFactory
      */
@@ -71244,7 +71244,7 @@ __webpack_require__.r(__webpack_exports__);
  * Texture node model which stores information about a node editor block
  */
 var TextureNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextureNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextureNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -71301,7 +71301,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var TextureNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextureNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextureNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -71378,7 +71378,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TexturePropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TexturePropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TexturePropertyTabComponent, _super);
     function TexturePropertyTabComponent(props) {
         var _this = _super.call(this, props) || this;
         var texture = _this.props.node.texture;
@@ -71622,7 +71622,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var TrigonometryNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TrigonometryNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TrigonometryNodeFactory, _super);
     /**
      * Constructs a GenericNodeFactory
      */
@@ -71677,7 +71677,7 @@ __webpack_require__.r(__webpack_exports__);
  * Generic node model which stores information about a node editor block
  */
 var TrigonometryNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TrigonometryNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TrigonometryNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -71728,7 +71728,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TrigonometryPropertyTabComponentProps = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TrigonometryPropertyTabComponentProps, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TrigonometryPropertyTabComponentProps, _super);
     function TrigonometryPropertyTabComponentProps(props) {
         return _super.call(this, props) || this;
     }
@@ -71800,7 +71800,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var TrigonometryNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TrigonometryNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TrigonometryNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -71895,7 +71895,7 @@ var LogEntry = /** @class */ (function () {
 }());
 
 var LogComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LogComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LogComponent, _super);
     function LogComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { logs: [] };
@@ -71983,7 +71983,7 @@ __webpack_require__.r(__webpack_exports__);
 
 __webpack_require__(/*! ./nodeList.scss */ "./components/nodeList/nodeList.scss");
 var NodeListComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](NodeListComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(NodeListComponent, _super);
     function NodeListComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { filter: "" };
@@ -72062,7 +72062,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var PreviewAreaComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PreviewAreaComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PreviewAreaComponent, _super);
     function PreviewAreaComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { isLoading: true };
@@ -72459,7 +72459,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var PreviewMeshControlComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PreviewMeshControlComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PreviewMeshControlComponent, _super);
     function PreviewMeshControlComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -72552,7 +72552,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Color3PropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Color3PropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Color3PropertyTabComponent, _super);
     function Color3PropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -72587,7 +72587,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var FloatPropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FloatPropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FloatPropertyTabComponent, _super);
     function FloatPropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -72622,7 +72622,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var MatrixPropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MatrixPropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MatrixPropertyTabComponent, _super);
     function MatrixPropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -72659,7 +72659,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector2PropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector2PropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector2PropertyTabComponent, _super);
     function Vector2PropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -72694,7 +72694,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector3PropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector3PropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector3PropertyTabComponent, _super);
     function Vector3PropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -72729,7 +72729,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector4PropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector4PropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector4PropertyTabComponent, _super);
     function Vector4PropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -72810,7 +72810,7 @@ __webpack_require__.r(__webpack_exports__);
 
 __webpack_require__(/*! ./propertyTab.scss */ "./components/propertyTab/propertyTab.scss");
 var PropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PropertyTabComponent, _super);
     function PropertyTabComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { currentNode: null };
@@ -73141,7 +73141,7 @@ var NodeCreationOptions = /** @class */ (function () {
 }());
 
 var GraphEditor = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GraphEditor, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GraphEditor, _super);
     function GraphEditor(props) {
         var _this = _super.call(this, props) || this;
         _this.NodeWidth = 100;
@@ -73712,7 +73712,7 @@ var GraphHelper = /** @class */ (function () {
                 width: node.width | 200,
                 height: node.height | 100
             };
-            output.push({ id: node.id, metadata: tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"]({}, size, { id: node.id }) });
+            output.push({ id: node.id, metadata: Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, size), { id: node.id }) });
         }
         return output;
     };
@@ -73909,7 +73909,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Portal = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Portal, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Portal, _super);
     function Portal() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -73998,7 +73998,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ButtonLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ButtonLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ButtonLineComponent, _super);
     function ButtonLineComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -74030,7 +74030,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var CheckBoxLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CheckBoxLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CheckBoxLineComponent, _super);
     function CheckBoxLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74120,7 +74120,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Color3LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Color3LineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Color3LineComponent, _super);
     function Color3LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74254,7 +74254,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var DraggableLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DraggableLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DraggableLineComponent, _super);
     function DraggableLineComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -74287,7 +74287,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var FileButtonLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FileButtonLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FileButtonLineComponent, _super);
     function FileButtonLineComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -74327,7 +74327,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var FloatLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FloatLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FloatLineComponent, _super);
     function FloatLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74420,7 +74420,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var LineContainerComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LineContainerComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LineContainerComponent, _super);
     function LineContainerComponent(props) {
         var _this = _super.call(this, props) || this;
         var initialState = _dataStorage__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean(_this.props.title, !_this.props.closed);
@@ -74482,7 +74482,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var MatrixLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MatrixLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MatrixLineComponent, _super);
     function MatrixLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74615,7 +74615,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var MessageDialogComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MessageDialogComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MessageDialogComponent, _super);
     function MessageDialogComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { message: "", isError: false };
@@ -74658,7 +74658,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var NumericInputComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](NumericInputComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(NumericInputComponent, _super);
     function NumericInputComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74727,7 +74727,7 @@ var ListLineOption = /** @class */ (function () {
     return ListLineOption;
 }());
 var OptionsLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](OptionsLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(OptionsLineComponent, _super);
     function OptionsLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74897,7 +74897,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var SliderLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SliderLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SliderLineComponent, _super);
     function SliderLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74998,7 +74998,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TextInputLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextInputLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextInputLineComponent, _super);
     function TextInputLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -75081,7 +75081,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TextLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextLineComponent, _super);
     function TextLineComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -75132,7 +75132,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TextureLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextureLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextureLineComponent, _super);
     function TextureLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {
@@ -75303,7 +75303,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector2LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector2LineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector2LineComponent, _super);
     function Vector2LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -75398,7 +75398,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector3LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector3LineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector3LineComponent, _super);
     function Vector3LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -75499,7 +75499,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector4LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector4LineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector4LineComponent, _super);
     function Vector4LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;

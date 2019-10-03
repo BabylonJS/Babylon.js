@@ -388,7 +388,7 @@ var ShaderSpecialParts = /** @class */ (function () {
 }());
 
 var CustomMaterial = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CustomMaterial, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CustomMaterial, _super);
     function CustomMaterial(name, scene) {
         var _this = _super.call(this, name, scene) || this;
         _this.CustomParts = new ShaderSpecialParts();
@@ -617,7 +617,7 @@ var ShaderAlebdoParts = /** @class */ (function () {
 }());
 
 var PBRCustomMaterial = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PBRCustomMaterial, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PBRCustomMaterial, _super);
     function PBRCustomMaterial(name, scene) {
         var _this = _super.call(this, name, scene) || this;
         _this.CustomParts = new ShaderAlebdoParts();

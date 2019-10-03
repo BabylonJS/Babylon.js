@@ -96,6 +96,235 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ({
 
+/***/ "../../node_modules/tslib/tslib.es6.js":
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
+/*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__extends", function() { return __extends; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__assign", function() { return __assign; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__rest", function() { return __rest; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__decorate", function() { return __decorate; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__param", function() { return __param; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__metadata", function() { return __metadata; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__awaiter", function() { return __awaiter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__generator", function() { return __generator; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__exportStar", function() { return __exportStar; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__values", function() { return __values; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__read", function() { return __read; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__spread", function() { return __spread; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__spreadArrays", function() { return __spreadArrays; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__await", function() { return __await; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__asyncGenerator", function() { return __asyncGenerator; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__asyncDelegator", function() { return __asyncDelegator; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__asyncValues", function() { return __asyncValues; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__makeTemplateObject", function() { return __makeTemplateObject; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__importStar", function() { return __importStar; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__importDefault", function() { return __importDefault; });
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation. All rights reserved.
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the
+License at http://www.apache.org/licenses/LICENSE-2.0
+
+THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
+WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+MERCHANTABLITY OR NON-INFRINGEMENT.
+
+See the Apache Version 2.0 License for specific language governing permissions
+and limitations under the License.
+***************************************************************************** */
+/* global Reflect, Promise */
+
+var extendStatics = function(d, b) {
+    extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return extendStatics(d, b);
+};
+
+function __extends(d, b) {
+    extendStatics(d, b);
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+}
+
+var __assign = function() {
+    __assign = Object.assign || function __assign(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+        }
+        return t;
+    }
+    return __assign.apply(this, arguments);
+}
+
+function __rest(s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+}
+
+function __decorate(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+
+function __param(paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+}
+
+function __metadata(metadataKey, metadataValue) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(metadataKey, metadataValue);
+}
+
+function __awaiter(thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+}
+
+function __generator(thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+}
+
+function __exportStar(m, exports) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+
+function __values(o) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+    if (m) return m.call(o);
+    return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+}
+
+function __read(o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+}
+
+function __spread() {
+    for (var ar = [], i = 0; i < arguments.length; i++)
+        ar = ar.concat(__read(arguments[i]));
+    return ar;
+}
+
+function __spreadArrays() {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
+
+function __await(v) {
+    return this instanceof __await ? (this.v = v, this) : new __await(v);
+}
+
+function __asyncGenerator(thisArg, _arguments, generator) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var g = generator.apply(thisArg, _arguments || []), i, q = [];
+    return i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i;
+    function verb(n) { if (g[n]) i[n] = function (v) { return new Promise(function (a, b) { q.push([n, v, a, b]) > 1 || resume(n, v); }); }; }
+    function resume(n, v) { try { step(g[n](v)); } catch (e) { settle(q[0][3], e); } }
+    function step(r) { r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r); }
+    function fulfill(value) { resume("next", value); }
+    function reject(value) { resume("throw", value); }
+    function settle(f, v) { if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]); }
+}
+
+function __asyncDelegator(o) {
+    var i, p;
+    return i = {}, verb("next"), verb("throw", function (e) { throw e; }), verb("return"), i[Symbol.iterator] = function () { return this; }, i;
+    function verb(n, f) { i[n] = o[n] ? function (v) { return (p = !p) ? { value: __await(o[n](v)), done: n === "return" } : f ? f(v) : v; } : f; }
+}
+
+function __asyncValues(o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+}
+
+function __makeTemplateObject(cooked, raw) {
+    if (Object.defineProperty) { Object.defineProperty(cooked, "raw", { value: raw }); } else { cooked.raw = raw; }
+    return cooked;
+};
+
+function __importStar(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result.default = mod;
+    return result;
+}
+
+function __importDefault(mod) {
+    return (mod && mod.__esModule) ? mod : { default: mod };
+}
+
+
+/***/ }),
+
 /***/ "../../node_modules/webpack/buildin/global.js":
 /*!***********************************!*\
   !*** (webpack)/buildin/global.js ***!
@@ -1344,12 +1573,14 @@ var GLTFData = /** @class */ (function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "_Exporter", function() { return _Exporter; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "_BinaryWriter", function() { return _BinaryWriter; });
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Maths/math");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _glTFMaterialExporter__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./glTFMaterialExporter */ "./glTF/2.0/glTFMaterialExporter.ts");
-/* harmony import */ var _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./glTFUtilities */ "./glTF/2.0/glTFUtilities.ts");
-/* harmony import */ var _glTFData__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./glTFData */ "./glTF/2.0/glTFData.ts");
-/* harmony import */ var _glTFAnimation__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./glTFAnimation */ "./glTF/2.0/glTFAnimation.ts");
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Maths/math");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _glTFMaterialExporter__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./glTFMaterialExporter */ "./glTF/2.0/glTFMaterialExporter.ts");
+/* harmony import */ var _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./glTFUtilities */ "./glTF/2.0/glTFUtilities.ts");
+/* harmony import */ var _glTFData__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./glTFData */ "./glTF/2.0/glTFData.ts");
+/* harmony import */ var _glTFAnimation__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./glTFAnimation */ "./glTF/2.0/glTFAnimation.ts");
+
 
 
 
@@ -1396,7 +1627,7 @@ var _Exporter = /** @class */ (function () {
         this._convertToRightHandedSystem = !this._babylonScene.useRightHandedSystem;
         this._options = options || {};
         this._animationSampleRate = options && options.animationSampleRate ? options.animationSampleRate : 1 / 60;
-        this._glTFMaterialExporter = new _glTFMaterialExporter__WEBPACK_IMPORTED_MODULE_1__["_GLTFMaterialExporter"](this);
+        this._glTFMaterialExporter = new _glTFMaterialExporter__WEBPACK_IMPORTED_MODULE_2__["_GLTFMaterialExporter"](this);
         this._loadExtensions();
     }
     _Exporter.prototype._applyExtensions = function (property, actionAsync) {
@@ -1462,7 +1693,7 @@ var _Exporter = /** @class */ (function () {
      */
     _Exporter.RegisterExtension = function (name, factory) {
         if (_Exporter.UnregisterExtension(name)) {
-            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("Extension with the name " + name + " already exists");
+            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Extension with the name " + name + " already exists");
         }
         _Exporter._ExtensionFactories[name] = factory;
         _Exporter._ExtensionNames.push(name);
@@ -1492,14 +1723,14 @@ var _Exporter = /** @class */ (function () {
             localCanvas.id = "WriteCanvas";
             localCanvas.width = 2048;
             localCanvas.height = 2048;
-            this._localEngine = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Engine"](localCanvas, true, { premultipliedAlpha: false, preserveDrawingBuffer: true });
-            this._localEngine.setViewport(new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Viewport"](0, 0, 1, 1));
+            this._localEngine = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Engine"](localCanvas, true, { premultipliedAlpha: false, preserveDrawingBuffer: true });
+            this._localEngine.setViewport(new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Viewport"](0, 0, 1, 1));
         }
         return this._localEngine;
     };
     _Exporter.prototype.reorderIndicesBasedOnPrimitiveMode = function (submesh, primitiveMode, babylonIndices, byteOffset, binaryWriter) {
         switch (primitiveMode) {
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].TriangleFillMode: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].TriangleFillMode: {
                 if (!byteOffset) {
                     byteOffset = 0;
                 }
@@ -1513,14 +1744,14 @@ var _Exporter = /** @class */ (function () {
                 }
                 break;
             }
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].TriangleFanDrawMode: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].TriangleFanDrawMode: {
                 for (var i = submesh.indexStart + submesh.indexCount - 1, start = submesh.indexStart; i >= start; --i) {
                     binaryWriter.setUInt32(babylonIndices[i], byteOffset);
                     byteOffset += 4;
                 }
                 break;
             }
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].TriangleStripDrawMode: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].TriangleStripDrawMode: {
                 if (submesh.indexCount >= 3) {
                     binaryWriter.setUInt32(babylonIndices[submesh.indexStart + 2], byteOffset + 4);
                     binaryWriter.setUInt32(babylonIndices[submesh.indexStart + 1], byteOffset + 8);
@@ -1541,17 +1772,17 @@ var _Exporter = /** @class */ (function () {
      * @param binaryWriter The binary data for the glTF file
      */
     _Exporter.prototype.reorderVertexAttributeDataBasedOnPrimitiveMode = function (submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter) {
-        if (this._convertToRightHandedSystem && sideOrientation === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].ClockWiseSideOrientation) {
+        if (this._convertToRightHandedSystem && sideOrientation === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].ClockWiseSideOrientation) {
             switch (primitiveMode) {
-                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].TriangleFillMode: {
+                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].TriangleFillMode: {
                     this.reorderTriangleFillMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter);
                     break;
                 }
-                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].TriangleStripDrawMode: {
+                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].TriangleStripDrawMode: {
                     this.reorderTriangleStripDrawMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter);
                     break;
                 }
-                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].TriangleFanDrawMode: {
+                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].TriangleFanDrawMode: {
                     this.reorderTriangleFanMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter);
                     break;
                 }
@@ -1572,69 +1803,69 @@ var _Exporter = /** @class */ (function () {
     _Exporter.prototype.reorderTriangleFillMode = function (submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter) {
         var vertexBuffer = this.getVertexBufferFromMesh(vertexBufferKind, submesh.getMesh());
         if (vertexBuffer) {
-            var stride = vertexBuffer.byteStride / babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].GetTypeByteLength(vertexBuffer.type);
+            var stride = vertexBuffer.byteStride / babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].GetTypeByteLength(vertexBuffer.type);
             if (submesh.verticesCount % 3 !== 0) {
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error('The submesh vertices for the triangle fill mode is not divisible by 3!');
+                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error('The submesh vertices for the triangle fill mode is not divisible by 3!');
             }
             else {
                 var vertexData = [];
                 var index = 0;
                 switch (vertexBufferKind) {
-                    case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].PositionKind:
-                    case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].NormalKind: {
+                    case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].PositionKind:
+                    case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].NormalKind: {
                         for (var x = submesh.verticesStart; x < submesh.verticesStart + submesh.verticesCount; x = x + 3) {
                             index = x * stride;
-                            vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArray(meshAttributeArray, index));
-                            vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArray(meshAttributeArray, index + 2 * stride));
-                            vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArray(meshAttributeArray, index + stride));
+                            vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(meshAttributeArray, index));
+                            vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(meshAttributeArray, index + 2 * stride));
+                            vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(meshAttributeArray, index + stride));
                         }
                         break;
                     }
-                    case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].TangentKind: {
+                    case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].TangentKind: {
                         for (var x = submesh.verticesStart; x < submesh.verticesStart + submesh.verticesCount; x = x + 3) {
                             index = x * stride;
-                            vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector4"].FromArray(meshAttributeArray, index));
-                            vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector4"].FromArray(meshAttributeArray, index + 2 * stride));
-                            vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector4"].FromArray(meshAttributeArray, index + stride));
+                            vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector4"].FromArray(meshAttributeArray, index));
+                            vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector4"].FromArray(meshAttributeArray, index + 2 * stride));
+                            vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector4"].FromArray(meshAttributeArray, index + stride));
                         }
                         break;
                     }
-                    case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].ColorKind: {
+                    case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].ColorKind: {
                         var size = vertexBuffer.getSize();
                         for (var x = submesh.verticesStart; x < submesh.verticesStart + submesh.verticesCount; x = x + size) {
                             index = x * stride;
                             if (size === 4) {
-                                vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector4"].FromArray(meshAttributeArray, index));
-                                vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector4"].FromArray(meshAttributeArray, index + 2 * stride));
-                                vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector4"].FromArray(meshAttributeArray, index + stride));
+                                vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector4"].FromArray(meshAttributeArray, index));
+                                vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector4"].FromArray(meshAttributeArray, index + 2 * stride));
+                                vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector4"].FromArray(meshAttributeArray, index + stride));
                             }
                             else {
-                                vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArray(meshAttributeArray, index));
-                                vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArray(meshAttributeArray, index + 2 * stride));
-                                vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArray(meshAttributeArray, index + stride));
+                                vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(meshAttributeArray, index));
+                                vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(meshAttributeArray, index + 2 * stride));
+                                vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(meshAttributeArray, index + stride));
                             }
                         }
                         break;
                     }
-                    case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].UVKind:
-                    case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].UV2Kind: {
+                    case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UVKind:
+                    case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UV2Kind: {
                         for (var x = submesh.verticesStart; x < submesh.verticesStart + submesh.verticesCount; x = x + 3) {
                             index = x * stride;
-                            vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"].FromArray(meshAttributeArray, index));
-                            vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"].FromArray(meshAttributeArray, index + 2 * stride));
-                            vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"].FromArray(meshAttributeArray, index + stride));
+                            vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector2"].FromArray(meshAttributeArray, index));
+                            vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector2"].FromArray(meshAttributeArray, index + 2 * stride));
+                            vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector2"].FromArray(meshAttributeArray, index + stride));
                         }
                         break;
                     }
                     default: {
-                        babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error("Unsupported Vertex Buffer type: " + vertexBufferKind);
+                        babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Unsupported Vertex Buffer type: " + vertexBufferKind);
                     }
                 }
                 this.writeVertexAttributeData(vertexData, byteOffset, vertexBufferKind, meshAttributeArray, binaryWriter);
             }
         }
         else {
-            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("reorderTriangleFillMode: Vertex Buffer Kind " + vertexBufferKind + " not present!");
+            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("reorderTriangleFillMode: Vertex Buffer Kind " + vertexBufferKind + " not present!");
         }
     };
     /**
@@ -1651,47 +1882,47 @@ var _Exporter = /** @class */ (function () {
     _Exporter.prototype.reorderTriangleStripDrawMode = function (submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter) {
         var vertexBuffer = this.getVertexBufferFromMesh(vertexBufferKind, submesh.getMesh());
         if (vertexBuffer) {
-            var stride = vertexBuffer.byteStride / babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].GetTypeByteLength(vertexBuffer.type);
+            var stride = vertexBuffer.byteStride / babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].GetTypeByteLength(vertexBuffer.type);
             var vertexData = [];
             var index = 0;
             switch (vertexBufferKind) {
-                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].PositionKind:
-                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].NormalKind: {
+                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].PositionKind:
+                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].NormalKind: {
                     index = submesh.verticesStart;
-                    vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArray(meshAttributeArray, index + 2 * stride));
-                    vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArray(meshAttributeArray, index + stride));
+                    vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(meshAttributeArray, index + 2 * stride));
+                    vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(meshAttributeArray, index + stride));
                     break;
                 }
-                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].TangentKind: {
+                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].TangentKind: {
                     for (var x = submesh.verticesStart + submesh.verticesCount - 1; x >= submesh.verticesStart; --x) {
                         index = x * stride;
-                        vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector4"].FromArray(meshAttributeArray, index));
+                        vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector4"].FromArray(meshAttributeArray, index));
                     }
                     break;
                 }
-                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].ColorKind: {
+                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].ColorKind: {
                     for (var x = submesh.verticesStart + submesh.verticesCount - 1; x >= submesh.verticesStart; --x) {
                         index = x * stride;
-                        vertexBuffer.getSize() === 4 ? vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector4"].FromArray(meshAttributeArray, index)) : vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArray(meshAttributeArray, index));
+                        vertexBuffer.getSize() === 4 ? vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector4"].FromArray(meshAttributeArray, index)) : vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(meshAttributeArray, index));
                     }
                     break;
                 }
-                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].UVKind:
-                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].UV2Kind: {
+                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UVKind:
+                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UV2Kind: {
                     for (var x = submesh.verticesStart + submesh.verticesCount - 1; x >= submesh.verticesStart; --x) {
                         index = x * stride;
-                        vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"].FromArray(meshAttributeArray, index));
+                        vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector2"].FromArray(meshAttributeArray, index));
                     }
                     break;
                 }
                 default: {
-                    babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error("Unsupported Vertex Buffer type: " + vertexBufferKind);
+                    babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Unsupported Vertex Buffer type: " + vertexBufferKind);
                 }
             }
             this.writeVertexAttributeData(vertexData, byteOffset + 12, vertexBufferKind, meshAttributeArray, binaryWriter);
         }
         else {
-            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("reorderTriangleStripDrawMode: Vertex buffer kind " + vertexBufferKind + " not present!");
+            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("reorderTriangleStripDrawMode: Vertex buffer kind " + vertexBufferKind + " not present!");
         }
     };
     /**
@@ -1708,49 +1939,49 @@ var _Exporter = /** @class */ (function () {
     _Exporter.prototype.reorderTriangleFanMode = function (submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter) {
         var vertexBuffer = this.getVertexBufferFromMesh(vertexBufferKind, submesh.getMesh());
         if (vertexBuffer) {
-            var stride = vertexBuffer.byteStride / babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].GetTypeByteLength(vertexBuffer.type);
+            var stride = vertexBuffer.byteStride / babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].GetTypeByteLength(vertexBuffer.type);
             var vertexData = [];
             var index = 0;
             switch (vertexBufferKind) {
-                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].PositionKind:
-                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].NormalKind: {
+                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].PositionKind:
+                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].NormalKind: {
                     for (var x = submesh.verticesStart + submesh.verticesCount - 1; x >= submesh.verticesStart; --x) {
                         index = x * stride;
-                        vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArray(meshAttributeArray, index));
+                        vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(meshAttributeArray, index));
                     }
                     break;
                 }
-                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].TangentKind: {
+                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].TangentKind: {
                     for (var x = submesh.verticesStart + submesh.verticesCount - 1; x >= submesh.verticesStart; --x) {
                         index = x * stride;
-                        vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector4"].FromArray(meshAttributeArray, index));
+                        vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector4"].FromArray(meshAttributeArray, index));
                     }
                     break;
                 }
-                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].ColorKind: {
+                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].ColorKind: {
                     for (var x = submesh.verticesStart + submesh.verticesCount - 1; x >= submesh.verticesStart; --x) {
                         index = x * stride;
-                        vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector4"].FromArray(meshAttributeArray, index));
-                        vertexBuffer.getSize() === 4 ? vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector4"].FromArray(meshAttributeArray, index)) : vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArray(meshAttributeArray, index));
+                        vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector4"].FromArray(meshAttributeArray, index));
+                        vertexBuffer.getSize() === 4 ? vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector4"].FromArray(meshAttributeArray, index)) : vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(meshAttributeArray, index));
                     }
                     break;
                 }
-                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].UVKind:
-                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].UV2Kind: {
+                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UVKind:
+                case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UV2Kind: {
                     for (var x = submesh.verticesStart + submesh.verticesCount - 1; x >= submesh.verticesStart; --x) {
                         index = x * stride;
-                        vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"].FromArray(meshAttributeArray, index));
+                        vertexData.push(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector2"].FromArray(meshAttributeArray, index));
                     }
                     break;
                 }
                 default: {
-                    babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error("Unsupported Vertex Buffer type: " + vertexBufferKind);
+                    babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Unsupported Vertex Buffer type: " + vertexBufferKind);
                 }
             }
             this.writeVertexAttributeData(vertexData, byteOffset, vertexBufferKind, meshAttributeArray, binaryWriter);
         }
         else {
-            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("reorderTriangleFanMode: Vertex buffer kind " + vertexBufferKind + " not present!");
+            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("reorderTriangleFanMode: Vertex buffer kind " + vertexBufferKind + " not present!");
         }
     };
     /**
@@ -1764,27 +1995,27 @@ var _Exporter = /** @class */ (function () {
     _Exporter.prototype.writeVertexAttributeData = function (vertices, byteOffset, vertexAttributeKind, meshAttributeArray, binaryWriter) {
         for (var _i = 0, vertices_1 = vertices; _i < vertices_1.length; _i++) {
             var vertex = vertices_1[_i];
-            if (this._convertToRightHandedSystem && !(vertexAttributeKind === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].ColorKind) && !(vertex instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"])) {
-                if (vertex instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"]) {
-                    if (vertexAttributeKind === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].NormalKind) {
-                        _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__["_GLTFUtilities"]._GetRightHandedNormalVector3FromRef(vertex);
+            if (this._convertToRightHandedSystem && !(vertexAttributeKind === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].ColorKind) && !(vertex instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector2"])) {
+                if (vertex instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"]) {
+                    if (vertexAttributeKind === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].NormalKind) {
+                        _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedNormalVector3FromRef(vertex);
                     }
-                    else if (vertexAttributeKind === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].PositionKind) {
-                        _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__["_GLTFUtilities"]._GetRightHandedPositionVector3FromRef(vertex);
+                    else if (vertexAttributeKind === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].PositionKind) {
+                        _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedPositionVector3FromRef(vertex);
                     }
                     else {
-                        babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error('Unsupported vertex attribute kind!');
+                        babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error('Unsupported vertex attribute kind!');
                     }
                 }
                 else {
-                    _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__["_GLTFUtilities"]._GetRightHandedVector4FromRef(vertex);
+                    _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedVector4FromRef(vertex);
                 }
             }
-            if (vertexAttributeKind === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].NormalKind) {
+            if (vertexAttributeKind === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].NormalKind) {
                 vertex.normalize();
             }
-            else if (vertexAttributeKind === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].TangentKind && vertex instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector4"]) {
-                _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__["_GLTFUtilities"]._NormalizeTangentFromRef(vertex);
+            else if (vertexAttributeKind === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].TangentKind && vertex instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector4"]) {
+                _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._NormalizeTangentFromRef(vertex);
             }
             for (var _a = 0, _b = vertex.asArray(); _a < _b.length; _a++) {
                 var component = _b[_a];
@@ -1806,51 +2037,51 @@ var _Exporter = /** @class */ (function () {
         var vertexAttributes = [];
         var index;
         switch (vertexBufferKind) {
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].PositionKind: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].PositionKind: {
                 for (var k = 0, length_2 = meshAttributeArray.length / stride; k < length_2; ++k) {
                     index = k * stride;
-                    var vertexData = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArray(meshAttributeArray, index);
+                    var vertexData = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(meshAttributeArray, index);
                     if (this._convertToRightHandedSystem) {
-                        _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__["_GLTFUtilities"]._GetRightHandedPositionVector3FromRef(vertexData);
+                        _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedPositionVector3FromRef(vertexData);
                     }
                     vertexAttributes.push(vertexData.asArray());
                 }
                 break;
             }
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].NormalKind: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].NormalKind: {
                 for (var k = 0, length_3 = meshAttributeArray.length / stride; k < length_3; ++k) {
                     index = k * stride;
-                    var vertexData = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArray(meshAttributeArray, index);
+                    var vertexData = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(meshAttributeArray, index);
                     if (this._convertToRightHandedSystem) {
-                        _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__["_GLTFUtilities"]._GetRightHandedNormalVector3FromRef(vertexData);
+                        _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedNormalVector3FromRef(vertexData);
                     }
                     vertexData.normalize();
                     vertexAttributes.push(vertexData.asArray());
                 }
                 break;
             }
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].TangentKind: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].TangentKind: {
                 for (var k = 0, length_4 = meshAttributeArray.length / stride; k < length_4; ++k) {
                     index = k * stride;
-                    var vertexData = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector4"].FromArray(meshAttributeArray, index);
+                    var vertexData = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector4"].FromArray(meshAttributeArray, index);
                     if (this._convertToRightHandedSystem) {
-                        _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__["_GLTFUtilities"]._GetRightHandedVector4FromRef(vertexData);
+                        _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedVector4FromRef(vertexData);
                     }
-                    _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__["_GLTFUtilities"]._NormalizeTangentFromRef(vertexData);
+                    _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._NormalizeTangentFromRef(vertexData);
                     vertexAttributes.push(vertexData.asArray());
                 }
                 break;
             }
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].ColorKind: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].ColorKind: {
                 for (var k = 0, length_5 = meshAttributeArray.length / stride; k < length_5; ++k) {
                     index = k * stride;
-                    var vertexData = stride === 3 ? babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArray(meshAttributeArray, index) : babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector4"].FromArray(meshAttributeArray, index);
+                    var vertexData = stride === 3 ? babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(meshAttributeArray, index) : babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector4"].FromArray(meshAttributeArray, index);
                     vertexAttributes.push(vertexData.asArray());
                 }
                 break;
             }
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].UVKind:
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].UV2Kind: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UVKind:
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UV2Kind: {
                 for (var k = 0, length_6 = meshAttributeArray.length / stride; k < length_6; ++k) {
                     index = k * stride;
                     vertexAttributes.push(this._convertToRightHandedSystem ? [meshAttributeArray[index], meshAttributeArray[index + 1]] : [meshAttributeArray[index], meshAttributeArray[index + 1]]);
@@ -1858,7 +2089,7 @@ var _Exporter = /** @class */ (function () {
                 break;
             }
             default: {
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("Unsupported Vertex Buffer Type: " + vertexBufferKind);
+                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Unsupported Vertex Buffer Type: " + vertexBufferKind);
                 vertexAttributes = [];
             }
         }
@@ -1925,7 +2156,7 @@ var _Exporter = /** @class */ (function () {
                     if (image.uri) {
                         imageData = _this._imageData[image.uri];
                         imageName = image.uri.split('.')[0] + " image";
-                        bufferView = _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__["_GLTFUtilities"]._CreateBufferView(0, byteOffset, imageData.data.length, undefined, imageName);
+                        bufferView = _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._CreateBufferView(0, byteOffset, imageData.data.length, undefined, imageName);
                         byteOffset += imageData.data.buffer.byteLength;
                         _this._bufferViews.push(bufferView);
                         image.bufferView = _this._bufferViews.length - 1;
@@ -1961,7 +2192,7 @@ var _Exporter = /** @class */ (function () {
             var bin = new Blob([binaryBuffer], { type: 'application/octet-stream' });
             var glTFFileName = glTFPrefix + '.gltf';
             var glTFBinFile = glTFPrefix + '.bin';
-            var container = new _glTFData__WEBPACK_IMPORTED_MODULE_3__["GLTFData"]();
+            var container = new _glTFData__WEBPACK_IMPORTED_MODULE_4__["GLTFData"]();
             container.glTFFiles[glTFFileName] = jsonText;
             container.glTFFiles[glTFBinFile] = bin;
             if (_this._imageData) {
@@ -2064,7 +2295,7 @@ var _Exporter = /** @class */ (function () {
             glbData.push(binPaddingBuffer);
             glbData.push(imagePaddingBuffer);
             var glbFile = new Blob(glbData, { type: 'application/octet-stream' });
-            var container = new _glTFData__WEBPACK_IMPORTED_MODULE_3__["GLTFData"]();
+            var container = new _glTFData__WEBPACK_IMPORTED_MODULE_4__["GLTFData"]();
             container.glTFFiles[glbFileName] = glbFile;
             if (_this._localEngine != null) {
                 _this._localEngine.dispose();
@@ -2079,21 +2310,21 @@ var _Exporter = /** @class */ (function () {
      */
     _Exporter.prototype.setNodeTransformation = function (node, babylonTransformNode) {
         if (!babylonTransformNode.getPivotPoint().equalsToFloats(0, 0, 0)) {
-            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("Pivot points are not supported in the glTF serializer");
+            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Pivot points are not supported in the glTF serializer");
         }
         if (!babylonTransformNode.position.equalsToFloats(0, 0, 0)) {
-            node.translation = this._convertToRightHandedSystem ? _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__["_GLTFUtilities"]._GetRightHandedPositionVector3(babylonTransformNode.position).asArray() : babylonTransformNode.position.asArray();
+            node.translation = this._convertToRightHandedSystem ? _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedPositionVector3(babylonTransformNode.position).asArray() : babylonTransformNode.position.asArray();
         }
         if (!babylonTransformNode.scaling.equalsToFloats(1, 1, 1)) {
             node.scale = babylonTransformNode.scaling.asArray();
         }
-        var rotationQuaternion = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Quaternion"].RotationYawPitchRoll(babylonTransformNode.rotation.y, babylonTransformNode.rotation.x, babylonTransformNode.rotation.z);
+        var rotationQuaternion = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].RotationYawPitchRoll(babylonTransformNode.rotation.y, babylonTransformNode.rotation.x, babylonTransformNode.rotation.z);
         if (babylonTransformNode.rotationQuaternion) {
             rotationQuaternion.multiplyInPlace(babylonTransformNode.rotationQuaternion);
         }
         if (!(rotationQuaternion.x === 0 && rotationQuaternion.y === 0 && rotationQuaternion.z === 0 && rotationQuaternion.w === 1)) {
             if (this._convertToRightHandedSystem) {
-                _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__["_GLTFUtilities"]._GetRightHandedQuaternionFromRef(rotationQuaternion);
+                _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedQuaternionFromRef(rotationQuaternion);
             }
             node.rotation = rotationQuaternion.normalize().asArray();
         }
@@ -2114,14 +2345,14 @@ var _Exporter = /** @class */ (function () {
      * @param binaryWriter The buffer to write the bufferview data to
      */
     _Exporter.prototype.createBufferViewKind = function (kind, babylonTransformNode, binaryWriter, byteStride) {
-        var bufferMesh = babylonTransformNode instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Mesh"] ?
-            babylonTransformNode : babylonTransformNode instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["InstancedMesh"] ?
+        var bufferMesh = babylonTransformNode instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Mesh"] ?
+            babylonTransformNode : babylonTransformNode instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["InstancedMesh"] ?
             babylonTransformNode.sourceMesh : null;
         if (bufferMesh) {
             var vertexData = bufferMesh.getVerticesData(kind);
             if (vertexData) {
                 var byteLength = vertexData.length * 4;
-                var bufferView = _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__["_GLTFUtilities"]._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, byteStride, kind + " - " + bufferMesh.name);
+                var bufferView = _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, byteStride, kind + " - " + bufferMesh.name);
                 this._bufferViews.push(bufferView);
                 this.writeAttributeData(kind, vertexData, byteStride, binaryWriter);
             }
@@ -2132,10 +2363,10 @@ var _Exporter = /** @class */ (function () {
      * @param babylonMesh The BabylonJS mesh
      */
     _Exporter.prototype.getMeshPrimitiveMode = function (babylonMesh) {
-        if (babylonMesh instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["LinesMesh"]) {
-            return babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].LineListDrawMode;
+        if (babylonMesh instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["LinesMesh"]) {
+            return babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].LineListDrawMode;
         }
-        return babylonMesh.material ? babylonMesh.material.fillMode : babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].TriangleFillMode;
+        return babylonMesh.material ? babylonMesh.material.fillMode : babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].TriangleFillMode;
     };
     /**
      * Sets the primitive mode of the glTF mesh primitive
@@ -2144,34 +2375,34 @@ var _Exporter = /** @class */ (function () {
      */
     _Exporter.prototype.setPrimitiveMode = function (meshPrimitive, primitiveMode) {
         switch (primitiveMode) {
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].TriangleFillMode: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].TriangleFillMode: {
                 // glTF defaults to using Triangle Mode
                 break;
             }
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].TriangleStripDrawMode: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].TriangleStripDrawMode: {
                 meshPrimitive.mode = 5 /* TRIANGLE_STRIP */;
                 break;
             }
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].TriangleFanDrawMode: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].TriangleFanDrawMode: {
                 meshPrimitive.mode = 6 /* TRIANGLE_FAN */;
                 break;
             }
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].PointListDrawMode: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].PointListDrawMode: {
                 meshPrimitive.mode = 0 /* POINTS */;
             }
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].PointFillMode: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].PointFillMode: {
                 meshPrimitive.mode = 0 /* POINTS */;
                 break;
             }
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].LineLoopDrawMode: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].LineLoopDrawMode: {
                 meshPrimitive.mode = 2 /* LINE_LOOP */;
                 break;
             }
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].LineListDrawMode: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].LineListDrawMode: {
                 meshPrimitive.mode = 1 /* LINES */;
                 break;
             }
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].LineStripDrawMode: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].LineStripDrawMode: {
                 meshPrimitive.mode = 3 /* LINE_STRIP */;
                 break;
             }
@@ -2185,32 +2416,32 @@ var _Exporter = /** @class */ (function () {
      */
     _Exporter.prototype.setAttributeKind = function (meshPrimitive, attributeKind) {
         switch (attributeKind) {
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].PositionKind: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].PositionKind: {
                 meshPrimitive.attributes.POSITION = this._accessors.length - 1;
                 break;
             }
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].NormalKind: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].NormalKind: {
                 meshPrimitive.attributes.NORMAL = this._accessors.length - 1;
                 break;
             }
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].ColorKind: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].ColorKind: {
                 meshPrimitive.attributes.COLOR_0 = this._accessors.length - 1;
                 break;
             }
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].TangentKind: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].TangentKind: {
                 meshPrimitive.attributes.TANGENT = this._accessors.length - 1;
                 break;
             }
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].UVKind: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UVKind: {
                 meshPrimitive.attributes.TEXCOORD_0 = this._accessors.length - 1;
                 break;
             }
-            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].UV2Kind: {
+            case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UV2Kind: {
                 meshPrimitive.attributes.TEXCOORD_1 = this._accessors.length - 1;
                 break;
             }
             default: {
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("Unsupported Vertex Buffer Type: " + attributeKind);
+                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Unsupported Vertex Buffer Type: " + attributeKind);
             }
         }
     };
@@ -2225,19 +2456,19 @@ var _Exporter = /** @class */ (function () {
         var bufferMesh = null;
         var bufferView;
         var minMax;
-        if (babylonTransformNode instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Mesh"]) {
+        if (babylonTransformNode instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Mesh"]) {
             bufferMesh = babylonTransformNode;
         }
-        else if (babylonTransformNode instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["InstancedMesh"]) {
+        else if (babylonTransformNode instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["InstancedMesh"]) {
             bufferMesh = babylonTransformNode.sourceMesh;
         }
         var attributeData = [
-            { kind: babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].PositionKind, accessorType: "VEC3" /* VEC3 */, byteStride: 12 },
-            { kind: babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].NormalKind, accessorType: "VEC3" /* VEC3 */, byteStride: 12 },
-            { kind: babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].ColorKind, accessorType: "VEC4" /* VEC4 */, byteStride: 16 },
-            { kind: babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].TangentKind, accessorType: "VEC4" /* VEC4 */, byteStride: 16 },
-            { kind: babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].UVKind, accessorType: "VEC2" /* VEC2 */, byteStride: 8 },
-            { kind: babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].UV2Kind, accessorType: "VEC2" /* VEC2 */, byteStride: 8 },
+            { kind: babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].PositionKind, accessorType: "VEC3" /* VEC3 */, byteStride: 12 },
+            { kind: babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].NormalKind, accessorType: "VEC3" /* VEC3 */, byteStride: 12 },
+            { kind: babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].ColorKind, accessorType: "VEC4" /* VEC4 */, byteStride: 16 },
+            { kind: babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].TangentKind, accessorType: "VEC4" /* VEC4 */, byteStride: 16 },
+            { kind: babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UVKind, accessorType: "VEC2" /* VEC2 */, byteStride: 8 },
+            { kind: babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UV2Kind, accessorType: "VEC2" /* VEC2 */, byteStride: 8 },
         ];
         if (bufferMesh) {
             var indexBufferViewIndex = null;
@@ -2249,7 +2480,7 @@ var _Exporter = /** @class */ (function () {
                 var attributeKind = attribute.kind;
                 if (bufferMesh.isVerticesDataPresent(attributeKind)) {
                     var vertexBuffer = this.getVertexBufferFromMesh(attributeKind, bufferMesh);
-                    attribute.byteStride = vertexBuffer ? vertexBuffer.getSize() * 4 : babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].DeduceStride(attributeKind) * 4;
+                    attribute.byteStride = vertexBuffer ? vertexBuffer.getSize() * 4 : babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].DeduceStride(attributeKind) * 4;
                     if (attribute.byteStride === 12) {
                         attribute.accessorType = "VEC3" /* VEC3 */;
                     }
@@ -2262,7 +2493,7 @@ var _Exporter = /** @class */ (function () {
                 var indices = bufferMesh.getIndices();
                 if (indices) {
                     var byteLength = indices.length * 4;
-                    bufferView = _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__["_GLTFUtilities"]._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, "Indices - " + bufferMesh.name);
+                    bufferView = _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, "Indices - " + bufferMesh.name);
                     this._bufferViews.push(bufferView);
                     indexBufferViewIndex = this._bufferViews.length - 1;
                     for (var k = 0, length_7 = indices.length; k < length_7; ++k) {
@@ -2277,12 +2508,12 @@ var _Exporter = /** @class */ (function () {
                     var babylonMaterial = submesh.getMaterial() || bufferMesh.getScene().defaultMaterial;
                     var materialIndex = null;
                     if (babylonMaterial) {
-                        if (bufferMesh instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["LinesMesh"]) {
+                        if (bufferMesh instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["LinesMesh"]) {
                             // get the color from the lines mesh and set it in the material
                             var material = {
                                 name: bufferMesh.name + ' material'
                             };
-                            if (!bufferMesh.color.equals(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Color3"].White()) || bufferMesh.alpha < 1) {
+                            if (!bufferMesh.color.equals(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Color3"].White()) || bufferMesh.alpha < 1) {
                                 material.pbrMetallicRoughness = {
                                     baseColorFactor: bufferMesh.color.asArray().concat([bufferMesh.alpha])
                                 };
@@ -2290,7 +2521,7 @@ var _Exporter = /** @class */ (function () {
                             this._materials.push(material);
                             materialIndex = this._materials.length - 1;
                         }
-                        else if (babylonMaterial instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["MultiMaterial"]) {
+                        else if (babylonMaterial instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["MultiMaterial"]) {
                             var subMaterial = babylonMaterial.subMaterials[submesh.materialIndex];
                             if (subMaterial) {
                                 babylonMaterial = subMaterial;
@@ -2307,7 +2538,7 @@ var _Exporter = /** @class */ (function () {
                     for (var _c = 0, attributeData_2 = attributeData; _c < attributeData_2.length; _c++) {
                         var attribute = attributeData_2[_c];
                         var attributeKind = attribute.kind;
-                        if (attributeKind === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].UVKind || attributeKind === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].UV2Kind) {
+                        if (attributeKind === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UVKind || attributeKind === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UV2Kind) {
                             if (glTFMaterial && !this._glTFMaterialExporter._hasTexturesPresent(glTFMaterial)) {
                                 continue;
                             }
@@ -2320,10 +2551,10 @@ var _Exporter = /** @class */ (function () {
                                 var bufferViewIndex = attribute.bufferViewIndex;
                                 if (bufferViewIndex != undefined) { // check to see if bufferviewindex has a numeric value assigned.
                                     minMax = { min: null, max: null };
-                                    if (attributeKind == babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexBuffer"].PositionKind) {
-                                        minMax = _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__["_GLTFUtilities"]._CalculateMinMaxPositions(vertexData, 0, vertexData.length / stride, this._convertToRightHandedSystem);
+                                    if (attributeKind == babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].PositionKind) {
+                                        minMax = _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._CalculateMinMaxPositions(vertexData, 0, vertexData.length / stride, this._convertToRightHandedSystem);
                                     }
-                                    var accessor = _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__["_GLTFUtilities"]._CreateAccessor(bufferViewIndex, attributeKind + " - " + babylonTransformNode.name, attribute.accessorType, 5126 /* FLOAT */, vertexData.length / stride, 0, minMax.min, minMax.max);
+                                    var accessor = _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._CreateAccessor(bufferViewIndex, attributeKind + " - " + babylonTransformNode.name, attribute.accessorType, 5126 /* FLOAT */, vertexData.length / stride, 0, minMax.min, minMax.max);
                                     this._accessors.push(accessor);
                                     this.setAttributeKind(meshPrimitive, attributeKind);
                                 }
@@ -2332,14 +2563,14 @@ var _Exporter = /** @class */ (function () {
                     }
                     if (indexBufferViewIndex) {
                         // Create accessor
-                        var accessor = _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__["_GLTFUtilities"]._CreateAccessor(indexBufferViewIndex, "indices - " + babylonTransformNode.name, "SCALAR" /* SCALAR */, 5125 /* UNSIGNED_INT */, submesh.indexCount, submesh.indexStart * 4, null, null);
+                        var accessor = _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._CreateAccessor(indexBufferViewIndex, "indices - " + babylonTransformNode.name, "SCALAR" /* SCALAR */, 5125 /* UNSIGNED_INT */, submesh.indexCount, submesh.indexStart * 4, null, null);
                         this._accessors.push(accessor);
                         meshPrimitive.indices = this._accessors.length - 1;
                     }
                     if (materialIndex != null && Object.keys(meshPrimitive.attributes).length > 0) {
                         var sideOrientation = bufferMesh.overrideMaterialSideOrientation !== null ? bufferMesh.overrideMaterialSideOrientation : babylonMaterial.sideOrientation;
                         // Only reverse the winding if we have a clockwise winding
-                        if (sideOrientation === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Material"].ClockWiseSideOrientation) {
+                        if (sideOrientation === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].ClockWiseSideOrientation) {
                             var byteOffset = indexBufferViewIndex != null ? this._bufferViews[indexBufferViewIndex].byteOffset : null;
                             if (byteOffset == null) {
                                 byteOffset = 0;
@@ -2391,7 +2622,7 @@ var _Exporter = /** @class */ (function () {
         var glTFNodeIndex;
         var glTFNode;
         var directDescendents;
-        var nodes = babylonScene.transformNodes.concat(babylonScene.meshes, babylonScene.lights);
+        var nodes = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArrays"])(babylonScene.transformNodes, babylonScene.meshes, babylonScene.lights);
         return this._glTFMaterialExporter._convertMaterialsToGLTFAsync(babylonScene.materials, "image/png" /* PNG */, true).then(function () {
             return _this.createNodeMapAndAnimationsAsync(babylonScene, nodes, binaryWriter).then(function (nodeMap) {
                 _this._nodeMap = nodeMap;
@@ -2415,7 +2646,7 @@ var _Exporter = /** @class */ (function () {
                         }
                         if (!babylonNode.parent) {
                             if (_this._options.shouldExportNode && !_this._options.shouldExportNode(babylonNode)) {
-                                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Log("Omitting " + babylonNode.name + " from scene.");
+                                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Log("Omitting " + babylonNode.name + " from scene.");
                             }
                             else {
                                 if (_this._convertToRightHandedSystem) {
@@ -2423,7 +2654,7 @@ var _Exporter = /** @class */ (function () {
                                         glTFNode.translation[2] *= -1;
                                         glTFNode.translation[0] *= -1;
                                     }
-                                    glTFNode.rotation = glTFNode.rotation ? babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Quaternion"].FromArray([0, 1, 0, 0]).multiply(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Quaternion"].FromArray(glTFNode.rotation)).asArray() : (babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Quaternion"].FromArray([0, 1, 0, 0])).asArray();
+                                    glTFNode.rotation = glTFNode.rotation ? babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].FromArray([0, 1, 0, 0]).multiply(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].FromArray(glTFNode.rotation)).asArray() : (babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].FromArray([0, 1, 0, 0])).asArray();
                                 }
                                 scene.nodes.push(glTFNodeIndex);
                             }
@@ -2473,19 +2704,19 @@ var _Exporter = /** @class */ (function () {
                     return _this.createNodeAsync(babylonNode, binaryWriter).then(function (node) {
                         var promise = _this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode);
                         if (promise == null) {
-                            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("Not exporting node " + babylonNode.name);
+                            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Not exporting node " + babylonNode.name);
                             return Promise.resolve();
                         }
                         else {
                             return promise.then(function (node) {
-                                var directDescendents = babylonNode.getDescendants(true, function (node) { return (node instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Node"]); });
+                                var directDescendents = babylonNode.getDescendants(true, function (node) { return (node instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Node"]); });
                                 if (directDescendents.length || node.mesh != null || (node.extensions)) {
                                     _this._nodes.push(node);
                                     nodeIndex = _this._nodes.length - 1;
                                     nodeMap[babylonNode.uniqueId] = nodeIndex;
                                 }
                                 if (!babylonScene.animationGroups.length && babylonNode.animations.length) {
-                                    _glTFAnimation__WEBPACK_IMPORTED_MODULE_4__["_GLTFAnimation"]._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, _this._nodes, binaryWriter, _this._bufferViews, _this._accessors, _this._convertToRightHandedSystem, _this._animationSampleRate);
+                                    _glTFAnimation__WEBPACK_IMPORTED_MODULE_5__["_GLTFAnimation"]._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, _this._nodes, binaryWriter, _this._bufferViews, _this._accessors, _this._convertToRightHandedSystem, _this._animationSampleRate);
                                 }
                             });
                         }
@@ -2511,7 +2742,7 @@ var _Exporter = /** @class */ (function () {
                 }
             });
             if (babylonScene.animationGroups.length) {
-                _glTFAnimation__WEBPACK_IMPORTED_MODULE_4__["_GLTFAnimation"]._CreateNodeAnimationFromAnimationGroups(babylonScene, _this._animations, nodeMap, _this._nodes, binaryWriter, _this._bufferViews, _this._accessors, _this._convertToRightHandedSystem, _this._animationSampleRate);
+                _glTFAnimation__WEBPACK_IMPORTED_MODULE_5__["_GLTFAnimation"]._CreateNodeAnimationFromAnimationGroups(babylonScene, _this._animations, nodeMap, _this._nodes, binaryWriter, _this._bufferViews, _this._accessors, _this._convertToRightHandedSystem, _this._animationSampleRate);
             }
             return nodeMap;
         });
@@ -2532,7 +2763,7 @@ var _Exporter = /** @class */ (function () {
             if (babylonNode.name) {
                 node.name = babylonNode.name;
             }
-            if (babylonNode instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["TransformNode"]) {
+            if (babylonNode instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["TransformNode"]) {
                 // Set transformation
                 _this.setNodeTransformation(node, babylonNode);
                 return _this.setPrimitiveAttributesAsync(mesh, babylonNode, binaryWriter).then(function () {
@@ -2611,7 +2842,7 @@ var _BinaryWriter = /** @class */ (function () {
                 this._dataView.setUint8(byteOffset, entry);
             }
             else {
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error('BinaryWriter: byteoffset is greater than the current binary buffer length!');
+                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error('BinaryWriter: byteoffset is greater than the current binary buffer length!');
             }
         }
         else {
@@ -2631,13 +2862,13 @@ var _BinaryWriter = /** @class */ (function () {
             return this._dataView.getUint32(byteOffset, true);
         }
         else {
-            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error('BinaryWriter: byteoffset is greater than the current binary buffer length!');
+            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error('BinaryWriter: byteoffset is greater than the current binary buffer length!');
             throw new Error('BinaryWriter: byteoffset is greater than the current binary buffer length!');
         }
     };
     _BinaryWriter.prototype.getVector3Float32FromRef = function (vector3, byteOffset) {
         if (byteOffset + 8 > this._byteOffset) {
-            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error("BinaryWriter: byteoffset is greater than the current binary buffer length!");
+            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("BinaryWriter: byteoffset is greater than the current binary buffer length!");
         }
         else {
             vector3.x = this._dataView.getFloat32(byteOffset, true);
@@ -2647,7 +2878,7 @@ var _BinaryWriter = /** @class */ (function () {
     };
     _BinaryWriter.prototype.setVector3Float32FromRef = function (vector3, byteOffset) {
         if (byteOffset + 8 > this._byteOffset) {
-            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error("BinaryWriter: byteoffset is greater than the current binary buffer length!");
+            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("BinaryWriter: byteoffset is greater than the current binary buffer length!");
         }
         else {
             this._dataView.setFloat32(byteOffset, vector3.x, true);
@@ -2657,7 +2888,7 @@ var _BinaryWriter = /** @class */ (function () {
     };
     _BinaryWriter.prototype.getVector4Float32FromRef = function (vector4, byteOffset) {
         if (byteOffset + 12 > this._byteOffset) {
-            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error("BinaryWriter: byteoffset is greater than the current binary buffer length!");
+            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("BinaryWriter: byteoffset is greater than the current binary buffer length!");
         }
         else {
             vector4.x = this._dataView.getFloat32(byteOffset, true);
@@ -2668,7 +2899,7 @@ var _BinaryWriter = /** @class */ (function () {
     };
     _BinaryWriter.prototype.setVector4Float32FromRef = function (vector4, byteOffset) {
         if (byteOffset + 12 > this._byteOffset) {
-            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error("BinaryWriter: byteoffset is greater than the current binary buffer length!");
+            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("BinaryWriter: byteoffset is greater than the current binary buffer length!");
         }
         else {
             this._dataView.setFloat32(byteOffset, vector4.x, true);
@@ -2683,14 +2914,14 @@ var _BinaryWriter = /** @class */ (function () {
      */
     _BinaryWriter.prototype.setFloat32 = function (entry, byteOffset) {
         if (isNaN(entry)) {
-            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error('Invalid data being written!');
+            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error('Invalid data being written!');
         }
         if (byteOffset != null) {
             if (byteOffset < this._byteOffset) {
                 this._dataView.setFloat32(byteOffset, entry, true);
             }
             else {
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error('BinaryWriter: byteoffset is greater than the current binary length!');
+                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error('BinaryWriter: byteoffset is greater than the current binary length!');
             }
         }
         if (this._byteOffset + 4 > this._arrayBuffer.byteLength) {
@@ -2710,7 +2941,7 @@ var _BinaryWriter = /** @class */ (function () {
                 this._dataView.setUint32(byteOffset, entry, true);
             }
             else {
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Error('BinaryWriter: byteoffset is greater than the current binary buffer length!');
+                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error('BinaryWriter: byteoffset is greater than the current binary buffer length!');
             }
         }
         else {

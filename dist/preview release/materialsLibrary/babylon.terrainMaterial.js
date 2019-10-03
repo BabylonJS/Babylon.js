@@ -497,7 +497,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TerrainMaterialDefines = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TerrainMaterialDefines, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TerrainMaterialDefines, _super);
     function TerrainMaterialDefines() {
         var _this = _super.call(this) || this;
         _this.DIFFUSE = false;
@@ -525,7 +525,7 @@ var TerrainMaterialDefines = /** @class */ (function (_super) {
     return TerrainMaterialDefines;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialDefines"]));
 var TerrainMaterial = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TerrainMaterial, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TerrainMaterial, _super);
     function TerrainMaterial(name, scene) {
         var _this = _super.call(this, name, scene) || this;
         _this.diffuseColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](1, 1, 1);
@@ -823,67 +823,67 @@ var TerrainMaterial = /** @class */ (function (_super) {
     TerrainMaterial.Parse = function (source, scene, rootUrl) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Parse(function () { return new TerrainMaterial(source.name, scene); }, source, scene, rootUrl);
     };
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsTexture"])("mixTexture")
     ], TerrainMaterial.prototype, "_mixTexture", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["expandToProperty"])("_markAllSubMeshesAsTexturesDirty")
     ], TerrainMaterial.prototype, "mixTexture", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsTexture"])("diffuseTexture1")
     ], TerrainMaterial.prototype, "_diffuseTexture1", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["expandToProperty"])("_markAllSubMeshesAsTexturesDirty")
     ], TerrainMaterial.prototype, "diffuseTexture1", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsTexture"])("diffuseTexture2")
     ], TerrainMaterial.prototype, "_diffuseTexture2", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["expandToProperty"])("_markAllSubMeshesAsTexturesDirty")
     ], TerrainMaterial.prototype, "diffuseTexture2", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsTexture"])("diffuseTexture3")
     ], TerrainMaterial.prototype, "_diffuseTexture3", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["expandToProperty"])("_markAllSubMeshesAsTexturesDirty")
     ], TerrainMaterial.prototype, "diffuseTexture3", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsTexture"])("bumpTexture1")
     ], TerrainMaterial.prototype, "_bumpTexture1", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["expandToProperty"])("_markAllSubMeshesAsTexturesDirty")
     ], TerrainMaterial.prototype, "bumpTexture1", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsTexture"])("bumpTexture2")
     ], TerrainMaterial.prototype, "_bumpTexture2", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["expandToProperty"])("_markAllSubMeshesAsTexturesDirty")
     ], TerrainMaterial.prototype, "bumpTexture2", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsTexture"])("bumpTexture3")
     ], TerrainMaterial.prototype, "_bumpTexture3", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["expandToProperty"])("_markAllSubMeshesAsTexturesDirty")
     ], TerrainMaterial.prototype, "bumpTexture3", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor3"])()
     ], TerrainMaterial.prototype, "diffuseColor", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor3"])()
     ], TerrainMaterial.prototype, "specularColor", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], TerrainMaterial.prototype, "specularPower", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])("disableLighting")
     ], TerrainMaterial.prototype, "_disableLighting", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["expandToProperty"])("_markAllSubMeshesAsLightsDirty")
     ], TerrainMaterial.prototype, "disableLighting", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])("maxSimultaneousLights")
     ], TerrainMaterial.prototype, "_maxSimultaneousLights", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["expandToProperty"])("_markAllSubMeshesAsLightsDirty")
     ], TerrainMaterial.prototype, "maxSimultaneousLights", void 0);
     return TerrainMaterial;

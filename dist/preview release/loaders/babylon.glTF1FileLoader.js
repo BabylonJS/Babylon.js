@@ -378,7 +378,7 @@ __webpack_require__.r(__webpack_exports__);
 var BinaryExtensionBufferName = "binary_glTF";
 /** @hidden */
 var GLTFBinaryExtension = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GLTFBinaryExtension, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GLTFBinaryExtension, _super);
     function GLTFBinaryExtension() {
         return _super.call(this, "KHR_binary_glTF") || this;
     }
@@ -2520,7 +2520,7 @@ __webpack_require__.r(__webpack_exports__);
 
 /** @hidden */
 var GLTFMaterialsCommonExtension = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GLTFMaterialsCommonExtension, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GLTFMaterialsCommonExtension, _super);
     function GLTFMaterialsCommonExtension() {
         return _super.call(this, "KHR_materials_common") || this;
     }

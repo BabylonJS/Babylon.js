@@ -455,7 +455,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var FurMaterialDefines = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FurMaterialDefines, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FurMaterialDefines, _super);
     function FurMaterialDefines() {
         var _this = _super.call(this) || this;
         _this.DIFFUSE = false;
@@ -483,7 +483,7 @@ var FurMaterialDefines = /** @class */ (function (_super) {
     return FurMaterialDefines;
 }(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["MaterialDefines"]));
 var FurMaterial = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FurMaterial, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FurMaterial, _super);
     function FurMaterial(name, scene) {
         var _this = _super.call(this, name, scene) || this;
         _this.diffuseColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](1, 1, 1);
@@ -849,64 +849,64 @@ var FurMaterial = /** @class */ (function (_super) {
         sourceMesh.material._meshes = meshes;
         return meshes;
     };
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsTexture"])("diffuseTexture")
     ], FurMaterial.prototype, "_diffuseTexture", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["expandToProperty"])("_markAllSubMeshesAsTexturesDirty")
     ], FurMaterial.prototype, "diffuseTexture", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsTexture"])("heightTexture")
     ], FurMaterial.prototype, "_heightTexture", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["expandToProperty"])("_markAllSubMeshesAsTexturesDirty")
     ], FurMaterial.prototype, "heightTexture", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor3"])()
     ], FurMaterial.prototype, "diffuseColor", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], FurMaterial.prototype, "furLength", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], FurMaterial.prototype, "furAngle", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor3"])()
     ], FurMaterial.prototype, "furColor", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], FurMaterial.prototype, "furOffset", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], FurMaterial.prototype, "furSpacing", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsVector3"])()
     ], FurMaterial.prototype, "furGravity", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], FurMaterial.prototype, "furSpeed", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], FurMaterial.prototype, "furDensity", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], FurMaterial.prototype, "furOcclusion", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])("disableLighting")
     ], FurMaterial.prototype, "_disableLighting", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["expandToProperty"])("_markAllSubMeshesAsLightsDirty")
     ], FurMaterial.prototype, "disableLighting", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])("maxSimultaneousLights")
     ], FurMaterial.prototype, "_maxSimultaneousLights", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["expandToProperty"])("_markAllSubMeshesAsLightsDirty")
     ], FurMaterial.prototype, "maxSimultaneousLights", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], FurMaterial.prototype, "highLevelFur", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], FurMaterial.prototype, "furTime", null);
     return FurMaterial;
