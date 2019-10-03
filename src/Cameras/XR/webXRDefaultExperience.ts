@@ -4,7 +4,6 @@ import { WebXRInput } from './webXRInput';
 import { WebXRControllerModelLoader } from './webXRControllerModelLoader';
 import { WebXRControllerPointerSelection } from './webXRControllerPointerSelection';
 import { WebXRControllerTeleportation } from './webXRControllerTeleportation';
-import { WebXRManagedOutputCanvas } from './webXRManagedOutputCanvas';
 import { WebXROutputTarget } from './webXROutputTarget';
 import { WebXREnterExitUI } from './webXREnterExitUI';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
@@ -79,13 +78,8 @@ export class WebXRDefaultExperience {
                 result.teleportation = new WebXRControllerTeleportation(result.input, options.floorMeshes);
             }
 
-            if (result.baseExperience.sessionManager.supportsWebXRNativeOutputTarget()) {
-                // Create the WebXR output for native experiences.
-                result.outputTarget = result.baseExperience.sessionManager.getWebXRNativeOutputTarget();
-            } else {
-                // Create output canvas manager (this controls where the xr frames will be rendered)
-                result.outputTarget = new WebXRManagedOutputCanvas(xrHelper, scene.getEngine().getRenderingCanvas() as HTMLCanvasElement);
-            }
+            // Create the WebXR output target
+            result.outputTarget = result.baseExperience.sessionManager.getWebXROutputTarget(xrHelper);
 
             if (!options.disableDefaultUI) {
                 // Create ui for entering/exiting xr
