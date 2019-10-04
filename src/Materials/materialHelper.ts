@@ -659,23 +659,25 @@ export class MaterialHelper {
      * @param light Light to bind
      * @param lightIndex Light index
      * @param scene The scene where the light belongs to
-     * @param mesh The mesh we are binding the information to render
      * @param effect The effect we are binding the data to
      * @param useSpecular Defines if specular is supported
      * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
      * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      */
-    public static BindLight(light: Light, lightIndex: number, scene: Scene, mesh: AbstractMesh, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff = false, rebuildInParallel = false): void {
+    public static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff = false, rebuildInParallel = false): void {
         let iAsString = lightIndex.toString();
         let needUpdate = false;
 
-        if (light._frameId !== scene.getFrameId()) {
-            light._frameId = scene.getFrameId();
+        if (rebuildInParallel && light._uniformBuffer._alreadyBound) {
+            return;
+        }
+
+        light._uniformBuffer.bindToEffect(effect, "Light" + iAsString);
+
+        if (light._renderId !== scene.getRenderId() || !light._uniformBuffer.useUbo) {
+            light._renderId = scene.getRenderId();
 
             let scaledIntensity = light.getScaledIntensity();
-            if (!rebuildInParallel) {
-                light._uniformBuffer.bindToEffect(effect, "Light" + iAsString);
-            }
 
             MaterialHelper.BindLightProperties(light, effect, lightIndex);
 
@@ -685,7 +687,6 @@ export class MaterialHelper {
                 light.specular.scaleToRef(scaledIntensity, TmpColors.Color3[1]);
                 light._uniformBuffer.updateColor3("vLightSpecular", TmpColors.Color3[1], iAsString);
             }
-
             needUpdate = true;
         }
 
@@ -699,7 +700,7 @@ export class MaterialHelper {
         }
 
         if (needUpdate) {
-            light._uniformBuffer.update();    
+            light._uniformBuffer.update();
         }
     }
 
@@ -719,7 +720,7 @@ export class MaterialHelper {
         for (var i = 0; i < len; i++) {
 
             let light = mesh.lightSources[i];
-            this.BindLight(light, i, scene, mesh, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], usePhysicalLightFalloff, rebuildInParallel);
+            this.BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], usePhysicalLightFalloff, rebuildInParallel);
         }
     }
 
