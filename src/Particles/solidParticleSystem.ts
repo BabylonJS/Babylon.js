@@ -635,8 +635,8 @@ export class SolidParticleSystem implements IDisposable {
      *  If the number of particles to remove is lower than zero or greater than the global remaining particle number, then an empty array is returned.
      *  The SPS can't be empty so at least one particle needs to remain in place.
      *  Under the hood, the VertexData array, so the VBO buffer, is recreated each call.
-     * @param start
-     * @param end
+     * @param start index of the first particle to remove
+     * @param end index of the last particle to remove (included)
      * @returns an array populated with the removed particles
      */
     public removeParticles(start: number, end: number): SolidParticle[] {
