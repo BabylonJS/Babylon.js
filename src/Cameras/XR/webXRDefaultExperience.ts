@@ -79,7 +79,7 @@ export class WebXRDefaultExperience {
             }
 
             // Create the WebXR output target
-            result.renderTarget = result.baseExperience.sessionManager.getWebXROutputTarget(xrHelper.onStateChangedObservable);
+            result.renderTarget = result.baseExperience.sessionManager.getWebXRRenderTarget(xrHelper.onStateChangedObservable);
 
             if (!options.disableDefaultUI) {
                 // Create ui for entering/exiting xr
