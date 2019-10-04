@@ -9,7 +9,7 @@ import { _DevTools } from './devTools';
 import { WebRequest } from './webRequest';
 import { IFileRequest } from './fileRequest';
 import { EngineStore } from '../Engines/engineStore';
-import { FileTools } from './fileTools';
+import { FileTools, ReadFileError } from './fileTools';
 import { IOfflineProvider } from '../Offline/IOfflineProvider';
 import { PromisePolyfill } from './promise';
 import { TimingTools } from './timingTools';
@@ -368,7 +368,7 @@ export class Tools {
     }
 
     /**
-     * Loads a file
+     * Loads a file from a url
      * @param url url string, ArrayBuffer, or Blob to load
      * @param onSuccess callback called when the file successfully loads
      * @param onProgress callback called while file is loading (if the server supports this mode)
@@ -496,15 +496,16 @@ export class Tools {
     }
 
     /**
-     * Loads a file
-     * @param fileToLoad defines the file to load
-     * @param callback defines the callback to call when data is loaded
-     * @param progressCallBack defines the callback to call during loading process
+     * Reads a file from a File object
+     * @param file defines the file to load
+     * @param onSuccess defines the callback to call when data is loaded
+     * @param onProgress defines the callback to call during loading process
      * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
+     * @param onError defines the callback to call when an error occurs
      * @returns a file request object
      */
-    public static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): IFileRequest {
-        return FileTools.ReadFile(fileToLoad, callback, progressCallBack, useArrayBuffer);
+    public static ReadFile(file: File, onSuccess: (data: any) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: ReadFileError) => void): IFileRequest {
+        return FileTools.ReadFile(file, onSuccess, onProgress, useArrayBuffer, onError);
     }
 
     /**

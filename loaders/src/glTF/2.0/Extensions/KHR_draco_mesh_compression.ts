@@ -31,13 +31,14 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
     public dracoCompression?: DracoCompression;
 
     /** Defines whether this extension is enabled. */
-    public enabled = DracoCompression.DecoderAvailable;
+    public enabled: boolean;
 
     private _loader: GLTFLoader;
 
     /** @hidden */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
+        this.enabled = DracoCompression.DecoderAvailable && this._loader.isExtensionUsed(NAME);
     }
 
     /** @hidden */
