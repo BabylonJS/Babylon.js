@@ -132,6 +132,19 @@
             ]
         },
         {
+            "name": "Launch Local Dev - Worker mode (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/localDev/index-worker.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },
+        {
             "name": "Launch Local Dev (Experimental Firefox)",
             "type": "firefox",
             "request": "launch",
