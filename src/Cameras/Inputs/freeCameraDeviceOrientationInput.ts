@@ -120,8 +120,10 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
 
         let hostWindow = this.camera.getScene().getEngine().getHostWindow();
 
-        hostWindow.addEventListener("orientationchange", this._orientationChanged);
-        hostWindow.addEventListener("deviceorientation", this._deviceOrientation);
+        if (hostWindow) {
+            hostWindow.addEventListener("orientationchange", this._orientationChanged);
+            hostWindow.addEventListener("deviceorientation", this._deviceOrientation);
+        }
 
         //In certain cases, the attach control is called AFTER orientation was changed,
         //So this is needed.

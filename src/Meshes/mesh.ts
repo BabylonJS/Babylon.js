@@ -34,6 +34,7 @@ import { MeshLODLevel } from './meshLODLevel';
 import { Path3D } from '../Maths/math.path';
 import { Plane } from '../Maths/math.plane';
 import { TransformNode } from './transformNode';
+import { CanvasGenerator } from '../Misc/canvasGenerator';
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
@@ -2218,14 +2219,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public applyDisplacementMap(url: string, minHeight: number, maxHeight: number, onSuccess?: (mesh: Mesh) => void, uvOffset?: Vector2, uvScale?: Vector2, forceUpdate = false): Mesh {
         var scene = this.getScene();
 
-        var onload = (img: HTMLImageElement) => {
+        var onload = (img: HTMLImageElement | ImageBitmap) => {
             // Getting height map data
-            var canvas = document.createElement("canvas");
-            var context = <CanvasRenderingContext2D>canvas.getContext("2d");
             var heightMapWidth = img.width;
             var heightMapHeight = img.height;
-            canvas.width = heightMapWidth;
-            canvas.height = heightMapHeight;
+            var canvas = CanvasGenerator.CreateCanvas(heightMapWidth, heightMapHeight);
+            var context = <CanvasRenderingContext2D>canvas.getContext("2d");
 
             context.drawImage(img, 0, 0);
 

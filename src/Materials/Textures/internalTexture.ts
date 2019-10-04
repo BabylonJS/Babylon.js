@@ -160,7 +160,7 @@ export class InternalTexture {
     /** @hidden */
     public _source = InternalTextureSource.Unknown;
     /** @hidden */
-    public _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob> = null;
+    public _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null;
     /** @hidden */
     public _bufferView: Nullable<ArrayBufferView> = null;
     /** @hidden */
@@ -174,9 +174,9 @@ export class InternalTexture {
     /** @hidden */
     public _files: Nullable<string[]> = null;
     /** @hidden */
-    public _workingCanvas: Nullable<HTMLCanvasElement> = null;
+    public _workingCanvas: Nullable<HTMLCanvasElement | OffscreenCanvas> = null;
     /** @hidden */
-    public _workingContext: Nullable<CanvasRenderingContext2D> = null;
+    public _workingContext: Nullable<CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D> = null;
     /** @hidden */
     public _framebuffer: Nullable<WebGLFramebuffer> = null;
     /** @hidden */
