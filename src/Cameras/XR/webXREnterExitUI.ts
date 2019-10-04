@@ -1,8 +1,8 @@
 import { Nullable } from "../../types";
 import { Observable } from "../../Misc/observable";
 import { IDisposable, Scene } from "../../scene";
-import { WebXRExperienceHelper, WebXRState } from "./webXRExperienceHelper";
-import { WebXROutputTarget } from './webXROutputTarget';
+import { WebXRExperienceHelper } from "./webXRExperienceHelper";
+import { WebXRState, WebXRRenderTarget } from './webXRTypes';
 /**
  * Button which can be used to enter a different mode of XR
  */
@@ -36,7 +36,7 @@ export class WebXREnterExitUIOptions {
     /**
      * Context to enter xr with
      */
-    outputTarget?: Nullable<WebXROutputTarget>;
+    renderTarget?: Nullable<WebXRRenderTarget>;
 
     /**
      * User provided buttons to enable/disable WebXR. The system will provide default if not set
@@ -86,8 +86,8 @@ export class WebXREnterExitUI implements IDisposable {
                             return;
                         } else if (helper.state == WebXRState.NOT_IN_XR) {
                             ui._updateButtons(ui._buttons[i]);
-                            if (options.outputTarget) {
-                                await helper.enterXRAsync(ui._buttons[i].sessionMode, ui._buttons[i].referenceSpaceType, options.outputTarget);
+                            if (options.renderTarget) {
+                                await helper.enterXRAsync(ui._buttons[i].sessionMode, ui._buttons[i].referenceSpaceType, options.renderTarget);
                             }
                         }
                     };

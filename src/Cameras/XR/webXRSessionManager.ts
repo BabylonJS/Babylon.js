@@ -4,9 +4,9 @@ import { Nullable } from "../../types";
 import { IDisposable, Scene } from "../../scene";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
-import { WebXROutputTarget } from './webXROutputTarget';
-import { WebXRExperienceHelper } from '../../Legacy/legacy';
+import { WebXRRenderTarget } from './webXRTypes';
 import { WebXRManagedOutputCanvas } from './webXRManagedOutputCanvas';
+import { WebXRState } from '../../Legacy/legacy';
 
 interface IRenderTargetProvider {
     getRenderTargetForEye(eye: XREye): RenderTargetTexture;
@@ -200,15 +200,15 @@ export class WebXRSessionManager implements IDisposable {
 
     /**
      * Creates a WebXROutputTarget object for the XR session
-     * @param xrHelper optional, helper class for event management, used only for Web scenarios
+     * @param onStateChangedObservable optional, mechanism for enabling/disabling XR rendering canvas, used only on Web
      * @returns a WebXR output target to which the session can render
      */
-    public getWebXROutputTarget(xrHelper?: WebXRExperienceHelper) : WebXROutputTarget {
+    public getWebXROutputTarget(onStateChangedObservable?: Observable<WebXRState>) : WebXRRenderTarget {
         if (this._xrNavigator.xr.native) {
             return this._xrNavigator.xr.getWebXROutputTarget(this.scene.getEngine());
         }
         else {
-            return new WebXRManagedOutputCanvas(xrHelper!, this.scene.getEngine().getRenderingCanvas() as HTMLCanvasElement);
+            return new WebXRManagedOutputCanvas(this.scene.getEngine(), onStateChangedObservable!, this.scene.getEngine().getRenderingCanvas() as HTMLCanvasElement);
         }
     }
 

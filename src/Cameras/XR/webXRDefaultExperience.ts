@@ -4,7 +4,7 @@ import { WebXRInput } from './webXRInput';
 import { WebXRControllerModelLoader } from './webXRControllerModelLoader';
 import { WebXRControllerPointerSelection } from './webXRControllerPointerSelection';
 import { WebXRControllerTeleportation } from './webXRControllerTeleportation';
-import { WebXROutputTarget } from './webXROutputTarget';
+import { WebXRRenderTarget } from './webXRTypes';
 import { WebXREnterExitUI } from './webXREnterExitUI';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 
@@ -54,7 +54,7 @@ export class WebXRDefaultExperience {
     /**
      * Default target xr should render to
      */
-    public outputTarget: WebXROutputTarget;
+    public renderTarget: WebXRRenderTarget;
 
     /**
      * Creates the default xr experience
@@ -79,11 +79,11 @@ export class WebXRDefaultExperience {
             }
 
             // Create the WebXR output target
-            result.outputTarget = result.baseExperience.sessionManager.getWebXROutputTarget(xrHelper);
+            result.renderTarget = result.baseExperience.sessionManager.getWebXROutputTarget(xrHelper.onStateChangedObservable);
 
             if (!options.disableDefaultUI) {
                 // Create ui for entering/exiting xr
-                return WebXREnterExitUI.CreateAsync(scene, result.baseExperience, { outputTarget: result.outputTarget }).then((ui) => {
+                return WebXREnterExitUI.CreateAsync(scene, result.baseExperience, { renderTarget: result.renderTarget }).then((ui) => {
                     result.enterExitUI = ui;
                 });
             } else {
@@ -111,8 +111,8 @@ export class WebXRDefaultExperience {
         if (this.enterExitUI) {
             this.enterExitUI.dispose();
         }
-        if (this.outputTarget) {
-            this.outputTarget.dispose();
+        if (this.renderTarget) {
+            this.renderTarget.dispose();
         }
     }
 }
