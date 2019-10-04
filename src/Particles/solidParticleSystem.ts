@@ -317,7 +317,7 @@ export class SolidParticleSystem implements IDisposable {
             if (this._particlesIntersect) {
                 bInfo = new BoundingInfo(minimum, maximum);
             }
-            var modelShape = new ModelShape(this._shapeCounter, shape, shapeInd, shapeNor, shapeUV, shapeCol, null, null);
+            var modelShape = new ModelShape(this._shapeCounter, shape, shapeInd, shapeNor, shapeCol, shapeUV, null, null);
 
             // add the particle in the SPS
             var currentPos = this._positions.length;
@@ -537,7 +537,7 @@ export class SolidParticleSystem implements IDisposable {
         var posfunc = options ? options.positionFunction : null;
         var vtxfunc = options ? options.vertexFunction : null;
 
-        var modelShape = new ModelShape(this._shapeCounter, shape, indices, shapeNormals, shapeUV, shapeColors, posfunc, vtxfunc);
+        var modelShape = new ModelShape(this._shapeCounter, shape, indices, shapeNormals, shapeColors, shapeUV, posfunc, vtxfunc);
 
         // particles
         var sp;
@@ -640,10 +640,19 @@ export class SolidParticleSystem implements IDisposable {
      * @returns an array populated with the removed particles
      */
     public removeParticles(start: number, end: number): SolidParticle[] {
-        const particles = this.particles;
         var nb = end - start + 1;
         if (!this._expandable || nb <= 0 || nb >= this.nbParticles) {
             return [];
+        }
+        const particles = this.particles;
+        const currentNb = this.nbParticles;
+        if (end < currentNb - 1) {              // update the particle indexes in the positions array in case they're remaining particles after the last removed
+            var startPositionIndex = particles[start]._pos;
+            var firstRemaining = end + 1;
+            var shift = particles[firstRemaining]._pos - startPositionIndex;
+            for (var i = firstRemaining; i < currentNb; i++) {
+                particles[i]._pos -= shift;
+            }
         }
         var removed = particles.splice(start, nb);
         this._positions.length = 0;
