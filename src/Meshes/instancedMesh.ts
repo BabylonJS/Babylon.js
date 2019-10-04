@@ -286,8 +286,8 @@ export class InstancedMesh extends AbstractMesh {
         }
 
         if (this._currentLOD) {
-
-            if (this._currentLOD._getWorldMatrixDeterminant() !== this._getWorldMatrixDeterminant()) {
+            let differentSign = (this._currentLOD._getWorldMatrixDeterminant() > 0) !== (this._getWorldMatrixDeterminant() > 0);
+            if (differentSign) {
                 this._internalAbstractMeshDataInfo._actAsRegularMesh = true;
                 return true;
             }
