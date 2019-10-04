@@ -11,8 +11,8 @@ import { TextLineComponent } from "../../lines/textLineComponent";
 import { GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "babylonjs-loaders/glTF/index";
 
 interface IGLTFComponentProps {
-    scene: Scene,
-    globalState: GlobalState
+    scene: Scene;
+    globalState: GlobalState;
 }
 
 export class GLTFComponent extends React.Component<IGLTFComponentProps> {
@@ -21,7 +21,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
 
         const extensionStates = this.props.globalState.glTFLoaderExtensionDefaults;
 
-        extensionStates["MSFT_lod"] = extensionStates["MSFT_lod"] || { enabled: true, maxLODsToLoad: Number.MAX_VALUE };
+        extensionStates["MSFT_lod"] = extensionStates["MSFT_lod"] || { enabled: true, maxLODsToLoad: 10 };
         extensionStates["MSFT_minecraftMesh"] = extensionStates["MSFT_minecraftMesh"] || { enabled: true };
         extensionStates["MSFT_sRGBFactors"] = extensionStates["MSFT_sRGBFactors"] || { enabled: true };
         extensionStates["MSFT_audio_emitter"] = extensionStates["MSFT_audio_emitter"] || { enabled: true };
@@ -123,7 +123,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="GLTF EXTENSIONS" closed={true}>
                     <CheckBoxLineComponent label="MSFT_lod" isSelected={() => extensionStates["MSFT_lod"].enabled} onSelect={value => extensionStates["MSFT_lod"].enabled = value} />
-                    <FloatLineComponent label="Maximum LODs" target={extensionStates["MSFT_lod"]} propertyName="maxLODsToLoad" additionalClass="gltf-extension-property" />
+                    <FloatLineComponent label="Maximum LODs" target={extensionStates["MSFT_lod"]} propertyName="maxLODsToLoad" additionalClass="gltf-extension-property" isInteger={true} />
                     <CheckBoxLineComponent label="MSFT_minecraftMesh" isSelected={() => extensionStates["MSFT_minecraftMesh"].enabled} onSelect={value => extensionStates["MSFT_minecraftMesh"].enabled = value} />
                     <CheckBoxLineComponent label="MSFT_sRGBFactors" isSelected={() => extensionStates["MSFT_sRGBFactors"].enabled} onSelect={value => extensionStates["MSFT_sRGBFactors"].enabled = value} />
                     <CheckBoxLineComponent label="MSFT_audio_emitter" isSelected={() => extensionStates["MSFT_audio_emitter"].enabled} onSelect={value => extensionStates["MSFT_audio_emitter"].enabled = value} />
