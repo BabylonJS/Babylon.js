@@ -32,6 +32,8 @@ export class UniformBuffer {
     private _needSync: boolean;
     private _noUBO: boolean;
     private _currentEffect: Effect;
+    
+    public _alreadyBound = false;
 
     // Pool for avoiding memory leaks
     private static _MAX_UNIFORM_SIZE = 256;
@@ -632,6 +634,7 @@ export class UniformBuffer {
             return;
         }
 
+        this._alreadyBound = true;
         effect.bindUniformBuffer(this._buffer, name);
     }
 
