@@ -116,6 +116,7 @@ export class SolidParticleSystem implements IDisposable {
     private _mustUnrotateFixedNormals = false;
     private _particlesIntersect: boolean = false;
     private _needs32Bits: boolean = false;
+    private _isNotBuilt: boolean = true;
 
     /**
      * Creates a SPS (Solid Particle System) object.
@@ -160,7 +161,10 @@ export class SolidParticleSystem implements IDisposable {
      * @returns the created mesh
      */
     public buildMesh(): Mesh {
-        if (this.nbParticles === 0) {
+        if (!this._isNotBuilt && this.mesh) {
+            return this.mesh;
+        }
+        if (this.nbParticles === 0 && !this.mesh) {
             var triangle = DiscBuilder.CreateDisc("", { radius: 1, tessellation: 3 }, this._scene);
             this.addShape(triangle, 1);
             triangle.dispose();
@@ -210,6 +214,7 @@ export class SolidParticleSystem implements IDisposable {
                 this.particles.length = 0;
             }
         }
+        this._isNotBuilt = false;
         return this.mesh;
     }
 
@@ -245,6 +250,7 @@ export class SolidParticleSystem implements IDisposable {
         }
 
         var facetPos: number[] = [];      // submesh positions
+        var facetNor: number[] = [];
         var facetInd: number[] = [];      // submesh indices
         var facetUV: number[] = [];       // submesh UV
         var facetCol: number[] = [];      // submesh colors
@@ -258,6 +264,7 @@ export class SolidParticleSystem implements IDisposable {
             }
             // reset temp arrays
             facetPos.length = 0;
+            facetNor.length = 0;
             facetInd.length = 0;
             facetUV.length = 0;
             facetCol.length = 0;
@@ -267,12 +274,16 @@ export class SolidParticleSystem implements IDisposable {
             for (var j = f * 3; j < (f + size) * 3; j++) {
                 facetInd.push(fi);
                 var i: number = meshInd[j];
-                facetPos.push(meshPos[i * 3], meshPos[i * 3 + 1], meshPos[i * 3 + 2]);
+                var i3: number = i * 3;
+                facetPos.push(meshPos[i3], meshPos[i3 + 1], meshPos[i3 + 2]);
+                facetNor.push(meshNor[i3], meshNor[i3 + 1], meshNor[i3 + 2]);
                 if (meshUV) {
-                    facetUV.push(meshUV[i * 2], meshUV[i * 2 + 1]);
+                    var i2: number = i * 2;
+                    facetUV.push(meshUV[i2], meshUV[i2 + 1]);
                 }
                 if (meshCol) {
-                    facetCol.push(meshCol[i * 4], meshCol[i * 4 + 1], meshCol[i * 4 + 2], meshCol[i * 4 + 3]);
+                    var i4: number = i * 4;
+                    facetCol.push(meshCol[i4], meshCol[i4 + 1], meshCol[i4 + 2], meshCol[i4 + 3]);
                 }
                 fi++;
             }
@@ -281,6 +292,9 @@ export class SolidParticleSystem implements IDisposable {
             var idx: number = this.nbParticles;
             var shape: Vector3[] = this._posToShape(facetPos);
             var shapeUV: number[] = this._uvsToShapeUV(facetUV);
+            var shapeInd = Array.from(facetInd);
+            var shapeCol = Array.from(facetCol);
+            var shapeNor = Array.from(facetNor);
 
             // compute the barycenter of the shape
             barycenter.copyFromFloats(0, 0, 0);
@@ -303,12 +317,12 @@ export class SolidParticleSystem implements IDisposable {
             if (this._particlesIntersect) {
                 bInfo = new BoundingInfo(minimum, maximum);
             }
-            var modelShape = new ModelShape(this._shapeCounter, shape, size * 3, shapeUV, null, null);
+            var modelShape = new ModelShape(this._shapeCounter, shape, shapeInd, shapeNor, shapeCol, shapeUV, null, null);
 
             // add the particle in the SPS
             var currentPos = this._positions.length;
             var currentInd = this._indices.length;
-            this._meshBuilder(this._index, shape, this._positions, facetInd, this._indices, facetUV, this._uvs, facetCol, this._colors, meshNor, this._normals, idx, 0, null);
+            this._meshBuilder(this._index, shape, this._positions, shapeInd, this._indices, facetUV, this._uvs, shapeCol, this._colors, shapeNor, this._normals, idx, 0, null);
             this._addParticle(idx, currentPos, currentInd, modelShape, this._shapeCounter, 0, bInfo);
             // initialize the particle position
             this.particles[this.nbParticles].position.addInPlace(barycenter);
@@ -319,6 +333,7 @@ export class SolidParticleSystem implements IDisposable {
             this._shapeCounter++;
             f += size;
         }
+        this._isNotBuilt = true;        // buildMesh() is now expected for setParticles() to work
         return this;
     }
 
@@ -508,6 +523,9 @@ export class SolidParticleSystem implements IDisposable {
         var meshUV = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind);
         var meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
         var meshNor = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind);
+        var indices = Array.from(meshInd);
+        var shapeNormals = Array.from(meshNor);
+        var shapeColors = (meshCol) ? Array.from(meshCol) : [];
         var bbInfo;
         if (this._particlesIntersect) {
             bbInfo = mesh.getBoundingInfo();
@@ -519,7 +537,7 @@ export class SolidParticleSystem implements IDisposable {
         var posfunc = options ? options.positionFunction : null;
         var vtxfunc = options ? options.vertexFunction : null;
 
-        var modelShape = new ModelShape(this._shapeCounter, shape, meshInd.length, shapeUV, posfunc, vtxfunc);
+        var modelShape = new ModelShape(this._shapeCounter, shape, indices, shapeNormals, shapeColors, shapeUV, posfunc, vtxfunc);
 
         // particles
         var sp;
@@ -547,11 +565,12 @@ export class SolidParticleSystem implements IDisposable {
         }
         this.nbParticles += nb;
         this._shapeCounter++;
+        this._isNotBuilt = true;        // buildMesh() is now expected for setParticles() to work
         return this._shapeCounter - 1;
     }
 
     // rebuilds a particle back to its just built status : if needed, recomputes the custom positions and vertices
-    private _rebuildParticle(particle: SolidParticle): void {
+    private _rebuildParticle(particle: SolidParticle, reset: boolean = false): void {
         this._resetCopy();
         const copy = this._copy;
         if (particle._model._positionFunction) {        // recall to stored custom positionFunction
@@ -587,39 +606,91 @@ export class SolidParticleSystem implements IDisposable {
             Vector3.TransformCoordinatesToRef(tmpVertex, rotMatrix, tmpRotated);
             tmpRotated.addInPlace(pivotBackTranslation).addInPlace(copy.position).toArray(this._positions32, particle._pos + pt * 3);
         }
-        particle.position.setAll(0.0);
-        particle.rotation.setAll(0.0);
-        particle.rotationQuaternion = null;
-        particle.scaling.setAll(1.0);
-        particle.uvs.setAll(0.0);
-        particle.pivot.setAll(0.0);
-        particle.translateFromPivot = false;
-        particle.parentId = null;
+        if (reset) {
+            particle.position.setAll(0.0);
+            particle.rotation.setAll(0.0);
+            particle.rotationQuaternion = null;
+            particle.scaling.setAll(1.0);
+            particle.uvs.setAll(0.0);
+            particle.pivot.setAll(0.0);
+            particle.translateFromPivot = false;
+            particle.parentId = null;
+        }
     }
 
     /**
      * Rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed.
+     * @param reset boolean, default false : if the particles must be reset at position and rotation zero, scaling 1, color white, initial UVs and not parented.
      * @returns the SPS.
      */
-    public rebuildMesh(): SolidParticleSystem {
+    public rebuildMesh(reset: boolean = false): SolidParticleSystem {
         for (var p = 0; p < this.particles.length; p++) {
-            this._rebuildParticle(this.particles[p]);
+            this._rebuildParticle(this.particles[p], reset);
         }
         this.mesh.updateVerticesData(VertexBuffer.PositionKind, this._positions32, false, false);
         return this;
+    }
+    /** Removes the particles from the start-th to the end-th included from an expandable SPS (required).
+     *  Returns an array with the removed particles.
+     *  If the number of particles to remove is lower than zero or greater than the global remaining particle number, then an empty array is returned.
+     *  The SPS can't be empty so at least one particle needs to remain in place.
+     *  Under the hood, the VertexData array, so the VBO buffer, is recreated each call.
+     * @param start index of the first particle to remove
+     * @param end index of the last particle to remove (included)
+     * @returns an array populated with the removed particles
+     */
+    public removeParticles(start: number, end: number): SolidParticle[] {
+        var nb = end - start + 1;
+        if (!this._expandable || nb <= 0 || nb >= this.nbParticles) {
+            return [];
+        }
+        const particles = this.particles;
+        const currentNb = this.nbParticles;
+        if (end < currentNb - 1) {              // update the particle indexes in the positions array in case they're remaining particles after the last removed
+            var startPositionIndex = particles[start]._pos;
+            var firstRemaining = end + 1;
+            var shift = particles[firstRemaining]._pos - startPositionIndex;
+            for (var i = firstRemaining; i < currentNb; i++) {
+                particles[i]._pos -= shift;
+            }
+        }
+        var removed = particles.splice(start, nb);
+        this._positions.length = 0;
+        this._indices.length = 0;
+        this._colors.length = 0;
+        this._uvs.length = 0;
+        this._normals.length = 0;
+        this._index = 0;
+        const particlesLength = particles.length;
+        for (var p = 0; p < particlesLength; p++) {
+            var particle = particles[p];
+            var model = particle._model;
+            var shape = model._shape;
+            var modelIndices = model._indices;
+            var modelNormals = model._normals;
+            var modelColors = model._shapeColors;
+            var modelUVs = model._shapeUV;
+            this._meshBuilder(this._index, shape, this._positions, modelIndices, this._indices, modelUVs, this._uvs, modelColors, this._colors, modelNormals, this._normals, particle.idx, particle.idxInShape, null);
+            this._index += shape.length;
+        }
+
+        this.nbParticles -= nb;
+        this._isNotBuilt = true;        // buildMesh() is now expected for setParticles() to work
+        return removed;
     }
 
     /**
      *  Sets all the particles : this method actually really updates the mesh according to the particle positions, rotations, colors, textures, etc.
      *  This method calls `updateParticle()` for each particle of the SPS.
      *  For an animated SPS, it is usually called within the render loop.
+     * This methods does nothing if called on a non updatable or not yet built SPS. Example : buildMesh() not called after having added or removed particles from an expandable SPS.
      * @param start The particle index in the particle array where to start to compute the particle property values _(default 0)_
      * @param end The particle index in the particle array where to stop to compute the particle property values _(default nbParticle - 1)_
      * @param update If the mesh must be finally updated on this call after all the particle computations _(default true)_
      * @returns the SPS.
      */
     public setParticles(start: number = 0, end: number = this.nbParticles - 1, update: boolean = true): SolidParticleSystem {
-        if (!this._updatable) {
+        if (!this._updatable || this._isNotBuilt) {
             return this;
         }
 
