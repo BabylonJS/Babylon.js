@@ -6051,6 +6051,7 @@ declare module BABYLON {
         /** @hidden */private _data: Nullable<DataArray>;
         private _updatable;
         private _instanced;
+        private _divisor;
         /**
          * Gets the byte stride.
          */
@@ -6064,8 +6065,9 @@ declare module BABYLON {
          * @param postponeInternalCreation whether to postpone creating the internal WebGL buffer (optional)
          * @param instanced whether the buffer is instanced (optional)
          * @param useBytes set to true if the stride in in bytes (optional)
+         * @param divisor sets an optional divisor for instances (1 by default)
          */
-        constructor(engine: any, data: DataArray, updatable: boolean, stride?: number, postponeInternalCreation?: boolean, instanced?: boolean, useBytes?: boolean);
+        constructor(engine: any, data: DataArray, updatable: boolean, stride?: number, postponeInternalCreation?: boolean, instanced?: boolean, useBytes?: boolean, divisor?: number);
         /**
          * Create a new VertexBuffer based on the current buffer
          * @param kind defines the vertex buffer kind (position, normal, etc.)
@@ -6073,10 +6075,11 @@ declare module BABYLON {
          * @param size defines the size in floats of attributes (position is 3 for instance)
          * @param stride defines the stride size in floats in the buffer (the offset to apply to reach next value when data is interleaved)
          * @param instanced defines if the vertex buffer contains indexed data
-         * @param useBytes defines if the offset and stride are in bytes
+         * @param useBytes defines if the offset and stride are in bytes     *
+         * @param divisor sets an optional divisor for instances (1 by default)
          * @returns the new vertex buffer
          */
-        createVertexBuffer(kind: string, offset: number, size: number, stride?: number, instanced?: boolean, useBytes?: boolean): VertexBuffer;
+        createVertexBuffer(kind: string, offset: number, size: number, stride?: number, instanced?: boolean, useBytes?: boolean, divisor?: number): VertexBuffer;
         /**
          * Gets a boolean indicating if the Buffer is updatable?
          * @returns true if the buffer is updatable
@@ -6195,8 +6198,9 @@ declare module BABYLON {
          * @param type the type of the component (optional)
          * @param normalized whether the data contains normalized data (optional)
          * @param useBytes set to true if stride and offset are in bytes (optional)
+         * @param divisor defines the instance divisor to use (1 by default)
          */
-        constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number, type?: number, normalized?: boolean, useBytes?: boolean);
+        constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number, type?: number, normalized?: boolean, useBytes?: boolean, divisor?: number);
         /** @hidden */private _rebuild(): void;
         /**
          * Returns the kind of the VertexBuffer (string)
@@ -32480,6 +32484,10 @@ declare module BABYLON {
          */
         defaultCursor: string;
         /**
+         * Defines wether cursors are handled by the scene.
+         */
+        doNotHandleCursors: boolean;
+        /**
          * This is used to call preventDefault() on pointer down
          * in order to block unwanted artifacts like system double clicks
          */
@@ -57774,12 +57782,13 @@ declare module BABYLON {
         */
         quaternion: Nullable<Quaternion>;
         /**
-         * Returns a boolean. True if the particle intersects another particle or another mesh, else false.
-         * The intersection is computed on the particle bounding sphere and Axis Aligned Bounding Box (AABB)
-         * @param target is the object (point or mesh) what the intersection is computed against.
+         * Returns a boolean. True if the particle intersects a mesh, else false
+         * The intersection is computed on the particle position and Axis Aligned Bounding Box (AABB) or Sphere
+         * @param target is the object (point or mesh) what the intersection is computed against
+         * @param isSphere is boolean flag when false (default) bounding box of mesh is used, when true the bouding sphere is used
          * @returns true if it intersects
          */
-        intersectsMesh(target: Mesh | CloudPoint): boolean;
+        intersectsMesh(target: Mesh, isSphere: boolean): boolean;
         /**
          * get the rotation matrix of the particle
          * @hidden
