@@ -334,6 +334,9 @@ export abstract class Light extends Node {
      */
     public _uniformBuffer: UniformBuffer;
 
+    /** @hidden */
+    public _frameId: number;
+
     /**
      * Creates a Light object in the scene.
      * Documentation : https://doc.babylonjs.com/babylon101/lights
