@@ -158,6 +158,7 @@ class NativeTextureFormat {
     public static readonly RGBA32F = 1;
 }
 
+/** @hidden */
 class NativeTexture extends InternalTexture {
     public getInternalTexture(): InternalTexture {
         return this;

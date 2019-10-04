@@ -1,7 +1,32 @@
 import { Nullable } from "../../types";
 import { IDisposable } from "../../scene";
 
-export interface WebXROutputTarget extends IDisposable {
+/**
+ * States of the webXR experience
+ */
+export enum WebXRState {
+    /**
+     * Transitioning to being in XR mode
+     */
+    ENTERING_XR,
+    /**
+     * Transitioning to non XR mode
+     */
+    EXITING_XR,
+    /**
+     * In XR mode and presenting
+     */
+    IN_XR,
+    /**
+     * Not entered XR mode
+     */
+    NOT_IN_XR
+}
+
+/**
+ * Abstraction of the XR render target
+ */
+export interface WebXRRenderTarget extends IDisposable {
     /**
      * xrpresent context of the canvas which can be used to display/mirror xr content
      */
