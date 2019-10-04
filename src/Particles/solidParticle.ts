@@ -244,6 +244,21 @@ export class ModelShape {
      */
     public _shapeUV: number[];
     /**
+     * color array of the model
+     * @hidden
+     */
+    public _shapeColors: number[];
+    /**
+     * indices array of the model
+     * @hidden
+     */
+    public _indices: number[];
+    /**
+     * normals array of the model
+     * @hidden
+     */
+    public _normals: number[];
+    /**
      * length of the shape in the model indices array (internal use)
      * @hidden
      */
@@ -264,12 +279,15 @@ export class ModelShape {
      * SPS internal tool, don't use it manually.
      * @hidden
      */
-    constructor(id: number, shape: Vector3[], indicesLength: number, shapeUV: number[],
+    constructor(id: number, shape: Vector3[], indices: number[], normals: number[], colors: number[], shapeUV: number[],
         posFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>, vtxFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>) {
         this.shapeID = id;
         this._shape = shape;
-        this._indicesLength = indicesLength;
+        this._indices = indices;
+        this._indicesLength = indices.length;
         this._shapeUV = shapeUV;
+        this._shapeColors = colors;
+        this._normals = normals;
         this._positionFunction = posFunction;
         this._vertexFunction = vtxFunction;
     }
