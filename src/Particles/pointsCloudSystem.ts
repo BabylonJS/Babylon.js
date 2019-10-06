@@ -603,6 +603,9 @@ export class PointsCloudSystem implements IDisposable {
             if (cp.color) {
                 this._colors.push(cp.color.r, cp.color.g, cp.color.b, cp.color.a);
             }
+            if (cp.uv) {
+                this._uvs.push(cp.uv.x, cp.uv.y);
+            }
             idx++;
         }
         this.nbParticles += nb;
