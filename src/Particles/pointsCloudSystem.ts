@@ -430,11 +430,11 @@ export class PointsCloudSystem implements IDisposable {
                         if (s > 1) {
                             s = 1;
                         }
-                        if (h < 0) {
-                            h = 0;
+                        if (v < 0) {
+                            v = 0;
                         }
-                        if (h > 1) {
-                            h = 1;
+                        if (v > 1) {
+                            v = 1;
                         }
                         Color3.HSVtoRGBToRef(h, s, v, colPoint3);
                         colPoint.set(colPoint3.r, colPoint3.g, colPoint3.b, 1);
