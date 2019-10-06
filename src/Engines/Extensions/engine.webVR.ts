@@ -140,9 +140,11 @@ Engine.prototype.initWebVRAsync = function(): Promise<IDisplayChangedEventArgs> 
             this._vrExclusivePointerMode = this._vrDisplay && this._vrDisplay.isPresenting;
         };
         let hostWindow = this.getHostWindow();
-        hostWindow.addEventListener('vrdisplayconnect', this._onVrDisplayConnect);
-        hostWindow.addEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
-        hostWindow.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
+        if (hostWindow) {
+            hostWindow.addEventListener('vrdisplayconnect', this._onVrDisplayConnect);
+            hostWindow.addEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
+            hostWindow.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
+        }
     }
     this._webVRInitPromise = this._webVRInitPromise || this._getVRDisplaysAsync();
     this._webVRInitPromise.then(notifyObservers);
@@ -245,8 +247,7 @@ Engine.prototype._connectVREvents = function(canvas?: HTMLCanvasElement, documen
     };
 
     if (DomManagement.IsWindowObjectExist()) {
-        let hostWindow = this.getHostWindow();
-
+        let hostWindow = this.getHostWindow()!;
         hostWindow.addEventListener('vrdisplaypointerrestricted', this._onVRDisplayPointerRestricted, false);
         hostWindow.addEventListener('vrdisplaypointerunrestricted', this._onVRDisplayPointerUnrestricted, false);
     }

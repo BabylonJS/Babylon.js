@@ -23,7 +23,7 @@ declare module "../../Engines/thinEngine" {
          * @param format defines the format of the data
          * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
          */
-        updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
+        updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement | OffscreenCanvas, invertY: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
     }
 }
 
