@@ -98,7 +98,7 @@
         "tslib": "^1.9.3",
         "tslint": "^5.11.0",
         "typedoc": "^0.15.0",
-        "typescript": "~3.5.1",
+        "typescript": "~3.6.3",
         "webpack": "^4.29.3",
         "webpack-bundle-analyzer": "^3.1.0",
         "webpack-cli": "^3.3.9",

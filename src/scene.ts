@@ -330,6 +330,10 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     public defaultCursor: string = "";
     /**
+     * Defines wether cursors are handled by the scene.
+     */
+    public doNotHandleCursors = false;
+    /**
      * This is used to call preventDefault() on pointer down
      * in order to block unwanted artifacts like system double clicks
      */
