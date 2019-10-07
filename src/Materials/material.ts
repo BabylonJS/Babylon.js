@@ -26,6 +26,11 @@ declare type InstancedMesh = import('../Meshes/instancedMesh').InstancedMesh;
 
 declare var BABYLON: any;
 
+export interface IMaterialCompilationOptions {
+    clipPlane: boolean;
+    useInstances: boolean;
+}
+
 /**
  * Base class for the main features of a material in Babylon.js
  */
@@ -854,9 +859,10 @@ export class Material implements IAnimatable {
      * @param options defines the options to configure the compilation
      * @param onError defines a function to execute if the material fails compiling
      */
-    public forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<{ clipPlane: boolean }>, onError?: (reason: string) => void): void {
+    public forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<IMaterialCompilationOptions>, onError?: (reason: string) => void): void {
         let localOptions = {
             clipPlane: false,
+            useInstances: false,
             ...options
         };
 
@@ -879,7 +885,7 @@ export class Material implements IAnimatable {
             }
 
             if (this._storeEffectOnSubMeshes) {
-                if (this.isReadyForSubMesh(mesh, subMesh)) {
+                if (this.isReadyForSubMesh(mesh, subMesh, localOptions.useInstances)) {
                     if (onCompiled) {
                         onCompiled(this);
                     }
@@ -918,7 +924,7 @@ export class Material implements IAnimatable {
      * @param options defines additional options for compiling the shaders
      * @returns a promise that resolves when the compilation completes
      */
-    public forceCompilationAsync(mesh: AbstractMesh, options?: Partial<{ clipPlane: boolean }>): Promise<void> {
+    public forceCompilationAsync(mesh: AbstractMesh, options?: Partial<IMaterialCompilationOptions>): Promise<void> {
         return new Promise((resolve, reject) => {
             this.forceCompilation(mesh, () => {
                 resolve();

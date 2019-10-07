@@ -480,7 +480,6 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                     Logger.Warn("glTF validation is not supported when range requests are enabled");
                 }
 
-                let firstWebRequest: WebRequest | undefined;
                 const fileRequests = new Array<IFileRequest>();
                 const aggregatedFileRequest: IFileRequest = {
                     abort: () => fileRequests.forEach((fileRequest) => fileRequest.abort()),
@@ -491,7 +490,6 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                     readAsync: (byteOffset: number, byteLength: number) => {
                         return new Promise<ArrayBufferView>((resolve, reject) => {
                             fileRequests.push(scene._requestFile(url, (data, webRequest) => {
-                                firstWebRequest = firstWebRequest || webRequest;
                                 dataBuffer.byteLength = Number(webRequest!.getResponseHeader("Content-Range")!.split("/")[1]);
                                 resolve(new Uint8Array(data as ArrayBuffer));
                             }, onProgress, true, true, (error) => {
@@ -506,7 +504,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
                 this._unpackBinaryAsync(new DataReader(dataBuffer)).then((loaderData) => {
                     aggregatedFileRequest.onCompleteObservable.notifyObservers(aggregatedFileRequest);
-                    onSuccess(loaderData, firstWebRequest);
+                    onSuccess(loaderData);
                 }, onError);
 
                 return aggregatedFileRequest;
