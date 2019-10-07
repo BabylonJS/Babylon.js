@@ -39,6 +39,7 @@ export * from "./perfCounter";
 export * from "./fileRequest";
 export * from "./customAnimationFrameRequester";
 export * from "./retryStrategy";
-export * from "./loadFileError";
 export * from "./interfaces/screenshotSize";
 export * from "./canvasGenerator";
+export * from "./fileTools";
+export * from "./stringTools";
