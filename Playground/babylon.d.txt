@@ -933,10 +933,6 @@ declare module BABYLON {
          * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
          */
         static readonly PARTICLES_BILLBOARDMODE_STRETCHED: number;
-        /**
-         * Gets or sets base Assets URL
-         */
-        static PARTICLES_BaseAssetsUrl: string;
         /** Default culling strategy : this is an exclusion test and it's the more accurate.
          *  Test order :
          *  Is the bounding sphere outside the frustum ?
@@ -6994,6 +6990,7 @@ declare module BABYLON {
         private _needSync;
         private _noUBO;
         private _currentEffect;
+        /** @hidden */private _alreadyBound: boolean;
         private static _MAX_UNIFORM_SIZE;
         private static _tempBuffer;
         /**
@@ -8888,15 +8885,6 @@ declare module BABYLON {
          */
         static PushAttributesForInstances(attribs: string[]): void;
         /**
-         * Binds the light shadow information to the effect for the given mesh.
-         * @param light The light containing the generator
-         * @param scene The scene the lights belongs to
-         * @param mesh The mesh we are binding the information to render
-         * @param lightIndex The light index in the effect used to render the mesh
-         * @param effect The effect we are binding the data to
-         */
-        static BindLightShadow(light: Light, mesh: AbstractMesh, lightIndex: string, effect: Effect): void;
-        /**
          * Binds the light information to the effect.
          * @param light The light containing the generator
          * @param effect The effect we are binding the data to
@@ -8908,13 +8896,12 @@ declare module BABYLON {
          * @param light Light to bind
          * @param lightIndex Light index
          * @param scene The scene where the light belongs to
-         * @param mesh The mesh we are binding the information to render
          * @param effect The effect we are binding the data to
          * @param useSpecular Defines if specular is supported
          * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
          * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
          */
-        static BindLight(light: Light, lightIndex: number, scene: Scene, mesh: AbstractMesh, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff?: boolean, rebuildInParallel?: boolean): void;
+        static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff?: boolean, rebuildInParallel?: boolean): void;
         /**
          * Binds the lights information from the scene to the effect for the given mesh.
          * @param scene The scene the lights belongs to
@@ -9790,6 +9777,7 @@ declare module BABYLON {
          * The current light unifom buffer.
          * @hidden Internal use only.
          */private _uniformBuffer: UniformBuffer;
+        /** @hidden */private _renderId: number;
         /**
          * Creates a Light object in the scene.
          * Documentation : https://doc.babylonjs.com/babylon101/lights
@@ -18648,6 +18636,38 @@ declare module BABYLON {
          */
         dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
     }
+        interface Mesh {
+            /**
+             * Register a custom buffer that will be instanced
+             * @see https://doc.babylonjs.com/how_to/how_to_use_instances#custom-buffers
+             * @param kind defines the buffer kind
+             * @param stride defines the stride in floats
+             */
+            registerInstancedBuffer(kind: string, stride: number): void;
+            /** @hidden */private _userInstancedBuffersStorage: {
+                data: {
+                    [key: string]: Float32Array;
+                };
+                sizes: {
+                    [key: string]: number;
+                };
+                vertexBuffers: {
+                    [key: string]: Nullable<VertexBuffer>;
+                };
+                strides: {
+                    [key: string]: number;
+                };
+            };
+        }
+        interface AbstractMesh {
+            /**
+             * Object used to store instanced buffers defined by user
+             * @see https://doc.babylonjs.com/how_to/how_to_use_instances#custom-buffers
+             */
+            instancedBuffers: {
+                [key: string]: any;
+            };
+        }
 }
 declare module BABYLON {
     /**
@@ -23544,6 +23564,23 @@ declare module BABYLON {
          */
         setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): AbstractMesh;
         /**
+         * Delete a vertex buffer associated with this mesh
+         * @param kind defines which buffer to delete (positions, indices, normals, etc). Possible `kind` values :
+         * - VertexBuffer.PositionKind
+         * - VertexBuffer.UVKind
+         * - VertexBuffer.UV2Kind
+         * - VertexBuffer.UV3Kind
+         * - VertexBuffer.UV4Kind
+         * - VertexBuffer.UV5Kind
+         * - VertexBuffer.UV6Kind
+         * - VertexBuffer.ColorKind
+         * - VertexBuffer.MatricesIndicesKind
+         * - VertexBuffer.MatricesIndicesExtraKind
+         * - VertexBuffer.MatricesWeightsKind
+         * - VertexBuffer.MatricesWeightsExtraKind
+         */
+        removeVerticesData(kind: string): void;
+        /**
          * Flags an associated vertex buffer as updatable
          * @param kind defines which buffer to use (positions, indices, normals, etc). Possible `kind` values :
          * - VertexBuffer.PositionKind
@@ -23650,6 +23687,7 @@ declare module BABYLON {
         unregisterAfterRender(func: (mesh: AbstractMesh) => void): Mesh;
         /** @hidden */private _getInstancesRenderList(subMeshId: number): _InstancesBatch;
         /** @hidden */private _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): Mesh;
+        /** @hidden */private _processInstancedBuffers(visibleInstances: InstancedMesh[], renderSelf: boolean): void;
         /** @hidden */private _processRendering(subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh;
         /** @hidden */private _rebuild(): void;
         /** @hidden */private _freeze(): void;
@@ -23741,6 +23779,7 @@ declare module BABYLON {
          * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
          */
         dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
+        /** @hidden */private _disposeInstanceSpecificData(): void;
         /**
          * Modifies the mesh geometry according to a displacement map.
          * A displacement map is a colored image. Each pixel color value (actually a gradient computed from red, green, blue values) will give the displacement to apply to each mesh vertex.
@@ -24859,6 +24898,7 @@ declare module BABYLON {
         private _mustUnrotateFixedNormals;
         private _particlesIntersect;
         private _needs32Bits;
+        private _isNotBuilt;
         /**
          * Creates a SPS (Solid Particle System) object.
          * @param name (String) is the SPS name, this will be the underlying mesh name.
@@ -24925,13 +24965,25 @@ declare module BABYLON {
         private _rebuildParticle;
         /**
          * Rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed.
+         * @param reset boolean, default false : if the particles must be reset at position and rotation zero, scaling 1, color white, initial UVs and not parented.
          * @returns the SPS.
          */
-        rebuildMesh(): SolidParticleSystem;
+        rebuildMesh(reset?: boolean): SolidParticleSystem;
+        /** Removes the particles from the start-th to the end-th included from an expandable SPS (required).
+         *  Returns an array with the removed particles.
+         *  If the number of particles to remove is lower than zero or greater than the global remaining particle number, then an empty array is returned.
+         *  The SPS can't be empty so at least one particle needs to remain in place.
+         *  Under the hood, the VertexData array, so the VBO buffer, is recreated each call.
+         * @param start index of the first particle to remove
+         * @param end index of the last particle to remove (included)
+         * @returns an array populated with the removed particles
+         */
+        removeParticles(start: number, end: number): SolidParticle[];
         /**
          *  Sets all the particles : this method actually really updates the mesh according to the particle positions, rotations, colors, textures, etc.
          *  This method calls `updateParticle()` for each particle of the SPS.
          *  For an animated SPS, it is usually called within the render loop.
+         * This methods does nothing if called on a non updatable or not yet built SPS. Example : buildMesh() not called after having added or removed particles from an expandable SPS.
          * @param start The particle index in the particle array where to start to compute the particle property values _(default 0)_
          * @param end The particle index in the particle array where to stop to compute the particle property values _(default nbParticle - 1)_
          * @param update If the mesh must be finally updated on this call after all the particle computations _(default true)_
@@ -25261,6 +25313,18 @@ declare module BABYLON {
          * @hidden
          */private _shapeUV: number[];
         /**
+         * color array of the model
+         * @hidden
+         */private _shapeColors: number[];
+        /**
+         * indices array of the model
+         * @hidden
+         */private _indices: number[];
+        /**
+         * normals array of the model
+         * @hidden
+         */private _normals: number[];
+        /**
          * length of the shape in the model indices array (internal use)
          * @hidden
          */private _indicesLength: number;
@@ -25277,7 +25341,7 @@ declare module BABYLON {
          * SPS internal tool, don't use it manually.
          * @hidden
          */
-        constructor(id: number, shape: Vector3[], indicesLength: number, shapeUV: number[], posFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>, vtxFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>);
+        constructor(id: number, shape: Vector3[], indices: number[], normals: number[], colors: number[], shapeUV: number[], posFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>, vtxFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>);
     }
     /**
      * Represents a Depth Sorted Particle in the solid particle system.
@@ -57329,6 +57393,10 @@ declare module BABYLON {
      * Represents a set of particle systems working together to create a specific effect
      */
     export class ParticleSystemSet implements IDisposable {
+        /**
+         * Gets or sets base Assets URL
+         */
+        static BaseAssetsUrl: string;
         private _emitterCreationOptions;
         private _emitterNode;
         /**
