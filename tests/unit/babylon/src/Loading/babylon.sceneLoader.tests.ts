@@ -386,22 +386,6 @@ describe('Babylon Scene Loader', function() {
             return Promise.all(promises);
         });
 
-        it('Load LevelOfDetail with useRangeRequests', () => {
-            const scene = new BABYLON.Scene(subject);
-            const promises = new Array<Promise<void>>();
-
-            BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
-                loader.useRangeRequests = true;
-                promises.push(loader.whenCompleteAsync());
-            });
-
-            promises.push(BABYLON.SceneLoader.AppendAsync("http://models.babylonjs.com/Tests/LevelOfDetail/", "LevelOfDetail.glb", scene).then(() => {
-                // do nothing
-            }));
-
-            return Promise.all(promises);
-        });
-
         it('Load LevelOfDetailNoTextures', () => {
             const scene = new BABYLON.Scene(subject);
 
@@ -412,6 +396,22 @@ describe('Babylon Scene Loader', function() {
             });
 
             promises.push(BABYLON.SceneLoader.AppendAsync("http://models.babylonjs.com/Tests/LevelOfDetail/", "LevelOfDetailNoTextures.gltf", scene));
+
+            return Promise.all(promises);
+        });
+
+        it('Load LevelOfDetail with useRangeRequests', () => {
+            const scene = new BABYLON.Scene(subject);
+            const promises = new Array<Promise<void>>();
+
+            BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
+                loader.useRangeRequests = true;
+                promises.push(loader.whenCompleteAsync());
+            });
+
+            promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/", "LevelOfDetail.glb", scene).then(() => {
+                // do nothing
+            }));
 
             return Promise.all(promises);
         });
