@@ -38,6 +38,7 @@
 - Added optional parameter to use Euler angles in planeRotationGizmo ([CedricGuillemet](https://github.com/CedricGuillemet))
 
 ### Engine
+- Improved instanceMesh with user defined custom buffers [Doc](https://doc.babylonjs.com/how_to/how_to_use_instances#custom-buffers) ([Deltakosh](https://github.com/deltakosh/))
 - Morph targets now can morph UV channel as well ([Deltakosh](https://github.com/deltakosh/))
 - Added MorphTarget support to the DepthRenderer, GeometryBufferRenderer and OutlineRenderer ([MarkusBillharz](https://github.com/MarkusBillharz))
 - Added preprocessors for shaders to improve how shaders are compiled for WebGL1/2 or WebGPU ([Deltakosh](https://github.com/deltakosh/))
@@ -115,6 +116,7 @@
 
 ### Particles
 - Added the feature `expandable` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
+- Added the feature `removeParticles()` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 
 ### Navigation Mesh
 - Added moveAlong function to cast a segment on mavmesh ([CedricGuillemet](https://github.com/CedricGuillemet/))

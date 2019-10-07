@@ -3286,20 +3286,22 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @returns the current scene
      */
     public freezeActiveMeshes(): Scene {
-        if (!this.activeCamera) {
-            return this;
-        }
+        this.executeWhenReady(() => {
+            if (!this.activeCamera) {
+                return;
+            }
 
-        if (!this._frustumPlanes) {
-            this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
-        }
+            if (!this._frustumPlanes) {
+                this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
+            }
 
-        this._evaluateActiveMeshes();
-        this._activeMeshesFrozen = true;
+            this._evaluateActiveMeshes();
+            this._activeMeshesFrozen = true;
 
-        for (var index = 0; index < this._activeMeshes.length; index++) {
-            this._activeMeshes.data[index]._freeze();
-        }
+            for (var index = 0; index < this._activeMeshes.length; index++) {
+                this._activeMeshes.data[index]._freeze();
+            }
+        });
         return this;
     }
 
