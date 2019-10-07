@@ -1178,6 +1178,30 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
+     * Delete a vertex buffer associated with this mesh
+     * @param kind defines which buffer to delete (positions, indices, normals, etc). Possible `kind` values :
+     * - VertexBuffer.PositionKind
+     * - VertexBuffer.UVKind
+     * - VertexBuffer.UV2Kind
+     * - VertexBuffer.UV3Kind
+     * - VertexBuffer.UV4Kind
+     * - VertexBuffer.UV5Kind
+     * - VertexBuffer.UV6Kind
+     * - VertexBuffer.ColorKind
+     * - VertexBuffer.MatricesIndicesKind
+     * - VertexBuffer.MatricesIndicesExtraKind
+     * - VertexBuffer.MatricesWeightsKind
+     * - VertexBuffer.MatricesWeightsExtraKind
+     */
+    public removeVerticesData(kind: string) {
+        if (!this._geometry) {
+            return;
+        }
+
+        this._geometry.removeVerticesData(kind);
+    }
+
+    /**
      * Flags an associated vertex buffer as updatable
      * @param kind defines which buffer to use (positions, indices, normals, etc). Possible `kind` values :
      * - VertexBuffer.PositionKind
@@ -1501,8 +1525,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var offset = 0;
         var instancesCount = 0;
 
+        let renderSelf = batch.renderSelf[subMesh._id];
         var world = this._effectiveMesh.getWorldMatrix();
-        if (batch.renderSelf[subMesh._id]) {
+        if (renderSelf) {
             world.copyToArray(instanceStorage.instancesData, offset);
             offset += 16;
             instancesCount++;
@@ -1533,11 +1558,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             instancesBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
         }
 
+        this._processInstancedBuffers(visibleInstances, renderSelf);
+
         this._bind(subMesh, effect, fillMode);
         this._draw(subMesh, fillMode, instancesCount);
 
         engine.unbindInstanceAttributes();
         return this;
+    }
+
+    /** @hidden */
+    public _processInstancedBuffers(visibleInstances: InstancedMesh[], renderSelf: boolean) {
+        // Do nothing
     }
 
     /** @hidden */
@@ -2191,16 +2223,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         internalDataInfo._source = null;
 
         // Instances
-        if (this._instanceDataStorage.instancesBuffer) {
-            this._instanceDataStorage.instancesBuffer.dispose();
-            this._instanceDataStorage.instancesBuffer = null;
-        }
-
-        while (this.instances.length) {
-            this.instances[0].dispose();
-        }
+        this._disposeInstanceSpecificData();
 
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
+    }
+
+    /** @hidden */
+    public _disposeInstanceSpecificData() {
+        // Do nothing
     }
 
     /**

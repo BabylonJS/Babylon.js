@@ -412,10 +412,6 @@ export class Constants {
      * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
      */
     public static readonly PARTICLES_BILLBOARDMODE_STRETCHED = 8;
-    /**
-     * Gets or sets base Assets URL
-     */
-    public static PARTICLES_BaseAssetsUrl = "https://assets.babylonjs.com/particles";
 
     /** Default culling strategy : this is an exclusion test and it's the more accurate.
      *  Test order :
