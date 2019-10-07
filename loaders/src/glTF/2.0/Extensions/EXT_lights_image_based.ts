@@ -32,14 +32,14 @@ interface ILights {
 }
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/eb3e32332042e04691a5f35103f8c261e50d8f1e/extensions/2.0/Khronos/EXT_lights_image_based/README.md) (Experimental)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Vendor/EXT_lights_image_based/README.md)
  */
 export class EXT_lights_image_based implements IGLTFLoaderExtension {
     /** The name of this extension. */
     public readonly name = NAME;
 
     /** Defines whether this extension is enabled. */
-    public enabled = true;
+    public enabled: boolean;
 
     private _loader: GLTFLoader;
     private _lights?: ILight[];
@@ -47,6 +47,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
     /** @hidden */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
+        this.enabled = this._loader.isExtensionUsed(NAME);
     }
 
     /** @hidden */

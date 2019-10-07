@@ -3,7 +3,6 @@ import { Deferred } from "babylonjs/Misc/deferred";
 import { Quaternion, Color3, Vector3, Matrix } from "babylonjs/Maths/math";
 import { Tools } from "babylonjs/Misc/tools";
 import { IFileRequest } from "babylonjs/Misc/fileRequest";
-import { LoadFileError } from "babylonjs/Misc/loadFileError";
 import { Camera } from "babylonjs/Cameras/camera";
 import { FreeCamera } from "babylonjs/Cameras/freeCamera";
 import { AnimationGroup } from "babylonjs/Animations/animationGroup";
@@ -30,6 +29,8 @@ import { IGLTFLoaderExtension } from "./glTFLoaderExtension";
 import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
 import { IAnimationKey, AnimationKeyInterpolation } from 'babylonjs/Animations/animationKey';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
+import { IDataBuffer } from '../dataReader';
+import { LoadFileError } from 'babylonjs/Misc/fileTools';
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
@@ -100,6 +101,7 @@ export class GLTFLoader implements IGLTFLoader {
     private _fileName: string;
     private _uniqueRootUrl: string;
     private _gltf: IGLTF;
+    private _bin: Nullable<IDataBuffer>;
     private _babylonScene: Scene;
     private _rootBabylonMesh: Mesh;
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
@@ -155,10 +157,24 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /**
-     * The glTF object parsed from the JSON.
+     * The object that represents the glTF JSON.
      */
     public get gltf(): IGLTF {
         return this._gltf;
+    }
+
+    /**
+     * The BIN chunk of a binary glTF.
+     */
+    public get bin(): Nullable<IDataBuffer> {
+        return this._bin;
+    }
+
+    /**
+     * The parent file loader.
+     */
+    public get parent(): GLTFFileLoader {
+        return this._parent;
     }
 
     /**
@@ -363,20 +379,7 @@ export class GLTFLoader implements IGLTFLoader {
         this._gltf = data.json as IGLTF;
         this._setupData();
 
-        if (data.bin) {
-            const buffers = this._gltf.buffers;
-            if (buffers && buffers[0] && !buffers[0].uri) {
-                const binaryBuffer = buffers[0];
-                if (binaryBuffer.byteLength < data.bin.byteLength - 3 || binaryBuffer.byteLength > data.bin.byteLength) {
-                    Tools.Warn(`Binary buffer length (${binaryBuffer.byteLength}) from JSON does not match chunk length (${data.bin.byteLength})`);
-                }
-
-                binaryBuffer._data = Promise.resolve(data.bin);
-            }
-            else {
-                Tools.Warn("Unexpected BIN chunk");
-            }
-        }
+        this._bin = data.bin;
     }
 
     private _setupData(): void {
@@ -1379,18 +1382,33 @@ export class GLTFLoader implements IGLTFLoader {
         return sampler._data;
     }
 
-    private _loadBufferAsync(context: string, buffer: IBuffer): Promise<ArrayBufferView> {
-        if (buffer._data) {
-            return buffer._data;
+    private _loadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Promise<ArrayBufferView> {
+        const extensionPromise = this._extensionsLoadBufferAsync(context, buffer, byteOffset, byteLength);
+        if (extensionPromise) {
+            return extensionPromise;
         }
 
-        if (!buffer.uri) {
-            throw new Error(`${context}/uri: Value is missing`);
+        if (!buffer._data) {
+            if (buffer.uri) {
+                buffer._data = this.loadUriAsync(`${context}/uri`, buffer, buffer.uri);
+            }
+            else {
+                if (!this._bin) {
+                    throw new Error(`${context}: Uri is missing or the binary glTF is missing its binary chunk`);
+                }
+
+                buffer._data = this._bin.readAsync(0, buffer.byteLength);
+            }
         }
 
-        buffer._data = this.loadUriAsync(`${context}/uri`, buffer, buffer.uri);
-
-        return buffer._data;
+        return buffer._data.then((data) => {
+            try {
+                return new Uint8Array(data.buffer, data.byteOffset + byteOffset, byteLength);
+            }
+            catch (e) {
+                throw new Error(`${context}: ${e.message}`);
+            }
+        });
     }
 
     /**
@@ -1410,14 +1428,7 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         const buffer = ArrayItem.Get(`${context}/buffer`, this._gltf.buffers, bufferView.buffer);
-        bufferView._data = this._loadBufferAsync(`/buffers/${buffer.index}`, buffer).then((data) => {
-            try {
-                return new Uint8Array(data.buffer, data.byteOffset + (bufferView.byteOffset || 0), bufferView.byteLength);
-            }
-            catch (e) {
-                throw new Error(`${context}: ${e.message}`);
-            }
-        });
+        bufferView._data = this._loadBufferAsync(`/buffers/${buffer.index}`, buffer, (bufferView.byteOffset || 0), bufferView.byteLength);
 
         return bufferView._data;
     }
@@ -2286,6 +2297,10 @@ export class GLTFLoader implements IGLTFLoader {
         return this._applyExtensions(bufferView, "loadBufferView", (extension) => extension.loadBufferViewAsync && extension.loadBufferViewAsync(context, bufferView));
     }
 
+    private _extensionsLoadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Nullable<Promise<ArrayBufferView>> {
+        return this._applyExtensions(buffer, "loadBuffer", (extension) => extension.loadBufferAsync && extension.loadBufferAsync(context, buffer, byteOffset, byteLength));
+    }
+
     /**
      * Helper method called by a loader extension to load an glTF extension.
      * @param context The context when loading the asset
@@ -2330,6 +2345,15 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         return actionAsync(`${context}/extras/${extensionName}`, extra);
+    }
+
+    /**
+     * Checks for presence of an extension.
+     * @param name The name of the extension to check
+     * @returns A boolean indicating the presence of the given extension name in `extensionsUsed`
+     */
+    public isExtensionUsed(name: string): boolean {
+        return !!this._gltf.extensionsUsed && this._gltf.extensionsUsed.indexOf(name) !== -1;
     }
 
     /**
