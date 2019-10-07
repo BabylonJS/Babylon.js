@@ -21,4 +21,22 @@ export class StringTools {
     public static StartsWith(str: string, suffix: string): boolean {
         return str.indexOf(suffix) === 0;
     }
+
+    /**
+     * Decodes a buffer into a string
+     * @param buffer The buffer to decode
+     * @returns The decoded string
+     */
+    public static Decode(buffer: Uint8Array | Uint16Array): string {
+        if (typeof TextDecoder !== "undefined") {
+            return new TextDecoder().decode(buffer);
+        }
+
+        let result = "";
+        for (let i = 0; i < buffer.byteLength; i++) {
+            result += String.fromCharCode(buffer[i]);
+        }
+
+        return result;
+    }
 }

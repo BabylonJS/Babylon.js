@@ -493,6 +493,18 @@ declare module BABYLON {
          * @param url defines the url to connect with
          */
         open(method: string, url: string): void;
+        /**
+         * Sets the value of a request header.
+         * @param name The name of the header whose value is to be set
+         * @param value The value to set as the body of the header
+         */
+        setRequestHeader(name: string, value: string): void;
+        /**
+         * Get the string containing the text of a particular header's value.
+         * @param name The name of the header
+         * @returns The string containing the text of the given header name
+         */
+        getResponseHeader(name: string): Nullable<string>;
     }
 }
 declare module BABYLON {
@@ -1129,6 +1141,12 @@ declare module BABYLON {
          * @returns Boolean indicating whether the suffix was found (true) or not (false)
          */
         static StartsWith(str: string, suffix: string): boolean;
+        /**
+         * Decodes a buffer into a string
+         * @param buffer The buffer to decode
+         * @returns The decoded string
+         */
+        static Decode(buffer: Uint8Array | Uint16Array): string;
     }
 }
 declare module BABYLON {
@@ -1226,25 +1244,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * @ignore
-     * Application error to support additional information when loading a file
-     */
-    export class LoadFileError extends Error {
-        /** defines the optional web request */
-        request?: WebRequest | undefined;
-        private static _setPrototypeOf;
-        /**
-         * Creates a new LoadFileError
-         * @param message defines the message of the error
-         * @param request defines the optional web request
-         */
-        constructor(message: string, 
-        /** defines the optional web request */
-        request?: WebRequest | undefined);
-    }
-}
-declare module BABYLON {
-    /**
      * Class used to enable access to offline support
      * @see http://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
      */
@@ -1310,6 +1309,47 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * @ignore
+     * Application error to support additional information when loading a file
+     */
+    export abstract class BaseError extends Error {
+        protected static _setPrototypeOf: (o: any, proto: object | null) => any;
+    }
+}
+declare module BABYLON {
+    /** @ignore */
+    export class LoadFileError extends BaseError {
+        request?: WebRequest;
+        file?: File;
+        /**
+         * Creates a new LoadFileError
+         * @param message defines the message of the error
+         * @param request defines the optional web request
+         * @param file defines the optional file
+         */
+        constructor(message: string, object?: WebRequest | File);
+    }
+    /** @ignore */
+    export class RequestFileError extends BaseError {
+        request: WebRequest;
+        /**
+         * Creates a new LoadFileError
+         * @param message defines the message of the error
+         * @param request defines the optional web request
+         */
+        constructor(message: string, request: WebRequest);
+    }
+    /** @ignore */
+    export class ReadFileError extends BaseError {
+        file: File;
+        /**
+         * Creates a new ReadFileError
+         * @param message defines the message of the error
+         * @param file defines the optional file
+         */
+        constructor(message: string, file: File);
+    }
+    /**
      * @hidden
      */
     export class FileTools {
@@ -1357,17 +1397,18 @@ declare module BABYLON {
          */
         static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement>;
         /**
-         * Loads a file
-         * @param fileToLoad defines the file to load
-         * @param callback defines the callback to call when data is loaded
-         * @param progressCallBack defines the callback to call during loading process
+         * Reads a file from a File object
+         * @param file defines the file to load
+         * @param onSuccess defines the callback to call when data is loaded
+         * @param onProgress defines the callback to call during loading process
          * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
+         * @param onError defines the callback to call when an error occurs
          * @returns a file request object
          */
-        static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): IFileRequest;
+        static ReadFile(file: File, onSuccess: (data: any) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: ReadFileError) => void): IFileRequest;
         /**
-         * Loads a file
-         * @param url url string, ArrayBuffer, or Blob to load
+         * Loads a file from a url
+         * @param url url to load
          * @param onSuccess callback called when the file successfully loads
          * @param onProgress callback called while file is loading (if the server supports this mode)
          * @param offlineProvider defines the offline provider for caching
@@ -1375,7 +1416,18 @@ declare module BABYLON {
          * @param onError callback called when the file fails to load
          * @returns a file request object
          */
-        static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
+        static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest;
+        /**
+         * Loads a file
+         * @param url url to load
+         * @param onSuccess callback called when the file successfully loads
+         * @param onProgress callback called while file is loading (if the server supports this mode)
+         * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+         * @param onError callback called when the file fails to load
+         * @param onOpened callback called when the web request is opened
+         * @returns a file request object
+         */
+        static RequestFile(url: string, onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void, onProgress?: (event: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (error: RequestFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest;
         /**
          * Checks if the loaded document was accessed via `file:`-Protocol.
          * @returns boolean
@@ -32116,7 +32168,7 @@ declare module BABYLON {
         */
         static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement>;
         /**
-         * Loads a file
+         * Loads a file from a url
          * @param url url string, ArrayBuffer, or Blob to load
          * @param onSuccess callback called when the file successfully loads
          * @param onProgress callback called while file is loading (if the server supports this mode)
@@ -32158,14 +32210,15 @@ declare module BABYLON {
          */
         static ReadFileAsDataURL(fileToLoad: Blob, callback: (data: any) => void, progressCallback: (ev: ProgressEvent) => any): IFileRequest;
         /**
-         * Loads a file
-         * @param fileToLoad defines the file to load
-         * @param callback defines the callback to call when data is loaded
-         * @param progressCallBack defines the callback to call during loading process
+         * Reads a file from a File object
+         * @param file defines the file to load
+         * @param onSuccess defines the callback to call when data is loaded
+         * @param onProgress defines the callback to call during loading process
          * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
+         * @param onError defines the callback to call when an error occurs
          * @returns a file request object
          */
-        static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): IFileRequest;
+        static ReadFile(file: File, onSuccess: (data: any) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: ReadFileError) => void): IFileRequest;
         /**
          * Creates a data url from a given string content
          * @param content defines the content to convert
@@ -34839,9 +34892,17 @@ declare module BABYLON {
          */
         markAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void;
         /** @hidden */
-        _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
+        _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest;
         /** @hidden */
-        _loadFileAsync(url: string, useOfflineSupport?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
+        _loadFileAsync(url: string, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
+        /** @hidden */
+        _requestFile(url: string, onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (error: RequestFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest;
+        /** @hidden */
+        _requestFileAsync(url: string, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onOpened?: (request: WebRequest) => void): Promise<string | ArrayBuffer>;
+        /** @hidden */
+        _readFile(file: File, onSuccess: (data: string | ArrayBuffer) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: ReadFileError) => void): IFileRequest;
+        /** @hidden */
+        _readFileAsync(file: File, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
     }
 }
 declare module BABYLON {
@@ -41928,14 +41989,16 @@ declare module BABYLON {
          */
         createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
         /**
-         * Boolean indicating if the plugin can direct load specific data
+         * The callback that returns true if the data can be directly loaded.
+         * @param data string containing the file data
+         * @returns if the data can be loaded directly
          */
-        canDirectLoad?: (data: string) => boolean;
+        canDirectLoad?(data: string): boolean;
     }
     /**
-     * Interface used to define a SceneLoader plugin
+     * Interface used to define the base of ISceneLoaderPlugin and ISceneLoaderPluginAsync
      */
-    export interface ISceneLoaderPlugin {
+    export interface ISceneLoaderPluginBase {
         /**
          * The friendly name of this plugin.
          */
@@ -41944,6 +42007,53 @@ declare module BABYLON {
          * The file extensions supported by this plugin.
          */
         extensions: string | ISceneLoaderPluginExtensions;
+        /**
+         * The callback called when loading from a url.
+         * @param scene scene loading this url
+         * @param url url to load
+         * @param onSuccess callback called when the file successfully loads
+         * @param onProgress callback called while file is loading (if the server supports this mode)
+         * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+         * @param onError callback called when the file fails to load
+         * @returns a file request object
+         */
+        requestFile?(scene: Scene, url: string, onSuccess: (data: any, request?: WebRequest) => void, onProgress?: (ev: ProgressEvent) => void, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
+        /**
+         * The callback called when loading from a file object.
+         * @param scene scene loading this file
+         * @param file defines the file to load
+         * @param onSuccess defines the callback to call when data is loaded
+         * @param onProgress defines the callback to call during loading process
+         * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
+         * @param onError defines the callback to call when an error occurs
+         * @returns a file request object
+         */
+        readFile?(scene: Scene, file: File, onSuccess: (data: any) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
+        /**
+         * The callback that returns true if the data can be directly loaded.
+         * @param data string containing the file data
+         * @returns if the data can be loaded directly
+         */
+        canDirectLoad?(data: string): boolean;
+        /**
+         * The callback that returns the data to pass to the plugin if the data can be directly loaded.
+         * @param scene scene loading this data
+         * @param data string containing the data
+         * @returns data to pass to the plugin
+         */
+        directLoad?(scene: Scene, data: string): any;
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         * @param rootUrl the original root url
+         * @param responseURL the response url if available
+         * @returns the new root url
+         */
+        rewriteRootURL?(rootUrl: string, responseURL?: string): string;
+    }
+    /**
+     * Interface used to define a SceneLoader plugin
+     */
+    export interface ISceneLoaderPlugin extends ISceneLoaderPluginBase {
         /**
          * Import meshes into a scene.
          * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
@@ -41963,17 +42073,9 @@ declare module BABYLON {
          * @param data The data to import
          * @param rootUrl The root url for scene and resources
          * @param onError The callback when import fails
-         * @returns true if successful or false otherwise
+         * @returns True if successful or false otherwise
          */
-        load(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
-        /**
-         * The callback that returns true if the data can be directly loaded.
-         */
-        canDirectLoad?: (data: string) => boolean;
-        /**
-         * The callback that allows custom handling of the root url based on the response url.
-         */
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        load(scene: Scene, data: any, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
         /**
          * Load into an asset container.
          * @param scene The scene to load into
@@ -41982,20 +42084,12 @@ declare module BABYLON {
          * @param onError The callback when import fails
          * @returns The loaded asset container
          */
-        loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
+        loadAssetContainer(scene: Scene, data: any, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
     }
     /**
      * Interface used to define an async SceneLoader plugin
      */
-    export interface ISceneLoaderPluginAsync {
-        /**
-         * The friendly name of this plugin.
-         */
-        name: string;
-        /**
-         * The file extensions supported by this plugin.
-         */
-        extensions: string | ISceneLoaderPluginExtensions;
+    export interface ISceneLoaderPluginAsync extends ISceneLoaderPluginBase {
         /**
          * Import meshes into a scene.
          * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
@@ -42021,15 +42115,7 @@ declare module BABYLON {
          * @param fileName Defines the name of the file to load
          * @returns Nothing
          */
-        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
-        /**
-         * The callback that returns true if the data can be directly loaded.
-         */
-        canDirectLoad?: (data: string) => boolean;
-        /**
-         * The callback that allows custom handling of the root url based on the response url.
-         */
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        loadAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
         /**
          * Load into an asset container.
          * @param scene The scene to load into
@@ -42039,7 +42125,7 @@ declare module BABYLON {
          * @param fileName Defines the name of the file to load
          * @returns The loaded asset container
          */
-        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
+        loadAssetContainerAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
     }
     /**
      * Class used to load scene from various file formats using registered plugins
@@ -53177,7 +53263,7 @@ declare module BABYLON {
          * @param url defines the url to load from
          * @returns a promise that will fullfil when the material is fully loaded
          */
-        loadAsync(url: string): Promise<unknown>;
+        loadAsync(url: string): Promise<void>;
         private _gatherBlocks;
         /**
          * Generate a string containing the code declaration required to create an equivalent of this material
@@ -68038,6 +68124,72 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON {
     /**
+     * Interface for a data buffer
+     */
+    export interface IDataBuffer {
+        /**
+         * Reads bytes from the data buffer.
+         * @param byteOffset The byte offset to read
+         * @param byteLength The byte length to read
+         * @returns A promise that resolves when the bytes are read
+         */
+        readAsync(byteOffset: number, byteLength: number): Promise<ArrayBufferView>;
+        /**
+         * The byte length of the buffer.
+         */
+        readonly byteLength: number;
+    }
+    /**
+     * Utility class for reading from a data buffer
+     */
+    export class DataReader {
+        /**
+         * The data buffer associated with this data reader.
+         */
+        readonly buffer: IDataBuffer;
+        /**
+         * The current byte offset from the beginning of the data buffer.
+         */
+        byteOffset: number;
+        private _dataView;
+        private _dataByteOffset;
+        /**
+         * Constructor
+         * @param buffer The buffer to read
+         */
+        constructor(buffer: IDataBuffer);
+        /**
+         * Loads the given byte length.
+         * @param byteLength The byte length to load
+         * @returns A promise that resolves when the load is complete
+         */
+        loadAsync(byteLength: number): Promise<void>;
+        /**
+         * Read a unsigned 32-bit integer from the currently loaded data range.
+         * @returns The 32-bit integer read
+         */
+        readUint32(): number;
+        /**
+         * Read a byte array from the currently loaded data range.
+         * @param byteLength The byte length to read
+         * @returns The byte array read
+         */
+        readUint8Array(byteLength: number): Uint8Array;
+        /**
+         * Read a string from the currently loaded data range.
+         * @param byteLength The byte length to read
+         * @returns The string read
+         */
+        readString(byteLength: number): string;
+        /**
+         * Skips the given byte length the currently loaded data range.
+         * @param byteLength The byte length to skip
+         */
+        skipBytes(byteLength: number): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Mode that determines the coordinate system to use.
      */
     export enum GLTFLoaderCoordinateSystemMode {
@@ -68072,13 +68224,13 @@ declare module BABYLON {
      */
     export interface IGLTFLoaderData {
         /**
-         * Object that represents the glTF JSON.
+         * The object that represents the glTF JSON.
          */
         json: Object;
         /**
          * The BIN chunk of a binary glTF.
          */
-        bin: Nullable<ArrayBufferView>;
+        bin: Nullable<IDataBuffer>;
     }
     /**
      * Interface for extending the loader.
@@ -68177,6 +68329,12 @@ declare module BABYLON {
          * If true, no extra effects are applied to transparent pixels.
          */
         transparencyAsCoverage: boolean;
+        /**
+         * Defines if the loader should use range requests when load binary glTF files from HTTP.
+         * Enabling will disable offline support and glTF validator.
+         * Defaults to false.
+         */
+        useRangeRequests: boolean;
         /**
          * Function called before loading a url referenced by the asset.
          */
@@ -68295,6 +68453,28 @@ declare module BABYLON {
         /** @hidden */
         _clear(): void;
         /**
+         * The callback called when loading from a url.
+         * @param scene scene loading this url
+         * @param url url to load
+         * @param onSuccess callback called when the file successfully loads
+         * @param onProgress callback called while file is loading (if the server supports this mode)
+         * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+         * @param onError callback called when the file fails to load
+         * @returns a file request object
+         */
+        requestFile(scene: Scene, url: string, onSuccess: (data: any, request?: WebRequest) => void, onProgress?: (ev: ProgressEvent) => void, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
+        /**
+         * The callback called when loading from a file object.
+         * @param scene scene loading this file
+         * @param file defines the file to load
+         * @param onSuccess defines the callback to call when data is loaded
+         * @param onProgress defines the callback to call during loading process
+         * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
+         * @param onError defines the callback to call when an error occurs
+         * @returns a file request object
+         */
+        readFile(scene: Scene, file: File, onSuccess: (data: any) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
+        /**
          * Imports one or more meshes from the loaded glTF data and adds them to the scene
          * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
          * @param scene the scene the meshes should be added to
@@ -68319,7 +68499,7 @@ declare module BABYLON {
          * @param fileName Defines the name of the file to load
          * @returns a promise which completes when objects have been loaded to the scene
          */
-        loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
+        loadAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
         /**
          * Load into an asset container.
          * @param scene The scene to load into
@@ -68329,17 +68509,27 @@ declare module BABYLON {
          * @param fileName Defines the name of the file to load
          * @returns The loaded asset container
          */
-        loadAssetContainerAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
+        loadAssetContainerAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
         /**
-         * If the data string can be loaded directly.
-         * @param data string contianing the file data
+         * The callback that returns true if the data can be directly loaded.
+         * @param data string containing the file data
          * @returns if the data can be loaded directly
          */
         canDirectLoad(data: string): boolean;
         /**
-         * Rewrites a url by combining a root url and response url.
+         * The callback that returns the data to pass to the plugin if the data can be directly loaded.
+         * @param scene scene loading this data
+         * @param data string containing the data
+         * @returns data to pass to the plugin
          */
-        rewriteRootURL: (rootUrl: string, responseURL?: string) => string;
+        directLoad(scene: Scene, data: string): any;
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         * @param rootUrl the original root url
+         * @param responseURL the response url if available
+         * @returns the new root url
+         */
+        rewriteRootURL?(rootUrl: string, responseURL?: string): string;
         /**
          * Instantiates a glTF file loader plugin.
          * @returns the created plugin
@@ -68354,15 +68544,14 @@ declare module BABYLON {
          * @returns a promise that resolves when the asset is completely loaded.
          */
         whenCompleteAsync(): Promise<void>;
-        private _parseAsync;
         private _validateAsync;
         private _getLoader;
-        private _unpackBinary;
-        private _unpackBinaryV1;
-        private _unpackBinaryV2;
+        private _parseJson;
+        private _unpackBinaryAsync;
+        private _unpackBinaryV1Async;
+        private _unpackBinaryV2Async;
         private static _parseVersion;
         private static _compareVersion;
-        private static _decodeBufferToText;
         private static readonly _logSpaces;
         private _logIndentLevel;
         private _loggingEnabled;
@@ -69287,9 +69476,18 @@ declare module BABYLON.GLTF2 {
          * Define this method to modify the default behavior when loading buffer views.
          * @param context The context when loading the asset
          * @param bufferView The glTF buffer view property
-         * @returns A promise that resolves with the loaded buffer view when the load is complete or null if not handled
+         * @returns A promise that resolves with the loaded data when the load is complete or null if not handled
          */
         loadBufferViewAsync?(context: string, bufferView: IBufferView): Nullable<Promise<ArrayBufferView>>;
+        /**
+         * Define this method to modify the default behavior when loading buffers.
+         * @param context The context when loading the asset
+         * @param buffer The glTF buffer property
+         * @param byteOffset The byte offset to load
+         * @param byteLength The byte length to load
+         * @returns A promise that resolves with the loaded data when the load is complete or null if not handled
+         */
+        loadBufferAsync?(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Nullable<Promise<ArrayBufferView>>;
     }
 }
 declare module BABYLON.GLTF2 {
@@ -69325,6 +69523,7 @@ declare module BABYLON.GLTF2 {
         private _fileName;
         private _uniqueRootUrl;
         private _gltf;
+        private _bin;
         private _babylonScene;
         private _rootBabylonMesh;
         private _defaultBabylonMaterialData;
@@ -69350,9 +69549,17 @@ declare module BABYLON.GLTF2 {
          */
         readonly state: Nullable<GLTFLoaderState>;
         /**
-         * The glTF object parsed from the JSON.
+         * The object that represents the glTF JSON.
          */
         readonly gltf: IGLTF;
+        /**
+         * The BIN chunk of a binary glTF.
+         */
+        readonly bin: Nullable<IDataBuffer>;
+        /**
+         * The parent file loader.
+         */
+        readonly parent: GLTFFileLoader;
         /**
          * The Babylon scene when loading the asset.
          */
@@ -69561,6 +69768,7 @@ declare module BABYLON.GLTF2 {
         private _extensionsLoadSkinAsync;
         private _extensionsLoadUriAsync;
         private _extensionsLoadBufferViewAsync;
+        private _extensionsLoadBufferAsync;
         /**
          * Helper method called by a loader extension to load an glTF extension.
          * @param context The context when loading the asset
@@ -69579,6 +69787,12 @@ declare module BABYLON.GLTF2 {
          * @returns The promise returned by actionAsync or null if the extra does not exist
          */
         static LoadExtraAsync<TExtra = any, TResult = void>(context: string, property: IProperty, extensionName: string, actionAsync: (extraContext: string, extra: TExtra) => Nullable<Promise<TResult>>): Nullable<Promise<TResult>>;
+        /**
+         * Checks for presence of an extension.
+         * @param name The name of the extension to check
+         * @returns A boolean indicating the presence of the given extension name in `extensionsUsed`
+         */
+        isExtensionUsed(name: string): boolean;
         /**
          * Increments the indentation level and logs a message.
          * @param message The message to log
@@ -69607,7 +69821,7 @@ declare module BABYLON.GLTF2 {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Specification](https://github.com/KhronosGroup/glTF/blob/eb3e32332042e04691a5f35103f8c261e50d8f1e/extensions/2.0/Khronos/EXT_lights_image_based/README.md) (Experimental)
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Vendor/EXT_lights_image_based/README.md)
      */
     export class EXT_lights_image_based implements IGLTFLoaderExtension {
         /** The name of this extension. */
@@ -69649,7 +69863,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Specification](https://github.com/KhronosGroup/glTF/blob/1048d162a44dbcb05aefc1874bfd423cf60135a6/extensions/2.0/Khronos/KHR_lights_punctual/README.md) (Experimental)
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md)
      */
     export class KHR_lights implements IGLTFLoaderExtension {
         /** The name of this extension. */
@@ -69786,6 +70000,8 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         private _materialIndexLOD;
         private _materialSignalLODs;
         private _materialPromiseLODs;
+        private _indexLOD;
+        private _bufferLODs;
         /** @hidden */
         constructor(loader: GLTFLoader);
         /** @hidden */
@@ -69798,6 +70014,9 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
         /** @hidden */
         _loadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>>;
+        /** @hidden */
+        loadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Nullable<Promise<ArrayBufferView>>;
+        private _loadBufferLOD;
         /**
          * Gets an array of LOD properties from lowest to highest.
          */

@@ -398,7 +398,7 @@ var GLTFBinaryExtension = /** @class */ (function (_super) {
         if (id !== BinaryExtensionBufferName) {
             return false;
         }
-        onSuccess(this._bin);
+        this._bin.readAsync(0, this._bin.byteLength).then(onSuccess, function (error) { return onError(error.message); });
         return true;
     };
     GLTFBinaryExtension.prototype.loadTextureBufferAsync = function (gltfRuntime, id, onSuccess, onError) {
@@ -2687,6 +2687,92 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./glTF/dataReader.ts":
+/*!****************************!*\
+  !*** ./glTF/dataReader.ts ***!
+  \****************************/
+/*! exports provided: DataReader */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DataReader", function() { return DataReader; });
+/* harmony import */ var babylonjs_Misc_stringTools__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/stringTools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_stringTools__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_stringTools__WEBPACK_IMPORTED_MODULE_0__);
+
+/**
+ * Utility class for reading from a data buffer
+ */
+var DataReader = /** @class */ (function () {
+    /**
+     * Constructor
+     * @param buffer The buffer to read
+     */
+    function DataReader(buffer) {
+        /**
+         * The current byte offset from the beginning of the data buffer.
+         */
+        this.byteOffset = 0;
+        this.buffer = buffer;
+    }
+    /**
+     * Loads the given byte length.
+     * @param byteLength The byte length to load
+     * @returns A promise that resolves when the load is complete
+     */
+    DataReader.prototype.loadAsync = function (byteLength) {
+        var _this = this;
+        delete this._dataView;
+        delete this._dataByteOffset;
+        return this.buffer.readAsync(this.byteOffset, byteLength).then(function (data) {
+            _this._dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
+            _this._dataByteOffset = 0;
+        });
+    };
+    /**
+     * Read a unsigned 32-bit integer from the currently loaded data range.
+     * @returns The 32-bit integer read
+     */
+    DataReader.prototype.readUint32 = function () {
+        var value = this._dataView.getUint32(this._dataByteOffset, true);
+        this._dataByteOffset += 4;
+        this.byteOffset += 4;
+        return value;
+    };
+    /**
+     * Read a byte array from the currently loaded data range.
+     * @param byteLength The byte length to read
+     * @returns The byte array read
+     */
+    DataReader.prototype.readUint8Array = function (byteLength) {
+        var value = new Uint8Array(this._dataView.buffer, this._dataView.byteOffset + this._dataByteOffset, byteLength);
+        this._dataByteOffset += byteLength;
+        this.byteOffset += byteLength;
+        return value;
+    };
+    /**
+     * Read a string from the currently loaded data range.
+     * @param byteLength The byte length to read
+     * @returns The string read
+     */
+    DataReader.prototype.readString = function (byteLength) {
+        return babylonjs_Misc_stringTools__WEBPACK_IMPORTED_MODULE_0__["StringTools"].Decode(this.readUint8Array(byteLength));
+    };
+    /**
+     * Skips the given byte length the currently loaded data range.
+     * @param byteLength The byte length to skip
+     */
+    DataReader.prototype.skipBytes = function (byteLength) {
+        this._dataByteOffset += byteLength;
+        this.byteOffset += byteLength;
+    };
+    return DataReader;
+}());
+
+
+
+/***/ }),
+
 /***/ "./glTF/glTFFileLoader.ts":
 /*!********************************!*\
   !*** ./glTF/glTFFileLoader.ts ***!
@@ -2702,6 +2788,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GLTFFileLoader", function() { return GLTFFileLoader; });
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _dataReader__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./dataReader */ "./glTF/dataReader.ts");
+
+
 
 
 
@@ -2797,6 +2886,12 @@ var GLTFFileLoader = /** @class */ (function () {
          * If true, no extra effects are applied to transparent pixels.
          */
         this.transparencyAsCoverage = false;
+        /**
+         * Defines if the loader should use range requests when load binary glTF files from HTTP.
+         * Enabling will disable offline support and glTF validator.
+         * Defaults to false.
+         */
+        this.useRangeRequests = false;
         /**
          * Function called before loading a url referenced by the asset.
          */
@@ -3067,6 +3162,92 @@ var GLTFFileLoader = /** @class */ (function () {
         this.onExtensionLoadedObservable.clear();
     };
     /**
+     * The callback called when loading from a url.
+     * @param scene scene loading this url
+     * @param url url to load
+     * @param onSuccess callback called when the file successfully loads
+     * @param onProgress callback called while file is loading (if the server supports this mode)
+     * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+     * @param onError callback called when the file fails to load
+     * @returns a file request object
+     */
+    GLTFFileLoader.prototype.requestFile = function (scene, url, onSuccess, onProgress, useArrayBuffer, onError) {
+        var _this = this;
+        if (useArrayBuffer) {
+            if (this.useRangeRequests) {
+                if (this.validate) {
+                    babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Logger"].Warn("glTF validation is not supported when range requests are enabled");
+                }
+                var firstWebRequest_1;
+                var fileRequests_1 = new Array();
+                var aggregatedFileRequest_1 = {
+                    abort: function () { return fileRequests_1.forEach(function (fileRequest) { return fileRequest.abort(); }); },
+                    onCompleteObservable: new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]()
+                };
+                var dataBuffer_1 = {
+                    readAsync: function (byteOffset, byteLength) {
+                        return new Promise(function (resolve, reject) {
+                            fileRequests_1.push(scene._requestFile(url, function (data, webRequest) {
+                                firstWebRequest_1 = firstWebRequest_1 || webRequest;
+                                dataBuffer_1.byteLength = Number(webRequest.getResponseHeader("Content-Range").split("/")[1]);
+                                resolve(new Uint8Array(data));
+                            }, onProgress, true, true, function (error) {
+                                reject(error);
+                            }, function (webRequest) {
+                                webRequest.setRequestHeader("Range", "bytes=" + byteOffset + "-" + (byteOffset + byteLength - 1));
+                            }));
+                        });
+                    },
+                    byteLength: 0
+                };
+                this._unpackBinaryAsync(new _dataReader__WEBPACK_IMPORTED_MODULE_1__["DataReader"](dataBuffer_1)).then(function (loaderData) {
+                    aggregatedFileRequest_1.onCompleteObservable.notifyObservers(aggregatedFileRequest_1);
+                    onSuccess(loaderData, firstWebRequest_1);
+                }, onError);
+                return aggregatedFileRequest_1;
+            }
+            return scene._requestFile(url, function (data, request) {
+                var arrayBuffer = data;
+                _this._unpackBinaryAsync(new _dataReader__WEBPACK_IMPORTED_MODULE_1__["DataReader"]({
+                    readAsync: function (byteOffset, byteLength) { return Promise.resolve(new Uint8Array(arrayBuffer, byteOffset, byteLength)); },
+                    byteLength: arrayBuffer.byteLength
+                })).then(function (loaderData) {
+                    onSuccess(loaderData, request);
+                }, onError);
+            }, onProgress, true, true, onError);
+        }
+        return scene._requestFile(url, function (data, response) {
+            _this._validateAsync(scene, data, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Tools"].GetFolderPath(url), babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Tools"].GetFilename(url));
+            onSuccess({ json: _this._parseJson(data) }, response);
+        }, onProgress, true, false, onError);
+    };
+    /**
+     * The callback called when loading from a file object.
+     * @param scene scene loading this file
+     * @param file defines the file to load
+     * @param onSuccess defines the callback to call when data is loaded
+     * @param onProgress defines the callback to call during loading process
+     * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
+     * @param onError defines the callback to call when an error occurs
+     * @returns a file request object
+     */
+    GLTFFileLoader.prototype.readFile = function (scene, file, onSuccess, onProgress, useArrayBuffer, onError) {
+        var _this = this;
+        return scene._readFile(file, function (data) {
+            _this._validateAsync(scene, data, "file:", file.name);
+            if (useArrayBuffer) {
+                var arrayBuffer_1 = data;
+                _this._unpackBinaryAsync(new _dataReader__WEBPACK_IMPORTED_MODULE_1__["DataReader"]({
+                    readAsync: function (byteOffset, byteLength) { return Promise.resolve(new Uint8Array(arrayBuffer_1, byteOffset, byteLength)); },
+                    byteLength: arrayBuffer_1.byteLength
+                })).then(onSuccess, onError);
+            }
+            else {
+                onSuccess({ json: _this._parseJson(data) });
+            }
+        }, onProgress, useArrayBuffer, onError);
+    };
+    /**
      * Imports one or more meshes from the loaded glTF data and adds them to the scene
      * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
      * @param scene the scene the meshes should be added to
@@ -3077,12 +3258,11 @@ var GLTFFileLoader = /** @class */ (function () {
      * @returns a promise containg the loaded meshes, particles, skeletons and animations
      */
     GLTFFileLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onProgress, fileName) {
-        var _this = this;
-        return this._parseAsync(scene, data, rootUrl, fileName).then(function (loaderData) {
-            _this._log("Loading " + (fileName || ""));
-            _this._loader = _this._getLoader(loaderData);
-            return _this._loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onProgress, fileName);
-        });
+        this.onParsedObservable.notifyObservers(data);
+        this.onParsedObservable.clear();
+        this._log("Loading " + (fileName || ""));
+        this._loader = this._getLoader(data);
+        return this._loader.importMeshAsync(meshesNames, scene, data, rootUrl, onProgress, fileName);
     };
     /**
      * Imports all objects from the loaded glTF data and adds them to the scene
@@ -3094,12 +3274,11 @@ var GLTFFileLoader = /** @class */ (function () {
      * @returns a promise which completes when objects have been loaded to the scene
      */
     GLTFFileLoader.prototype.loadAsync = function (scene, data, rootUrl, onProgress, fileName) {
-        var _this = this;
-        return this._parseAsync(scene, data, rootUrl, fileName).then(function (loaderData) {
-            _this._log("Loading " + (fileName || ""));
-            _this._loader = _this._getLoader(loaderData);
-            return _this._loader.loadAsync(scene, loaderData, rootUrl, onProgress, fileName);
-        });
+        this.onParsedObservable.notifyObservers(data);
+        this.onParsedObservable.clear();
+        this._log("Loading " + (fileName || ""));
+        this._loader = this._getLoader(data);
+        return this._loader.loadAsync(scene, data, rootUrl, onProgress, fileName);
     };
     /**
      * Load into an asset container.
@@ -3111,39 +3290,46 @@ var GLTFFileLoader = /** @class */ (function () {
      * @returns The loaded asset container
      */
     GLTFFileLoader.prototype.loadAssetContainerAsync = function (scene, data, rootUrl, onProgress, fileName) {
-        var _this = this;
-        return this._parseAsync(scene, data, rootUrl, fileName).then(function (loaderData) {
-            _this._log("Loading " + (fileName || ""));
-            _this._loader = _this._getLoader(loaderData);
-            // Get materials/textures when loading to add to container
-            var materials = [];
-            _this.onMaterialLoadedObservable.add(function (material) {
-                materials.push(material);
-            });
-            var textures = [];
-            _this.onTextureLoadedObservable.add(function (texture) {
-                textures.push(texture);
-            });
-            return _this._loader.importMeshAsync(null, scene, loaderData, rootUrl, onProgress, fileName).then(function (result) {
-                var container = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["AssetContainer"](scene);
-                Array.prototype.push.apply(container.meshes, result.meshes);
-                Array.prototype.push.apply(container.particleSystems, result.particleSystems);
-                Array.prototype.push.apply(container.skeletons, result.skeletons);
-                Array.prototype.push.apply(container.animationGroups, result.animationGroups);
-                Array.prototype.push.apply(container.materials, materials);
-                Array.prototype.push.apply(container.textures, textures);
-                container.removeAllFromScene();
-                return container;
-            });
+        this._log("Loading " + (fileName || ""));
+        this._loader = this._getLoader(data);
+        // Get materials/textures when loading to add to container
+        var materials = [];
+        this.onMaterialLoadedObservable.add(function (material) {
+            materials.push(material);
+        });
+        var textures = [];
+        this.onTextureLoadedObservable.add(function (texture) {
+            textures.push(texture);
+        });
+        return this._loader.importMeshAsync(null, scene, data, rootUrl, onProgress, fileName).then(function (result) {
+            var container = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["AssetContainer"](scene);
+            Array.prototype.push.apply(container.meshes, result.meshes);
+            Array.prototype.push.apply(container.particleSystems, result.particleSystems);
+            Array.prototype.push.apply(container.skeletons, result.skeletons);
+            Array.prototype.push.apply(container.animationGroups, result.animationGroups);
+            Array.prototype.push.apply(container.materials, materials);
+            Array.prototype.push.apply(container.textures, textures);
+            container.removeAllFromScene();
+            return container;
         });
     };
     /**
-     * If the data string can be loaded directly.
-     * @param data string contianing the file data
+     * The callback that returns true if the data can be directly loaded.
+     * @param data string containing the file data
      * @returns if the data can be loaded directly
      */
     GLTFFileLoader.prototype.canDirectLoad = function (data) {
-        return ((data.indexOf("scene") !== -1) && (data.indexOf("node") !== -1));
+        return data.indexOf("asset") !== -1 && data.indexOf("version") !== -1;
+    };
+    /**
+     * The callback that returns the data to pass to the plugin if the data can be directly loaded.
+     * @param scene scene loading this data
+     * @param data string containing the data
+     * @returns data to pass to the plugin
+     */
+    GLTFFileLoader.prototype.directLoad = function (scene, data) {
+        this._validateAsync(scene, data);
+        return { json: this._parseJson(data) };
     };
     /**
      * Instantiates a glTF file loader plugin.
@@ -3177,26 +3363,9 @@ var GLTFFileLoader = /** @class */ (function () {
             });
         });
     };
-    GLTFFileLoader.prototype._parseAsync = function (scene, data, rootUrl, fileName) {
-        var _this = this;
-        return Promise.resolve().then(function () {
-            return _this._validateAsync(scene, data, rootUrl, fileName).then(function () {
-                var unpacked = (data instanceof ArrayBuffer) ? _this._unpackBinary(data) : { json: data, bin: null };
-                _this._startPerformanceCounter("Parse JSON");
-                _this._log("JSON length: " + unpacked.json.length);
-                var loaderData = {
-                    json: JSON.parse(unpacked.json),
-                    bin: unpacked.bin
-                };
-                _this._endPerformanceCounter("Parse JSON");
-                _this.onParsedObservable.notifyObservers(loaderData);
-                _this.onParsedObservable.clear();
-                return loaderData;
-            });
-        });
-    };
     GLTFFileLoader.prototype._validateAsync = function (scene, data, rootUrl, fileName) {
         var _this = this;
+        if (rootUrl === void 0) { rootUrl = ""; }
         if (!this.validate || typeof GLTFValidator === "undefined") {
             return Promise.resolve();
         }
@@ -3204,12 +3373,12 @@ var GLTFFileLoader = /** @class */ (function () {
         var options = {
             externalResourceFunction: function (uri) {
                 return _this.preprocessUrlAsync(rootUrl + uri)
-                    .then(function (url) { return scene._loadFileAsync(url, true, true); })
+                    .then(function (url) { return scene._loadFileAsync(url, undefined, true, true); })
                     .then(function (data) { return new Uint8Array(data); });
             }
         };
-        if (fileName && fileName.substr(0, 5) !== "data:") {
-            options.uri = (rootUrl === "file:" ? fileName : "" + rootUrl + fileName);
+        if (fileName) {
+            options.uri = (rootUrl === "file:" ? fileName : rootUrl + fileName);
         }
         var promise = (data instanceof ArrayBuffer)
             ? GLTFValidator.validateBytes(new Uint8Array(data), options)
@@ -3252,105 +3421,121 @@ var GLTFFileLoader = /** @class */ (function () {
         }
         return createLoader(this);
     };
-    GLTFFileLoader.prototype._unpackBinary = function (data) {
-        this._startPerformanceCounter("Unpack binary");
-        this._log("Binary length: " + data.byteLength);
-        var Binary = {
-            Magic: 0x46546C67
-        };
-        var binaryReader = new BinaryReader(data);
-        var magic = binaryReader.readUint32();
-        if (magic !== Binary.Magic) {
-            throw new Error("Unexpected magic: " + magic);
-        }
-        var version = binaryReader.readUint32();
-        if (this.loggingEnabled) {
-            this._log("Binary version: " + version);
-        }
-        var unpacked;
-        switch (version) {
-            case 1: {
-                unpacked = this._unpackBinaryV1(binaryReader);
-                break;
-            }
-            case 2: {
-                unpacked = this._unpackBinaryV2(binaryReader);
-                break;
-            }
-            default: {
-                throw new Error("Unsupported version: " + version);
-            }
-        }
-        this._endPerformanceCounter("Unpack binary");
-        return unpacked;
+    GLTFFileLoader.prototype._parseJson = function (json) {
+        this._startPerformanceCounter("Parse JSON");
+        this._log("JSON length: " + json.length);
+        var parsed = JSON.parse(json);
+        this._endPerformanceCounter("Parse JSON");
+        return parsed;
     };
-    GLTFFileLoader.prototype._unpackBinaryV1 = function (binaryReader) {
+    GLTFFileLoader.prototype._unpackBinaryAsync = function (dataReader) {
+        var _this = this;
+        this._startPerformanceCounter("Unpack Binary");
+        // Read magic + version + length + json length + json format
+        return dataReader.loadAsync(20).then(function () {
+            var Binary = {
+                Magic: 0x46546C67
+            };
+            var magic = dataReader.readUint32();
+            if (magic !== Binary.Magic) {
+                throw new Error("Unexpected magic: " + magic);
+            }
+            var version = dataReader.readUint32();
+            if (_this.loggingEnabled) {
+                _this._log("Binary version: " + version);
+            }
+            var length = dataReader.readUint32();
+            if (length !== dataReader.buffer.byteLength) {
+                throw new Error("Length in header does not match actual data length: " + length + " != " + dataReader.buffer.byteLength);
+            }
+            var unpacked;
+            switch (version) {
+                case 1: {
+                    unpacked = _this._unpackBinaryV1Async(dataReader);
+                    break;
+                }
+                case 2: {
+                    unpacked = _this._unpackBinaryV2Async(dataReader);
+                    break;
+                }
+                default: {
+                    throw new Error("Unsupported version: " + version);
+                }
+            }
+            _this._endPerformanceCounter("Unpack Binary");
+            return unpacked;
+        });
+    };
+    GLTFFileLoader.prototype._unpackBinaryV1Async = function (dataReader) {
         var ContentFormat = {
             JSON: 0
         };
-        var length = binaryReader.readUint32();
-        if (length != binaryReader.getLength()) {
-            throw new Error("Length in header does not match actual data length: " + length + " != " + binaryReader.getLength());
+        var contentLength = dataReader.readUint32();
+        var contentFormat = dataReader.readUint32();
+        if (contentFormat !== ContentFormat.JSON) {
+            throw new Error("Unexpected content format: " + contentFormat);
         }
-        var contentLength = binaryReader.readUint32();
-        var contentFormat = binaryReader.readUint32();
-        var content;
-        switch (contentFormat) {
-            case ContentFormat.JSON: {
-                content = GLTFFileLoader._decodeBufferToText(binaryReader.readUint8Array(contentLength));
-                break;
-            }
-            default: {
-                throw new Error("Unexpected content format: " + contentFormat);
-            }
+        var bodyLength = dataReader.buffer.byteLength - dataReader.byteOffset;
+        var data = { json: this._parseJson(dataReader.readString(contentLength)), bin: null };
+        if (bodyLength !== 0) {
+            var startByteOffset_1 = dataReader.byteOffset;
+            data.bin = {
+                readAsync: function (byteOffset, byteLength) { return dataReader.buffer.readAsync(startByteOffset_1 + byteOffset, byteLength); },
+                byteLength: bodyLength
+            };
         }
-        var bytesRemaining = binaryReader.getLength() - binaryReader.getPosition();
-        var body = binaryReader.readUint8Array(bytesRemaining);
-        return {
-            json: content,
-            bin: body
-        };
+        return Promise.resolve(data);
     };
-    GLTFFileLoader.prototype._unpackBinaryV2 = function (binaryReader) {
+    GLTFFileLoader.prototype._unpackBinaryV2Async = function (dataReader) {
+        var _this = this;
         var ChunkFormat = {
             JSON: 0x4E4F534A,
             BIN: 0x004E4942
         };
-        var length = binaryReader.readUint32();
-        if (length !== binaryReader.getLength()) {
-            throw new Error("Length in header does not match actual data length: " + length + " != " + binaryReader.getLength());
-        }
-        // JSON chunk
-        var chunkLength = binaryReader.readUint32();
-        var chunkFormat = binaryReader.readUint32();
+        // Read the JSON chunk header.
+        var chunkLength = dataReader.readUint32();
+        var chunkFormat = dataReader.readUint32();
         if (chunkFormat !== ChunkFormat.JSON) {
             throw new Error("First chunk format is not JSON");
         }
-        var json = GLTFFileLoader._decodeBufferToText(binaryReader.readUint8Array(chunkLength));
-        // Look for BIN chunk
-        var bin = null;
-        while (binaryReader.getPosition() < binaryReader.getLength()) {
-            var chunkLength_1 = binaryReader.readUint32();
-            var chunkFormat_1 = binaryReader.readUint32();
-            switch (chunkFormat_1) {
-                case ChunkFormat.JSON: {
-                    throw new Error("Unexpected JSON chunk");
-                }
-                case ChunkFormat.BIN: {
-                    bin = binaryReader.readUint8Array(chunkLength_1);
-                    break;
-                }
-                default: {
-                    // ignore unrecognized chunkFormat
-                    binaryReader.skipBytes(chunkLength_1);
-                    break;
-                }
-            }
+        // Bail if there are no other chunks.
+        if (dataReader.byteOffset + chunkLength === dataReader.buffer.byteLength) {
+            return dataReader.loadAsync(chunkLength).then(function () {
+                return { json: _this._parseJson(dataReader.readString(chunkLength)), bin: null };
+            });
         }
-        return {
-            json: json,
-            bin: bin
-        };
+        // Read the JSON chunk and the length and type of the next chunk.
+        return dataReader.loadAsync(chunkLength + 8).then(function () {
+            var data = { json: _this._parseJson(dataReader.readString(chunkLength)), bin: null };
+            var readAsync = function () {
+                var chunkLength = dataReader.readUint32();
+                var chunkFormat = dataReader.readUint32();
+                switch (chunkFormat) {
+                    case ChunkFormat.JSON: {
+                        throw new Error("Unexpected JSON chunk");
+                    }
+                    case ChunkFormat.BIN: {
+                        var startByteOffset_2 = dataReader.byteOffset;
+                        data.bin = {
+                            readAsync: function (byteOffset, byteLength) { return dataReader.buffer.readAsync(startByteOffset_2 + byteOffset, byteLength); },
+                            byteLength: chunkLength
+                        };
+                        dataReader.skipBytes(chunkLength);
+                        break;
+                    }
+                    default: {
+                        // ignore unrecognized chunkFormat
+                        dataReader.skipBytes(chunkLength);
+                        break;
+                    }
+                }
+                if (dataReader.byteOffset !== dataReader.buffer.byteLength) {
+                    return dataReader.loadAsync(8).then(readAsync);
+                }
+                return Promise.resolve(data);
+            };
+            return readAsync();
+        });
     };
     GLTFFileLoader._parseVersion = function (version) {
         if (version === "1.0" || version === "1.0.1") {
@@ -3383,17 +3568,6 @@ var GLTFFileLoader = /** @class */ (function () {
         }
         return 0;
     };
-    GLTFFileLoader._decodeBufferToText = function (buffer) {
-        if (typeof TextDecoder !== "undefined") {
-            return new TextDecoder().decode(buffer);
-        }
-        var result = "";
-        var length = buffer.byteLength;
-        for (var i = 0; i < length; i++) {
-            result += String.fromCharCode(buffer[i]);
-        }
-        return result;
-    };
     /** @hidden */
     GLTFFileLoader.prototype._logOpen = function (message) {
         this._log(message);
@@ -3405,7 +3579,7 @@ var GLTFFileLoader = /** @class */ (function () {
     };
     GLTFFileLoader.prototype._logEnabled = function (message) {
         var spaces = GLTFFileLoader._logSpaces.substr(0, this._logIndentLevel * 2);
-        babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Tools"].Log("" + spaces + message);
+        babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Logger"].Log("" + spaces + message);
     };
     GLTFFileLoader.prototype._logDisabled = function (message) {
     };
@@ -3439,33 +3613,6 @@ var GLTFFileLoader = /** @class */ (function () {
     return GLTFFileLoader;
 }());
 
-var BinaryReader = /** @class */ (function () {
-    function BinaryReader(arrayBuffer) {
-        this._arrayBuffer = arrayBuffer;
-        this._dataView = new DataView(arrayBuffer);
-        this._byteOffset = 0;
-    }
-    BinaryReader.prototype.getPosition = function () {
-        return this._byteOffset;
-    };
-    BinaryReader.prototype.getLength = function () {
-        return this._arrayBuffer.byteLength;
-    };
-    BinaryReader.prototype.readUint32 = function () {
-        var value = this._dataView.getUint32(this._byteOffset, true);
-        this._byteOffset += 4;
-        return value;
-    };
-    BinaryReader.prototype.readUint8Array = function (length) {
-        var value = new Uint8Array(this._arrayBuffer, this._byteOffset, length);
-        this._byteOffset += length;
-        return value;
-    };
-    BinaryReader.prototype.skipBytes = function (length) {
-        this._byteOffset += length;
-    };
-    return BinaryReader;
-}());
 if (babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"]) {
     babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].RegisterPlugin(new GLTFFileLoader());
 }
