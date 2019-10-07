@@ -32,7 +32,7 @@ export class UniformBuffer {
     private _needSync: boolean;
     private _noUBO: boolean;
     private _currentEffect: Effect;
-    
+
     public _alreadyBound = false;
 
     // Pool for avoiding memory leaks
