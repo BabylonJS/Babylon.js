@@ -17,13 +17,14 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
     public readonly name = NAME;
 
     /** Defines whether this extension is enabled. */
-    public enabled = true;
+    public enabled: boolean;
 
     private _loader: GLTFLoader;
 
     /** @hidden */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
+        this.enabled = this._loader.isExtensionUsed(NAME);
     }
 
     /** @hidden */
