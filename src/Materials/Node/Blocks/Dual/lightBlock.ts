@@ -181,7 +181,7 @@ export class LightBlock extends NodeMaterialBlock {
         if (!this.light) {
             MaterialHelper.BindLights(scene, mesh, effect, true, nodeMaterial.maxSimultaneousLights, false);
         } else {
-            MaterialHelper.BindLight(this.light, this._lightId, scene, mesh, effect, true, false);
+            MaterialHelper.BindLight(this.light, this._lightId, scene, effect, true, false);
         }
     }
 
