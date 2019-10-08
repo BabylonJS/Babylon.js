@@ -53959,6 +53959,9 @@ declare module BABYLON {
          * Gets or sets a string indicating that this uniform must be defined under a #ifdef
          */
         define: string;
+        /** @hidden */
+        _prioritizeVertex: boolean;
+        private _target;
         /** Gets or sets the target of that connection point */
         target: NodeMaterialBlockTargets;
         /**
