@@ -26,8 +26,18 @@ declare type InstancedMesh = import('../Meshes/instancedMesh').InstancedMesh;
 
 declare var BABYLON: any;
 
+/**
+ * Options for compiling materials.
+ */
 export interface IMaterialCompilationOptions {
+    /**
+     * Defines whether clip planes are enabled.
+     */
     clipPlane: boolean;
+
+    /**
+     * Defines whether instances are enabled.
+     */
     useInstances: boolean;
 }
 
