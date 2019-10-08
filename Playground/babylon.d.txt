@@ -1379,7 +1379,12 @@ declare module BABYLON {
         static SetCorsBehavior(url: string | string[], element: {
             crossOrigin: string | null;
         }): void;
-        private static _ArrayBufferToBase64;
+        /**
+         * Encode an array buffer into a base64 string
+         * @param buffer defines the buffer to encode
+         * @returns a string containing the base64 version of the buffer
+         */
+        static ArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): string;
         /**
          * Loads an image as an HTMLImageElement.
          * @param input url string, ArrayBuffer, or Blob to load
@@ -27013,6 +27018,14 @@ declare module BABYLON {
          */
         color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3;
         /**
+         * Interpolates a Color4 linearly
+         * @param startValue Start value of the animation curve
+         * @param endValue End value of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated Color3 value
+         */
+        color4InterpolateFunction(startValue: Color4, endValue: Color4, gradient: number): Color4;
+        /**
          * @hidden Internal use only
          */private _getKeyValue(value: any): any;
         /**
@@ -27045,81 +27058,45 @@ declare module BABYLON {
         /**
          * Float animation type
          */
-        private static _ANIMATIONTYPE_FLOAT;
+        static readonly ANIMATIONTYPE_FLOAT: number;
         /**
          * Vector3 animation type
          */
-        private static _ANIMATIONTYPE_VECTOR3;
+        static readonly ANIMATIONTYPE_VECTOR3: number;
         /**
          * Quaternion animation type
          */
-        private static _ANIMATIONTYPE_QUATERNION;
+        static readonly ANIMATIONTYPE_QUATERNION: number;
         /**
          * Matrix animation type
          */
-        private static _ANIMATIONTYPE_MATRIX;
+        static readonly ANIMATIONTYPE_MATRIX: number;
         /**
          * Color3 animation type
          */
-        private static _ANIMATIONTYPE_COLOR3;
+        static readonly ANIMATIONTYPE_COLOR3: number;
+        /**
+         * Color3 animation type
+         */
+        static readonly ANIMATIONTYPE_COLOR4: number;
         /**
          * Vector2 animation type
          */
-        private static _ANIMATIONTYPE_VECTOR2;
+        static readonly ANIMATIONTYPE_VECTOR2: number;
         /**
          * Size animation type
          */
-        private static _ANIMATIONTYPE_SIZE;
+        static readonly ANIMATIONTYPE_SIZE: number;
         /**
          * Relative Loop Mode
          */
-        private static _ANIMATIONLOOPMODE_RELATIVE;
+        static readonly ANIMATIONLOOPMODE_RELATIVE: number;
         /**
          * Cycle Loop Mode
          */
-        private static _ANIMATIONLOOPMODE_CYCLE;
-        /**
-         * Constant Loop Mode
-         */
-        private static _ANIMATIONLOOPMODE_CONSTANT;
-        /**
-         * Get the float animation type
-         */
-        static readonly ANIMATIONTYPE_FLOAT: number;
-        /**
-         * Get the Vector3 animation type
-         */
-        static readonly ANIMATIONTYPE_VECTOR3: number;
-        /**
-         * Get the Vector2 animation type
-         */
-        static readonly ANIMATIONTYPE_VECTOR2: number;
-        /**
-         * Get the Size animation type
-         */
-        static readonly ANIMATIONTYPE_SIZE: number;
-        /**
-         * Get the Quaternion animation type
-         */
-        static readonly ANIMATIONTYPE_QUATERNION: number;
-        /**
-         * Get the Matrix animation type
-         */
-        static readonly ANIMATIONTYPE_MATRIX: number;
-        /**
-         * Get the Color3 animation type
-         */
-        static readonly ANIMATIONTYPE_COLOR3: number;
-        /**
-         * Get the Relative Loop Mode
-         */
-        static readonly ANIMATIONLOOPMODE_RELATIVE: number;
-        /**
-         * Get the Cycle Loop Mode
-         */
         static readonly ANIMATIONLOOPMODE_CYCLE: number;
         /**
-         * Get the Constant Loop Mode
+         * Constant Loop Mode
          */
         static readonly ANIMATIONLOOPMODE_CONSTANT: number;
         /** @hidden */private static _UniversalLerp(left: any, right: any, amount: number): any;
@@ -31498,12 +31475,6 @@ declare module BABYLON {
          * @returns the angle in radians
          */
         static ToRadians(angle: number): number;
-        /**
-         * Encode a buffer to a base64 string
-         * @param buffer defines the buffer to encode
-         * @returns the encoded string
-         */
-        static EncodeArrayBufferTobase64(buffer: ArrayBuffer): string;
         /**
          * Returns an array if obj is not an array
          * @param obj defines the object to evaluate as an array
@@ -53140,6 +53111,8 @@ declare module BABYLON {
          * Gets or sets a string indicating that this uniform must be defined under a #ifdef
          */
         define: string;
+        /** @hidden */private _prioritizeVertex: boolean;
+        private _target;
         /** Gets or sets the target of that connection point */
         target: NodeMaterialBlockTargets;
         /**
