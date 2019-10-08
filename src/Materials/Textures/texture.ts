@@ -376,7 +376,6 @@ export class Texture extends BaseTexture {
             this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
-        this.name = url;
         this.url = url;
         this._buffer = buffer;
         this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
