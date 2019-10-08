@@ -11,7 +11,6 @@ import { Constants } from "./constants";
 import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { IColor4Like, IViewportLike } from '../Maths/math.like';
-import { EngineCapabilities } from './engineCapabilities';
 
 declare const global: any;
 
@@ -97,47 +96,42 @@ export class NullEngine extends Engine {
         // Init caps
         // We consider we are on a webgl1 capable device
 
-        this._caps = new EngineCapabilities();
-        this._caps.maxTexturesImageUnits = 16;
-        this._caps.maxVertexTextureImageUnits = 16;
-        this._caps.maxTextureSize = 512;
-        this._caps.maxCubemapTextureSize = 512;
-        this._caps.maxRenderTextureSize = 512;
-        this._caps.maxVertexAttribs = 16;
-        this._caps.maxVaryingVectors = 16;
-        this._caps.maxFragmentUniformVectors = 16;
-        this._caps.maxVertexUniformVectors = 16;
-
-        // Extensions
-        this._caps.standardDerivatives = false;
-
-        this._caps.astc = null;
-        this._caps.s3tc = null;
-        this._caps.pvrtc = null;
-        this._caps.etc1 = null;
-        this._caps.etc2 = null;
-
-        this._caps.textureAnisotropicFilterExtension = null;
-        this._caps.maxAnisotropy = 0;
-        this._caps.uintIndices = false;
-        this._caps.fragmentDepthSupported = false;
-        this._caps.highPrecisionShaderSupported = true;
-
-        this._caps.colorBufferFloat = false;
-        this._caps.textureFloat = false;
-        this._caps.textureFloatLinearFiltering = false;
-        this._caps.textureFloatRender = false;
-
-        this._caps.textureHalfFloat = false;
-        this._caps.textureHalfFloatLinearFiltering = false;
-        this._caps.textureHalfFloatRender = false;
-
-        this._caps.textureLOD = false;
-        this._caps.drawBuffersExtension = false;
-
-        this._caps.depthTextureExtension = false;
-        this._caps.vertexArrayObject = false;
-        this._caps.instancedArrays = false;
+        this._caps = {
+            maxTexturesImageUnits: 16,
+            maxVertexTextureImageUnits: 16,
+            maxCombinedTexturesImageUnits: 32,
+            maxTextureSize: 512,
+            maxCubemapTextureSize: 512,
+            maxRenderTextureSize: 512,
+            maxVertexAttribs: 16,
+            maxVaryingVectors: 16,
+            maxFragmentUniformVectors: 16,
+            maxVertexUniformVectors: 16,
+            standardDerivatives: false,
+            astc: null,
+            pvrtc: null,
+            etc1: null,
+            etc2: null,
+            maxAnisotropy: 0,
+            uintIndices: false,
+            fragmentDepthSupported: false,
+            highPrecisionShaderSupported: true,
+            colorBufferFloat: false,
+            textureFloat: false,
+            textureFloatLinearFiltering: false,
+            textureFloatRender: false,
+            textureHalfFloat: false,
+            textureHalfFloatLinearFiltering: false,
+            textureHalfFloatRender: false,
+            textureLOD: false,
+            drawBuffersExtension: false,
+            depthTextureExtension: false,
+            vertexArrayObject: false,
+            instancedArrays: false,
+            canUseTimestampForTimerQuery: false,
+            maxMSAASamples: 1,
+            blendMinMax: false
+        };
 
         Logger.Log(`Babylon.js v${Engine.Version} - Null engine`);
 

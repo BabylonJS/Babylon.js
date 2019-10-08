@@ -2893,6 +2893,10 @@ var GLTFFileLoader = /** @class */ (function () {
          */
         this.useRangeRequests = false;
         /**
+         * Defines if the loader should create instances when multiple glTF nodes point to the same glTF mesh. Defaults to true.
+         */
+        this.createInstances = true;
+        /**
          * Function called before loading a url referenced by the asset.
          */
         this.preprocessUrlAsync = function (url) { return Promise.resolve(url); };

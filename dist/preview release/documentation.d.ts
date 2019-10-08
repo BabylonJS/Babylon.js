@@ -1147,6 +1147,12 @@ declare module BABYLON {
          * @returns The decoded string
          */
         static Decode(buffer: Uint8Array | Uint16Array): string;
+        /**
+         * Encode a buffer to a base64 string
+         * @param buffer defines the buffer to encode
+         * @returns the encoded string
+         */
+        static EncodeArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): string;
     }
 }
 declare module BABYLON {
@@ -1385,12 +1391,6 @@ declare module BABYLON {
         static SetCorsBehavior(url: string | string[], element: {
             crossOrigin: string | null;
         }): void;
-        /**
-         * Encode an array buffer into a base64 string
-         * @param buffer defines the buffer to encode
-         * @returns a string containing the base64 version of the buffer
-         */
-        static ArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): string;
         /**
          * Loads an image as an HTMLImageElement.
          * @param input url string, ArrayBuffer, or Blob to load
@@ -68316,6 +68316,10 @@ declare module BABYLON {
          * Defaults to false.
          */
         useRangeRequests: boolean;
+        /**
+         * Defines if the loader should create instances when multiple glTF nodes point to the same glTF mesh. Defaults to true.
+         */
+        createInstances: boolean;
         /**
          * Function called before loading a url referenced by the asset.
          */
