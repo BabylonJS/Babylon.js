@@ -15,7 +15,6 @@ export class WebXRControllerModelLoader {
      */
     constructor(input: WebXRInput) {
         input.onControllerAddedObservable.add((c) => {
-            console.log("controller added");
             let controllerModel: WebVRController;
             if (c.inputSource.gamepad && c.inputSource.gamepad.id === "htc-vive") {
                 controllerModel = new ViveController(c.inputSource.gamepad);
