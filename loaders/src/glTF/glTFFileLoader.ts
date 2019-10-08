@@ -208,6 +208,11 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     public useRangeRequests = false;
 
     /**
+     * Defines if the loader should create instances when multiple glTF nodes point to the same glTF mesh. Defaults to true.
+     */
+    public createInstances = true;
+
+    /**
      * Function called before loading a url referenced by the asset.
      */
     public preprocessUrlAsync = (url: string) => Promise.resolve(url);
