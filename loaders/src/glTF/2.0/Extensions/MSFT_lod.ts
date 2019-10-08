@@ -66,6 +66,8 @@ export class MSFT_lod implements IGLTFLoaderExtension {
 
     /** @hidden */
     public dispose() {
+        this._disposeUnusedMaterials();
+
         delete this._loader;
 
         this._nodeIndexLOD = null;
@@ -340,7 +342,8 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                 if (material._data) {
                     for (const drawMode in material._data) {
                         const data = material._data[drawMode];
-                        if (data.babylonMeshes.length === 0) {
+                        if (data.babylonMeshes.every((babylonMesh) => babylonMesh.material !== data.babylonMaterial)) {
+                            // TODO: check if texture is in use instead of force disposing textures
                             data.babylonMaterial.dispose(false, true);
                             delete material._data[drawMode];
                         }
