@@ -85,6 +85,7 @@
 - Load glTF extras into BJS metadata ([pjoe](https://github.com/pjoe))
 - Added support for morph target names via `mesh.extras.targetNames` when loading a glTF ([zeux](https://github.com/zeux))
 - Added support for using HTTP range requests when loading `MSFT_lod` extension from a glTF binary. ([bghgary](https://github.com/bghgary))
+- Added a flag to enable/disable creation of instances for glTF loader. ([bghgary](https://github.com/bghgary))
 
 ### Materials
 - Added `ShaderMaterial.setColor4Array` ([JonathanTron](https://github.com/JonathanTron/))
