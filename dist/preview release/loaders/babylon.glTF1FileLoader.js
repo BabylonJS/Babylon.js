@@ -3178,7 +3178,6 @@ var GLTFFileLoader = /** @class */ (function () {
                 if (this.validate) {
                     babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Logger"].Warn("glTF validation is not supported when range requests are enabled");
                 }
-                var firstWebRequest_1;
                 var fileRequests_1 = new Array();
                 var aggregatedFileRequest_1 = {
                     abort: function () { return fileRequests_1.forEach(function (fileRequest) { return fileRequest.abort(); }); },
@@ -3188,7 +3187,6 @@ var GLTFFileLoader = /** @class */ (function () {
                     readAsync: function (byteOffset, byteLength) {
                         return new Promise(function (resolve, reject) {
                             fileRequests_1.push(scene._requestFile(url, function (data, webRequest) {
-                                firstWebRequest_1 = firstWebRequest_1 || webRequest;
                                 dataBuffer_1.byteLength = Number(webRequest.getResponseHeader("Content-Range").split("/")[1]);
                                 resolve(new Uint8Array(data));
                             }, onProgress, true, true, function (error) {
@@ -3202,7 +3200,7 @@ var GLTFFileLoader = /** @class */ (function () {
                 };
                 this._unpackBinaryAsync(new _dataReader__WEBPACK_IMPORTED_MODULE_1__["DataReader"](dataBuffer_1)).then(function (loaderData) {
                     aggregatedFileRequest_1.onCompleteObservable.notifyObservers(aggregatedFileRequest_1);
-                    onSuccess(loaderData, firstWebRequest_1);
+                    onSuccess(loaderData);
                 }, onError);
                 return aggregatedFileRequest_1;
             }
