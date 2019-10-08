@@ -1897,7 +1897,7 @@ export class GLTFLoader implements IGLTFLoader {
             if (!this._disposed) {
                 deferred.reject(new Error(`${context}: ${(exception && exception.message) ? exception.message : message || "Failed to load texture"}`));
             }
-        });
+        }, undefined, undefined, undefined, image.mimeType);
         promises.push(deferred.promise);
 
         if (!url) {
