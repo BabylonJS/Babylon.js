@@ -7,6 +7,7 @@ import { Observable } from './observable';
 import { FilesInputStore } from './filesInputStore';
 import { RetryStrategy } from './retryStrategy';
 import { BaseError } from './baseError';
+import { StringTools } from './stringTools';
 
 /** @ignore */
 export class LoadFileError extends BaseError {
@@ -123,21 +124,6 @@ export class FileTools {
     }
 
     /**
-     * Encode an array buffer into a base64 string
-     * @param buffer defines the buffer to encode
-     * @returns a string containing the base64 version of the buffer
-     */
-    public static ArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView) {
-        var binary = '';
-        var bytes = (buffer as ArrayBufferView).buffer ? new Uint8Array((buffer as ArrayBufferView).buffer) : new Uint8Array(buffer as ArrayBuffer);
-        var len = bytes.byteLength;
-        for (var i = 0; i < len; i++) {
-            binary += String.fromCharCode(bytes[i]);
-        }
-        return window.btoa(binary);
-    }
-
-    /**
      * Loads an image as an HTMLImageElement.
      * @param input url string, ArrayBuffer, or Blob to load
      * @param onLoad callback called when the image successfully loads
@@ -155,7 +141,7 @@ export class FileTools {
                 url = URL.createObjectURL(new Blob([input]));
                 usingObjectURL = true;
             } else {
-                url = `data:${mimeType || "image/jpg"};base64,` + this.ArrayBufferToBase64(input);
+                url = `data:${mimeType || "image/jpg"};base64,` + StringTools.EncodeArrayBufferToBase64(input);
             }
         }
         else if (input instanceof Blob) {
