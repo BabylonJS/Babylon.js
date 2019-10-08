@@ -535,7 +535,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._render();
         this.update(true, this.premulAlpha);
     }
+
     private _clearMeasure = new Measure(0, 0, 0, 0);
+
     private _render(): void {
         var textureSize = this.getSize();
         var renderWidth = textureSize.width;
