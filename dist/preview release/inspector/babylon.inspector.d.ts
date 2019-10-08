@@ -581,6 +581,7 @@ declare module INSPECTOR {
         constructor(props: ITexturePropertyGridComponentProps);
         componentWillUnmount(): void;
         updateTexture(file: File): void;
+        foreceRefresh(): void;
         render(): JSX.Element;
     }
 }

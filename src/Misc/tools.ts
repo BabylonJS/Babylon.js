@@ -260,40 +260,6 @@ export class Tools {
     }
 
     /**
-     * Encode a buffer to a base64 string
-     * @param buffer defines the buffer to encode
-     * @returns the encoded string
-     */
-    public static EncodeArrayBufferTobase64(buffer: ArrayBuffer): string {
-        var keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-        var output = "";
-        var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
-        var i = 0;
-        var bytes = new Uint8Array(buffer);
-
-        while (i < bytes.length) {
-            chr1 = bytes[i++];
-            chr2 = i < bytes.length ? bytes[i++] : Number.NaN; // Not sure if the index
-            chr3 = i < bytes.length ? bytes[i++] : Number.NaN; // checks are needed here
-
-            enc1 = chr1 >> 2;
-            enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
-            enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
-            enc4 = chr3 & 63;
-
-            if (isNaN(chr2)) {
-                enc3 = enc4 = 64;
-            } else if (isNaN(chr3)) {
-                enc4 = 64;
-            }
-            output += keyStr.charAt(enc1) + keyStr.charAt(enc2) +
-                keyStr.charAt(enc3) + keyStr.charAt(enc4);
-        }
-
-        return "data:image/png;base64," + output;
-    }
-
-    /**
      * Returns an array if obj is not an array
      * @param obj defines the object to evaluate as an array
      * @param allowsNullUndefined defines a boolean indicating if obj is allowed to be null or undefined

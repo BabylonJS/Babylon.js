@@ -41716,7 +41716,7 @@ var TextInputLineComponent = /** @class */ (function (_super) {
     function TextInputLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
-        _this.state = { value: _this.props.value || _this.props.target[_this.props.propertyName] || "" };
+        _this.state = { value: (_this.props.value !== undefined ? _this.props.value : _this.props.target[_this.props.propertyName]) || "" };
         return _this;
     }
     TextInputLineComponent.prototype.componentWillUnmount = function () {
@@ -41727,7 +41727,7 @@ var TextInputLineComponent = /** @class */ (function (_super) {
             this._localChange = false;
             return true;
         }
-        var newValue = nextProps.value || nextProps.target[nextProps.propertyName];
+        var newValue = nextProps.value !== undefined ? nextProps.value : nextProps.target[nextProps.propertyName];
         if (newValue !== nextState.value) {
             nextState.value = newValue || "";
             return true;
@@ -41751,7 +41751,7 @@ var TextInputLineComponent = /** @class */ (function (_super) {
     };
     TextInputLineComponent.prototype.updateValue = function (value) {
         this._localChange = true;
-        var store = this.props.value || this.props.target[this.props.propertyName];
+        var store = this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName];
         this.setState({ value: value });
         this.raiseOnPropertyChanged(value, store);
         if (this.props.propertyName) {
@@ -45669,6 +45669,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 /* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
+
 
 
 
@@ -45719,12 +45721,16 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
                 else if (file.name.toLowerCase().indexOf(".env") > 0) {
                     extension = ".env";
                 }
-                texture.updateURL(url, extension, function () { return _this.forceUpdate(); });
+                texture.updateURL(url, extension, function () { return _this.foreceRefresh(); });
             }
             else {
-                texture.updateURL(url, null, function () { return _this.forceUpdate(); });
+                texture.updateURL(url, null, function () { return _this.foreceRefresh(); });
             }
         }, undefined, true);
+    };
+    TexturePropertyGridComponent.prototype.foreceRefresh = function () {
+        this.forceUpdate();
+        this.refs["textureLine"].updatePreview();
     };
     TexturePropertyGridComponent.prototype.render = function () {
         var _this = this;
@@ -45756,10 +45762,18 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
                 extension = url[index] + extension;
             }
         }
+        else {
+            url = "";
+        }
+        var textureUrl = (url.substring(0, 4) === "data" || url.substring(0, 4) === "blob") ? "" : url;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "PREVIEW" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLineComponent"], { texture: texture, width: 256, height: 256, globalState: this.props.globalState }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__["FileButtonLineComponent"], { label: "Replace texture", onClick: function (file) { return _this.updateTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLineComponent"], { ref: "textureLine", texture: texture, width: 256, height: 256, globalState: this.props.globalState }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__["FileButtonLineComponent"], { label: "Load texture from file", onClick: function (file) { return _this.updateTexture(file); }, accept: ".jpg, .png, .tga, .dds, .env" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_15__["TextInputLineComponent"], { label: "URL", value: textureUrl, lockObject: this.props.lockObject, onChange: function (url) {
+                        texture.updateURL(url);
+                        _this.foreceRefresh();
+                    } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__["CustomPropertyGridComponent"], { globalState: this.props.globalState, target: texture, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Width", value: texture.getSize().width.toString() }),

@@ -101,8 +101,31 @@ export class NodeMaterialConnectionPoint {
      */
     public define: string;
 
+    /** @hidden */
+    public _prioritizeVertex = false;
+
+    private _target: NodeMaterialBlockTargets = NodeMaterialBlockTargets.VertexAndFragment;
+
     /** Gets or sets the target of that connection point */
-    public target: NodeMaterialBlockTargets = NodeMaterialBlockTargets.VertexAndFragment;
+    public get target(): NodeMaterialBlockTargets {
+        if (!this._prioritizeVertex || !this._ownerBlock) {
+            return this._target;
+        }
+
+        if (this._target !== NodeMaterialBlockTargets.VertexAndFragment) {
+            return this._target;
+        }
+
+        if (this._ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
+            return NodeMaterialBlockTargets.Fragment;
+        }
+
+        return NodeMaterialBlockTargets.Vertex;
+    }
+
+    public set target(value: NodeMaterialBlockTargets) {
+        this._target = value;
+    }
 
     /**
      * Gets a boolean indicating that the current point is connected
@@ -179,6 +202,10 @@ export class NodeMaterialConnectionPoint {
 
         for (var endpoint of this._endpoints) {
             if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Vertex) {
+                return true;
+            }
+
+            if (endpoint.target === NodeMaterialBlockTargets.Vertex) {
                 return true;
             }
 

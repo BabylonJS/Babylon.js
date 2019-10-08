@@ -679,6 +679,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         constructor(props: ITexturePropertyGridComponentProps);
         componentWillUnmount(): void;
         updateTexture(file: File): void;
+        foreceRefresh(): void;
         render(): JSX.Element;
     }
 }
@@ -2900,6 +2901,7 @@ declare module INSPECTOR {
         constructor(props: ITexturePropertyGridComponentProps);
         componentWillUnmount(): void;
         updateTexture(file: File): void;
+        foreceRefresh(): void;
         render(): JSX.Element;
     }
 }
