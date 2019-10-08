@@ -3575,6 +3575,7 @@ var MSFT_lod = /** @class */ (function () {
     }
     /** @hidden */
     MSFT_lod.prototype.dispose = function () {
+        this._disposeUnusedMaterials();
         delete this._loader;
         this._nodeIndexLOD = null;
         this._nodeSignalLODs.length = 0;
@@ -3814,12 +3815,16 @@ var MSFT_lod = /** @class */ (function () {
             for (var _i = 0, materials_1 = materials; _i < materials_1.length; _i++) {
                 var material = materials_1[_i];
                 if (material._data) {
-                    for (var drawMode in material._data) {
+                    var _loop_5 = function (drawMode) {
                         var data = material._data[drawMode];
-                        if (data.babylonMeshes.length === 0) {
+                        if (data.babylonMeshes.every(function (babylonMesh) { return babylonMesh.material !== data.babylonMaterial; })) {
+                            // TODO: check if texture is in use instead of force disposing textures
                             data.babylonMaterial.dispose(false, true);
                             delete material._data[drawMode];
                         }
+                    };
+                    for (var drawMode in material._data) {
+                        _loop_5(drawMode);
                     }
                 }
             }
@@ -4316,7 +4321,19 @@ var GLTFLoader = /** @class */ (function () {
     GLTFLoader.prototype._loadData = function (data) {
         this._gltf = data.json;
         this._setupData();
-        this._bin = data.bin;
+        if (data.bin) {
+            var buffers = this._gltf.buffers;
+            if (buffers && buffers[0] && !buffers[0].uri) {
+                var binaryBuffer = buffers[0];
+                if (binaryBuffer.byteLength < data.bin.byteLength - 3 || binaryBuffer.byteLength > data.bin.byteLength) {
+                    babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("Binary buffer length (" + binaryBuffer.byteLength + ") from JSON does not match chunk length (" + data.bin.byteLength + ")");
+                }
+                this._bin = data.bin;
+            }
+            else {
+                babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("Unexpected BIN chunk");
+            }
+        }
     };
     GLTFLoader.prototype._setupData = function () {
         ArrayItem.Assign(this._gltf.accessors);
@@ -5877,8 +5894,10 @@ var GLTFLoader = /** @class */ (function () {
                             babylonMesh.computeWorldMatrix(true);
                             var babylonMaterial = babylonData.babylonMaterial;
                             promises.push(babylonMaterial.forceCompilationAsync(babylonMesh));
+                            promises.push(babylonMaterial.forceCompilationAsync(babylonMesh, { useInstances: true }));
                             if (this._parent.useClipPlane) {
                                 promises.push(babylonMaterial.forceCompilationAsync(babylonMesh, { clipPlane: true }));
+                                promises.push(babylonMaterial.forceCompilationAsync(babylonMesh, { clipPlane: true, useInstances: true }));
                             }
                         }
                     }
@@ -6623,7 +6642,6 @@ var GLTFFileLoader = /** @class */ (function () {
                 if (this.validate) {
                     babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Logger"].Warn("glTF validation is not supported when range requests are enabled");
                 }
-                var firstWebRequest_1;
                 var fileRequests_1 = new Array();
                 var aggregatedFileRequest_1 = {
                     abort: function () { return fileRequests_1.forEach(function (fileRequest) { return fileRequest.abort(); }); },
@@ -6633,7 +6651,6 @@ var GLTFFileLoader = /** @class */ (function () {
                     readAsync: function (byteOffset, byteLength) {
                         return new Promise(function (resolve, reject) {
                             fileRequests_1.push(scene._requestFile(url, function (data, webRequest) {
-                                firstWebRequest_1 = firstWebRequest_1 || webRequest;
                                 dataBuffer_1.byteLength = Number(webRequest.getResponseHeader("Content-Range").split("/")[1]);
                                 resolve(new Uint8Array(data));
                             }, onProgress, true, true, function (error) {
@@ -6647,7 +6664,7 @@ var GLTFFileLoader = /** @class */ (function () {
                 };
                 this._unpackBinaryAsync(new _dataReader__WEBPACK_IMPORTED_MODULE_1__["DataReader"](dataBuffer_1)).then(function (loaderData) {
                     aggregatedFileRequest_1.onCompleteObservable.notifyObservers(aggregatedFileRequest_1);
-                    onSuccess(loaderData, firstWebRequest_1);
+                    onSuccess(loaderData);
                 }, onError);
                 return aggregatedFileRequest_1;
             }
