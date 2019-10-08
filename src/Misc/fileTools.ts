@@ -122,7 +122,12 @@ export class FileTools {
         }
     }
 
-    private static _ArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView) {
+    /**
+     * Encode an array buffer into a base64 string
+     * @param buffer defines the buffer to encode
+     * @returns a string containing the base64 version of the buffer
+     */
+    public static ArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView) {
         var binary = '';
         var bytes = (buffer as ArrayBufferView).buffer ? new Uint8Array((buffer as ArrayBufferView).buffer) : new Uint8Array(buffer as ArrayBuffer);
         var len = bytes.byteLength;
@@ -150,7 +155,7 @@ export class FileTools {
                 url = URL.createObjectURL(new Blob([input]));
                 usingObjectURL = true;
             } else {
-                url = `data:${mimeType || "image/jpg"};base64,` + this._ArrayBufferToBase64(input);
+                url = `data:${mimeType || "image/jpg"};base64,` + this.ArrayBufferToBase64(input);
             }
         }
         else if (input instanceof Blob) {

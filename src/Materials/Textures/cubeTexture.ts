@@ -250,7 +250,6 @@ export class CubeTexture extends BaseTexture {
             this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
-        this.name = url;
         this.url = url;
         this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
         this._prefiltered = false;
