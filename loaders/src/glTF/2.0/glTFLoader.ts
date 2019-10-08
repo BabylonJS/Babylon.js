@@ -379,7 +379,20 @@ export class GLTFLoader implements IGLTFLoader {
         this._gltf = data.json as IGLTF;
         this._setupData();
 
-        this._bin = data.bin;
+        if (data.bin) {
+            const buffers = this._gltf.buffers;
+            if (buffers && buffers[0] && !buffers[0].uri) {
+                const binaryBuffer = buffers[0];
+                if (binaryBuffer.byteLength < data.bin.byteLength - 3 || binaryBuffer.byteLength > data.bin.byteLength) {
+                    Tools.Warn(`Binary buffer length (${binaryBuffer.byteLength}) from JSON does not match chunk length (${data.bin.byteLength})`);
+                }
+
+                this._bin = data.bin;
+            }
+            else {
+                Tools.Warn("Unexpected BIN chunk");
+            }
+        }
     }
 
     private _setupData(): void {
@@ -2169,8 +2182,10 @@ export class GLTFLoader implements IGLTFLoader {
 
                             const babylonMaterial = babylonData.babylonMaterial;
                             promises.push(babylonMaterial.forceCompilationAsync(babylonMesh));
+                            promises.push(babylonMaterial.forceCompilationAsync(babylonMesh, { useInstances: true }));
                             if (this._parent.useClipPlane) {
                                 promises.push(babylonMaterial.forceCompilationAsync(babylonMesh, { clipPlane: true }));
+                                promises.push(babylonMaterial.forceCompilationAsync(babylonMesh, { clipPlane: true, useInstances: true }));
                             }
                         }
                     }
