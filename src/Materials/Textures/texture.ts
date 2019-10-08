@@ -607,7 +607,7 @@ export class Texture extends BaseTexture {
                 serializationObject.base64String = this._buffer;
                 serializationObject.name = serializationObject.name.replace("data:", "");
             } else if (this.url && StringTools.StartsWith(this.url, "data:") && this._buffer instanceof Uint8Array) {
-                serializationObject.base64String = "data:image/png;base64," + FileTools.ArrayBufferToBase64(this._buffer);
+                serializationObject.base64String = "data:image/png;base64," + StringTools.EncodeArrayBufferToBase64(this._buffer);
             }
         }
 
