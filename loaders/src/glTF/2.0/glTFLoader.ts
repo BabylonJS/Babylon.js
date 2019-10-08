@@ -744,15 +744,14 @@ export class GLTFLoader implements IGLTFLoader {
 
         this.logOpen(`${context}`);
 
-        const canInstance = (node.skin == undefined && !mesh.primitives[0].targets);
+        const shouldInstance = this._parent.createInstances && (node.skin == undefined && !mesh.primitives[0].targets);
 
         let babylonAbstractMesh: AbstractMesh;
         let promise: Promise<any>;
 
-        const instanceData = primitive._instanceData;
-        if (canInstance && instanceData) {
-            babylonAbstractMesh = instanceData.babylonSourceMesh.createInstance(name);
-            promise = instanceData.promise;
+        if (shouldInstance && primitive._instanceData) {
+            babylonAbstractMesh = primitive._instanceData.babylonSourceMesh.createInstance(name);
+            promise = primitive._instanceData.promise;
         }
         else {
             const promises = new Array<Promise<any>>();
@@ -786,7 +785,7 @@ export class GLTFLoader implements IGLTFLoader {
 
             promise = Promise.all(promises);
 
-            if (canInstance) {
+            if (shouldInstance) {
                 primitive._instanceData = {
                     babylonSourceMesh: babylonMesh,
                     promise: promise
