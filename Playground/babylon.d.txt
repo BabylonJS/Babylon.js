@@ -19876,6 +19876,19 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Options for compiling materials.
+     */
+    export interface IMaterialCompilationOptions {
+        /**
+         * Defines whether clip planes are enabled.
+         */
+        clipPlane: boolean;
+        /**
+         * Defines whether instances are enabled.
+         */
+        useInstances: boolean;
+    }
+    /**
      * Base class for the main features of a material in Babylon.js
      */
     export class Material implements IAnimatable {
@@ -20347,18 +20360,14 @@ declare module BABYLON {
          * @param options defines the options to configure the compilation
          * @param onError defines a function to execute if the material fails compiling
          */
-        forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<{
-            clipPlane: boolean;
-        }>, onError?: (reason: string) => void): void;
+        forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<IMaterialCompilationOptions>, onError?: (reason: string) => void): void;
         /**
          * Force shader compilation
          * @param mesh defines the mesh that will use this material
          * @param options defines additional options for compiling the shaders
          * @returns a promise that resolves when the compilation completes
          */
-        forceCompilationAsync(mesh: AbstractMesh, options?: Partial<{
-            clipPlane: boolean;
-        }>): Promise<void>;
+        forceCompilationAsync(mesh: AbstractMesh, options?: Partial<IMaterialCompilationOptions>): Promise<void>;
         private static readonly _AllDirtyCallBack;
         private static readonly _ImageProcessingDirtyCallBack;
         private static readonly _TextureDirtyCallBack;
@@ -47408,9 +47417,7 @@ declare module BABYLON {
         /**
          * Force shader compilation
          */
-        forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<{
-            clipPlane: boolean;
-        }>): void;
+        forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<IMaterialCompilationOptions>): void;
         /**
          * Initializes the uniform buffer layout for the shader.
          */
@@ -49065,7 +49072,7 @@ declare module BABYLON {
     /**
      * The glow layer Helps adding a glow effect around the emissive parts of a mesh.
      *
-     * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
+     * Once instantiated in a scene, simply use the addMesh or removeMesh method to add or remove
      * glowy meshes to your scene.
      *
      * Documentation: https://doc.babylonjs.com/how_to/glow_layer
@@ -49292,7 +49299,7 @@ declare module BABYLON {
     /**
      * The highlight layer Helps adding a glow effect around a mesh.
      *
-     * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
+     * Once instantiated in a scene, simply use the addMesh or removeMesh method to add or remove
      * glowy meshes to your scene.
      *
      * !!! THIS REQUIRES AN ACTIVE STENCIL BUFFER ON THE CANVAS !!!
