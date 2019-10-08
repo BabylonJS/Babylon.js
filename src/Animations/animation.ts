@@ -96,7 +96,7 @@ export class Animation {
         } else if (from instanceof Color3) {
             dataType = Animation.ANIMATIONTYPE_COLOR3;
         } else if (from instanceof Color4) {
-            dataType = Animation.ANIMATIONTYPE_COLOR4;            
+            dataType = Animation.ANIMATIONTYPE_COLOR4;
         } else if (from instanceof Size) {
             dataType = Animation.ANIMATIONTYPE_SIZE;
         }
@@ -582,7 +582,7 @@ export class Animation {
      */
     public color4InterpolateFunction(startValue: Color4, endValue: Color4, gradient: number): Color4 {
         return Color4.Lerp(startValue, endValue, gradient);
-    }    
+    }
 
     /**
      * @hidden Internal use only
@@ -711,7 +711,7 @@ export class Animation {
                                 return this.color4InterpolateFunction(startValue, endValue, gradient);
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                 return this.color4InterpolateFunction(startValue, endValue, gradient).add(state.offsetValue.scale(state.repeatCount));
-                        }                        
+                        }
                     // Matrix
                     case Animation.ANIMATIONTYPE_MATRIX:
                         switch (state.loopMode) {
@@ -874,7 +874,7 @@ export class Animation {
     /**
      * Color3 animation type
      */
-    public static readonly ANIMATIONTYPE_COLOR4 = 7;    
+    public static readonly ANIMATIONTYPE_COLOR4 = 7;
     /**
      * Vector2 animation type
      */
@@ -969,7 +969,7 @@ export class Animation {
                     break;
                 case Animation.ANIMATIONTYPE_COLOR4:
                     data = Color4.FromArray(key.values);
-                    break;                    
+                    break;
                 case Animation.ANIMATIONTYPE_VECTOR3:
                 default:
                     data = Vector3.FromArray(key.values);
