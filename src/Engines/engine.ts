@@ -1,5 +1,5 @@
 import { Observable } from "../Misc/observable";
-import { Nullable, IndicesArray } from "../types";
+import { Nullable, IndicesArray, DataArray } from "../types";
 import { Scene } from "../scene";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { _TimeToken } from "../Instrumentation/timeToken";
@@ -1535,6 +1535,43 @@ export class Engine extends ThinEngine {
                 this.onResizeObservable.notifyObservers(this);
             }
         }
+    }
+
+    /**
+     * Updates a dynamic vertex buffer.
+     * @param vertexBuffer the vertex buffer to update
+     * @param data the data used to update the vertex buffer
+     * @param byteOffset the byte offset of the data
+     * @param byteLength the byte length of the data
+     */
+    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
+        this.bindArrayBuffer(vertexBuffer);
+
+        if (byteOffset === undefined) {
+            byteOffset = 0;
+        }
+
+        if (byteLength === undefined) {
+            if (data instanceof Array) {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, new Float32Array(data));
+            } else {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, <ArrayBuffer>data);
+            }
+        } else {
+            if (data instanceof Array) {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(data).subarray(byteOffset, byteOffset + byteLength));
+            } else {
+                if (data instanceof ArrayBuffer) {
+                    data = new Uint8Array(data, byteOffset, byteLength);
+                } else {
+                    data = new Uint8Array(data.buffer, data.byteOffset + byteOffset, byteLength);
+                }
+
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, <ArrayBuffer>data);
+            }
+        }
+
+        this._resetVertexBufferBinding();
     }
 
     public _deletePipelineContext(pipelineContext: IPipelineContext): void {
