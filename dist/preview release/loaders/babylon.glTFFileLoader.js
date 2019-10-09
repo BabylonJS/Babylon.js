@@ -4647,13 +4647,12 @@ var GLTFLoader = /** @class */ (function () {
             return extensionPromise;
         }
         this.logOpen("" + context);
-        var canInstance = (node.skin == undefined && !mesh.primitives[0].targets);
+        var shouldInstance = this._parent.createInstances && (node.skin == undefined && !mesh.primitives[0].targets);
         var babylonAbstractMesh;
         var promise;
-        var instanceData = primitive._instanceData;
-        if (canInstance && instanceData) {
-            babylonAbstractMesh = instanceData.babylonSourceMesh.createInstance(name);
-            promise = instanceData.promise;
+        if (shouldInstance && primitive._instanceData) {
+            babylonAbstractMesh = primitive._instanceData.babylonSourceMesh.createInstance(name);
+            promise = primitive._instanceData.promise;
         }
         else {
             var promises = new Array();
@@ -4682,7 +4681,7 @@ var GLTFLoader = /** @class */ (function () {
                 }));
             }
             promise = Promise.all(promises);
-            if (canInstance) {
+            if (shouldInstance) {
                 primitive._instanceData = {
                     babylonSourceMesh: babylonMesh_1,
                     promise: promise
@@ -5646,7 +5645,7 @@ var GLTFLoader = /** @class */ (function () {
             if (!_this._disposed) {
                 deferred.reject(new Error(context + ": " + ((exception && exception.message) ? exception.message : message || "Failed to load texture")));
             }
-        });
+        }, undefined, undefined, undefined, image.mimeType);
         promises.push(deferred.promise);
         if (!url) {
             promises.push(this.loadImageAsync("/images/" + image.index, image).then(function (data) {
@@ -6356,6 +6355,10 @@ var GLTFFileLoader = /** @class */ (function () {
          * Defaults to false.
          */
         this.useRangeRequests = false;
+        /**
+         * Defines if the loader should create instances when multiple glTF nodes point to the same glTF mesh. Defaults to true.
+         */
+        this.createInstances = true;
         /**
          * Function called before loading a url referenced by the asset.
          */

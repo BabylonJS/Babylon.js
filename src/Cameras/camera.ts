@@ -1205,7 +1205,7 @@ export class Camera extends Node {
 
     /**
      * Compute the world  matrix of the camera.
-     * @returns the camera workd matrix
+     * @returns the camera world matrix
      */
     public computeWorldMatrix(): Matrix {
         return this.getWorldMatrix();

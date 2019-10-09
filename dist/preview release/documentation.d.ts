@@ -1147,6 +1147,12 @@ declare module BABYLON {
          * @returns The decoded string
          */
         static Decode(buffer: Uint8Array | Uint16Array): string;
+        /**
+         * Encode a buffer to a base64 string
+         * @param buffer defines the buffer to encode
+         * @returns the encoded string
+         */
+        static EncodeArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): string;
     }
 }
 declare module BABYLON {
@@ -1385,12 +1391,6 @@ declare module BABYLON {
         static SetCorsBehavior(url: string | string[], element: {
             crossOrigin: string | null;
         }): void;
-        /**
-         * Encode an array buffer into a base64 string
-         * @param buffer defines the buffer to encode
-         * @returns a string containing the base64 version of the buffer
-         */
-        static ArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): string;
         /**
          * Loads an image as an HTMLImageElement.
          * @param input url string, ArrayBuffer, or Blob to load
@@ -7495,6 +7495,10 @@ declare module BABYLON {
             _cascadeLoadImgs(scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>, mimeType?: string): void;
             /** @hidden */
             _partialLoadImg(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>, mimeType?: string): void;
+            /**
+             * @hidden
+             */
+            _setCubeMapTextureParams(loadMipmap: boolean): void;
         }
 }
 declare module BABYLON {
@@ -8260,6 +8264,22 @@ declare module BABYLON {
                 width: number;
                 height: number;
             }, options: boolean | RenderTargetCreationOptions): InternalTexture;
+            /**
+             * Creates a depth stencil texture.
+             * This is only available in WebGL 2 or with the depth texture extension available.
+             * @param size The size of face edge in the texture.
+             * @param options The options defining the texture.
+             * @returns The texture
+             */
+            createDepthStencilTexture(size: number | {
+                width: number;
+                height: number;
+            }, options: DepthTextureCreationOptions): InternalTexture;
+            /** @hidden */
+            _createDepthStencilTexture(size: number | {
+                width: number;
+                height: number;
+            }, options: DepthTextureCreationOptions): InternalTexture;
         }
 }
 declare module BABYLON {
@@ -11229,7 +11249,7 @@ declare module BABYLON {
      */
     export type PointerUpDownStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: PointerEvent) => Nullable<PickingInfo>;
     /**
-     * Repressentation of a stage in the scene (Basically a list of ordered steps)
+     * Representation of a stage in the scene (Basically a list of ordered steps)
      * @hidden
      */
     export class Stage<T extends Function> extends Array<{
@@ -25210,7 +25230,7 @@ declare module BABYLON {
         static GetConstructorFromName(type: string, name: string, scene: Scene, interaxial_distance?: number, isStereoscopicSideBySide?: boolean): () => Camera;
         /**
          * Compute the world  matrix of the camera.
-         * @returns the camera workd matrix
+         * @returns the camera world matrix
          */
         computeWorldMatrix(): Matrix;
         /**
@@ -28619,9 +28639,9 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Class used to describe the capabilities of the engine relatively to the current browser
+     * Interface used to describe the capabilities of the engine relatively to the current browser
      */
-    export class EngineCapabilities {
+    export interface EngineCapabilities {
         /** Maximum textures units per fragment shader */
         maxTexturesImageUnits: number;
         /** Maximum texture units per vertex shader */
@@ -28645,7 +28665,7 @@ declare module BABYLON {
         /** Defines if standard derivates (dx/dy) are supported */
         standardDerivatives: boolean;
         /** Defines if s3tc texture compression is supported */
-        s3tc: Nullable<WEBGL_compressed_texture_s3tc>;
+        s3tc?: WEBGL_compressed_texture_s3tc;
         /** Defines if pvrtc texture compression is supported */
         pvrtc: any;
         /** Defines if etc1 texture compression is supported */
@@ -28659,7 +28679,7 @@ declare module BABYLON {
         /** Defines if vertex array objects are supported */
         vertexArrayObject: boolean;
         /** Gets the webgl extension for anisotropic filtering (null if not supported) */
-        textureAnisotropicFilterExtension: Nullable<EXT_texture_filter_anisotropic>;
+        textureAnisotropicFilterExtension?: EXT_texture_filter_anisotropic;
         /** Gets the maximum level of anisotropy supported */
         maxAnisotropy: number;
         /** Defines if instancing is supported */
@@ -28689,13 +28709,13 @@ declare module BABYLON {
         /** Defines if float color buffer are supported */
         colorBufferFloat: boolean;
         /** Gets disjoint timer query extension (null if not supported) */
-        timerQuery: EXT_disjoint_timer_query;
+        timerQuery?: EXT_disjoint_timer_query;
         /** Defines if timestamp can be used with timer query */
         canUseTimestampForTimerQuery: boolean;
         /** Defines if multiview is supported (https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/) */
-        multiview: any;
+        multiview?: any;
         /** Function used to let the system compiles shaders in background */
-        parallelShaderCompile: {
+        parallelShaderCompile?: {
             COMPLETION_STATUS_KHR: number;
         };
         /** Max number of texture samples for MSAA */
@@ -29518,17 +29538,6 @@ declare module BABYLON {
         _releaseBuffer(buffer: DataBuffer): boolean;
         protected _deleteBuffer(buffer: DataBuffer): void;
         /**
-         * Creates a webGL buffer to use with instanciation
-         * @param capacity defines the size of the buffer
-         * @returns the webGL buffer
-         */
-        createInstancesBuffer(capacity: number): DataBuffer;
-        /**
-         * Delete a webGL buffer used with instanciation
-         * @param buffer defines the webGL buffer to delete
-         */
-        deleteInstancesBuffer(buffer: WebGLBuffer): void;
-        /**
          * Update the content of a webGL buffer used with instanciation and bind it to the webGL context
          * @param instancesBuffer defines the webGL buffer to update and bind
          * @param data defines the data to store in the buffer
@@ -29921,37 +29930,12 @@ declare module BABYLON {
             width: number;
             height: number;
         }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number): void;
-        /**
-         * Creates a depth stencil texture.
-         * This is only available in WebGL 2 or with the depth texture extension available.
-         * @param size The size of face edge in the texture.
-         * @param options The options defining the texture.
-         * @returns The texture
-         */
-        createDepthStencilTexture(size: number | {
-            width: number;
-            height: number;
-        }, options: DepthTextureCreationOptions): InternalTexture;
-        /**
-         * Creates a depth stencil texture.
-         * This is only available in WebGL 2 or with the depth texture extension available.
-         * @param size The size of face edge in the texture.
-         * @param options The options defining the texture.
-         * @returns The texture
-         */
-        private _createDepthStencilTexture;
         /** @hidden */
         _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex?: number, lod?: number): void;
         /** @hidden */
         _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number, babylonInternalFormat?: number, useTextureWidthAndHeight?: boolean): void;
         /** @hidden */
         _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number): void;
-        /** @hidden */
-        _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex?: number, lod?: number): void;
-        /**
-         * @hidden
-         */
-        _setCubeMapTextureParams(loadMipmap: boolean): void;
         protected _prepareWebGLTextureContinuation(texture: InternalTexture, scene: Nullable<ISceneLike>, noMipmap: boolean, isCompressed: boolean, samplingMode: number): void;
         private _prepareWebGLTexture;
         /** @hidden */
@@ -31833,6 +31817,8 @@ declare module BABYLON {
          */
         getDeltaTime(): number;
         private _measureFps;
+        /** @hidden */
+        _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex?: number, lod?: number): void;
         /**
          * Sets the frame buffer Depth / Stencil attachement of the render target to the defined depth stencil texture.
          * @param renderTarget The render target to set the frame buffer for
@@ -31853,6 +31839,17 @@ declare module BABYLON {
          * @returns the effective sample count (could be 0 if multisample render targets are not supported)
          */
         updateRenderTargetTextureSampleCount(texture: Nullable<InternalTexture>, samples: number): number;
+        /**
+         * Creates a webGL buffer to use with instanciation
+         * @param capacity defines the size of the buffer
+         * @returns the webGL buffer
+         */
+        createInstancesBuffer(capacity: number): DataBuffer;
+        /**
+         * Delete a webGL buffer used with instanciation
+         * @param buffer defines the webGL buffer to delete
+         */
+        deleteInstancesBuffer(buffer: WebGLBuffer): void;
         /** @hidden */
         _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>): ArrayBufferView;
         dispose(): void;
@@ -41503,6 +41500,7 @@ declare module BABYLON {
         currentFrame: Nullable<XRFrame>;
         private _xrNavigator;
         private baseLayer;
+        private _sessionEnded;
         /**
          * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
          * @param scene The scene which the session should be created for
@@ -41576,7 +41574,7 @@ declare module BABYLON {
         constructor(name: string, scene: Scene);
         private _updateNumberOfRigCameras;
         /** @hidden */
-        _updateForDualEyeDebugging(pupilDistance?: number): void;
+        _updateForDualEyeDebugging(): void;
         /**
          * Updates the cameras position from the current pose information of the  XR session
          * @param xrSessionManager the session containing pose information
@@ -41806,6 +41804,13 @@ declare module BABYLON {
          * Pointer which can be used to select objects or attach a visible laser to
          */
         pointer: AbstractMesh;
+        private _gamepadMode;
+        /**
+         * If available, this is the gamepad object related to this controller.
+         * Using this object it is possible to get click events and trackpad changes of the
+         * webxr controller that is currently being used.
+         */
+        gamepadController?: WebVRController;
         /**
          * Event that fires when the controller is removed/disposed
          */
@@ -41834,6 +41839,11 @@ declare module BABYLON {
          * @param result the resulting ray
          */
         getWorldPointerRayToRef(result: Ray): void;
+        /**
+         * Get the scene associated with this controller
+         * @returns the scene object
+         */
+        getScene(): Scene;
         /**
          * Disposes of the object
          */
@@ -68316,6 +68326,10 @@ declare module BABYLON {
          * Defaults to false.
          */
         useRangeRequests: boolean;
+        /**
+         * Defines if the loader should create instances when multiple glTF nodes point to the same glTF mesh. Defaults to true.
+         */
+        createInstances: boolean;
         /**
          * Function called before loading a url referenced by the asset.
          */
