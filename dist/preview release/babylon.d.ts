@@ -11231,7 +11231,7 @@ declare module BABYLON {
     /**
      * Strong typing of a Mesh Render related stage step action
      */
-    export type RenderingMeshStageAction = (mesh: AbstractMesh, subMesh: SubMesh, batch: _InstancesBatch) => void;
+    export type RenderingMeshStageAction = (mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch) => void;
     /**
      * Strong typing of a simple stage step action
      */
@@ -28847,7 +28847,7 @@ declare module BABYLON {
          * type of the attribute, gl.BYTE, gl.UNSIGNED_BYTE, gl.SHORT, gl.UNSIGNED_SHORT, gl.FIXED, gl.FLOAT.
          * default is FLOAT
          */
-        attribyteType: number;
+        attributeType: number;
         /**
          * normalization of fixed-point data. behavior unclear, use FALSE, default is FALSE
          */
@@ -29442,7 +29442,8 @@ declare module BABYLON {
          * Unbind the current render target and bind the default framebuffer
          */
         restoreDefaultFramebuffer(): void;
-        private _resetVertexBufferBinding;
+        /** @hidden */
+        protected _resetVertexBufferBinding(): void;
         /**
          * Creates a vertex buffer
          * @param data the data for the vertex buffer
@@ -29456,14 +29457,6 @@ declare module BABYLON {
          * @returns the new WebGL dynamic buffer
          */
         createDynamicVertexBuffer(data: DataArray): DataBuffer;
-        /**
-         * Updates a dynamic vertex buffer.
-         * @param vertexBuffer the vertex buffer to update
-         * @param data the data used to update the vertex buffer
-         * @param byteOffset the byte offset of the data
-         * @param byteLength the byte length of the data
-         */
-        updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void;
         protected _resetIndexBufferBinding(): void;
         /**
          * Creates a new index buffer
@@ -31792,6 +31785,14 @@ declare module BABYLON {
          * @param height defines the new canvas' height
          */
         setSize(width: number, height: number): void;
+        /**
+         * Updates a dynamic vertex buffer.
+         * @param vertexBuffer the vertex buffer to update
+         * @param data the data used to update the vertex buffer
+         * @param byteOffset the byte offset of the data
+         * @param byteLength the byte length of the data
+         */
+        updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void;
         _deletePipelineContext(pipelineContext: IPipelineContext): void;
         createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
         protected _createShaderProgram(pipelineContext: WebGLPipelineContext, vertexShader: WebGLShader, fragmentShader: WebGLShader, context: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
