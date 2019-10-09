@@ -210,7 +210,7 @@ export class Stage<T extends Function> extends Array<{ index: number, component:
      * @param items The items to add.
      */
     private constructor(items?: { index: number, component: ISceneComponent, action: T }[]) {
-        super(<any>items);
+        super(...<any>items);
     }
 
     /**
