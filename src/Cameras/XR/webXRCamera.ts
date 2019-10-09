@@ -72,7 +72,9 @@ export class WebXRCamera extends FreeCamera {
         if (!pose) {
             return false;
         }
+        let globalTransform = false;
         if (pose && pose.transform && pose.transform.matrix) {
+            globalTransform = true;
             // Update the parent cameras matrix
             Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, WebXRCamera._TmpMatrix);
 
@@ -91,7 +93,7 @@ export class WebXRCamera extends FreeCamera {
         pose.views.forEach((view: any, i: number) => {
             const currentRig = <TargetCamera> this.rigCameras[i];
             // Update view/projection matrix
-            if (view.transform.position && view.transform.orientation) {
+            if (!globalTransform && view.transform.position && view.transform.orientation) {
                 currentRig.position.copyFrom(view.transform.position);
                 currentRig.rotationQuaternion.copyFrom(view.transform.orientation);
                 currentRig.getViewMatrix(true);
@@ -120,7 +122,7 @@ export class WebXRCamera extends FreeCamera {
             currentRig.outputRenderTarget = xrSessionManager._sessionRenderTargetTexture;
 
         });
-        this._updateForDualEyeDebugging();
+        // this._updateForDualEyeDebugging();
         return true;
     }
 }
