@@ -1,5 +1,5 @@
 import { Observable } from "../Misc/observable";
-import { Nullable, IndicesArray } from "../types";
+import { Nullable, IndicesArray, DataArray } from "../types";
 import { Scene } from "../scene";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { _TimeToken } from "../Instrumentation/timeToken";
@@ -20,6 +20,7 @@ import { PerformanceMonitor } from '../Misc/performanceMonitor';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { PerfCounter } from '../Misc/perfCounter';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
+import { Logger } from '../Misc/logger';
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -1537,6 +1538,43 @@ export class Engine extends ThinEngine {
         }
     }
 
+    /**
+     * Updates a dynamic vertex buffer.
+     * @param vertexBuffer the vertex buffer to update
+     * @param data the data used to update the vertex buffer
+     * @param byteOffset the byte offset of the data
+     * @param byteLength the byte length of the data
+     */
+    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
+        this.bindArrayBuffer(vertexBuffer);
+
+        if (byteOffset === undefined) {
+            byteOffset = 0;
+        }
+
+        if (byteLength === undefined) {
+            if (data instanceof Array) {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, new Float32Array(data));
+            } else {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, <ArrayBuffer>data);
+            }
+        } else {
+            if (data instanceof Array) {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(data).subarray(byteOffset, byteOffset + byteLength));
+            } else {
+                if (data instanceof ArrayBuffer) {
+                    data = new Uint8Array(data, byteOffset, byteLength);
+                } else {
+                    data = new Uint8Array(data.buffer, data.byteOffset + byteOffset, byteLength);
+                }
+
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, <ArrayBuffer>data);
+            }
+        }
+
+        this._resetVertexBufferBinding();
+    }
+
     public _deletePipelineContext(pipelineContext: IPipelineContext): void {
         let webGLPipelineContext = pipelineContext as WebGLPipelineContext;
         if (webGLPipelineContext && webGLPipelineContext.program) {
@@ -1844,6 +1882,52 @@ export class Engine extends ThinEngine {
         this._bindUnboundFramebuffer(null);
 
         return samples;
+    }
+
+    /**
+     * Updates a depth texture Comparison Mode and Function.
+     * If the comparison Function is equal to 0, the mode will be set to none.
+     * Otherwise, this only works in webgl 2 and requires a shadow sampler in the shader.
+     * @param texture The texture to set the comparison function for
+     * @param comparisonFunction The comparison function to set, 0 if no comparison required
+     */
+    public updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void {
+        if (this.webGLVersion === 1) {
+            Logger.Error("WebGL 1 does not support texture comparison.");
+            return;
+        }
+
+        var gl = this._gl;
+
+        if (texture.isCube) {
+            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture, true);
+
+            if (comparisonFunction === 0) {
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.NONE);
+            }
+            else {
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+            }
+
+            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
+        } else {
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
+
+            if (comparisonFunction === 0) {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.NONE);
+            }
+            else {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+            }
+
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+        }
+
+        texture._comparisonFunction = comparisonFunction;
     }
 
     /**

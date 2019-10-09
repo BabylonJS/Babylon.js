@@ -1343,7 +1343,9 @@ export class ThinEngine {
     }
 
     // VBOs
-    private _resetVertexBufferBinding(): void {
+
+    /** @hidden */
+    protected _resetVertexBufferBinding(): void {
         this.bindArrayBuffer(null);
         this._cachedVertexBuffers = null;
     }
@@ -1386,43 +1388,6 @@ export class ThinEngine {
      */
     public createDynamicVertexBuffer(data: DataArray): DataBuffer {
         return this._createVertexBuffer(data, this._gl.DYNAMIC_DRAW);
-    }
-
-    /**
-     * Updates a dynamic vertex buffer.
-     * @param vertexBuffer the vertex buffer to update
-     * @param data the data used to update the vertex buffer
-     * @param byteOffset the byte offset of the data
-     * @param byteLength the byte length of the data
-     */
-    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
-        this.bindArrayBuffer(vertexBuffer);
-
-        if (byteOffset === undefined) {
-            byteOffset = 0;
-        }
-
-        if (byteLength === undefined) {
-            if (data instanceof Array) {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, new Float32Array(data));
-            } else {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, <ArrayBuffer>data);
-            }
-        } else {
-            if (data instanceof Array) {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(data).subarray(byteOffset, byteOffset + byteLength));
-            } else {
-                if (data instanceof ArrayBuffer) {
-                    data = new Uint8Array(data, byteOffset, byteLength);
-                } else {
-                    data = new Uint8Array(data.buffer, data.byteOffset + byteOffset, byteLength);
-                }
-
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, <ArrayBuffer>data);
-            }
-        }
-
-        this._resetVertexBufferBinding();
     }
 
     protected _resetIndexBufferBinding(): void {
@@ -1785,7 +1750,7 @@ export class ThinEngine {
                     this._vertexAttribArraysEnabled[ai.index] = true;
                 }
 
-                this._vertexAttribPointer(instancesBuffer, ai.index, ai.attributeSize, ai.attribyteType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
+                this._vertexAttribPointer(instancesBuffer, ai.index, ai.attributeSize, ai.attributeType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
                 this._gl.vertexAttribDivisor(ai.index, 1);
                 this._currentInstanceLocations.push(ai.index);
                 this._currentInstanceBuffers.push(instancesBuffer);
@@ -2237,6 +2202,19 @@ export class ThinEngine {
     }
 
     /**
+     * Set the value of an uniform to a number (int)
+     * @param uniform defines the webGL uniform location where to store the value
+     * @param value defines the int number to store
+     */
+    public setInt(uniform: Nullable<WebGLUniformLocation>, value: number): void {
+        if (!uniform) {
+            return;
+        }
+
+        this._gl.uniform1i(uniform, value);
+    }
+
+    /**
      * Set the value of an uniform to an array of int32
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of int32 to store
@@ -2289,11 +2267,11 @@ export class ThinEngine {
     }
 
     /**
-     * Set the value of an uniform to an array of float32
+     * Set the value of an uniform to an array of number
      * @param uniform defines the webGL uniform location where to store the value
-     * @param array defines the array of float32 to store
+     * @param array defines the array of number to store
      */
-    public setFloatArray(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
+    public setArray(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void {
         if (!uniform) {
             return;
         }
@@ -2302,63 +2280,11 @@ export class ThinEngine {
     }
 
     /**
-     * Set the value of an uniform to an array of float32 (stored as vec2)
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param array defines the array of float32 to store
-     */
-    public setFloatArray2(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
-        if (!uniform || array.length % 2 !== 0) {
-            return;
-        }
-
-        this._gl.uniform2fv(uniform, array);
-    }
-
-    /**
-     * Set the value of an uniform to an array of float32 (stored as vec3)
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param array defines the array of float32 to store
-     */
-    public setFloatArray3(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
-        if (!uniform || array.length % 3 !== 0) {
-            return;
-        }
-
-        this._gl.uniform3fv(uniform, array);
-    }
-
-    /**
-     * Set the value of an uniform to an array of float32 (stored as vec4)
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param array defines the array of float32 to store
-     */
-    public setFloatArray4(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
-        if (!uniform || array.length % 4 !== 0) {
-            return;
-        }
-
-        this._gl.uniform4fv(uniform, array);
-    }
-
-    /**
-     * Set the value of an uniform to an array of number
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param array defines the array of number to store
-     */
-    public setArray(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._gl.uniform1fv(uniform, <any>array);
-    }
-
-    /**
      * Set the value of an uniform to an array of number (stored as vec2)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of number to store
      */
-    public setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
+    public setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void {
         if (!uniform || array.length % 2 !== 0) {
             return;
         }
@@ -2371,7 +2297,7 @@ export class ThinEngine {
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of number to store
      */
-    public setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
+    public setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void {
         if (!uniform || array.length % 3 !== 0) {
             return;
         }
@@ -2384,7 +2310,7 @@ export class ThinEngine {
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of number to store
      */
-    public setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
+    public setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void {
         if (!uniform || array.length % 4 !== 0) {
             return;
         }
@@ -2432,19 +2358,6 @@ export class ThinEngine {
     }
 
     /**
-     * Set the value of an uniform to a number (int)
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param value defines the int number to store
-     */
-    public setInt(uniform: Nullable<WebGLUniformLocation>, value: number): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._gl.uniform1i(uniform, value);
-    }
-
-    /**
      * Set the value of an uniform to a number (float)
      * @param uniform defines the webGL uniform location where to store the value
      * @param value defines the float number to store
@@ -2487,19 +2400,6 @@ export class ThinEngine {
     }
 
     /**
-     * Set the value of an uniform to a boolean
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param bool defines the boolean to store
-     */
-    public setBool(uniform: Nullable<WebGLUniformLocation>, bool: number): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._gl.uniform1i(uniform, bool);
-    }
-
-    /**
      * Set the value of an uniform to a vec4
      * @param uniform defines the webGL uniform location where to store the value
      * @param x defines the 1st component of the value
@@ -2513,19 +2413,6 @@ export class ThinEngine {
         }
 
         this._gl.uniform4f(uniform, x, y, z, w);
-    }
-
-    /**
-     * Sets a Color4 on a uniform variable
-     * @param uniform defines the uniform location
-     * @param color4 defines the value to be set
-     */
-    public setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: IColor4Like): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._gl.uniform4f(uniform, color4.r, color4.g, color4.b, color4.a);
     }
 
     // States
@@ -3013,52 +2900,6 @@ export class ThinEngine {
         }
 
         texture.samplingMode = samplingMode;
-    }
-
-    /**
-     * Updates a depth texture Comparison Mode and Function.
-     * If the comparison Function is equal to 0, the mode will be set to none.
-     * Otherwise, this only works in webgl 2 and requires a shadow sampler in the shader.
-     * @param texture The texture to set the comparison function for
-     * @param comparisonFunction The comparison function to set, 0 if no comparison required
-     */
-    public updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void {
-        if (this.webGLVersion === 1) {
-            Logger.Error("WebGL 1 does not support texture comparison.");
-            return;
-        }
-
-        var gl = this._gl;
-
-        if (texture.isCube) {
-            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture, true);
-
-            if (comparisonFunction === 0) {
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.NONE);
-            }
-            else {
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
-            }
-
-            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
-        } else {
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
-
-            if (comparisonFunction === 0) {
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.NONE);
-            }
-            else {
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
-            }
-
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
-        }
-
-        texture._comparisonFunction = comparisonFunction;
     }
 
     /** @hidden */

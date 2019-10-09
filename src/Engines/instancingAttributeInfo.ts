@@ -1,7 +1,7 @@
 /**
  * Interface for attribute information associated with buffer instanciation
  */
-export class InstancingAttributeInfo {
+export interface InstancingAttributeInfo {
     /**
      * Index/offset of the attribute in the vertex shader
      */
@@ -16,7 +16,7 @@ export class InstancingAttributeInfo {
      * type of the attribute, gl.BYTE, gl.UNSIGNED_BYTE, gl.SHORT, gl.UNSIGNED_SHORT, gl.FIXED, gl.FLOAT.
      * default is FLOAT
      */
-    attribyteType: number;
+    attributeType: number;
 
     /**
      * normalization of fixed-point data. behavior unclear, use FALSE, default is FALSE
