@@ -122,7 +122,6 @@ export class WebXRCamera extends FreeCamera {
             currentRig.outputRenderTarget = xrSessionManager._sessionRenderTargetTexture;
 
         });
-        // this._updateForDualEyeDebugging();
         return true;
     }
 }
