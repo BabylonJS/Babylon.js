@@ -20,6 +20,7 @@ export interface ITextureLinkLineComponentProps {
     onSelectionChangedObservable?: Observable<any>;
     onDebugSelectionChangeObservable?: Observable<BaseTexture>;
     propertyName?: string;
+    onTextureCreated?: (texture: BaseTexture) => void;
     customDebugAction?: (state: boolean) => void
 }
 
@@ -142,7 +143,11 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
 
             let texture = new Texture(url, material.getScene(), false, false);
 
-            (material as any)[this.props.propertyName!] = texture;
+            if (this.props.propertyName) {
+                (material as any)[this.props.propertyName!] = texture;
+            } else if (this.props.onTextureCreated) {
+                this.props.onTextureCreated(texture);
+            }
 
             this.forceUpdate();
 
@@ -153,7 +158,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         const texture = this.props.texture;
 
         if (!texture) {
-            if (this.props.propertyName) {
+            if (this.props.propertyName || this.props.onTextureCreated) {
                 return (
                     <FileButtonLineComponent label={`Add ${this.props.label} texture`} onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
                 )

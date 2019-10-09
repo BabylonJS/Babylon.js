@@ -73,7 +73,7 @@ compileAndRun = function(parent, fpsLabel) {
                 if (!createSceneFunction) {
                     // Just pasted code.
                     engine = createDefaultEngine();
-                    await engine.initAsync(window.shadercOptions).catch((e) => {
+                    await engine.initAsync(window.glslangOptions).catch((e) => {
                         showparent.utils.showErrorError(e);
                 
                         // Also log error in console to help debug playgrounds
@@ -105,7 +105,7 @@ compileAndRun = function(parent, fpsLabel) {
                         parent.utils.showError("createEngine function must return an engine.", null);
                         return;
                     }
-                    await engine.initAsync(window.shadercOptions).catch((e) => {
+                    await engine.initAsync(window.glslangOptions).catch((e) => {
                         parent.utils.showError(e);
                 
                         // Also log error in console to help debug playgrounds

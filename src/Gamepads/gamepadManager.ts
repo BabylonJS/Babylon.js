@@ -104,8 +104,10 @@ export class GamepadManager {
             if (this._gamepadEventSupported) {
                 let hostWindow = this._scene ? this._scene.getEngine().getHostWindow() : window;
 
-                hostWindow.addEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
-                hostWindow.addEventListener('gamepaddisconnected', this._onGamepadDisconnectedEvent, false);
+                if (hostWindow) {
+                    hostWindow.addEventListener('gamepadconnected', this._onGamepadConnectedEvent, false);
+                    hostWindow.addEventListener('gamepaddisconnected', this._onGamepadDisconnectedEvent, false);
+                }
             }
             else {
                 this._startMonitoringGamepads();

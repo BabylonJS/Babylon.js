@@ -467,6 +467,7 @@ declare module INSPECTOR {
         onSelectionChangedObservable?: BABYLON.Observable<any>;
         onDebugSelectionChangeObservable?: BABYLON.Observable<BABYLON.BaseTexture>;
         propertyName?: string;
+        onTextureCreated?: (texture: BABYLON.BaseTexture) => void;
         customDebugAction?: (state: boolean) => void;
     }
     export class TextureLinkLineComponent extends React.Component<ITextureLinkLineComponentProps, {
@@ -580,6 +581,7 @@ declare module INSPECTOR {
         constructor(props: ITexturePropertyGridComponentProps);
         componentWillUnmount(): void;
         updateTexture(file: File): void;
+        foreceRefresh(): void;
         render(): JSX.Element;
     }
 }

@@ -27,7 +27,6 @@ import { _TypeStore } from '../../Misc/typeStore';
 import { SerializationHelper } from '../../Misc/decorators';
 import { TextureBlock } from './Blocks/Dual/textureBlock';
 import { ReflectionTextureBlock } from './Blocks/Dual/reflectionTextureBlock';
-import { FileTools } from '../../Misc/fileTools';
 import { EffectFallbacks } from '../effectFallbacks';
 
 // declare NODEEDITOR namespace for compilation issue
@@ -712,8 +711,9 @@ export class NodeMaterial extends PushMaterial {
             });
 
             // Uniforms
+            let uniformBuffers: string[] = [];
             this._sharedData.dynamicUniformBlocks.forEach((b) => {
-                b.updateUniformsAndSamples(this._vertexCompilationState, this, defines);
+                b.updateUniformsAndSamples(this._vertexCompilationState, this, defines, uniformBuffers);
             });
 
             let mergedUniforms = this._vertexCompilationState.uniforms;
@@ -723,17 +723,6 @@ export class NodeMaterial extends PushMaterial {
 
                 if (index === -1) {
                     mergedUniforms.push(u);
-                }
-            });
-
-            // Uniform buffers
-            let mergedUniformBuffers = this._vertexCompilationState.uniformBuffers;
-
-            this._fragmentCompilationState.uniformBuffers.forEach((u) => {
-                let index = mergedUniformBuffers.indexOf(u);
-
-                if (index === -1) {
-                    mergedUniformBuffers.push(u);
                 }
             });
 
@@ -765,7 +754,7 @@ export class NodeMaterial extends PushMaterial {
             }, <IEffectCreationOptions>{
                 attributes: this._vertexCompilationState.attributes,
                 uniformsNames: mergedUniforms,
-                uniformBuffersNames: mergedUniformBuffers,
+                uniformBuffersNames: uniformBuffers,
                 samplers: mergedSamplers,
                 defines: join,
                 fallbacks: fallbacks,
@@ -888,7 +877,7 @@ export class NodeMaterial extends PushMaterial {
             return [];
         }
 
-        return this._sharedData.textureBlocks.filter((tb) => tb.texture);
+        return this._sharedData.textureBlocks;
     }
 
     /**
@@ -1018,16 +1007,9 @@ export class NodeMaterial extends PushMaterial {
      * @returns a promise that will fullfil when the material is fully loaded
      */
     public loadAsync(url: string) {
-        return new Promise((resolve, reject) => {
-            FileTools.LoadFile(url, (data) => {
-                let serializationObject = JSON.parse(data as string);
-
-                this.loadFromSerialization(serializationObject, "");
-
-                resolve();
-            }, undefined, undefined, false, (request, exception) => {
-                reject(exception.message);
-            });
+        return this.getScene()._loadFileAsync(url).then((data) => {
+            const serializationObject = JSON.parse(data as string);
+            this.loadFromSerialization(serializationObject, "");
         });
     }
 

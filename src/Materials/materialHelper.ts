@@ -645,23 +645,6 @@ export class MaterialHelper {
     }
 
     /**
-     * Binds the light shadow information to the effect for the given mesh.
-     * @param light The light containing the generator
-     * @param scene The scene the lights belongs to
-     * @param mesh The mesh we are binding the information to render
-     * @param lightIndex The light index in the effect used to render the mesh
-     * @param effect The effect we are binding the data to
-     */
-    public static BindLightShadow(light: Light, mesh: AbstractMesh, lightIndex: string, effect: Effect): void {
-        if (light.shadowEnabled && mesh.receiveShadows) {
-            var shadowGenerator = light.getShadowGenerator();
-            if (shadowGenerator) {
-                shadowGenerator.bindShadowLight(lightIndex, effect);
-            }
-        }
-    }
-
-    /**
      * Binds the light information to the effect.
      * @param light The light containing the generator
      * @param effect The effect we are binding the data to
@@ -676,34 +659,49 @@ export class MaterialHelper {
      * @param light Light to bind
      * @param lightIndex Light index
      * @param scene The scene where the light belongs to
-     * @param mesh The mesh we are binding the information to render
      * @param effect The effect we are binding the data to
      * @param useSpecular Defines if specular is supported
      * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
      * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      */
-    public static BindLight(light: Light, lightIndex: number, scene: Scene, mesh: AbstractMesh, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff = false, rebuildInParallel = false): void {
+    public static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff = false, rebuildInParallel = false): void {
         let iAsString = lightIndex.toString();
+        let needUpdate = false;
 
-        let scaledIntensity = light.getScaledIntensity();
-        if (!rebuildInParallel) {
-            light._uniformBuffer.bindToEffect(effect, "Light" + iAsString);
+        if (rebuildInParallel && light._uniformBuffer._alreadyBound) {
+            return;
         }
 
-        MaterialHelper.BindLightProperties(light, effect, lightIndex);
+        light._uniformBuffer.bindToEffect(effect, "Light" + iAsString);
 
-        light.diffuse.scaleToRef(scaledIntensity, TmpColors.Color3[0]);
-        light._uniformBuffer.updateColor4("vLightDiffuse", TmpColors.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, iAsString);
-        if (useSpecular) {
-            light.specular.scaleToRef(scaledIntensity, TmpColors.Color3[1]);
-            light._uniformBuffer.updateColor3("vLightSpecular", TmpColors.Color3[1], iAsString);
+        if (light._renderId !== scene.getRenderId() || !light._uniformBuffer.useUbo) {
+            light._renderId = scene.getRenderId();
+
+            let scaledIntensity = light.getScaledIntensity();
+
+            MaterialHelper.BindLightProperties(light, effect, lightIndex);
+
+            light.diffuse.scaleToRef(scaledIntensity, TmpColors.Color3[0]);
+            light._uniformBuffer.updateColor4("vLightDiffuse", TmpColors.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, iAsString);
+            if (useSpecular) {
+                light.specular.scaleToRef(scaledIntensity, TmpColors.Color3[1]);
+                light._uniformBuffer.updateColor3("vLightSpecular", TmpColors.Color3[1], iAsString);
+            }
+            needUpdate = true;
         }
 
         // Shadows
-        if (scene.shadowsEnabled) {
-            this.BindLightShadow(light, mesh, iAsString, effect);
+        if (scene.shadowsEnabled && light.shadowEnabled) {
+            var shadowGenerator = light.getShadowGenerator();
+            if (shadowGenerator) {
+                shadowGenerator.bindShadowLight(iAsString, effect);
+                needUpdate = true;
+            }
         }
-        light._uniformBuffer.update();
+
+        if (needUpdate) {
+            light._uniformBuffer.update();
+        }
     }
 
     /**
@@ -722,7 +720,7 @@ export class MaterialHelper {
         for (var i = 0; i < len; i++) {
 
             let light = mesh.lightSources[i];
-            this.BindLight(light, i, scene, mesh, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], usePhysicalLightFalloff, rebuildInParallel);
+            this.BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], usePhysicalLightFalloff, rebuildInParallel);
         }
     }
 

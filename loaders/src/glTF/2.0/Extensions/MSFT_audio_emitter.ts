@@ -97,7 +97,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     public readonly name = NAME;
 
     /** Defines whether this extension is enabled. */
-    public enabled = true;
+    public enabled: boolean;
 
     private _loader: GLTFLoader;
     private _clips: Array<ILoaderClip>;
@@ -106,6 +106,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     /** @hidden */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
+        this.enabled = this._loader.isExtensionUsed(NAME);
     }
 
     /** @hidden */

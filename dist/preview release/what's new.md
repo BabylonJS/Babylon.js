@@ -6,11 +6,13 @@
 - WIP: WebGPU support (NEED DOC OR SAMPLES) ([Sebavan](https://github.com/sebavan/))
 - .basis texture file format support [Doc](https://doc.babylonjs.com/resources/multi-platform_compressed_textures#basis-file-format) ([TrevorDev](https://github.com/TrevorDev))
 - WIP: Recast navigation mesh and crowd of moving agents [Demo](https://www.babylonjs-playground.com/#AJTRIL) ([CedricGuillemet](https://github.com/CedricGuillemet))
+- Added Points Cloud Particle System ([JohnK](https://github.com/BabylonJSGuide/))
 - Classes decoupling ending up with smaller bundle sizes [Blog](https://medium.com/@babylonjs/size-matters-e0e94dad01a7) ([Deltakosh](https://github.com/deltakosh/))
 - Babylon.js controls [Doc](https://doc.babylonjs.com/features/controls) ([Sebavan](https://github.com/sebavan/) / [Deltakosh](https://github.com/deltakosh/))
 - WebXR updates:
   - WebXR updated to spec as of July 10th ([TrevorDev](https://github.com/TrevorDev))
   - WebXR webVR parity helpers (Vive, WMR, Oculus Rift) ([TrevorDev](https://github.com/TrevorDev))
+- Added support for Offscreen canvas [Doc](https://doc.babylonjs.com/how_to/using_offscreen_canvas) ([Deltakosh](https://github.com/deltakosh/)
 
 ## Updates
 
@@ -36,6 +38,7 @@
 - Added optional parameter to use Euler angles in planeRotationGizmo ([CedricGuillemet](https://github.com/CedricGuillemet))
 
 ### Engine
+- Improved instanceMesh with user defined custom buffers [Doc](https://doc.babylonjs.com/how_to/how_to_use_instances#custom-buffers) ([Deltakosh](https://github.com/deltakosh/))
 - Morph targets now can morph UV channel as well ([Deltakosh](https://github.com/deltakosh/))
 - Added MorphTarget support to the DepthRenderer, GeometryBufferRenderer and OutlineRenderer ([MarkusBillharz](https://github.com/MarkusBillharz))
 - Added preprocessors for shaders to improve how shaders are compiled for WebGL1/2 or WebGPU ([Deltakosh](https://github.com/deltakosh/))
@@ -80,6 +83,9 @@
 - Added support for non-float accessors in animation data for glTF loader. ([bghgary](https://github.com/bghgary))
 - Support loading cube data in the .basis loader ([TrevorDev](https://github.com/TrevorDev))
 - Load glTF extras into BJS metadata ([pjoe](https://github.com/pjoe))
+- Added support for morph target names via `mesh.extras.targetNames` when loading a glTF ([zeux](https://github.com/zeux))
+- Added support for using HTTP range requests when loading `MSFT_lod` extension from a glTF binary. ([bghgary](https://github.com/bghgary))
+- Added a flag to enable/disable creation of instances for glTF loader. ([bghgary](https://github.com/bghgary))
 
 ### Materials
 - Added `ShaderMaterial.setColor4Array` ([JonathanTron](https://github.com/JonathanTron/))
@@ -111,7 +117,9 @@
 - Added `StackPanel.ignoreLayoutWarnings` to disable console warnings when controls with percentage size are added to a StackPanel ([Deltakosh](https://github.com/deltakosh/))
 - Added `_getSVGAttribs` functionality for loading multiple svg icons from an external svg file via icon id.([lockphase](https://github.com/lockphase/))
 
-
+### Particles
+- Added the feature `expandable` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
+- Added the feature `removeParticles()` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 
 ### Navigation Mesh
 - Added moveAlong function to cast a segment on mavmesh ([CedricGuillemet](https://github.com/CedricGuillemet/))
@@ -160,3 +168,4 @@
 - `Tools.ExtractMinAndMaxIndexed` and `Tools.ExtractMinAndMax` are now ambiant functions (available on `BABYLON.extractMinAndMaxIndexed` and `BABYLON.extractMinAndMax`) ([Deltakosh](https://github.com/deltakosh/))
 - `Tools.QueueNewFrame` was removed in favor of `Engine.QueueNewFrame` ([Deltakosh](https://github.com/deltakosh/))
 - Removed external data from Engine (`addExternalData`, `getExternalData`, `getOrAddExternalDataWithFactory`, `removeExternalData`)  ([Deltakosh](https://github.com/deltakosh/))
+- The glTF loader extensions that map to glTF 2.0 extensions will now be disabled if the extension is not present in `extensionsUsed`. ([bghgary](https://github.com/bghgary))
