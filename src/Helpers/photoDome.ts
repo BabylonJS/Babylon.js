@@ -158,6 +158,7 @@ export class PhotoDome extends TransformNode {
                 onError(message, exception);
             }
         });
+        this.photoTexture.anisotropicFilteringLevel = 1;
 
         this.photoTexture.onLoadObservable.addOnce(() => {
             this._setReady(true);
