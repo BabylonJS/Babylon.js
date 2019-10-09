@@ -25230,7 +25230,7 @@ declare module BABYLON {
         static GetConstructorFromName(type: string, name: string, scene: Scene, interaxial_distance?: number, isStereoscopicSideBySide?: boolean): () => Camera;
         /**
          * Compute the world  matrix of the camera.
-         * @returns the camera workd matrix
+         * @returns the camera world matrix
          */
         computeWorldMatrix(): Matrix;
         /**
@@ -41500,6 +41500,7 @@ declare module BABYLON {
         currentFrame: Nullable<XRFrame>;
         private _xrNavigator;
         private baseLayer;
+        private _sessionEnded;
         /**
          * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
          * @param scene The scene which the session should be created for
@@ -41573,7 +41574,7 @@ declare module BABYLON {
         constructor(name: string, scene: Scene);
         private _updateNumberOfRigCameras;
         /** @hidden */
-        _updateForDualEyeDebugging(pupilDistance?: number): void;
+        _updateForDualEyeDebugging(): void;
         /**
          * Updates the cameras position from the current pose information of the  XR session
          * @param xrSessionManager the session containing pose information
@@ -41803,6 +41804,13 @@ declare module BABYLON {
          * Pointer which can be used to select objects or attach a visible laser to
          */
         pointer: AbstractMesh;
+        private _gamepadMode;
+        /**
+         * If available, this is the gamepad object related to this controller.
+         * Using this object it is possible to get click events and trackpad changes of the
+         * webxr controller that is currently being used.
+         */
+        gamepadController?: WebVRController;
         /**
          * Event that fires when the controller is removed/disposed
          */
@@ -41831,6 +41839,11 @@ declare module BABYLON {
          * @param result the resulting ray
          */
         getWorldPointerRayToRef(result: Ray): void;
+        /**
+         * Get the scene associated with this controller
+         * @returns the scene object
+         */
+        getScene(): Scene;
         /**
          * Disposes of the object
          */
