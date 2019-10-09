@@ -4,7 +4,7 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Matrix, Quaternion, Vector3 } from '../../Maths/math.vector';
 import { Ray } from '../../Culling/ray';
 import { Scene } from '../../scene';
-import { WebVRController } from '../../Gamepads';
+import { WebVRController } from '../../Gamepads/Controllers/webVRController';
 /**
  * Represents an XR input
  */

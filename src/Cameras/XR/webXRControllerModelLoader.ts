@@ -3,7 +3,7 @@ import { WindowsMotionController } from '../../Gamepads/Controllers/windowsMotio
 import { OculusTouchController } from '../../Gamepads/Controllers/oculusTouchController';
 import { WebXRInput } from './webXRInput';
 import { ViveController } from '../../Gamepads/Controllers/viveController';
-import { WebVRController } from '../../Gamepads';
+import { WebVRController } from '../../Gamepads/Controllers/webVRController';
 
 /**
  * Loads a controller model and adds it as a child of the WebXRControllers grip when the controller is created
