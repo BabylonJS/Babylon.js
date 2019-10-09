@@ -174,9 +174,9 @@ export class WebXRSessionManager implements IDisposable {
      */
     public exitXRAsync() {
         if (this.session) {
-            this.session.end();
+            return this.session.end();
         }
-        return new Promise(() => {});
+        return Promise.resolve();
     }
 
     /**

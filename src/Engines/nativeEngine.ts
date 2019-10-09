@@ -261,6 +261,27 @@ export class NativeEngine extends Engine {
         return 0;
     }
 
+    /**
+     * Override default engine behavior.
+     * @param color
+     * @param backBuffer
+     * @param depth
+     * @param stencil
+     */
+    public _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>) {
+        if (this._currentFramebuffer !== framebuffer) {
+            if (this._currentFramebuffer) {
+                this._native.unbindFramebuffer(this._currentFramebuffer!);
+            }
+
+            if (framebuffer) {
+                this._native.bindFramebuffer(framebuffer);
+            }
+
+            this._currentFramebuffer = framebuffer;
+        }
+    }
+
     public clear(color: Color4, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
         this._native.clear(color.r, color.g, color.b, color.a, backBuffer, depth, stencil);
     }
@@ -1207,7 +1228,7 @@ export class NativeEngine extends Engine {
             throw new Error("forceFullscreenViewport for frame buffers not yet supported in NativeEngine.");
         }
 
-        this._native.bindFramebuffer(texture._framebuffer!);
+        this._bindUnboundFramebuffer(texture._framebuffer);
     }
 
     public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
@@ -1218,7 +1239,8 @@ export class NativeEngine extends Engine {
         if (onBeforeUnbind) {
             onBeforeUnbind();
         }
-        this._native.unbindFramebuffer(texture._framebuffer!);
+
+        this._bindUnboundFramebuffer(null);
     }
 
     public createDynamicVertexBuffer(data: DataArray): DataBuffer {
