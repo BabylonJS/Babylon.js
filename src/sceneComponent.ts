@@ -9,7 +9,6 @@ import { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
 import { PickingInfo } from "./Collisions/pickingInfo";
 import { AbstractScene } from "./abstractScene";
 
-
 declare type Mesh = import("./Meshes/mesh").Mesh;
 
 /**
