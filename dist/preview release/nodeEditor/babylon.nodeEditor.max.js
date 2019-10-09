@@ -72214,9 +72214,9 @@ var PreviewManager = /** @class */ (function () {
             _this._engine.resize();
             _this._scene.render();
         });
-        var cameraLastRotation = 0;
+        //     let cameraLastRotation = 0;
         var lastOffsetX = undefined;
-        var lightRotationParallaxSpeed = 0.5;
+        //   const lightRotationParallaxSpeed = 0.5;        
         var lightRotationSpeed = 0.01;
         this._scene.onPointerObservable.add(function (evt) {
             if (_this._globalState.controlCamera) {
@@ -72236,17 +72236,17 @@ var PreviewManager = /** @class */ (function () {
             _this._lightParent.rotation.y += rotateLighting;
             lastOffsetX = evt.event.offsetX;
         });
-        this._scene.registerBeforeRender(function () {
-            if (_this._camera.alpha === cameraLastRotation) {
-                return;
-            }
-            if (!_this._globalState.controlCamera) {
-                return;
-            }
-            var rotateLighting = (_this._camera.alpha - cameraLastRotation) * lightRotationParallaxSpeed;
-            _this._lightParent.rotate(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Up(), rotateLighting);
-            cameraLastRotation = _this._camera.alpha;
-        });
+        // this._scene.registerBeforeRender(() => {
+        //     if (this._camera.alpha === cameraLastRotation) {
+        //         return;
+        //     }
+        //     if (!this._globalState.controlCamera) {
+        //         return;
+        //     }
+        //     var rotateLighting = (this._camera.alpha - cameraLastRotation) * lightRotationParallaxSpeed; 
+        //     this._lightParent.rotate(Vector3.Up(), rotateLighting);
+        //     cameraLastRotation = this._camera.alpha;
+        // });
     }
     PreviewManager.prototype._handleAnimations = function () {
         this._scene.stopAllAnimations();

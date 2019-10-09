@@ -28834,7 +28834,7 @@ declare module BABYLON {
     /**
      * Interface for attribute information associated with buffer instanciation
      */
-    export class InstancingAttributeInfo {
+    export interface InstancingAttributeInfo {
         /**
          * Index/offset of the attribute in the vertex shader
          */
@@ -29658,6 +29658,12 @@ declare module BABYLON {
          */
         enableEffect(effect: Nullable<Effect>): void;
         /**
+         * Set the value of an uniform to a number (int)
+         * @param uniform defines the webGL uniform location where to store the value
+         * @param value defines the int number to store
+         */
+        setInt(uniform: Nullable<WebGLUniformLocation>, value: number): void;
+        /**
          * Set the value of an uniform to an array of int32
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
@@ -29682,53 +29688,29 @@ declare module BABYLON {
          */
         setIntArray4(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void;
         /**
-         * Set the value of an uniform to an array of float32
-         * @param uniform defines the webGL uniform location where to store the value
-         * @param array defines the array of float32 to store
-         */
-        setFloatArray(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void;
-        /**
-         * Set the value of an uniform to an array of float32 (stored as vec2)
-         * @param uniform defines the webGL uniform location where to store the value
-         * @param array defines the array of float32 to store
-         */
-        setFloatArray2(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void;
-        /**
-         * Set the value of an uniform to an array of float32 (stored as vec3)
-         * @param uniform defines the webGL uniform location where to store the value
-         * @param array defines the array of float32 to store
-         */
-        setFloatArray3(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void;
-        /**
-         * Set the value of an uniform to an array of float32 (stored as vec4)
-         * @param uniform defines the webGL uniform location where to store the value
-         * @param array defines the array of float32 to store
-         */
-        setFloatArray4(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void;
-        /**
          * Set the value of an uniform to an array of number
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
          */
-        setArray(uniform: Nullable<WebGLUniformLocation>, array: number[]): void;
+        setArray(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void;
         /**
          * Set the value of an uniform to an array of number (stored as vec2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
          */
-        setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[]): void;
+        setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void;
         /**
          * Set the value of an uniform to an array of number (stored as vec3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
          */
-        setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[]): void;
+        setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void;
         /**
          * Set the value of an uniform to an array of number (stored as vec4)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
          */
-        setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[]): void;
+        setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void;
         /**
          * Set the value of an uniform to an array of float32 (stored as matrices)
          * @param uniform defines the webGL uniform location where to store the value
@@ -29747,12 +29729,6 @@ declare module BABYLON {
          * @param matrix defines the Float32Array representing the 2x2 matrix to store
          */
         setMatrix2x2(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): void;
-        /**
-         * Set the value of an uniform to a number (int)
-         * @param uniform defines the webGL uniform location where to store the value
-         * @param value defines the int number to store
-         */
-        setInt(uniform: Nullable<WebGLUniformLocation>, value: number): void;
         /**
          * Set the value of an uniform to a number (float)
          * @param uniform defines the webGL uniform location where to store the value
@@ -29775,12 +29751,6 @@ declare module BABYLON {
          */
         setFloat3(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): void;
         /**
-         * Set the value of an uniform to a boolean
-         * @param uniform defines the webGL uniform location where to store the value
-         * @param bool defines the boolean to store
-         */
-        setBool(uniform: Nullable<WebGLUniformLocation>, bool: number): void;
-        /**
          * Set the value of an uniform to a vec4
          * @param uniform defines the webGL uniform location where to store the value
          * @param x defines the 1st component of the value
@@ -29789,12 +29759,6 @@ declare module BABYLON {
          * @param w defines the 4th component of the value
          */
         setFloat4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): void;
-        /**
-         * Sets a Color4 on a uniform variable
-         * @param uniform defines the uniform location
-         * @param color4 defines the value to be set
-         */
-        setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: IColor4Like): void;
         /**
          * Gets the depth culling state manager
          */
@@ -29910,14 +29874,6 @@ declare module BABYLON {
          * @param texture defines the texture to update
          */
         updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void;
-        /**
-         * Updates a depth texture Comparison Mode and Function.
-         * If the comparison Function is equal to 0, the mode will be set to none.
-         * Otherwise, this only works in webgl 2 and requires a shadow sampler in the shader.
-         * @param texture The texture to set the comparison function for
-         * @param comparisonFunction The comparison function to set, 0 if no comparison required
-         */
-        updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void;
         /** @hidden */
         _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | {
             width: number;
@@ -31840,6 +31796,14 @@ declare module BABYLON {
          * @returns the effective sample count (could be 0 if multisample render targets are not supported)
          */
         updateRenderTargetTextureSampleCount(texture: Nullable<InternalTexture>, samples: number): number;
+        /**
+         * Updates a depth texture Comparison Mode and Function.
+         * If the comparison Function is equal to 0, the mode will be set to none.
+         * Otherwise, this only works in webgl 2 and requires a shadow sampler in the shader.
+         * @param texture The texture to set the comparison function for
+         * @param comparisonFunction The comparison function to set, 0 if no comparison required
+         */
+        updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void;
         /**
          * Creates a webGL buffer to use with instanciation
          * @param capacity defines the size of the buffer
