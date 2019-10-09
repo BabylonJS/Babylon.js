@@ -1585,14 +1585,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (hardwareInstancedRendering) {
             this._renderWithInstances(subMesh, fillMode, batch, effect, engine);
         } else {
+            let instanceCount = 0;
             if (batch.renderSelf[subMesh._id]) {
                 // Draw
                 if (onBeforeDraw) {
                     onBeforeDraw(false, this._effectiveMesh.getWorldMatrix(), effectiveMaterial);
                 }
-
-                // Stats                   
-                scene._activeIndices.addCount(subMesh.indexCount, false);
+                instanceCount++;
 
                 this._draw(subMesh, fillMode, this._instanceDataStorage.overridenInstanceCount);
             }
@@ -1600,10 +1599,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             let visibleInstancesForSubMesh = batch.visibleInstances[subMesh._id];
 
             if (visibleInstancesForSubMesh) {
-                // Stats                   
-                scene._activeIndices.addCount(subMesh.indexCount * visibleInstancesForSubMesh.length, false);
+                let visibleInstanceCount = visibleInstancesForSubMesh.length;
+                instanceCount += visibleInstanceCount;
 
-                for (var instanceIndex = 0; instanceIndex < visibleInstancesForSubMesh.length; instanceIndex++) {
+                // Stats                   
+                for (var instanceIndex = 0; instanceIndex < visibleInstanceCount; instanceIndex++) {
                     var instance = visibleInstancesForSubMesh[instanceIndex];
 
                     // World
@@ -1611,11 +1611,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     if (onBeforeDraw) {
                         onBeforeDraw(true, world, effectiveMaterial);
                     }
-
                     // Draw
                     this._draw(subMesh, fillMode);
                 }
             }
+        
+            // Stats                   
+            scene._activeIndices.addCount(subMesh.indexCount * instanceCount, false);
         }
         return this;
     }
