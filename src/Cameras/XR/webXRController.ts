@@ -121,6 +121,7 @@ export class WebXRController {
 
     /**
      * Get the scene associated with this controller
+     * @returns the scene object
      */
     public getScene() {
         return this.scene;
