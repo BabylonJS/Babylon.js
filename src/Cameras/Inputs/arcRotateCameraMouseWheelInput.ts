@@ -63,8 +63,6 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
                 wheelDelta = -(event.deltaY || event.detail) * 60;
             }
 
-            console.log(wheelDelta);
-
             if (this.wheelDeltaPercentage) {
                 delta = this.computeDeltaFromMouseWheelLegacyEvent(wheelDelta, this.camera.radius);
 
