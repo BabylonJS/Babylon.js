@@ -176,35 +176,35 @@ describe('Babylon Scene Loader', function() {
             });
         });
 
-        it('Load CompileMaterials', () => {
-            const scene = new BABYLON.Scene(subject);
-            const promises = new Array<Promise<void>>();
-            let createShaderProgramSpy: sinon.SinonSpy;
+        // it('Load CompileMaterials', () => {
+        //     const scene = new BABYLON.Scene(subject);
+        //     const promises = new Array<Promise<void>>();
+        //     let createShaderProgramSpy: sinon.SinonSpy;
 
-            subject.runRenderLoop(() => {
-                for (const mesh of scene.meshes) {
-                    if (mesh.material && mesh.isEnabled()) {
-                        expect(mesh.material.isReady(mesh), "mesh material is ready").to.be.true;
-                    }
-                }
-            });
+        //     subject.runRenderLoop(() => {
+        //         for (const mesh of scene.meshes) {
+        //             if (mesh.material && mesh.isEnabled()) {
+        //                 expect(mesh.material.isReady(mesh), "mesh material is ready").to.be.true;
+        //             }
+        //         }
+        //     });
 
-            BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
-                loader.compileMaterials = true;
+        //     BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
+        //         loader.compileMaterials = true;
 
-                promises.push(loader.whenCompleteAsync().then(() => {
-                    const called = createShaderProgramSpy.called;
-                    createShaderProgramSpy.restore();
-                    expect(called, "createShaderProgramCalled").to.be.false;
-                }));
-            });
+        //         promises.push(loader.whenCompleteAsync().then(() => {
+        //             const called = createShaderProgramSpy.called;
+        //             createShaderProgramSpy.restore();
+        //             expect(called, "createShaderProgramCalled").to.be.false;
+        //         }));
+        //     });
 
-            promises.push(BABYLON.SceneLoader.AppendAsync("http://models.babylonjs.com/Tests/CompileMaterials/", "Test.gltf", scene).then(() => {
-                createShaderProgramSpy = sinon.spy(subject, "createShaderProgram");
-            }));
+        //     promises.push(BABYLON.SceneLoader.AppendAsync("http://models.babylonjs.com/Tests/CompileMaterials/", "Test.gltf", scene).then(() => {
+        //         createShaderProgramSpy = sinon.spy(subject, "createShaderProgram");
+        //     }));
 
-            return Promise.all(promises);
-        });
+        //     return Promise.all(promises);
+        // });
 
         it('Load BrainStem with compileMaterials', () => {
             const scene = new BABYLON.Scene(subject);

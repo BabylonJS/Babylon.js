@@ -1559,7 +1559,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         this._processInstancedBuffers(visibleInstances, renderSelf);
+        
+        // Stats                   
+        this.getScene()._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
 
+        // Draw
         this._bind(subMesh, effect, fillMode);
         this._draw(subMesh, fillMode, instancesCount);
 
@@ -1587,12 +1591,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     onBeforeDraw(false, this._effectiveMesh.getWorldMatrix(), effectiveMaterial);
                 }
 
+                // Stats                   
+                scene._activeIndices.addCount(subMesh.indexCount, false);
+
                 this._draw(subMesh, fillMode, this._instanceDataStorage.overridenInstanceCount);
             }
 
             let visibleInstancesForSubMesh = batch.visibleInstances[subMesh._id];
 
             if (visibleInstancesForSubMesh) {
+                // Stats                   
+                scene._activeIndices.addCount(subMesh.indexCount * visibleInstancesForSubMesh.length, false);
+
                 for (var instanceIndex = 0; instanceIndex < visibleInstancesForSubMesh.length; instanceIndex++) {
                     var instance = visibleInstancesForSubMesh[instanceIndex];
 
