@@ -1864,7 +1864,7 @@ export class Engine extends ThinEngine {
         this.bindArrayBuffer(result);
         this._gl.bufferData(this._gl.ARRAY_BUFFER, capacity, this._gl.DYNAMIC_DRAW);
         return result;
-    }    
+    }
 
     /**
      * Delete a webGL buffer used with instanciation
@@ -1872,7 +1872,7 @@ export class Engine extends ThinEngine {
      */
     public deleteInstancesBuffer(buffer: WebGLBuffer): void {
         this._gl.deleteBuffer(buffer);
-    }    
+    }
 
     /** @hidden */
     public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null): ArrayBufferView {
