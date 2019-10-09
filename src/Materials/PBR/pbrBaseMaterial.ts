@@ -21,7 +21,7 @@ import { Color3, TmpColors } from '../../Maths/math.color';
 
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
 import { Effect, IEffectCreationOptions } from "../../Materials/effect";
-import { Material } from "../../Materials/material";
+import { Material, IMaterialCompilationOptions } from "../../Materials/material";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { MaterialHelper } from "../../Materials/materialHelper";
@@ -1356,7 +1356,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                             defines.USEIRRADIANCEMAP = true;
                             defines.USESPHERICALFROMREFLECTIONMAP = false;
                         }
-                        else if (reflectionTexture.sphericalPolynomial) {
+                        // Assume using spherical polynomial if the reflection texture is a cube map
+                        else if (reflectionTexture.isCube) {
                             defines.USESPHERICALFROMREFLECTIONMAP = true;
                             defines.USEIRRADIANCEMAP = false;
                             if (this._forceIrradianceInFragment || scene.getEngine().getCaps().maxVaryingVectors <= 8) {
@@ -1536,14 +1537,15 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Force shader compilation
      */
-    public forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<{ clipPlane: boolean }>): void {
-        let localOptions = {
+    public forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<IMaterialCompilationOptions>): void {
+        const localOptions = {
             clipPlane: false,
+            useInstances: false,
             ...options
         };
 
         const defines = new PBRMaterialDefines();
-        const effect = this._prepareEffect(mesh, defines, undefined, undefined, undefined, localOptions.clipPlane)!;
+        const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane)!;
         if (effect.isReady()) {
             if (onCompiled) {
                 onCompiled(this);

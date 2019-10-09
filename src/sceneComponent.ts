@@ -201,7 +201,7 @@ export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslated
 export type PointerUpDownStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: PointerEvent) => Nullable<PickingInfo>;
 
 /**
- * Repressentation of a stage in the scene (Basically a list of ordered steps)
+ * Representation of a stage in the scene (Basically a list of ordered steps)
  * @hidden
  */
 export class Stage<T extends Function> extends Array<{ index: number, component: ISceneComponent, action: T }> {

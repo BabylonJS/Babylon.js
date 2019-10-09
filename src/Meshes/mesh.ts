@@ -34,6 +34,7 @@ import { MeshLODLevel } from './meshLODLevel';
 import { Path3D } from '../Maths/math.path';
 import { Plane } from '../Maths/math.plane';
 import { TransformNode } from './transformNode';
+import { CanvasGenerator } from '../Misc/canvasGenerator';
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
@@ -1177,6 +1178,30 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
+     * Delete a vertex buffer associated with this mesh
+     * @param kind defines which buffer to delete (positions, indices, normals, etc). Possible `kind` values :
+     * - VertexBuffer.PositionKind
+     * - VertexBuffer.UVKind
+     * - VertexBuffer.UV2Kind
+     * - VertexBuffer.UV3Kind
+     * - VertexBuffer.UV4Kind
+     * - VertexBuffer.UV5Kind
+     * - VertexBuffer.UV6Kind
+     * - VertexBuffer.ColorKind
+     * - VertexBuffer.MatricesIndicesKind
+     * - VertexBuffer.MatricesIndicesExtraKind
+     * - VertexBuffer.MatricesWeightsKind
+     * - VertexBuffer.MatricesWeightsExtraKind
+     */
+    public removeVerticesData(kind: string) {
+        if (!this._geometry) {
+            return;
+        }
+
+        this._geometry.removeVerticesData(kind);
+    }
+
+    /**
      * Flags an associated vertex buffer as updatable
      * @param kind defines which buffer to use (positions, indices, normals, etc). Possible `kind` values :
      * - VertexBuffer.PositionKind
@@ -1500,8 +1525,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var offset = 0;
         var instancesCount = 0;
 
+        let renderSelf = batch.renderSelf[subMesh._id];
         var world = this._effectiveMesh.getWorldMatrix();
-        if (batch.renderSelf[subMesh._id]) {
+        if (renderSelf) {
             world.copyToArray(instanceStorage.instancesData, offset);
             offset += 16;
             instancesCount++;
@@ -1532,11 +1558,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             instancesBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
         }
 
+        this._processInstancedBuffers(visibleInstances, renderSelf);
+
         this._bind(subMesh, effect, fillMode);
         this._draw(subMesh, fillMode, instancesCount);
 
         engine.unbindInstanceAttributes();
         return this;
+    }
+
+    /** @hidden */
+    public _processInstancedBuffers(visibleInstances: InstancedMesh[], renderSelf: boolean) {
+        // Do nothing
     }
 
     /** @hidden */
@@ -1612,9 +1645,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
      * @param subMesh defines the subMesh to render
      * @param enableAlphaMode defines if alpha mode can be changed
+     * @param effectiveMeshReplacement defines an optional mesh used to provide info for the rendering
      * @returns the current mesh
      */
-    public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
+    public render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
         var scene = this.getScene();
 
         if (scene._isInIntermediateRendering()) {
@@ -1687,7 +1721,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        const effectiveMesh = this._effectiveMesh;
+        const effectiveMesh = effectiveMeshReplacement || this._effectiveMesh;
 
         var sideOrientation: Nullable<number>;
 
@@ -1701,17 +1735,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
             }
             instanceDataStorage.sideOrientation = sideOrientation!;
-
-            let visibleInstances = batch.visibleInstances[subMesh._id];
-            if (visibleInstances) {
-                for (var instance of visibleInstances) {
-                    if (mainDeterminant !== instance._getWorldMatrixDeterminant()) {
-                        this._effectiveMaterial.backFaceCulling = false; // Turn off back face culling as one of the instance is having an incompatible world matrix
-                        break;
-                    }
-                }
-            }
-
         } else {
             sideOrientation = instanceDataStorage.sideOrientation;
         }
@@ -2200,16 +2223,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         internalDataInfo._source = null;
 
         // Instances
-        if (this._instanceDataStorage.instancesBuffer) {
-            this._instanceDataStorage.instancesBuffer.dispose();
-            this._instanceDataStorage.instancesBuffer = null;
-        }
-
-        while (this.instances.length) {
-            this.instances[0].dispose();
-        }
+        this._disposeInstanceSpecificData();
 
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
+    }
+
+    /** @hidden */
+    public _disposeInstanceSpecificData() {
+        // Do nothing
     }
 
     /**
@@ -2228,14 +2249,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public applyDisplacementMap(url: string, minHeight: number, maxHeight: number, onSuccess?: (mesh: Mesh) => void, uvOffset?: Vector2, uvScale?: Vector2, forceUpdate = false): Mesh {
         var scene = this.getScene();
 
-        var onload = (img: HTMLImageElement) => {
+        var onload = (img: HTMLImageElement | ImageBitmap) => {
             // Getting height map data
-            var canvas = document.createElement("canvas");
-            var context = <CanvasRenderingContext2D>canvas.getContext("2d");
             var heightMapWidth = img.width;
             var heightMapHeight = img.height;
-            canvas.width = heightMapWidth;
-            canvas.height = heightMapHeight;
+            var canvas = CanvasGenerator.CreateCanvas(heightMapWidth, heightMapHeight);
+            var context = <CanvasRenderingContext2D>canvas.getContext("2d");
 
             context.drawImage(img, 0, 0);
 

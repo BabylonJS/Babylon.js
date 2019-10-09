@@ -286,8 +286,7 @@
         {
             "title": "LOD",
             "renderCount": 10,
-            "scriptToRun": "/Demos/LOD/lod.js",
-            "functionToCall": "CreateLODTestScene",
+            "playgroundId": "#FFMFW5#0",
             "referenceImage": "lod.png"
         },
         {

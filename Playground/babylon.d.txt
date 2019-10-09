@@ -492,6 +492,18 @@ declare module BABYLON {
          * @param url defines the url to connect with
          */
         open(method: string, url: string): void;
+        /**
+         * Sets the value of a request header.
+         * @param name The name of the header whose value is to be set
+         * @param value The value to set as the body of the header
+         */
+        setRequestHeader(name: string, value: string): void;
+        /**
+         * Get the string containing the text of a particular header's value.
+         * @param name The name of the header
+         * @returns The string containing the text of the given header name
+         */
+        getResponseHeader(name: string): Nullable<string>;
     }
 }
 declare module BABYLON {
@@ -933,10 +945,6 @@ declare module BABYLON {
          * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
          */
         static readonly PARTICLES_BILLBOARDMODE_STRETCHED: number;
-        /**
-         * Gets or sets base Assets URL
-         */
-        static PARTICLES_BaseAssetsUrl: string;
         /** Default culling strategy : this is an exclusion test and it's the more accurate.
          *  Test order :
          *  Is the bounding sphere outside the frustum ?
@@ -1127,6 +1135,18 @@ declare module BABYLON {
          * @returns Boolean indicating whether the suffix was found (true) or not (false)
          */
         static StartsWith(str: string, suffix: string): boolean;
+        /**
+         * Decodes a buffer into a string
+         * @param buffer The buffer to decode
+         * @returns The decoded string
+         */
+        static Decode(buffer: Uint8Array | Uint16Array): string;
+        /**
+         * Encode a buffer to a base64 string
+         * @param buffer defines the buffer to encode
+         * @returns the encoded string
+         */
+        static EncodeArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): string;
     }
 }
 declare module BABYLON {
@@ -1224,25 +1244,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * @ignore
-     * Application error to support additional information when loading a file
-     */
-    export class LoadFileError extends Error {
-        /** defines the optional web request */
-        request?: WebRequest | undefined;
-        private static _setPrototypeOf;
-        /**
-         * Creates a new LoadFileError
-         * @param message defines the message of the error
-         * @param request defines the optional web request
-         */
-        constructor(message: string, 
-        /** defines the optional web request */
-        request?: WebRequest | undefined);
-    }
-}
-declare module BABYLON {
-    /**
      * Class used to enable access to offline support
      * @see http://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
      */
@@ -1308,6 +1309,47 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * @ignore
+     * Application error to support additional information when loading a file
+     */
+    export abstract class BaseError extends Error {
+        protected static _setPrototypeOf: (o: any, proto: object | null) => any;
+    }
+}
+declare module BABYLON {
+    /** @ignore */
+    export class LoadFileError extends BaseError {
+        request?: WebRequest;
+        file?: File;
+        /**
+         * Creates a new LoadFileError
+         * @param message defines the message of the error
+         * @param request defines the optional web request
+         * @param file defines the optional file
+         */
+        constructor(message: string, object?: WebRequest | File);
+    }
+    /** @ignore */
+    export class RequestFileError extends BaseError {
+        request: WebRequest;
+        /**
+         * Creates a new LoadFileError
+         * @param message defines the message of the error
+         * @param request defines the optional web request
+         */
+        constructor(message: string, request: WebRequest);
+    }
+    /** @ignore */
+    export class ReadFileError extends BaseError {
+        file: File;
+        /**
+         * Creates a new ReadFileError
+         * @param message defines the message of the error
+         * @param file defines the optional file
+         */
+        constructor(message: string, file: File);
+    }
+    /**
      * @hidden
      */
     export class FileTools {
@@ -1349,21 +1391,23 @@ declare module BABYLON {
          * @param onLoad callback called when the image successfully loads
          * @param onError callback called when the image fails to load
          * @param offlineProvider offline provider for caching
+         * @param mimeType optional mime type
          * @returns the HTMLImageElement of the loaded image
          */
-        static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>): HTMLImageElement;
+        static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement>;
         /**
-         * Loads a file
-         * @param fileToLoad defines the file to load
-         * @param callback defines the callback to call when data is loaded
-         * @param progressCallBack defines the callback to call during loading process
+         * Reads a file from a File object
+         * @param file defines the file to load
+         * @param onSuccess defines the callback to call when data is loaded
+         * @param onProgress defines the callback to call during loading process
          * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
+         * @param onError defines the callback to call when an error occurs
          * @returns a file request object
          */
-        static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): IFileRequest;
+        static ReadFile(file: File, onSuccess: (data: any) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: ReadFileError) => void): IFileRequest;
         /**
-         * Loads a file
-         * @param url url string, ArrayBuffer, or Blob to load
+         * Loads a file from a url
+         * @param url url to load
          * @param onSuccess callback called when the file successfully loads
          * @param onProgress callback called while file is loading (if the server supports this mode)
          * @param offlineProvider defines the offline provider for caching
@@ -1371,7 +1415,18 @@ declare module BABYLON {
          * @param onError callback called when the file fails to load
          * @returns a file request object
          */
-        static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
+        static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest;
+        /**
+         * Loads a file
+         * @param url url to load
+         * @param onSuccess callback called when the file successfully loads
+         * @param onProgress callback called while file is loading (if the server supports this mode)
+         * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+         * @param onError callback called when the file fails to load
+         * @param onOpened callback called when the web request is opened
+         * @returns a file request object
+         */
+        static RequestFile(url: string, onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void, onProgress?: (event: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (error: RequestFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest;
         /**
          * Checks if the loaded document was accessed via `file:`-Protocol.
          * @returns boolean
@@ -6049,6 +6104,7 @@ declare module BABYLON {
         /** @hidden */private _data: Nullable<DataArray>;
         private _updatable;
         private _instanced;
+        private _divisor;
         /**
          * Gets the byte stride.
          */
@@ -6062,8 +6118,9 @@ declare module BABYLON {
          * @param postponeInternalCreation whether to postpone creating the internal WebGL buffer (optional)
          * @param instanced whether the buffer is instanced (optional)
          * @param useBytes set to true if the stride in in bytes (optional)
+         * @param divisor sets an optional divisor for instances (1 by default)
          */
-        constructor(engine: any, data: DataArray, updatable: boolean, stride?: number, postponeInternalCreation?: boolean, instanced?: boolean, useBytes?: boolean);
+        constructor(engine: any, data: DataArray, updatable: boolean, stride?: number, postponeInternalCreation?: boolean, instanced?: boolean, useBytes?: boolean, divisor?: number);
         /**
          * Create a new VertexBuffer based on the current buffer
          * @param kind defines the vertex buffer kind (position, normal, etc.)
@@ -6071,10 +6128,11 @@ declare module BABYLON {
          * @param size defines the size in floats of attributes (position is 3 for instance)
          * @param stride defines the stride size in floats in the buffer (the offset to apply to reach next value when data is interleaved)
          * @param instanced defines if the vertex buffer contains indexed data
-         * @param useBytes defines if the offset and stride are in bytes
+         * @param useBytes defines if the offset and stride are in bytes     *
+         * @param divisor sets an optional divisor for instances (1 by default)
          * @returns the new vertex buffer
          */
-        createVertexBuffer(kind: string, offset: number, size: number, stride?: number, instanced?: boolean, useBytes?: boolean): VertexBuffer;
+        createVertexBuffer(kind: string, offset: number, size: number, stride?: number, instanced?: boolean, useBytes?: boolean, divisor?: number): VertexBuffer;
         /**
          * Gets a boolean indicating if the Buffer is updatable?
          * @returns true if the buffer is updatable
@@ -6193,8 +6251,9 @@ declare module BABYLON {
          * @param type the type of the component (optional)
          * @param normalized whether the data contains normalized data (optional)
          * @param useBytes set to true if stride and offset are in bytes (optional)
+         * @param divisor defines the instance divisor to use (1 by default)
          */
-        constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number, type?: number, normalized?: boolean, useBytes?: boolean);
+        constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number, type?: number, normalized?: boolean, useBytes?: boolean, divisor?: number);
         /** @hidden */private _rebuild(): void;
         /**
          * Returns the kind of the VertexBuffer (string)
@@ -6988,6 +7047,7 @@ declare module BABYLON {
         private _needSync;
         private _noUBO;
         private _currentEffect;
+        /** @hidden */private _alreadyBound: boolean;
         private static _MAX_UNIFORM_SIZE;
         private static _tempBuffer;
         /**
@@ -7394,8 +7454,8 @@ declare module BABYLON {
             createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number): InternalTexture;
             /** @hidden */private _partialLoadFile(url: string, index: number, loadedFiles: (string | ArrayBuffer)[], onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>): void;
             /** @hidden */private _cascadeLoadFiles(scene: Nullable<Scene>, onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>): void;
-            /** @hidden */private _cascadeLoadImgs(scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>): void;
-            /** @hidden */private _partialLoadImg(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>): void;
+            /** @hidden */private _cascadeLoadImgs(scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>, mimeType?: string): void;
+            /** @hidden */private _partialLoadImg(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>, mimeType?: string): void;
         }
 }
 declare module BABYLON {
@@ -8882,15 +8942,6 @@ declare module BABYLON {
          */
         static PushAttributesForInstances(attribs: string[]): void;
         /**
-         * Binds the light shadow information to the effect for the given mesh.
-         * @param light The light containing the generator
-         * @param scene The scene the lights belongs to
-         * @param mesh The mesh we are binding the information to render
-         * @param lightIndex The light index in the effect used to render the mesh
-         * @param effect The effect we are binding the data to
-         */
-        static BindLightShadow(light: Light, mesh: AbstractMesh, lightIndex: string, effect: Effect): void;
-        /**
          * Binds the light information to the effect.
          * @param light The light containing the generator
          * @param effect The effect we are binding the data to
@@ -8902,13 +8953,12 @@ declare module BABYLON {
          * @param light Light to bind
          * @param lightIndex Light index
          * @param scene The scene where the light belongs to
-         * @param mesh The mesh we are binding the information to render
          * @param effect The effect we are binding the data to
          * @param useSpecular Defines if specular is supported
          * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
          * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
          */
-        static BindLight(light: Light, lightIndex: number, scene: Scene, mesh: AbstractMesh, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff?: boolean, rebuildInParallel?: boolean): void;
+        static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff?: boolean, rebuildInParallel?: boolean): void;
         /**
          * Binds the lights information from the scene to the effect for the given mesh.
          * @param scene The scene the lights belongs to
@@ -9784,6 +9834,7 @@ declare module BABYLON {
          * The current light unifom buffer.
          * @hidden Internal use only.
          */private _uniformBuffer: UniformBuffer;
+        /** @hidden */private _renderId: number;
         /**
          * Creates a Light object in the scene.
          * Documentation : https://doc.babylonjs.com/babylon101/lights
@@ -15523,11 +15574,12 @@ declare module BABYLON {
         private _cachedCoordinatesMode;
         /** @hidden */
         protected _initialSamplingMode: number;
-        /** @hidden */private _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>;
+        /** @hidden */private _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>;
         private _deleteBuffer;
         protected _format: Nullable<number>;
         private _delayedOnLoad;
         private _delayedOnError;
+        private _mimeType?;
         /**
          * Observable triggered once the texture has been loaded.
          */
@@ -15550,18 +15602,19 @@ declare module BABYLON {
          * Instantiates a new texture.
          * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
          * @see http://doc.babylonjs.com/babylon101/materials#texture
-         * @param url define the url of the picture to load as a texture
-         * @param scene define the scene or engine the texture will belong to
-         * @param noMipmap define if the texture will require mip maps or not
-         * @param invertY define if the texture needs to be inverted on the y axis during loading
-         * @param samplingMode define the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
-         * @param onLoad define a callback triggered when the texture has been loaded
-         * @param onError define a callback triggered when an error occurred during the loading session
-         * @param buffer define the buffer to load the texture from in case the texture is loaded from a buffer representation
-         * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
-         * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
+         * @param url defines the url of the picture to load as a texture
+         * @param scene defines the scene or engine the texture will belong to
+         * @param noMipmap defines if the texture will require mip maps or not
+         * @param invertY defines if the texture needs to be inverted on the y axis during loading
+         * @param samplingMode defines the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
+         * @param onLoad defines a callback triggered when the texture has been loaded
+         * @param onError defines a callback triggered when an error occurred during the loading session
+         * @param buffer defines the buffer to load the texture from in case the texture is loaded from a buffer representation
+         * @param deleteBuffer defines if the buffer we are loading the texture from should be deleted after load
+         * @param format defines the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
+         * @param mimeType defines an optional mime type information
          */
-        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>, deleteBuffer?: boolean, format?: number);
+        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, deleteBuffer?: boolean, format?: number, mimeType?: string);
         /**
          * Update the url (and optional buffer) of this texture if url was null during construction.
          * @param url the url of the texture
@@ -15789,8 +15842,22 @@ declare module BABYLON {
              * @param format defines the format of the data
              * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
              */
-            updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
+            updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement | OffscreenCanvas, invertY: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
         }
+}
+declare module BABYLON {
+    /**
+     * Helper class used to generate a canvas to manipulate images
+     */
+    export class CanvasGenerator {
+        /**
+         * Create a new canvas (or offscreen canvas depending on the context)
+         * @param width defines the expected width
+         * @param height defines the expected height
+         * @return a new canvas or offscreen canvas
+         */
+        static CreateCanvas(width: number, height: number): HTMLCanvasElement | OffscreenCanvas;
+    }
 }
 declare module BABYLON {
     /**
@@ -18626,6 +18693,38 @@ declare module BABYLON {
          */
         dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
     }
+        interface Mesh {
+            /**
+             * Register a custom buffer that will be instanced
+             * @see https://doc.babylonjs.com/how_to/how_to_use_instances#custom-buffers
+             * @param kind defines the buffer kind
+             * @param stride defines the stride in floats
+             */
+            registerInstancedBuffer(kind: string, stride: number): void;
+            /** @hidden */private _userInstancedBuffersStorage: {
+                data: {
+                    [key: string]: Float32Array;
+                };
+                sizes: {
+                    [key: string]: number;
+                };
+                vertexBuffers: {
+                    [key: string]: Nullable<VertexBuffer>;
+                };
+                strides: {
+                    [key: string]: number;
+                };
+            };
+        }
+        interface AbstractMesh {
+            /**
+             * Object used to store instanced buffers defined by user
+             * @see https://doc.babylonjs.com/how_to/how_to_use_instances#custom-buffers
+             */
+            instancedBuffers: {
+                [key: string]: any;
+            };
+        }
 }
 declare module BABYLON {
     /**
@@ -19782,6 +19881,19 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Options for compiling materials.
+     */
+    export interface IMaterialCompilationOptions {
+        /**
+         * Defines whether clip planes are enabled.
+         */
+        clipPlane: boolean;
+        /**
+         * Defines whether instances are enabled.
+         */
+        useInstances: boolean;
+    }
+    /**
      * Base class for the main features of a material in Babylon.js
      */
     export class Material implements IAnimatable {
@@ -20253,18 +20365,14 @@ declare module BABYLON {
          * @param options defines the options to configure the compilation
          * @param onError defines a function to execute if the material fails compiling
          */
-        forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<{
-            clipPlane: boolean;
-        }>, onError?: (reason: string) => void): void;
+        forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<IMaterialCompilationOptions>, onError?: (reason: string) => void): void;
         /**
          * Force shader compilation
          * @param mesh defines the mesh that will use this material
          * @param options defines additional options for compiling the shaders
          * @returns a promise that resolves when the compilation completes
          */
-        forceCompilationAsync(mesh: AbstractMesh, options?: Partial<{
-            clipPlane: boolean;
-        }>): Promise<void>;
+        forceCompilationAsync(mesh: AbstractMesh, options?: Partial<IMaterialCompilationOptions>): Promise<void>;
         private static readonly _AllDirtyCallBack;
         private static readonly _ImageProcessingDirtyCallBack;
         private static readonly _TextureDirtyCallBack;
@@ -23522,6 +23630,23 @@ declare module BABYLON {
          */
         setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): AbstractMesh;
         /**
+         * Delete a vertex buffer associated with this mesh
+         * @param kind defines which buffer to delete (positions, indices, normals, etc). Possible `kind` values :
+         * - VertexBuffer.PositionKind
+         * - VertexBuffer.UVKind
+         * - VertexBuffer.UV2Kind
+         * - VertexBuffer.UV3Kind
+         * - VertexBuffer.UV4Kind
+         * - VertexBuffer.UV5Kind
+         * - VertexBuffer.UV6Kind
+         * - VertexBuffer.ColorKind
+         * - VertexBuffer.MatricesIndicesKind
+         * - VertexBuffer.MatricesIndicesExtraKind
+         * - VertexBuffer.MatricesWeightsKind
+         * - VertexBuffer.MatricesWeightsExtraKind
+         */
+        removeVerticesData(kind: string): void;
+        /**
          * Flags an associated vertex buffer as updatable
          * @param kind defines which buffer to use (positions, indices, normals, etc). Possible `kind` values :
          * - VertexBuffer.PositionKind
@@ -23628,6 +23753,7 @@ declare module BABYLON {
         unregisterAfterRender(func: (mesh: AbstractMesh) => void): Mesh;
         /** @hidden */private _getInstancesRenderList(subMeshId: number): _InstancesBatch;
         /** @hidden */private _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): Mesh;
+        /** @hidden */private _processInstancedBuffers(visibleInstances: InstancedMesh[], renderSelf: boolean): void;
         /** @hidden */private _processRendering(subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh;
         /** @hidden */private _rebuild(): void;
         /** @hidden */private _freeze(): void;
@@ -23636,9 +23762,10 @@ declare module BABYLON {
          * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
          * @param subMesh defines the subMesh to render
          * @param enableAlphaMode defines if alpha mode can be changed
+         * @param effectiveMeshReplacement defines an optional mesh used to provide info for the rendering
          * @returns the current mesh
          */
-        render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh;
+        render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh;
         private _onBeforeDraw;
         /**
          *   Renormalize the mesh and patch it up if there are no weights
@@ -23718,6 +23845,7 @@ declare module BABYLON {
          * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
          */
         dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
+        /** @hidden */private _disposeInstanceSpecificData(): void;
         /**
          * Modifies the mesh geometry according to a displacement map.
          * A displacement map is a colored image. Each pixel color value (actually a gradient computed from red, green, blue values) will give the displacement to apply to each mesh vertex.
@@ -24822,6 +24950,7 @@ declare module BABYLON {
         private _isVisibilityBoxLocked;
         private _alwaysVisible;
         private _depthSort;
+        private _expandable;
         private _shapeCounter;
         private _copy;
         private _color;
@@ -24835,6 +24964,7 @@ declare module BABYLON {
         private _mustUnrotateFixedNormals;
         private _particlesIntersect;
         private _needs32Bits;
+        private _isNotBuilt;
         /**
          * Creates a SPS (Solid Particle System) object.
          * @param name (String) is the SPS name, this will be the underlying mesh name.
@@ -24843,6 +24973,7 @@ declare module BABYLON {
          * * updatable (optional boolean, default true) : if the SPS must be updatable or immutable.
          * * isPickable (optional boolean, default false) : if the solid particles must be pickable.
          * * enableDepthSort (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.
+         * * expandable (optional boolean, default false) : if particles can still be added after the initial SPS mesh creation.
          * * particleIntersection (optional boolean, default false) : if the solid particle intersections must be computed.
          * * boundingSphereOnly (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
          * * bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance.
@@ -24855,6 +24986,7 @@ declare module BABYLON {
             particleIntersection?: boolean;
             boundingSphereOnly?: boolean;
             bSphereRadiusFactor?: number;
+            expandable?: boolean;
         });
         /**
          * Builds the SPS underlying mesh. Returns a standard Mesh.
@@ -24899,13 +25031,25 @@ declare module BABYLON {
         private _rebuildParticle;
         /**
          * Rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed.
+         * @param reset boolean, default false : if the particles must be reset at position and rotation zero, scaling 1, color white, initial UVs and not parented.
          * @returns the SPS.
          */
-        rebuildMesh(): SolidParticleSystem;
+        rebuildMesh(reset?: boolean): SolidParticleSystem;
+        /** Removes the particles from the start-th to the end-th included from an expandable SPS (required).
+         *  Returns an array with the removed particles.
+         *  If the number of particles to remove is lower than zero or greater than the global remaining particle number, then an empty array is returned.
+         *  The SPS can't be empty so at least one particle needs to remain in place.
+         *  Under the hood, the VertexData array, so the VBO buffer, is recreated each call.
+         * @param start index of the first particle to remove
+         * @param end index of the last particle to remove (included)
+         * @returns an array populated with the removed particles
+         */
+        removeParticles(start: number, end: number): SolidParticle[];
         /**
          *  Sets all the particles : this method actually really updates the mesh according to the particle positions, rotations, colors, textures, etc.
          *  This method calls `updateParticle()` for each particle of the SPS.
          *  For an animated SPS, it is usually called within the render loop.
+         * This methods does nothing if called on a non updatable or not yet built SPS. Example : buildMesh() not called after having added or removed particles from an expandable SPS.
          * @param start The particle index in the particle array where to start to compute the particle property values _(default 0)_
          * @param end The particle index in the particle array where to stop to compute the particle property values _(default nbParticle - 1)_
          * @param update If the mesh must be finally updated on this call after all the particle computations _(default true)_
@@ -25004,6 +25148,11 @@ declare module BABYLON {
         * Default : `true`
         */
         depthSortParticles: boolean;
+        /**
+         * Gets if the SPS is created as expandable at construction time.
+         * Default : `false`
+         */
+        readonly expandable: boolean;
         /**
          * This function does nothing. It may be overwritten to set all the particle first values.
          * The SPS doesn't call this function, you may have to call it by your own.
@@ -25230,6 +25379,18 @@ declare module BABYLON {
          * @hidden
          */private _shapeUV: number[];
         /**
+         * color array of the model
+         * @hidden
+         */private _shapeColors: number[];
+        /**
+         * indices array of the model
+         * @hidden
+         */private _indices: number[];
+        /**
+         * normals array of the model
+         * @hidden
+         */private _normals: number[];
+        /**
          * length of the shape in the model indices array (internal use)
          * @hidden
          */private _indicesLength: number;
@@ -25246,7 +25407,7 @@ declare module BABYLON {
          * SPS internal tool, don't use it manually.
          * @hidden
          */
-        constructor(id: number, shape: Vector3[], indicesLength: number, shapeUV: number[], posFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>, vtxFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>);
+        constructor(id: number, shape: Vector3[], indices: number[], normals: number[], colors: number[], shapeUV: number[], posFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>, vtxFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>);
     }
     /**
      * Represents a Depth Sorted Particle in the solid particle system.
@@ -25310,7 +25471,7 @@ declare module BABYLON {
     }
     /**
      * @hidden
-     **/private class _InternalAbstractMeshDataInfo {private _hasVertexAlpha: boolean;private _useVertexColors: boolean;private _numBoneInfluencers: number;private _applyFog: boolean;private _receiveShadows: boolean;private _facetData: _FacetDataStorage;private _visibility: number;private _skeleton: Nullable<Skeleton>;private _layerMask: number;private _computeBonesUsingShaders: boolean;private _isActive: boolean;private _onlyForInstances: boolean;private _isActiveIntermediate: boolean;private _onlyForInstancesIntermediate: boolean;
+     **/private class _InternalAbstractMeshDataInfo {private _hasVertexAlpha: boolean;private _useVertexColors: boolean;private _numBoneInfluencers: number;private _applyFog: boolean;private _receiveShadows: boolean;private _facetData: _FacetDataStorage;private _visibility: number;private _skeleton: Nullable<Skeleton>;private _layerMask: number;private _computeBonesUsingShaders: boolean;private _isActive: boolean;private _onlyForInstances: boolean;private _isActiveIntermediate: boolean;private _onlyForInstancesIntermediate: boolean;private _actAsRegularMesh: boolean;
     }
     /**
      * Class used to store all common mesh properties
@@ -26857,6 +27018,14 @@ declare module BABYLON {
          */
         color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3;
         /**
+         * Interpolates a Color4 linearly
+         * @param startValue Start value of the animation curve
+         * @param endValue End value of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated Color3 value
+         */
+        color4InterpolateFunction(startValue: Color4, endValue: Color4, gradient: number): Color4;
+        /**
          * @hidden Internal use only
          */private _getKeyValue(value: any): any;
         /**
@@ -26889,81 +27058,45 @@ declare module BABYLON {
         /**
          * Float animation type
          */
-        private static _ANIMATIONTYPE_FLOAT;
+        static readonly ANIMATIONTYPE_FLOAT: number;
         /**
          * Vector3 animation type
          */
-        private static _ANIMATIONTYPE_VECTOR3;
+        static readonly ANIMATIONTYPE_VECTOR3: number;
         /**
          * Quaternion animation type
          */
-        private static _ANIMATIONTYPE_QUATERNION;
+        static readonly ANIMATIONTYPE_QUATERNION: number;
         /**
          * Matrix animation type
          */
-        private static _ANIMATIONTYPE_MATRIX;
+        static readonly ANIMATIONTYPE_MATRIX: number;
         /**
          * Color3 animation type
          */
-        private static _ANIMATIONTYPE_COLOR3;
+        static readonly ANIMATIONTYPE_COLOR3: number;
+        /**
+         * Color3 animation type
+         */
+        static readonly ANIMATIONTYPE_COLOR4: number;
         /**
          * Vector2 animation type
          */
-        private static _ANIMATIONTYPE_VECTOR2;
+        static readonly ANIMATIONTYPE_VECTOR2: number;
         /**
          * Size animation type
          */
-        private static _ANIMATIONTYPE_SIZE;
+        static readonly ANIMATIONTYPE_SIZE: number;
         /**
          * Relative Loop Mode
          */
-        private static _ANIMATIONLOOPMODE_RELATIVE;
+        static readonly ANIMATIONLOOPMODE_RELATIVE: number;
         /**
          * Cycle Loop Mode
          */
-        private static _ANIMATIONLOOPMODE_CYCLE;
-        /**
-         * Constant Loop Mode
-         */
-        private static _ANIMATIONLOOPMODE_CONSTANT;
-        /**
-         * Get the float animation type
-         */
-        static readonly ANIMATIONTYPE_FLOAT: number;
-        /**
-         * Get the Vector3 animation type
-         */
-        static readonly ANIMATIONTYPE_VECTOR3: number;
-        /**
-         * Get the Vector2 animation type
-         */
-        static readonly ANIMATIONTYPE_VECTOR2: number;
-        /**
-         * Get the Size animation type
-         */
-        static readonly ANIMATIONTYPE_SIZE: number;
-        /**
-         * Get the Quaternion animation type
-         */
-        static readonly ANIMATIONTYPE_QUATERNION: number;
-        /**
-         * Get the Matrix animation type
-         */
-        static readonly ANIMATIONTYPE_MATRIX: number;
-        /**
-         * Get the Color3 animation type
-         */
-        static readonly ANIMATIONTYPE_COLOR3: number;
-        /**
-         * Get the Relative Loop Mode
-         */
-        static readonly ANIMATIONLOOPMODE_RELATIVE: number;
-        /**
-         * Get the Cycle Loop Mode
-         */
         static readonly ANIMATIONLOOPMODE_CYCLE: number;
         /**
-         * Get the Constant Loop Mode
+         * Constant Loop Mode
          */
         static readonly ANIMATIONLOOPMODE_CONSTANT: number;
         /** @hidden */private static _UniversalLerp(left: any, right: any, amount: number): any;
@@ -28531,8 +28664,8 @@ declare module BABYLON {
         private _currentInstanceLocations;
         private _currentInstanceBuffers;
         private _textureUnits;
-        /** @hidden */private _workingCanvas: Nullable<HTMLCanvasElement>;
-        /** @hidden */private _workingContext: Nullable<CanvasRenderingContext2D>;
+        /** @hidden */private _workingCanvas: Nullable<HTMLCanvasElement | OffscreenCanvas>;
+        /** @hidden */private _workingContext: Nullable<CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D>;
         /** @hidden */private _bindedRenderFunction: any;
         private _vaoRecordInProgress;
         private _mustWipeVertexAttributes;
@@ -28661,7 +28794,7 @@ declare module BABYLON {
          * Gets host window
          * @returns the host window object
          */
-        getHostWindow(): Window;
+        getHostWindow(): Nullable<Window>;
         /**
          * Gets the current render width
          * @param useScreen defines if screen size must be used (or the current render target if any)
@@ -29157,9 +29290,10 @@ declare module BABYLON {
          * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
          * @param forcedExtension defines the extension to use to pick the right loader
          * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (default: empty array)
+         * @param mimeType defines an optional mime type
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, excludeLoaders?: Array<IInternalTextureLoader>): InternalTexture;
+        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, excludeLoaders?: Array<IInternalTextureLoader>, mimeType?: string): InternalTexture;
         /**
          * @hidden
          */private _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void;
@@ -29254,7 +29388,7 @@ declare module BABYLON {
         /** @hidden */private _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex?: number, lod?: number): void;
         /** @hidden */private _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number, babylonInternalFormat?: number, useTextureWidthAndHeight?: boolean): void;
         /** @hidden */private _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number): void;
-        /** @hidden */private _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex?: number, lod?: number): void;
+        /** @hidden */private _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex?: number, lod?: number): void;
         /**
          * @hidden
          */private _setCubeMapTextureParams(loadMipmap: boolean): void;
@@ -29685,15 +29819,15 @@ declare module BABYLON {
         /** @hidden */private _invertVScale: boolean;
         /** @hidden */private _associatedChannel: number;
         /** @hidden */private _source: InternalTextureSource;
-        /** @hidden */private _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>;
+        /** @hidden */private _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>;
         /** @hidden */private _bufferView: Nullable<ArrayBufferView>;
         /** @hidden */private _bufferViewArray: Nullable<ArrayBufferView[]>;
         /** @hidden */private _bufferViewArrayArray: Nullable<ArrayBufferView[][]>;
         /** @hidden */private _size: number;
         /** @hidden */private _extension: string;
         /** @hidden */private _files: Nullable<string[]>;
-        /** @hidden */private _workingCanvas: Nullable<HTMLCanvasElement>;
-        /** @hidden */private _workingContext: Nullable<CanvasRenderingContext2D>;
+        /** @hidden */private _workingCanvas: Nullable<HTMLCanvasElement | OffscreenCanvas>;
+        /** @hidden */private _workingContext: Nullable<CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D>;
         /** @hidden */private _framebuffer: Nullable<WebGLFramebuffer>;
         /** @hidden */private _depthStencilBuffer: Nullable<WebGLRenderbuffer>;
         /** @hidden */private _MSAAFramebuffer: Nullable<WebGLFramebuffer>;
@@ -31342,12 +31476,6 @@ declare module BABYLON {
          */
         static ToRadians(angle: number): number;
         /**
-         * Encode a buffer to a base64 string
-         * @param buffer defines the buffer to encode
-         * @returns the encoded string
-         */
-        static EncodeArrayBufferTobase64(buffer: ArrayBuffer): string;
-        /**
          * Returns an array if obj is not an array
          * @param obj defines the object to evaluate as an array
          * @param allowsNullUndefined defines a boolean indicating if obj is allowed to be null or undefined
@@ -31383,11 +31511,12 @@ declare module BABYLON {
         * @param onLoad callback called when the image successfully loads
         * @param onError callback called when the image fails to load
         * @param offlineProvider offline provider for caching
+        * @param mimeType optional mime type
         * @returns the HTMLImageElement of the loaded image
         */
-        static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>): HTMLImageElement;
+        static LoadImage(input: string | ArrayBuffer | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement>;
         /**
-         * Loads a file
+         * Loads a file from a url
          * @param url url string, ArrayBuffer, or Blob to load
          * @param onSuccess callback called when the file successfully loads
          * @param onProgress callback called while file is loading (if the server supports this mode)
@@ -31429,14 +31558,15 @@ declare module BABYLON {
          */
         static ReadFileAsDataURL(fileToLoad: Blob, callback: (data: any) => void, progressCallback: (ev: ProgressEvent) => any): IFileRequest;
         /**
-         * Loads a file
-         * @param fileToLoad defines the file to load
-         * @param callback defines the callback to call when data is loaded
-         * @param progressCallBack defines the callback to call during loading process
+         * Reads a file from a File object
+         * @param file defines the file to load
+         * @param onSuccess defines the callback to call when data is loaded
+         * @param onProgress defines the callback to call during loading process
          * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
+         * @param onError defines the callback to call when an error occurs
          * @returns a file request object
          */
-        static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): IFileRequest;
+        static ReadFile(file: File, onSuccess: (data: any) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: ReadFileError) => void): IFileRequest;
         /**
          * Creates a data url from a given string content
          * @param content defines the content to convert
@@ -32450,6 +32580,10 @@ declare module BABYLON {
          * Defines the HTML default cursor to use (empty by default)
          */
         defaultCursor: string;
+        /**
+         * Defines wether cursors are handled by the scene.
+         */
+        doNotHandleCursors: boolean;
         /**
          * This is used to call preventDefault() on pointer down
          * in order to block unwanted artifacts like system double clicks
@@ -34046,8 +34180,12 @@ declare module BABYLON {
          * @param predicate If not null, it will be used to specifiy if a material has to be marked as dirty
          */
         markAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void;
-        /** @hidden */private _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest;
-        /** @hidden */private _loadFileAsync(url: string, useOfflineSupport?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
+        /** @hidden */private _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest;
+        /** @hidden */private _loadFileAsync(url: string, onProgress?: (data: any) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
+        /** @hidden */private _requestFile(url: string, onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onError?: (error: RequestFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest;
+        /** @hidden */private _requestFileAsync(url: string, onProgress?: (ev: ProgressEvent) => void, useOfflineSupport?: boolean, useArrayBuffer?: boolean, onOpened?: (request: WebRequest) => void): Promise<string | ArrayBuffer>;
+        /** @hidden */private _readFile(file: File, onSuccess: (data: string | ArrayBuffer) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: ReadFileError) => void): IFileRequest;
+        /** @hidden */private _readFileAsync(file: File, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
     }
 }
 declare module BABYLON {
@@ -41093,14 +41231,16 @@ declare module BABYLON {
          */
         createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
         /**
-         * Boolean indicating if the plugin can direct load specific data
+         * The callback that returns true if the data can be directly loaded.
+         * @param data string containing the file data
+         * @returns if the data can be loaded directly
          */
-        canDirectLoad?: (data: string) => boolean;
+        canDirectLoad?(data: string): boolean;
     }
     /**
-     * Interface used to define a SceneLoader plugin
+     * Interface used to define the base of ISceneLoaderPlugin and ISceneLoaderPluginAsync
      */
-    export interface ISceneLoaderPlugin {
+    export interface ISceneLoaderPluginBase {
         /**
          * The friendly name of this plugin.
          */
@@ -41109,6 +41249,53 @@ declare module BABYLON {
          * The file extensions supported by this plugin.
          */
         extensions: string | ISceneLoaderPluginExtensions;
+        /**
+         * The callback called when loading from a url.
+         * @param scene scene loading this url
+         * @param url url to load
+         * @param onSuccess callback called when the file successfully loads
+         * @param onProgress callback called while file is loading (if the server supports this mode)
+         * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+         * @param onError callback called when the file fails to load
+         * @returns a file request object
+         */
+        requestFile?(scene: Scene, url: string, onSuccess: (data: any, request?: WebRequest) => void, onProgress?: (ev: ProgressEvent) => void, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
+        /**
+         * The callback called when loading from a file object.
+         * @param scene scene loading this file
+         * @param file defines the file to load
+         * @param onSuccess defines the callback to call when data is loaded
+         * @param onProgress defines the callback to call during loading process
+         * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
+         * @param onError defines the callback to call when an error occurs
+         * @returns a file request object
+         */
+        readFile?(scene: Scene, file: File, onSuccess: (data: any) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
+        /**
+         * The callback that returns true if the data can be directly loaded.
+         * @param data string containing the file data
+         * @returns if the data can be loaded directly
+         */
+        canDirectLoad?(data: string): boolean;
+        /**
+         * The callback that returns the data to pass to the plugin if the data can be directly loaded.
+         * @param scene scene loading this data
+         * @param data string containing the data
+         * @returns data to pass to the plugin
+         */
+        directLoad?(scene: Scene, data: string): any;
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         * @param rootUrl the original root url
+         * @param responseURL the response url if available
+         * @returns the new root url
+         */
+        rewriteRootURL?(rootUrl: string, responseURL?: string): string;
+    }
+    /**
+     * Interface used to define a SceneLoader plugin
+     */
+    export interface ISceneLoaderPlugin extends ISceneLoaderPluginBase {
         /**
          * Import meshes into a scene.
          * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
@@ -41128,17 +41315,9 @@ declare module BABYLON {
          * @param data The data to import
          * @param rootUrl The root url for scene and resources
          * @param onError The callback when import fails
-         * @returns true if successful or false otherwise
+         * @returns True if successful or false otherwise
          */
-        load(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
-        /**
-         * The callback that returns true if the data can be directly loaded.
-         */
-        canDirectLoad?: (data: string) => boolean;
-        /**
-         * The callback that allows custom handling of the root url based on the response url.
-         */
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        load(scene: Scene, data: any, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
         /**
          * Load into an asset container.
          * @param scene The scene to load into
@@ -41147,20 +41326,12 @@ declare module BABYLON {
          * @param onError The callback when import fails
          * @returns The loaded asset container
          */
-        loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
+        loadAssetContainer(scene: Scene, data: any, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
     }
     /**
      * Interface used to define an async SceneLoader plugin
      */
-    export interface ISceneLoaderPluginAsync {
-        /**
-         * The friendly name of this plugin.
-         */
-        name: string;
-        /**
-         * The file extensions supported by this plugin.
-         */
-        extensions: string | ISceneLoaderPluginExtensions;
+    export interface ISceneLoaderPluginAsync extends ISceneLoaderPluginBase {
         /**
          * Import meshes into a scene.
          * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
@@ -41186,15 +41357,7 @@ declare module BABYLON {
          * @param fileName Defines the name of the file to load
          * @returns Nothing
          */
-        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
-        /**
-         * The callback that returns true if the data can be directly loaded.
-         */
-        canDirectLoad?: (data: string) => boolean;
-        /**
-         * The callback that allows custom handling of the root url based on the response url.
-         */
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        loadAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
         /**
          * Load into an asset container.
          * @param scene The scene to load into
@@ -41204,7 +41367,7 @@ declare module BABYLON {
          * @param fileName Defines the name of the file to load
          * @returns The loaded asset container
          */
-        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
+        loadAssetContainerAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
     }
     /**
      * Class used to load scene from various file formats using registered plugins
@@ -43736,6 +43899,7 @@ declare module BABYLON {
          * @returns a promise
          */
         static UploadEnvLevelsAsync(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): Promise<void>;
+        private static _OnImageReadyAsync;
         /**
          * Uploads the levels of image data to the GPU.
          * @param texture defines the internal texture to upload to
@@ -47224,9 +47388,7 @@ declare module BABYLON {
         /**
          * Force shader compilation
          */
-        forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<{
-            clipPlane: boolean;
-        }>): void;
+        forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<IMaterialCompilationOptions>): void;
         /**
          * Initializes the uniform buffer layout for the shader.
          */
@@ -48881,7 +49043,7 @@ declare module BABYLON {
     /**
      * The glow layer Helps adding a glow effect around the emissive parts of a mesh.
      *
-     * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
+     * Once instantiated in a scene, simply use the addMesh or removeMesh method to add or remove
      * glowy meshes to your scene.
      *
      * Documentation: https://doc.babylonjs.com/how_to/glow_layer
@@ -49108,7 +49270,7 @@ declare module BABYLON {
     /**
      * The highlight layer Helps adding a glow effect around a mesh.
      *
-     * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
+     * Once instantiated in a scene, simply use the addMesh or removeMesh method to add or remove
      * glowy meshes to your scene.
      *
      * !!! THIS REQUIRES AN ACTIVE STENCIL BUFFER ON THE CANVAS !!!
@@ -52268,7 +52430,7 @@ declare module BABYLON {
          * @param url defines the url to load from
          * @returns a promise that will fullfil when the material is fully loaded
          */
-        loadAsync(url: string): Promise<unknown>;
+        loadAsync(url: string): Promise<void>;
         private _gatherBlocks;
         /**
          * Generate a string containing the code declaration required to create an equivalent of this material
@@ -52489,10 +52651,6 @@ declare module BABYLON {
         */
         constants: string[];
         /**
-         * Gets the list of emitted uniform buffers
-         */
-        uniformBuffers: string[];
-        /**
          * Gets the list of emitted samplers
          */
         samplers: string[];
@@ -52543,6 +52701,7 @@ declare module BABYLON {
         /** @hidden */private _getFreeVariableName(prefix: string): string;
         /** @hidden */private _getFreeDefineName(prefix: string): string;
         /** @hidden */private _excludeVariableName(name: string): void;
+        /** @hidden */private _emit2DSampler(name: string): void;
         /** @hidden */private _getGLType(type: NodeMaterialBlockConnectionPointTypes): string;
         /** @hidden */private _emitExtension(name: string, extension: string): void;
         /** @hidden */private _emitFunction(name: string, code: string, comments: string): void;
@@ -52706,8 +52865,9 @@ declare module BABYLON {
          * @param state defines the state to update
          * @param nodeMaterial defines the node material requesting the update
          * @param defines defines the material defines to update
+         * @param uniformBuffers defines the list of uniform buffer names
          */
-        updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]): void;
         /**
          * Add potential fallbacks if shader compilation fails
          * @param mesh defines the mesh to be rendered
@@ -52951,6 +53111,8 @@ declare module BABYLON {
          * Gets or sets a string indicating that this uniform must be defined under a #ifdef
          */
         define: string;
+        /** @hidden */private _prioritizeVertex: boolean;
+        private _target;
         /** Gets or sets the target of that connection point */
         target: NodeMaterialBlockTargets;
         /**
@@ -52977,6 +53139,10 @@ declare module BABYLON {
         readonly endpoints: NodeMaterialConnectionPoint[];
         /** Gets a boolean indicating if that output point is connected to at least one input */
         readonly hasEndpoints: boolean;
+        /** Gets a boolean indicating that this connection will be used in the vertex shader */
+        readonly isConnectedInVertexShader: boolean;
+        /** Gets a boolean indicating that this connection will be used in the fragment shader */
+        readonly isConnectedInFragmentShader: boolean;
         /**
          * Creates a new connection point
          * @param name defines the connection point name
@@ -53424,7 +53590,7 @@ declare module BABYLON {
         readonly specularOutput: NodeMaterialConnectionPoint;
         autoConfigure(material: NodeMaterial): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
-        updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]): void;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         private _injectVertexCode;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
@@ -57289,6 +57455,10 @@ declare module BABYLON {
      * Represents a set of particle systems working together to create a specific effect
      */
     export class ParticleSystemSet implements IDisposable {
+        /**
+         * Gets or sets base Assets URL
+         */
+        static BaseAssetsUrl: string;
         private _emitterCreationOptions;
         private _emitterNode;
         /**
@@ -57401,6 +57571,397 @@ declare module BABYLON {
      * @hidden
      */
     export var _IDoNeedToBeInTheBuild: number;
+}
+declare module BABYLON {
+    /** Defines the 4 color options */
+    export enum PointColor {
+        /** color value */
+        Color = 2,
+        /** uv value */
+        UV = 1,
+        /** random value */
+        Random = 0,
+        /** stated value */
+        Stated = 3
+    }
+    /**
+     * The PointCloudSystem (PCS) is a single updatable mesh. The points corresponding to the vertices of this big mesh.
+     * As it is just a mesh, the PointCloudSystem has all the same properties as any other BJS mesh : not more, not less. It can be scaled, rotated, translated, enlighted, textured, moved, etc.
+     * The PointCloudSytem is also a particle system, with each point being a particle. It provides some methods to manage the particles.
+     * However it is behavior agnostic. This means it has no emitter, no particle physics, no particle recycler. You have to implement your own behavior.
+     *
+     * Full documentation here : TO BE ENTERED
+     */
+    export class PointsCloudSystem implements IDisposable {
+        /**
+         *  The PCS array of cloud point objects. Just access each particle as with any classic array.
+         *  Example : var p = SPS.particles[i];
+         */
+        particles: CloudPoint[];
+        /**
+         * The PCS total number of particles. Read only. Use PCS.counter instead if you need to set your own value.
+         */
+        nbParticles: number;
+        /**
+         * This a counter for your own usage. It's not set by any SPS functions.
+         */
+        counter: number;
+        /**
+         * The PCS name. This name is also given to the underlying mesh.
+         */
+        name: string;
+        /**
+         * The PCS mesh. It's a standard BJS Mesh, so all the methods from the Mesh class are avalaible.
+         */
+        mesh: Mesh;
+        /**
+         * This empty object is intended to store some PCS specific or temporary values in order to lower the Garbage Collector activity.
+         * Please read :
+         */
+        vars: any;
+        /**
+         * @hidden
+         */private _size: number;
+        private _scene;
+        private _promises;
+        private _positions;
+        private _indices;
+        private _normals;
+        private _colors;
+        private _uvs;
+        private _indices32;
+        private _positions32;
+        private _colors32;
+        private _uvs32;
+        private _updatable;
+        private _isVisibilityBoxLocked;
+        private _alwaysVisible;
+        private _groups;
+        private _groupCounter;
+        private _computeParticleColor;
+        private _computeParticleTexture;
+        private _computeParticleRotation;
+        private _computeBoundingBox;
+        private _isReady;
+        /**
+         * Creates a PCS (Points Cloud System) object
+         * @param name (String) is the PCS name, this will be the underlying mesh name
+         * @param pointSize (number) is the size for each point
+         * @param scene (Scene) is the scene in which the PCS is added
+         * @param options defines the options of the PCS e.g.
+         * * updatable (optional boolean, default true) : if the PCS must be updatable or immutable
+         */
+        constructor(name: string, pointSize: number, scene: Scene, options?: {
+            updatable?: boolean;
+        });
+        /**
+         * Builds the PCS underlying mesh. Returns a standard Mesh.
+         * If no points were added to the PCS, the returned mesh is just a single point.
+         * @returns a promise for the created mesh
+         */
+        buildMeshAsync(): Promise<Mesh>;
+        /**
+         * @hidden
+         */
+        private _buildMesh;
+        private _addParticle;
+        private _randomUnitVector;
+        private _getColorIndicesForCoord;
+        private _setPointsColorOrUV;
+        private _colorFromTexture;
+        private _calculateDensity;
+        /**
+         * Adds points to the PCS in random positions within a unit sphere
+         * @param nb (positive integer) the number of particles to be created from this model
+         * @param pointFunction is an optional javascript function to be called for each particle on PCS creation
+         * @returns the number of groups in the system
+         */
+        addPoints(nb: number, pointFunction?: any): number;
+        /**
+         * Adds points to the PCS from the surface of the model shape
+         * @param mesh is any Mesh object that will be used as a surface model for the points
+         * @param nb (positive integer) the number of particles to be created from this model
+         * @param colorWith determines whether a point is colored using color (default), uv, random, stated or none (invisible)
+         * @param color (color3) to be used when colorWith is stated
+         * @param range (number from 0 to 1) to determine the variation in shape and tone for a stated color
+         * @returns the number of groups in the system
+         */
+        addSurfacePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4, range?: number): number;
+        /**
+         * Adds points to the PCS inside the model shape
+         * @param mesh is any Mesh object that will be used as a surface model for the points
+         * @param nb (positive integer) the number of particles to be created from this model
+         * @param colorWith determines whether a point is colored using color (default), uv, random, stated or none (invisible),
+         * @param color (color4) to be used when colorWith is stated
+         * @param range (number from 0 to 1) to determine the variation in shape and tone for a stated color
+         * @returns the number of groups in the system
+         */
+        addVolumePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4, range?: number): number;
+        /**
+         *  Sets all the particles : this method actually really updates the mesh according to the particle positions, rotations, colors, textures, etc.
+         *  This method calls `updateParticle()` for each particle of the SPS.
+         *  For an animated SPS, it is usually called within the render loop.
+         * @param start The particle index in the particle array where to start to compute the particle property values _(default 0)_
+         * @param end The particle index in the particle array where to stop to compute the particle property values _(default nbParticle - 1)_
+         * @param update If the mesh must be finally updated on this call after all the particle computations _(default true)_
+         * @returns the PCS.
+         */
+        setParticles(start?: number, end?: number, update?: boolean): PointsCloudSystem;
+        /**
+        * Disposes the PCS.
+        */
+        dispose(): void;
+        /**
+         * Visibilty helper : Recomputes the visible size according to the mesh bounding box
+         * doc :
+         * @returns the PCS.
+         */
+        refreshVisibleSize(): PointsCloudSystem;
+        /**
+         * Visibility helper : Sets the size of a visibility box, this sets the underlying mesh bounding box.
+         * @param size the size (float) of the visibility box
+         * note : this doesn't lock the PCS mesh bounding box.
+         * doc :
+         */
+        setVisibilityBox(size: number): void;
+        /**
+         * Gets whether the PCS is always visible or not
+         * doc :
+         */
+        /**
+        * Sets the PCS as always visible or not
+        * doc :
+        */
+        isAlwaysVisible: boolean;
+        /**
+         * Tells to `setParticles()` to compute the particle rotations or not
+         * Default value : false. The PCS is faster when it's set to false
+         * Note : particle rotations are only applied to parent particles
+         * Note : the particle rotations aren't stored values, so setting `computeParticleRotation` to false will prevents the particle to rotate
+         */
+        computeParticleRotation: boolean;
+        /**
+         * Tells to `setParticles()` to compute the particle colors or not.
+         * Default value : true. The PCS is faster when it's set to false.
+         * Note : the particle colors are stored values, so setting `computeParticleColor` to false will keep yet the last colors set.
+         */
+        /**
+        * Gets if `setParticles()` computes the particle colors or not.
+        * Default value : false. The PCS is faster when it's set to false.
+        * Note : the particle colors are stored values, so setting `computeParticleColor` to false will keep yet the last colors set.
+        */
+        computeParticleColor: boolean;
+        /**
+        * Gets if `setParticles()` computes the particle textures or not.
+        * Default value : false. The PCS is faster when it's set to false.
+        * Note : the particle textures are stored values, so setting `computeParticleTexture` to false will keep yet the last colors set.
+        */
+        computeParticleTexture: boolean;
+        /**
+         * Tells to `setParticles()` to compute or not the mesh bounding box when computing the particle positions.
+         */
+        /**
+        * Gets if `setParticles()` computes or not the mesh bounding box when computing the particle positions.
+        */
+        computeBoundingBox: boolean;
+        /**
+         * This function does nothing. It may be overwritten to set all the particle first values.
+         * The PCS doesn't call this function, you may have to call it by your own.
+         * doc :
+         */
+        initParticles(): void;
+        /**
+         * This function does nothing. It may be overwritten to recycle a particle
+         * The PCS doesn't call this function, you can to call it
+         * doc :
+         * @param particle The particle to recycle
+         * @returns the recycled particle
+         */
+        recycleParticle(particle: CloudPoint): CloudPoint;
+        /**
+         * Updates a particle : this function should  be overwritten by the user.
+         * It is called on each particle by `setParticles()`. This is the place to code each particle behavior.
+         * doc :
+         * @example : just set a particle position or velocity and recycle conditions
+         * @param particle The particle to update
+         * @returns the updated particle
+         */
+        updateParticle(particle: CloudPoint): CloudPoint;
+        /**
+         * This will be called before any other treatment by `setParticles()` and will be passed three parameters.
+         * This does nothing and may be overwritten by the user.
+         * @param start the particle index in the particle array where to start to iterate, same than the value passed to setParticle()
+         * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+         * @param update the boolean update value actually passed to setParticles()
+         */
+        beforeUpdateParticles(start?: number, stop?: number, update?: boolean): void;
+        /**
+         * This will be called  by `setParticles()` after all the other treatments and just before the actual mesh update.
+         * This will be passed three parameters.
+         * This does nothing and may be overwritten by the user.
+         * @param start the particle index in the particle array where to start to iterate, same than the value passed to setParticle()
+         * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+         * @param update the boolean update value actually passed to setParticles()
+         */
+        afterUpdateParticles(start?: number, stop?: number, update?: boolean): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Represents one particle of a points cloud system.
+     */
+    export class CloudPoint {
+        /**
+         * particle global index
+         */
+        idx: number;
+        /**
+         * The color of the particle
+         */
+        color: Nullable<Color4>;
+        /**
+         * The world space position of the particle.
+         */
+        position: Vector3;
+        /**
+         * The world space rotation of the particle. (Not use if rotationQuaternion is set)
+         */
+        rotation: Vector3;
+        /**
+         * The world space rotation quaternion of the particle.
+         */
+        rotationQuaternion: Nullable<Quaternion>;
+        /**
+         * The uv of the particle.
+         */
+        uv: Nullable<Vector2>;
+        /**
+         * The current speed of the particle.
+         */
+        velocity: Vector3;
+        /**
+         * The pivot point in the particle local space.
+         */
+        pivot: Vector3;
+        /**
+         * Must the particle be translated from its pivot point in its local space ?
+         * In this case, the pivot point is set at the origin of the particle local space and the particle is translated.
+         * Default : false
+         */
+        translateFromPivot: boolean;
+        /**
+         * Index of this particle in the global "positions" array (Internal use)
+         * @hidden
+         */private _pos: number;
+        /**
+         * @hidden Index of this particle in the global "indices" array (Internal use)
+         */private _ind: number;
+        /**
+         * Group this particle belongs to
+         */private _group: PointsGroup;
+        /**
+         * Group id of this particle
+         */
+        groupId: number;
+        /**
+         * Index of the particle in its group id (Internal use)
+         */
+        idxInGroup: number;
+        /**
+         * @hidden Particle BoundingInfo object (Internal use)
+         */private _boundingInfo: BoundingInfo;
+        /**
+         * @hidden Reference to the PCS that the particle belongs to (Internal use)
+         */private _pcs: PointsCloudSystem;
+        /**
+         * @hidden Still set as invisible in order to skip useless computations (Internal use)
+         */private _stillInvisible: boolean;
+        /**
+         * @hidden Last computed particle rotation matrix
+         */private _rotationMatrix: number[];
+        /**
+         * Parent particle Id, if any.
+         * Default null.
+         */
+        parentId: Nullable<number>;
+        /**
+         * @hidden Internal global position in the PCS.
+         */private _globalPosition: Vector3;
+        /**
+         * Creates a Point Cloud object.
+         * Don't create particles manually, use instead the PCS internal tools like _addParticle()
+         * @param particleIndex (integer) is the particle index in the PCS pool. It's also the particle identifier.
+         * @param group (PointsGroup) is the group the particle belongs to
+         * @param groupId (integer) is the group identifier in the PCS.
+         * @param idxInGroup (integer) is the index of the particle in the current point group (ex: the 10th point of addPoints(30))
+         * @param pcs defines the PCS it is associated to
+         */
+        constructor(particleIndex: number, group: PointsGroup, groupId: number, idxInGroup: number, pcs: PointsCloudSystem);
+        /**
+         * get point size
+         */
+        /**
+        * Set point size
+        */
+        size: Vector3;
+        /**
+         * Legacy support, changed quaternion to rotationQuaternion
+         */
+        /**
+        * Legacy support, changed quaternion to rotationQuaternion
+        */
+        quaternion: Nullable<Quaternion>;
+        /**
+         * Returns a boolean. True if the particle intersects a mesh, else false
+         * The intersection is computed on the particle position and Axis Aligned Bounding Box (AABB) or Sphere
+         * @param target is the object (point or mesh) what the intersection is computed against
+         * @param isSphere is boolean flag when false (default) bounding box of mesh is used, when true the bouding sphere is used
+         * @returns true if it intersects
+         */
+        intersectsMesh(target: Mesh, isSphere: boolean): boolean;
+        /**
+         * get the rotation matrix of the particle
+         * @hidden
+         */
+        getRotationMatrix(m: Matrix): void;
+    }
+    /**
+     * Represents a group of points in a points cloud system
+     *  * PCS internal tool, don't use it manually.
+     */
+    export class PointsGroup {
+        /**
+         * The group id
+         * @hidden
+         */
+        groupID: number;
+        /**
+         * image data for group (internal use)
+         * @hidden
+         */private _groupImageData: Nullable<ArrayBufferView>;
+        /**
+         * Image Width (internal use)
+         * @hidden
+         */private _groupImgWidth: number;
+        /**
+         * Image Height (internal use)
+         * @hidden
+         */private _groupImgHeight: number;
+        /**
+         * Custom position function (internal use)
+         * @hidden
+         */private _positionFunction: Nullable<(particle: CloudPoint, i?: number, s?: number) => void>;
+        /**
+         * density per facet for surface points
+         * @hidden
+         */private _groupDensity: number[];
+        /**
+         * Creates a points group object. This is an internal reference to produce particles for the PCS.
+         * PCS internal tool, don't use it manually.
+         * @hidden
+         */
+        constructor(id: number, posFunction: Nullable<(particle: CloudPoint, i?: number, s?: number) => void>);
+    }
 }
 declare module BABYLON {
         interface Scene {
@@ -66487,6 +67048,72 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON {
     /**
+     * Interface for a data buffer
+     */
+    export interface IDataBuffer {
+        /**
+         * Reads bytes from the data buffer.
+         * @param byteOffset The byte offset to read
+         * @param byteLength The byte length to read
+         * @returns A promise that resolves when the bytes are read
+         */
+        readAsync(byteOffset: number, byteLength: number): Promise<ArrayBufferView>;
+        /**
+         * The byte length of the buffer.
+         */
+        readonly byteLength: number;
+    }
+    /**
+     * Utility class for reading from a data buffer
+     */
+    export class DataReader {
+        /**
+         * The data buffer associated with this data reader.
+         */
+        readonly buffer: IDataBuffer;
+        /**
+         * The current byte offset from the beginning of the data buffer.
+         */
+        byteOffset: number;
+        private _dataView;
+        private _dataByteOffset;
+        /**
+         * Constructor
+         * @param buffer The buffer to read
+         */
+        constructor(buffer: IDataBuffer);
+        /**
+         * Loads the given byte length.
+         * @param byteLength The byte length to load
+         * @returns A promise that resolves when the load is complete
+         */
+        loadAsync(byteLength: number): Promise<void>;
+        /**
+         * Read a unsigned 32-bit integer from the currently loaded data range.
+         * @returns The 32-bit integer read
+         */
+        readUint32(): number;
+        /**
+         * Read a byte array from the currently loaded data range.
+         * @param byteLength The byte length to read
+         * @returns The byte array read
+         */
+        readUint8Array(byteLength: number): Uint8Array;
+        /**
+         * Read a string from the currently loaded data range.
+         * @param byteLength The byte length to read
+         * @returns The string read
+         */
+        readString(byteLength: number): string;
+        /**
+         * Skips the given byte length the currently loaded data range.
+         * @param byteLength The byte length to skip
+         */
+        skipBytes(byteLength: number): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Mode that determines the coordinate system to use.
      */
     export enum GLTFLoaderCoordinateSystemMode {
@@ -66521,13 +67148,13 @@ declare module BABYLON {
      */
     export interface IGLTFLoaderData {
         /**
-         * Object that represents the glTF JSON.
+         * The object that represents the glTF JSON.
          */
         json: Object;
         /**
          * The BIN chunk of a binary glTF.
          */
-        bin: Nullable<ArrayBufferView>;
+        bin: Nullable<IDataBuffer>;
     }
     /**
      * Interface for extending the loader.
@@ -66624,6 +67251,16 @@ declare module BABYLON {
          * If true, no extra effects are applied to transparent pixels.
          */
         transparencyAsCoverage: boolean;
+        /**
+         * Defines if the loader should use range requests when load binary glTF files from HTTP.
+         * Enabling will disable offline support and glTF validator.
+         * Defaults to false.
+         */
+        useRangeRequests: boolean;
+        /**
+         * Defines if the loader should create instances when multiple glTF nodes point to the same glTF mesh. Defaults to true.
+         */
+        createInstances: boolean;
         /**
          * Function called before loading a url referenced by the asset.
          */
@@ -66741,6 +67378,28 @@ declare module BABYLON {
         dispose(): void;
         /** @hidden */private _clear(): void;
         /**
+         * The callback called when loading from a url.
+         * @param scene scene loading this url
+         * @param url url to load
+         * @param onSuccess callback called when the file successfully loads
+         * @param onProgress callback called while file is loading (if the server supports this mode)
+         * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+         * @param onError callback called when the file fails to load
+         * @returns a file request object
+         */
+        requestFile(scene: Scene, url: string, onSuccess: (data: any, request?: WebRequest) => void, onProgress?: (ev: ProgressEvent) => void, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
+        /**
+         * The callback called when loading from a file object.
+         * @param scene scene loading this file
+         * @param file defines the file to load
+         * @param onSuccess defines the callback to call when data is loaded
+         * @param onProgress defines the callback to call during loading process
+         * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
+         * @param onError defines the callback to call when an error occurs
+         * @returns a file request object
+         */
+        readFile(scene: Scene, file: File, onSuccess: (data: any) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest;
+        /**
          * Imports one or more meshes from the loaded glTF data and adds them to the scene
          * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
          * @param scene the scene the meshes should be added to
@@ -66765,7 +67424,7 @@ declare module BABYLON {
          * @param fileName Defines the name of the file to load
          * @returns a promise which completes when objects have been loaded to the scene
          */
-        loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
+        loadAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
         /**
          * Load into an asset container.
          * @param scene The scene to load into
@@ -66775,17 +67434,27 @@ declare module BABYLON {
          * @param fileName Defines the name of the file to load
          * @returns The loaded asset container
          */
-        loadAssetContainerAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
+        loadAssetContainerAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
         /**
-         * If the data string can be loaded directly.
-         * @param data string contianing the file data
+         * The callback that returns true if the data can be directly loaded.
+         * @param data string containing the file data
          * @returns if the data can be loaded directly
          */
         canDirectLoad(data: string): boolean;
         /**
-         * Rewrites a url by combining a root url and response url.
+         * The callback that returns the data to pass to the plugin if the data can be directly loaded.
+         * @param scene scene loading this data
+         * @param data string containing the data
+         * @returns data to pass to the plugin
          */
-        rewriteRootURL: (rootUrl: string, responseURL?: string) => string;
+        directLoad(scene: Scene, data: string): any;
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         * @param rootUrl the original root url
+         * @param responseURL the response url if available
+         * @returns the new root url
+         */
+        rewriteRootURL?(rootUrl: string, responseURL?: string): string;
         /**
          * Instantiates a glTF file loader plugin.
          * @returns the created plugin
@@ -66800,15 +67469,14 @@ declare module BABYLON {
          * @returns a promise that resolves when the asset is completely loaded.
          */
         whenCompleteAsync(): Promise<void>;
-        private _parseAsync;
         private _validateAsync;
         private _getLoader;
-        private _unpackBinary;
-        private _unpackBinaryV1;
-        private _unpackBinaryV2;
+        private _parseJson;
+        private _unpackBinaryAsync;
+        private _unpackBinaryV1Async;
+        private _unpackBinaryV2Async;
         private static _parseVersion;
         private static _compareVersion;
-        private static _decodeBufferToText;
         private static readonly _logSpaces;
         private _logIndentLevel;
         private _loggingEnabled;
@@ -67703,6 +68371,22 @@ declare module BABYLON.GLTF2 {
          * @param uri The uri to load
          * @returns A promise that resolves with the loaded data when the load is complete or null if not handled
          */private _loadUriAsync?(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>>;
+        /**
+         * Define this method to modify the default behavior when loading buffer views.
+         * @param context The context when loading the asset
+         * @param bufferView The glTF buffer view property
+         * @returns A promise that resolves with the loaded data when the load is complete or null if not handled
+         */
+        loadBufferViewAsync?(context: string, bufferView: IBufferView): Nullable<Promise<ArrayBufferView>>;
+        /**
+         * Define this method to modify the default behavior when loading buffers.
+         * @param context The context when loading the asset
+         * @param buffer The glTF buffer property
+         * @param byteOffset The byte offset to load
+         * @param byteLength The byte length to load
+         * @returns A promise that resolves with the loaded data when the load is complete or null if not handled
+         */
+        loadBufferAsync?(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Nullable<Promise<ArrayBufferView>>;
     }
 }
 declare module BABYLON.GLTF2 {
@@ -67737,6 +68421,7 @@ declare module BABYLON.GLTF2 {
         private _fileName;
         private _uniqueRootUrl;
         private _gltf;
+        private _bin;
         private _babylonScene;
         private _rootBabylonMesh;
         private _defaultBabylonMaterialData;
@@ -67762,9 +68447,17 @@ declare module BABYLON.GLTF2 {
          */
         readonly state: Nullable<GLTFLoaderState>;
         /**
-         * The glTF object parsed from the JSON.
+         * The object that represents the glTF JSON.
          */
         readonly gltf: IGLTF;
+        /**
+         * The BIN chunk of a binary glTF.
+         */
+        readonly bin: Nullable<IDataBuffer>;
+        /**
+         * The parent file loader.
+         */
+        readonly parent: GLTFFileLoader;
         /**
          * The Babylon scene when loading the asset.
          */
@@ -67969,6 +68662,8 @@ declare module BABYLON.GLTF2 {
         private _extensionsLoadAnimationAsync;
         private _extensionsLoadSkinAsync;
         private _extensionsLoadUriAsync;
+        private _extensionsLoadBufferViewAsync;
+        private _extensionsLoadBufferAsync;
         /**
          * Helper method called by a loader extension to load an glTF extension.
          * @param context The context when loading the asset
@@ -67987,6 +68682,12 @@ declare module BABYLON.GLTF2 {
          * @returns The promise returned by actionAsync or null if the extra does not exist
          */
         static LoadExtraAsync<TExtra = any, TResult = void>(context: string, property: IProperty, extensionName: string, actionAsync: (extraContext: string, extra: TExtra) => Nullable<Promise<TResult>>): Nullable<Promise<TResult>>;
+        /**
+         * Checks for presence of an extension.
+         * @param name The name of the extension to check
+         * @returns A boolean indicating the presence of the given extension name in `extensionsUsed`
+         */
+        isExtensionUsed(name: string): boolean;
         /**
          * Increments the indentation level and logs a message.
          * @param message The message to log
@@ -68015,7 +68716,7 @@ declare module BABYLON.GLTF2 {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Specification](https://github.com/KhronosGroup/glTF/blob/eb3e32332042e04691a5f35103f8c261e50d8f1e/extensions/2.0/Khronos/EXT_lights_image_based/README.md) (Experimental)
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Vendor/EXT_lights_image_based/README.md)
      */
     export class EXT_lights_image_based implements IGLTFLoaderExtension {
         /** The name of this extension. */
@@ -68056,7 +68757,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Specification](https://github.com/KhronosGroup/glTF/blob/1048d162a44dbcb05aefc1874bfd423cf60135a6/extensions/2.0/Khronos/KHR_lights_punctual/README.md) (Experimental)
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md)
      */
     export class KHR_lights implements IGLTFLoaderExtension {
         /** The name of this extension. */
@@ -68193,6 +68894,8 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         private _materialIndexLOD;
         private _materialSignalLODs;
         private _materialPromiseLODs;
+        private _indexLOD;
+        private _bufferLODs;
         /** @hidden */
         constructor(loader: GLTFLoader);
         /** @hidden */
@@ -68203,6 +68906,9 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
         /** @hidden */private _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
         /** @hidden */private _loadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>>;
+        /** @hidden */
+        loadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Nullable<Promise<ArrayBufferView>>;
+        private _loadBufferLOD;
         /**
          * Gets an array of LOD properties from lowest to highest.
          */

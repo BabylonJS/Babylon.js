@@ -66,7 +66,9 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
 
         let hostWindow = this.camera.getScene().getEngine().getHostWindow();
 
-        hostWindow.addEventListener("deviceorientation", this._deviceOrientationHandler);
+        if (hostWindow) {
+            hostWindow.addEventListener("deviceorientation", this._deviceOrientationHandler);
+        }
     }
 
     /** @hidden */

@@ -55,7 +55,13 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                 {
                     textureBlocks.map((textureBlock, i) => {
                         return (
-                            <TextureLinkLineComponent label={textureBlock.name} key={textureBlock.texture!.uniqueId + i} texture={textureBlock.texture} material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
+                            <TextureLinkLineComponent label={textureBlock.name} 
+                                key={i} 
+                                texture={textureBlock.texture} 
+                                material={material} 
+                                onTextureCreated={texture => textureBlock.texture = texture}
+                                onSelectionChangedObservable={this.props.onSelectionChangedObservable} 
+                                onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                         )
                     })
                 }
