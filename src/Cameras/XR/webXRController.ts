@@ -19,6 +19,11 @@ export class WebXRController {
     public pointer: AbstractMesh;
 
     private _gamepadMode = false;
+    /**
+     * If available, this is the gamepad object related to this controller.
+     * Using this object it is possible to get click events and trackpad changes of the
+     * webxr controller that is currently being used.
+     */
     public gamepadController?: WebVRController;
 
     /**
