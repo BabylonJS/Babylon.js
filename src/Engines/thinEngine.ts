@@ -1343,7 +1343,9 @@ export class ThinEngine {
     }
 
     // VBOs
-    private _resetVertexBufferBinding(): void {
+
+    /** @hidden */
+    protected _resetVertexBufferBinding(): void {
         this.bindArrayBuffer(null);
         this._cachedVertexBuffers = null;
     }
@@ -1386,43 +1388,6 @@ export class ThinEngine {
      */
     public createDynamicVertexBuffer(data: DataArray): DataBuffer {
         return this._createVertexBuffer(data, this._gl.DYNAMIC_DRAW);
-    }
-
-    /**
-     * Updates a dynamic vertex buffer.
-     * @param vertexBuffer the vertex buffer to update
-     * @param data the data used to update the vertex buffer
-     * @param byteOffset the byte offset of the data
-     * @param byteLength the byte length of the data
-     */
-    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
-        this.bindArrayBuffer(vertexBuffer);
-
-        if (byteOffset === undefined) {
-            byteOffset = 0;
-        }
-
-        if (byteLength === undefined) {
-            if (data instanceof Array) {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, new Float32Array(data));
-            } else {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, <ArrayBuffer>data);
-            }
-        } else {
-            if (data instanceof Array) {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(data).subarray(byteOffset, byteOffset + byteLength));
-            } else {
-                if (data instanceof ArrayBuffer) {
-                    data = new Uint8Array(data, byteOffset, byteLength);
-                } else {
-                    data = new Uint8Array(data.buffer, data.byteOffset + byteOffset, byteLength);
-                }
-
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, <ArrayBuffer>data);
-            }
-        }
-
-        this._resetVertexBufferBinding();
     }
 
     protected _resetIndexBufferBinding(): void {
@@ -1785,7 +1750,7 @@ export class ThinEngine {
                     this._vertexAttribArraysEnabled[ai.index] = true;
                 }
 
-                this._vertexAttribPointer(instancesBuffer, ai.index, ai.attributeSize, ai.attribyteType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
+                this._vertexAttribPointer(instancesBuffer, ai.index, ai.attributeSize, ai.attributeType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
                 this._gl.vertexAttribDivisor(ai.index, 1);
                 this._currentInstanceLocations.push(ai.index);
                 this._currentInstanceBuffers.push(instancesBuffer);
