@@ -508,7 +508,7 @@ export class ImageProcessingConfiguration {
             var inverseHeight = 1 / effect.getEngine().getRenderHeight();
             effect.setFloat2("vInverseScreenSize", inverseWidth, inverseHeight);
 
-            let aspectRatio = overrideAspectRatio != null ? overrideAspectRatio : (inverseHeight/inverseWidth);
+            let aspectRatio = overrideAspectRatio != null ? overrideAspectRatio : (inverseHeight / inverseWidth);
 
             let vignetteScaleY = Math.tan(this.vignetteCameraFov * 0.5);
             let vignetteScaleX = vignetteScaleY * aspectRatio;
