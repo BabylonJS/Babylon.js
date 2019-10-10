@@ -22,11 +22,14 @@ import { FloatLineComponent } from '../lines/floatLineComponent';
 import { IScreenshotSize } from 'babylonjs/Misc/interfaces/screenshotSize';
 import { NumericInputComponent } from '../lines/numericInputComponent';
 import { CheckBoxLineComponent } from '../lines/checkBoxLineComponent';
+import { TextLineComponent } from '../lines/textLineComponent';
 
 export class ToolsTabComponent extends PaneComponent {
     private _videoRecorder: Nullable<VideoRecorder>;
     private _screenShotSize: IScreenshotSize = { precision: 1 };
     private _useWidthHeight = false;
+    private _isExporting = false;
+
     constructor(props: IPaneComponentProps) {
         super(props);
 
@@ -108,11 +111,18 @@ export class ToolsTabComponent extends PaneComponent {
 
     exportGLTF() {
         const scene = this.props.scene;
+        this._isExporting = true;
+        this.forceUpdate();
 
         GLTF2Export.GLBAsync(scene, "scene", {
             shouldExportNode: (node) => this.shouldExport(node)
         }).then((glb: GLTFData) => {
             glb.downloadFiles();
+            this._isExporting = false;
+            this.forceUpdate();
+        }).catch(reason => {      
+            this._isExporting = false;
+            this.forceUpdate();
         });
     }
 
@@ -183,11 +193,20 @@ export class ToolsTabComponent extends PaneComponent {
                     <ButtonLineComponent label="Reset" onClick={() => this.resetReplay()} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="SCENE EXPORT">
-                    <ButtonLineComponent label="Export to GLB" onClick={() => this.exportGLTF()} />
-                    <ButtonLineComponent label="Export to Babylon" onClick={() => this.exportBabylon()} />
                     {
-                        !scene.getEngine().premultipliedAlpha && scene.environmentTexture && (scene.environmentTexture as CubeTexture).isPrefiltered && scene.activeCamera &&
-                        <ButtonLineComponent label="Generate .env texture" onClick={() => this.createEnvTexture()} />
+                        this._isExporting && 
+                        <TextLineComponent label="Please wait..exporting" ignoreValue={true} />
+                    }
+                    {
+                        !this._isExporting && 
+                        <>  
+                            <ButtonLineComponent label="Export to GLB" onClick={() => this.exportGLTF()} />
+                            <ButtonLineComponent label="Export to Babylon" onClick={() => this.exportBabylon()} />
+                            {
+                                !scene.getEngine().premultipliedAlpha && scene.environmentTexture && (scene.environmentTexture as CubeTexture).isPrefiltered && scene.activeCamera &&
+                                <ButtonLineComponent label="Generate .env texture" onClick={() => this.createEnvTexture()} />
+                            }
+                        </>
                     }
                 </LineContainerComponent>
                 {
