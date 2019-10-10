@@ -32191,6 +32191,10 @@ declare module BABYLON {
          */
         onAnimationLoopObservable: Observable<TargetedAnimation>;
         /**
+         * Observer raised when all animations have looped
+         */
+        onAnimationGroupLoopObservable: Observable<AnimationGroup>;
+        /**
          * This observable will notify when all animations have ended.
          */
         onAnimationGroupEndObservable: Observable<AnimationGroup>;
@@ -32262,6 +32266,9 @@ declare module BABYLON {
          * @returns the animation group
          */
         normalize(beginFrame?: Nullable<number>, endFrame?: Nullable<number>): AnimationGroup;
+        private _animationLoopCount;
+        private _animationLoopFlags;
+        private _processLoop;
         /**
          * Start all animations on given targets
          * @param loop defines if animations must loop

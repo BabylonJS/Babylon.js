@@ -64,11 +64,11 @@ export class AnimationGroup implements IDisposable {
      * Observer raised when one animation loops
      */
     public onAnimationLoopObservable = new Observable<TargetedAnimation>();
-    
+
     /**
      * Observer raised when all animations have looped
      */
-    public onAnimationGroupLoopObservable = new Observable<AnimationGroup>();    
+    public onAnimationGroupLoopObservable = new Observable<AnimationGroup>();
 
     /**
      * This observable will notify when all animations have ended.
@@ -258,15 +258,13 @@ export class AnimationGroup implements IDisposable {
         return this;
     }
 
-    
-
     private _animationLoopCount: number;
     private _animationLoopFlags: boolean[];
 
     private _processLoop(animatable: Animatable, targetedAnimation: TargetedAnimation, index: number) {
         animatable.onAnimationLoop = () => {
             this.onAnimationLoopObservable.notifyObservers(targetedAnimation);
-            
+
             if (this._animationLoopFlags[index]) {
                 return;
             }
@@ -274,12 +272,12 @@ export class AnimationGroup implements IDisposable {
             this._animationLoopFlags[index] = true;
 
             this._animationLoopCount++;
-            if (this._animationLoopCount === this._targetedAnimations.length) {                    
+            if (this._animationLoopCount === this._targetedAnimations.length) {
                 this.onAnimationGroupLoopObservable.notifyObservers(this);
                 this._animationLoopCount = 0;
-                this._animationLoopFlags = [];            
-            } 
-        }
+                this._animationLoopFlags = [];
+            }
+        };
     }
 
     /**
@@ -307,7 +305,7 @@ export class AnimationGroup implements IDisposable {
                 this.onAnimationEndObservable.notifyObservers(targetedAnimation);
                 this._checkAnimationGroupEnded(animatable);
             };
-            
+
             this._processLoop(animatable, targetedAnimation, index);
             this._animatables.push(animatable);
         }
