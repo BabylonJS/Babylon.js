@@ -98,7 +98,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
             <div className="pane">
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={skeleton}
                     lockObject={this.props.lockObject}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />                    
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={skeleton.id} />
                     <TextLineComponent label="Bone count" value={skeleton.bones.length.toString()} />
