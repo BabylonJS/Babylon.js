@@ -423,13 +423,21 @@ export class TransformNode extends Node {
     /**
      * Instantiate (when possible) or clone that node with its hierarchy
      * @param newParent defines the new parent to use for the instance (or clone)
+     * @param options defines options to configure how copy is done
+     * @param onNewNodeCreated defines an option callback to call when a clone or an instance is created
      * @returns an instance (or a clone) of the current node with its hiearchy
      */
-    public instantiateHierarchy(newParent: Nullable<TransformNode> = null): Nullable<TransformNode> {
+    public instantiateHierarchy(newParent: Nullable<TransformNode> = null, options?: { doNotInstantiate: boolean}, onNewNodeCreated?: (source: TransformNode, clone: TransformNode) => void): Nullable<TransformNode> {
         let clone = this.clone("Clone of " +  (this.name || this.id), newParent || this.parent, true);
 
+        if (clone) {        
+            if (onNewNodeCreated) {
+                onNewNodeCreated(this, clone);
+            }
+        }
+
         for (var child of this.getChildTransformNodes(true)) {
-            child.instantiateHierarchy(clone);
+            child.instantiateHierarchy(clone, options, onNewNodeCreated);
         }
 
         return clone;

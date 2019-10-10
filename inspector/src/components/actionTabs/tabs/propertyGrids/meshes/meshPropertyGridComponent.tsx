@@ -218,6 +218,15 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         this.props.onSelectionChangedObservable.notifyObservers(instanceMesh.sourceMesh);
     }
 
+    onSkeletonLink() {
+        if (!this.props.onSelectionChangedObservable) {
+            return;
+        }
+
+        const mesh = this.props.mesh;
+        this.props.onSelectionChangedObservable.notifyObservers(mesh.skeleton);
+    }
+
     convertPhysicsTypeToString(): string {
         const mesh = this.props.mesh;
         switch (mesh.physicsImpostor!.type) {
@@ -288,7 +297,10 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     <TextLineComponent label="Vertices" value={mesh.getTotalVertices().toString()} />
                     <TextLineComponent label="Faces" value={(mesh.getTotalIndices() / 3).toFixed(0)} />
                     <TextLineComponent label="Sub-meshes" value={mesh.subMeshes ? mesh.subMeshes.length.toString() : "0"} />
-                    <TextLineComponent label="Has skeleton" value={mesh.skeleton ? "Yes" : "No"} />
+                    {
+                        mesh.skeleton &&
+                        <TextLineComponent label="Skeleton" value={mesh.skeleton.name} onLink={() => this.onSkeletonLink()}/>
+                    }
                     <CheckBoxLineComponent label="Is enabled" isSelected={() => mesh.isEnabled()} onSelect={(value) => mesh.setEnabled(value)} />
                     <CheckBoxLineComponent label="Is pickable" target={mesh} propertyName="isPickable" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
