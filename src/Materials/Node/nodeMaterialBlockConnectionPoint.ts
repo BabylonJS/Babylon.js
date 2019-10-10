@@ -2,6 +2,7 @@ import { NodeMaterialBlockConnectionPointTypes } from './Enums/nodeMaterialBlock
 import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
 import { Nullable } from '../../types';
 import { InputBlock } from './Blocks/Input/inputBlock';
+import { Observable } from '../../Misc/observable';
 
 declare type NodeMaterialBlock = import("./nodeMaterialBlock").NodeMaterialBlock;
 
@@ -37,6 +38,11 @@ export class NodeMaterialConnectionPoint {
      * Gets or sets the additional types excluded by this connection point
      */
     public excludedConnectionPointTypes = new Array<NodeMaterialBlockConnectionPointTypes>();
+
+    /**
+     * Observable triggered when this point is connected
+     */
+    public onConnectionObservable = new Observable<NodeMaterialConnectionPoint>();
 
     /**
      * Gets or sets the associated variable name in the shader
@@ -320,6 +326,10 @@ export class NodeMaterialConnectionPoint {
         connectionPoint._connectedPoint = this;
 
         this._enforceAssociatedVariableName = false;
+
+        this.onConnectionObservable.notifyObservers(connectionPoint);
+        connectionPoint.onConnectionObservable.notifyObservers(this);
+
         return this;
     }
 
@@ -358,5 +368,12 @@ export class NodeMaterialConnectionPoint {
         }
 
         return serializationObject;
+    }
+
+    /**
+     * Release resources
+     */
+    public dispose() {
+        this.onConnectionObservable.clear();
     }
 }
