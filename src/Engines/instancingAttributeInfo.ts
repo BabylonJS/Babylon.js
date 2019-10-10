@@ -1,7 +1,7 @@
 /**
  * Interface for attribute information associated with buffer instanciation
  */
-export class InstancingAttributeInfo {
+export interface InstancingAttributeInfo {
     /**
      * Index/offset of the attribute in the vertex shader
      */
