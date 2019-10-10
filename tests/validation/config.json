@@ -20,6 +20,11 @@
             "title": "Node material #4",
             "playgroundId": "#ZYGRII#0",
             "referenceImage": "node-material4.png"
+        },        
+        {
+            "title": "Node material #5",
+            "playgroundId": "#V8VH7B#0",
+            "referenceImage": "node-material5.png"
         },       
         {
             "title": "Basis loader",

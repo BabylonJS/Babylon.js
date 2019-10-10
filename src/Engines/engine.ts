@@ -20,6 +20,7 @@ import { PerformanceMonitor } from '../Misc/performanceMonitor';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { PerfCounter } from '../Misc/perfCounter';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
+import { Logger } from '../Misc/logger';
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -1881,6 +1882,52 @@ export class Engine extends ThinEngine {
         this._bindUnboundFramebuffer(null);
 
         return samples;
+    }
+
+    /**
+     * Updates a depth texture Comparison Mode and Function.
+     * If the comparison Function is equal to 0, the mode will be set to none.
+     * Otherwise, this only works in webgl 2 and requires a shadow sampler in the shader.
+     * @param texture The texture to set the comparison function for
+     * @param comparisonFunction The comparison function to set, 0 if no comparison required
+     */
+    public updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void {
+        if (this.webGLVersion === 1) {
+            Logger.Error("WebGL 1 does not support texture comparison.");
+            return;
+        }
+
+        var gl = this._gl;
+
+        if (texture.isCube) {
+            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture, true);
+
+            if (comparisonFunction === 0) {
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.NONE);
+            }
+            else {
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+            }
+
+            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
+        } else {
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
+
+            if (comparisonFunction === 0) {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.NONE);
+            }
+            else {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+            }
+
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+        }
+
+        texture._comparisonFunction = comparisonFunction;
     }
 
     /**
