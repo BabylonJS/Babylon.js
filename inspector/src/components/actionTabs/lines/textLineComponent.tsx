@@ -2,10 +2,11 @@ import * as React from "react";
 
 interface ITextLineComponentProps {
     label: string;
-    value: string;
+    value?: string;
     color?: string;
     underline?: boolean;
     onLink?: () => void;
+    ignoreValue?: boolean
 }
 
 export class TextLineComponent extends React.Component<ITextLineComponentProps> {
@@ -22,6 +23,10 @@ export class TextLineComponent extends React.Component<ITextLineComponentProps> 
     }
 
     renderContent() {
+        if (this.props.ignoreValue) {
+            return null;
+        }
+
         if (this.props.onLink) {
             return (
                 <div className="link-value" title={this.props.value} onClick={() => this.onLink()}>

@@ -623,4 +623,17 @@ export class NodeMaterialBlock {
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         this.name = serializationObject.name;
     }
+
+    /**
+     * Release resources
+     */
+    public dispose() {
+        for (var input of this.inputs) {
+            input.dispose();
+        }
+
+        for (var output of this.outputs) {
+            output.dispose();
+        }
+    }
 }
