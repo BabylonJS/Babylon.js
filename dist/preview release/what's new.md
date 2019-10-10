@@ -189,6 +189,7 @@
 - Added missing callback triggers within texture loaders ([PierreLeBlond](https://github.com/PierreLeBlond))
 - Fixed `TextureLinkLineComponent` to no longer invert inspector-loaded textures ([Drigax](https://github.com/drigax))
 - Fixed a single frame drop after leaving webxr on some devices ([RaananW](https://github.com/RaananW/))
+- Fixed bug where vignette aspect ratio would be wrong when rendering direct to canvas
 
 ## Breaking changes
 
