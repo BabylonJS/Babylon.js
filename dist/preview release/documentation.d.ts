@@ -35597,6 +35597,10 @@ declare module BABYLON {
              * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
              */
             audioListenerPositionProvider: Nullable<() => Vector3>;
+            /**
+             * Gets or sets a refresh rate when using 3D audio positioning
+             */
+            audioPositioningRefreshRate: number;
         }
     /**
      * Defines the sound scene component responsible to manage any sounds
@@ -35623,6 +35627,10 @@ declare module BABYLON {
          * Please use the according Switch methods to change output.
          */
         readonly headphone: boolean;
+        /**
+         * Gets or sets a refresh rate when using 3D audio positioning
+         */
+        audioPositioningRefreshRate: number;
         private _audioListenerPositionProvider;
         /**
          * Gets the current audio listener position provider
@@ -35682,6 +35690,9 @@ declare module BABYLON {
          * Switch audio to normal speakers.
          */
         switchAudioModeForNormalSpeakers(): void;
+        private _cachedCameraDirection;
+        private _cachedCameraPosition;
+        private _lastCheck;
         private _afterRender;
     }
 }
@@ -53752,6 +53763,10 @@ declare module BABYLON {
         serialize(): any;
         /** @hidden */
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        /**
+         * Release resources
+         */
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -53915,6 +53930,10 @@ declare module BABYLON {
          */
         excludedConnectionPointTypes: NodeMaterialBlockConnectionPointTypes[];
         /**
+         * Observable triggered when this point is connected
+         */
+        onConnectionObservable: Observable<NodeMaterialConnectionPoint>;
+        /**
          * Gets or sets the associated variable name in the shader
          */
         associatedVariableName: string;
@@ -54002,6 +54021,10 @@ declare module BABYLON {
          * @returns the serialized point object
          */
         serialize(): any;
+        /**
+         * Release resources
+         */
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -55663,6 +55686,37 @@ declare module BABYLON {
          * Gets the output component
          */
         readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to test if the fragment shader is front facing
+     */
+    export class FrontFacingBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new FrontFacingBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the world normal component
+         */
+        readonly worldNormal: NodeMaterialConnectionPoint;
+        /**
+         * Gets the view direction input component
+         */
+        readonly viewDirection: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        autoConfigure(material: NodeMaterial): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
