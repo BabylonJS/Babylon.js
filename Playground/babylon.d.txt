@@ -8160,9 +8160,9 @@ declare module BABYLON {
         /**
          * Binds the image processing to the shader.
          * @param effect The effect to bind to
-         * @param aspectRatio Define the current aspect ratio of the effect
+         * @param overrideAspectRatio Override the aspect ratio of the effect
          */
-        bind(effect: Effect, aspectRatio?: number): void;
+        bind(effect: Effect, overrideAspectRatio?: number): void;
         /**
          * Clones the current image processing instance.
          * @return The cloned image processing
