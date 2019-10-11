@@ -29,7 +29,7 @@ import { IGLTFLoaderExtension } from "./glTFLoaderExtension";
 import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
 import { IAnimationKey, AnimationKeyInterpolation } from 'babylonjs/Animations/animationKey';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
-import { IDataBuffer } from '../dataReader';
+import { IDataBuffer } from 'babylonjs/Misc/dataReader';
 import { LoadFileError } from 'babylonjs/Misc/fileTools';
 import { Logger } from 'babylonjs';
 

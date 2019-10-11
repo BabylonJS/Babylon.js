@@ -15,7 +15,7 @@ import { Scene, IDisposable } from "babylonjs/scene";
 import { WebRequest } from "babylonjs/Misc/webRequest";
 import { IFileRequest } from "babylonjs/Misc/fileRequest";
 import { Logger } from 'babylonjs/Misc/logger';
-import { DataReader, IDataBuffer } from './dataReader';
+import { DataReader, IDataBuffer } from 'babylonjs/Misc/dataReader';
 
 /**
  * glTF validator object
