@@ -47,14 +47,14 @@ export class WebXRCamera extends FreeCamera {
     }
 
     /** @hidden */
-    public _updateForDualEyeDebugging(pupilDistance = 0.01) {
+    public _updateForDualEyeDebugging(/*pupilDistance = 0.01*/) {
         // Create initial camera rigs
         this._updateNumberOfRigCameras(2);
         this.rigCameras[0].viewport = new Viewport(0, 0, 0.5, 1.0);
-        this.rigCameras[0].position.x = -pupilDistance / 2;
+        // this.rigCameras[0].position.x = -pupilDistance / 2;
         this.rigCameras[0].outputRenderTarget = null;
         this.rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
-        this.rigCameras[1].position.x = pupilDistance / 2;
+        // this.rigCameras[1].position.x = pupilDistance / 2;
         this.rigCameras[1].outputRenderTarget = null;
     }
 
@@ -69,29 +69,42 @@ export class WebXRCamera extends FreeCamera {
             return false;
         }
         var pose = xrSessionManager.currentFrame.getViewerPose(xrSessionManager.referenceSpace);
-        if (!pose || !pose.transform || !pose.transform.matrix) {
+        if (!pose) {
             return false;
         }
+        let globalTransform = false;
+        if (pose && pose.transform && pose.transform.matrix) {
+            globalTransform = true;
+            // Update the parent cameras matrix
+            Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, WebXRCamera._TmpMatrix);
 
-        // Update the parent cameras matrix
-        Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, WebXRCamera._TmpMatrix);
-        if (!this._scene.useRightHandedSystem) {
-            WebXRCamera._TmpMatrix.toggleModelMatrixHandInPlace();
+            if (!this._scene.useRightHandedSystem) {
+                WebXRCamera._TmpMatrix.toggleModelMatrixHandInPlace();
+            }
+            WebXRCamera._TmpMatrix.getTranslationToRef(this.position);
+            WebXRCamera._TmpMatrix.getRotationMatrixToRef(WebXRCamera._TmpMatrix);
+            Quaternion.FromRotationMatrixToRef(WebXRCamera._TmpMatrix, this.rotationQuaternion);
+
+            this.computeWorldMatrix();
         }
-        WebXRCamera._TmpMatrix.getTranslationToRef(this.position);
-        WebXRCamera._TmpMatrix.getRotationMatrixToRef(WebXRCamera._TmpMatrix);
-        Quaternion.FromRotationMatrixToRef(WebXRCamera._TmpMatrix, this.rotationQuaternion);
-        this.computeWorldMatrix();
 
         // Update camera rigs
         this._updateNumberOfRigCameras(pose.views.length);
-        pose.views.forEach((view: XRView, i: number) => {
+        pose.views.forEach((view: any, i: number) => {
+            const currentRig = <TargetCamera> this.rigCameras[i];
             // Update view/projection matrix
-            Matrix.FromFloat32ArrayToRefScaled(view.transform.matrix, 0, 1, this.rigCameras[i]._computedViewMatrix);
-            Matrix.FromFloat32ArrayToRefScaled(view.projectionMatrix, 0, 1, this.rigCameras[i]._projectionMatrix);
+            if (!globalTransform && view.transform.position && view.transform.orientation) {
+                currentRig.position.copyFrom(view.transform.position);
+                currentRig.rotationQuaternion.copyFrom(view.transform.orientation);
+                currentRig.getViewMatrix(true);
+            } else {
+                Matrix.FromFloat32ArrayToRefScaled(view.transform.matrix, 0, 1, currentRig._computedViewMatrix);
+            }
+            Matrix.FromFloat32ArrayToRefScaled(view.projectionMatrix, 0, 1, currentRig._projectionMatrix);
+
             if (!this._scene.useRightHandedSystem) {
-                this.rigCameras[i]._computedViewMatrix.toggleModelMatrixHandInPlace();
-                this.rigCameras[i]._projectionMatrix.toggleProjectionMatrixHandInPlace();
+                currentRig._computedViewMatrix.toggleModelMatrixHandInPlace();
+                currentRig._projectionMatrix.toggleProjectionMatrixHandInPlace();
             }
 
             // Update viewport
@@ -99,14 +112,14 @@ export class WebXRCamera extends FreeCamera {
                 var viewport = xrSessionManager.session.renderState.baseLayer.getViewport(view);
                 var width = xrSessionManager.session.renderState.baseLayer.framebufferWidth;
                 var height = xrSessionManager.session.renderState.baseLayer.framebufferHeight;
-                this.rigCameras[i].viewport.width = viewport.width / width;
-                this.rigCameras[i].viewport.height = viewport.height / height;
-                this.rigCameras[i].viewport.x = viewport.x / width;
-                this.rigCameras[i].viewport.y = viewport.y / height;
+                currentRig.viewport.width = viewport.width / width;
+                currentRig.viewport.height = viewport.height / height;
+                currentRig.viewport.x = viewport.x / width;
+                currentRig.viewport.y = viewport.y / height;
             }
 
             // Set cameras to render to the session's render target
-            this.rigCameras[i].outputRenderTarget = xrSessionManager.getRenderTargetTextureForEye(view.eye);
+            currentRig.outputRenderTarget = xrSessionManager.getRenderTargetTextureForEye(view.eye);
         });
         return true;
     }

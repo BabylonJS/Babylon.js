@@ -98,7 +98,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -384,7 +384,7 @@ __webpack_require__.r(__webpack_exports__);
  * This is used later on in the postprocess.
  */
 var AsciiArtFontTexture = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AsciiArtFontTexture, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AsciiArtFontTexture, _super);
     /**
      * Create a new instance of the Ascii Art FontTexture class
      * @param name the name of the texture
@@ -510,10 +510,10 @@ var AsciiArtFontTexture = /** @class */ (function (_super) {
         var texture = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Parse(function () { return new AsciiArtFontTexture(source.name, source.font, source.text, scene); }, source, scene, null);
         return texture;
     };
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])("font")
     ], AsciiArtFontTexture.prototype, "_font", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])("text")
     ], AsciiArtFontTexture.prototype, "_text", void 0);
     return AsciiArtFontTexture;
@@ -526,7 +526,7 @@ var AsciiArtFontTexture = /** @class */ (function (_super) {
  * Example usage: var pp = new AsciiArtPostProcess("myAscii", "20px Monospace", camera);
  */
 var AsciiArtPostProcess = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AsciiArtPostProcess, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AsciiArtPostProcess, _super);
     /**
      * Instantiates a new Ascii Art Post Process.
      * @param name the name to give to the postprocess

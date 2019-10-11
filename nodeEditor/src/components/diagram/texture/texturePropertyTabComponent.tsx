@@ -15,27 +15,29 @@ import { FloatLineComponent } from '../../../sharedComponents/floatLineComponent
 import { ButtonLineComponent } from '../../../sharedComponents/buttonLineComponent';
 import { ReflectionTextureNodeModel } from '../reflectionTexture/reflectionTextureNodeModel';
 import { CubeTexture } from 'babylonjs/Materials/Textures/cubeTexture';
+import { OptionsLineComponent } from '../../../sharedComponents/optionsLineComponent';
 
 interface ITexturePropertyTabComponentProps {
     globalState: GlobalState;
     node: TextureNodeModel | ReflectionTextureNodeModel;
 }
 
-export class TexturePropertyTabComponent extends React.Component<ITexturePropertyTabComponentProps, {isEmbedded: boolean}> {
+export class TexturePropertyTabComponent extends React.Component<ITexturePropertyTabComponentProps, {isEmbedded: boolean, loadAsCubeTexture: boolean}> {
 
     constructor(props: ITexturePropertyTabComponentProps) {
         super(props);
 
         let texture = this.props.node.texture as BaseTexture;
 
-        this.state = {isEmbedded: !texture || texture.name.substring(0, 4) !== "http"};
+        this.state = {isEmbedded: !texture || texture.name.substring(0, 4) === "data", loadAsCubeTexture: texture && texture.isCube};
     }
 
-    UNSAFE_componentWillUpdate(nextProps: ITexturePropertyTabComponentProps, nextState: {isEmbedded: boolean}) {
+    UNSAFE_componentWillUpdate(nextProps: ITexturePropertyTabComponentProps, nextState: {isEmbedded: boolean, loadAsCubeTexture: boolean}) {
         if (nextProps.node !== this.props.node) {
             let texture = nextProps.node.texture as BaseTexture;
 
-            nextState.isEmbedded = !texture || texture.name.substring(0, 4) !== "http";
+            nextState.isEmbedded = !texture || texture.name.substring(0, 4) === "data";
+            nextState.loadAsCubeTexture = texture && texture.isCube;
         }
     }
 
@@ -50,6 +52,19 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
     updateAfterTextureLoad() {
         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+        this.forceUpdate();
+    }
+
+    removeTexture() {
+        let texture = this.props.node.texture as BaseTexture;
+
+        if (texture) {
+            texture.dispose();
+            (texture as any) = null;
+            this.props.node.texture = null;
+        }
+
+        this.updateAfterTextureLoad();
     }
 
 	/**
@@ -62,11 +77,18 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
         }
 
         let texture = this.props.node.texture as BaseTexture;
+
+        if (texture && texture.isCube !== this.state.loadAsCubeTexture) {
+            texture.dispose();
+            (texture as any) = null;
+        }
+
         if (!texture) {
 
-            if (this.props.node instanceof TextureNodeModel) {
-                this.props.node.texture = new Texture(null, this.props.globalState.nodeMaterial.getScene(), false, false);
+            if (!this.state.loadAsCubeTexture) {
+                this.props.node.texture = new Texture(null, this.props.globalState.nodeMaterial.getScene(), false, this.props.node instanceof ReflectionTextureNodeModel);
                 texture = this.props.node.texture;
+                texture.coordinatesMode = Texture.EQUIRECTANGULAR_MODE;
             } else {
                 this.props.node.texture = new CubeTexture("", this.props.globalState.nodeMaterial.getScene());
                 texture = this.props.node.texture;
@@ -82,18 +104,14 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
             reader.onloadend = () => {
                 let base64data = reader.result as string;                
 
-                if (texture.isCube || this.props.node instanceof ReflectionTextureNodeModel) {
-                    let extension: string | undefined = undefined;
-                    if (file.name.toLowerCase().indexOf(".dds") > 0) {
-                        extension = ".dds";
-                    } else if (file.name.toLowerCase().indexOf(".env") > 0) {
-                        extension = ".env";
-                    }
-
-                    (texture as Texture).updateURL(base64data, extension, () => this.updateAfterTextureLoad());
-                } else {
-                    (texture as Texture).updateURL(base64data, null, () => this.updateAfterTextureLoad());
+                let extension: string | undefined = undefined;
+                if (file.name.toLowerCase().indexOf(".dds") > 0) {
+                    extension = ".dds";
+                } else if (file.name.toLowerCase().indexOf(".env") > 0) {
+                    extension = ".env";
                 }
+
+                (texture as Texture).updateURL(base64data, extension, () => this.updateAfterTextureLoad());
             }
         }, undefined, true);
     }
@@ -125,24 +143,63 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
         let url = "";
 
         let texture = this.props.node.texture as BaseTexture;
-        if (texture && texture.name && texture.name.substring(0, 4) === "http") {
+        if (texture && texture.name && texture.name.substring(0, 4) !== "data") {
             url = texture.name;
         }
 
         url = url.replace(/\?nocache=\d+/, "");
 
         let isInReflectionMode = this.props.node instanceof ReflectionTextureNodeModel;
+
+        var reflectionModeOptions: {label: string, value: number}[] = [
+            {
+                label: "Cubic", value: Texture.CUBIC_MODE
+            },
+            {                
+                label: "Equirectangular", value: Texture.EQUIRECTANGULAR_MODE
+            },
+            {
+                label: "Explicit", value: Texture.EXPLICIT_MODE
+            },
+            {
+                label: "Fixed equirectangular", value: Texture.FIXED_EQUIRECTANGULAR_MODE
+            },
+            {
+                label: "Fixed mirrored equirectangular", value: Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE
+            },
+            {
+                label: "Planar", value: Texture.PLANAR_MODE
+            },              
+            {
+                label: "Projection", value: Texture.PROJECTION_MODE
+            },         
+            {
+                label: "Skybox", value: Texture.SKYBOX_MODE
+            },         
+            {
+                label: "Spherical", value: Texture.SPHERICAL_MODE
+            },
+        ];
         
         return (
             <div>
                 <LineContainerComponent title="GENERAL">
-                    <TextLineComponent label="Type" value="Texture" />
+                    <TextLineComponent label="Type" value={this.props.node.block!.getClassName()} />
                     <TextInputLineComponent globalState={this.props.globalState} label="Name" propertyName="name" target={this.props.node.block!} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
                 </LineContainerComponent>
                 <LineContainerComponent title="PROPERTIES">
                     <CheckBoxLineComponent label="Auto select UV" propertyName="autoSelectUV" target={this.props.node.block!} onValueChanged={() => {                        
                         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-                    }}/> {
+                    }}/> 
+                    {
+                        texture && isInReflectionMode &&
+                        <OptionsLineComponent label="Reflection mode" options={reflectionModeOptions} target={texture} propertyName="coordinatesMode" onSelect={(value: any) => {
+                            texture.coordinatesMode = value;
+                            this.forceUpdate();
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }} />
+                    }                    
+                    {
                         texture && !isInReflectionMode &&
                         <CheckBoxLineComponent label="Gamma space" propertyName="gammaSpace" target={texture} onValueChanged={() => {                        
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
@@ -218,11 +275,16 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
                     }
                 </LineContainerComponent>
                 <LineContainerComponent title="SOURCE">
-                    <CheckBoxLineComponent label="Embed texture" isSelected={() => this.state.isEmbedded} onSelect={value => {
+                    <CheckBoxLineComponent label="Embed static texture" isSelected={() => this.state.isEmbedded} onSelect={value => {
                         this.setState({isEmbedded: value});
                         this.props.node.texture = null;
                         this.updateAfterTextureLoad();
                     }}/>
+                    {
+                        isInReflectionMode &&
+                        <CheckBoxLineComponent label="Load as cube texture" isSelected={() => this.state.loadAsCubeTexture} 
+                            onSelect={value => this.setState({loadAsCubeTexture: value})}/> 
+                    }
                     {
                         this.state.isEmbedded &&
                         <FileButtonLineComponent label="Upload" onClick={(file) => this.replaceTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
@@ -234,6 +296,10 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
                     {
                         !this.state.isEmbedded && url &&
                         <ButtonLineComponent label="Refresh" onClick={() => this.replaceTextureWithUrl(url + "?nocache=" + this._generateRandomForCache())}/>
+                    }
+                    {
+                        texture &&
+                        <ButtonLineComponent label="Remove" onClick={() => this.removeTexture()}/>
                     }
                 </LineContainerComponent>
             </div>

@@ -51,7 +51,7 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                         }        
                         {
                             !cantDisplaySlider &&
-                            <SliderLineComponent label="Value" target={inputBlock} propertyName="value" step={0.1} minimum={inputBlock.min} maximum={inputBlock.max} onChange={() => {
+                            <SliderLineComponent label="Value" target={inputBlock} propertyName="value" step={(inputBlock.max - inputBlock.min) / 100.0} minimum={inputBlock.min} maximum={inputBlock.max} onChange={() => {
                                 this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             }}/>
                         }
@@ -179,7 +179,10 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                     {
                         inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&
                         <CheckBoxLineComponent label="IsConstant" target={inputBlock} propertyName="isConstant"
-                            onValueChanged={() => this.props.globalState.onRebuildRequiredObservable.notifyObservers()}
+                            onValueChanged={() => {
+                                this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                                this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            }}
                         />
                     }                             
                     <OptionsLineComponent label="Mode" options={modeOptions} target={inputBlock} 

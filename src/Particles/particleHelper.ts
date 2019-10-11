@@ -10,7 +10,6 @@ import { IParticleSystem } from "./IParticleSystem";
 import { GPUParticleSystem } from "./gpuParticleSystem";
 import { ParticleSystemSet } from "./particleSystemSet";
 import { ParticleSystem } from "./particleSystem";
-import { Constants } from "../Engines/constants";
 /**
  * This class is made for on one-liner static method to help creating particle system set.
  */
@@ -18,7 +17,7 @@ export class ParticleHelper {
     /**
      * Gets or sets base Assets URL
      */
-    public static BaseAssetsUrl = Constants.PARTICLES_BaseAssetsUrl;
+    public static BaseAssetsUrl = ParticleSystemSet.BaseAssetsUrl;
 
     /**
      * Create a default particle system that you can tweak

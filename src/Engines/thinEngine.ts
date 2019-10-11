@@ -1,18 +1,17 @@
 import { EngineStore } from './engineStore';
 import { IInternalTextureLoader } from '../Materials/Textures/internalTextureLoader';
-import { Effect, EffectCreationOptions } from '../Materials/effect';
+import { Effect, IEffectCreationOptions } from '../Materials/effect';
 import { _DevTools } from '../Misc/devTools';
 import { IShaderProcessor } from './Processors/iShaderProcessor';
 import { UniformBuffer } from '../Materials/uniformBuffer';
 import { Nullable, DataArray, IndicesArray } from '../types';
 import { EngineCapabilities } from './engineCapabilities';
-import { PerfCounter } from '../Misc/perfCounter';
 import { Observable } from '../Misc/observable';
 import { DepthCullingState } from '../States/depthCullingState';
 import { StencilState } from '../States/stencilState';
 import { AlphaState } from '../States/alphaCullingState';
 import { Constants } from './constants';
-import { InternalTexture } from '../Materials/Textures/internalTexture';
+import { InternalTexture, InternalTextureSource } from '../Materials/Textures/internalTexture';
 import { IViewportLike, IColor4Like } from '../Maths/math.like';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { IFileRequest } from '../Misc/fileRequest';
@@ -24,16 +23,17 @@ import { IPipelineContext } from './IPipelineContext';
 import { WebGLPipelineContext } from './WebGL/webGLPipelineContext';
 import { VertexBuffer } from '../Meshes/buffer';
 import { InstancingAttributeInfo } from './instancingAttributeInfo';
-import { WebRequest } from '../Misc/webRequest';
 import { FileTools } from '../Misc/fileTools';
-import { DepthTextureCreationOptions } from './depthTextureCreationOptions';
 import { BaseTexture } from '../Materials/Textures/baseTexture';
 import { IOfflineProvider } from '../Offline/IOfflineProvider';
 import { IEffectFallbacks } from '../Materials/iEffectFallbacks';
+import { IWebRequest } from '../Misc/interfaces/iWebRequest';
+import { CanvasGenerator } from '../Misc/canvasGenerator';
 
 declare type Observer<T> = import("../Misc/observable").Observer<T>;
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
+declare type Texture = import("../Materials/Textures/texture").Texture;
 
 /**
  * Defines the interface used by objects working like Scene
@@ -128,14 +128,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-alpha.22";
+        return "babylonjs@4.1.0-alpha.24";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-alpha.22";
+        return "4.1.0-alpha.24";
     }
 
     /**
@@ -230,7 +230,7 @@ export class ThinEngine {
     protected _highPrecisionShadersAllowed = true;
     /** @hidden */
     public get _shouldUseHighPrecisionShader(): boolean {
-        return this._caps.highPrecisionShaderSupported && this._highPrecisionShadersAllowed;
+        return !!(this._caps.highPrecisionShaderSupported && this._highPrecisionShadersAllowed);
     }
 
     /**
@@ -252,9 +252,6 @@ export class ThinEngine {
     public _caps: EngineCapabilities;
     private _isStencilEnable: boolean;
     protected _colorWrite = true;
-
-    /** @hidden */
-    public _drawCalls = new PerfCounter();
 
     private _glVersion: string;
     private _glRenderer: string;
@@ -333,7 +330,7 @@ export class ThinEngine {
     /** @hidden */
     public _currentRenderTarget: Nullable<InternalTexture>;
     private _uintIndicesCurrentlySet = false;
-    private _currentBoundBuffer = new Array<Nullable<WebGLBuffer>>();
+    protected _currentBoundBuffer = new Array<Nullable<WebGLBuffer>>();
     /** @hidden */
     protected _currentFramebuffer: Nullable<WebGLFramebuffer> = null;
     private _currentBufferPointers = new Array<BufferPointer>();
@@ -342,9 +339,9 @@ export class ThinEngine {
     private _textureUnits: Int32Array;
 
     /** @hidden */
-    public _workingCanvas: Nullable<HTMLCanvasElement>;
+    public _workingCanvas: Nullable<HTMLCanvasElement | OffscreenCanvas>;
     /** @hidden */
-    public _workingContext: Nullable<CanvasRenderingContext2D>;
+    public _workingContext: Nullable<CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D>;
 
     /** @hidden */
     public _bindedRenderFunction: any;
@@ -434,6 +431,11 @@ export class ThinEngine {
      * Defines whether the engine has been created with the premultipliedAlpha option on or not.
      */
     public readonly premultipliedAlpha: boolean = true;
+
+    /**
+     * Observable event triggered before each texture is initialized
+     */
+    public onBeforeTextureInitObservable = new Observable<Texture>();
 
     /**
      * Creates a new engine
@@ -684,17 +686,48 @@ export class ThinEngine {
 
     private _initGLContext(): void {
         // Caps
-        this._caps = new EngineCapabilities();
-        this._caps.maxTexturesImageUnits = this._gl.getParameter(this._gl.MAX_TEXTURE_IMAGE_UNITS);
-        this._caps.maxCombinedTexturesImageUnits = this._gl.getParameter(this._gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS);
-        this._caps.maxVertexTextureImageUnits = this._gl.getParameter(this._gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
-        this._caps.maxTextureSize = this._gl.getParameter(this._gl.MAX_TEXTURE_SIZE);
-        this._caps.maxCubemapTextureSize = this._gl.getParameter(this._gl.MAX_CUBE_MAP_TEXTURE_SIZE);
-        this._caps.maxRenderTextureSize = this._gl.getParameter(this._gl.MAX_RENDERBUFFER_SIZE);
-        this._caps.maxVertexAttribs = this._gl.getParameter(this._gl.MAX_VERTEX_ATTRIBS);
-        this._caps.maxVaryingVectors = this._gl.getParameter(this._gl.MAX_VARYING_VECTORS);
-        this._caps.maxFragmentUniformVectors = this._gl.getParameter(this._gl.MAX_FRAGMENT_UNIFORM_VECTORS);
-        this._caps.maxVertexUniformVectors = this._gl.getParameter(this._gl.MAX_VERTEX_UNIFORM_VECTORS);
+        this._caps = {
+            maxTexturesImageUnits: this._gl.getParameter(this._gl.MAX_TEXTURE_IMAGE_UNITS),
+            maxCombinedTexturesImageUnits: this._gl.getParameter(this._gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS),
+            maxVertexTextureImageUnits: this._gl.getParameter(this._gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS),
+            maxTextureSize: this._gl.getParameter(this._gl.MAX_TEXTURE_SIZE),
+            maxCubemapTextureSize: this._gl.getParameter(this._gl.MAX_CUBE_MAP_TEXTURE_SIZE),
+            maxRenderTextureSize: this._gl.getParameter(this._gl.MAX_RENDERBUFFER_SIZE),
+            maxVertexAttribs: this._gl.getParameter(this._gl.MAX_VERTEX_ATTRIBS),
+            maxVaryingVectors: this._gl.getParameter(this._gl.MAX_VARYING_VECTORS),
+            maxFragmentUniformVectors: this._gl.getParameter(this._gl.MAX_FRAGMENT_UNIFORM_VECTORS),
+            maxVertexUniformVectors: this._gl.getParameter(this._gl.MAX_VERTEX_UNIFORM_VECTORS),
+            parallelShaderCompile: this._gl.getExtension('KHR_parallel_shader_compile'),
+            standardDerivatives: this._webGLVersion > 1 || (this._gl.getExtension('OES_standard_derivatives') !== null),
+            maxAnisotropy: 1,
+            astc: this._gl.getExtension('WEBGL_compressed_texture_astc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_astc'),
+            s3tc: this._gl.getExtension('WEBGL_compressed_texture_s3tc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_s3tc'),
+            pvrtc: this._gl.getExtension('WEBGL_compressed_texture_pvrtc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_pvrtc'),
+            etc1: this._gl.getExtension('WEBGL_compressed_texture_etc1') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_etc1'),
+            etc2: this._gl.getExtension('WEBGL_compressed_texture_etc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_etc') ||
+                this._gl.getExtension('WEBGL_compressed_texture_es3_0'), // also a requirement of OpenGL ES 3
+            textureAnisotropicFilterExtension: this._gl.getExtension('EXT_texture_filter_anisotropic') || this._gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') || this._gl.getExtension('MOZ_EXT_texture_filter_anisotropic'),
+            uintIndices: this._webGLVersion > 1 || this._gl.getExtension('OES_element_index_uint') !== null,
+            fragmentDepthSupported: this._webGLVersion > 1 || this._gl.getExtension('EXT_frag_depth') !== null,
+            highPrecisionShaderSupported: false,
+            timerQuery: this._gl.getExtension('EXT_disjoint_timer_query_webgl2') || this._gl.getExtension("EXT_disjoint_timer_query"),
+            canUseTimestampForTimerQuery: false,
+            drawBuffersExtension: false,
+            maxMSAASamples: 1,
+            colorBufferFloat: this._webGLVersion > 1 && this._gl.getExtension('EXT_color_buffer_float'),
+            textureFloat: (this._webGLVersion > 1 || this._gl.getExtension('OES_texture_float')) ? true : false,
+            textureHalfFloat: (this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float')) ? true : false,
+            textureHalfFloatRender: false,
+            textureFloatLinearFiltering: false,
+            textureFloatRender: false,
+            textureHalfFloatLinearFiltering: false,
+            vertexArrayObject: false,
+            instancedArrays: false,
+            textureLOD: (this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod')) ? true : false,
+            blendMinMax: false,
+            multiview: this._gl.getExtension('OVR_multiview2'),
+            depthTextureExtension: false
+        };
 
         // Infos
         this._glVersion = this._gl.getParameter(this._gl.VERSION);
@@ -726,21 +759,6 @@ export class ThinEngine {
         }
 
         // Extensions
-        this._caps.standardDerivatives = this._webGLVersion > 1 || (this._gl.getExtension('OES_standard_derivatives') !== null);
-
-        this._caps.astc = this._gl.getExtension('WEBGL_compressed_texture_astc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_astc');
-        this._caps.s3tc = this._gl.getExtension('WEBGL_compressed_texture_s3tc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_s3tc');
-        this._caps.pvrtc = this._gl.getExtension('WEBGL_compressed_texture_pvrtc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_pvrtc');
-        this._caps.etc1 = this._gl.getExtension('WEBGL_compressed_texture_etc1') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_etc1');
-        this._caps.etc2 = this._gl.getExtension('WEBGL_compressed_texture_etc') || this._gl.getExtension('WEBKIT_WEBGL_compressed_texture_etc') ||
-            this._gl.getExtension('WEBGL_compressed_texture_es3_0'); // also a requirement of OpenGL ES 3
-
-        this._caps.textureAnisotropicFilterExtension = this._gl.getExtension('EXT_texture_filter_anisotropic') || this._gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') || this._gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
-        this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
-        this._caps.uintIndices = this._webGLVersion > 1 || this._gl.getExtension('OES_element_index_uint') !== null;
-        this._caps.fragmentDepthSupported = this._webGLVersion > 1 || this._gl.getExtension('EXT_frag_depth') !== null;
-        this._caps.highPrecisionShaderSupported = false;
-        this._caps.timerQuery = this._gl.getExtension('EXT_disjoint_timer_query_webgl2') || this._gl.getExtension("EXT_disjoint_timer_query");
         if (this._caps.timerQuery) {
             if (this._webGLVersion === 1) {
                 this._gl.getQuery = (<any>this._caps.timerQuery).getQueryEXT.bind(this._caps.timerQuery);
@@ -748,23 +766,16 @@ export class ThinEngine {
             this._caps.canUseTimestampForTimerQuery = this._gl.getQuery(this._caps.timerQuery.TIMESTAMP_EXT, this._caps.timerQuery.QUERY_COUNTER_BITS_EXT) > 0;
         }
 
-        // Checks if some of the format renders first to allow the use of webgl inspector.
-        this._caps.colorBufferFloat = this._webGLVersion > 1 && this._gl.getExtension('EXT_color_buffer_float');
-
-        this._caps.textureFloat = (this._webGLVersion > 1 || this._gl.getExtension('OES_texture_float')) ? true : false;
+        this._caps.maxAnisotropy = this._caps.textureAnisotropicFilterExtension ? this._gl.getParameter(this._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
         this._caps.textureFloatLinearFiltering = this._caps.textureFloat && this._gl.getExtension('OES_texture_float_linear') ? true : false;
         this._caps.textureFloatRender = this._caps.textureFloat && this._canRenderToFloatFramebuffer() ? true : false;
-
-        this._caps.textureHalfFloat = (this._webGLVersion > 1 || this._gl.getExtension('OES_texture_half_float')) ? true : false;
         this._caps.textureHalfFloatLinearFiltering = (this._webGLVersion > 1 || (this._caps.textureHalfFloat && this._gl.getExtension('OES_texture_half_float_linear'))) ? true : false;
+
+        // Checks if some of the format renders first to allow the use of webgl inspector.
         if (this._webGLVersion > 1) {
             this._gl.HALF_FLOAT_OES = 0x140B;
         }
         this._caps.textureHalfFloatRender = this._caps.textureHalfFloat && this._canRenderToHalfFloatFramebuffer();
-
-        this._caps.textureLOD = (this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod')) ? true : false;
-
-        this._caps.multiview = this._gl.getExtension('OVR_multiview2');
         // Draw buffers
         if (this._webGLVersion > 1) {
             this._caps.drawBuffersExtension = true;
@@ -780,13 +791,8 @@ export class ThinEngine {
                 for (var i = 0; i < 16; i++) {
                     (<any>this._gl)["COLOR_ATTACHMENT" + i + "_WEBGL"] = (<any>drawBuffersExtension)["COLOR_ATTACHMENT" + i + "_WEBGL"];
                 }
-            } else {
-                this._caps.drawBuffersExtension = false;
             }
         }
-
-        // Shader compiler threads
-        this._caps.parallelShaderCompile = this._gl.getExtension('KHR_parallel_shader_compile');
 
         // Depth Texture
         if (this._webGLVersion > 1) {
@@ -813,8 +819,6 @@ export class ThinEngine {
                 this._gl.createVertexArray = vertexArrayObjectExtension.createVertexArrayOES.bind(vertexArrayObjectExtension);
                 this._gl.bindVertexArray = vertexArrayObjectExtension.bindVertexArrayOES.bind(vertexArrayObjectExtension);
                 this._gl.deleteVertexArray = vertexArrayObjectExtension.deleteVertexArrayOES.bind(vertexArrayObjectExtension);
-            } else {
-                this._caps.vertexArrayObject = false;
             }
         }
 
@@ -863,8 +867,6 @@ export class ThinEngine {
                 this._caps.blendMinMax = true;
                 this._gl.MAX = blendMinMaxExtension.MAX_EXT;
                 this._gl.MIN = blendMinMaxExtension.MIN_EXT;
-            } else {
-                this._caps.blendMinMax = false;
             }
         }
 
@@ -892,7 +894,7 @@ export class ThinEngine {
      * @returns "Engine" string
      */
     public getClassName(): string {
-        return "Engine";
+        return "ThinEngine";
     }
 
     /**
@@ -908,7 +910,7 @@ export class ThinEngine {
             return;
         }
 
-        this._workingCanvas = document.createElement("canvas");
+        this._workingCanvas = CanvasGenerator.CreateCanvas(1, 1);
         let context = this._workingCanvas.getContext("2d");
 
         if (context) {
@@ -1038,7 +1040,11 @@ export class ThinEngine {
      * Gets host window
      * @returns the host window object
      */
-    public getHostWindow(): Window {
+    public getHostWindow(): Nullable<Window> {
+        if (!DomManagement.IsWindowObjectExist()) {
+            return null;
+        }
+
         if (this._renderingCanvas && this._renderingCanvas.ownerDocument && this._renderingCanvas.ownerDocument.defaultView) {
             return this._renderingCanvas.ownerDocument.defaultView;
         }
@@ -1178,8 +1184,16 @@ export class ThinEngine {
      * Resize the view according to the canvas' size
      */
     public resize(): void {
-        var width = this._renderingCanvas ? this._renderingCanvas.clientWidth : window.innerWidth;
-        var height = this._renderingCanvas ? this._renderingCanvas.clientHeight : window.innerHeight;
+        let width: number;
+        let height: number;
+
+        if (DomManagement.IsWindowObjectExist()) {
+            width = this._renderingCanvas ? this._renderingCanvas.clientWidth : window.innerWidth;
+            height = this._renderingCanvas ? this._renderingCanvas.clientHeight : window.innerHeight;
+        } else {
+            width = this._renderingCanvas ? this._renderingCanvas.width : 100;
+            height = this._renderingCanvas ? this._renderingCanvas.height : 100;
+        }
 
         this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel);
     }
@@ -1329,7 +1343,9 @@ export class ThinEngine {
     }
 
     // VBOs
-    private _resetVertexBufferBinding(): void {
+
+    /** @hidden */
+    protected _resetVertexBufferBinding(): void {
         this.bindArrayBuffer(null);
         this._cachedVertexBuffers = null;
     }
@@ -1374,67 +1390,7 @@ export class ThinEngine {
         return this._createVertexBuffer(data, this._gl.DYNAMIC_DRAW);
     }
 
-    /**
-     * Update a dynamic index buffer
-     * @param indexBuffer defines the target index buffer
-     * @param indices defines the data to update
-     * @param offset defines the offset in the target index buffer where update should start
-     */
-    public updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
-        // Force cache update
-        this._currentBoundBuffer[this._gl.ELEMENT_ARRAY_BUFFER] = null;
-        this.bindIndexBuffer(indexBuffer);
-        var arrayBuffer;
-
-        if (indices instanceof Uint16Array || indices instanceof Uint32Array) {
-            arrayBuffer = indices;
-        } else {
-            arrayBuffer = indexBuffer.is32Bits ? new Uint32Array(indices) : new Uint16Array(indices);
-        }
-
-        this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, this._gl.DYNAMIC_DRAW);
-
-        this._resetIndexBufferBinding();
-    }
-
-    /**
-     * Updates a dynamic vertex buffer.
-     * @param vertexBuffer the vertex buffer to update
-     * @param data the data used to update the vertex buffer
-     * @param byteOffset the byte offset of the data
-     * @param byteLength the byte length of the data
-     */
-    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
-        this.bindArrayBuffer(vertexBuffer);
-
-        if (byteOffset === undefined) {
-            byteOffset = 0;
-        }
-
-        if (byteLength === undefined) {
-            if (data instanceof Array) {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, new Float32Array(data));
-            } else {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, <ArrayBuffer>data);
-            }
-        } else {
-            if (data instanceof Array) {
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(data).subarray(byteOffset, byteOffset + byteLength));
-            } else {
-                if (data instanceof ArrayBuffer) {
-                    data = new Uint8Array(data, byteOffset, byteLength);
-                } else {
-                    data = new Uint8Array(data.buffer, data.byteOffset + byteOffset, byteLength);
-                }
-
-                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, <ArrayBuffer>data);
-            }
-        }
-
-        this._resetVertexBufferBinding();
-    }
-
-    private _resetIndexBufferBinding(): void {
+    protected _resetIndexBufferBinding(): void {
         this.bindIndexBuffer(null);
         this._cachedIndexBuffer = null;
     }
@@ -1514,7 +1470,7 @@ export class ThinEngine {
         this._gl.uniformBlockBinding(program, uniformLocation, index);
     }
 
-    private bindIndexBuffer(buffer: Nullable<DataBuffer>): void {
+    protected bindIndexBuffer(buffer: Nullable<DataBuffer>): void {
         if (!this._vaoRecordInProgress) {
             this._unbindVertexArrayObject();
         }
@@ -1769,34 +1725,6 @@ export class ThinEngine {
     }
 
     /**
-     * Creates a webGL buffer to use with instanciation
-     * @param capacity defines the size of the buffer
-     * @returns the webGL buffer
-     */
-    public createInstancesBuffer(capacity: number): DataBuffer {
-        var buffer = this._gl.createBuffer();
-
-        if (!buffer) {
-            throw new Error("Unable to create instance buffer");
-        }
-
-        var result = new WebGLDataBuffer(buffer);
-        result.capacity = capacity;
-
-        this.bindArrayBuffer(result);
-        this._gl.bufferData(this._gl.ARRAY_BUFFER, capacity, this._gl.DYNAMIC_DRAW);
-        return result;
-    }
-
-    /**
-     * Delete a webGL buffer used with instanciation
-     * @param buffer defines the webGL buffer to delete
-     */
-    public deleteInstancesBuffer(buffer: WebGLBuffer): void {
-        this._gl.deleteBuffer(buffer);
-    }
-
-    /**
      * Update the content of a webGL buffer used with instanciation and bind it to the webGL context
      * @param instancesBuffer defines the webGL buffer to update and bind
      * @param data defines the data to store in the buffer
@@ -1822,7 +1750,7 @@ export class ThinEngine {
                     this._vertexAttribArraysEnabled[ai.index] = true;
                 }
 
-                this._vertexAttribPointer(instancesBuffer, ai.index, ai.attributeSize, ai.attribyteType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
+                this._vertexAttribPointer(instancesBuffer, ai.index, ai.attributeSize, ai.attributeType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
                 this._gl.vertexAttribDivisor(ai.index, 1);
                 this._currentInstanceLocations.push(ai.index);
                 this._currentInstanceBuffers.push(instancesBuffer);
@@ -1896,7 +1824,8 @@ export class ThinEngine {
         // Apply states
         this.applyStates();
 
-        this._drawCalls.addCount(1, false);
+        this._reportDrawCall();
+
         // Render
 
         const drawMode = this._drawMode(fillMode);
@@ -1919,7 +1848,8 @@ export class ThinEngine {
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {
         // Apply states
         this.applyStates();
-        this._drawCalls.addCount(1, false);
+
+        this._reportDrawCall();
 
         const drawMode = this._drawMode(fillMode);
         if (instancesCount) {
@@ -1956,6 +1886,11 @@ export class ThinEngine {
         }
     }
 
+    /** @hidden */
+    protected _reportDrawCall() {
+        // Will be implemented by children
+    }
+
     // Shaders
 
     /** @hidden */
@@ -1980,7 +1915,7 @@ export class ThinEngine {
     /**
      * Create a new effect (used to store vertex/fragment shaders)
      * @param baseName defines the base name of the effect (The name of file without .fragment.fx or .vertex.fx)
-     * @param attributesNamesOrOptions defines either a list of attribute names or an EffectCreationOptions object
+     * @param attributesNamesOrOptions defines either a list of attribute names or an IEffectCreationOptions object
      * @param uniformsNamesOrEngine defines either a list of uniform names or the engine to use
      * @param samplers defines an array of string used to represent textures
      * @param defines defines the string containing the defines to use to compile the shaders
@@ -1990,13 +1925,13 @@ export class ThinEngine {
      * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
      * @returns the new Effect
      */
-    public createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: string[], defines?: string,
+    public createEffect(baseName: any, attributesNamesOrOptions: string[] | IEffectCreationOptions, uniformsNamesOrEngine: string[] | ThinEngine, samplers?: string[], defines?: string,
         fallbacks?: IEffectFallbacks,
         onCompiled?: Nullable<(effect: Effect) => void>, onError?: Nullable<(effect: Effect, errors: string) => void>, indexParameters?: any): Effect {
         var vertex = baseName.vertexElement || baseName.vertex || baseName;
         var fragment = baseName.fragmentElement || baseName.fragment || baseName;
 
-        var name = vertex + "+" + fragment + "@" + (defines ? defines : (<EffectCreationOptions>attributesNamesOrOptions).defines);
+        var name = vertex + "+" + fragment + "@" + (defines ? defines : (<IEffectCreationOptions>attributesNamesOrOptions).defines);
         if (this._compiledEffects[name]) {
             var compiledEffect = <Effect>this._compiledEffects[name];
             if (onCompiled && compiledEffect.isReady()) {
@@ -2186,7 +2121,7 @@ export class ThinEngine {
     /** @hidden */
     public _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean {
         let webGLPipelineContext = pipelineContext as WebGLPipelineContext;
-        if (this._gl.getProgramParameter(webGLPipelineContext.program!, this._caps.parallelShaderCompile.COMPLETION_STATUS_KHR)) {
+        if (this._gl.getProgramParameter(webGLPipelineContext.program!, this._caps.parallelShaderCompile!.COMPLETION_STATUS_KHR)) {
             this._finalizePipelineContext(webGLPipelineContext);
             return true;
         }
@@ -2267,6 +2202,19 @@ export class ThinEngine {
     }
 
     /**
+     * Set the value of an uniform to a number (int)
+     * @param uniform defines the webGL uniform location where to store the value
+     * @param value defines the int number to store
+     */
+    public setInt(uniform: Nullable<WebGLUniformLocation>, value: number): void {
+        if (!uniform) {
+            return;
+        }
+
+        this._gl.uniform1i(uniform, value);
+    }
+
+    /**
      * Set the value of an uniform to an array of int32
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of int32 to store
@@ -2319,11 +2267,11 @@ export class ThinEngine {
     }
 
     /**
-     * Set the value of an uniform to an array of float32
+     * Set the value of an uniform to an array of number
      * @param uniform defines the webGL uniform location where to store the value
-     * @param array defines the array of float32 to store
+     * @param array defines the array of number to store
      */
-    public setFloatArray(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
+    public setArray(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void {
         if (!uniform) {
             return;
         }
@@ -2332,63 +2280,11 @@ export class ThinEngine {
     }
 
     /**
-     * Set the value of an uniform to an array of float32 (stored as vec2)
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param array defines the array of float32 to store
-     */
-    public setFloatArray2(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
-        if (!uniform || array.length % 2 !== 0) {
-            return;
-        }
-
-        this._gl.uniform2fv(uniform, array);
-    }
-
-    /**
-     * Set the value of an uniform to an array of float32 (stored as vec3)
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param array defines the array of float32 to store
-     */
-    public setFloatArray3(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
-        if (!uniform || array.length % 3 !== 0) {
-            return;
-        }
-
-        this._gl.uniform3fv(uniform, array);
-    }
-
-    /**
-     * Set the value of an uniform to an array of float32 (stored as vec4)
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param array defines the array of float32 to store
-     */
-    public setFloatArray4(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
-        if (!uniform || array.length % 4 !== 0) {
-            return;
-        }
-
-        this._gl.uniform4fv(uniform, array);
-    }
-
-    /**
-     * Set the value of an uniform to an array of number
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param array defines the array of number to store
-     */
-    public setArray(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._gl.uniform1fv(uniform, <any>array);
-    }
-
-    /**
      * Set the value of an uniform to an array of number (stored as vec2)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of number to store
      */
-    public setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
+    public setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void {
         if (!uniform || array.length % 2 !== 0) {
             return;
         }
@@ -2401,7 +2297,7 @@ export class ThinEngine {
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of number to store
      */
-    public setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
+    public setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void {
         if (!uniform || array.length % 3 !== 0) {
             return;
         }
@@ -2414,7 +2310,7 @@ export class ThinEngine {
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of number to store
      */
-    public setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
+    public setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void {
         if (!uniform || array.length % 4 !== 0) {
             return;
         }
@@ -2462,19 +2358,6 @@ export class ThinEngine {
     }
 
     /**
-     * Set the value of an uniform to a number (int)
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param value defines the int number to store
-     */
-    public setInt(uniform: Nullable<WebGLUniformLocation>, value: number): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._gl.uniform1i(uniform, value);
-    }
-
-    /**
      * Set the value of an uniform to a number (float)
      * @param uniform defines the webGL uniform location where to store the value
      * @param value defines the float number to store
@@ -2517,19 +2400,6 @@ export class ThinEngine {
     }
 
     /**
-     * Set the value of an uniform to a boolean
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param bool defines the boolean to store
-     */
-    public setBool(uniform: Nullable<WebGLUniformLocation>, bool: number): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._gl.uniform1i(uniform, bool);
-    }
-
-    /**
      * Set the value of an uniform to a vec4
      * @param uniform defines the webGL uniform location where to store the value
      * @param x defines the 1st component of the value
@@ -2543,19 +2413,6 @@ export class ThinEngine {
         }
 
         this._gl.uniform4f(uniform, x, y, z, w);
-    }
-
-    /**
-     * Sets a Color4 on a uniform variable
-     * @param uniform defines the uniform location
-     * @param color4 defines the value to be set
-     */
-    public setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: IColor4Like): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._gl.uniform4f(uniform, color4.r, color4.g, color4.b, color4.a);
     }
 
     // States
@@ -2752,18 +2609,19 @@ export class ThinEngine {
      * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
      * @param forcedExtension defines the extension to use to pick the right loader
      * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (default: empty array)
+     * @param mimeType defines an optional mime type
      * @returns a InternalTexture for assignment back into BABYLON.Texture
      */
     public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
-        buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
-        forcedExtension: Nullable<string> = null, excludeLoaders: Array<IInternalTextureLoader> = []): InternalTexture {
+        buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
+        forcedExtension: Nullable<string> = null, excludeLoaders: Array<IInternalTextureLoader> = [], mimeType?: string): InternalTexture {
         var url = String(urlArg); // assign a new string, so that the original is still available in case of fallback
         var fromData = url.substr(0, 5) === "data:";
         var fromBlob = url.substr(0, 5) === "blob:";
         var isBase64 = fromData && url.indexOf(";base64,") !== -1;
 
-        let texture = fallback ? fallback : new InternalTexture(this, InternalTexture.DATASOURCE_URL);
+        let texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Url);
 
         // establish the file extension, if possible
         var lastDot = url.lastIndexOf('.');
@@ -2849,7 +2707,7 @@ export class ThinEngine {
             };
 
             if (!buffer) {
-                this._loadFile(url, callback, undefined, scene ? scene.offlineProvider : undefined, true, (request?: WebRequest, exception?: any) => {
+                this._loadFile(url, callback, undefined, scene ? scene.offlineProvider : undefined, true, (request?: IWebRequest, exception?: any) => {
                     onInternalError("Unable to load " + (request ? request.responseURL : url, exception));
                 });
             } else {
@@ -2864,7 +2722,7 @@ export class ThinEngine {
                 }
             }
         } else {
-            var onload = (img: HTMLImageElement) => {
+            var onload = (img: HTMLImageElement | ImageBitmap) => {
                 if (fromBlob && !this._doNotHandleContextLost) {
                     // We need to store the image if we need to rebuild the texture
                     // in case of a webgl context lost
@@ -2901,7 +2759,7 @@ export class ThinEngine {
                         return false;
                     } else {
                         // Using shaders when possible to rescale because canvas.drawImage is lossy
-                        let source = new InternalTexture(this, InternalTexture.DATASOURCE_TEMP);
+                        let source = new InternalTexture(this, InternalTextureSource.Temp);
                         this._bindTextureDirectly(gl.TEXTURE_2D, source, true);
                         gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, img);
 
@@ -2918,14 +2776,14 @@ export class ThinEngine {
             };
 
             if (!fromData || isBase64) {
-                if (buffer instanceof HTMLImageElement) {
-                    onload(buffer);
+                if (buffer && ((<HTMLImageElement>buffer).decoding || (<ImageBitmap>buffer).close)) {
+                    onload(<HTMLImageElement>buffer);
                 } else {
-                    FileTools.LoadImage(url, onload, onInternalError, scene ? scene.offlineProvider : null);
+                    FileTools.LoadImage(url, onload, onInternalError, scene ? scene.offlineProvider : null, mimeType);
                 }
             }
             else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || ArrayBuffer.isView(buffer) || buffer instanceof Blob) {
-                FileTools.LoadImage(buffer, onload, onInternalError, scene ? scene.offlineProvider : null);
+                FileTools.LoadImage(buffer, onload, onInternalError, scene ? scene.offlineProvider : null, mimeType);
             }
             else if (buffer) {
                 onload(<HTMLImageElement>buffer);
@@ -3044,52 +2902,6 @@ export class ThinEngine {
         texture.samplingMode = samplingMode;
     }
 
-    /**
-     * Updates a depth texture Comparison Mode and Function.
-     * If the comparison Function is equal to 0, the mode will be set to none.
-     * Otherwise, this only works in webgl 2 and requires a shadow sampler in the shader.
-     * @param texture The texture to set the comparison function for
-     * @param comparisonFunction The comparison function to set, 0 if no comparison required
-     */
-    public updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void {
-        if (this.webGLVersion === 1) {
-            Logger.Error("WebGL 1 does not support texture comparison.");
-            return;
-        }
-
-        var gl = this._gl;
-
-        if (texture.isCube) {
-            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture, true);
-
-            if (comparisonFunction === 0) {
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.NONE);
-            }
-            else {
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
-            }
-
-            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
-        } else {
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
-
-            if (comparisonFunction === 0) {
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.NONE);
-            }
-            else {
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
-            }
-
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
-        }
-
-        texture._comparisonFunction = comparisonFunction;
-    }
-
     /** @hidden */
     public _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | { width: number, height: number }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number): void {
         var width = (<{ width: number, height: number }>size).width || <number>size;
@@ -3123,140 +2935,6 @@ export class ThinEngine {
             gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
             gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
         }
-    }
-
-    /**
-     * Creates a depth stencil texture.
-     * This is only available in WebGL 2 or with the depth texture extension available.
-     * @param size The size of face edge in the texture.
-     * @param options The options defining the texture.
-     * @returns The texture
-     */
-    public createDepthStencilTexture(size: number | { width: number, height: number }, options: DepthTextureCreationOptions): InternalTexture {
-        if (options.isCube) {
-            let width = (<{ width: number, height: number }>size).width || <number>size;
-            return this._createDepthStencilCubeTexture(width, options);
-        }
-        else {
-            return this._createDepthStencilTexture(size, options);
-        }
-    }
-
-    /**
-     * Creates a depth stencil texture.
-     * This is only available in WebGL 2 or with the depth texture extension available.
-     * @param size The size of face edge in the texture.
-     * @param options The options defining the texture.
-     * @returns The texture
-     */
-    private _createDepthStencilTexture(size: number | { width: number, height: number }, options: DepthTextureCreationOptions): InternalTexture {
-        var internalTexture = new InternalTexture(this, InternalTexture.DATASOURCE_DEPTHTEXTURE);
-
-        if (!this._caps.depthTextureExtension) {
-            Logger.Error("Depth texture is not supported by your browser or hardware.");
-            return internalTexture;
-        }
-
-        var internalOptions = {
-            bilinearFiltering: false,
-            comparisonFunction: 0,
-            generateStencil: false,
-            ...options
-        };
-
-        var gl = this._gl;
-        this._bindTextureDirectly(gl.TEXTURE_2D, internalTexture, true);
-
-        this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.bilinearFiltering, internalOptions.comparisonFunction);
-
-        if (this.webGLVersion > 1) {
-            if (internalOptions.generateStencil) {
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH24_STENCIL8, internalTexture.width, internalTexture.height, 0, gl.DEPTH_STENCIL, gl.UNSIGNED_INT_24_8, null);
-            }
-            else {
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT24, internalTexture.width, internalTexture.height, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
-            }
-        }
-        else {
-            if (internalOptions.generateStencil) {
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_STENCIL, internalTexture.width, internalTexture.height, 0, gl.DEPTH_STENCIL, gl.UNSIGNED_INT_24_8, null);
-            }
-            else {
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, internalTexture.width, internalTexture.height, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
-            }
-        }
-
-        this._bindTextureDirectly(gl.TEXTURE_2D, null);
-
-        return internalTexture;
-    }
-
-    /**
-     * Sets the frame buffer Depth / Stencil attachement of the render target to the defined depth stencil texture.
-     * @param renderTarget The render target to set the frame buffer for
-     */
-    public setFrameBufferDepthStencilTexture(renderTarget: RenderTargetTexture): void {
-        // Create the framebuffer
-        var internalTexture = renderTarget.getInternalTexture();
-        if (!internalTexture || !internalTexture._framebuffer || !renderTarget.depthStencilTexture) {
-            return;
-        }
-
-        var gl = this._gl;
-        var depthStencilTexture = renderTarget.depthStencilTexture;
-
-        this._bindUnboundFramebuffer(internalTexture._framebuffer);
-        if (depthStencilTexture.isCube) {
-            if (depthStencilTexture._generateStencilBuffer) {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture._webGLTexture, 0);
-            }
-            else {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture._webGLTexture, 0);
-            }
-        }
-        else {
-            if (depthStencilTexture._generateStencilBuffer) {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture._webGLTexture, 0);
-            }
-            else {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture._webGLTexture, 0);
-            }
-        }
-        this._bindUnboundFramebuffer(null);
-    }
-
-    /** @hidden */
-    public _setupFramebufferDepthAttachments(generateStencilBuffer: boolean, generateDepthBuffer: boolean, width: number, height: number, samples = 1): Nullable<WebGLRenderbuffer> {
-        var depthStencilBuffer: Nullable<WebGLRenderbuffer> = null;
-        var gl = this._gl;
-
-        // Create the depth/stencil buffer
-        if (generateStencilBuffer) {
-            depthStencilBuffer = gl.createRenderbuffer();
-            gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-
-            if (samples > 1) {
-                gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH24_STENCIL8, width, height);
-            } else {
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, width, height);
-            }
-
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
-        }
-        else if (generateDepthBuffer) {
-            depthStencilBuffer = gl.createRenderbuffer();
-            gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-
-            if (samples > 1) {
-                gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH_COMPONENT16, width, height);
-            } else {
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
-            }
-
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
-        }
-
-        return depthStencilBuffer;
     }
 
     /** @hidden */
@@ -3304,41 +2982,6 @@ export class ThinEngine {
         this._uploadDataToTextureDirectly(texture, imageData, faceIndex, lod);
 
         this._bindTextureDirectly(bindTarget, null, true);
-    }
-
-    /** @hidden */
-    public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex: number = 0, lod: number = 0) {
-        var gl = this._gl;
-
-        var textureType = this._getWebGLTextureType(texture.type);
-        var format = this._getInternalFormat(texture.format);
-        var internalFormat = this._getRGBABufferInternalSizedFormat(texture.type, format);
-
-        var bindTarget = texture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
-
-        this._bindTextureDirectly(bindTarget, texture, true);
-        this._unpackFlipY(texture.invertY);
-
-        var target = gl.TEXTURE_2D;
-        if (texture.isCube) {
-            target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
-        }
-
-        gl.texImage2D(target, lod, internalFormat, format, textureType, image);
-        this._bindTextureDirectly(bindTarget, null, true);
-    }
-
-    /**
-     * @hidden
-     */
-    public _setCubeMapTextureParams(loadMipmap: boolean): void {
-        var gl = this._gl;
-        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, loadMipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-        this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
     }
 
     protected _prepareWebGLTextureContinuation(texture: InternalTexture, scene: Nullable<ISceneLike>, noMipmap: boolean, isCompressed: boolean, samplingMode: number): void {
@@ -3404,6 +3047,40 @@ export class ThinEngine {
         }
 
         this._prepareWebGLTextureContinuation(texture, scene, noMipmap, isCompressed, samplingMode);
+    }
+
+    /** @hidden */
+    public _setupFramebufferDepthAttachments(generateStencilBuffer: boolean, generateDepthBuffer: boolean, width: number, height: number, samples = 1): Nullable<WebGLRenderbuffer> {
+        var depthStencilBuffer: Nullable<WebGLRenderbuffer> = null;
+        var gl = this._gl;
+
+        // Create the depth/stencil buffer
+        if (generateStencilBuffer) {
+            depthStencilBuffer = gl.createRenderbuffer();
+            gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+
+            if (samples > 1) {
+                gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH24_STENCIL8, width, height);
+            } else {
+                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, width, height);
+            }
+
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+        }
+        else if (generateDepthBuffer) {
+            depthStencilBuffer = gl.createRenderbuffer();
+            gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+
+            if (samples > 1) {
+                gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH_COMPONENT16, width, height);
+            } else {
+                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
+            }
+
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+        }
+
+        return depthStencilBuffer;
     }
 
     /** @hidden */
@@ -3828,6 +3505,11 @@ export class ThinEngine {
     public dispose(): void {
         this.stopRenderLoop();
 
+        // Clear observables
+        if (this.onBeforeTextureInitObservable) {
+            this.onBeforeTextureInitObservable.clear();
+        }
+
         // Empty texture
         if (this._emptyTexture) {
             this._releaseTexture(this._emptyTexture);
@@ -4248,7 +3930,8 @@ export class ThinEngine {
     }
 
     /** @hidden */
-    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: any) => void): IFileRequest {
+    public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void,
+    offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: IWebRequest, exception?: any) => void): IFileRequest {
         let request = FileTools.LoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
@@ -4266,8 +3949,8 @@ export class ThinEngine {
      */
     public static isSupported(): boolean {
         try {
-            var tempcanvas = document.createElement("canvas");
-            var gl = tempcanvas.getContext("webgl") || tempcanvas.getContext("experimental-webgl");
+            var tempcanvas = CanvasGenerator.CreateCanvas(1, 1);
+            var gl = tempcanvas.getContext("webgl") || (tempcanvas as any).getContext("experimental-webgl");
 
             return gl != null && !!window.WebGLRenderingContext;
         } catch (e) {
@@ -4350,6 +4033,10 @@ export class ThinEngine {
      */
     public static QueueNewFrame(func: () => void, requester?: any): number {
         if (!DomManagement.IsWindowObjectExist()) {
+            if (typeof requestAnimationFrame !== "undefined") {
+                return requestAnimationFrame(func);
+            }
+
             return setTimeout(func, 16);
         }
 

@@ -318,10 +318,12 @@ export class SpriteSceneComponent implements ISceneComponent {
 
             if (pickResult && pickResult.hit && pickResult.pickedSprite) {
                 scene.setPointerOverSprite(pickResult.pickedSprite);
-                if (scene._pointerOverSprite && scene._pointerOverSprite.actionManager && scene._pointerOverSprite.actionManager.hoverCursor) {
-                    canvas.style.cursor = scene._pointerOverSprite.actionManager.hoverCursor;
-                } else {
-                    canvas.style.cursor = scene.hoverCursor;
+                if (!scene.doNotHandleCursors) {
+                    if (scene._pointerOverSprite && scene._pointerOverSprite.actionManager && scene._pointerOverSprite.actionManager.hoverCursor) {
+                        canvas.style.cursor = scene._pointerOverSprite.actionManager.hoverCursor;
+                    } else {
+                        canvas.style.cursor = scene.hoverCursor;
+                    }
                 }
             } else {
                 scene.setPointerOverSprite(null);

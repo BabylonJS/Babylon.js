@@ -20,8 +20,8 @@ import { IMaterialSubSurfaceDefines, PBRSubSurfaceConfiguration } from "./pbrSub
 import { Color3, TmpColors } from '../../Maths/math.color';
 
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
-import { Effect, EffectCreationOptions } from "../../Materials/effect";
-import { Material } from "../../Materials/material";
+import { Effect, IEffectCreationOptions } from "../../Materials/effect";
+import { Material, IMaterialCompilationOptions } from "../../Materials/material";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { MaterialHelper } from "../../Materials/materialHelper";
@@ -35,6 +35,7 @@ import { MaterialFlags } from "../materialFlags";
 import { Constants } from "../../Engines/constants";
 import { IAnimatable } from '../../Animations/animatable.interface';
 
+import "../../Materials/Textures/baseTexture.polynomial";
 import "../../Shaders/pbr.fragment";
 import "../../Shaders/pbr.vertex";
 import { EffectFallbacks } from '../effectFallbacks';
@@ -1225,7 +1226,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
         }
 
-        MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
+        MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
             uniformsNames: uniforms,
             uniformBuffersNames: uniformBuffers,
             samplers: samplers,
@@ -1238,7 +1239,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         var join = defines.toString();
-        return engine.createEffect(shaderName, <EffectCreationOptions>{
+        return engine.createEffect(shaderName, <IEffectCreationOptions>{
             attributes: attribs,
             uniformsNames: uniforms,
             uniformBuffersNames: uniformBuffers,
@@ -1355,7 +1356,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                             defines.USEIRRADIANCEMAP = true;
                             defines.USESPHERICALFROMREFLECTIONMAP = false;
                         }
-                        else if (reflectionTexture.sphericalPolynomial) {
+                        // Assume using spherical polynomial if the reflection texture is a cube map
+                        else if (reflectionTexture.isCube) {
                             defines.USESPHERICALFROMREFLECTIONMAP = true;
                             defines.USEIRRADIANCEMAP = false;
                             if (this._forceIrradianceInFragment || scene.getEngine().getCaps().maxVaryingVectors <= 8) {
@@ -1535,14 +1537,15 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Force shader compilation
      */
-    public forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<{ clipPlane: boolean }>): void {
-        let localOptions = {
+    public forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<IMaterialCompilationOptions>): void {
+        const localOptions = {
             clipPlane: false,
+            useInstances: false,
             ...options
         };
 
         const defines = new PBRMaterialDefines();
-        const effect = this._prepareEffect(mesh, defines, undefined, undefined, undefined, localOptions.clipPlane)!;
+        const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane)!;
         if (effect.isReady()) {
             if (onCompiled) {
                 onCompiled(this);

@@ -6,7 +6,7 @@ import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
-import { EffectCreationOptions } from "babylonjs/Materials/effect";
+import { IEffectCreationOptions } from "babylonjs/Materials/effect";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
 import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -185,7 +185,7 @@ export class GradientMaterial extends PushMaterial {
             var samplers: string[] = [];
             var uniformBuffers = new Array<string>();
 
-            MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
+            MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
@@ -194,7 +194,7 @@ export class GradientMaterial extends PushMaterial {
             });
 
             subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                <EffectCreationOptions>{
+                <IEffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,

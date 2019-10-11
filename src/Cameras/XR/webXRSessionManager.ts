@@ -2,7 +2,7 @@ import { Logger } from "../../Misc/logger";
 import { Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
 import { IDisposable, Scene } from "../../scene";
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { WebXRRenderTarget } from './webXRTypes';
 import { WebXRManagedOutputCanvas } from './webXRManagedOutputCanvas';
@@ -57,6 +57,8 @@ export class WebXRSessionManager implements IDisposable {
     private baseLayer: Nullable<XRWebGLLayer> = null;
     private _rttProvider: Nullable<IRenderTargetProvider>;
 
+    private _sessionEnded: boolean = false;
+
     /**
      * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
      * @param scene The scene which the session should be created for
@@ -88,9 +90,11 @@ export class WebXRSessionManager implements IDisposable {
     public initializeSessionAsync(xrSessionMode: XRSessionMode) {
         return this._xrNavigator.xr.requestSession(xrSessionMode).then((session: XRSession) => {
             this.session = session;
+            this._sessionEnded = false;
 
             // handle when the session is ended (By calling session.end or device ends its own session eg. pressing home button on phone)
             this.session.addEventListener("end", () => {
+                this._sessionEnded = true;
                 // Remove render target texture and notify frame obervers
                 this._rttProvider = null;
 
@@ -137,6 +141,9 @@ export class WebXRSessionManager implements IDisposable {
         this.scene.getEngine().customAnimationFrameRequester = {
             requestAnimationFrame: this.session.requestAnimationFrame.bind(this.session),
             renderFunction: (timestamp: number, xrFrame: Nullable<XRFrame>) => {
+                if (this._sessionEnded) {
+                    return;
+                }
                 // Store the XR frame in the manager to be consumed by the XR camera to update pose
                 this.currentFrame = xrFrame;
                 this.onXRFrameObservable.notifyObservers(null);
@@ -187,8 +194,7 @@ export class WebXRSessionManager implements IDisposable {
     public supportsSessionAsync(sessionMode: XRSessionMode) {
         if (!(navigator as any).xr || !(navigator as any).xr.supportsSession) {
             return Promise.resolve(false);
-        }
-        else {
+        } else {
             return (navigator as any).xr.supportsSession(sessionMode).then(() => {
                 return Promise.resolve(true);
             }).catch((e: any) => {
@@ -223,7 +229,7 @@ export class WebXRSessionManager implements IDisposable {
             throw "no layer";
         }
         // Create internal texture
-        var internalTexture = new InternalTexture(scene.getEngine(), InternalTexture.DATASOURCE_UNKNOWN, true);
+        var internalTexture = new InternalTexture(scene.getEngine(), InternalTextureSource.Unknown, true);
         internalTexture.width = baseLayer.framebufferWidth;
         internalTexture.height = baseLayer.framebufferHeight;
         internalTexture._framebuffer = baseLayer.framebuffer;
