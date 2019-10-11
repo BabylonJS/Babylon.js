@@ -139,7 +139,7 @@ describe('Babylon Scene Loader', function() {
                     disposed = true;
                 };
 
-                promises.push(BABYLON.Tools.DelayAsync(50).then(() => {
+                promises.push(BABYLON.Tools.DelayAsync(1).then(() => {
                     loader.dispose();
                     expect(ready, "ready").to.be.false;
                     expect(disposed, "disposed").to.be.true;
@@ -147,7 +147,7 @@ describe('Babylon Scene Loader', function() {
             });
 
             const scene = new BABYLON.Scene(subject);
-            promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox2.gltf", scene).then(() => {
+            promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then(() => {
                 ready = true;
             }));
 
@@ -176,35 +176,35 @@ describe('Babylon Scene Loader', function() {
             });
         });
 
-        // it('Load CompileMaterials', () => {
-        //     const scene = new BABYLON.Scene(subject);
-        //     const promises = new Array<Promise<void>>();
-        //     let createShaderProgramSpy: sinon.SinonSpy;
+        it('Load CompileMaterials', () => {
+            const scene = new BABYLON.Scene(subject);
+            const promises = new Array<Promise<void>>();
+            let createShaderProgramSpy: sinon.SinonSpy;
 
-        //     subject.runRenderLoop(() => {
-        //         for (const mesh of scene.meshes) {
-        //             if (mesh.material && mesh.isEnabled()) {
-        //                 expect(mesh.material.isReady(mesh), "mesh material is ready").to.be.true;
-        //             }
-        //         }
-        //     });
+            subject.runRenderLoop(() => {
+                for (const mesh of scene.meshes) {
+                    if (mesh.material && mesh.isEnabled()) {
+                        expect(mesh.isReady(true), "mesh is ready").to.be.true;
+                    }
+                }
+            });
 
-        //     BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
-        //         loader.compileMaterials = true;
+            BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
+                loader.compileMaterials = true;
 
-        //         promises.push(loader.whenCompleteAsync().then(() => {
-        //             const called = createShaderProgramSpy.called;
-        //             createShaderProgramSpy.restore();
-        //             expect(called, "createShaderProgramCalled").to.be.false;
-        //         }));
-        //     });
+                promises.push(loader.whenCompleteAsync().then(() => {
+                    const called = createShaderProgramSpy.called;
+                    createShaderProgramSpy.restore();
+                    expect(called, "createShaderProgramCalled").to.be.false;
+                }));
+            });
 
-        //     promises.push(BABYLON.SceneLoader.AppendAsync("http://models.babylonjs.com/Tests/CompileMaterials/", "Test.gltf", scene).then(() => {
-        //         createShaderProgramSpy = sinon.spy(subject, "createShaderProgram");
-        //     }));
+            promises.push(BABYLON.SceneLoader.AppendAsync("http://models.babylonjs.com/Tests/CompileMaterials/", "Test.gltf", scene).then(() => {
+                createShaderProgramSpy = sinon.spy(subject, "createShaderProgram");
+            }));
 
-        //     return Promise.all(promises);
-        // });
+            return Promise.all(promises);
+        });
 
         it('Load BrainStem with compileMaterials', () => {
             const scene = new BABYLON.Scene(subject);
@@ -214,7 +214,7 @@ describe('Babylon Scene Loader', function() {
             subject.runRenderLoop(() => {
                 for (const mesh of scene.meshes) {
                     if (mesh.material && mesh.isEnabled()) {
-                        expect(mesh.material.isReady(mesh), "mesh material is ready").to.be.true;
+                        expect(mesh.isReady(true), "mesh is ready").to.be.true;
                     }
                 }
             });
@@ -283,7 +283,7 @@ describe('Babylon Scene Loader', function() {
             subject.runRenderLoop(() => {
                 for (const mesh of scene.meshes) {
                     if (mesh.material && mesh.isEnabled()) {
-                        expect(mesh.material.isReady(mesh), "mesh material is ready").to.be.true;
+                        expect(mesh.isReady(true), "mesh is ready").to.be.true;
                     }
                 }
             });
