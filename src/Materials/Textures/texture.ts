@@ -377,6 +377,9 @@ export class Texture extends BaseTexture {
         }
 
         this.url = url;
+        if (!this.name) {
+            this.name = url;
+        }
         this._buffer = buffer;
         this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
 
