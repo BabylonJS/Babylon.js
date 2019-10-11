@@ -162,12 +162,12 @@ export class LightBlock extends NodeMaterialBlock {
         }
     }
 
-    public updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]) {
         for (var lightIndex = 0; lightIndex < nodeMaterial.maxSimultaneousLights; lightIndex++) {
             if (!defines["LIGHT" + lightIndex]) {
                 break;
             }
-            MaterialHelper.PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, false, state.uniformBuffers);
+            MaterialHelper.PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, false, uniformBuffers);
         }
     }
 
@@ -181,7 +181,7 @@ export class LightBlock extends NodeMaterialBlock {
         if (!this.light) {
             MaterialHelper.BindLights(scene, mesh, effect, true, nodeMaterial.maxSimultaneousLights, false);
         } else {
-            MaterialHelper.BindLight(this.light, this._lightId, scene, mesh, effect, true, false);
+            MaterialHelper.BindLight(this.light, this._lightId, scene, effect, true, false);
         }
     }
 
@@ -267,9 +267,6 @@ export class LightBlock extends NodeMaterialBlock {
             state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
                 replaceStrings: [{ search: /{X}/g, replace: this._lightId.toString() }]
             }, this._lightId.toString());
-
-            // Uniforms and samplers
-            MaterialHelper.PrepareUniformsAndSamplersForLight(this._lightId, state.uniforms, state.samplers, undefined, state.uniformBuffers);
         }
 
         // Code

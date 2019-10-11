@@ -1,7 +1,7 @@
 import { Nullable } from '../types';
 import { Tools } from './tools';
 import { Texture } from '../Materials/Textures/texture';
-import { InternalTexture } from '../Materials/Textures/internalTexture';
+import { InternalTexture, InternalTextureSource } from '../Materials/Textures/internalTexture';
 import { Scalar } from '../Maths/math.scalar';
 import { Constants } from '../Engines/constants';
 import { Engine } from '../Engines/engine';
@@ -192,7 +192,7 @@ export class BasisTools {
 
                 if (engine.webGLVersion < 2 && (Scalar.Log2(rootImage.width) % 1 !== 0 || Scalar.Log2(rootImage.height) % 1 !== 0)) {
                     // Create non power of two texture
-                    let source = new InternalTexture(engine, InternalTexture.DATASOURCE_TEMP);
+                    let source = new InternalTexture(engine, InternalTextureSource.Temp);
 
                     texture._invertVScale = texture.invertY;
                     source.type = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;

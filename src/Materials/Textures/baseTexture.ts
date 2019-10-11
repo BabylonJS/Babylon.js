@@ -1,10 +1,8 @@
 import { serialize, SerializationHelper, serializeAsTexture, expandToProperty } from "../../Misc/decorators";
 import { Observer, Observable } from "../../Misc/observable";
-import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Matrix } from "../../Maths/math.vector";
-import { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 import { EngineStore } from "../../Engines/engineStore";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { _TimeToken } from "../../Instrumentation/timeToken";
@@ -655,30 +653,6 @@ export class BaseTexture implements IAnimatable {
         if (this._texture) {
             this._texture.dispose();
             this._texture = null;
-        }
-    }
-
-    /**
-     * Get the polynomial representation of the texture data.
-     * This is mainly use as a fast way to recover IBL Diffuse irradiance data.
-     * @see https://learnopengl.com/PBR/IBL/Diffuse-irradiance
-     */
-    public get sphericalPolynomial(): Nullable<SphericalPolynomial> {
-        if (!this._texture || !CubeMapToSphericalPolynomialTools || !this.isReady()) {
-            return null;
-        }
-
-        if (!this._texture._sphericalPolynomial) {
-            this._texture._sphericalPolynomial =
-                CubeMapToSphericalPolynomialTools.ConvertCubeMapTextureToSphericalPolynomial(this);
-        }
-
-        return this._texture._sphericalPolynomial;
-    }
-
-    public set sphericalPolynomial(value: Nullable<SphericalPolynomial>) {
-        if (this._texture) {
-            this._texture._sphericalPolynomial = value;
         }
     }
 

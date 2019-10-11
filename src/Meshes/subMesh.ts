@@ -307,7 +307,7 @@ export class SubMesh extends BaseSubMesh implements ICullable {
      * @returns the submesh
      */
     public render(enableAlphaMode: boolean): SubMesh {
-        this._renderingMesh.render(this, enableAlphaMode);
+        this._renderingMesh.render(this, enableAlphaMode, this._mesh._internalAbstractMeshDataInfo._actAsRegularMesh ? this._mesh : undefined);
         return this;
     }
 

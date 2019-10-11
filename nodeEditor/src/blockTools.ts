@@ -42,6 +42,7 @@ import { MinBlock } from 'babylonjs/Materials/Node/Blocks/minBlock';
 import { PerturbNormalBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/perturbNormalBlock';
 import { LengthBlock } from 'babylonjs/Materials/Node/Blocks/lengthBlock';
 import { DistanceBlock } from 'babylonjs/Materials/Node/Blocks/distanceBlock';
+import { FrontFacingBlock } from 'babylonjs/Materials/Node/Blocks/frontFacingBlock';
 import { NegateBlock } from 'babylonjs/Materials/Node/Blocks/negateBlock';
 import { PowBlock } from 'babylonjs/Materials/Node/Blocks/powBlock';
 import { Scene } from 'babylonjs/scene';
@@ -154,7 +155,9 @@ export class BlockTools {
             case "ArcTan2Block":                                          
                 return new ArcTan2Block("ArcTan2");                            
             case "GradientBlock":                                          
-                return new GradientBlock("Gradient");            
+                return new GradientBlock("Gradient");                             
+            case "FrontFacingBlock":                                          
+                return new FrontFacingBlock("Front facing");            
             case "CosBlock": {
                 let cosBlock = new TrigonometryBlock("Cos");
                 cosBlock.operation = TrigonometryBlockOperations.Cos;
@@ -394,7 +397,7 @@ export class BlockTools {
         let color = "Red";
         switch (type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
-				color = "#ca9e27";
+				color = "#cb9e27";
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector2:                
 				color = "#16bcb1";

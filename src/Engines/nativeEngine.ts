@@ -1,7 +1,7 @@
 import { Nullable, IndicesArray, DataArray } from "../types";
 import { Engine } from "../Engines/engine";
 import { VertexBuffer } from "../Meshes/buffer";
-import { InternalTexture } from "../Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import { Texture } from "../Materials/Textures/texture";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -21,7 +21,7 @@ import { NativeShaderProcessor } from './Native/nativeShaderProcessor';
 import { Logger } from "../Misc/logger";
 import { Constants } from './constants';
 import { ThinEngine } from './thinEngine';
-import { EngineCapabilities } from './engineCapabilities';
+import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 
 interface INativeEngine {
     requestAnimationFrame(callback: () => void): void;
@@ -189,46 +189,42 @@ export class NativeEngine extends Engine {
         // TODO: Initialize this more correctly based on the hardware capabilities.
         // Init caps
 
-        this._caps = new EngineCapabilities();
-        this._caps.maxTexturesImageUnits = 16;
-        this._caps.maxVertexTextureImageUnits = 16;
-        this._caps.maxTextureSize = 512;
-        this._caps.maxCubemapTextureSize = 512;
-        this._caps.maxRenderTextureSize = 512;
-        this._caps.maxVertexAttribs = 16;
-        this._caps.maxVaryingVectors = 16;
-        this._caps.maxFragmentUniformVectors = 16;
-        this._caps.maxVertexUniformVectors = 16;
-
-        // Extensions
-        this._caps.standardDerivatives = true;
-
-        this._caps.astc = null;
-        this._caps.s3tc = null;
-        this._caps.pvrtc = null;
-        this._caps.etc1 = null;
-        this._caps.etc2 = null;
-
-        this._caps.maxAnisotropy = 16;  // TODO: Retrieve this smartly. Currently set to D3D11 maximum allowable value.
-        this._caps.uintIndices = false;
-        this._caps.fragmentDepthSupported = false;
-        this._caps.highPrecisionShaderSupported = true;
-
-        this._caps.colorBufferFloat = false;
-        this._caps.textureFloat = false;
-        this._caps.textureFloatLinearFiltering = false;
-        this._caps.textureFloatRender = false;
-
-        this._caps.textureHalfFloat = false;
-        this._caps.textureHalfFloatLinearFiltering = false;
-        this._caps.textureHalfFloatRender = false;
-
-        this._caps.textureLOD = true;
-        this._caps.drawBuffersExtension = false;
-
-        this._caps.depthTextureExtension = false;
-        this._caps.vertexArrayObject = true;
-        this._caps.instancedArrays = false;
+        this._caps = {
+            maxTexturesImageUnits: 16,
+            maxVertexTextureImageUnits: 16,
+            maxCombinedTexturesImageUnits: 32,
+            maxTextureSize: 512,
+            maxCubemapTextureSize: 512,
+            maxRenderTextureSize: 512,
+            maxVertexAttribs: 16,
+            maxVaryingVectors: 16,
+            maxFragmentUniformVectors: 16,
+            maxVertexUniformVectors: 16,
+            standardDerivatives: true,
+            astc: null,
+            pvrtc: null,
+            etc1: null,
+            etc2: null,
+            maxAnisotropy: 16,  // TODO: Retrieve this smartly. Currently set to D3D11 maximum allowable value.
+            uintIndices: false,
+            fragmentDepthSupported: false,
+            highPrecisionShaderSupported: true,
+            colorBufferFloat: false,
+            textureFloat: false,
+            textureFloatLinearFiltering: false,
+            textureFloatRender: false,
+            textureHalfFloat: false,
+            textureHalfFloatLinearFiltering: false,
+            textureHalfFloatRender: false,
+            textureLOD: true,
+            drawBuffersExtension: false,
+            depthTextureExtension: false,
+            vertexArrayObject: true,
+            instancedArrays: false,
+            canUseTimestampForTimerQuery: false,
+            blendMinMax: false,
+            maxMSAASamples: 1
+        };
 
         Tools.Log("Babylon Native (v" + Engine.Version + ") launched");
 
@@ -837,7 +833,7 @@ export class NativeEngine extends Engine {
         var fromBlob = url.substr(0, 5) === "blob:";
         var isBase64 = fromData && url.indexOf("base64") !== -1;
 
-        let texture = fallback ? fallback : new InternalTexture(this, InternalTexture.DATASOURCE_URL);
+        let texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Url);
 
         // establish the file extension, if possible
         var lastDot = url.lastIndexOf('.');
@@ -1025,7 +1021,7 @@ export class NativeEngine extends Engine {
         lodOffset: number = 0,
         fallback: Nullable<InternalTexture> = null): InternalTexture
     {
-        var texture = fallback ? fallback : new InternalTexture(this, InternalTexture.DATASOURCE_CUBE);
+        var texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Cube);
         texture.isCube = true;
         texture.url = rootUrl;
         texture.generateMipMaps = !noMipmap;
@@ -1079,7 +1075,7 @@ export class NativeEngine extends Engine {
                 throw new Error(`Multi-file loading not yet supported.`);
             }
             else {
-                let onInternalError = (request?: WebRequest, exception?: any) => {
+                let onInternalError = (request?: IWebRequest, exception?: any) => {
                     if (onError && request) {
                         onError(request.status + " " + request.statusText, exception);
                     }
@@ -1168,7 +1164,7 @@ export class NativeEngine extends Engine {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
             fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
-        var texture = new NativeTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
+        var texture = new NativeTexture(this, InternalTextureSource.RenderTarget);
 
         var width = (<{ width: number, height: number }>size).width || <number>size;
         var height = (<{ width: number, height: number }>size).height || <number>size;

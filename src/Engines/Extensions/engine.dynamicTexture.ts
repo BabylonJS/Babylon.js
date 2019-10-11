@@ -1,5 +1,5 @@
 import { ThinEngine } from "../../Engines/thinEngine";
-import { InternalTexture } from '../../Materials/Textures/internalTexture';
+import { InternalTexture, InternalTextureSource } from '../../Materials/Textures/internalTexture';
 import { Nullable } from '../../types';
 
 declare module "../../Engines/thinEngine" {
@@ -23,12 +23,12 @@ declare module "../../Engines/thinEngine" {
          * @param format defines the format of the data
          * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
          */
-        updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
+        updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement | OffscreenCanvas, invertY: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
     }
 }
 
 ThinEngine.prototype.createDynamicTexture = function(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
-    var texture = new InternalTexture(this, InternalTexture.DATASOURCE_DYNAMIC);
+    var texture = new InternalTexture(this, InternalTextureSource.Dynamic);
     texture.baseWidth = width;
     texture.baseHeight = height;
 

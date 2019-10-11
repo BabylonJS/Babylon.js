@@ -1,5 +1,5 @@
 import { Observable } from "../Misc/observable";
-import { Nullable } from "../types";
+import { Nullable, IndicesArray, DataArray } from "../types";
 import { Scene } from "../scene";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { _TimeToken } from "../Instrumentation/timeToken";
@@ -15,14 +15,15 @@ import { ICustomAnimationFrameRequester } from '../Misc/customAnimationFrameRequ
 import { ThinEngine, EngineOptions } from './thinEngine';
 import { Constants } from './constants';
 import { IViewportLike, IColor4Like } from '../Maths/math.like';
-import { RenderTargetCreationOptions } from '../Materials/Textures/renderTargetCreationOptions';
 import { RenderTargetTexture } from '../Materials/Textures/renderTargetTexture';
 import { PerformanceMonitor } from '../Misc/performanceMonitor';
+import { DataBuffer } from '../Meshes/dataBuffer';
+import { PerfCounter } from '../Misc/perfCounter';
+import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
 import { Logger } from '../Misc/logger';
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
-declare type Texture = import("../Materials/Textures/texture").Texture;
 
 /**
  * Defines the interface used by display changed events
@@ -370,11 +371,6 @@ export class Engine extends ThinEngine {
     public onCanvasPointerOutObservable = new Observable<PointerEvent>();
 
     /**
-     * Observable event triggered before each texture is initialized
-     */
-    public onBeforeTextureInitObservable = new Observable<Texture>();
-
-    /**
      * Observable raised when the engine begins a new frame
      */
     public onBeginFrameObservable = new Observable<Engine>();
@@ -439,6 +435,10 @@ export class Engine extends ThinEngine {
     // FPS
     private _fps = 60;
     private _deltaTime = 0;
+
+    /** @hidden */
+    public _drawCalls = new PerfCounter();
+
     /**
      * Turn this value on if you want to pause FPS computation when in background
      */
@@ -513,60 +513,60 @@ export class Engine extends ThinEngine {
                 this.onCanvasPointerOutObservable.notifyObservers(ev);
             };
 
-            if (DomManagement.IsWindowObjectExist()) {
-                let hostWindow = this.getHostWindow();
-                hostWindow.addEventListener("blur", this._onBlur);
-                hostWindow.addEventListener("focus", this._onFocus);
-            }
-
             canvas.addEventListener("pointerout", this._onCanvasPointerOut);
 
-            let anyDoc = document as any;
+            if (DomManagement.IsWindowObjectExist()) {
+                let hostWindow = this.getHostWindow()!;
+                hostWindow.addEventListener("blur", this._onBlur);
+                hostWindow.addEventListener("focus", this._onFocus);
 
-            // Fullscreen
-            this._onFullscreenChange = () => {
+                let anyDoc = document as any;
 
-                if (anyDoc.fullscreen !== undefined) {
-                    this.isFullscreen = anyDoc.fullscreen;
-                } else if (anyDoc.mozFullScreen !== undefined) {
-                    this.isFullscreen = anyDoc.mozFullScreen;
-                } else if (anyDoc.webkitIsFullScreen !== undefined) {
-                    this.isFullscreen = anyDoc.webkitIsFullScreen;
-                } else if (anyDoc.msIsFullScreen !== undefined) {
-                    this.isFullscreen = anyDoc.msIsFullScreen;
-                }
+                // Fullscreen
+                this._onFullscreenChange = () => {
+
+                    if (anyDoc.fullscreen !== undefined) {
+                        this.isFullscreen = anyDoc.fullscreen;
+                    } else if (anyDoc.mozFullScreen !== undefined) {
+                        this.isFullscreen = anyDoc.mozFullScreen;
+                    } else if (anyDoc.webkitIsFullScreen !== undefined) {
+                        this.isFullscreen = anyDoc.webkitIsFullScreen;
+                    } else if (anyDoc.msIsFullScreen !== undefined) {
+                        this.isFullscreen = anyDoc.msIsFullScreen;
+                    }
+
+                    // Pointer lock
+                    if (this.isFullscreen && this._pointerLockRequested && canvas) {
+                        Engine._RequestPointerlock(canvas);
+                    }
+                };
+
+                document.addEventListener("fullscreenchange", this._onFullscreenChange, false);
+                document.addEventListener("mozfullscreenchange", this._onFullscreenChange, false);
+                document.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
+                document.addEventListener("msfullscreenchange", this._onFullscreenChange, false);
 
                 // Pointer lock
-                if (this.isFullscreen && this._pointerLockRequested && canvas) {
-                    Engine._RequestPointerlock(canvas);
+                this._onPointerLockChange = () => {
+                    this.isPointerLock = (anyDoc.mozPointerLockElement === canvas ||
+                        anyDoc.webkitPointerLockElement === canvas ||
+                        anyDoc.msPointerLockElement === canvas ||
+                        anyDoc.pointerLockElement === canvas
+                    );
+                };
+
+                document.addEventListener("pointerlockchange", this._onPointerLockChange, false);
+                document.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
+                document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
+                document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
+
+                // Create Audio Engine if needed.
+                if (!Engine.audioEngine && options.audioEngine && Engine.AudioEngineFactory) {
+                    Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas());
                 }
-            };
-
-            document.addEventListener("fullscreenchange", this._onFullscreenChange, false);
-            document.addEventListener("mozfullscreenchange", this._onFullscreenChange, false);
-            document.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
-            document.addEventListener("msfullscreenchange", this._onFullscreenChange, false);
-
-            // Pointer lock
-            this._onPointerLockChange = () => {
-                this.isPointerLock = (anyDoc.mozPointerLockElement === canvas ||
-                    anyDoc.webkitPointerLockElement === canvas ||
-                    anyDoc.msPointerLockElement === canvas ||
-                    anyDoc.pointerLockElement === canvas
-                );
-            };
-
-            document.addEventListener("pointerlockchange", this._onPointerLockChange, false);
-            document.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
-            document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
-            document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
+            }
 
             this._connectVREvents();
-
-            // Create Audio Engine if needed.
-            if (!Engine.audioEngine && options.audioEngine && Engine.AudioEngineFactory) {
-                Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas());
-            }
 
             this.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
 
@@ -1173,6 +1173,10 @@ export class Engine extends ThinEngine {
         gl.disable(gl.SCISSOR_TEST);
     }
 
+    protected _reportDrawCall() {
+        this._drawCalls.addCount(1, false);
+    }
+
     /**
      * Initializes a webVR display and starts listening to display change events
      * The onVRDisplayChangedObservable will be notified upon these changes
@@ -1534,6 +1538,43 @@ export class Engine extends ThinEngine {
         }
     }
 
+    /**
+     * Updates a dynamic vertex buffer.
+     * @param vertexBuffer the vertex buffer to update
+     * @param data the data used to update the vertex buffer
+     * @param byteOffset the byte offset of the data
+     * @param byteLength the byte length of the data
+     */
+    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
+        this.bindArrayBuffer(vertexBuffer);
+
+        if (byteOffset === undefined) {
+            byteOffset = 0;
+        }
+
+        if (byteLength === undefined) {
+            if (data instanceof Array) {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, new Float32Array(data));
+            } else {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, <ArrayBuffer>data);
+            }
+        } else {
+            if (data instanceof Array) {
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(data).subarray(byteOffset, byteOffset + byteLength));
+            } else {
+                if (data instanceof ArrayBuffer) {
+                    data = new Uint8Array(data, byteOffset, byteLength);
+                } else {
+                    data = new Uint8Array(data.buffer, data.byteOffset + byteOffset, byteLength);
+                }
+
+                this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, <ArrayBuffer>data);
+            }
+        }
+
+        this._resetVertexBufferBinding();
+    }
+
     public _deletePipelineContext(pipelineContext: IPipelineContext): void {
         let webGLPipelineContext = pipelineContext as WebGLPipelineContext;
         if (webGLPipelineContext && webGLPipelineContext.program) {
@@ -1693,97 +1734,83 @@ export class Engine extends ThinEngine {
         this._deltaTime = this._performanceMonitor.instantaneousFrameTime || 0;
     }
 
-    /**
-     * Creates a new render target texture
-     * @param size defines the size of the texture
-     * @param options defines the options used to create the texture
-     * @returns a new render target texture stored in an InternalTexture
-     */
-    public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): InternalTexture {
-        let fullOptions = new RenderTargetCreationOptions();
-
-        if (options !== undefined && typeof options === "object") {
-            fullOptions.generateMipMaps = options.generateMipMaps;
-            fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
-            fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
-            fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
-            fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
-            fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
-        } else {
-            fullOptions.generateMipMaps = <boolean>options;
-            fullOptions.generateDepthBuffer = true;
-            fullOptions.generateStencilBuffer = false;
-            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
-            fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
-            fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
-        }
-
-        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
-            // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-        }
-        else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
-            // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-        }
+    /** @hidden */
+    public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex: number = 0, lod: number = 0) {
         var gl = this._gl;
 
-        var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
-        this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
+        var textureType = this._getWebGLTextureType(texture.type);
+        var format = this._getInternalFormat(texture.format);
+        var internalFormat = this._getRGBABufferInternalSizedFormat(texture.type, format);
 
-        var width = (<{ width: number, height: number }>size).width || <number>size;
-        var height = (<{ width: number, height: number }>size).height || <number>size;
+        var bindTarget = texture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
 
-        var filters = this._getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false);
+        this._bindTextureDirectly(bindTarget, texture, true);
+        this._unpackFlipY(texture.invertY);
 
-        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
-            Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
+        var target = gl.TEXTURE_2D;
+        if (texture.isCube) {
+            target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
         }
 
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texImage2D(target, lod, internalFormat, format, textureType, image);
+        this._bindTextureDirectly(bindTarget, null, true);
+    }
 
-        gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(fullOptions.type, fullOptions.format), width, height, 0, this._getInternalFormat(fullOptions.format), this._getWebGLTextureType(fullOptions.type), null);
-
+    /**
+     * Sets the frame buffer Depth / Stencil attachement of the render target to the defined depth stencil texture.
+     * @param renderTarget The render target to set the frame buffer for
+     */
+    public setFrameBufferDepthStencilTexture(renderTarget: RenderTargetTexture): void {
         // Create the framebuffer
-        var currentFrameBuffer = this._currentFramebuffer;
-        var framebuffer = gl.createFramebuffer();
-        this._bindUnboundFramebuffer(framebuffer);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._webGLTexture, 0);
-
-        texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer ? true : false, fullOptions.generateDepthBuffer, width, height);
-
-        if (fullOptions.generateMipMaps) {
-            this._gl.generateMipmap(this._gl.TEXTURE_2D);
+        var internalTexture = renderTarget.getInternalTexture();
+        if (!internalTexture || !internalTexture._framebuffer || !renderTarget.depthStencilTexture) {
+            return;
         }
 
-        // Unbind
-        this._bindTextureDirectly(gl.TEXTURE_2D, null);
-        gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-        this._bindUnboundFramebuffer(currentFrameBuffer);
+        var gl = this._gl;
+        var depthStencilTexture = renderTarget.depthStencilTexture;
 
-        texture._framebuffer = framebuffer;
-        texture.baseWidth = width;
-        texture.baseHeight = height;
-        texture.width = width;
-        texture.height = height;
-        texture.isReady = true;
-        texture.samples = 1;
-        texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
-        texture.samplingMode = fullOptions.samplingMode;
-        texture.type = fullOptions.type;
-        texture.format = fullOptions.format;
-        texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
-        texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
+        this._bindUnboundFramebuffer(internalTexture._framebuffer);
+        if (depthStencilTexture.isCube) {
+            if (depthStencilTexture._generateStencilBuffer) {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture._webGLTexture, 0);
+            }
+            else {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture._webGLTexture, 0);
+            }
+        }
+        else {
+            if (depthStencilTexture._generateStencilBuffer) {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture._webGLTexture, 0);
+            }
+            else {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture._webGLTexture, 0);
+            }
+        }
+        this._bindUnboundFramebuffer(null);
+    }
 
-        // this.resetTextureCache();
+    /**
+     * Update a dynamic index buffer
+     * @param indexBuffer defines the target index buffer
+     * @param indices defines the data to update
+     * @param offset defines the offset in the target index buffer where update should start
+     */
+    public updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
+        // Force cache update
+        this._currentBoundBuffer[this._gl.ELEMENT_ARRAY_BUFFER] = null;
+        this.bindIndexBuffer(indexBuffer);
+        var arrayBuffer;
 
-        this._internalTexturesCache.push(texture);
+        if (indices instanceof Uint16Array || indices instanceof Uint32Array) {
+            arrayBuffer = indices;
+        } else {
+            arrayBuffer = indexBuffer.is32Bits ? new Uint32Array(indices) : new Uint16Array(indices);
+        }
 
-        return texture;
+        this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, arrayBuffer, this._gl.DYNAMIC_DRAW);
+
+        this._resetIndexBufferBinding();
     }
 
     /**
@@ -1855,6 +1882,80 @@ export class Engine extends ThinEngine {
         this._bindUnboundFramebuffer(null);
 
         return samples;
+    }
+
+    /**
+     * Updates a depth texture Comparison Mode and Function.
+     * If the comparison Function is equal to 0, the mode will be set to none.
+     * Otherwise, this only works in webgl 2 and requires a shadow sampler in the shader.
+     * @param texture The texture to set the comparison function for
+     * @param comparisonFunction The comparison function to set, 0 if no comparison required
+     */
+    public updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void {
+        if (this.webGLVersion === 1) {
+            Logger.Error("WebGL 1 does not support texture comparison.");
+            return;
+        }
+
+        var gl = this._gl;
+
+        if (texture.isCube) {
+            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture, true);
+
+            if (comparisonFunction === 0) {
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.NONE);
+            }
+            else {
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+            }
+
+            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
+        } else {
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
+
+            if (comparisonFunction === 0) {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.NONE);
+            }
+            else {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+            }
+
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+        }
+
+        texture._comparisonFunction = comparisonFunction;
+    }
+
+    /**
+     * Creates a webGL buffer to use with instanciation
+     * @param capacity defines the size of the buffer
+     * @returns the webGL buffer
+     */
+    public createInstancesBuffer(capacity: number): DataBuffer {
+        var buffer = this._gl.createBuffer();
+
+        if (!buffer) {
+            throw new Error("Unable to create instance buffer");
+        }
+
+        var result = new WebGLDataBuffer(buffer);
+        result.capacity = capacity;
+
+        this.bindArrayBuffer(result);
+        this._gl.bufferData(this._gl.ARRAY_BUFFER, capacity, this._gl.DYNAMIC_DRAW);
+        return result;
+    }
+
+    /**
+     * Delete a webGL buffer used with instanciation
+     * @param buffer defines the webGL buffer to delete
+     */
+    public deleteInstancesBuffer(buffer: WebGLBuffer): void {
+        this._gl.deleteBuffer(buffer);
     }
 
     /** @hidden */
@@ -1970,7 +2071,7 @@ export class Engine extends ThinEngine {
     }
 
     private _disableTouchAction(): void {
-        if (!this._renderingCanvas) {
+        if (!this._renderingCanvas || !this._renderingCanvas.setAttribute) {
             return;
         }
 

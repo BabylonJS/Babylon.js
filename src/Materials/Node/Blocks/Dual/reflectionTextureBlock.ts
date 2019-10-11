@@ -17,6 +17,7 @@ import { Constants } from '../../../../Engines/constants';
 
 import "../../../../Shaders/ShadersInclude/reflectionFunction";
 import { CubeTexture } from '../../../Textures/cubeTexture';
+import { Texture } from '../../../Textures/texture';
 
 /**
  * Block used to read a reflection texture from a sampler
@@ -336,7 +337,6 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
         let view = `${this.view.associatedVariableName}`;
 
         state.compilationString += `vec3 ${this._reflectionColorName};\r\n`;
-        state.compilationString += `#ifdef ${this._define3DName}\r\n`;
         state.compilationString += `#ifdef ${this._defineMirroredEquirectangularFixedName}\r\n`;
         state.compilationString += `    vec3 ${this._reflectionCoordsName} = computeMirroredFixedEquirectangularCoords(${worldPos}, ${worldNormal}, ${direction});\r\n`;
         state.compilationString += `#endif\r\n`;
@@ -377,6 +377,7 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
         state.compilationString += `    vec3 ${this._reflectionCoordsName} = vec3(0, 0, 0);\r\n`;
         state.compilationString += `#endif\r\n`;
 
+        state.compilationString += `#ifdef ${this._define3DName}\r\n`;
         state.compilationString += `${this._reflectionColorName} = textureCube(${this._cubeSamplerName}, ${this._reflectionCoordsName}).rgb;\r\n`;
         state.compilationString += `#else\r\n`;
         state.compilationString += `vec2 ${this._reflection2DCoordsName} = ${this._reflectionCoordsName}.xy;\r\n`;
@@ -412,7 +413,11 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
         super._deserialize(serializationObject, scene, rootUrl);
 
         if (serializationObject.texture) {
-            this.texture = CubeTexture.Parse(serializationObject.texture, scene, rootUrl);
+            if (serializationObject.texture.isCube) {
+                this.texture = CubeTexture.Parse(serializationObject.texture, scene, rootUrl);
+            } else {
+                this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl);
+            }
         }
     }
 }

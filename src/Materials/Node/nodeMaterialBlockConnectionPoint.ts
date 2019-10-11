@@ -2,6 +2,7 @@ import { NodeMaterialBlockConnectionPointTypes } from './Enums/nodeMaterialBlock
 import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
 import { Nullable } from '../../types';
 import { InputBlock } from './Blocks/Input/inputBlock';
+import { Observable } from '../../Misc/observable';
 
 declare type NodeMaterialBlock = import("./nodeMaterialBlock").NodeMaterialBlock;
 
@@ -37,6 +38,11 @@ export class NodeMaterialConnectionPoint {
      * Gets or sets the additional types excluded by this connection point
      */
     public excludedConnectionPointTypes = new Array<NodeMaterialBlockConnectionPointTypes>();
+
+    /**
+     * Observable triggered when this point is connected
+     */
+    public onConnectionObservable = new Observable<NodeMaterialConnectionPoint>();
 
     /**
      * Gets or sets the associated variable name in the shader
@@ -101,8 +107,31 @@ export class NodeMaterialConnectionPoint {
      */
     public define: string;
 
+    /** @hidden */
+    public _prioritizeVertex = false;
+
+    private _target: NodeMaterialBlockTargets = NodeMaterialBlockTargets.VertexAndFragment;
+
     /** Gets or sets the target of that connection point */
-    public target: NodeMaterialBlockTargets = NodeMaterialBlockTargets.VertexAndFragment;
+    public get target(): NodeMaterialBlockTargets {
+        if (!this._prioritizeVertex || !this._ownerBlock) {
+            return this._target;
+        }
+
+        if (this._target !== NodeMaterialBlockTargets.VertexAndFragment) {
+            return this._target;
+        }
+
+        if (this._ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
+            return NodeMaterialBlockTargets.Fragment;
+        }
+
+        return NodeMaterialBlockTargets.Vertex;
+    }
+
+    public set target(value: NodeMaterialBlockTargets) {
+        this._target = value;
+    }
 
     /**
      * Gets a boolean indicating that the current point is connected
@@ -165,6 +194,60 @@ export class NodeMaterialConnectionPoint {
     /** Gets a boolean indicating if that output point is connected to at least one input */
     public get hasEndpoints(): boolean {
         return this._endpoints && this._endpoints.length > 0;
+    }
+
+    /** Gets a boolean indicating that this connection will be used in the vertex shader */
+    public get isConnectedInVertexShader(): boolean {
+        if (this.target === NodeMaterialBlockTargets.Vertex) {
+            return true;
+        }
+
+        if (!this.hasEndpoints) {
+            return false;
+        }
+
+        for (var endpoint of this._endpoints) {
+            if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Vertex) {
+                return true;
+            }
+
+            if (endpoint.target === NodeMaterialBlockTargets.Vertex) {
+                return true;
+            }
+
+            if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Neutral || endpoint.ownerBlock.target === NodeMaterialBlockTargets.VertexAndFragment) {
+                if (endpoint.ownerBlock.outputs.some((o) => o.isConnectedInVertexShader)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /** Gets a boolean indicating that this connection will be used in the fragment shader */
+    public get isConnectedInFragmentShader(): boolean {
+        if (this.target === NodeMaterialBlockTargets.Fragment) {
+            return true;
+        }
+
+        if (!this.hasEndpoints) {
+            return false;
+        }
+
+        for (var endpoint of this._endpoints) {
+            if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
+                return true;
+            }
+
+            if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Neutral || endpoint.ownerBlock.target === NodeMaterialBlockTargets.VertexAndFragment) {
+                if (endpoint.ownerBlock.outputs.some((o) => o.isConnectedInFragmentShader)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -243,6 +326,10 @@ export class NodeMaterialConnectionPoint {
         connectionPoint._connectedPoint = this;
 
         this._enforceAssociatedVariableName = false;
+
+        this.onConnectionObservable.notifyObservers(connectionPoint);
+        connectionPoint.onConnectionObservable.notifyObservers(this);
+
         return this;
     }
 
@@ -281,5 +368,12 @@ export class NodeMaterialConnectionPoint {
         }
 
         return serializationObject;
+    }
+
+    /**
+     * Release resources
+     */
+    public dispose() {
+        this.onConnectionObservable.clear();
     }
 }

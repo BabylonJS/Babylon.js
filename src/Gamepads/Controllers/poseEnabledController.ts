@@ -231,9 +231,6 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
      * Updates the state of the pose enbaled controller and mesh based on the current position and rotation of the controller
      */
     public update() {
-        if (this.isXR) {
-            return;
-        }
         super.update();
         this._updatePoseAndMesh();
     }
