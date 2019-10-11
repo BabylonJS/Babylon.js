@@ -916,7 +916,7 @@ export class Effect implements IDisposable {
      */
     public setFloatArray(uniformName: string, array: Float32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setFloatArray(this._uniforms[uniformName], array);
+        this._engine.setArray(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -929,7 +929,7 @@ export class Effect implements IDisposable {
      */
     public setFloatArray2(uniformName: string, array: Float32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setFloatArray2(this._uniforms[uniformName], array);
+        this._engine.setArray2(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -942,7 +942,7 @@ export class Effect implements IDisposable {
      */
     public setFloatArray3(uniformName: string, array: Float32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setFloatArray3(this._uniforms[uniformName], array);
+        this._engine.setArray3(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -955,7 +955,7 @@ export class Effect implements IDisposable {
      */
     public setFloatArray4(uniformName: string, array: Float32Array): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setFloatArray4(this._uniforms[uniformName], array);
+        this._engine.setArray4(this._uniforms[uniformName], array);
 
         return this;
     }
@@ -1101,7 +1101,7 @@ export class Effect implements IDisposable {
 
         this._valueCache[uniformName] = bool;
 
-        this._engine.setBool(this._uniforms[uniformName], bool ? 1 : 0);
+        this._engine.setInt(this._uniforms[uniformName], bool ? 1 : 0);
 
         return this;
     }
@@ -1226,7 +1226,7 @@ export class Effect implements IDisposable {
      */
     public setDirectColor4(uniformName: string, color4: IColor4Like): Effect {
         if (this._cacheFloat4(uniformName, color4.r, color4.g, color4.b, color4.a)) {
-            this._engine.setDirectColor4(this._uniforms[uniformName], color4);
+            this._engine.setFloat4(this._uniforms[uniformName], color4.r, color4.g, color4.b, color4.a);
         }
         return this;
     }

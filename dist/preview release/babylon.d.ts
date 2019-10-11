@@ -1147,6 +1147,12 @@ declare module BABYLON {
          * @returns The decoded string
          */
         static Decode(buffer: Uint8Array | Uint16Array): string;
+        /**
+         * Encode a buffer to a base64 string
+         * @param buffer defines the buffer to encode
+         * @returns the encoded string
+         */
+        static EncodeArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): string;
     }
 }
 declare module BABYLON {
@@ -1385,7 +1391,6 @@ declare module BABYLON {
         static SetCorsBehavior(url: string | string[], element: {
             crossOrigin: string | null;
         }): void;
-        private static _ArrayBufferToBase64;
         /**
          * Loads an image as an HTMLImageElement.
          * @param input url string, ArrayBuffer, or Blob to load
@@ -7490,6 +7495,10 @@ declare module BABYLON {
             _cascadeLoadImgs(scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>, mimeType?: string): void;
             /** @hidden */
             _partialLoadImg(url: string, index: number, loadedImages: HTMLImageElement[], scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>, mimeType?: string): void;
+            /**
+             * @hidden
+             */
+            _setCubeMapTextureParams(loadMipmap: boolean): void;
         }
 }
 declare module BABYLON {
@@ -8205,9 +8214,9 @@ declare module BABYLON {
         /**
          * Binds the image processing to the shader.
          * @param effect The effect to bind to
-         * @param aspectRatio Define the current aspect ratio of the effect
+         * @param overrideAspectRatio Override the aspect ratio of the effect
          */
-        bind(effect: Effect, aspectRatio?: number): void;
+        bind(effect: Effect, overrideAspectRatio?: number): void;
         /**
          * Clones the current image processing instance.
          * @return The cloned image processing
@@ -8255,6 +8264,22 @@ declare module BABYLON {
                 width: number;
                 height: number;
             }, options: boolean | RenderTargetCreationOptions): InternalTexture;
+            /**
+             * Creates a depth stencil texture.
+             * This is only available in WebGL 2 or with the depth texture extension available.
+             * @param size The size of face edge in the texture.
+             * @param options The options defining the texture.
+             * @returns The texture
+             */
+            createDepthStencilTexture(size: number | {
+                width: number;
+                height: number;
+            }, options: DepthTextureCreationOptions): InternalTexture;
+            /** @hidden */
+            _createDepthStencilTexture(size: number | {
+                width: number;
+                height: number;
+            }, options: DepthTextureCreationOptions): InternalTexture;
         }
 }
 declare module BABYLON {
@@ -11206,7 +11231,7 @@ declare module BABYLON {
     /**
      * Strong typing of a Mesh Render related stage step action
      */
-    export type RenderingMeshStageAction = (mesh: AbstractMesh, subMesh: SubMesh, batch: _InstancesBatch) => void;
+    export type RenderingMeshStageAction = (mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch) => void;
     /**
      * Strong typing of a simple stage step action
      */
@@ -11224,7 +11249,7 @@ declare module BABYLON {
      */
     export type PointerUpDownStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: PointerEvent) => Nullable<PickingInfo>;
     /**
-     * Repressentation of a stage in the scene (Basically a list of ordered steps)
+     * Representation of a stage in the scene (Basically a list of ordered steps)
      * @hidden
      */
     export class Stage<T extends Function> extends Array<{
@@ -20155,6 +20180,19 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Options for compiling materials.
+     */
+    export interface IMaterialCompilationOptions {
+        /**
+         * Defines whether clip planes are enabled.
+         */
+        clipPlane: boolean;
+        /**
+         * Defines whether instances are enabled.
+         */
+        useInstances: boolean;
+    }
+    /**
      * Base class for the main features of a material in Babylon.js
      */
     export class Material implements IAnimatable {
@@ -20631,18 +20669,14 @@ declare module BABYLON {
          * @param options defines the options to configure the compilation
          * @param onError defines a function to execute if the material fails compiling
          */
-        forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<{
-            clipPlane: boolean;
-        }>, onError?: (reason: string) => void): void;
+        forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<IMaterialCompilationOptions>, onError?: (reason: string) => void): void;
         /**
          * Force shader compilation
          * @param mesh defines the mesh that will use this material
          * @param options defines additional options for compiling the shaders
          * @returns a promise that resolves when the compilation completes
          */
-        forceCompilationAsync(mesh: AbstractMesh, options?: Partial<{
-            clipPlane: boolean;
-        }>): Promise<void>;
+        forceCompilationAsync(mesh: AbstractMesh, options?: Partial<IMaterialCompilationOptions>): Promise<void>;
         private static readonly _AllDirtyCallBack;
         private static readonly _ImageProcessingDirtyCallBack;
         private static readonly _TextureDirtyCallBack;
@@ -25196,7 +25230,7 @@ declare module BABYLON {
         static GetConstructorFromName(type: string, name: string, scene: Scene, interaxial_distance?: number, isStereoscopicSideBySide?: boolean): () => Camera;
         /**
          * Compute the world  matrix of the camera.
-         * @returns the camera workd matrix
+         * @returns the camera world matrix
          */
         computeWorldMatrix(): Matrix;
         /**
@@ -27499,6 +27533,14 @@ declare module BABYLON {
          */
         color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3;
         /**
+         * Interpolates a Color4 linearly
+         * @param startValue Start value of the animation curve
+         * @param endValue End value of the animation curve
+         * @param gradient Scalar amount to interpolate
+         * @returns Interpolated Color3 value
+         */
+        color4InterpolateFunction(startValue: Color4, endValue: Color4, gradient: number): Color4;
+        /**
          * @hidden Internal use only
          */
         _getKeyValue(value: any): any;
@@ -27533,81 +27575,45 @@ declare module BABYLON {
         /**
          * Float animation type
          */
-        private static _ANIMATIONTYPE_FLOAT;
+        static readonly ANIMATIONTYPE_FLOAT: number;
         /**
          * Vector3 animation type
          */
-        private static _ANIMATIONTYPE_VECTOR3;
+        static readonly ANIMATIONTYPE_VECTOR3: number;
         /**
          * Quaternion animation type
          */
-        private static _ANIMATIONTYPE_QUATERNION;
+        static readonly ANIMATIONTYPE_QUATERNION: number;
         /**
          * Matrix animation type
          */
-        private static _ANIMATIONTYPE_MATRIX;
+        static readonly ANIMATIONTYPE_MATRIX: number;
         /**
          * Color3 animation type
          */
-        private static _ANIMATIONTYPE_COLOR3;
+        static readonly ANIMATIONTYPE_COLOR3: number;
+        /**
+         * Color3 animation type
+         */
+        static readonly ANIMATIONTYPE_COLOR4: number;
         /**
          * Vector2 animation type
          */
-        private static _ANIMATIONTYPE_VECTOR2;
+        static readonly ANIMATIONTYPE_VECTOR2: number;
         /**
          * Size animation type
          */
-        private static _ANIMATIONTYPE_SIZE;
+        static readonly ANIMATIONTYPE_SIZE: number;
         /**
          * Relative Loop Mode
          */
-        private static _ANIMATIONLOOPMODE_RELATIVE;
+        static readonly ANIMATIONLOOPMODE_RELATIVE: number;
         /**
          * Cycle Loop Mode
          */
-        private static _ANIMATIONLOOPMODE_CYCLE;
-        /**
-         * Constant Loop Mode
-         */
-        private static _ANIMATIONLOOPMODE_CONSTANT;
-        /**
-         * Get the float animation type
-         */
-        static readonly ANIMATIONTYPE_FLOAT: number;
-        /**
-         * Get the Vector3 animation type
-         */
-        static readonly ANIMATIONTYPE_VECTOR3: number;
-        /**
-         * Get the Vector2 animation type
-         */
-        static readonly ANIMATIONTYPE_VECTOR2: number;
-        /**
-         * Get the Size animation type
-         */
-        static readonly ANIMATIONTYPE_SIZE: number;
-        /**
-         * Get the Quaternion animation type
-         */
-        static readonly ANIMATIONTYPE_QUATERNION: number;
-        /**
-         * Get the Matrix animation type
-         */
-        static readonly ANIMATIONTYPE_MATRIX: number;
-        /**
-         * Get the Color3 animation type
-         */
-        static readonly ANIMATIONTYPE_COLOR3: number;
-        /**
-         * Get the Relative Loop Mode
-         */
-        static readonly ANIMATIONLOOPMODE_RELATIVE: number;
-        /**
-         * Get the Cycle Loop Mode
-         */
         static readonly ANIMATIONLOOPMODE_CYCLE: number;
         /**
-         * Get the Constant Loop Mode
+         * Constant Loop Mode
          */
         static readonly ANIMATIONLOOPMODE_CONSTANT: number;
         /** @hidden */
@@ -28633,9 +28639,9 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Class used to describe the capabilities of the engine relatively to the current browser
+     * Interface used to describe the capabilities of the engine relatively to the current browser
      */
-    export class EngineCapabilities {
+    export interface EngineCapabilities {
         /** Maximum textures units per fragment shader */
         maxTexturesImageUnits: number;
         /** Maximum texture units per vertex shader */
@@ -28659,7 +28665,7 @@ declare module BABYLON {
         /** Defines if standard derivates (dx/dy) are supported */
         standardDerivatives: boolean;
         /** Defines if s3tc texture compression is supported */
-        s3tc: Nullable<WEBGL_compressed_texture_s3tc>;
+        s3tc?: WEBGL_compressed_texture_s3tc;
         /** Defines if pvrtc texture compression is supported */
         pvrtc: any;
         /** Defines if etc1 texture compression is supported */
@@ -28673,7 +28679,7 @@ declare module BABYLON {
         /** Defines if vertex array objects are supported */
         vertexArrayObject: boolean;
         /** Gets the webgl extension for anisotropic filtering (null if not supported) */
-        textureAnisotropicFilterExtension: Nullable<EXT_texture_filter_anisotropic>;
+        textureAnisotropicFilterExtension?: EXT_texture_filter_anisotropic;
         /** Gets the maximum level of anisotropy supported */
         maxAnisotropy: number;
         /** Defines if instancing is supported */
@@ -28703,13 +28709,13 @@ declare module BABYLON {
         /** Defines if float color buffer are supported */
         colorBufferFloat: boolean;
         /** Gets disjoint timer query extension (null if not supported) */
-        timerQuery: EXT_disjoint_timer_query;
+        timerQuery?: EXT_disjoint_timer_query;
         /** Defines if timestamp can be used with timer query */
         canUseTimestampForTimerQuery: boolean;
         /** Defines if multiview is supported (https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/) */
-        multiview: any;
+        multiview?: any;
         /** Function used to let the system compiles shaders in background */
-        parallelShaderCompile: {
+        parallelShaderCompile?: {
             COMPLETION_STATUS_KHR: number;
         };
         /** Max number of texture samples for MSAA */
@@ -28828,7 +28834,7 @@ declare module BABYLON {
     /**
      * Interface for attribute information associated with buffer instanciation
      */
-    export class InstancingAttributeInfo {
+    export interface InstancingAttributeInfo {
         /**
          * Index/offset of the attribute in the vertex shader
          */
@@ -28841,7 +28847,7 @@ declare module BABYLON {
          * type of the attribute, gl.BYTE, gl.UNSIGNED_BYTE, gl.SHORT, gl.UNSIGNED_SHORT, gl.FIXED, gl.FLOAT.
          * default is FLOAT
          */
-        attribyteType: number;
+        attributeType: number;
         /**
          * normalization of fixed-point data. behavior unclear, use FALSE, default is FALSE
          */
@@ -29436,7 +29442,8 @@ declare module BABYLON {
          * Unbind the current render target and bind the default framebuffer
          */
         restoreDefaultFramebuffer(): void;
-        private _resetVertexBufferBinding;
+        /** @hidden */
+        protected _resetVertexBufferBinding(): void;
         /**
          * Creates a vertex buffer
          * @param data the data for the vertex buffer
@@ -29450,14 +29457,6 @@ declare module BABYLON {
          * @returns the new WebGL dynamic buffer
          */
         createDynamicVertexBuffer(data: DataArray): DataBuffer;
-        /**
-         * Updates a dynamic vertex buffer.
-         * @param vertexBuffer the vertex buffer to update
-         * @param data the data used to update the vertex buffer
-         * @param byteOffset the byte offset of the data
-         * @param byteLength the byte length of the data
-         */
-        updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void;
         protected _resetIndexBufferBinding(): void;
         /**
          * Creates a new index buffer
@@ -29531,17 +29530,6 @@ declare module BABYLON {
         /** @hidden */
         _releaseBuffer(buffer: DataBuffer): boolean;
         protected _deleteBuffer(buffer: DataBuffer): void;
-        /**
-         * Creates a webGL buffer to use with instanciation
-         * @param capacity defines the size of the buffer
-         * @returns the webGL buffer
-         */
-        createInstancesBuffer(capacity: number): DataBuffer;
-        /**
-         * Delete a webGL buffer used with instanciation
-         * @param buffer defines the webGL buffer to delete
-         */
-        deleteInstancesBuffer(buffer: WebGLBuffer): void;
         /**
          * Update the content of a webGL buffer used with instanciation and bind it to the webGL context
          * @param instancesBuffer defines the webGL buffer to update and bind
@@ -29670,6 +29658,12 @@ declare module BABYLON {
          */
         enableEffect(effect: Nullable<Effect>): void;
         /**
+         * Set the value of an uniform to a number (int)
+         * @param uniform defines the webGL uniform location where to store the value
+         * @param value defines the int number to store
+         */
+        setInt(uniform: Nullable<WebGLUniformLocation>, value: number): void;
+        /**
          * Set the value of an uniform to an array of int32
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
@@ -29694,53 +29688,29 @@ declare module BABYLON {
          */
         setIntArray4(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void;
         /**
-         * Set the value of an uniform to an array of float32
-         * @param uniform defines the webGL uniform location where to store the value
-         * @param array defines the array of float32 to store
-         */
-        setFloatArray(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void;
-        /**
-         * Set the value of an uniform to an array of float32 (stored as vec2)
-         * @param uniform defines the webGL uniform location where to store the value
-         * @param array defines the array of float32 to store
-         */
-        setFloatArray2(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void;
-        /**
-         * Set the value of an uniform to an array of float32 (stored as vec3)
-         * @param uniform defines the webGL uniform location where to store the value
-         * @param array defines the array of float32 to store
-         */
-        setFloatArray3(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void;
-        /**
-         * Set the value of an uniform to an array of float32 (stored as vec4)
-         * @param uniform defines the webGL uniform location where to store the value
-         * @param array defines the array of float32 to store
-         */
-        setFloatArray4(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void;
-        /**
          * Set the value of an uniform to an array of number
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
          */
-        setArray(uniform: Nullable<WebGLUniformLocation>, array: number[]): void;
+        setArray(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void;
         /**
          * Set the value of an uniform to an array of number (stored as vec2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
          */
-        setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[]): void;
+        setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void;
         /**
          * Set the value of an uniform to an array of number (stored as vec3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
          */
-        setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[]): void;
+        setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void;
         /**
          * Set the value of an uniform to an array of number (stored as vec4)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
          */
-        setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[]): void;
+        setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void;
         /**
          * Set the value of an uniform to an array of float32 (stored as matrices)
          * @param uniform defines the webGL uniform location where to store the value
@@ -29759,12 +29729,6 @@ declare module BABYLON {
          * @param matrix defines the Float32Array representing the 2x2 matrix to store
          */
         setMatrix2x2(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): void;
-        /**
-         * Set the value of an uniform to a number (int)
-         * @param uniform defines the webGL uniform location where to store the value
-         * @param value defines the int number to store
-         */
-        setInt(uniform: Nullable<WebGLUniformLocation>, value: number): void;
         /**
          * Set the value of an uniform to a number (float)
          * @param uniform defines the webGL uniform location where to store the value
@@ -29787,12 +29751,6 @@ declare module BABYLON {
          */
         setFloat3(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): void;
         /**
-         * Set the value of an uniform to a boolean
-         * @param uniform defines the webGL uniform location where to store the value
-         * @param bool defines the boolean to store
-         */
-        setBool(uniform: Nullable<WebGLUniformLocation>, bool: number): void;
-        /**
          * Set the value of an uniform to a vec4
          * @param uniform defines the webGL uniform location where to store the value
          * @param x defines the 1st component of the value
@@ -29801,12 +29759,6 @@ declare module BABYLON {
          * @param w defines the 4th component of the value
          */
         setFloat4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): void;
-        /**
-         * Sets a Color4 on a uniform variable
-         * @param uniform defines the uniform location
-         * @param color4 defines the value to be set
-         */
-        setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: IColor4Like): void;
         /**
          * Gets the depth culling state manager
          */
@@ -29922,50 +29874,17 @@ declare module BABYLON {
          * @param texture defines the texture to update
          */
         updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void;
-        /**
-         * Updates a depth texture Comparison Mode and Function.
-         * If the comparison Function is equal to 0, the mode will be set to none.
-         * Otherwise, this only works in webgl 2 and requires a shadow sampler in the shader.
-         * @param texture The texture to set the comparison function for
-         * @param comparisonFunction The comparison function to set, 0 if no comparison required
-         */
-        updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void;
         /** @hidden */
         _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | {
             width: number;
             height: number;
         }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number): void;
-        /**
-         * Creates a depth stencil texture.
-         * This is only available in WebGL 2 or with the depth texture extension available.
-         * @param size The size of face edge in the texture.
-         * @param options The options defining the texture.
-         * @returns The texture
-         */
-        createDepthStencilTexture(size: number | {
-            width: number;
-            height: number;
-        }, options: DepthTextureCreationOptions): InternalTexture;
-        /**
-         * Creates a depth stencil texture.
-         * This is only available in WebGL 2 or with the depth texture extension available.
-         * @param size The size of face edge in the texture.
-         * @param options The options defining the texture.
-         * @returns The texture
-         */
-        private _createDepthStencilTexture;
         /** @hidden */
         _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex?: number, lod?: number): void;
         /** @hidden */
         _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number, babylonInternalFormat?: number, useTextureWidthAndHeight?: boolean): void;
         /** @hidden */
         _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number): void;
-        /** @hidden */
-        _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex?: number, lod?: number): void;
-        /**
-         * @hidden
-         */
-        _setCubeMapTextureParams(loadMipmap: boolean): void;
         protected _prepareWebGLTextureContinuation(texture: InternalTexture, scene: Nullable<ISceneLike>, noMipmap: boolean, isCompressed: boolean, samplingMode: number): void;
         private _prepareWebGLTexture;
         /** @hidden */
@@ -31822,6 +31741,14 @@ declare module BABYLON {
          * @param height defines the new canvas' height
          */
         setSize(width: number, height: number): void;
+        /**
+         * Updates a dynamic vertex buffer.
+         * @param vertexBuffer the vertex buffer to update
+         * @param data the data used to update the vertex buffer
+         * @param byteOffset the byte offset of the data
+         * @param byteLength the byte length of the data
+         */
+        updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void;
         _deletePipelineContext(pipelineContext: IPipelineContext): void;
         createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
         protected _createShaderProgram(pipelineContext: WebGLPipelineContext, vertexShader: WebGLShader, fragmentShader: WebGLShader, context: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
@@ -31847,6 +31774,8 @@ declare module BABYLON {
          */
         getDeltaTime(): number;
         private _measureFps;
+        /** @hidden */
+        _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex?: number, lod?: number): void;
         /**
          * Sets the frame buffer Depth / Stencil attachement of the render target to the defined depth stencil texture.
          * @param renderTarget The render target to set the frame buffer for
@@ -31867,6 +31796,25 @@ declare module BABYLON {
          * @returns the effective sample count (could be 0 if multisample render targets are not supported)
          */
         updateRenderTargetTextureSampleCount(texture: Nullable<InternalTexture>, samples: number): number;
+        /**
+         * Updates a depth texture Comparison Mode and Function.
+         * If the comparison Function is equal to 0, the mode will be set to none.
+         * Otherwise, this only works in webgl 2 and requires a shadow sampler in the shader.
+         * @param texture The texture to set the comparison function for
+         * @param comparisonFunction The comparison function to set, 0 if no comparison required
+         */
+        updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void;
+        /**
+         * Creates a webGL buffer to use with instanciation
+         * @param capacity defines the size of the buffer
+         * @returns the webGL buffer
+         */
+        createInstancesBuffer(capacity: number): DataBuffer;
+        /**
+         * Delete a webGL buffer used with instanciation
+         * @param buffer defines the webGL buffer to delete
+         */
+        deleteInstancesBuffer(buffer: WebGLBuffer): void;
         /** @hidden */
         _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>): ArrayBufferView;
         dispose(): void;
@@ -32121,12 +32069,6 @@ declare module BABYLON {
          * @returns the angle in radians
          */
         static ToRadians(angle: number): number;
-        /**
-         * Encode a buffer to a base64 string
-         * @param buffer defines the buffer to encode
-         * @returns the encoded string
-         */
-        static EncodeArrayBufferTobase64(buffer: ArrayBuffer): string;
         /**
          * Returns an array if obj is not an array
          * @param obj defines the object to evaluate as an array
@@ -32884,6 +32826,10 @@ declare module BABYLON {
          */
         onAnimationLoopObservable: Observable<TargetedAnimation>;
         /**
+         * Observer raised when all animations have looped
+         */
+        onAnimationGroupLoopObservable: Observable<AnimationGroup>;
+        /**
          * This observable will notify when all animations have ended.
          */
         onAnimationGroupEndObservable: Observable<AnimationGroup>;
@@ -32955,6 +32901,9 @@ declare module BABYLON {
          * @returns the animation group
          */
         normalize(beginFrame?: Nullable<number>, endFrame?: Nullable<number>): AnimationGroup;
+        private _animationLoopCount;
+        private _animationLoopFlags;
+        private _processLoop;
         /**
          * Start all animations on given targets
          * @param loop defines if animations must loop
@@ -35655,6 +35604,10 @@ declare module BABYLON {
              * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
              */
             audioListenerPositionProvider: Nullable<() => Vector3>;
+            /**
+             * Gets or sets a refresh rate when using 3D audio positioning
+             */
+            audioPositioningRefreshRate: number;
         }
     /**
      * Defines the sound scene component responsible to manage any sounds
@@ -35681,6 +35634,10 @@ declare module BABYLON {
          * Please use the according Switch methods to change output.
          */
         readonly headphone: boolean;
+        /**
+         * Gets or sets a refresh rate when using 3D audio positioning
+         */
+        audioPositioningRefreshRate: number;
         private _audioListenerPositionProvider;
         /**
          * Gets the current audio listener position provider
@@ -35740,6 +35697,9 @@ declare module BABYLON {
          * Switch audio to normal speakers.
          */
         switchAudioModeForNormalSpeakers(): void;
+        private _cachedCameraDirection;
+        private _cachedCameraPosition;
+        private _lastCheck;
         private _afterRender;
     }
 }
@@ -41523,6 +41483,7 @@ declare module BABYLON {
         currentFrame: Nullable<XRFrame>;
         private _xrNavigator;
         private baseLayer;
+        private _sessionEnded;
         /**
          * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
          * @param scene The scene which the session should be created for
@@ -41596,7 +41557,7 @@ declare module BABYLON {
         constructor(name: string, scene: Scene);
         private _updateNumberOfRigCameras;
         /** @hidden */
-        _updateForDualEyeDebugging(pupilDistance?: number): void;
+        _updateForDualEyeDebugging(): void;
         /**
          * Updates the cameras position from the current pose information of the  XR session
          * @param xrSessionManager the session containing pose information
@@ -41826,6 +41787,13 @@ declare module BABYLON {
          * Pointer which can be used to select objects or attach a visible laser to
          */
         pointer: AbstractMesh;
+        private _gamepadMode;
+        /**
+         * If available, this is the gamepad object related to this controller.
+         * Using this object it is possible to get click events and trackpad changes of the
+         * webxr controller that is currently being used.
+         */
+        gamepadController?: WebVRController;
         /**
          * Event that fires when the controller is removed/disposed
          */
@@ -41854,6 +41822,11 @@ declare module BABYLON {
          * @param result the resulting ray
          */
         getWorldPointerRayToRef(result: Ray): void;
+        /**
+         * Get the scene associated with this controller
+         * @returns the scene object
+         */
+        getScene(): Scene;
         /**
          * Disposes of the object
          */
@@ -48200,9 +48173,7 @@ declare module BABYLON {
         /**
          * Force shader compilation
          */
-        forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<{
-            clipPlane: boolean;
-        }>): void;
+        forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<IMaterialCompilationOptions>): void;
         /**
          * Initializes the uniform buffer layout for the shader.
          */
@@ -49859,7 +49830,7 @@ declare module BABYLON {
     /**
      * The glow layer Helps adding a glow effect around the emissive parts of a mesh.
      *
-     * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
+     * Once instantiated in a scene, simply use the addMesh or removeMesh method to add or remove
      * glowy meshes to your scene.
      *
      * Documentation: https://doc.babylonjs.com/how_to/glow_layer
@@ -50087,7 +50058,7 @@ declare module BABYLON {
     /**
      * The highlight layer Helps adding a glow effect around a mesh.
      *
-     * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
+     * Once instantiated in a scene, simply use the addMesh or removeMesh method to add or remove
      * glowy meshes to your scene.
      *
      * !!! THIS REQUIRES AN ACTIVE STENCIL BUFFER ON THE CANVAS !!!
@@ -53799,6 +53770,10 @@ declare module BABYLON {
         serialize(): any;
         /** @hidden */
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        /**
+         * Release resources
+         */
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -53962,6 +53937,10 @@ declare module BABYLON {
          */
         excludedConnectionPointTypes: NodeMaterialBlockConnectionPointTypes[];
         /**
+         * Observable triggered when this point is connected
+         */
+        onConnectionObservable: Observable<NodeMaterialConnectionPoint>;
+        /**
          * Gets or sets the associated variable name in the shader
          */
         associatedVariableName: string;
@@ -53981,6 +53960,9 @@ declare module BABYLON {
          * Gets or sets a string indicating that this uniform must be defined under a #ifdef
          */
         define: string;
+        /** @hidden */
+        _prioritizeVertex: boolean;
+        private _target;
         /** Gets or sets the target of that connection point */
         target: NodeMaterialBlockTargets;
         /**
@@ -54046,6 +54028,10 @@ declare module BABYLON {
          * @returns the serialized point object
          */
         serialize(): any;
+        /**
+         * Release resources
+         */
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -55707,6 +55693,37 @@ declare module BABYLON {
          * Gets the output component
          */
         readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to test if the fragment shader is front facing
+     */
+    export class FrontFacingBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new FrontFacingBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the world normal component
+         */
+        readonly worldNormal: NodeMaterialConnectionPoint;
+        /**
+         * Gets the view direction input component
+         */
+        readonly viewDirection: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        autoConfigure(material: NodeMaterial): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }

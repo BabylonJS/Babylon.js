@@ -208,6 +208,11 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     public useRangeRequests = false;
 
     /**
+     * Defines if the loader should create instances when multiple glTF nodes point to the same glTF mesh. Defaults to true.
+     */
+    public createInstances = true;
+
+    /**
      * Function called before loading a url referenced by the asset.
      */
     public preprocessUrlAsync = (url: string) => Promise.resolve(url);
@@ -480,7 +485,6 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                     Logger.Warn("glTF validation is not supported when range requests are enabled");
                 }
 
-                let firstWebRequest: WebRequest | undefined;
                 const fileRequests = new Array<IFileRequest>();
                 const aggregatedFileRequest: IFileRequest = {
                     abort: () => fileRequests.forEach((fileRequest) => fileRequest.abort()),
@@ -491,7 +495,6 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                     readAsync: (byteOffset: number, byteLength: number) => {
                         return new Promise<ArrayBufferView>((resolve, reject) => {
                             fileRequests.push(scene._requestFile(url, (data, webRequest) => {
-                                firstWebRequest = firstWebRequest || webRequest;
                                 dataBuffer.byteLength = Number(webRequest!.getResponseHeader("Content-Range")!.split("/")[1]);
                                 resolve(new Uint8Array(data as ArrayBuffer));
                             }, onProgress, true, true, (error) => {
@@ -506,7 +509,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
                 this._unpackBinaryAsync(new DataReader(dataBuffer)).then((loaderData) => {
                     aggregatedFileRequest.onCompleteObservable.notifyObservers(aggregatedFileRequest);
-                    onSuccess(loaderData, firstWebRequest);
+                    onSuccess(loaderData);
                 }, onError);
 
                 return aggregatedFileRequest;

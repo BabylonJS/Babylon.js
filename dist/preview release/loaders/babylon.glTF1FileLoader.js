@@ -98,7 +98,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -2893,6 +2893,10 @@ var GLTFFileLoader = /** @class */ (function () {
          */
         this.useRangeRequests = false;
         /**
+         * Defines if the loader should create instances when multiple glTF nodes point to the same glTF mesh. Defaults to true.
+         */
+        this.createInstances = true;
+        /**
          * Function called before loading a url referenced by the asset.
          */
         this.preprocessUrlAsync = function (url) { return Promise.resolve(url); };
@@ -3178,7 +3182,6 @@ var GLTFFileLoader = /** @class */ (function () {
                 if (this.validate) {
                     babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Logger"].Warn("glTF validation is not supported when range requests are enabled");
                 }
-                var firstWebRequest_1;
                 var fileRequests_1 = new Array();
                 var aggregatedFileRequest_1 = {
                     abort: function () { return fileRequests_1.forEach(function (fileRequest) { return fileRequest.abort(); }); },
@@ -3188,7 +3191,6 @@ var GLTFFileLoader = /** @class */ (function () {
                     readAsync: function (byteOffset, byteLength) {
                         return new Promise(function (resolve, reject) {
                             fileRequests_1.push(scene._requestFile(url, function (data, webRequest) {
-                                firstWebRequest_1 = firstWebRequest_1 || webRequest;
                                 dataBuffer_1.byteLength = Number(webRequest.getResponseHeader("Content-Range").split("/")[1]);
                                 resolve(new Uint8Array(data));
                             }, onProgress, true, true, function (error) {
@@ -3202,7 +3204,7 @@ var GLTFFileLoader = /** @class */ (function () {
                 };
                 this._unpackBinaryAsync(new _dataReader__WEBPACK_IMPORTED_MODULE_1__["DataReader"](dataBuffer_1)).then(function (loaderData) {
                     aggregatedFileRequest_1.onCompleteObservable.notifyObservers(aggregatedFileRequest_1);
-                    onSuccess(loaderData, firstWebRequest_1);
+                    onSuccess(loaderData);
                 }, onError);
                 return aggregatedFileRequest_1;
             }
