@@ -43,3 +43,4 @@ export * from "./interfaces/screenshotSize";
 export * from "./canvasGenerator";
 export * from "./fileTools";
 export * from "./stringTools";
+export * from "./dataReader";
