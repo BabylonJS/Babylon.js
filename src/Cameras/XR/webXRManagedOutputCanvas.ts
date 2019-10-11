@@ -44,6 +44,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
      * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
      */
     constructor(engine: ThinEngine, onStateChangedObservable: Observable<WebXRState>, canvas?: HTMLCanvasElement) {
+        this._engine = engine;
         if (!canvas) {
             canvas = document.createElement('canvas');
             canvas.style.cssText = "position:absolute; bottom:0px;right:0px;z-index:10;width:90%;height:100%;background-color: #000000;";
