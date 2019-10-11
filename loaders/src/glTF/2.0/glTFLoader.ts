@@ -31,7 +31,7 @@ import { IAnimationKey, AnimationKeyInterpolation } from 'babylonjs/Animations/a
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { IDataBuffer } from 'babylonjs/Misc/dataReader';
 import { LoadFileError } from 'babylonjs/Misc/fileTools';
-import { Logger } from 'babylonjs';
+import { Logger } from 'babylonjs/Misc/logger';
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
