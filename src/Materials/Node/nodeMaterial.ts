@@ -917,6 +917,10 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
+        for (var block of this.attachedBlocks) {
+            block.dispose();
+        }
+
         this.onBuildObservable.clear();
 
         super.dispose(forceDisposeEffect, forceDisposeTextures, notBoundToMesh);

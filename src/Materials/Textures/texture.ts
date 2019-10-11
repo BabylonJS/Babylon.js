@@ -376,8 +376,10 @@ export class Texture extends BaseTexture {
             this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
-        this.name = url;
         this.url = url;
+        if (!this.name) {
+            this.name = url;
+        }
         this._buffer = buffer;
         this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
 
@@ -606,6 +608,8 @@ export class Texture extends BaseTexture {
             if (typeof this._buffer === "string" && (this._buffer as string).substr(0, 5) === "data:") {
                 serializationObject.base64String = this._buffer;
                 serializationObject.name = serializationObject.name.replace("data:", "");
+            } else if (this.url && StringTools.StartsWith(this.url, "data:") && this._buffer instanceof Uint8Array) {
+                serializationObject.base64String = "data:image/png;base64," + StringTools.EncodeArrayBufferToBase64(this._buffer);
             }
         }
 

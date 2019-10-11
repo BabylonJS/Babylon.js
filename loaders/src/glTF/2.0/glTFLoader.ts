@@ -379,7 +379,20 @@ export class GLTFLoader implements IGLTFLoader {
         this._gltf = data.json as IGLTF;
         this._setupData();
 
-        this._bin = data.bin;
+        if (data.bin) {
+            const buffers = this._gltf.buffers;
+            if (buffers && buffers[0] && !buffers[0].uri) {
+                const binaryBuffer = buffers[0];
+                if (binaryBuffer.byteLength < data.bin.byteLength - 3 || binaryBuffer.byteLength > data.bin.byteLength) {
+                    Tools.Warn(`Binary buffer length (${binaryBuffer.byteLength}) from JSON does not match chunk length (${data.bin.byteLength})`);
+                }
+
+                this._bin = data.bin;
+            }
+            else {
+                Tools.Warn("Unexpected BIN chunk");
+            }
+        }
     }
 
     private _setupData(): void {
@@ -731,15 +744,14 @@ export class GLTFLoader implements IGLTFLoader {
 
         this.logOpen(`${context}`);
 
-        const canInstance = (node.skin == undefined && !mesh.primitives[0].targets);
+        const shouldInstance = this._parent.createInstances && (node.skin == undefined && !mesh.primitives[0].targets);
 
         let babylonAbstractMesh: AbstractMesh;
         let promise: Promise<any>;
 
-        const instanceData = primitive._instanceData;
-        if (canInstance && instanceData) {
-            babylonAbstractMesh = instanceData.babylonSourceMesh.createInstance(name);
-            promise = instanceData.promise;
+        if (shouldInstance && primitive._instanceData) {
+            babylonAbstractMesh = primitive._instanceData.babylonSourceMesh.createInstance(name);
+            promise = primitive._instanceData.promise;
         }
         else {
             const promises = new Array<Promise<any>>();
@@ -773,7 +785,7 @@ export class GLTFLoader implements IGLTFLoader {
 
             promise = Promise.all(promises);
 
-            if (canInstance) {
+            if (shouldInstance) {
                 primitive._instanceData = {
                     babylonSourceMesh: babylonMesh,
                     promise: promise
@@ -1885,7 +1897,7 @@ export class GLTFLoader implements IGLTFLoader {
             if (!this._disposed) {
                 deferred.reject(new Error(`${context}: ${(exception && exception.message) ? exception.message : message || "Failed to load texture"}`));
             }
-        });
+        }, undefined, undefined, undefined, image.mimeType);
         promises.push(deferred.promise);
 
         if (!url) {
@@ -2169,8 +2181,10 @@ export class GLTFLoader implements IGLTFLoader {
 
                             const babylonMaterial = babylonData.babylonMaterial;
                             promises.push(babylonMaterial.forceCompilationAsync(babylonMesh));
+                            promises.push(babylonMaterial.forceCompilationAsync(babylonMesh, { useInstances: true }));
                             if (this._parent.useClipPlane) {
                                 promises.push(babylonMaterial.forceCompilationAsync(babylonMesh, { clipPlane: true }));
+                                promises.push(babylonMaterial.forceCompilationAsync(babylonMesh, { clipPlane: true, useInstances: true }));
                             }
                         }
                     }

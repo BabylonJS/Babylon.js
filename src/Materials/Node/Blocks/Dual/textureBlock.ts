@@ -51,6 +51,8 @@ export class TextureBlock extends NodeMaterialBlock {
 
         this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
         this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
+
+        this._inputs[0]._prioritizeVertex = true;
     }
 
     /**
