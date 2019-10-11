@@ -96,7 +96,7 @@
 - Added sprite isVisible field ([TrevorDev](https://github.com/TrevorDev))
 - EnvironmentHelper will recreate ground and skybox meshes if force-disposed ([RaananW](https://github.com/RaananW))
 - Added viewport caching mechanism in engine ([sebavan](http://www.github.com/sebavan))
-- Added `unpackFlipY` caching mechanism in engine ([sebavan](http://www.github.com/sebavan))
+- Added unpackFlipY caching mechanism in engine ([sebavan](http://www.github.com/sebavan))
 - Added rebind optimization of video texture ([sebavan](http://www.github.com/sebavan))
 - Fix Background Material effect caching ([sebavan](http://www.github.com/sebavan))
 - Prevent texture ```getSize``` to generate garbage collection ([sebavan](http://www.github.com/sebavan))
