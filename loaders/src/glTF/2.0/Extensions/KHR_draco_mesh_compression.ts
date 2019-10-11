@@ -24,13 +24,19 @@ interface IBufferViewDraco extends IBufferView {
  * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression)
  */
 export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
-    /** The name of this extension. */
+    /**
+     * The name of this extension.
+     */
     public readonly name = NAME;
 
-    /** The draco compression used to decode vertex data or DracoCompression.Default if not defined */
+    /**
+     * The draco compression used to decode vertex data or DracoCompression.Default if not defined
+     */
     public dracoCompression?: DracoCompression;
 
-    /** Defines whether this extension is enabled. */
+    /**
+     * Defines whether this extension is enabled.
+     */
     public enabled: boolean;
 
     private _loader: GLTFLoader;

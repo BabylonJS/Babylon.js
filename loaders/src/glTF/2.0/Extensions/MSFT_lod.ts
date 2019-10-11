@@ -20,11 +20,20 @@ interface IMSFTLOD {
  * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/MSFT_lod)
  */
 export class MSFT_lod implements IGLTFLoaderExtension {
-    /** The name of this extension. */
+    /**
+     * The name of this extension.
+     */
     public readonly name = NAME;
 
-    /** Defines whether this extension is enabled. */
+    /**
+     * Defines whether this extension is enabled.
+     */
     public enabled: boolean;
+
+    /**
+     * Defines a number that determines the order the extensions are applied.
+     */
+    public order = 100;
 
     /**
      * Maximum number of LODs to load, starting from the lowest LOD.
