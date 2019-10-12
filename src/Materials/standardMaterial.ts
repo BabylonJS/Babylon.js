@@ -72,6 +72,10 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public NORMAL = false;
     public UV1 = false;
     public UV2 = false;
+    public UV3 = false;
+    public UV4 = false;
+    public UV5 = false;
+    public UV6 = false;
     public VERTEXCOLOR = false;
     public VERTEXALPHA = false;
     public NUM_BONE_INFLUENCERS = 0;
@@ -1108,12 +1112,28 @@ export class StandardMaterial extends PushMaterial {
                 attribs.push(VertexBuffer.UV2Kind);
             }
 
+            if (defines.UV3) {
+                attribs.push(VertexBuffer.UV3Kind);
+            }
+
+            if (defines.UV4) {
+                attribs.push(VertexBuffer.UV4Kind);
+            }
+
+            if (defines.UV5) {
+                attribs.push(VertexBuffer.UV5Kind);
+            }
+
+            if (defines.UV6) {
+                attribs.push(VertexBuffer.UV6Kind);
+            }
+
             if (defines.VERTEXCOLOR) {
                 attribs.push(VertexBuffer.ColorKind);
             }
 
             MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
-            MaterialHelper.PrepareAttributesForInstances(attribs, defines);
+            MaterialHelper.PrepareAttributesForInstances(attribs, defines); 
             MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
 
             var shaderName = "default";

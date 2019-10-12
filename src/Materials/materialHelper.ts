@@ -247,6 +247,11 @@ export class MaterialHelper {
             defines["VERTEXALPHA"] = mesh.hasVertexAlpha && hasVertexColors && useVertexAlpha;
         }
 
+        defines["UV3"] = mesh.isVerticesDataPresent(VertexBuffer.UV3Kind);
+        defines["UV4"] = mesh.isVerticesDataPresent(VertexBuffer.UV4Kind);
+        defines["UV5"] = mesh.isVerticesDataPresent(VertexBuffer.UV5Kind);
+        defines["UV6"] = mesh.isVerticesDataPresent(VertexBuffer.UV6Kind);
+        
         if (useBones) {
             this.PrepareDefinesForBones(mesh, defines);
         }

@@ -48,6 +48,7 @@
 - Added preprocessors for shaders to improve how shaders are compiled for WebGL1/2 or WebGPU ([Deltakosh](https://github.com/deltakosh/))
 - Added enterPointerlock and exitPointerlock (Separated from enterFullscreen) ([aWeirdo](https://github.com/aWeirdo/))
 - Added support for `vertexSource` and `fragmentSource` parameters to `ShaderMaterial` ([Deltakosh](https://github.com/deltakosh/))
+- Added support for UV3-UV6 in the CustomMaterial ([Azukaar](https://github.com/azukaar/))
 
 ### Inspector
 
