@@ -1133,7 +1133,7 @@ export class StandardMaterial extends PushMaterial {
             }
 
             MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
-            MaterialHelper.PrepareAttributesForInstances(attribs, defines); 
+            MaterialHelper.PrepareAttributesForInstances(attribs, defines);
             MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
 
             var shaderName = "default";
