@@ -384,16 +384,10 @@ export class Image extends Control {
             // check if object alr exist in document
             var svgExist = <HTMLObjectElement> document.body.querySelector('object[data="' + svgsrc + '"]');
             if (svgExist) {
-                if (svgExist.contentDocument) {
-                    // svg object alr exists
+                // wait for object to load
+                svgExist.addEventListener("load", () => {
                     this._getSVGAttribs(svgExist, elemid);
-                } else {
-                    // wait for object to load
-                    svgExist.addEventListener("load", () => {
-                        this._getSVGAttribs(svgExist, elemid);
-                    });
-                }
-
+                });
             } else {
                 // create document object
                 var svgImage = document.createElement("object");
@@ -409,7 +403,6 @@ export class Image extends Control {
                         this._getSVGAttribs(svgobj, elemid);
                     }
                 };
-
             }
         }
     }
@@ -427,7 +420,7 @@ export class Image extends Control {
             var docheight = Number(svgDoc.documentElement.getAttribute("height"));
             // get element bbox and matrix transform
             var elem = <SVGGraphicsElement> <unknown> svgDoc.getElementById(elemid);
-            if (elem instanceof SVGElement && vb && docwidth && docheight) {
+            if (vb && docwidth && docheight) {
                 var vb_width = Number(vb.split(" ")[2]);
                 var vb_height = Number(vb.split(" ")[3]);
                 var elem_bbox = elem.getBBox();
