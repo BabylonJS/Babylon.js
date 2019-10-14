@@ -1,9 +1,9 @@
 import { AbstractScene } from "./abstractScene";
 import { Scene } from "./scene";
 import { Mesh } from "./Meshes/mesh";
-import { TransformNode } from './Meshes';
-import { Skeleton } from './Bones';
-import { AnimationGroup } from './Animations';
+import { TransformNode } from './Meshes/transformNode';
+import { Skeleton } from './Bones/skeleton';
+import { AnimationGroup } from './Animations/animationGroup';
 
 /**
  * Set of assets to keep when moving a scene into an asset container.
@@ -21,7 +21,7 @@ export class InstantiatedEntries {
 
     /**
      * List of new skeletons
-     */    
+     */
     public skeletons: Skeleton[] = [];
 
     /**
@@ -58,14 +58,15 @@ export class AssetContainer extends AbstractScene {
      * Instantiate or clone all meshes and add the new ones to the scene.
      * Skeletons and animation groups will all be cloned
      */
-    public instantiateAllMeshesToScene(): InstantiatedEntries {
+    public instantiateModelsToScene(): InstantiatedEntries {
         let convertionMap: {[key: number]: number} = {};
         let storeMap: {[key: number]: any} = {};
         let result = new InstantiatedEntries();
+        let alreadySwapped: Skeleton[] = [];
 
         let options = {
             doNotInstantiate: true
-        }
+        };
 
         let onClone = (source: TransformNode, clone: TransformNode) => {
             convertionMap[source.uniqueId] = clone.uniqueId;
@@ -82,12 +83,12 @@ export class AssetContainer extends AbstractScene {
                         let oldTarget = oldMorphTargetManager.getTarget(index);
                         let newTarget = clonedMesh.morphTargetManager.getTarget(index);
 
-                        convertionMap[oldTarget.uniqueId] = newTarget.uniqueId;                    
+                        convertionMap[oldTarget.uniqueId] = newTarget.uniqueId;
                         storeMap[newTarget.uniqueId] = newTarget;
                     }
                 }
             }
-        }
+        };
 
         this.transformNodes.forEach((o) => {
             if (!o.parent) {
@@ -112,9 +113,9 @@ export class AssetContainer extends AbstractScene {
                 }
             }
         });
-        
+
         this.skeletons.forEach((s) => {
-            let clone = s.clone("clone of " + s.name);
+            let clone = s.clone("Clone of " + s.name);
 
             if (s.overrideMesh) {
                 clone.overrideMesh = storeMap[convertionMap[s.overrideMesh.uniqueId]];
@@ -124,6 +125,12 @@ export class AssetContainer extends AbstractScene {
                 if (m.skeleton === s && !m.isAnInstance) {
                     let copy = storeMap[convertionMap[m.uniqueId]];
                     (copy as Mesh).skeleton = clone;
+
+                    if (alreadySwapped.indexOf(clone) !== -1) {
+                        continue;
+                    }
+
+                    alreadySwapped.push(clone);
 
                     // Check if bones are mesh linked
                     for (var bone of clone.bones) {
@@ -136,9 +143,9 @@ export class AssetContainer extends AbstractScene {
 
             result.skeletons.push(clone);
         });
-        
+
         this.animationGroups.forEach((o) => {
-            let clone = o.clone(o.name, oldTarget => {
+            let clone = o.clone(o.name, (oldTarget) => {
                 let newTarget = storeMap[convertionMap[oldTarget.uniqueId]];
 
                 return newTarget || oldTarget;

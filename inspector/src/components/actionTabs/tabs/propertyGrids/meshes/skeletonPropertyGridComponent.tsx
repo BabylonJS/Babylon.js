@@ -91,6 +91,15 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
         return true;
     }
 
+    onOverrideMeshLink() {
+        if (!this.props.globalState.onSelectionChangedObservable) {
+            return;
+        }
+
+        const skeleton = this.props.skeleton;
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(skeleton.overrideMesh);
+    }        
+
     render() {
         const skeleton = this.props.skeleton;
 
@@ -102,6 +111,10 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={skeleton.id} />
                     <TextLineComponent label="Bone count" value={skeleton.bones.length.toString()} />
+                    {
+                        skeleton.overrideMesh &&
+                        <TextLineComponent label="Override mesh" value={skeleton.overrideMesh.name} onLink={() => this.onOverrideMeshLink()}/>
+                    }                        
                     <CheckBoxLineComponent label="Use texture to store matrices" target={skeleton} propertyName="useTextureToStoreBoneMatrices" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Debug mode" isSelected={() => this._skeletonViewersEnabled} onSelect={() => this.switchSkeletonViewers()} />
                 </LineContainerComponent>

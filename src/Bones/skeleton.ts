@@ -565,6 +565,8 @@ export class Skeleton implements IAnimatable {
             }
 
             var bone = new Bone(source.name, result, parentBone, source.getBaseMatrix().clone(), source.getRestPose().clone());
+            bone._index = source._index;
+
 
             if (source._linkedTransformNode) {
                 bone.linkTransformNode(source._linkedTransformNode);
