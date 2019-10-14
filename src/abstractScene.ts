@@ -158,8 +158,8 @@ export abstract class AbstractScene {
     /**
     * All of the materials added to this scene
     * In the context of a Scene, it is not supposed to be modified manually.
-    * Any addition or removal should be done using the addMaterial and removeMAterial Scene methods.
-    * Note also that the order of the Material wihin the array is not significant and might change.
+    * Any addition or removal should be done using the addMaterial and removeMaterial Scene methods.
+    * Note also that the order of the Material within the array is not significant and might change.
     * @see http://doc.babylonjs.com/babylon101/materials
     */
     public materials = new Array<Material>();
