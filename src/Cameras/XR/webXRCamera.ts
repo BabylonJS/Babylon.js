@@ -119,8 +119,7 @@ export class WebXRCamera extends FreeCamera {
             }
 
             // Set cameras to render to the session's render target
-            currentRig.outputRenderTarget = xrSessionManager._sessionRenderTargetTexture;
-
+            currentRig.outputRenderTarget = xrSessionManager.getRenderTargetTextureForEye(view.eye);
         });
         return true;
     }

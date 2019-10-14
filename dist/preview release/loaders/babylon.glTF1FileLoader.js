@@ -2687,92 +2687,6 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./glTF/dataReader.ts":
-/*!****************************!*\
-  !*** ./glTF/dataReader.ts ***!
-  \****************************/
-/*! exports provided: DataReader */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DataReader", function() { return DataReader; });
-/* harmony import */ var babylonjs_Misc_stringTools__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/stringTools */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Misc_stringTools__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_stringTools__WEBPACK_IMPORTED_MODULE_0__);
-
-/**
- * Utility class for reading from a data buffer
- */
-var DataReader = /** @class */ (function () {
-    /**
-     * Constructor
-     * @param buffer The buffer to read
-     */
-    function DataReader(buffer) {
-        /**
-         * The current byte offset from the beginning of the data buffer.
-         */
-        this.byteOffset = 0;
-        this.buffer = buffer;
-    }
-    /**
-     * Loads the given byte length.
-     * @param byteLength The byte length to load
-     * @returns A promise that resolves when the load is complete
-     */
-    DataReader.prototype.loadAsync = function (byteLength) {
-        var _this = this;
-        delete this._dataView;
-        delete this._dataByteOffset;
-        return this.buffer.readAsync(this.byteOffset, byteLength).then(function (data) {
-            _this._dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
-            _this._dataByteOffset = 0;
-        });
-    };
-    /**
-     * Read a unsigned 32-bit integer from the currently loaded data range.
-     * @returns The 32-bit integer read
-     */
-    DataReader.prototype.readUint32 = function () {
-        var value = this._dataView.getUint32(this._dataByteOffset, true);
-        this._dataByteOffset += 4;
-        this.byteOffset += 4;
-        return value;
-    };
-    /**
-     * Read a byte array from the currently loaded data range.
-     * @param byteLength The byte length to read
-     * @returns The byte array read
-     */
-    DataReader.prototype.readUint8Array = function (byteLength) {
-        var value = new Uint8Array(this._dataView.buffer, this._dataView.byteOffset + this._dataByteOffset, byteLength);
-        this._dataByteOffset += byteLength;
-        this.byteOffset += byteLength;
-        return value;
-    };
-    /**
-     * Read a string from the currently loaded data range.
-     * @param byteLength The byte length to read
-     * @returns The string read
-     */
-    DataReader.prototype.readString = function (byteLength) {
-        return babylonjs_Misc_stringTools__WEBPACK_IMPORTED_MODULE_0__["StringTools"].Decode(this.readUint8Array(byteLength));
-    };
-    /**
-     * Skips the given byte length the currently loaded data range.
-     * @param byteLength The byte length to skip
-     */
-    DataReader.prototype.skipBytes = function (byteLength) {
-        this._dataByteOffset += byteLength;
-        this.byteOffset += byteLength;
-    };
-    return DataReader;
-}());
-
-
-
-/***/ }),
-
 /***/ "./glTF/glTFFileLoader.ts":
 /*!********************************!*\
   !*** ./glTF/glTFFileLoader.ts ***!
@@ -2788,7 +2702,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GLTFFileLoader", function() { return GLTFFileLoader; });
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _dataReader__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./dataReader */ "./glTF/dataReader.ts");
 
 
 
@@ -2948,9 +2861,7 @@ var GLTFFileLoader = /** @class */ (function () {
          * Name of the loader ("gltf")
          */
         this.name = "gltf";
-        /**
-         * Supported file extensions of the loader (.gltf, .glb)
-         */
+        /** @hidden */
         this.extensions = {
             ".gltf": { isBinary: false },
             ".glb": { isBinary: true }
@@ -3165,16 +3076,7 @@ var GLTFFileLoader = /** @class */ (function () {
         this.onCompleteObservable.clear();
         this.onExtensionLoadedObservable.clear();
     };
-    /**
-     * The callback called when loading from a url.
-     * @param scene scene loading this url
-     * @param url url to load
-     * @param onSuccess callback called when the file successfully loads
-     * @param onProgress callback called while file is loading (if the server supports this mode)
-     * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
-     * @param onError callback called when the file fails to load
-     * @returns a file request object
-     */
+    /** @hidden */
     GLTFFileLoader.prototype.requestFile = function (scene, url, onSuccess, onProgress, useArrayBuffer, onError) {
         var _this = this;
         if (useArrayBuffer) {
@@ -3202,7 +3104,7 @@ var GLTFFileLoader = /** @class */ (function () {
                     },
                     byteLength: 0
                 };
-                this._unpackBinaryAsync(new _dataReader__WEBPACK_IMPORTED_MODULE_1__["DataReader"](dataBuffer_1)).then(function (loaderData) {
+                this._unpackBinaryAsync(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataReader"](dataBuffer_1)).then(function (loaderData) {
                     aggregatedFileRequest_1.onCompleteObservable.notifyObservers(aggregatedFileRequest_1);
                     onSuccess(loaderData);
                 }, onError);
@@ -3210,7 +3112,7 @@ var GLTFFileLoader = /** @class */ (function () {
             }
             return scene._requestFile(url, function (data, request) {
                 var arrayBuffer = data;
-                _this._unpackBinaryAsync(new _dataReader__WEBPACK_IMPORTED_MODULE_1__["DataReader"]({
+                _this._unpackBinaryAsync(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataReader"]({
                     readAsync: function (byteOffset, byteLength) { return Promise.resolve(new Uint8Array(arrayBuffer, byteOffset, byteLength)); },
                     byteLength: arrayBuffer.byteLength
                 })).then(function (loaderData) {
@@ -3223,23 +3125,14 @@ var GLTFFileLoader = /** @class */ (function () {
             onSuccess({ json: _this._parseJson(data) }, response);
         }, onProgress, true, false, onError);
     };
-    /**
-     * The callback called when loading from a file object.
-     * @param scene scene loading this file
-     * @param file defines the file to load
-     * @param onSuccess defines the callback to call when data is loaded
-     * @param onProgress defines the callback to call during loading process
-     * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
-     * @param onError defines the callback to call when an error occurs
-     * @returns a file request object
-     */
+    /** @hidden */
     GLTFFileLoader.prototype.readFile = function (scene, file, onSuccess, onProgress, useArrayBuffer, onError) {
         var _this = this;
         return scene._readFile(file, function (data) {
             _this._validateAsync(scene, data, "file:", file.name);
             if (useArrayBuffer) {
                 var arrayBuffer_1 = data;
-                _this._unpackBinaryAsync(new _dataReader__WEBPACK_IMPORTED_MODULE_1__["DataReader"]({
+                _this._unpackBinaryAsync(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataReader"]({
                     readAsync: function (byteOffset, byteLength) { return Promise.resolve(new Uint8Array(arrayBuffer_1, byteOffset, byteLength)); },
                     byteLength: arrayBuffer_1.byteLength
                 })).then(onSuccess, onError);
@@ -3249,94 +3142,68 @@ var GLTFFileLoader = /** @class */ (function () {
             }
         }, onProgress, useArrayBuffer, onError);
     };
-    /**
-     * Imports one or more meshes from the loaded glTF data and adds them to the scene
-     * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
-     * @param scene the scene the meshes should be added to
-     * @param data the glTF data to load
-     * @param rootUrl root url to load from
-     * @param onProgress event that fires when loading progress has occured
-     * @param fileName Defines the name of the file to load
-     * @returns a promise containg the loaded meshes, particles, skeletons and animations
-     */
+    /** @hidden */
     GLTFFileLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onProgress, fileName) {
-        this.onParsedObservable.notifyObservers(data);
-        this.onParsedObservable.clear();
-        this._log("Loading " + (fileName || ""));
-        this._loader = this._getLoader(data);
-        return this._loader.importMeshAsync(meshesNames, scene, data, rootUrl, onProgress, fileName);
+        var _this = this;
+        return Promise.resolve().then(function () {
+            _this.onParsedObservable.notifyObservers(data);
+            _this.onParsedObservable.clear();
+            _this._log("Loading " + (fileName || ""));
+            _this._loader = _this._getLoader(data);
+            return _this._loader.importMeshAsync(meshesNames, scene, data, rootUrl, onProgress, fileName);
+        });
     };
-    /**
-     * Imports all objects from the loaded glTF data and adds them to the scene
-     * @param scene the scene the objects should be added to
-     * @param data the glTF data to load
-     * @param rootUrl root url to load from
-     * @param onProgress event that fires when loading progress has occured
-     * @param fileName Defines the name of the file to load
-     * @returns a promise which completes when objects have been loaded to the scene
-     */
+    /** @hidden */
     GLTFFileLoader.prototype.loadAsync = function (scene, data, rootUrl, onProgress, fileName) {
-        this.onParsedObservable.notifyObservers(data);
-        this.onParsedObservable.clear();
-        this._log("Loading " + (fileName || ""));
-        this._loader = this._getLoader(data);
-        return this._loader.loadAsync(scene, data, rootUrl, onProgress, fileName);
+        var _this = this;
+        return Promise.resolve().then(function () {
+            _this.onParsedObservable.notifyObservers(data);
+            _this.onParsedObservable.clear();
+            _this._log("Loading " + (fileName || ""));
+            _this._loader = _this._getLoader(data);
+            return _this._loader.loadAsync(scene, data, rootUrl, onProgress, fileName);
+        });
     };
-    /**
-     * Load into an asset container.
-     * @param scene The scene to load into
-     * @param data The data to import
-     * @param rootUrl The root url for scene and resources
-     * @param onProgress The callback when the load progresses
-     * @param fileName Defines the name of the file to load
-     * @returns The loaded asset container
-     */
+    /** @hidden */
     GLTFFileLoader.prototype.loadAssetContainerAsync = function (scene, data, rootUrl, onProgress, fileName) {
-        this._log("Loading " + (fileName || ""));
-        this._loader = this._getLoader(data);
-        // Get materials/textures when loading to add to container
-        var materials = [];
-        this.onMaterialLoadedObservable.add(function (material) {
-            materials.push(material);
-        });
-        var textures = [];
-        this.onTextureLoadedObservable.add(function (texture) {
-            textures.push(texture);
-        });
-        return this._loader.importMeshAsync(null, scene, data, rootUrl, onProgress, fileName).then(function (result) {
-            var container = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["AssetContainer"](scene);
-            Array.prototype.push.apply(container.meshes, result.meshes);
-            Array.prototype.push.apply(container.particleSystems, result.particleSystems);
-            Array.prototype.push.apply(container.skeletons, result.skeletons);
-            Array.prototype.push.apply(container.animationGroups, result.animationGroups);
-            Array.prototype.push.apply(container.materials, materials);
-            Array.prototype.push.apply(container.textures, textures);
-            container.removeAllFromScene();
-            return container;
+        var _this = this;
+        return Promise.resolve().then(function () {
+            _this.onParsedObservable.notifyObservers(data);
+            _this.onParsedObservable.clear();
+            _this._log("Loading " + (fileName || ""));
+            _this._loader = _this._getLoader(data);
+            // Get materials/textures when loading to add to container
+            var materials = [];
+            _this.onMaterialLoadedObservable.add(function (material) {
+                materials.push(material);
+            });
+            var textures = [];
+            _this.onTextureLoadedObservable.add(function (texture) {
+                textures.push(texture);
+            });
+            return _this._loader.importMeshAsync(null, scene, data, rootUrl, onProgress, fileName).then(function (result) {
+                var container = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["AssetContainer"](scene);
+                Array.prototype.push.apply(container.meshes, result.meshes);
+                Array.prototype.push.apply(container.particleSystems, result.particleSystems);
+                Array.prototype.push.apply(container.skeletons, result.skeletons);
+                Array.prototype.push.apply(container.animationGroups, result.animationGroups);
+                Array.prototype.push.apply(container.materials, materials);
+                Array.prototype.push.apply(container.textures, textures);
+                container.removeAllFromScene();
+                return container;
+            });
         });
     };
-    /**
-     * The callback that returns true if the data can be directly loaded.
-     * @param data string containing the file data
-     * @returns if the data can be loaded directly
-     */
+    /** @hidden */
     GLTFFileLoader.prototype.canDirectLoad = function (data) {
         return data.indexOf("asset") !== -1 && data.indexOf("version") !== -1;
     };
-    /**
-     * The callback that returns the data to pass to the plugin if the data can be directly loaded.
-     * @param scene scene loading this data
-     * @param data string containing the data
-     * @returns data to pass to the plugin
-     */
+    /** @hidden */
     GLTFFileLoader.prototype.directLoad = function (scene, data) {
         this._validateAsync(scene, data);
         return { json: this._parseJson(data) };
     };
-    /**
-     * Instantiates a glTF file loader plugin.
-     * @returns the created plugin
-     */
+    /** @hidden */
     GLTFFileLoader.prototype.createPlugin = function () {
         return new GLTFFileLoader();
     };

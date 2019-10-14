@@ -6672,16 +6672,10 @@ var Image = /** @class */ (function (_super) {
             // check if object alr exist in document
             var svgExist = document.body.querySelector('object[data="' + svgsrc + '"]');
             if (svgExist) {
-                if (svgExist.contentDocument) {
-                    // svg object alr exists
-                    this._getSVGAttribs(svgExist, elemid);
-                }
-                else {
-                    // wait for object to load
-                    svgExist.addEventListener("load", function () {
-                        _this._getSVGAttribs(svgExist, elemid);
-                    });
-                }
+                // wait for object to load
+                svgExist.addEventListener("load", function () {
+                    _this._getSVGAttribs(svgExist, elemid);
+                });
             }
             else {
                 // create document object
@@ -6714,7 +6708,7 @@ var Image = /** @class */ (function (_super) {
             var docheight = Number(svgDoc.documentElement.getAttribute("height"));
             // get element bbox and matrix transform
             var elem = svgDoc.getElementById(elemid);
-            if (elem instanceof SVGElement && vb && docwidth && docheight) {
+            if (vb && docwidth && docheight) {
                 var vb_width = Number(vb.split(" ")[2]);
                 var vb_height = Number(vb.split(" ")[3]);
                 var elem_bbox = elem.getBBox();
