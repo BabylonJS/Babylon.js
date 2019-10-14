@@ -547,10 +547,12 @@ export class Skeleton implements IAnimatable {
      * @param id defines the id of the new skeleton
      * @returns the new skeleton
      */
-    public clone(name: string, id: string): Skeleton {
+    public clone(name: string, id?: string): Skeleton {
         var result = new Skeleton(name, id || name, this._scene);
 
         result.needInitialSkinMatrix = this.needInitialSkinMatrix;
+
+        result.overrideMesh = this.overrideMesh;
 
         for (var index = 0; index < this.bones.length; index++) {
             var source = this.bones[index];
@@ -563,6 +565,13 @@ export class Skeleton implements IAnimatable {
             }
 
             var bone = new Bone(source.name, result, parentBone, source.getBaseMatrix().clone(), source.getRestPose().clone());
+            bone._index = source._index;
+
+
+            if (source._linkedTransformNode) {
+                bone.linkTransformNode(source._linkedTransformNode);
+            }
+
             DeepCopier.DeepCopy(source.animations, bone.animations);
         }
 

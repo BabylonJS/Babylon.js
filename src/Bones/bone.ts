@@ -141,6 +141,14 @@ export class Bone extends Node {
         return this.children;
     }
 
+    /** 
+     * Gets the node index in matrix array generated for rendering
+     * @returns the node index
+     */
+    public getIndex(): number {
+        return this._index === null ? this.getSkeleton().bones.indexOf(this) : this._index;
+    }
+
     /**
      * Sets the parent bone
      * @param parent defines the parent (can be null if the bone is the root)
