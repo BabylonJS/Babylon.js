@@ -603,7 +603,7 @@ Scene.prototype.createPickingRayToRef = function(x: number, y: number, world: Ma
 
     if (!camera) {
         if (!this.activeCamera) {
-            throw new Error("Active camera not set");
+            return this;
         }
 
         camera = this.activeCamera;
