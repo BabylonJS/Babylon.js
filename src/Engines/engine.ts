@@ -477,7 +477,7 @@ export class Engine extends ThinEngine {
             return;
         }
 
-        options = options || {};
+        options = this._creationOptions;
 
         Engine.Instances.push(this);
 
