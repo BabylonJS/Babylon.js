@@ -821,28 +821,33 @@ export class SolidParticleSystem implements IDisposable {
                 const particleHasParent = (particle.parentId !== null);
                 if (particleHasParent) {
                     const parent = this.particles[particle.parentId!];
-                    const parentRotationMatrix = parent._rotationMatrix;
-                    const parentGlobalPosition = parent._globalPosition;
+                    if (parent) {
+                        const parentRotationMatrix = parent._rotationMatrix;
+                        const parentGlobalPosition = parent._globalPosition;
 
-                    const rotatedY = particlePosition.x * parentRotationMatrix[1] + particlePosition.y * parentRotationMatrix[4] + particlePosition.z * parentRotationMatrix[7];
-                    const rotatedX = particlePosition.x * parentRotationMatrix[0] + particlePosition.y * parentRotationMatrix[3] + particlePosition.z * parentRotationMatrix[6];
-                    const rotatedZ = particlePosition.x * parentRotationMatrix[2] + particlePosition.y * parentRotationMatrix[5] + particlePosition.z * parentRotationMatrix[8];
+                        const rotatedY = particlePosition.x * parentRotationMatrix[1] + particlePosition.y * parentRotationMatrix[4] + particlePosition.z * parentRotationMatrix[7];
+                        const rotatedX = particlePosition.x * parentRotationMatrix[0] + particlePosition.y * parentRotationMatrix[3] + particlePosition.z * parentRotationMatrix[6];
+                        const rotatedZ = particlePosition.x * parentRotationMatrix[2] + particlePosition.y * parentRotationMatrix[5] + particlePosition.z * parentRotationMatrix[8];
 
-                    particleGlobalPosition.x = parentGlobalPosition.x + rotatedX;
-                    particleGlobalPosition.y = parentGlobalPosition.y + rotatedY;
-                    particleGlobalPosition.z = parentGlobalPosition.z + rotatedZ;
+                        particleGlobalPosition.x = parentGlobalPosition.x + rotatedX;
+                        particleGlobalPosition.y = parentGlobalPosition.y + rotatedY;
+                        particleGlobalPosition.z = parentGlobalPosition.z + rotatedZ;
 
-                    if (this._computeParticleRotation || this.billboard) {
-                        const rotMatrixValues = rotMatrix.m;
-                        particleRotationMatrix[0] = rotMatrixValues[0] * parentRotationMatrix[0] + rotMatrixValues[1] * parentRotationMatrix[3] + rotMatrixValues[2] * parentRotationMatrix[6];
-                        particleRotationMatrix[1] = rotMatrixValues[0] * parentRotationMatrix[1] + rotMatrixValues[1] * parentRotationMatrix[4] + rotMatrixValues[2] * parentRotationMatrix[7];
-                        particleRotationMatrix[2] = rotMatrixValues[0] * parentRotationMatrix[2] + rotMatrixValues[1] * parentRotationMatrix[5] + rotMatrixValues[2] * parentRotationMatrix[8];
-                        particleRotationMatrix[3] = rotMatrixValues[4] * parentRotationMatrix[0] + rotMatrixValues[5] * parentRotationMatrix[3] + rotMatrixValues[6] * parentRotationMatrix[6];
-                        particleRotationMatrix[4] = rotMatrixValues[4] * parentRotationMatrix[1] + rotMatrixValues[5] * parentRotationMatrix[4] + rotMatrixValues[6] * parentRotationMatrix[7];
-                        particleRotationMatrix[5] = rotMatrixValues[4] * parentRotationMatrix[2] + rotMatrixValues[5] * parentRotationMatrix[5] + rotMatrixValues[6] * parentRotationMatrix[8];
-                        particleRotationMatrix[6] = rotMatrixValues[8] * parentRotationMatrix[0] + rotMatrixValues[9] * parentRotationMatrix[3] + rotMatrixValues[10] * parentRotationMatrix[6];
-                        particleRotationMatrix[7] = rotMatrixValues[8] * parentRotationMatrix[1] + rotMatrixValues[9] * parentRotationMatrix[4] + rotMatrixValues[10] * parentRotationMatrix[7];
-                        particleRotationMatrix[8] = rotMatrixValues[8] * parentRotationMatrix[2] + rotMatrixValues[9] * parentRotationMatrix[5] + rotMatrixValues[10] * parentRotationMatrix[8];
+                        if (this._computeParticleRotation || this.billboard) {
+                            const rotMatrixValues = rotMatrix.m;
+                            particleRotationMatrix[0] = rotMatrixValues[0] * parentRotationMatrix[0] + rotMatrixValues[1] * parentRotationMatrix[3] + rotMatrixValues[2] * parentRotationMatrix[6];
+                            particleRotationMatrix[1] = rotMatrixValues[0] * parentRotationMatrix[1] + rotMatrixValues[1] * parentRotationMatrix[4] + rotMatrixValues[2] * parentRotationMatrix[7];
+                            particleRotationMatrix[2] = rotMatrixValues[0] * parentRotationMatrix[2] + rotMatrixValues[1] * parentRotationMatrix[5] + rotMatrixValues[2] * parentRotationMatrix[8];
+                            particleRotationMatrix[3] = rotMatrixValues[4] * parentRotationMatrix[0] + rotMatrixValues[5] * parentRotationMatrix[3] + rotMatrixValues[6] * parentRotationMatrix[6];
+                            particleRotationMatrix[4] = rotMatrixValues[4] * parentRotationMatrix[1] + rotMatrixValues[5] * parentRotationMatrix[4] + rotMatrixValues[6] * parentRotationMatrix[7];
+                            particleRotationMatrix[5] = rotMatrixValues[4] * parentRotationMatrix[2] + rotMatrixValues[5] * parentRotationMatrix[5] + rotMatrixValues[6] * parentRotationMatrix[8];
+                            particleRotationMatrix[6] = rotMatrixValues[8] * parentRotationMatrix[0] + rotMatrixValues[9] * parentRotationMatrix[3] + rotMatrixValues[10] * parentRotationMatrix[6];
+                            particleRotationMatrix[7] = rotMatrixValues[8] * parentRotationMatrix[1] + rotMatrixValues[9] * parentRotationMatrix[4] + rotMatrixValues[10] * parentRotationMatrix[7];
+                            particleRotationMatrix[8] = rotMatrixValues[8] * parentRotationMatrix[2] + rotMatrixValues[9] * parentRotationMatrix[5] + rotMatrixValues[10] * parentRotationMatrix[8];
+                        }
+                    }
+                    else {      // in case the parent were removed at some moment
+                        particle.parentId = null;
                     }
                 }
                 else {
@@ -1080,7 +1085,27 @@ export class SolidParticleSystem implements IDisposable {
         (<any>this._colors32) = null;
         (<any>this.pickedParticles) = null;
     }
-
+    /**
+     * Returns a SolidParticle object from its identifier : particle.id
+     * @param id (integer) the particle Id
+     * returns null of not found in the SPS.
+     */
+    public getParticleById(id: number): Nullable<SolidParticle> {
+        const p = this.particles[id];
+        if (p && p.idx == id) {
+            return p;
+        }
+        var i = 0;
+        const nb = this.nbParticles;
+        const particles = this.particles;
+        while (i < nb) {
+            if (particles[i].idx == id) {
+                return particles[i];
+            }
+            i++;
+        }
+        return null;
+    }
     /**
      * Visibilty helper : Recomputes the visible size according to the mesh bounding box
      * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
