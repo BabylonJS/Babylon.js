@@ -39,6 +39,7 @@
 - Added support for 180 VR videos in `VideoDome` ([RaananW](https://github.com/RaananW/))
 - Added optional parameter to use Euler angles in planeRotationGizmo ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Added `AnimationGroup.onAnimationGroupLoopObservable` ([Deltakosh](https://github.com/deltakosh/))
+- Supports custom materials to generate glow through ```referenceMeshToUseItsOwnMaterial``` in the ```GlowLayer``` ([sebavan](http://www.github.com/sebavan))
 
 ### Engine
 
