@@ -409,7 +409,7 @@ export class ShaderMaterial extends Material {
             return false;
         }
 
-        return false;
+        return true;
     }
 
     /**
