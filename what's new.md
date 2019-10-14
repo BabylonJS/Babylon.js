@@ -134,7 +134,7 @@
 - Fixed renormalization of mesh weights to in cleanMatrixWeights function. ([Bolloxim](https://github.com/Bolloxim))
 - Added a validationSkin function to report out any errors on skinned meshes. ([Bolloxim](https://github.com/Bolloxim))
 - PolygonMeshBuilder can be used to generate ```VertexData``` instead of requiring a mesh to be built
-
+- Supports custom materials to generate glow through ```referenceMeshToUseItsOwnMaterial``` in the ```GlowLayer``` ([sebavan](http://www.github.com/sebavan))
 
 ### glTF Loader
 
