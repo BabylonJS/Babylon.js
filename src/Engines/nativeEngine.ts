@@ -81,9 +81,10 @@ interface INativeEngine {
     setTexture(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>): void;
     deleteTexture(texture: Nullable<WebGLTexture>): void;
 
-    createFrameBuffer(texture: WebGLTexture, width: number, height: number, format: number, samplingMode: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMipMaps: boolean): WebGLFramebuffer;
-    bindFrameBuffer(frameBuffer: WebGLFramebuffer): void;
-    unbindFrameBuffer(frameBuffer: WebGLFramebuffer): void;
+    createFramebuffer(texture: WebGLTexture, width: number, height: number, format: number, samplingMode: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMipMaps: boolean): WebGLFramebuffer;
+    deleteFramebuffer(framebuffer: WebGLFramebuffer): void;
+    bindFramebuffer(framebuffer: WebGLFramebuffer): void;
+    unbindFramebuffer(framebuffer: WebGLFramebuffer): void;
 
     drawIndexed(fillMode: number, indexStart: number, indexCount: number): void;
     draw(fillMode: number, vertexStart: number, vertexCount: number): void;
@@ -155,6 +156,17 @@ class NativeAddressMode {
 class NativeTextureFormat {
     public static readonly RGBA8 = 0;
     public static readonly RGBA32F = 1;
+}
+
+/** @hidden */
+class NativeTexture extends InternalTexture {
+    public getInternalTexture(): InternalTexture {
+        return this;
+    }
+
+    public getViewCount(): number {
+        return 1;
+    }
 }
 
 /** @hidden */
@@ -236,9 +248,34 @@ export class NativeEngine extends Engine {
      * Can be used to override the current requestAnimationFrame requester.
      * @hidden
      */
-    protected _queueNewFrame(bindedRenderFunction: any, requester: any): number {
-        this._native.requestAnimationFrame(bindedRenderFunction);
+    protected _queueNewFrame(bindedRenderFunction: any, requester?: any): number {
+        if (requester.requestAnimationFrame) {
+            requester.requestAnimationFrame(bindedRenderFunction);
+        } else {
+            this._native.requestAnimationFrame(bindedRenderFunction);
+        }
         return 0;
+    }
+
+    /**
+     * Override default engine behavior.
+     * @param color
+     * @param backBuffer
+     * @param depth
+     * @param stencil
+     */
+    public _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>) {
+        if (this._currentFramebuffer !== framebuffer) {
+            if (this._currentFramebuffer) {
+                this._native.unbindFramebuffer(this._currentFramebuffer!);
+            }
+
+            if (framebuffer) {
+                this._native.bindFramebuffer(framebuffer);
+            }
+
+            this._currentFramebuffer = framebuffer;
+        }
     }
 
     public clear(color: Color4, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
@@ -1100,7 +1137,7 @@ export class NativeEngine extends Engine {
         }
     }
 
-    public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): InternalTexture {
+    public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): NativeTexture {
         let fullOptions = new RenderTargetCreationOptions();
 
         if (options !== undefined && typeof options === "object") {
@@ -1127,7 +1164,7 @@ export class NativeEngine extends Engine {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
             fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
-        var texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
+        var texture = new NativeTexture(this, InternalTextureSource.RenderTarget);
 
         var width = (<{ width: number, height: number }>size).width || <number>size;
         var height = (<{ width: number, height: number }>size).height || <number>size;
@@ -1137,7 +1174,7 @@ export class NativeEngine extends Engine {
             Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
         }
 
-        var framebuffer = this._native.createFrameBuffer(
+        var framebuffer = this._native.createFramebuffer(
             texture._webGLTexture!,
             width,
             height,
@@ -1187,7 +1224,7 @@ export class NativeEngine extends Engine {
             throw new Error("forceFullscreenViewport for frame buffers not yet supported in NativeEngine.");
         }
 
-        this._native.bindFrameBuffer(texture._framebuffer!);
+        this._bindUnboundFramebuffer(texture._framebuffer);
     }
 
     public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
@@ -1198,7 +1235,8 @@ export class NativeEngine extends Engine {
         if (onBeforeUnbind) {
             onBeforeUnbind();
         }
-        this._native.unbindFrameBuffer(texture._framebuffer!);
+
+        this._bindUnboundFramebuffer(null);
     }
 
     public createDynamicVertexBuffer(data: DataArray): DataBuffer {
