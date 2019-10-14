@@ -22171,6 +22171,10 @@ declare module BABYLON {
          * @returns a FloatArray containing the texture coordinates data (or null if not present)
          */
         getUVs(): Nullable<FloatArray>;
+        /**
+         * Clone the current target
+         * @returns a new MorphTarget
+         */
         clone(): MorphTarget;
         /**
          * Serializes the current target into a Serialization object
