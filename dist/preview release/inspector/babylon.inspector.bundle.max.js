@@ -43091,7 +43091,8 @@ var AnimationGroupGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "INFOS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Animation count", value: animationGroup.targetedAnimations.length.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "From", value: animationGroup.from.toFixed(2) }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "To", value: animationGroup.to.toFixed(2) }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "To", value: animationGroup.to.toFixed(2) }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Unique ID", value: animationGroup.uniqueId.toString() }))));
     };
     return AnimationGroupGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -45873,12 +45874,25 @@ var BonePropertyGridComponent = /** @class */ (function (_super) {
     function BonePropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
+    BonePropertyGridComponent.prototype.onTransformNodeLink = function () {
+        if (!this.props.globalState.onSelectionChangedObservable) {
+            return;
+        }
+        var node = this.props.bone.getTransformNode();
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(node);
+    };
     BonePropertyGridComponent.prototype.render = function () {
+        var _this = this;
         var bone = this.props.bone;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "ID", value: bone.id }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Unique ID", value: bone.uniqueId.toString() })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Name", value: bone.name }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Index", value: bone.getIndex().toString() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Unique ID", value: bone.uniqueId.toString() }),
+                bone.getParent() &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Parent", value: bone.getParent().name, onLink: function () { return _this.props.globalState.onSelectionChangedObservable.notifyObservers(bone.getParent()); } }),
+                bone.getTransformNode() &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Linked node", value: bone.getTransformNode().name, onLink: function () { return _this.onTransformNodeLink(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "TRANSFORMATIONS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Position", target: bone, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 !bone.rotationQuaternion &&
@@ -46088,6 +46102,13 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
         var instanceMesh = this.props.mesh;
         this.props.onSelectionChangedObservable.notifyObservers(instanceMesh.sourceMesh);
     };
+    MeshPropertyGridComponent.prototype.onSkeletonLink = function () {
+        if (!this.props.onSelectionChangedObservable) {
+            return;
+        }
+        var mesh = this.props.mesh;
+        this.props.onSelectionChangedObservable.notifyObservers(mesh.skeleton);
+    };
     MeshPropertyGridComponent.prototype.convertPhysicsTypeToString = function () {
         var mesh = this.props.mesh;
         switch (mesh.physicsImpostor.type) {
@@ -46148,7 +46169,10 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Vertices", value: mesh.getTotalVertices().toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Faces", value: (mesh.getTotalIndices() / 3).toFixed(0) }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Sub-meshes", value: mesh.subMeshes ? mesh.subMeshes.length.toString() : "0" }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Has skeleton", value: mesh.skeleton ? "Yes" : "No" }),
+                mesh.parent &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Parent", value: mesh.parent.name, onLink: function () { return _this.props.globalState.onSelectionChangedObservable.notifyObservers(mesh.parent); } }),
+                mesh.skeleton &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Skeleton", value: mesh.skeleton.name, onLink: function () { return _this.onSkeletonLink(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Is enabled", isSelected: function () { return mesh.isEnabled(); }, onSelect: function (value) { return mesh.setEnabled(value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Is pickable", target: mesh, propertyName: "isPickable", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 mesh.material && (!mesh.material.reservedDataStore || !mesh.material.reservedDataStore.hidden) &&
@@ -46326,6 +46350,13 @@ var SkeletonPropertyGridComponent = /** @class */ (function (_super) {
         }
         return true;
     };
+    SkeletonPropertyGridComponent.prototype.onOverrideMeshLink = function () {
+        if (!this.props.globalState.onSelectionChangedObservable) {
+            return;
+        }
+        var skeleton = this.props.skeleton;
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(skeleton.overrideMesh);
+    };
     SkeletonPropertyGridComponent.prototype.render = function () {
         var _this = this;
         var skeleton = this.props.skeleton;
@@ -46334,6 +46365,8 @@ var SkeletonPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "ID", value: skeleton.id }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Bone count", value: skeleton.bones.length.toString() }),
+                skeleton.overrideMesh &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Override mesh", value: skeleton.overrideMesh.name, onLink: function () { return _this.onOverrideMeshLink(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Use texture to store matrices", target: skeleton, propertyName: "useTextureToStoreBoneMatrices", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Debug mode", isSelected: function () { return _this._skeletonViewersEnabled; }, onSelect: function () { return _this.switchSkeletonViewers(); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__["AnimationGridComponent"], { globalState: this.props.globalState, animatable: skeleton, scene: skeleton.getScene(), lockObject: this.props.lockObject })));
@@ -46378,6 +46411,7 @@ var TransformNodePropertyGridComponent = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     TransformNodePropertyGridComponent.prototype.render = function () {
+        var _this = this;
         var transformNode = this.props.transformNode;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__["CustomPropertyGridComponent"], { globalState: this.props.globalState, target: transformNode, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -46385,7 +46419,9 @@ var TransformNodePropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "ID", value: transformNode.id }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Unique ID", value: transformNode.uniqueId.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Class", value: transformNode.getClassName() }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "IsEnabled", isSelected: function () { return transformNode.isEnabled(); }, onSelect: function (value) { return transformNode.setEnabled(value); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "IsEnabled", isSelected: function () { return transformNode.isEnabled(); }, onSelect: function (value) { return transformNode.setEnabled(value); } }),
+                transformNode.parent &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Parent", value: transformNode.parent.name, onLink: function () { return _this.props.globalState.onSelectionChangedObservable.notifyObservers(transformNode.parent); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "TRANSFORMATIONS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Position", target: transformNode, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 !transformNode.rotationQuaternion &&
