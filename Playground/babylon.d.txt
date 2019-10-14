@@ -374,6 +374,39 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Helper to manipulate strings
+     */
+    export class StringTools {
+        /**
+         * Checks for a matching suffix at the end of a string (for ES5 and lower)
+         * @param str Source string
+         * @param suffix Suffix to search for in the source string
+         * @returns Boolean indicating whether the suffix was found (true) or not (false)
+         */
+        static EndsWith(str: string, suffix: string): boolean;
+        /**
+         * Checks for a matching suffix at the beginning of a string (for ES5 and lower)
+         * @param str Source string
+         * @param suffix Suffix to search for in the source string
+         * @returns Boolean indicating whether the suffix was found (true) or not (false)
+         */
+        static StartsWith(str: string, suffix: string): boolean;
+        /**
+         * Decodes a buffer into a string
+         * @param buffer The buffer to decode
+         * @returns The decoded string
+         */
+        static Decode(buffer: Uint8Array | Uint16Array): string;
+        /**
+         * Encode a buffer to a base64 string
+         * @param buffer defines the buffer to encode
+         * @returns the encoded string
+         */
+        static EncodeArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): string;
+    }
+}
+declare module BABYLON {
+    /**
      * Class containing a set of static utilities functions for deep copy.
      */
     export class DeepCopier {
@@ -1114,39 +1147,6 @@ declare module BABYLON {
         version: string;
         platformName: string;
         lookForClosingBracketForUniformBuffer?: boolean;
-    }
-}
-declare module BABYLON {
-    /**
-     * Helper to manipulate strings
-     */
-    export class StringTools {
-        /**
-         * Checks for a matching suffix at the end of a string (for ES5 and lower)
-         * @param str Source string
-         * @param suffix Suffix to search for in the source string
-         * @returns Boolean indicating whether the suffix was found (true) or not (false)
-         */
-        static EndsWith(str: string, suffix: string): boolean;
-        /**
-         * Checks for a matching suffix at the beginning of a string (for ES5 and lower)
-         * @param str Source string
-         * @param suffix Suffix to search for in the source string
-         * @returns Boolean indicating whether the suffix was found (true) or not (false)
-         */
-        static StartsWith(str: string, suffix: string): boolean;
-        /**
-         * Decodes a buffer into a string
-         * @param buffer The buffer to decode
-         * @returns The decoded string
-         */
-        static Decode(buffer: Uint8Array | Uint16Array): string;
-        /**
-         * Encode a buffer to a base64 string
-         * @param buffer defines the buffer to encode
-         * @returns the encoded string
-         */
-        static EncodeArrayBufferToBase64(buffer: ArrayBuffer | ArrayBufferView): string;
     }
 }
 declare module BABYLON {
@@ -13226,7 +13226,7 @@ declare module BABYLON {
          * @param id defines the id of the new skeleton
          * @returns the new skeleton
          */
-        clone(name: string, id: string): Skeleton;
+        clone(name: string, id?: string): Skeleton;
         /**
          * Enable animation blending for this skeleton
          * @param blendingSpeed defines the blending speed to apply
@@ -13347,6 +13347,11 @@ declare module BABYLON {
          * @returns an array containing the root bones
          */
         getChildren(): Array<Bone>;
+        /**
+         * Gets the node index in matrix array generated for rendering
+         * @returns the node index
+         */
+        getIndex(): number;
         /**
          * Sets the parent bone
          * @param parent defines the parent (can be null if the bone is the root)
@@ -13820,9 +13825,13 @@ declare module BABYLON {
         /**
          * Instantiate (when possible) or clone that node with its hierarchy
          * @param newParent defines the new parent to use for the instance (or clone)
+         * @param options defines options to configure how copy is done
+         * @param onNewNodeCreated defines an option callback to call when a clone or an instance is created
          * @returns an instance (or a clone) of the current node with its hiearchy
          */
-        instantiateHierarchy(newParent?: Nullable<TransformNode>): Nullable<TransformNode>;
+        instantiateHierarchy(newParent?: Nullable<TransformNode>, options?: {
+            doNotInstantiate: boolean;
+        }, onNewNodeCreated?: (source: TransformNode, clone: TransformNode) => void): Nullable<TransformNode>;
         /**
          * Prevents the World matrix to be computed any longer
          * @param newWorldMatrix defines an optional matrix to use as world matrix
@@ -21760,6 +21769,7 @@ declare module BABYLON {
         private _tangents;
         private _uvs;
         private _influence;
+        private _uniqueId;
         /**
          * Observable raised when the influence changes
          */
@@ -21787,6 +21797,10 @@ declare module BABYLON {
         constructor(
         /** defines the name of the target */
         name: string, influence?: number, scene?: Nullable<Scene>);
+        /**
+         * Gets the unique ID of this manager
+         */
+        readonly uniqueId: number;
         /**
          * Gets a boolean defining if the target contains position data
          */
@@ -21843,6 +21857,11 @@ declare module BABYLON {
          * @returns a FloatArray containing the texture coordinates data (or null if not present)
          */
         getUVs(): Nullable<FloatArray>;
+        /**
+         * Clone the current target
+         * @returns a new MorphTarget
+         */
+        clone(): MorphTarget;
         /**
          * Serializes the current target into a Serialization object
          * @returns the serialized object
@@ -21958,6 +21977,11 @@ declare module BABYLON {
          * @param target defines the target to remove
          */
         removeTarget(target: MorphTarget): void;
+        /**
+         * Clone the current manager
+         * @returns a new MorphTargetManager
+         */
+        clone(): MorphTargetManager;
         /**
          * Serializes the current manager into a Serialization object
          * @returns the serialized object
@@ -23414,7 +23438,9 @@ declare module BABYLON {
          * @param clonePhysicsImpostor When cloning, include cloning mesh physics impostor, default True.
          */
         constructor(name: string, scene?: Nullable<Scene>, parent?: Nullable<Node>, source?: Nullable<Mesh>, doNotCloneChildren?: boolean, clonePhysicsImpostor?: boolean);
-        instantiateHierarchy(newParent?: Nullable<TransformNode>): Nullable<TransformNode>;
+        instantiateHierarchy(newParent?: Nullable<TransformNode>, options?: {
+            doNotInstantiate: boolean;
+        }, onNewNodeCreated?: (source: TransformNode, clone: TransformNode) => void): Nullable<TransformNode>;
         /**
          * Gets the class name
          * @returns the string "Mesh".
@@ -34164,6 +34190,23 @@ declare module BABYLON {
     export class KeepAssets extends AbstractScene {
     }
     /**
+     * Class used to store the output of the AssetContainer.instantiateAllMeshesToScene function
+     */
+    export class InstantiatedEntries {
+        /**
+         * List of new root nodes (eg. nodes with no parent)
+         */
+        rootNodes: TransformNode[];
+        /**
+         * List of new skeletons
+         */
+        skeletons: Skeleton[];
+        /**
+         * List of new animation groups
+         */
+        animationGroups: AnimationGroup[];
+    }
+    /**
      * Container with a set of assets that can be added or removed from a scene.
      */
     export class AssetContainer extends AbstractScene {
@@ -34176,6 +34219,12 @@ declare module BABYLON {
          * @param scene The scene the AssetContainer belongs to.
          */
         constructor(scene: Scene);
+        /**
+         * Instantiate or clone all meshes and add the new ones to the scene.
+         * Skeletons and animation groups will all be cloned
+         * @returns a list of rootNodes, skeletons and aniamtion groups that were duplicated
+         */
+        instantiateModelsToScene(): InstantiatedEntries;
         /**
          * Adds all the assets from the container to the scene.
          */
@@ -40798,868 +40847,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Renders a layer on top of an existing scene
-     */
-    export class UtilityLayerRenderer implements IDisposable {
-        /** the original scene that will be rendered on top of */
-        originalScene: Scene;
-        private _pointerCaptures;
-        private _lastPointerEvents;
-        private static _DefaultUtilityLayer;
-        private static _DefaultKeepDepthUtilityLayer;
-        private _sharedGizmoLight;
-        private _renderCamera;
-        /**
-         * Gets the camera that is used to render the utility layer (when not set, this will be the last active camera)
-         * @returns the camera that is used when rendering the utility layer
-         */
-        getRenderCamera(): Nullable<Camera>;
-        /**
-         * Sets the camera that should be used when rendering the utility layer (If set to null the last active camera will be used)
-         * @param cam the camera that should be used when rendering the utility layer
-         */
-        setRenderCamera(cam: Nullable<Camera>): void;
-        /**
-         * @hidden
-         * Light which used by gizmos to get light shading
-         */private _getSharedGizmoLight(): HemisphericLight;
-        /**
-         * If the picking should be done on the utility layer prior to the actual scene (Default: true)
-         */
-        pickUtilitySceneFirst: boolean;
-        /**
-         * A shared utility layer that can be used to overlay objects into a scene (Depth map of the previous scene is cleared before drawing on top of it)
-         */
-        static readonly DefaultUtilityLayer: UtilityLayerRenderer;
-        /**
-         * A shared utility layer that can be used to embed objects into a scene (Depth map of the previous scene is not cleared before drawing on top of it)
-         */
-        static readonly DefaultKeepDepthUtilityLayer: UtilityLayerRenderer;
-        /**
-         * The scene that is rendered on top of the original scene
-         */
-        utilityLayerScene: Scene;
-        /**
-         *  If the utility layer should automatically be rendered on top of existing scene
-        */
-        shouldRender: boolean;
-        /**
-         * If set to true, only pointer down onPointerObservable events will be blocked when picking is occluded by original scene
-         */
-        onlyCheckPointerDownEvents: boolean;
-        /**
-         * If set to false, only pointerUp, pointerDown and pointerMove will be sent to the utilityLayerScene (false by default)
-         */
-        processAllEvents: boolean;
-        /**
-         * Observable raised when the pointer move from the utility layer scene to the main scene
-         */
-        onPointerOutObservable: Observable<number>;
-        /** Gets or sets a predicate that will be used to indicate utility meshes present in the main scene */
-        mainSceneTrackerPredicate: (mesh: Nullable<AbstractMesh>) => boolean;
-        private _afterRenderObserver;
-        private _sceneDisposeObserver;
-        private _originalPointerObserver;
-        /**
-         * Instantiates a UtilityLayerRenderer
-         * @param originalScene the original scene that will be rendered on top of
-         * @param handleEvents boolean indicating if the utility layer should handle events
-         */
-        constructor(
-        /** the original scene that will be rendered on top of */
-        originalScene: Scene, handleEvents?: boolean);
-        private _notifyObservers;
-        /**
-         * Renders the utility layers scene on top of the original scene
-         */
-        render(): void;
-        /**
-         * Disposes of the renderer
-         */
-        dispose(): void;
-        private _updateCamera;
-    }
-}
-declare module BABYLON {
-    /**
-     * Renders gizmos on top of an existing scene which provide controls for position, rotation, etc.
-     */
-    export class Gizmo implements IDisposable {
-        /** The utility layer the gizmo will be added to */
-        gizmoLayer: UtilityLayerRenderer;
-        /**
-         * The root mesh of the gizmo
-         */private _rootMesh: Mesh;
-        private _attachedMesh;
-        /**
-         * Ratio for the scale of the gizmo (Default: 1)
-         */
-        scaleRatio: number;
-        /**
-         * If a custom mesh has been set (Default: false)
-         */
-        protected _customMeshSet: boolean;
-        /**
-         * Mesh that the gizmo will be attached to. (eg. on a drag gizmo the mesh that will be dragged)
-         * * When set, interactions will be enabled
-         */
-        attachedMesh: Nullable<AbstractMesh>;
-        /**
-         * Disposes and replaces the current meshes in the gizmo with the specified mesh
-         * @param mesh The mesh to replace the default mesh of the gizmo
-         */
-        setCustomMesh(mesh: Mesh): void;
-        /**
-         * If set the gizmo's rotation will be updated to match the attached mesh each frame (Default: true)
-         */
-        updateGizmoRotationToMatchAttachedMesh: boolean;
-        /**
-         * If set the gizmo's position will be updated to match the attached mesh each frame (Default: true)
-         */
-        updateGizmoPositionToMatchAttachedMesh: boolean;
-        /**
-         * When set, the gizmo will always appear the same size no matter where the camera is (default: true)
-         */
-        updateScale: boolean;
-        protected _interactionsEnabled: boolean;
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
-        private _beforeRenderObserver;
-        private _tempVector;
-        /**
-         * Creates a gizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         */
-        constructor(
-        /** The utility layer the gizmo will be added to */
-        gizmoLayer?: UtilityLayerRenderer);
-        /**
-         * Updates the gizmo to match the attached mesh's position/rotation
-         */
-        protected _update(): void;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Single plane drag gizmo
-     */
-    export class PlaneDragGizmo extends Gizmo {
-        /**
-         * Drag behavior responsible for the gizmos dragging interactions
-         */
-        dragBehavior: PointerDragBehavior;
-        private _pointerObserver;
-        /**
-         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
-         */
-        snapDistance: number;
-        /**
-         * Event that fires each time the gizmo snaps to a new location.
-         * * snapDistance is the the change in distance
-         */
-        onSnapObservable: Observable<{
-            snapDistance: number;
-        }>;
-        private _plane;
-        private _coloredMaterial;
-        private _hoverMaterial;
-        private _isEnabled;
-        private _parent;
-        /** @hidden */private static _CreatePlane(scene: Scene, material: StandardMaterial): TransformNode;
-        /** @hidden */private static _CreateArrowInstance(scene: Scene, arrow: TransformNode): TransformNode;
-        /**
-         * Creates a PlaneDragGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         * @param dragPlaneNormal The axis normal to which the gizmo will be able to drag on
-         * @param color The color of the gizmo
-         */
-        constructor(dragPlaneNormal: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, parent?: Nullable<PositionGizmo>);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
-        /**
-         * If the gizmo is enabled
-         */
-        isEnabled: boolean;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Gizmo that enables dragging a mesh along 3 axis
-     */
-    export class PositionGizmo extends Gizmo {
-        /**
-         * Internal gizmo used for interactions on the x axis
-         */
-        xGizmo: AxisDragGizmo;
-        /**
-         * Internal gizmo used for interactions on the y axis
-         */
-        yGizmo: AxisDragGizmo;
-        /**
-         * Internal gizmo used for interactions on the z axis
-         */
-        zGizmo: AxisDragGizmo;
-        /**
-         * Internal gizmo used for interactions on the yz plane
-         */
-        xPlaneGizmo: PlaneDragGizmo;
-        /**
-         * Internal gizmo used for interactions on the xz plane
-         */
-        yPlaneGizmo: PlaneDragGizmo;
-        /**
-         * Internal gizmo used for interactions on the xy plane
-         */
-        zPlaneGizmo: PlaneDragGizmo;
-        /**
-         * private variables
-         */
-        private _meshAttached;
-        private _updateGizmoRotationToMatchAttachedMesh;
-        private _snapDistance;
-        private _scaleRatio;
-        /** Fires an event when any of it's sub gizmos are dragged */
-        onDragStartObservable: Observable<unknown>;
-        /** Fires an event when any of it's sub gizmos are released from dragging */
-        onDragEndObservable: Observable<unknown>;
-        /**
-         * If set to true, planar drag is enabled
-         */
-        private _planarGizmoEnabled;
-        attachedMesh: Nullable<AbstractMesh>;
-        /**
-         * Creates a PositionGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         */
-        constructor(gizmoLayer?: UtilityLayerRenderer);
-        /**
-         * If the planar drag gizmo is enabled
-         * setting this will enable/disable XY, XZ and YZ planes regardless of individual gizmo settings.
-         */
-        planarGizmoEnabled: boolean;
-        updateGizmoRotationToMatchAttachedMesh: boolean;
-        /**
-         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
-         */
-        snapDistance: number;
-        /**
-         * Ratio for the scale of the gizmo (Default: 1)
-         */
-        scaleRatio: number;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-        /**
-         * CustomMeshes are not supported by this gizmo
-         * @param mesh The mesh to replace the default mesh of the gizmo
-         */
-        setCustomMesh(mesh: Mesh): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Single axis drag gizmo
-     */
-    export class AxisDragGizmo extends Gizmo {
-        /**
-         * Drag behavior responsible for the gizmos dragging interactions
-         */
-        dragBehavior: PointerDragBehavior;
-        private _pointerObserver;
-        /**
-         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
-         */
-        snapDistance: number;
-        /**
-         * Event that fires each time the gizmo snaps to a new location.
-         * * snapDistance is the the change in distance
-         */
-        onSnapObservable: Observable<{
-            snapDistance: number;
-        }>;
-        private _isEnabled;
-        private _parent;
-        private _arrow;
-        private _coloredMaterial;
-        private _hoverMaterial;
-        /** @hidden */private static _CreateArrow(scene: Scene, material: StandardMaterial): TransformNode;
-        /** @hidden */private static _CreateArrowInstance(scene: Scene, arrow: TransformNode): TransformNode;
-        /**
-         * Creates an AxisDragGizmo
-         * @param gizmoLayer The utility layer the gizmo will be added to
-         * @param dragAxis The axis which the gizmo will be able to drag on
-         * @param color The color of the gizmo
-         */
-        constructor(dragAxis: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, parent?: Nullable<PositionGizmo>);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
-        /**
-         * If the gizmo is enabled
-         */
-        isEnabled: boolean;
-        /**
-         * Disposes of the gizmo
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON.Debug {
-    /**
-         * The Axes viewer will show 3 axes in a specific point in space
-         */
-    export class AxesViewer {
-        private _xAxis;
-        private _yAxis;
-        private _zAxis;
-        private _scaleLinesFactor;
-        private _instanced;
-        /**
-         * Gets the hosting scene
-         */
-        scene: Scene;
-        /**
-         * Gets or sets a number used to scale line length
-         */
-        scaleLines: number;
-        /** Gets the node hierarchy used to render x-axis */
-        readonly xAxis: TransformNode;
-        /** Gets the node hierarchy used to render y-axis */
-        readonly yAxis: TransformNode;
-        /** Gets the node hierarchy used to render z-axis */
-        readonly zAxis: TransformNode;
-        /**
-         * Creates a new AxesViewer
-         * @param scene defines the hosting scene
-         * @param scaleLines defines a number used to scale line length (1 by default)
-         * @param renderingGroupId defines a number used to set the renderingGroupId of the meshes (2 by default)
-         * @param xAxis defines the node hierarchy used to render the x-axis
-         * @param yAxis defines the node hierarchy used to render the y-axis
-         * @param zAxis defines the node hierarchy used to render the z-axis
-         */
-        constructor(scene: Scene, scaleLines?: number, renderingGroupId?: Nullable<number>, xAxis?: TransformNode, yAxis?: TransformNode, zAxis?: TransformNode);
-        /**
-         * Force the viewer to update
-         * @param position defines the position of the viewer
-         * @param xaxis defines the x axis of the viewer
-         * @param yaxis defines the y axis of the viewer
-         * @param zaxis defines the z axis of the viewer
-         */
-        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
-        /**
-         * Creates an instance of this axes viewer.
-         * @returns a new axes viewer with instanced meshes
-         */
-        createInstance(): AxesViewer;
-        /** Releases resources */
-        dispose(): void;
-        private static _SetRenderingGroupId;
-    }
-}
-declare module BABYLON.Debug {
-    /**
-         * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
-         * @see demo here: https://www.babylonjs-playground.com/#0DE8F4#8
-         */
-    export class BoneAxesViewer extends AxesViewer {
-        /**
-         * Gets or sets the target mesh where to display the axes viewer
-         */
-        mesh: Nullable<Mesh>;
-        /**
-         * Gets or sets the target bone where to display the axes viewer
-         */
-        bone: Nullable<Bone>;
-        /** Gets current position */
-        pos: Vector3;
-        /** Gets direction of X axis */
-        xaxis: Vector3;
-        /** Gets direction of Y axis */
-        yaxis: Vector3;
-        /** Gets direction of Z axis */
-        zaxis: Vector3;
-        /**
-         * Creates a new BoneAxesViewer
-         * @param scene defines the hosting scene
-         * @param bone defines the target bone
-         * @param mesh defines the target mesh
-         * @param scaleLines defines a scaling factor for line length (1 by default)
-         */
-        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
-        /**
-         * Force the viewer to update
-         */
-        update(): void;
-        /** Releases resources */
-        dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Interface used to define scene explorer extensibility option
-     */
-    export interface IExplorerExtensibilityOption {
-        /**
-         * Define the option label
-         */
-        label: string;
-        /**
-         * Defines the action to execute on click
-         */
-        action: (entity: any) => void;
-    }
-    /**
-     * Defines a group of actions associated with a predicate to use when extending the Inspector scene explorer
-     */
-    export interface IExplorerExtensibilityGroup {
-        /**
-         * Defines a predicate to test if a given type mut be extended
-         */
-        predicate: (entity: any) => boolean;
-        /**
-         * Gets the list of options added to a type
-         */
-        entries: IExplorerExtensibilityOption[];
-    }
-    /**
-     * Interface used to define the options to use to create the Inspector
-     */
-    export interface IInspectorOptions {
-        /**
-         * Display in overlay mode (default: false)
-         */
-        overlay?: boolean;
-        /**
-         * HTML element to use as root (the parent of the rendering canvas will be used as default value)
-         */
-        globalRoot?: HTMLElement;
-        /**
-         * Display the Scene explorer
-         */
-        showExplorer?: boolean;
-        /**
-         * Display the property inspector
-         */
-        showInspector?: boolean;
-        /**
-         * Display in embed mode (both panes on the right)
-         */
-        embedMode?: boolean;
-        /**
-         * let the Inspector handles resize of the canvas when panes are resized (default to true)
-         */
-        handleResize?: boolean;
-        /**
-         * Allow the panes to popup (default: true)
-         */
-        enablePopup?: boolean;
-        /**
-         * Allow the panes to be closed by users (default: true)
-         */
-        enableClose?: boolean;
-        /**
-         * Optional list of extensibility entries
-         */
-        explorerExtensibility?: IExplorerExtensibilityGroup[];
-        /**
-         * Optional URL to get the inspector script from (by default it uses the babylonjs CDN).
-         */
-        inspectorURL?: string;
-    }
-        interface Scene {
-            /**
-             * @hidden
-             * Backing field
-             */private _debugLayer: DebugLayer;
-            /**
-             * Gets the debug layer (aka Inspector) associated with the scene
-             * @see http://doc.babylonjs.com/features/playground_debuglayer
-             */
-            debugLayer: DebugLayer;
-        }
-    /**
-     * The debug layer (aka Inspector) is the go to tool in order to better understand
-     * what is happening in your scene
-     * @see http://doc.babylonjs.com/features/playground_debuglayer
-     */
-    export class DebugLayer {
-        /**
-         * Define the url to get the inspector script from.
-         * By default it uses the babylonjs CDN.
-         * @ignoreNaming
-         */
-        static InspectorURL: string;
-        private _scene;
-        private BJSINSPECTOR;
-        private _onPropertyChangedObservable?;
-        /**
-         * Observable triggered when a property is changed through the inspector.
-         */
-        readonly onPropertyChangedObservable: any;
-        /**
-         * Instantiates a new debug layer.
-         * The debug layer (aka Inspector) is the go to tool in order to better understand
-         * what is happening in your scene
-         * @see http://doc.babylonjs.com/features/playground_debuglayer
-         * @param scene Defines the scene to inspect
-         */
-        constructor(scene: Scene);
-        /** Creates the inspector window. */
-        private _createInspector;
-        /**
-         * Select a specific entity in the scene explorer and highlight a specific block in that entity property grid
-         * @param entity defines the entity to select
-         * @param lineContainerTitle defines the specific block to highlight
-         */
-        select(entity: any, lineContainerTitle?: string): void;
-        /** Get the inspector from bundle or global */
-        private _getGlobalInspector;
-        /**
-         * Get if the inspector is visible or not.
-         * @returns true if visible otherwise, false
-         */
-        isVisible(): boolean;
-        /**
-         * Hide the inspector and close its window.
-         */
-        hide(): void;
-        /**
-          * Launch the debugLayer.
-          * @param config Define the configuration of the inspector
-          * @return a promise fulfilled when the debug layer is visible
-          */
-        show(config?: IInspectorOptions): Promise<DebugLayer>;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class containing static functions to help procedurally build meshes
-     */
-    export class BoxBuilder {
-        /**
-         * Creates a box mesh
-         * * The parameter `size` sets the size (float) of each box side (default 1)
-         * * You can set some different box dimensions by using the parameters `width`, `height` and `depth` (all by default have the same value of `size`)
-         * * You can set different colors and different images to each box side by using the parameters `faceColors` (an array of 6 Color3 elements) and `faceUV` (an array of 6 Vector4 elements)
-         * * Please read this tutorial : https://doc.babylonjs.com/how_to/createbox_per_face_textures_and_colors
-         * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
-         * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
-         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @see https://doc.babylonjs.com/how_to/set_shapes#box
-         * @param name defines the name of the mesh
-         * @param options defines the options used to create the mesh
-         * @param scene defines the hosting scene
-         * @returns the box mesh
-         */
-        static CreateBox(name: string, options: {
-            size?: number;
-            width?: number;
-            height?: number;
-            depth?: number;
-            faceUV?: Vector4[];
-            faceColors?: Color4[];
-            sideOrientation?: number;
-            frontUVs?: Vector4;
-            backUVs?: Vector4;
-            wrap?: boolean;
-            topBaseAt?: number;
-            bottomBaseAt?: number;
-            updatable?: boolean;
-        }, scene?: Nullable<Scene>): Mesh;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class containing static functions to help procedurally build meshes
-     */
-    export class SphereBuilder {
-        /**
-         * Creates a sphere mesh
-         * * The parameter `diameter` sets the diameter size (float) of the sphere (default 1)
-         * * You can set some different sphere dimensions, for instance to build an ellipsoid, by using the parameters `diameterX`, `diameterY` and `diameterZ` (all by default have the same value of `diameter`)
-         * * The parameter `segments` sets the sphere number of horizontal stripes (positive integer, default 32)
-         * * You can create an unclosed sphere with the parameter `arc` (positive float, default 1), valued between 0 and 1, what is the ratio of the circumference (latitude) : 2 x PI x ratio
-         * * You can create an unclosed sphere on its height with the parameter `slice` (positive float, default1), valued between 0 and 1, what is the height ratio (longitude)
-         * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
-         * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
-         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @param name defines the name of the mesh
-         * @param options defines the options used to create the mesh
-         * @param scene defines the hosting scene
-         * @returns the sphere mesh
-         * @see https://doc.babylonjs.com/how_to/set_shapes#sphere
-         */
-        static CreateSphere(name: string, options: {
-            segments?: number;
-            diameter?: number;
-            diameterX?: number;
-            diameterY?: number;
-            diameterZ?: number;
-            arc?: number;
-            slice?: number;
-            sideOrientation?: number;
-            frontUVs?: Vector4;
-            backUVs?: Vector4;
-            updatable?: boolean;
-        }, scene?: Nullable<Scene>): Mesh;
-    }
-}
-declare module BABYLON.Debug {
-    /**
-         * Used to show the physics impostor around the specific mesh
-         */
-    export class PhysicsViewer {
-        /** @hidden */
-        protected _impostors: Array<Nullable<PhysicsImpostor>>;
-        /** @hidden */
-        protected _meshes: Array<Nullable<AbstractMesh>>;
-        /** @hidden */
-        protected _scene: Nullable<Scene>;
-        /** @hidden */
-        protected _numMeshes: number;
-        /** @hidden */
-        protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
-        private _renderFunction;
-        private _utilityLayer;
-        private _debugBoxMesh;
-        private _debugSphereMesh;
-        private _debugCylinderMesh;
-        private _debugMaterial;
-        private _debugMeshMeshes;
-        /**
-         * Creates a new PhysicsViewer
-         * @param scene defines the hosting scene
-         */
-        constructor(scene: Scene);
-        /** @hidden */
-        protected _updateDebugMeshes(): void;
-        /**
-         * Renders a specified physic impostor
-         * @param impostor defines the impostor to render
-         * @param targetMesh defines the mesh represented by the impostor
-         * @returns the new debug mesh used to render the impostor
-         */
-        showImpostor(impostor: PhysicsImpostor, targetMesh?: Mesh): Nullable<AbstractMesh>;
-        /**
-         * Hides a specified physic impostor
-         * @param impostor defines the impostor to hide
-         */
-        hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
-        private _getDebugMaterial;
-        private _getDebugBoxMesh;
-        private _getDebugSphereMesh;
-        private _getDebugCylinderMesh;
-        private _getDebugMeshMesh;
-        private _getDebugMesh;
-        /** Releases all resources */
-        dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class containing static functions to help procedurally build meshes
-     */
-    export class LinesBuilder {
-        /**
-         * Creates a line system mesh. A line system is a pool of many lines gathered in a single mesh
-         * * A line system mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of lines as an input parameter
-         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineSystem to this static function
-         * * The parameter `lines` is an array of lines, each line being an array of successive Vector3
-         * * The optional parameter `instance` is an instance of an existing LineSystem object to be updated with the passed `lines` parameter
-         * * The optional parameter `colors` is an array of line colors, each line colors being an array of successive Color4, one per line point
-         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need the alpha blending (faster)
-         * * Updating a simple Line mesh, you just need to update every line in the `lines` array : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
-         * * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines
-         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes#line-system
-         * @param name defines the name of the new line system
-         * @param options defines the options used to create the line system
-         * @param scene defines the hosting scene
-         * @returns a new line system mesh
-         */
-        static CreateLineSystem(name: string, options: {
-            lines: Vector3[][];
-            updatable?: boolean;
-            instance?: Nullable<LinesMesh>;
-            colors?: Nullable<Color4[][]>;
-            useVertexAlpha?: boolean;
-        }, scene: Nullable<Scene>): LinesMesh;
-        /**
-         * Creates a line mesh
-         * A line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter
-         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function
-         * * The parameter `points` is an array successive Vector3
-         * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
-         * * The optional parameter `colors` is an array of successive Color4, one per line point
-         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need alpha blending (faster)
-         * * When updating an instance, remember that only point positions can change, not the number of points
-         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes#lines
-         * @param name defines the name of the new line system
-         * @param options defines the options used to create the line system
-         * @param scene defines the hosting scene
-         * @returns a new line mesh
-         */
-        static CreateLines(name: string, options: {
-            points: Vector3[];
-            updatable?: boolean;
-            instance?: Nullable<LinesMesh>;
-            colors?: Color4[];
-            useVertexAlpha?: boolean;
-        }, scene?: Nullable<Scene>): LinesMesh;
-        /**
-         * Creates a dashed line mesh
-         * * A dashed line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter
-         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function
-         * * The parameter `points` is an array successive Vector3
-         * * The parameter `dashNb` is the intended total number of dashes (positive integer, default 200)
-         * * The parameter `dashSize` is the size of the dashes relatively the dash number (positive float, default 3)
-         * * The parameter `gapSize` is the size of the gap between two successive dashes relatively the dash number (positive float, default 1)
-         * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
-         * * When updating an instance, remember that only point positions can change, not the number of points
-         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @param name defines the name of the mesh
-         * @param options defines the options used to create the mesh
-         * @param scene defines the hosting scene
-         * @returns the dashed line mesh
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes#dashed-lines
-         */
-        static CreateDashedLines(name: string, options: {
-            points: Vector3[];
-            dashSize?: number;
-            gapSize?: number;
-            dashNb?: number;
-            updatable?: boolean;
-            instance?: LinesMesh;
-        }, scene?: Nullable<Scene>): LinesMesh;
-    }
-}
-declare module BABYLON {
-    /**
-     * As raycast might be hard to debug, the RayHelper can help rendering the different rays
-     * in order to better appreciate the issue one might have.
-     * @see http://doc.babylonjs.com/babylon101/raycasts#debugging
-     */
-    export class RayHelper {
-        /**
-         * Defines the ray we are currently tryin to visualize.
-         */
-        ray: Nullable<Ray>;
-        private _renderPoints;
-        private _renderLine;
-        private _renderFunction;
-        private _scene;
-        private _updateToMeshFunction;
-        private _attachedToMesh;
-        private _meshSpaceDirection;
-        private _meshSpaceOrigin;
-        /**
-         * Helper function to create a colored helper in a scene in one line.
-         * @param ray Defines the ray we are currently tryin to visualize
-         * @param scene Defines the scene the ray is used in
-         * @param color Defines the color we want to see the ray in
-         * @returns The newly created ray helper.
-         */
-        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
-        /**
-         * Instantiate a new ray helper.
-         * As raycast might be hard to debug, the RayHelper can help rendering the different rays
-         * in order to better appreciate the issue one might have.
-         * @see http://doc.babylonjs.com/babylon101/raycasts#debugging
-         * @param ray Defines the ray we are currently tryin to visualize
-         */
-        constructor(ray: Ray);
-        /**
-         * Shows the ray we are willing to debug.
-         * @param scene Defines the scene the ray needs to be rendered in
-         * @param color Defines the color the ray needs to be rendered in
-         */
-        show(scene: Scene, color?: Color3): void;
-        /**
-         * Hides the ray we are debugging.
-         */
-        hide(): void;
-        private _render;
-        /**
-         * Attach a ray helper to a mesh so that we can easily see its orientation for instance or information like its normals.
-         * @param mesh Defines the mesh we want the helper attached to
-         * @param meshSpaceDirection Defines the direction of the Ray in mesh space (local space of the mesh node)
-         * @param meshSpaceOrigin Defines the origin of the Ray in mesh space (local space of the mesh node)
-         * @param length Defines the length of the ray
-         */
-        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
-        /**
-         * Detach the ray helper from the mesh it has previously been attached to.
-         */
-        detachFromMesh(): void;
-        private _updateToMesh;
-        /**
-         * Dispose the helper and release its associated resources.
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON.Debug {
-    /**
-         * Class used to render a debug view of a given skeleton
-         * @see http://www.babylonjs-playground.com/#1BZJVJ#8
-         */
-    export class SkeletonViewer {
-        /** defines the skeleton to render */
-        skeleton: Skeleton;
-        /** defines the mesh attached to the skeleton */
-        mesh: AbstractMesh;
-        /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
-        autoUpdateBonesMatrices: boolean;
-        /** defines the rendering group id to use with the viewer */
-        renderingGroupId: number;
-        /** Gets or sets the color used to render the skeleton */
-        color: Color3;
-        private _scene;
-        private _debugLines;
-        private _debugMesh;
-        private _isEnabled;
-        private _renderFunction;
-        private _utilityLayer;
-        /**
-         * Returns the mesh used to render the bones
-         */
-        readonly debugMesh: Nullable<LinesMesh>;
-        /**
-         * Creates a new SkeletonViewer
-         * @param skeleton defines the skeleton to render
-         * @param mesh defines the mesh attached to the skeleton
-         * @param scene defines the hosting scene
-         * @param autoUpdateBonesMatrices defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)
-         * @param renderingGroupId defines the rendering group id to use with the viewer
-         */
-        constructor(
-        /** defines the skeleton to render */
-        skeleton: Skeleton, 
-        /** defines the mesh attached to the skeleton */
-        mesh: AbstractMesh, scene: Scene, 
-        /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
-        autoUpdateBonesMatrices?: boolean, 
-        /** defines the rendering group id to use with the viewer */
-        renderingGroupId?: number);
-        /** Gets or sets a boolean indicating if the viewer is enabled */
-        isEnabled: boolean;
-        private _getBonePosition;
-        private _getLinesForBonesWithLength;
-        private _getLinesForBonesNoLength;
-        /** Update the viewer to sync with current skeleton state */
-        update(): void;
-        /** Release associated resources */
-        dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
      * Manages an XRSession to work with Babylon's engine
      * @see https://doc.babylonjs.com/how_to/webxr
      */
@@ -42983,6 +42170,868 @@ declare module BABYLON {
         /**
          * Disposes the component and the associated ressources.
          */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Renders a layer on top of an existing scene
+     */
+    export class UtilityLayerRenderer implements IDisposable {
+        /** the original scene that will be rendered on top of */
+        originalScene: Scene;
+        private _pointerCaptures;
+        private _lastPointerEvents;
+        private static _DefaultUtilityLayer;
+        private static _DefaultKeepDepthUtilityLayer;
+        private _sharedGizmoLight;
+        private _renderCamera;
+        /**
+         * Gets the camera that is used to render the utility layer (when not set, this will be the last active camera)
+         * @returns the camera that is used when rendering the utility layer
+         */
+        getRenderCamera(): Nullable<Camera>;
+        /**
+         * Sets the camera that should be used when rendering the utility layer (If set to null the last active camera will be used)
+         * @param cam the camera that should be used when rendering the utility layer
+         */
+        setRenderCamera(cam: Nullable<Camera>): void;
+        /**
+         * @hidden
+         * Light which used by gizmos to get light shading
+         */private _getSharedGizmoLight(): HemisphericLight;
+        /**
+         * If the picking should be done on the utility layer prior to the actual scene (Default: true)
+         */
+        pickUtilitySceneFirst: boolean;
+        /**
+         * A shared utility layer that can be used to overlay objects into a scene (Depth map of the previous scene is cleared before drawing on top of it)
+         */
+        static readonly DefaultUtilityLayer: UtilityLayerRenderer;
+        /**
+         * A shared utility layer that can be used to embed objects into a scene (Depth map of the previous scene is not cleared before drawing on top of it)
+         */
+        static readonly DefaultKeepDepthUtilityLayer: UtilityLayerRenderer;
+        /**
+         * The scene that is rendered on top of the original scene
+         */
+        utilityLayerScene: Scene;
+        /**
+         *  If the utility layer should automatically be rendered on top of existing scene
+        */
+        shouldRender: boolean;
+        /**
+         * If set to true, only pointer down onPointerObservable events will be blocked when picking is occluded by original scene
+         */
+        onlyCheckPointerDownEvents: boolean;
+        /**
+         * If set to false, only pointerUp, pointerDown and pointerMove will be sent to the utilityLayerScene (false by default)
+         */
+        processAllEvents: boolean;
+        /**
+         * Observable raised when the pointer move from the utility layer scene to the main scene
+         */
+        onPointerOutObservable: Observable<number>;
+        /** Gets or sets a predicate that will be used to indicate utility meshes present in the main scene */
+        mainSceneTrackerPredicate: (mesh: Nullable<AbstractMesh>) => boolean;
+        private _afterRenderObserver;
+        private _sceneDisposeObserver;
+        private _originalPointerObserver;
+        /**
+         * Instantiates a UtilityLayerRenderer
+         * @param originalScene the original scene that will be rendered on top of
+         * @param handleEvents boolean indicating if the utility layer should handle events
+         */
+        constructor(
+        /** the original scene that will be rendered on top of */
+        originalScene: Scene, handleEvents?: boolean);
+        private _notifyObservers;
+        /**
+         * Renders the utility layers scene on top of the original scene
+         */
+        render(): void;
+        /**
+         * Disposes of the renderer
+         */
+        dispose(): void;
+        private _updateCamera;
+    }
+}
+declare module BABYLON {
+    /**
+     * Renders gizmos on top of an existing scene which provide controls for position, rotation, etc.
+     */
+    export class Gizmo implements IDisposable {
+        /** The utility layer the gizmo will be added to */
+        gizmoLayer: UtilityLayerRenderer;
+        /**
+         * The root mesh of the gizmo
+         */private _rootMesh: Mesh;
+        private _attachedMesh;
+        /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        scaleRatio: number;
+        /**
+         * If a custom mesh has been set (Default: false)
+         */
+        protected _customMeshSet: boolean;
+        /**
+         * Mesh that the gizmo will be attached to. (eg. on a drag gizmo the mesh that will be dragged)
+         * * When set, interactions will be enabled
+         */
+        attachedMesh: Nullable<AbstractMesh>;
+        /**
+         * Disposes and replaces the current meshes in the gizmo with the specified mesh
+         * @param mesh The mesh to replace the default mesh of the gizmo
+         */
+        setCustomMesh(mesh: Mesh): void;
+        /**
+         * If set the gizmo's rotation will be updated to match the attached mesh each frame (Default: true)
+         */
+        updateGizmoRotationToMatchAttachedMesh: boolean;
+        /**
+         * If set the gizmo's position will be updated to match the attached mesh each frame (Default: true)
+         */
+        updateGizmoPositionToMatchAttachedMesh: boolean;
+        /**
+         * When set, the gizmo will always appear the same size no matter where the camera is (default: true)
+         */
+        updateScale: boolean;
+        protected _interactionsEnabled: boolean;
+        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        private _beforeRenderObserver;
+        private _tempVector;
+        /**
+         * Creates a gizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         */
+        constructor(
+        /** The utility layer the gizmo will be added to */
+        gizmoLayer?: UtilityLayerRenderer);
+        /**
+         * Updates the gizmo to match the attached mesh's position/rotation
+         */
+        protected _update(): void;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Single plane drag gizmo
+     */
+    export class PlaneDragGizmo extends Gizmo {
+        /**
+         * Drag behavior responsible for the gizmos dragging interactions
+         */
+        dragBehavior: PointerDragBehavior;
+        private _pointerObserver;
+        /**
+         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
+         */
+        snapDistance: number;
+        /**
+         * Event that fires each time the gizmo snaps to a new location.
+         * * snapDistance is the the change in distance
+         */
+        onSnapObservable: Observable<{
+            snapDistance: number;
+        }>;
+        private _plane;
+        private _coloredMaterial;
+        private _hoverMaterial;
+        private _isEnabled;
+        private _parent;
+        /** @hidden */private static _CreatePlane(scene: Scene, material: StandardMaterial): TransformNode;
+        /** @hidden */private static _CreateArrowInstance(scene: Scene, arrow: TransformNode): TransformNode;
+        /**
+         * Creates a PlaneDragGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         * @param dragPlaneNormal The axis normal to which the gizmo will be able to drag on
+         * @param color The color of the gizmo
+         */
+        constructor(dragPlaneNormal: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, parent?: Nullable<PositionGizmo>);
+        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        /**
+         * If the gizmo is enabled
+         */
+        isEnabled: boolean;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Gizmo that enables dragging a mesh along 3 axis
+     */
+    export class PositionGizmo extends Gizmo {
+        /**
+         * Internal gizmo used for interactions on the x axis
+         */
+        xGizmo: AxisDragGizmo;
+        /**
+         * Internal gizmo used for interactions on the y axis
+         */
+        yGizmo: AxisDragGizmo;
+        /**
+         * Internal gizmo used for interactions on the z axis
+         */
+        zGizmo: AxisDragGizmo;
+        /**
+         * Internal gizmo used for interactions on the yz plane
+         */
+        xPlaneGizmo: PlaneDragGizmo;
+        /**
+         * Internal gizmo used for interactions on the xz plane
+         */
+        yPlaneGizmo: PlaneDragGizmo;
+        /**
+         * Internal gizmo used for interactions on the xy plane
+         */
+        zPlaneGizmo: PlaneDragGizmo;
+        /**
+         * private variables
+         */
+        private _meshAttached;
+        private _updateGizmoRotationToMatchAttachedMesh;
+        private _snapDistance;
+        private _scaleRatio;
+        /** Fires an event when any of it's sub gizmos are dragged */
+        onDragStartObservable: Observable<unknown>;
+        /** Fires an event when any of it's sub gizmos are released from dragging */
+        onDragEndObservable: Observable<unknown>;
+        /**
+         * If set to true, planar drag is enabled
+         */
+        private _planarGizmoEnabled;
+        attachedMesh: Nullable<AbstractMesh>;
+        /**
+         * Creates a PositionGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         */
+        constructor(gizmoLayer?: UtilityLayerRenderer);
+        /**
+         * If the planar drag gizmo is enabled
+         * setting this will enable/disable XY, XZ and YZ planes regardless of individual gizmo settings.
+         */
+        planarGizmoEnabled: boolean;
+        updateGizmoRotationToMatchAttachedMesh: boolean;
+        /**
+         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
+         */
+        snapDistance: number;
+        /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        scaleRatio: number;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+        /**
+         * CustomMeshes are not supported by this gizmo
+         * @param mesh The mesh to replace the default mesh of the gizmo
+         */
+        setCustomMesh(mesh: Mesh): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Single axis drag gizmo
+     */
+    export class AxisDragGizmo extends Gizmo {
+        /**
+         * Drag behavior responsible for the gizmos dragging interactions
+         */
+        dragBehavior: PointerDragBehavior;
+        private _pointerObserver;
+        /**
+         * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
+         */
+        snapDistance: number;
+        /**
+         * Event that fires each time the gizmo snaps to a new location.
+         * * snapDistance is the the change in distance
+         */
+        onSnapObservable: Observable<{
+            snapDistance: number;
+        }>;
+        private _isEnabled;
+        private _parent;
+        private _arrow;
+        private _coloredMaterial;
+        private _hoverMaterial;
+        /** @hidden */private static _CreateArrow(scene: Scene, material: StandardMaterial): TransformNode;
+        /** @hidden */private static _CreateArrowInstance(scene: Scene, arrow: TransformNode): TransformNode;
+        /**
+         * Creates an AxisDragGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         * @param dragAxis The axis which the gizmo will be able to drag on
+         * @param color The color of the gizmo
+         */
+        constructor(dragAxis: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, parent?: Nullable<PositionGizmo>);
+        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        /**
+         * If the gizmo is enabled
+         */
+        isEnabled: boolean;
+        /**
+         * Disposes of the gizmo
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.Debug {
+    /**
+         * The Axes viewer will show 3 axes in a specific point in space
+         */
+    export class AxesViewer {
+        private _xAxis;
+        private _yAxis;
+        private _zAxis;
+        private _scaleLinesFactor;
+        private _instanced;
+        /**
+         * Gets the hosting scene
+         */
+        scene: Scene;
+        /**
+         * Gets or sets a number used to scale line length
+         */
+        scaleLines: number;
+        /** Gets the node hierarchy used to render x-axis */
+        readonly xAxis: TransformNode;
+        /** Gets the node hierarchy used to render y-axis */
+        readonly yAxis: TransformNode;
+        /** Gets the node hierarchy used to render z-axis */
+        readonly zAxis: TransformNode;
+        /**
+         * Creates a new AxesViewer
+         * @param scene defines the hosting scene
+         * @param scaleLines defines a number used to scale line length (1 by default)
+         * @param renderingGroupId defines a number used to set the renderingGroupId of the meshes (2 by default)
+         * @param xAxis defines the node hierarchy used to render the x-axis
+         * @param yAxis defines the node hierarchy used to render the y-axis
+         * @param zAxis defines the node hierarchy used to render the z-axis
+         */
+        constructor(scene: Scene, scaleLines?: number, renderingGroupId?: Nullable<number>, xAxis?: TransformNode, yAxis?: TransformNode, zAxis?: TransformNode);
+        /**
+         * Force the viewer to update
+         * @param position defines the position of the viewer
+         * @param xaxis defines the x axis of the viewer
+         * @param yaxis defines the y axis of the viewer
+         * @param zaxis defines the z axis of the viewer
+         */
+        update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
+        /**
+         * Creates an instance of this axes viewer.
+         * @returns a new axes viewer with instanced meshes
+         */
+        createInstance(): AxesViewer;
+        /** Releases resources */
+        dispose(): void;
+        private static _SetRenderingGroupId;
+    }
+}
+declare module BABYLON.Debug {
+    /**
+         * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
+         * @see demo here: https://www.babylonjs-playground.com/#0DE8F4#8
+         */
+    export class BoneAxesViewer extends AxesViewer {
+        /**
+         * Gets or sets the target mesh where to display the axes viewer
+         */
+        mesh: Nullable<Mesh>;
+        /**
+         * Gets or sets the target bone where to display the axes viewer
+         */
+        bone: Nullable<Bone>;
+        /** Gets current position */
+        pos: Vector3;
+        /** Gets direction of X axis */
+        xaxis: Vector3;
+        /** Gets direction of Y axis */
+        yaxis: Vector3;
+        /** Gets direction of Z axis */
+        zaxis: Vector3;
+        /**
+         * Creates a new BoneAxesViewer
+         * @param scene defines the hosting scene
+         * @param bone defines the target bone
+         * @param mesh defines the target mesh
+         * @param scaleLines defines a scaling factor for line length (1 by default)
+         */
+        constructor(scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number);
+        /**
+         * Force the viewer to update
+         */
+        update(): void;
+        /** Releases resources */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Interface used to define scene explorer extensibility option
+     */
+    export interface IExplorerExtensibilityOption {
+        /**
+         * Define the option label
+         */
+        label: string;
+        /**
+         * Defines the action to execute on click
+         */
+        action: (entity: any) => void;
+    }
+    /**
+     * Defines a group of actions associated with a predicate to use when extending the Inspector scene explorer
+     */
+    export interface IExplorerExtensibilityGroup {
+        /**
+         * Defines a predicate to test if a given type mut be extended
+         */
+        predicate: (entity: any) => boolean;
+        /**
+         * Gets the list of options added to a type
+         */
+        entries: IExplorerExtensibilityOption[];
+    }
+    /**
+     * Interface used to define the options to use to create the Inspector
+     */
+    export interface IInspectorOptions {
+        /**
+         * Display in overlay mode (default: false)
+         */
+        overlay?: boolean;
+        /**
+         * HTML element to use as root (the parent of the rendering canvas will be used as default value)
+         */
+        globalRoot?: HTMLElement;
+        /**
+         * Display the Scene explorer
+         */
+        showExplorer?: boolean;
+        /**
+         * Display the property inspector
+         */
+        showInspector?: boolean;
+        /**
+         * Display in embed mode (both panes on the right)
+         */
+        embedMode?: boolean;
+        /**
+         * let the Inspector handles resize of the canvas when panes are resized (default to true)
+         */
+        handleResize?: boolean;
+        /**
+         * Allow the panes to popup (default: true)
+         */
+        enablePopup?: boolean;
+        /**
+         * Allow the panes to be closed by users (default: true)
+         */
+        enableClose?: boolean;
+        /**
+         * Optional list of extensibility entries
+         */
+        explorerExtensibility?: IExplorerExtensibilityGroup[];
+        /**
+         * Optional URL to get the inspector script from (by default it uses the babylonjs CDN).
+         */
+        inspectorURL?: string;
+    }
+        interface Scene {
+            /**
+             * @hidden
+             * Backing field
+             */private _debugLayer: DebugLayer;
+            /**
+             * Gets the debug layer (aka Inspector) associated with the scene
+             * @see http://doc.babylonjs.com/features/playground_debuglayer
+             */
+            debugLayer: DebugLayer;
+        }
+    /**
+     * The debug layer (aka Inspector) is the go to tool in order to better understand
+     * what is happening in your scene
+     * @see http://doc.babylonjs.com/features/playground_debuglayer
+     */
+    export class DebugLayer {
+        /**
+         * Define the url to get the inspector script from.
+         * By default it uses the babylonjs CDN.
+         * @ignoreNaming
+         */
+        static InspectorURL: string;
+        private _scene;
+        private BJSINSPECTOR;
+        private _onPropertyChangedObservable?;
+        /**
+         * Observable triggered when a property is changed through the inspector.
+         */
+        readonly onPropertyChangedObservable: any;
+        /**
+         * Instantiates a new debug layer.
+         * The debug layer (aka Inspector) is the go to tool in order to better understand
+         * what is happening in your scene
+         * @see http://doc.babylonjs.com/features/playground_debuglayer
+         * @param scene Defines the scene to inspect
+         */
+        constructor(scene: Scene);
+        /** Creates the inspector window. */
+        private _createInspector;
+        /**
+         * Select a specific entity in the scene explorer and highlight a specific block in that entity property grid
+         * @param entity defines the entity to select
+         * @param lineContainerTitle defines the specific block to highlight
+         */
+        select(entity: any, lineContainerTitle?: string): void;
+        /** Get the inspector from bundle or global */
+        private _getGlobalInspector;
+        /**
+         * Get if the inspector is visible or not.
+         * @returns true if visible otherwise, false
+         */
+        isVisible(): boolean;
+        /**
+         * Hide the inspector and close its window.
+         */
+        hide(): void;
+        /**
+          * Launch the debugLayer.
+          * @param config Define the configuration of the inspector
+          * @return a promise fulfilled when the debug layer is visible
+          */
+        show(config?: IInspectorOptions): Promise<DebugLayer>;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class containing static functions to help procedurally build meshes
+     */
+    export class BoxBuilder {
+        /**
+         * Creates a box mesh
+         * * The parameter `size` sets the size (float) of each box side (default 1)
+         * * You can set some different box dimensions by using the parameters `width`, `height` and `depth` (all by default have the same value of `size`)
+         * * You can set different colors and different images to each box side by using the parameters `faceColors` (an array of 6 Color3 elements) and `faceUV` (an array of 6 Vector4 elements)
+         * * Please read this tutorial : https://doc.babylonjs.com/how_to/createbox_per_face_textures_and_colors
+         * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @see https://doc.babylonjs.com/how_to/set_shapes#box
+         * @param name defines the name of the mesh
+         * @param options defines the options used to create the mesh
+         * @param scene defines the hosting scene
+         * @returns the box mesh
+         */
+        static CreateBox(name: string, options: {
+            size?: number;
+            width?: number;
+            height?: number;
+            depth?: number;
+            faceUV?: Vector4[];
+            faceColors?: Color4[];
+            sideOrientation?: number;
+            frontUVs?: Vector4;
+            backUVs?: Vector4;
+            wrap?: boolean;
+            topBaseAt?: number;
+            bottomBaseAt?: number;
+            updatable?: boolean;
+        }, scene?: Nullable<Scene>): Mesh;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class containing static functions to help procedurally build meshes
+     */
+    export class SphereBuilder {
+        /**
+         * Creates a sphere mesh
+         * * The parameter `diameter` sets the diameter size (float) of the sphere (default 1)
+         * * You can set some different sphere dimensions, for instance to build an ellipsoid, by using the parameters `diameterX`, `diameterY` and `diameterZ` (all by default have the same value of `diameter`)
+         * * The parameter `segments` sets the sphere number of horizontal stripes (positive integer, default 32)
+         * * You can create an unclosed sphere with the parameter `arc` (positive float, default 1), valued between 0 and 1, what is the ratio of the circumference (latitude) : 2 x PI x ratio
+         * * You can create an unclosed sphere on its height with the parameter `slice` (positive float, default1), valued between 0 and 1, what is the height ratio (longitude)
+         * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @param name defines the name of the mesh
+         * @param options defines the options used to create the mesh
+         * @param scene defines the hosting scene
+         * @returns the sphere mesh
+         * @see https://doc.babylonjs.com/how_to/set_shapes#sphere
+         */
+        static CreateSphere(name: string, options: {
+            segments?: number;
+            diameter?: number;
+            diameterX?: number;
+            diameterY?: number;
+            diameterZ?: number;
+            arc?: number;
+            slice?: number;
+            sideOrientation?: number;
+            frontUVs?: Vector4;
+            backUVs?: Vector4;
+            updatable?: boolean;
+        }, scene?: Nullable<Scene>): Mesh;
+    }
+}
+declare module BABYLON.Debug {
+    /**
+         * Used to show the physics impostor around the specific mesh
+         */
+    export class PhysicsViewer {
+        /** @hidden */
+        protected _impostors: Array<Nullable<PhysicsImpostor>>;
+        /** @hidden */
+        protected _meshes: Array<Nullable<AbstractMesh>>;
+        /** @hidden */
+        protected _scene: Nullable<Scene>;
+        /** @hidden */
+        protected _numMeshes: number;
+        /** @hidden */
+        protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
+        private _renderFunction;
+        private _utilityLayer;
+        private _debugBoxMesh;
+        private _debugSphereMesh;
+        private _debugCylinderMesh;
+        private _debugMaterial;
+        private _debugMeshMeshes;
+        /**
+         * Creates a new PhysicsViewer
+         * @param scene defines the hosting scene
+         */
+        constructor(scene: Scene);
+        /** @hidden */
+        protected _updateDebugMeshes(): void;
+        /**
+         * Renders a specified physic impostor
+         * @param impostor defines the impostor to render
+         * @param targetMesh defines the mesh represented by the impostor
+         * @returns the new debug mesh used to render the impostor
+         */
+        showImpostor(impostor: PhysicsImpostor, targetMesh?: Mesh): Nullable<AbstractMesh>;
+        /**
+         * Hides a specified physic impostor
+         * @param impostor defines the impostor to hide
+         */
+        hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
+        private _getDebugMaterial;
+        private _getDebugBoxMesh;
+        private _getDebugSphereMesh;
+        private _getDebugCylinderMesh;
+        private _getDebugMeshMesh;
+        private _getDebugMesh;
+        /** Releases all resources */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class containing static functions to help procedurally build meshes
+     */
+    export class LinesBuilder {
+        /**
+         * Creates a line system mesh. A line system is a pool of many lines gathered in a single mesh
+         * * A line system mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of lines as an input parameter
+         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineSystem to this static function
+         * * The parameter `lines` is an array of lines, each line being an array of successive Vector3
+         * * The optional parameter `instance` is an instance of an existing LineSystem object to be updated with the passed `lines` parameter
+         * * The optional parameter `colors` is an array of line colors, each line colors being an array of successive Color4, one per line point
+         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need the alpha blending (faster)
+         * * Updating a simple Line mesh, you just need to update every line in the `lines` array : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @see https://doc.babylonjs.com/how_to/parametric_shapes#line-system
+         * @param name defines the name of the new line system
+         * @param options defines the options used to create the line system
+         * @param scene defines the hosting scene
+         * @returns a new line system mesh
+         */
+        static CreateLineSystem(name: string, options: {
+            lines: Vector3[][];
+            updatable?: boolean;
+            instance?: Nullable<LinesMesh>;
+            colors?: Nullable<Color4[][]>;
+            useVertexAlpha?: boolean;
+        }, scene: Nullable<Scene>): LinesMesh;
+        /**
+         * Creates a line mesh
+         * A line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter
+         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function
+         * * The parameter `points` is an array successive Vector3
+         * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * * The optional parameter `colors` is an array of successive Color4, one per line point
+         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need alpha blending (faster)
+         * * When updating an instance, remember that only point positions can change, not the number of points
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @see https://doc.babylonjs.com/how_to/parametric_shapes#lines
+         * @param name defines the name of the new line system
+         * @param options defines the options used to create the line system
+         * @param scene defines the hosting scene
+         * @returns a new line mesh
+         */
+        static CreateLines(name: string, options: {
+            points: Vector3[];
+            updatable?: boolean;
+            instance?: Nullable<LinesMesh>;
+            colors?: Color4[];
+            useVertexAlpha?: boolean;
+        }, scene?: Nullable<Scene>): LinesMesh;
+        /**
+         * Creates a dashed line mesh
+         * * A dashed line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter
+         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function
+         * * The parameter `points` is an array successive Vector3
+         * * The parameter `dashNb` is the intended total number of dashes (positive integer, default 200)
+         * * The parameter `dashSize` is the size of the dashes relatively the dash number (positive float, default 3)
+         * * The parameter `gapSize` is the size of the gap between two successive dashes relatively the dash number (positive float, default 1)
+         * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * * When updating an instance, remember that only point positions can change, not the number of points
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @param name defines the name of the mesh
+         * @param options defines the options used to create the mesh
+         * @param scene defines the hosting scene
+         * @returns the dashed line mesh
+         * @see https://doc.babylonjs.com/how_to/parametric_shapes#dashed-lines
+         */
+        static CreateDashedLines(name: string, options: {
+            points: Vector3[];
+            dashSize?: number;
+            gapSize?: number;
+            dashNb?: number;
+            updatable?: boolean;
+            instance?: LinesMesh;
+        }, scene?: Nullable<Scene>): LinesMesh;
+    }
+}
+declare module BABYLON {
+    /**
+     * As raycast might be hard to debug, the RayHelper can help rendering the different rays
+     * in order to better appreciate the issue one might have.
+     * @see http://doc.babylonjs.com/babylon101/raycasts#debugging
+     */
+    export class RayHelper {
+        /**
+         * Defines the ray we are currently tryin to visualize.
+         */
+        ray: Nullable<Ray>;
+        private _renderPoints;
+        private _renderLine;
+        private _renderFunction;
+        private _scene;
+        private _updateToMeshFunction;
+        private _attachedToMesh;
+        private _meshSpaceDirection;
+        private _meshSpaceOrigin;
+        /**
+         * Helper function to create a colored helper in a scene in one line.
+         * @param ray Defines the ray we are currently tryin to visualize
+         * @param scene Defines the scene the ray is used in
+         * @param color Defines the color we want to see the ray in
+         * @returns The newly created ray helper.
+         */
+        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
+        /**
+         * Instantiate a new ray helper.
+         * As raycast might be hard to debug, the RayHelper can help rendering the different rays
+         * in order to better appreciate the issue one might have.
+         * @see http://doc.babylonjs.com/babylon101/raycasts#debugging
+         * @param ray Defines the ray we are currently tryin to visualize
+         */
+        constructor(ray: Ray);
+        /**
+         * Shows the ray we are willing to debug.
+         * @param scene Defines the scene the ray needs to be rendered in
+         * @param color Defines the color the ray needs to be rendered in
+         */
+        show(scene: Scene, color?: Color3): void;
+        /**
+         * Hides the ray we are debugging.
+         */
+        hide(): void;
+        private _render;
+        /**
+         * Attach a ray helper to a mesh so that we can easily see its orientation for instance or information like its normals.
+         * @param mesh Defines the mesh we want the helper attached to
+         * @param meshSpaceDirection Defines the direction of the Ray in mesh space (local space of the mesh node)
+         * @param meshSpaceOrigin Defines the origin of the Ray in mesh space (local space of the mesh node)
+         * @param length Defines the length of the ray
+         */
+        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
+        /**
+         * Detach the ray helper from the mesh it has previously been attached to.
+         */
+        detachFromMesh(): void;
+        private _updateToMesh;
+        /**
+         * Dispose the helper and release its associated resources.
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON.Debug {
+    /**
+         * Class used to render a debug view of a given skeleton
+         * @see http://www.babylonjs-playground.com/#1BZJVJ#8
+         */
+    export class SkeletonViewer {
+        /** defines the skeleton to render */
+        skeleton: Skeleton;
+        /** defines the mesh attached to the skeleton */
+        mesh: AbstractMesh;
+        /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
+        autoUpdateBonesMatrices: boolean;
+        /** defines the rendering group id to use with the viewer */
+        renderingGroupId: number;
+        /** Gets or sets the color used to render the skeleton */
+        color: Color3;
+        private _scene;
+        private _debugLines;
+        private _debugMesh;
+        private _isEnabled;
+        private _renderFunction;
+        private _utilityLayer;
+        /**
+         * Returns the mesh used to render the bones
+         */
+        readonly debugMesh: Nullable<LinesMesh>;
+        /**
+         * Creates a new SkeletonViewer
+         * @param skeleton defines the skeleton to render
+         * @param mesh defines the mesh attached to the skeleton
+         * @param scene defines the hosting scene
+         * @param autoUpdateBonesMatrices defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)
+         * @param renderingGroupId defines the rendering group id to use with the viewer
+         */
+        constructor(
+        /** defines the skeleton to render */
+        skeleton: Skeleton, 
+        /** defines the mesh attached to the skeleton */
+        mesh: AbstractMesh, scene: Scene, 
+        /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
+        autoUpdateBonesMatrices?: boolean, 
+        /** defines the rendering group id to use with the viewer */
+        renderingGroupId?: number);
+        /** Gets or sets a boolean indicating if the viewer is enabled */
+        isEnabled: boolean;
+        private _getBonePosition;
+        private _getLinesForBonesWithLength;
+        private _getLinesForBonesNoLength;
+        /** Update the viewer to sync with current skeleton state */
+        update(): void;
+        /** Release associated resources */
         dispose(): void;
     }
 }
@@ -48786,6 +48835,14 @@ declare module BABYLON {
          */
         onBeforeComposeObservable: Observable<EffectLayer>;
         /**
+         * An event triggered when the mesh is rendered into the effect render target.
+         */
+        onBeforeRenderMeshToEffect: Observable<AbstractMesh>;
+        /**
+         * An event triggered after the mesh has been rendered into the effect render target.
+         */
+        onAfterRenderMeshToEffect: Observable<AbstractMesh>;
+        /**
          * An event triggered when the generated texture has been merged in the scene.
          */
         onAfterComposeObservable: Observable<EffectLayer>;
@@ -48922,6 +48979,11 @@ declare module BABYLON {
          * Renders the submesh passed in parameter to the generation map.
          */
         protected _renderSubMesh(subMesh: SubMesh, enableAlphaMode?: boolean): void;
+        /**
+         * Defines wether the current material of the mesh should be use to render the effect.
+         * @param mesh defines the current mesh to render
+         */
+        protected _useMeshMaterial(mesh: AbstractMesh): boolean;
         /**
          * Rebuild the required buffers.
          * @hidden Internal use only.
@@ -49086,8 +49148,7 @@ declare module BABYLON {
     /**
      * The glow layer Helps adding a glow effect around the emissive parts of a mesh.
      *
-     * Once instantiated in a scene, simply use the addMesh or removeMesh method to add or remove
-     * glowy meshes to your scene.
+     * Once instantiated in a scene, by default, all the emissive meshes will glow.
      *
      * Documentation: https://doc.babylonjs.com/how_to/glow_layer
      */
@@ -49130,6 +49191,7 @@ declare module BABYLON {
         private _postProcesses2;
         private _includedOnlyMeshes;
         private _excludedMeshes;
+        private _meshesUsingTheirOwnMaterials;
         /**
          * Callback used to let the user override the color selection on a per mesh basis
          */
@@ -49224,6 +49286,21 @@ declare module BABYLON {
          * @returns true if the mesh will be highlighted by the current glow layer
          */
         hasMesh(mesh: AbstractMesh): boolean;
+        /**
+         * Defines wether the current material of the mesh should be use to render the effect.
+         * @param mesh defines the current mesh to render
+         */
+        protected _useMeshMaterial(mesh: AbstractMesh): boolean;
+        /**
+         * Add a mesh to be rendered through its own material and not with emissive only.
+         * @param mesh The mesh for which we need to use its material
+         */
+        referenceMeshToUseItsOwnMaterial(mesh: AbstractMesh): void;
+        /**
+         * Remove a mesh from being rendered through its own material and not with emissive only.
+         * @param mesh The mesh for which we need to not use its material
+         */
+        unReferenceMeshFromUsingItsOwnMaterial(mesh: AbstractMesh): void;
         /**
          * Free any resources and references associated to a mesh.
          * Internal use

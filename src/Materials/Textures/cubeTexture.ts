@@ -251,6 +251,11 @@ export class CubeTexture extends BaseTexture {
         }
 
         this.url = url;
+
+        if (!this.name) {
+            this.name = url;
+        }
+
         this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
         this._prefiltered = false;
         this._forcedExtension = forcedExtension || null;

@@ -792,6 +792,7 @@ declare module INSPECTOR {
         displayVertexColors(): void;
         onMaterialLink(): void;
         onSourceMeshLink(): void;
+        onSkeletonLink(): void;
         convertPhysicsTypeToString(): string;
         render(): JSX.Element;
     }
@@ -1198,6 +1199,7 @@ declare module INSPECTOR {
         switchSkeletonViewers(): void;
         checkSkeletonViewerState(props: ISkeletonPropertyGridComponentProps): void;
         shouldComponentUpdate(nextProps: ISkeletonPropertyGridComponentProps): boolean;
+        onOverrideMeshLink(): void;
         render(): JSX.Element;
     }
 }
@@ -1210,6 +1212,7 @@ declare module INSPECTOR {
     }
     export class BonePropertyGridComponent extends React.Component<IBonePropertyGridComponentProps> {
         constructor(props: IBonePropertyGridComponentProps);
+        onTransformNodeLink(): void;
         render(): JSX.Element;
     }
 }
