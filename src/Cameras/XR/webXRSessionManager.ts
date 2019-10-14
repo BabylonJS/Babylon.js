@@ -4,9 +4,9 @@ import { Nullable } from "../../types";
 import { IDisposable, Scene } from "../../scene";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
-import { WebXRRenderTarget } from './webXRTypes';
+import { WebXRRenderTarget, WebXRState } from './webXRTypes';
 import { WebXRManagedOutputCanvas } from './webXRManagedOutputCanvas';
-import { WebXRState, Tools } from '../../Legacy/legacy';
+import { Tools } from '../../Misc/tools';
 
 interface IRenderTargetProvider {
     getRenderTargetForEye(eye: XREye): RenderTargetTexture;
@@ -117,14 +117,14 @@ export class WebXRSessionManager implements IDisposable {
     public setReferenceSpaceAsync(referenceSpace: XRReferenceSpaceType) {
         return this.session.requestReferenceSpace(referenceSpace).then((referenceSpace: XRReferenceSpace) => {
             this.referenceSpace = referenceSpace;
-        }, rejectionReason => {
+        }, (rejectionReason) => {
             Tools.Error("XR.requestReferenceSpace failed for the following reason: ");
             Tools.Error(rejectionReason);
             Tools.Log("Defaulting to universally-supported \"viewer\" reference space type.");
 
             return this.session.requestReferenceSpace("viewer").then((referenceSpace: XRReferenceSpace) => {
                 this.referenceSpace = referenceSpace;
-            }, rejectionReason => {
+            }, (rejectionReason) => {
                 Tools.Error(rejectionReason);
                 throw "XR initialization failed: required \"viewer\" reference space type not supported.";
             });

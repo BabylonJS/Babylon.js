@@ -57,6 +57,7 @@ export class AssetContainer extends AbstractScene {
     /**
      * Instantiate or clone all meshes and add the new ones to the scene.
      * Skeletons and animation groups will all be cloned
+     * @returns a list of rootNodes, skeletons and aniamtion groups that were duplicated
      */
     public instantiateModelsToScene(): InstantiatedEntries {
         let convertionMap: {[key: number]: number} = {};

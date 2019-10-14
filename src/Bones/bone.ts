@@ -141,7 +141,7 @@ export class Bone extends Node {
         return this.children;
     }
 
-    /** 
+    /**
      * Gets the node index in matrix array generated for rendering
      * @returns the node index
      */

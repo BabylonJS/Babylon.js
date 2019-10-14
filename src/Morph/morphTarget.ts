@@ -90,12 +90,12 @@ export class MorphTarget implements IAnimatable {
         public name: string, influence = 0, scene: Nullable<Scene> = null) {
         this._scene = scene || EngineStore.LastCreatedScene;
         this.influence = influence;
-        
+
         if (this._scene) {
             this._uniqueId = this._scene.getUniqueId();
         }
     }
-    
+
     /**
      * Gets the unique ID of this manager
      */
@@ -219,6 +219,10 @@ export class MorphTarget implements IAnimatable {
         return this._uvs;
     }
 
+    /**
+     * Clone the current target
+     * @returns a new MorphTarget
+     */
     public clone(): MorphTarget {
         let newOne = SerializationHelper.Clone(() => new MorphTarget(this.name, this.influence, this._scene), this);
 
