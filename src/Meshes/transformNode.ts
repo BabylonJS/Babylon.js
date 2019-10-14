@@ -430,7 +430,7 @@ export class TransformNode extends Node {
     public instantiateHierarchy(newParent: Nullable<TransformNode> = null, options?: { doNotInstantiate: boolean}, onNewNodeCreated?: (source: TransformNode, clone: TransformNode) => void): Nullable<TransformNode> {
         let clone = this.clone("Clone of " +  (this.name || this.id), newParent || this.parent, true);
 
-        if (clone) {        
+        if (clone) {
             if (onNewNodeCreated) {
                 onNewNodeCreated(this, clone);
             }
