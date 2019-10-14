@@ -219,6 +219,10 @@ export class MorphTarget implements IAnimatable {
         return this._uvs;
     }
 
+    /**
+     * Clones the current Morph Target
+     * @returns The cloned morph target
+     */
     public clone(): MorphTarget {
         let newOne = SerializationHelper.Clone(() => new MorphTarget(this.name, this.influence, this._scene), this);
 
