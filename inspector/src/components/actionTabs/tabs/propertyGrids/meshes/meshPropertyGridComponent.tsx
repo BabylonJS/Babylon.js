@@ -298,6 +298,10 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     <TextLineComponent label="Faces" value={(mesh.getTotalIndices() / 3).toFixed(0)} />
                     <TextLineComponent label="Sub-meshes" value={mesh.subMeshes ? mesh.subMeshes.length.toString() : "0"} />
                     {
+                        mesh.parent &&
+                        <TextLineComponent label="Parent" value={mesh.parent.name} onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(mesh.parent)}/>
+                    }                      
+                    {
                         mesh.skeleton &&
                         <TextLineComponent label="Skeleton" value={mesh.skeleton.name} onLink={() => this.onSkeletonLink()}/>
                     }

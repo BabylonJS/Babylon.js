@@ -42,6 +42,10 @@ export class BonePropertyGridComponent extends React.Component<IBonePropertyGrid
                     <TextLineComponent label="Index" value={bone.getIndex().toString()} />
                     <TextLineComponent label="Unique ID" value={bone.uniqueId.toString()} />
                     {
+                        bone.getParent() &&
+                        <TextLineComponent label="Parent" value={bone.getParent()!.name} onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(bone.getParent())}/>
+                    }                    
+                    {
                         bone.getTransformNode() &&
                         <TextLineComponent label="Linked node" value={bone.getTransformNode()!.name} onLink={() => this.onTransformNodeLink()}/>
                     }
