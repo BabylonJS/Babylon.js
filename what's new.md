@@ -135,6 +135,7 @@
 - Added a validationSkin function to report out any errors on skinned meshes. ([Bolloxim](https://github.com/Bolloxim))
 - PolygonMeshBuilder can be used to generate ```VertexData``` instead of requiring a mesh to be built
 
+
 ### glTF Loader
 
 - Added support for KHR_texture_transform ([bghgary](http://www.github.com/bghgary))
