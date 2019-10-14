@@ -891,6 +891,11 @@ export class SceneLoader {
 
         var errorHandler = (message: Nullable<string>, exception?: any) => {
             let errorMessage = "Unable to load assets from " + fileInfo.url + (message ? ": " + message : "");
+
+            if (exception && exception.message) {
+                errorMessage += ` (${exception.message})`;
+            }
+
             if (onError) {
                 onError(scene, errorMessage, exception);
             } else {
