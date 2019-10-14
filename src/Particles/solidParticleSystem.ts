@@ -40,7 +40,7 @@ export class SolidParticleSystem implements IDisposable {
     /**
      * Recompute normals when adding a shape
      */
-    public recomputeNormals: boolean = true;
+    public recomputeNormals: boolean = false;
     /**
      * This a counter ofr your own usage. It's not set by any SPS functions.
      */
@@ -523,6 +523,7 @@ export class SolidParticleSystem implements IDisposable {
         var meshUV = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind);
         var meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
         var meshNor = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind);
+        this.recomputeNormals = (meshNor) ? false : true;
         var indices = Array.from(meshInd);
         var shapeNormals = Array.from(meshNor);
         var shapeColors = (meshCol) ? Array.from(meshCol) : [];
