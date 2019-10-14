@@ -117,6 +117,7 @@ export class SolidParticleSystem implements IDisposable {
     private _particlesIntersect: boolean = false;
     private _needs32Bits: boolean = false;
     private _isNotBuilt: boolean = true;
+    private _lastParticleIdx: number = 0;
 
     /**
      * Creates a SPS (Solid Particle System) object.
@@ -323,13 +324,14 @@ export class SolidParticleSystem implements IDisposable {
             var currentPos = this._positions.length;
             var currentInd = this._indices.length;
             this._meshBuilder(this._index, shape, this._positions, shapeInd, this._indices, facetUV, this._uvs, shapeCol, this._colors, shapeNor, this._normals, idx, 0, null);
-            this._addParticle(idx, currentPos, currentInd, modelShape, this._shapeCounter, 0, bInfo);
+            this._addParticle(this._lastParticleIdx, currentPos, currentInd, modelShape, this._shapeCounter, 0, bInfo);
             // initialize the particle position
             this.particles[this.nbParticles].position.addInPlace(barycenter);
 
             this._index += shape.length;
             idx++;
             this.nbParticles++;
+            this._lastParticleIdx++;
             this._shapeCounter++;
             f += size;
         }
@@ -549,7 +551,7 @@ export class SolidParticleSystem implements IDisposable {
             var currentInd = this._indices.length;
             currentCopy = this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, meshNor, this._normals, idx, i, options);
             if (this._updatable) {
-                sp = this._addParticle(idx, currentPos, currentInd, modelShape, this._shapeCounter, i, bbInfo);
+                sp = this._addParticle(this._lastParticleIdx, currentPos, currentInd, modelShape, this._shapeCounter, i, bbInfo);
                 sp.position.copyFrom(currentCopy.position);
                 sp.rotation.copyFrom(currentCopy.rotation);
                 if (currentCopy.rotationQuaternion && sp.rotationQuaternion) {
@@ -563,6 +565,7 @@ export class SolidParticleSystem implements IDisposable {
             }
             this._index += shape.length;
             idx++;
+            this._lastParticleIdx++;
         }
         this.nbParticles += nb;
         this._shapeCounter++;
