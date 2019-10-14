@@ -90,12 +90,12 @@ export class MorphTarget implements IAnimatable {
         public name: string, influence = 0, scene: Nullable<Scene> = null) {
         this._scene = scene || EngineStore.LastCreatedScene;
         this.influence = influence;
-        
+
         if (this._scene) {
             this._uniqueId = this._scene.getUniqueId();
         }
     }
-    
+
     /**
      * Gets the unique ID of this manager
      */

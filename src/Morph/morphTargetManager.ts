@@ -167,7 +167,7 @@ export class MorphTargetManager {
      */
     public clone(): MorphTargetManager {
         let copy = new MorphTargetManager(this._scene);
-        
+
         for (var target of this._targets) {
             copy.addTarget(target.clone());
         }
