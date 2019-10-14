@@ -226,6 +226,7 @@ export class ThinEngine {
     protected _renderingCanvas: Nullable<HTMLCanvasElement>;
     protected _windowIsBackground = false;
     protected _webGLVersion = 1.0;
+    protected _creationOptions: EngineOptions;
 
     protected _highPrecisionShadersAllowed = true;
     /** @hidden */
@@ -640,6 +641,7 @@ export class ThinEngine {
         // Detect if we are running on a faulty buggy desktop OS.
         this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
+        this._creationOptions = options;
         console.log(`Babylon.js v${ThinEngine.Version} - ${this.description}`);
     }
 
