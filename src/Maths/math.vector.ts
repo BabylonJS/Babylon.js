@@ -368,10 +368,8 @@ export class Vector2 {
             return this;
         }
 
-        var num = 1.0 / len;
-
-        this.x *= num;
-        this.y *= num;
+        this.x /= len;
+        this.y /= len;
 
         return this;
     }
