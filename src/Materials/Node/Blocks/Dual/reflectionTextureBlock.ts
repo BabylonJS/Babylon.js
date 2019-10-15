@@ -399,6 +399,23 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
         return this;
     }
 
+    protected _dumpPropertiesCode() {
+        if (!this.texture) {
+            return "";
+        }
+
+        let codeString: string;
+
+        if (this.texture.isCube) {
+            codeString = `${this._codeVariableName}.texture = new BABYLON.CubeTexture("${this.texture.name}");\r\n`;
+        } else {
+            codeString = `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}");\r\n`;
+        }
+        codeString += `${this._codeVariableName}.texture.coordinatesMode = ${this.texture.coordinatesMode};\r\n`;
+
+        return codeString;
+    }
+
     public serialize(): any {
         let serializationObject = super.serialize();
 
