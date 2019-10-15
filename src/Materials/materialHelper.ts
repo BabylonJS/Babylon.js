@@ -46,7 +46,7 @@ export class MaterialHelper {
     }
 
     /**
-     * Helps preparing the defines values about the UVs in used in the effect.
+     * Helps preparing the defines values about the UVs used in the effect.
      * UVs are shared as much as we can accross channels in the shaders.
      * @param texture The texture we are preparing the UVs for
      * @param defines The defines to update
@@ -236,9 +236,17 @@ export class MaterialHelper {
         if (defines._needUVs) {
             defines["UV1"] = mesh.isVerticesDataPresent(VertexBuffer.UVKind);
             defines["UV2"] = mesh.isVerticesDataPresent(VertexBuffer.UV2Kind);
+            defines["UV3"] = mesh.isVerticesDataPresent(VertexBuffer.UV3Kind);
+            defines["UV4"] = mesh.isVerticesDataPresent(VertexBuffer.UV4Kind);
+            defines["UV5"] = mesh.isVerticesDataPresent(VertexBuffer.UV5Kind);
+            defines["UV6"] = mesh.isVerticesDataPresent(VertexBuffer.UV6Kind);
         } else {
             defines["UV1"] = false;
             defines["UV2"] = false;
+            defines["UV3"] = false;
+            defines["UV4"] = false;
+            defines["UV5"] = false;
+            defines["UV6"] = false;
         }
 
         if (useVertexColor) {
@@ -246,11 +254,6 @@ export class MaterialHelper {
             defines["VERTEXCOLOR"] = hasVertexColors;
             defines["VERTEXALPHA"] = mesh.hasVertexAlpha && hasVertexColors && useVertexAlpha;
         }
-
-        defines["UV3"] = mesh.isVerticesDataPresent(VertexBuffer.UV3Kind);
-        defines["UV4"] = mesh.isVerticesDataPresent(VertexBuffer.UV4Kind);
-        defines["UV5"] = mesh.isVerticesDataPresent(VertexBuffer.UV5Kind);
-        defines["UV6"] = mesh.isVerticesDataPresent(VertexBuffer.UV6Kind);
 
         if (useBones) {
             this.PrepareDefinesForBones(mesh, defines);
