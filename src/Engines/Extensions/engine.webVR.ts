@@ -6,6 +6,20 @@ import { Observable } from '../../Misc/observable';
 import { Tools } from '../../Misc/tools';
 import { DomManagement } from '../../Misc/domManagement';
 
+/**
+ * Interface used to define additional presentation attributes
+ */
+export interface IVRPresentationAttributes {
+    /**
+     * Defines a boolean indicating that we want to get 72hz mode on Oculus Browser (default is off eg. 60hz)
+     */
+    highRefreshRate: boolean;
+    /**
+     * Enables foveation in VR to improve perf. 0 none, 1 low, 2 medium, 3 high (Default is 1)
+     */
+    foveationLevel: number;
+}
+
 declare module "../../Engines/engine" {
     export interface Engine {
         /** @hidden */
@@ -73,6 +87,11 @@ declare module "../../Engines/engine" {
 
         /** @hidden */
         _getVRDisplaysAsync(): Promise<IDisplayChangedEventArgs>;
+
+        /**
+         * Gets or sets the presentation attributes used to configure VR rendering
+         */
+        vrPresentationAttributes?: IVRPresentationAttributes;
 
         /**
          * Call this function to switch to webVR mode
@@ -186,7 +205,16 @@ Engine.prototype.enableVR = function() {
         };
 
         this.onVRRequestPresentStart.notifyObservers(this);
-        this._vrDisplay.requestPresent([{ source: this.getRenderingCanvas() }]).then(onResolved).catch(onRejected);
+
+        var presentationAttributes = {
+            highRefreshRate: this.vrPresentationAttributes ? this.vrPresentationAttributes.highRefreshRate : false,
+            foveationLevel: this.vrPresentationAttributes ? this.vrPresentationAttributes.foveationLevel : 1,
+          };
+
+        this._vrDisplay.requestPresent([{
+            source: this.getRenderingCanvas(),
+            attributes: presentationAttributes
+        }]).then(onResolved).catch(onRejected);
     }
 };
 
