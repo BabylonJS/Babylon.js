@@ -144,23 +144,41 @@ export class ScreenshotTools {
         var texture = new RenderTargetTexture("screenShot", targetTextureSize, scene, false, false, Constants.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE);
         texture.renderList = null;
         texture.samples = samples;
-        if (antialiasing) {
-            texture.addPostProcess(new FxaaPostProcess('antialiasing', 1.0, scene.activeCamera));
-        }
         texture.onAfterRenderObservable.add(() => {
             Tools.DumpFramebuffer(width, height, engine, successCallback, mimeType, fileName);
         });
 
-        scene.incrementRenderId();
-        scene.resetCachedMaterial();
-        texture.render(true);
-        texture.dispose();
+        const renderToTexture = () => {
+            scene.incrementRenderId();
+            scene.resetCachedMaterial();
+            texture.render(true);
+            texture.dispose();
 
-        if (previousCamera) {
-            scene.activeCamera = previousCamera;
+            if (previousCamera) {
+                scene.activeCamera = previousCamera;
+            }
+            engine.setSize(originalSize.width, originalSize.height);
+            camera.getProjectionMatrix(true); // Force cache refresh;
+        };
+
+        if (antialiasing) {
+            const fxaaPostProcess = new FxaaPostProcess('antialiasing', 1.0, scene.activeCamera);
+            texture.addPostProcess(fxaaPostProcess);
+            // Async Shader Compilation can lead to none ready effects in synchronous code
+            if (!fxaaPostProcess.getEffect().isReady()) {
+                fxaaPostProcess.getEffect().onCompiled = () => {
+                    renderToTexture();
+                };
+            }
+            // The effect is ready we can render
+            else {
+                renderToTexture();
+            }
         }
-        engine.setSize(originalSize.width, originalSize.height);
-        camera.getProjectionMatrix(true); // Force cache refresh;
+        else {
+            // No need to wait for extra resources to be ready
+            renderToTexture();
+        }
     }
 
     /**
