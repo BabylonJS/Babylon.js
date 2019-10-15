@@ -91,7 +91,7 @@ export class Bone extends Node {
          */
         public name: string, skeleton: Skeleton, parentBone: Nullable<Bone> = null, localMatrix: Nullable<Matrix> = null,
         restPose: Nullable<Matrix> = null, baseMatrix: Nullable<Matrix> = null, index: Nullable<number> = null) {
-        super(name, skeleton.getScene(), false);
+        super(name, skeleton.getScene());
         this._skeleton = skeleton;
         this._localMatrix = localMatrix ? localMatrix.clone() : Matrix.Identity();
         this._restPose = restPose ? restPose : this._localMatrix.clone();
