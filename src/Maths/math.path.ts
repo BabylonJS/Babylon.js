@@ -265,7 +265,7 @@ export class Path2 {
     public length(): number {
         var result = this._length;
 
-        if (!this.closed) {
+        if (this.closed) {
             var lastPoint = this._points[this._points.length - 1];
             var firstPoint = this._points[0];
             result += (firstPoint.subtract(lastPoint).length());
