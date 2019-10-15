@@ -2006,7 +2006,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         if (!newMesh.parent) {
             newMesh._addToSceneRootNodes();
-        }          
+        }
 
         this.onNewMeshAddedObservable.notifyObservers(newMesh);
 
@@ -2054,7 +2054,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         if (!newTransformNode.parent) {
             newTransformNode._addToSceneRootNodes();
-        }            
+        }
 
         this.onNewTransformNodeAddedObservable.notifyObservers(newTransformNode);
     }
@@ -2296,7 +2296,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         if (!newLight.parent) {
             newLight._addToSceneRootNodes();
-        }        
+        }
 
         // Add light to all meshes (To support if the light is removed and then readded)
         for (var mesh of this.meshes) {
