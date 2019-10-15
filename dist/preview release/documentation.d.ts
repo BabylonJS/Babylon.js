@@ -27020,8 +27020,10 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/how_to/parenting
          */
         parent: Nullable<Node>;
-        private addToSceneRootNodes;
-        private removeFromSceneRootNodes;
+        /** @hidden */
+        _addToSceneRootNodes(): void;
+        /** @hidden */
+        _removeFromSceneRootNodes(): void;
         private _animationPropertiesOverride;
         /**
          * Gets or sets the animation properties override
@@ -27047,9 +27049,8 @@ declare module BABYLON {
          * Creates a new Node
          * @param name the name and id to be given to this node
          * @param scene the scene this node will be added to
-         * @param addToRootNodes the node will be added to scene.rootNodes
          */
-        constructor(name: string, scene?: Nullable<Scene>, addToRootNodes?: boolean);
+        constructor(name: string, scene?: Nullable<Scene>);
         /**
          * Gets the scene of the node
          * @returns a scene
@@ -34920,9 +34921,11 @@ declare module BABYLON {
         /**
          * Instantiate or clone all meshes and add the new ones to the scene.
          * Skeletons and animation groups will all be cloned
+         * @param nameFunction defines an optional function used to get new names for clones
+         * @param cloneMaterials defines an optional boolean that defines if materials must be cloned as well (false by default)
          * @returns a list of rootNodes, skeletons and aniamtion groups that were duplicated
          */
-        instantiateModelsToScene(): InstantiatedEntries;
+        instantiateModelsToScene(nameFunction?: (sourceName: string) => string, cloneMaterials?: boolean): InstantiatedEntries;
         /**
          * Adds all the assets from the container to the scene.
          */

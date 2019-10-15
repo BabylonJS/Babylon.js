@@ -4,6 +4,9 @@ import { Mesh } from "./Meshes/mesh";
 import { TransformNode } from './Meshes/transformNode';
 import { Skeleton } from './Bones/skeleton';
 import { AnimationGroup } from './Animations/animationGroup';
+import { AbstractMesh } from './Meshes/abstractMesh';
+import { MultiMaterial } from './Materials/multiMaterial';
+import { Material } from './Materials/material';
 
 /**
  * Set of assets to keep when moving a scene into an asset container.
@@ -57,13 +60,16 @@ export class AssetContainer extends AbstractScene {
     /**
      * Instantiate or clone all meshes and add the new ones to the scene.
      * Skeletons and animation groups will all be cloned
+     * @param nameFunction defines an optional function used to get new names for clones
+     * @param cloneMaterials defines an optional boolean that defines if materials must be cloned as well (false by default)
      * @returns a list of rootNodes, skeletons and aniamtion groups that were duplicated
      */
-    public instantiateModelsToScene(): InstantiatedEntries {
+    public instantiateModelsToScene(nameFunction?: (sourceName: string) => string, cloneMaterials = false): InstantiatedEntries {
         let convertionMap: {[key: number]: number} = {};
         let storeMap: {[key: number]: any} = {};
         let result = new InstantiatedEntries();
-        let alreadySwapped: Skeleton[] = [];
+        let alreadySwappedSkeletons: Skeleton[] = [];
+        let alreadySwappedMaterials: Material[] = [];
 
         let options = {
             doNotInstantiate: true
@@ -72,6 +78,10 @@ export class AssetContainer extends AbstractScene {
         let onClone = (source: TransformNode, clone: TransformNode) => {
             convertionMap[source.uniqueId] = clone.uniqueId;
             storeMap[clone.uniqueId] = clone;
+
+            if (nameFunction) {
+                clone.name = nameFunction(source.name);
+            }
 
             if (clone instanceof Mesh) {
                 let clonedMesh = clone as Mesh;
@@ -107,6 +117,50 @@ export class AssetContainer extends AbstractScene {
             if (!o.parent) {
                 let newOne = o.instantiateHierarchy(null, options, (source, clone) => {
                     onClone(source, clone);
+
+                    if ((clone as any).material) {
+                        let mesh = clone as AbstractMesh;
+
+                        if (mesh.material) {
+                            if (cloneMaterials) {
+                                let sourceMaterial = (source as AbstractMesh).material!;
+
+                                if (alreadySwappedMaterials.indexOf(sourceMaterial) === -1) {
+                                    let swap = sourceMaterial.clone(nameFunction ? nameFunction(sourceMaterial.name) : "Clone of " + sourceMaterial.name)!;
+                                    alreadySwappedMaterials.push(sourceMaterial);
+                                    convertionMap[sourceMaterial.uniqueId] = swap.uniqueId;
+                                    storeMap[swap.uniqueId] = swap;
+
+                                    if (sourceMaterial.getClassName() === "MultiMaterial") {
+                                        let multi = sourceMaterial as MultiMaterial;
+
+                                        for (var material of multi.subMaterials) {
+                                            if (!material) {
+                                                continue;
+                                            }
+                                            swap = material.clone(nameFunction ? nameFunction(material.name) : "Clone of " + material.name)!;
+                                            alreadySwappedMaterials.push(material);
+                                            convertionMap[material.uniqueId] = swap.uniqueId;
+                                            storeMap[swap.uniqueId] = swap;
+                                        }
+                                    }
+                                }
+
+                                mesh.material = storeMap[convertionMap[sourceMaterial.uniqueId]];
+                            } else {
+                                if (mesh.material.getClassName() === "MultiMaterial") {
+                                    if (this.scene.multiMaterials.indexOf(mesh.material as MultiMaterial) === -1) {
+                                        this.scene.addMultiMaterial(mesh.material as MultiMaterial);
+                                    }
+                                } else {
+                                    if (this.scene.materials.indexOf(mesh.material) === -1) {
+                                        this.scene.addMaterial(mesh.material);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                 });
 
                 if (newOne) {
@@ -116,7 +170,7 @@ export class AssetContainer extends AbstractScene {
         });
 
         this.skeletons.forEach((s) => {
-            let clone = s.clone("Clone of " + s.name);
+            let clone =  s.clone(nameFunction ? nameFunction(s.name) : "Clone of " + s.name);
 
             if (s.overrideMesh) {
                 clone.overrideMesh = storeMap[convertionMap[s.overrideMesh.uniqueId]];
@@ -127,11 +181,11 @@ export class AssetContainer extends AbstractScene {
                     let copy = storeMap[convertionMap[m.uniqueId]];
                     (copy as Mesh).skeleton = clone;
 
-                    if (alreadySwapped.indexOf(clone) !== -1) {
+                    if (alreadySwappedSkeletons.indexOf(clone) !== -1) {
                         continue;
                     }
 
-                    alreadySwapped.push(clone);
+                    alreadySwappedSkeletons.push(clone);
 
                     // Check if bones are mesh linked
                     for (var bone of clone.bones) {
