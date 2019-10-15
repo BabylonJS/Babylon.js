@@ -450,6 +450,7 @@ declare module NODEEDITOR {
         private _generateRandomForCache;
         updateAfterTextureLoad(): void;
         removeTexture(): void;
+        _prepareTexture(): void;
         /**
          * Replaces the texture of the node
          * @param file the file of the texture to use

@@ -71415,15 +71415,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         }
         this.updateAfterTextureLoad();
     };
-    /**
-     * Replaces the texture of the node
-     * @param file the file of the texture to use
-     */
-    TexturePropertyTabComponent.prototype.replaceTexture = function (file) {
-        var _this = this;
-        if (!this.props.node) {
-            return;
-        }
+    TexturePropertyTabComponent.prototype._prepareTexture = function () {
         var texture = this.props.node.texture;
         if (texture && texture.isCube !== this.state.loadAsCubeTexture) {
             texture.dispose();
@@ -71441,6 +71433,18 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
                 texture.coordinatesMode = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CUBIC_MODE;
             }
         }
+    };
+    /**
+     * Replaces the texture of the node
+     * @param file the file of the texture to use
+     */
+    TexturePropertyTabComponent.prototype.replaceTexture = function (file) {
+        var _this = this;
+        if (!this.props.node) {
+            return;
+        }
+        this._prepareTexture();
+        var texture = this.props.node.texture;
         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ReadFile(file, function (data) {
             var blob = new Blob([data], { type: "octet/stream" });
             var reader = new FileReader();
@@ -71460,13 +71464,8 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
     };
     TexturePropertyTabComponent.prototype.replaceTextureWithUrl = function (url) {
         var _this = this;
+        this._prepareTexture();
         var texture = this.props.node.texture;
-        if (!texture) {
-            this.props.node.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"](url, this.props.globalState.nodeMaterial.getScene(), false, false, undefined, function () {
-                _this.updateAfterTextureLoad();
-            });
-            return;
-        }
         if (texture.isCube || this.props.node instanceof _reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_11__["ReflectionTextureNodeModel"]) {
             var extension = undefined;
             if (url.toLowerCase().indexOf(".dds") > 0) {
