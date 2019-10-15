@@ -86,11 +86,6 @@ namespace xr
         constexpr static XrViewConfigurationType VIEW_CONFIGURATION_TYPE{ XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO };
         constexpr static uint32_t STEREO_VIEW_COUNT{ 2 }; // PRIMARY_STEREO view configuration always has 2 views
 
-        // These values are taken from Microsoft's OpenXR sample and are used in conjunction with the depth extension. Values are reversed, as in example.
-        // https://github.com/microsoft/OpenXR-SDK-VisualStudio/blob/42172676a9388f02ce5a776c89a62cecf95429bd/samples/BasicXrApp/OpenXrProgram.cpp#L226
-        constexpr static float DEPTH_NEAR_Z{ 20.f };
-        constexpr static float DEPTH_FAR_Z{ 1.f };
-
         XrInstance Instance{ XR_NULL_HANDLE };
         XrSystemId SystemId{ XR_NULL_SYSTEM_ID };
 
@@ -203,6 +198,9 @@ namespace xr
         };
         RenderResources Resources{};
 
+        float DepthNearZ{ DEFAULT_DEPTH_NEAR_Z };
+        float DepthFarZ{ DEFAULT_DEPTH_FAR_Z };
+
         XrSessionState SessionState{ XR_SESSION_STATE_UNKNOWN };
 
         Impl(System::Impl& hmdImpl, void* graphicsContext)
@@ -250,9 +248,9 @@ namespace xr
             XrCheck(xrEnumerateViewConfigurationViews(instance, systemId, HmdImpl.VIEW_CONFIGURATION_TYPE, viewCount, &viewCount, Resources.ConfigViews.data()));
 
             // Create all the swapchains.
-            const XrViewConfigurationView& view = Resources.ConfigViews[0];
             for (uint32_t idx = 0; idx < viewCount; ++idx)
             {
+                const XrViewConfigurationView& view = Resources.ConfigViews[idx];
                 Resources.ColorSwapchains.push_back(
                     CreateSwapchain(Session,
                         colorSwapchainFormat,
@@ -294,6 +292,12 @@ namespace xr
         void RequestEndSession()
         {
             xrRequestExitSession(Session);
+        }
+
+        Size GetWidthAndHeightForViewIndex(size_t viewIndex) const
+        {
+            const auto& swapchain = Resources.ColorSwapchains[viewIndex];
+            return{ static_cast<size_t>(swapchain.Width), static_cast<size_t>(swapchain.Height) };
         }
 
     private:
@@ -514,6 +518,8 @@ namespace xr
                 view.DepthTexturePointer = depthSwapchain.Images[depthSwapchainImageIndex].texture;
                 view.DepthTextureSize.Width = depthSwapchain.Width;
                 view.DepthTextureSize.Height = depthSwapchain.Height;
+                view.DepthNearZ = sessionImpl.DepthNearZ;
+                view.DepthFarZ = sessionImpl.DepthFarZ;
         
                 renderResources.ProjectionLayerViews[idx] = { XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW };
                 renderResources.ProjectionLayerViews[idx].pose = renderResources.Views[idx].pose;
@@ -527,8 +533,8 @@ namespace xr
                     renderResources.DepthInfoViews[idx] = { XR_TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR };
                     renderResources.DepthInfoViews[idx].minDepth = 0;
                     renderResources.DepthInfoViews[idx].maxDepth = 1;
-                    renderResources.DepthInfoViews[idx].nearZ = System::Impl::DEPTH_NEAR_Z;
-                    renderResources.DepthInfoViews[idx].farZ = System::Impl::DEPTH_FAR_Z;
+                    renderResources.DepthInfoViews[idx].nearZ = sessionImpl.DepthNearZ;
+                    renderResources.DepthInfoViews[idx].farZ = sessionImpl.DepthFarZ;
                     renderResources.DepthInfoViews[idx].subImage.swapchain = depthSwapchain.Handle;
                     renderResources.DepthInfoViews[idx].subImage.imageRect = imageRect;
                     renderResources.DepthInfoViews[idx].subImage.imageArrayIndex = 0;
@@ -587,8 +593,8 @@ namespace xr
         XrAssert(xrEndFrame(m_sessionImpl.Session, &frameEndInfo));
     }
 
-    System::System()
-        : m_impl{ std::make_unique<System::Impl>("APP NAME HERE") }
+    System::System(const char* appName)
+        : m_impl{ std::make_unique<System::Impl>(appName) }
     {}
 
     System::~System() {}
@@ -617,5 +623,16 @@ namespace xr
     void System::Session::RequestEndSession()
     {
         m_impl->RequestEndSession();
+    }
+
+    Size System::Session::GetWidthAndHeightForViewIndex(size_t viewIndex) const
+    {
+        return m_impl->GetWidthAndHeightForViewIndex(viewIndex);
+    }
+
+    void System::Session::SetDepthsNearFar(float depthNear, float depthFar)
+    {
+        m_impl->DepthNearZ = depthNear;
+        m_impl->DepthFarZ = depthFar;
     }
 }

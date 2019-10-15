@@ -3,6 +3,7 @@ var turntable = false;
 var logfps = true;
 var ibl = false;
 var rtt = false;
+var xr = false;
 
 function CreateBoxAsync() {
     BABYLON.Mesh.CreateBox("box1", 0.7);
@@ -111,7 +112,7 @@ CreateBoxAsync().then(function () {
 
     if (turntable) {
         scene.beforeRender = function () {
-            scene.meshes[0].rotation.y += 0.005 * scene.getAnimationRatio();
+            scene.meshes[0].rotate(BABYLON.Vector3.Up(), 0.005 * scene.getAnimationRatio());
         };
     }
 
@@ -127,6 +128,19 @@ CreateBoxAsync().then(function () {
     engine.runRenderLoop(function () {
         scene.render();
     });
+
+    if (xr) {
+        setTimeout(function () {
+            scene.createDefaultXRExperienceAsync({ disableDefaultUI: true }).then((xr) => {
+                setTimeout(function () {
+                    scene.meshes[0].position = scene.activeCamera.getFrontPosition(2);
+                    scene.meshes[0].rotate(BABYLON.Vector3.Up(), 3.14159);
+                }, 5000);
+                return xr.baseExperience.enterXRAsync("immersive-vr", "unbounded", xr.renderTarget);
+            });
+        }, 5000);
+    }
+    
 }, function (ex) {
     console.log(ex.message, ex.stack);
 });

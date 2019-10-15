@@ -988,6 +988,12 @@ namespace babylon
         return Napi::External<FrameBufferData>::New(info.Env(), m_frameBufferManager.CreateNew(frameBufferHandle, width, height));
     }
 
+    void NativeEngine::Impl::DeleteFrameBuffer(const Napi::CallbackInfo& info)
+    {
+        const auto frameBufferData = info[0].As<Napi::External<FrameBufferData>>().Data();
+        delete frameBufferData;
+    }
+
     void NativeEngine::Impl::BindFrameBuffer(const Napi::CallbackInfo& info)
     {
         const auto frameBufferData = info[0].As<Napi::External<FrameBufferData>>().Data();
@@ -1064,6 +1070,14 @@ namespace babylon
 
             callbackPtr->Call({});
             bgfx::frame();
+        });
+    }
+
+    void NativeEngine::Impl::Dispatch(std::function<void()> function)
+    {
+        m_runtimeImpl.Execute([function = std::move(function)](auto&)
+        {
+            function();
         });
     }
 

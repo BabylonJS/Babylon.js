@@ -72,6 +72,11 @@ namespace babylon
             auto depth = info[5].IsUndefined() ? true : info[5].As<Napi::Boolean>().Value();
             auto stencil = info[6].IsUndefined() ? true : info[6].As<Napi::Boolean>().Value();
 
+            return Update(r, g, b, a, backBuffer, depth, stencil);
+        }
+        
+        bool Update(float r, float g, float b, float a = 1.f, bool backBuffer = true, bool depth = true, bool stencil = true)
+        {
             bool needToUpdate = r != m_red
                 || g != m_green
                 || b != m_blue
@@ -287,6 +292,7 @@ namespace babylon
         void Suspend();
 
         FrameBufferManager& GetFrameBufferManager();
+        void Dispatch(std::function<void()>);
 
     private:
         using EngineDefiner = NativeEngineDefiner<NativeEngine::Impl>;
@@ -347,6 +353,7 @@ namespace babylon
         void SetTexture(const Napi::CallbackInfo& info);
         void DeleteTexture(const Napi::CallbackInfo& info);
         Napi::Value CreateFrameBuffer(const Napi::CallbackInfo& info);
+        void DeleteFrameBuffer(const Napi::CallbackInfo& info);
         void BindFrameBuffer(const Napi::CallbackInfo& info);
         void UnbindFrameBuffer(const Napi::CallbackInfo& info);
         void DrawIndexed(const Napi::CallbackInfo& info);

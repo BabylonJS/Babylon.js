@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
+set(DYNAMIC_LOADER OFF CACHE BOOL "Build the loader as a .dll library")
 add_subdirectory(Dependencies/OpenXR-SDK)
 
 set(SOURCES

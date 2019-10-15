@@ -22,9 +22,18 @@ namespace xr
         D24S8
     };
 
+    struct Size
+    {
+        size_t Width{};
+        size_t Height{};
+    };
+
     class System
     {
     public:
+        constexpr static float DEFAULT_DEPTH_NEAR_Z{ 0.5f };
+        constexpr static float DEFAULT_DEPTH_FAR_Z{ 1000.f };
+
         class Session
         {
             friend class System;
@@ -61,19 +70,14 @@ namespace xr
 
                     TextureFormat ColorTextureFormat{};
                     void* ColorTexturePointer{};
-                    struct
-                    {
-                        size_t Width{};
-                        size_t Height{};
-                    } ColorTextureSize;
+                    Size ColorTextureSize;
 
                     TextureFormat DepthTextureFormat{};
                     void* DepthTexturePointer{};
-                    struct
-                    {
-                        size_t Width{};
-                        size_t Height{};
-                    } DepthTextureSize;
+                    Size DepthTextureSize;
+
+                    float DepthNearZ{};
+                    float DepthFarZ{};
                 };
 
                 std::vector<View>& Views;
@@ -95,12 +99,14 @@ namespace xr
 
             std::unique_ptr<Frame> GetNextFrame(bool& shouldEndSession, bool& shouldRestartSession);
             void RequestEndSession();
+            Size GetWidthAndHeightForViewIndex(size_t viewIndex) const;
+            void SetDepthsNearFar(float depthNear, float depthFar);
 
         private:
             std::unique_ptr<Impl> m_impl{};
         };
 
-        System();
+        System(const char* = "OpenXR Experience");
         ~System();
 
         System(System&) = delete;
