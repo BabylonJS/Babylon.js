@@ -6,7 +6,7 @@ import { Skeleton } from './Bones/skeleton';
 import { AnimationGroup } from './Animations/animationGroup';
 import { AbstractMesh } from './Meshes/abstractMesh';
 import { MultiMaterial } from './Materials/multiMaterial';
-import { Material } from './Materials';
+import { Material } from './Materials/material';
 
 /**
  * Set of assets to keep when moving a scene into an asset container.
@@ -124,7 +124,7 @@ export class AssetContainer extends AbstractScene {
                         if (mesh.material) {
                             if (cloneMaterials) {
                                 let sourceMaterial = (source as AbstractMesh).material!;
-                                
+
                                 if (alreadySwappedMaterials.indexOf(sourceMaterial) === -1) {
                                     let swap = sourceMaterial.clone(nameFunction ? nameFunction(sourceMaterial.name) : "Clone of " + sourceMaterial.name)!;
                                     alreadySwappedMaterials.push(sourceMaterial);
@@ -170,7 +170,7 @@ export class AssetContainer extends AbstractScene {
         });
 
         this.skeletons.forEach((s) => {
-            let clone =  s.clone(nameFunction ? nameFunction(s.name) :"Clone of " + s.name);
+            let clone =  s.clone(nameFunction ? nameFunction(s.name) : "Clone of " + s.name);
 
             if (s.overrideMesh) {
                 clone.overrideMesh = storeMap[convertionMap[s.overrideMesh.uniqueId]];

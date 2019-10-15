@@ -171,7 +171,7 @@ export class TransformNode extends Node {
 
         if (isPure) {
             this.getScene().addTransformNode(this);
-        }        
+        }
     }
 
     /**
