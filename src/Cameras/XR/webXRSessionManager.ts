@@ -224,7 +224,7 @@ export class WebXRSessionManager implements IDisposable {
             return this._xrNavigator.xr.getWebXRRenderTarget(this.scene.getEngine());
         }
         else {
-            return new WebXRManagedOutputCanvas(this.scene.getEngine(), onStateChangedObservable!, this.scene.getEngine().getRenderingCanvas() as HTMLCanvasElement);
+            return new WebXRManagedOutputCanvas(this.scene.getEngine(), this.scene.getEngine().getRenderingCanvas() as HTMLCanvasElement, onStateChangedObservable!);
         }
     }
 
