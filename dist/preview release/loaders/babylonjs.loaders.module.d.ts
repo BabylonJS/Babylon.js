@@ -2304,7 +2304,6 @@ declare module "babylonjs-loaders/STL/stlFileLoader" {
     import { ISceneLoaderPlugin, ISceneLoaderPluginExtensions } from "babylonjs/Loading/sceneLoader";
     import { AssetContainer } from "babylonjs/assetContainer";
     import { Scene } from "babylonjs/scene";
-    import "babylonjs/Helpers/sceneHelpers";
     /**
      * STL file type loader.
      * This is a babylon scene loader plugin.
