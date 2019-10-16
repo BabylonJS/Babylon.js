@@ -206,14 +206,10 @@ Engine.prototype.enableVR = function() {
 
         this.onVRRequestPresentStart.notifyObservers(this);
 
-        var presentationAttributes = {
-            highRefreshRate: this.vrPresentationAttributes ? this.vrPresentationAttributes.highRefreshRate : false,
-            foveationLevel: this.vrPresentationAttributes ? this.vrPresentationAttributes.foveationLevel : 1,
-          };
-
         this._vrDisplay.requestPresent([{
             source: this.getRenderingCanvas(),
-            attributes: presentationAttributes
+            highRefreshRate: this.vrPresentationAttributes ? this.vrPresentationAttributes.highRefreshRate : false,
+            foveationLevel: this.vrPresentationAttributes ? this.vrPresentationAttributes.foveationLevel : 1,
         }]).then(onResolved).catch(onRejected);
     }
 };
