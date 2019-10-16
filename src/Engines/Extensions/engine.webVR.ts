@@ -213,7 +213,8 @@ Engine.prototype.enableVR = function() {
 
         this._vrDisplay.requestPresent([{
             source: this.getRenderingCanvas(),
-            attributes: presentationAttributes
+            attributes: presentationAttributes,
+            ...presentationAttributes
         }]).then(onResolved).catch(onRejected);
     }
 };
