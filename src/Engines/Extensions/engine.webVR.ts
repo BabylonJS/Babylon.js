@@ -209,11 +209,12 @@ Engine.prototype.enableVR = function() {
         var presentationAttributes = {
             highRefreshRate: this.vrPresentationAttributes ? this.vrPresentationAttributes.highRefreshRate : false,
             foveationLevel: this.vrPresentationAttributes ? this.vrPresentationAttributes.foveationLevel : 1,
-          };
+        };
 
         this._vrDisplay.requestPresent([{
             source: this.getRenderingCanvas(),
-            attributes: presentationAttributes
+            attributes: presentationAttributes,
+            ...presentationAttributes
         }]).then(onResolved).catch(onRejected);
     }
 };
