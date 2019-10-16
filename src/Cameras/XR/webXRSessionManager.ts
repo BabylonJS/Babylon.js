@@ -23,6 +23,11 @@ class RenderTargetProvider implements IRenderTargetProvider {
     }
 }
 
+declare var XRRigidTransform: {
+    prototype: XRRigidTransform;
+    new(position?: DOMPointInit, orientation?: DOMPointInit): XRRigidTransform;
+}
+
 /**
  * Manages an XRSession to work with Babylon's engine
  * @see https://doc.babylonjs.com/how_to/webxr
@@ -113,20 +118,41 @@ export class WebXRSessionManager implements IDisposable {
      * @param referenceSpace space to set
      * @returns a promise that will resolve once the reference space has been set
      */
-    public setReferenceSpaceAsync(referenceSpace: XRReferenceSpaceType) {
-        return this.session.requestReferenceSpace(referenceSpace).then((referenceSpace: XRReferenceSpace) => {
+    public setReferenceSpaceAsync(referenceSpaceType: XRReferenceSpaceType) {
+        return this.session.requestReferenceSpace(referenceSpaceType).then((referenceSpace: XRReferenceSpace) => {
             this.referenceSpace = referenceSpace;
         }, (rejectionReason) => {
             Logger.Error("XR.requestReferenceSpace failed for the following reason: ");
             Logger.Error(rejectionReason);
-            Logger.Log("Defaulting to universally-supported \"viewer\" reference space type.");
 
-            return this.session.requestReferenceSpace("viewer").then((referenceSpace: XRReferenceSpace) => {
-                this.referenceSpace = referenceSpace;
-            }, (rejectionReason) => {
+            const tryViewerReferenceSpaceType = (rejectionReason: any) => {
+                Logger.Error("XR.requestReferenceSpace failed for the following reason: ");
                 Logger.Error(rejectionReason);
-                throw "XR initialization failed: required \"viewer\" reference space type not supported.";
-            });
+                Logger.Log("Defaulting to universally-supported \"viewer\" reference space type.");
+
+                return this.session.requestReferenceSpace("viewer").then((referenceSpace: XRReferenceSpace) => {
+                    this.referenceSpace = referenceSpace;
+                }, (rejectionReason) => {
+                    Logger.Error(rejectionReason);
+                    throw "XR initialization failed: required \"viewer\" reference space type not supported.";
+                });
+            };
+            
+            if (referenceSpaceType == "local-floor") {
+                Logger.Log(
+                    "An attempt to create a \"local-floor\" reference space has failed. Though this is not allowed by the spec, certain " +
+                    "browers which do not support \"local-floor\" do actually support \"local\" reference spaces, which can be used to " +
+                    "make a reasonable emulation of \"local-floor\" by creating an arbitrarily-offset reference space: in our case, by " +
+                    "one vertical meter, a plausible eye height for a user sitting in a chair. Attempting this now as a workaround.");
+                return this.session.requestReferenceSpace("local").then((referenceSpace: XRReferenceSpace) => {
+                    let transform = new XRRigidTransform(new DOMPointReadOnly(0, -1, 0));
+                    this.referenceSpace = referenceSpace.getOffsetReferenceSpace(transform);
+                }, (rejectionReason) => {
+                    return tryViewerReferenceSpaceType(rejectionReason);
+                });
+            } else {
+                return tryViewerReferenceSpaceType(rejectionReason);
+            }
         });
     }
 
