@@ -44,7 +44,7 @@ gulp tests-all
 
 ## Run Integrated Web Server and watch for changes (dev build):
 ```
-gulp run
+gulp run --max-old-space-size=8192
 ```
 
 you can now freely test in the following URLs:
