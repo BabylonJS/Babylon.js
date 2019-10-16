@@ -25,6 +25,7 @@ import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
 import { ShadowLight, IShadowLight } from 'babylonjs/Lights/shadowLight';
 import { CubeTexture } from 'babylonjs/Materials/Textures/cubeTexture';
 import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
+import { HemisphericLight } from 'babylonjs/Lights/hemisphericLight';
 import { Scalar } from 'babylonjs/Maths/math.scalar';
 import { SpotLight } from 'babylonjs/Lights/spotLight';
 import { PointLight } from 'babylonjs/Lights/pointLight';
@@ -1209,7 +1210,7 @@ export class SceneManager {
 
         if (!lightKeys.length) {
             if (!this.scene.lights.length) {
-                this.scene.createDefaultLight(true);
+                new HemisphericLight("default light", Vector3.Up(), this.scene);
             }
         } else {
 
