@@ -2878,7 +2878,7 @@ export class ThinEngine {
      * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
      * @param compression defines the compressed used (can be null)
      * @param textureType defines the compressed used (can be null)
-     * @returns a new raw 3D texture (stored in an InternalTexture)
+     * @returns a new raw 2D array texture (stored in an InternalTexture)
      */
     public createRawTexture2DArray(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
         throw _DevTools.WarnImport("Engine.RawTexture");
