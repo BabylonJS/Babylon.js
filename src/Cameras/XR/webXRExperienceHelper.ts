@@ -88,7 +88,7 @@ export class WebXRExperienceHelper implements IDisposable {
 
     /**
      * Enters XR mode (This must be done within a user interaction in most browsers eg. button click)
-     * @param sessionCreationOptions options for the XR session
+     * @param sessionMode options for the XR session
      * @param referenceSpaceType frame of reference of the XR session
      * @param renderTarget the output canvas that will be used to enter XR mode
      * @returns promise that resolves after xr mode has entered

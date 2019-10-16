@@ -84,6 +84,7 @@ export class WebXRSessionManager implements IDisposable {
     /**
      * Initializes an xr session
      * @param xrSessionMode mode to initialize
+     * @param optionalFeatures defines optional values to pass to the session builder
      * @returns a promise which will resolve once the session has been initialized
      */
     public initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures: any = {}) {
