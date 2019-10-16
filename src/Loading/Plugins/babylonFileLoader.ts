@@ -35,11 +35,16 @@ import { StringTools } from '../../Misc/stringTools';
 export var _BabylonLoaderRegistered = true;
 
 /**
- * The loader does not allow injecting custom physix engine into the plugins.
- * Unfortunately in ES6, we need to manually inject them into the plugin.
- * So you could set this variable to your engine import to make it work.
+ * Helps setting up some configuration for the babylon file loader.
  */
-export var LoaderInjectedPhysicsEngine: any = undefined;
+export class BabylonFileLoaderConfiguration {
+    /**
+     * The loader does not allow injecting custom physix engine into the plugins.
+     * Unfortunately in ES6, we need to manually inject them into the plugin.
+     * So you could set this variable to your engine import to make it work.
+     */
+    public static LoaderInjectedPhysicsEngine: any = undefined;
+}
 
 var parseMaterialById = (id: string, parsedData: any, scene: Scene, rootUrl: string) => {
     for (var index = 0, cache = parsedData.materials.length; index < cache; index++) {
@@ -710,11 +715,11 @@ SceneLoader.RegisterPlugin({
             if (parsedData.physicsEnabled) {
                 var physicsPlugin;
                 if (parsedData.physicsEngine === "cannon") {
-                    physicsPlugin = new CannonJSPlugin(undefined, undefined, LoaderInjectedPhysicsEngine);
+                    physicsPlugin = new CannonJSPlugin(undefined, undefined, BabylonFileLoaderConfiguration.LoaderInjectedPhysicsEngine);
                 } else if (parsedData.physicsEngine === "oimo") {
-                    physicsPlugin = new OimoJSPlugin(undefined, LoaderInjectedPhysicsEngine);
+                    physicsPlugin = new OimoJSPlugin(undefined, BabylonFileLoaderConfiguration.LoaderInjectedPhysicsEngine);
                 } else if (parsedData.physicsEngine === "ammo") {
-                    physicsPlugin = new AmmoJSPlugin(undefined, LoaderInjectedPhysicsEngine, undefined);
+                    physicsPlugin = new AmmoJSPlugin(undefined, BabylonFileLoaderConfiguration.LoaderInjectedPhysicsEngine, undefined);
                 }
                 log = "\tPhysics engine " + (parsedData.physicsEngine ? parsedData.physicsEngine : "oimo") + " enabled\n";
                 //else - default engine, which is currently oimo
