@@ -206,10 +206,14 @@ Engine.prototype.enableVR = function() {
 
         this.onVRRequestPresentStart.notifyObservers(this);
 
-        this._vrDisplay.requestPresent([{
-            source: this.getRenderingCanvas(),
+        var presentationAttributes = {
             highRefreshRate: this.vrPresentationAttributes ? this.vrPresentationAttributes.highRefreshRate : false,
             foveationLevel: this.vrPresentationAttributes ? this.vrPresentationAttributes.foveationLevel : 1,
+        };
+
+        this._vrDisplay.requestPresent([{
+            source: this.getRenderingCanvas(),
+            attributes: presentationAttributes
         }]).then(onResolved).catch(onRejected);
     }
 };
