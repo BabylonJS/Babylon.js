@@ -26,7 +26,7 @@ class RenderTargetProvider implements IRenderTargetProvider {
 declare var XRRigidTransform: {
     prototype: XRRigidTransform;
     new(position?: DOMPointInit, orientation?: DOMPointInit): XRRigidTransform;
-}
+};
 
 /**
  * Manages an XRSession to work with Babylon's engine
@@ -137,7 +137,7 @@ export class WebXRSessionManager implements IDisposable {
                     throw "XR initialization failed: required \"viewer\" reference space type not supported.";
                 });
             };
-            
+
             if (referenceSpaceType == "local-floor") {
                 Logger.Log(
                     "An attempt to create a \"local-floor\" reference space has failed. Though this is not allowed by the spec, certain " +
