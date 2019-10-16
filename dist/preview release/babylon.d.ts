@@ -41646,9 +41646,10 @@ declare module BABYLON {
         /**
          * Initializes an xr session
          * @param xrSessionMode mode to initialize
+         * @param optionalFeatures defines optional values to pass to the session builder
          * @returns a promise which will resolve once the session has been initialized
          */
-        initializeSessionAsync(xrSessionMode: XRSessionMode): any;
+        initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures?: any): any;
         /**
          * Sets the reference space on the xr session
          * @param referenceSpace space to set
@@ -41774,12 +41775,12 @@ declare module BABYLON {
         exitXRAsync(): Promise<void>;
         /**
          * Enters XR mode (This must be done within a user interaction in most browsers eg. button click)
-         * @param sessionCreationOptions options for the XR session
+         * @param sessionMode options for the XR session
          * @param referenceSpaceType frame of reference of the XR session
          * @param renderTarget the output canvas that will be used to enter XR mode
          * @returns promise that resolves after xr mode has entered
          */
-        enterXRAsync(sessionCreationOptions: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget): any;
+        enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget): any;
         /**
          * Updates the global position of the camera by moving the camera's container
          * This should be used instead of modifying the camera's position as it will be overwritten by an xrSessions's update frame
