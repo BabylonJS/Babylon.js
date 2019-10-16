@@ -93,12 +93,15 @@ export class WebXRExperienceHelper implements IDisposable {
      * @param renderTarget the output canvas that will be used to enter XR mode
      * @returns promise that resolves after xr mode has entered
      */
-    public enterXRAsync(sessionCreationOptions: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget) {
+    public enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget) {
         if (!this._supported) {
             throw "XR session not supported by this browser";
         }
         this._setState(WebXRState.ENTERING_XR);
-        return this.sessionManager.initializeSessionAsync(sessionCreationOptions).then(() => {
+        let sessionCreationOptions = {
+            optionalFeatures: (referenceSpaceType !== "viewer" && referenceSpaceType !== "local") ? [referenceSpaceType] : []
+        };
+        return this.sessionManager.initializeSessionAsync(sessionMode, sessionCreationOptions).then(() => {
             return this.sessionManager.setReferenceSpaceAsync(referenceSpaceType);
         }).then(() => {
             return renderTarget.initializeXRLayerAsync(this.sessionManager.session);
