@@ -121,11 +121,12 @@
 - SpritePackedManager extends SpriteManager so that a sprite sheet with different size sprites can be used ([JohnK](https://github.com/BabylonJSGuide))
 - MultiPickSprite and multiPickSpriteWithRay added to sprites ([JohnK](https://github.com/BabylonJSGuide))
 
-### WebXR
+### WebXR / WebVR
 
 - Compliance with the mozilla WebXR emulator ([RaananW](https://github.com/RaananW/))
 - Gamepad object is now exposed in the WebXRController class ([RaananW](https://github.com/RaananW/))
 - If canvas does not have WebXR support the scene will still render (mainly Firefox) ([RaananW](https://github.com/RaananW/))
+- Added support for foveated rendering in Oculus Quest ([Deltakosh](https://github.com/deltakosh/))
 
 ### Ray
 
