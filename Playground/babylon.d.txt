@@ -40850,10 +40850,10 @@ declare module BABYLON {
         /**
          * Initializes the canvas to be added/removed upon entering/exiting xr
          * @param engine the Babylon engine
-         * @param onStateChangedObservable the mechanism by which the canvas will be added/removed based on XR state
          * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
+         * @param onStateChangedObservable the mechanism by which the canvas will be added/removed based on XR state
          */
-        constructor(engine: ThinEngine, onStateChangedObservable: Observable<WebXRState>, canvas?: HTMLCanvasElement);
+        constructor(engine: ThinEngine, canvas?: HTMLCanvasElement, onStateChangedObservable?: Observable<WebXRState>);
         /**
          * Disposes of the object
          */
