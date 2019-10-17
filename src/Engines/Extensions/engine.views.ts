@@ -23,7 +23,7 @@ declare module "../../Engines/engine" {
          * @param canvas defines the canvas to remove
          * @returns the current engine
          */
-        unRegisterView(canvas: HTMLCanvasElement): Engine;        
+        unRegisterView(canvas: HTMLCanvasElement): Engine;
     }
 }
 
@@ -42,9 +42,9 @@ Engine.prototype.registerView = function(canvas: HTMLCanvasElement, camera: Came
 
     camera.onDisposeObservable.add(() => {
         this.unRegisterView(canvas);
-    })
+    });
 
-    return this;    
+    return this;
 };
 
 Engine.prototype.unRegisterView = function(canvas: HTMLCanvasElement): Engine {
@@ -63,7 +63,7 @@ Engine.prototype.unRegisterView = function(canvas: HTMLCanvasElement): Engine {
         }
     }
 
-    return this;    
+    return this;
 };
 
 Engine.prototype._renderViews = function() {
@@ -105,4 +105,4 @@ Engine.prototype._renderViews = function() {
         // Restore
         scene.activeCamera = previewCamera;
     }
-}
+};
