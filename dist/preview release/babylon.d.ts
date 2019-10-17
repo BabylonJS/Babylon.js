@@ -29268,7 +29268,7 @@ declare module BABYLON {
         /** @hidden */
         _workingContext: Nullable<CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D>;
         /** @hidden */
-        _bindedRenderFunction: any;
+        _boundRenderFunction: any;
         private _vaoRecordInProgress;
         private _mustWipeVertexAttributes;
         private _emptyTexture;
@@ -31727,7 +31727,11 @@ declare module BABYLON {
         /** @hidden */
         _convertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView;
         protected _rebuildBuffers(): void;
+        /** @hidden */
+        _renderFrame(): void;
         _renderLoop(): void;
+        /** @hidden */
+        _renderViews(): void;
         /**
          * Toggle full screen mode
          * @param requestPointerLock defines if a pointer lock should be requested from the user
@@ -44537,6 +44541,28 @@ declare module BABYLON {
         }
 }
 declare module BABYLON {
+        interface Engine {
+            /** Gets or sets the list of views */
+            views: {
+                target: HTMLCanvasElement;
+                camera: Camera;
+            }[];
+            /**
+             * Register a new child canvas
+             * @param canvas defines the canvas to register
+             * @param camera defines the camera to use with this canvas (it will overwrite the scene.camera for this view)
+             * @returns the current engine
+             */
+            registerView(canvas: HTMLCanvasElement, camera: Camera): Engine;
+            /**
+             * Remove a registered child canvas
+             * @param canvas defines the canvas to remove
+             * @returns the current engine
+             */
+            unRegisterView(canvas: HTMLCanvasElement): Engine;
+        }
+}
+declare module BABYLON {
     /**
      * CubeMap information grouping all the data for each faces as well as the cubemap size.
      */
@@ -53944,6 +53970,8 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         /** @hidden */
         _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]): string;
+        /** @hidden */
+        _dumpCodeForOutputConnections(): string;
         /**
          * Clone the current block to a new identical block
          * @param scene defines the hosting scene
@@ -60676,6 +60704,8 @@ declare module BABYLON {
          * Gets pipeline name
          */
         readonly name: string;
+        /** Gets the list of attached cameras */
+        readonly cameras: Camera[];
         /**
          * Initializes a PostProcessRenderPipeline
          * @param engine engine to add the pipeline to
