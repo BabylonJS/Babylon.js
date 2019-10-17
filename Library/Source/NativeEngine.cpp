@@ -151,7 +151,7 @@ namespace babylon
             }
         }
 
-        void GenerateMipmap(uint8_t* __restrict source, int size, int channels, uint8_t* __restrict dest)
+        void GenerateMipmap(const uint8_t* const __restrict source, const int size, const int channels, uint8_t* __restrict dest)
         {
             int mipsize = size / 2;
 
