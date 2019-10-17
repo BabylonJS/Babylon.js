@@ -100,6 +100,7 @@
 - Added an order property to glTF loader extensions to support reordering. ([bghgary](https://github.com/bghgary))
 - Added support for GLTF clearcoat extension [Sebavan](https://github.com/sebavan/)
 - Added support for GLTF specular extension [Sebavan](https://github.com/sebavan/)
+- Added support for GLTF sheen extension [Sebavan](https://github.com/sebavan/)
 
 ### Materials
 
