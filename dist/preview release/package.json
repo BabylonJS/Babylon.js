@@ -34,8 +34,8 @@
     },
     "readme": "Babylon.js is a 3D engine based on webgl and javascript",
     "readmeFilename": "README.md",
-    "devDependencies": [],
-    "dependencies": [],
+    "devDependencies": {},
+    "dependencies": {},
     "module": "babylon.js",
     "esnext": "babylon.js"
 }
