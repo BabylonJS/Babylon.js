@@ -542,7 +542,8 @@ export class NodeMaterialBlock {
         uniqueNames.push(this._codeVariableName);
 
         // Declaration
-        codeString = `\r\nvar ${this._codeVariableName} = new BABYLON.${this.getClassName()}("${this.name}");\r\n`;
+        codeString = `\r\n// ${this.getClassName()}\r\n`;
+        codeString += `var ${this._codeVariableName} = new BABYLON.${this.getClassName()}("${this.name}");\r\n`;
 
         // Properties
         codeString += this._dumpPropertiesCode();
@@ -559,8 +560,6 @@ export class NodeMaterialBlock {
             if (alreadyDumped.indexOf(connectedBlock) === -1) {
                 codeString += connectedBlock._dumpCode(uniqueNames, alreadyDumped);
             }
-
-            codeString += `${connectedBlock._codeVariableName}.${connectedBlock._outputRename(connectedOutput.name)}.connectTo(${this._codeVariableName}.${this._inputRename(input.name)});\r\n`;
         }
 
         // Outputs
@@ -579,6 +578,25 @@ export class NodeMaterialBlock {
 
         return codeString;
     }
+    
+    /** @hidden */
+    public _dumpCodeForOutputConnections() {
+        let codeString = "";
+
+        for (var input of this.inputs) {
+            if (!input.isConnected) {
+                continue;
+            }
+
+            var connectedOutput = input.connectedPoint!;
+            var connectedBlock = connectedOutput.ownerBlock;
+
+            codeString += `${connectedBlock._codeVariableName}.${connectedBlock._outputRename(connectedOutput.name)}.connectTo(${this._codeVariableName}.${this._inputRename(input.name)});\r\n`;
+        }
+
+        return codeString;        
+    }
+
 
     /**
      * Clone the current block to a new identical block
