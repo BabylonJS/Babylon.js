@@ -61,6 +61,19 @@ class MonacoCreator {
                         if (this.monacoMode === "javascript") {
                             monaco.languages.typescript.javascriptDefaults.addExtraLib(xhr.responseText, 'babylon.d.ts');
                         } else {
+                            var typescript = monaco.languages.typescript;
+
+                            // setup compiler option for typescript
+                            typescript.typescriptDefaults.setCompilerOptions({
+                                module: typescript.ModuleKind.AMD,
+                                target: typescript.ScriptTarget.ES5,
+                                noLib: true,
+                                noResolve: true,
+                                suppressOutputPathCheck: true,
+
+                                allowNonTsExtensions: true // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
+                            });
+
                             monaco.languages.typescript.typescriptDefaults.addExtraLib(xhr.responseText, 'babylon.d.ts');
                         }
 
@@ -139,69 +152,19 @@ class MonacoCreator {
         if (this.parent.settingsPG.ScriptLanguage == "JS")
             callBack(this.jsEditor.getValue());
         else if (this.parent.settingsPG.ScriptLanguage == "TS") {
-            this.triggerCompile(this.JsEditor.getValue(), function (result) {
-                callBack(result + "var createScene = function() { return Playground.CreateScene(engine, engine.getRenderingCanvas()); }")
+            var uri = this.jsEditor.getModel().uri;
+            monaco.languages.typescript.getTypeScriptWorker()
+            .then(function(worker) {
+                worker(uri)
+                .then(function(languageService) {
+                     languageService.getEmitOutput(uri.toString())
+                     .then((result) => {
+                          var output = result.outputFiles[0].text;
+                          var stub = "var createScene = function() { return Playground.CreateScene(engine, engine.getRenderingCanvas()); }";
+                          callBack(output + stub);
+                     });
+                });
             });
         }
     };
-
-    /**
-     * Usefull function for TypeScript code
-     * @param {*} codeValue 
-     * @param {*} callback 
-     */
-    triggerCompile(codeValue, callback) {
-        if (this.compilerTriggerTimeoutID !== null) {
-            window.clearTimeout(this.compilerTriggerTimeoutID);
-        }
-        this.compilerTriggerTimeoutID = window.setTimeout(function () {
-            try {
-
-                var output = this.transpileModule(codeValue, {
-                    module: ts.ModuleKind.AMD,
-                    target: ts.ScriptTarget.ES5,
-                    noLib: true,
-                    noResolve: true,
-                    suppressOutputPathCheck: true
-                });
-                if (typeof output === "string") {
-                    callback(output);
-                }
-            }
-            catch (e) {
-                this.parent.utils.showError(e.message, e);
-            }
-        }.bind(this), 100);
-    };
-    
-    /**
-     * Usefull function for TypeScript code
-     * @param {*} input 
-     * @param {*} options 
-     */
-    transpileModule(input, options) {
-        var inputFileName = options.jsx ? "module.tsx" : "module.ts";
-        var sourceFile = ts.createSourceFile(inputFileName, input, options.target || ts.ScriptTarget.ES5);
-        // Output
-        var outputText;
-        var program = ts.createProgram([inputFileName], options, {
-            getSourceFile: function (fileName) { return fileName.indexOf("module") === 0 ? sourceFile : undefined; },
-            writeFile: function (_name, text) { outputText = text; },
-            getDefaultLibFileName: function () { return "lib.d.ts"; },
-            useCaseSensitiveFileNames: function () { return false; },
-            getCanonicalFileName: function (fileName) { return fileName; },
-            getCurrentDirectory: function () { return ""; },
-            getNewLine: function () { return "\r\n"; },
-            fileExists: function (fileName) { return fileName === inputFileName; },
-            readFile: function () { return ""; },
-            directoryExists: function () { return true; },
-            getDirectories: function () { return []; }
-        });
-        // Emit
-        program.emit();
-        if (outputText === undefined) {
-            throw new Error("Output generation failed");
-        }
-        return outputText;
-    }
 };
