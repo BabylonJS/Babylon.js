@@ -153,7 +153,9 @@ class MonacoCreator {
         if (parent.settingsPG.ScriptLanguage == "JS")
             callBack(this.jsEditor.getValue());
         else if (parent.settingsPG.ScriptLanguage == "TS") {
-            var uri = this.jsEditor.getModel().uri;
+            var model = this.jsEditor.getModel();
+            var uri = model.uri;
+
             monaco.languages.typescript.getTypeScriptWorker()
             .then(function(worker) {
                 worker(uri)
@@ -164,7 +166,11 @@ class MonacoCreator {
                     .then(function(diagnostics) {
                         diagnostics.forEach(function(diagset) {
                             if (diagset.length) {
-                                parent.utils.showError(diagset[0].messageText);
+                                var diagnostic = diagset[0];
+                                var position = model.getPositionAt(diagnostic.start);
+                                
+                                parent.utils.showError(`Line ${position.lineNumber}:${position.column} - ${diagnostic.messageText}`);
+                                return;
                             }
                         });
                     });
