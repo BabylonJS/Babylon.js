@@ -360,7 +360,7 @@ export class Image extends Control {
         this._source = value;
 
         if (value) {
-            this._svgCheck(value);
+            value = this._svgCheck(value);
         }
 
         this._domImage = document.createElement("img");
@@ -377,7 +377,7 @@ export class Image extends Control {
     /**
      * Checks for svg document with icon id present
      */
-    private _svgCheck(value: string) {
+    private _svgCheck(value: string): string {
         if ((value.search(/.svg#/gi) !== -1) && (value.indexOf("#") === value.lastIndexOf("#"))) {
             var svgsrc = value.split('#')[0];
             var elemid = value.split('#')[1];
@@ -404,6 +404,9 @@ export class Image extends Control {
                     }
                 };
             }
+            return svgsrc;
+        } else {
+            return value;
         }
     }
 
