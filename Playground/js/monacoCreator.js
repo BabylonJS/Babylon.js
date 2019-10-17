@@ -145,44 +145,38 @@ class MonacoCreator {
 
     /**
      * Get the code in the editor
-     * @param {Function} callBack : Function that will be called after retrieving the code.
      */
-    getRunCode(callBack) {
+    async getRunCode() {
         var parent = this.parent;
 
         if (parent.settingsPG.ScriptLanguage == "JS")
             callBack(this.jsEditor.getValue());
+            
         else if (parent.settingsPG.ScriptLanguage == "TS") {
-            var model = this.jsEditor.getModel();
-            var uri = model.uri;
+            const model = this.jsEditor.getModel();
+            const uri = model.uri;
 
-            monaco.languages.typescript.getTypeScriptWorker()
-            .then(function(worker) {
-                worker(uri)
-                .then(function(languageService) {
-                    var uriStr = uri.toString();
+            const worker = await monaco.languages.typescript.getTypeScriptWorker();
+            const languageService = await worker(uri);
 
-                    Promise.all([languageService.getSyntacticDiagnostics(uriStr), languageService.getSemanticDiagnostics(uriStr)])
-                    .then(function(diagnostics) {
-                        diagnostics.forEach(function(diagset) {
-                            if (diagset.length) {
-                                var diagnostic = diagset[0];
-                                var position = model.getPositionAt(diagnostic.start);
-                                
-                                parent.utils.showError(`Line ${position.lineNumber}:${position.column} - ${diagnostic.messageText}`);
-                                return;
-                            }
-                        });
-                    });
+            const uriStr = uri.toString();
+            const diagnostics = await Promise.all([languageService.getSyntacticDiagnostics(uriStr), languageService.getSemanticDiagnostics(uriStr)]);
 
-                    languageService.getEmitOutput(uriStr)
-                    .then(function(result) {
-                        var output = result.outputFiles[0].text;
-                        var stub = "var createScene = function() { return Playground.CreateScene(engine, engine.getRenderingCanvas()); }";
-                        callBack(output + stub);
-                    });
-                });
+            diagnostics.forEach(function(diagset) {
+                if (diagset.length) {
+                    var diagnostic = diagset[0];
+                    var position = model.getPositionAt(diagnostic.start);
+                    
+                    parent.utils.showError(`Line ${position.lineNumber}:${position.column} - ${diagnostic.messageText}`);
+                    return;
+                }
             });
+
+            const result = await languageService.getEmitOutput(uri.toString());
+            const output = result.outputFiles[0].text;
+            const stub = "var createScene = function() { return Playground.CreateScene(engine, engine.getRenderingCanvas()); }";
+
+            return output + stub;
         }
     };
 };

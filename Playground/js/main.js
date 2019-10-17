@@ -40,7 +40,7 @@ compileAndRun = function(parent, fpsLabel) {
         var createEngineFunction = "createDefaultEngine";
         var createSceneFunction;
 
-        parent.monacoCreator.getRunCode(function (code) {
+        parent.monacoCreator.getRunCode().then(function (code) {
             var createDefaultEngine = function () {
                 return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
             }
