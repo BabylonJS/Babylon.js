@@ -148,20 +148,33 @@ class MonacoCreator {
      * @param {Function} callBack : Function that will be called after retrieving the code.
      */
     getRunCode(callBack) {
-        if (this.parent.settingsPG.ScriptLanguage == "JS")
+        var parent = this.parent;
+
+        if (parent.settingsPG.ScriptLanguage == "JS")
             callBack(this.jsEditor.getValue());
-        else if (this.parent.settingsPG.ScriptLanguage == "TS") {
+        else if (parent.settingsPG.ScriptLanguage == "TS") {
             var uri = this.jsEditor.getModel().uri;
             monaco.languages.typescript.getTypeScriptWorker()
             .then(function(worker) {
                 worker(uri)
                 .then(function(languageService) {
-                     languageService.getEmitOutput(uri.toString())
-                     .then(function(result) {
-                          var output = result.outputFiles[0].text;
-                          var stub = "var createScene = function() { return Playground.CreateScene(engine, engine.getRenderingCanvas()); }";
-                          callBack(output + stub);
-                     });
+                    var uriStr = uri.toString();
+
+                    Promise.all([languageService.getSyntacticDiagnostics(uriStr), languageService.getSemanticDiagnostics(uriStr)])
+                    .then(function(diagnostics) {
+                        diagnostics.forEach(function(diagset) {
+                            if (diagset.length) {
+                                parent.utils.showError(diagset[0].messageText);
+                            }
+                        });
+                    });
+
+                    languageService.getEmitOutput(uriStr)
+                    .then(function(result) {
+                        var output = result.outputFiles[0].text;
+                        var stub = "var createScene = function() { return Playground.CreateScene(engine, engine.getRenderingCanvas()); }";
+                        callBack(output + stub);
+                    });
                 });
             });
         }
