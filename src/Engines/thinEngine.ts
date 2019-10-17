@@ -2916,24 +2916,18 @@ export class ThinEngine {
      */
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
         var filters = this._getSamplingParameters(samplingMode, texture.generateMipMaps);
-
+        var target = this._gl.TEXTURE_2D;
         if (texture.isCube) {
-            this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
-            this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MIN_FILTER, filters.min);
-            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
+            target = this._gl.TEXTURE_CUBE_MAP;
         } else if (texture.is3D) {
-            this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
-            this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_MIN_FILTER, filters.min);
-            this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
+            target = this._gl.TEXTURE_3D;
         } else if (texture.is2DArray) {
-            this._setTextureParameterInteger(this._gl.TEXTURE_2D_ARRAY, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
-            this._setTextureParameterInteger(this._gl.TEXTURE_2D_ARRAY, this._gl.TEXTURE_MIN_FILTER, filters.min);
-            this._bindTextureDirectly(this._gl.TEXTURE_2D_ARRAY, null);
-        } else {
-            this._setTextureParameterInteger(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
-            this._setTextureParameterInteger(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+            target = this._gl.TEXTURE_2D_ARRAY;
         }
+
+        this._setTextureParameterInteger(target, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
+        this._setTextureParameterInteger(target, this._gl.TEXTURE_MIN_FILTER, filters.min);
+        this._bindTextureDirectly(target, null);
 
         texture.samplingMode = samplingMode;
     }
