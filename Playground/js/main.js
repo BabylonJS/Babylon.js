@@ -40,7 +40,7 @@ compileAndRun = function(parent, fpsLabel) {
         var createEngineFunction = "createDefaultEngine";
         var createSceneFunction;
 
-        parent.monacoCreator.getRunCode().then(function (code) {
+        parent.monacoCreator.getRunCode().then(code => {
             var createDefaultEngine = function () {
                 return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
             }
@@ -172,7 +172,7 @@ compileAndRun = function(parent, fpsLabel) {
                     }
                 }
             }
-        }.bind(this));
+        });
 
     } catch (e) {
         parent.utils.showError(e.message, e);
