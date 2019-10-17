@@ -15,6 +15,7 @@ interface IKHR_materials_specular {
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1677)
+ * !!! Experimental Extension Subject to Changes !!!
  */
 export class KHR_materials_specular implements IGLTFLoaderExtension {
     /**
