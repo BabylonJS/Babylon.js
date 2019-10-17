@@ -862,6 +862,7 @@ namespace babylon
                 imageDataRef = imageDataRefMipMap;
                 useMipMap = true;
             }
+            // TODO: log an warning message: "Could not generate mipmap for texture"
         }
 
         textureData->Texture = bgfx::createTexture2D(
