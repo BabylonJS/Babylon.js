@@ -1359,6 +1359,7 @@ export class Engine extends ThinEngine {
         super._rebuildBuffers();
     }
 
+    /** @hidden */
     public _renderFrame() {
         // Start new frame
         this.beginFrame();
@@ -1370,7 +1371,7 @@ export class Engine extends ThinEngine {
         }
 
         // Present
-        this.endFrame();  
+        this.endFrame();
     }
 
     public _renderLoop(): void {
@@ -1382,7 +1383,7 @@ export class Engine extends ThinEngine {
 
             if (shouldRender) {
                 // Child canvases
-                this._renderViews();      
+                this._renderViews();
 
                 // Main frame
                 this._renderFrame();
