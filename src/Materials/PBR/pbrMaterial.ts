@@ -173,7 +173,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    protected metallicF0Factor = 0.5;
+    public metallicF0Factor = 0.5;
 
     /**
      * Specifies whether the F0 factor can be fetched from the mettalic texture.
@@ -182,7 +182,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    protected useMetallicF0FactorFromMetallicTexture = false;
+    public useMetallicF0FactorFromMetallicTexture = false;
 
     /**
      * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.

@@ -2,7 +2,7 @@ import { Nullable } from "babylonjs/types";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Material } from "babylonjs/Materials/material";
 
-import { IMaterial } from "../glTFLoaderInterfaces";
+import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 
@@ -10,6 +10,7 @@ const NAME = "KHR_materials_specular";
 
 interface IKHR_materials_specular {
     specularFactor: number;
+    specularTexture: ITextureInfo;
 }
 
 /**
@@ -55,7 +56,7 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
         });
     }
 
-    private _loadSpecularPropertiesAsync(context: string, material: IMaterial, properties: IKHR_materials_clearcoat, babylonMaterial: Material): Promise<void> {
+    private _loadSpecularPropertiesAsync(context: string, material: IMaterial, properties: IKHR_materials_specular, babylonMaterial: Material): Promise<void> {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
