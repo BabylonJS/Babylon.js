@@ -63,7 +63,6 @@ class MonacoCreator {
                         } else {
                             var typescript = monaco.languages.typescript;
 
-                            // setup compiler option for typescript
                             typescript.typescriptDefaults.setCompilerOptions({
                                 module: typescript.ModuleKind.AMD,
                                 target: typescript.ScriptTarget.ES5,
@@ -74,7 +73,7 @@ class MonacoCreator {
                                 allowNonTsExtensions: true // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
                             });
 
-                            monaco.languages.typescript.typescriptDefaults.addExtraLib(xhr.responseText, 'babylon.d.ts');
+                            typescript.typescriptDefaults.addExtraLib(xhr.responseText, 'babylon.d.ts');
                         }
 
                         this.parent.main.run();
