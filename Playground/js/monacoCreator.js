@@ -150,8 +150,8 @@ class MonacoCreator {
         var parent = this.parent;
 
         if (parent.settingsPG.ScriptLanguage == "JS")
-            callBack(this.jsEditor.getValue());
-            
+            return this.jsEditor.getValue();
+
         else if (parent.settingsPG.ScriptLanguage == "TS") {
             const model = this.jsEditor.getModel();
             const uri = model.uri;
@@ -160,6 +160,7 @@ class MonacoCreator {
             const languageService = await worker(uri);
 
             const uriStr = uri.toString();
+            const result = await languageService.getEmitOutput(uriStr);
             const diagnostics = await Promise.all([languageService.getSyntacticDiagnostics(uriStr), languageService.getSemanticDiagnostics(uriStr)]);
 
             diagnostics.forEach(function(diagset) {
@@ -172,7 +173,6 @@ class MonacoCreator {
                 }
             });
 
-            const result = await languageService.getEmitOutput(uri.toString());
             const output = result.outputFiles[0].text;
             const stub = "var createScene = function() { return Playground.CreateScene(engine, engine.getRenderingCanvas()); }";
 
