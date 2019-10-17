@@ -1075,7 +1075,7 @@ export class NodeMaterial extends PushMaterial {
             codeString += node._dumpCodeForOutputConnections();
         }
 
-        // Output nodes        
+        // Output nodes
         codeString += "\r\n// Output nodes\r\n";
         for (var node of this._vertexOutputNodes) {
             codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\r\n`;
@@ -1084,7 +1084,6 @@ export class NodeMaterial extends PushMaterial {
         for (var node of this._fragmentOutputNodes) {
             codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\r\n`;
         }
-        
 
         codeString += `nodeMaterial.build();\r\n`;
 

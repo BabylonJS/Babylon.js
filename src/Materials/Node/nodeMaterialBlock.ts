@@ -578,7 +578,7 @@ export class NodeMaterialBlock {
 
         return codeString;
     }
-    
+
     /** @hidden */
     public _dumpCodeForOutputConnections() {
         let codeString = "";
@@ -594,9 +594,8 @@ export class NodeMaterialBlock {
             codeString += `${connectedBlock._codeVariableName}.${connectedBlock._outputRename(connectedOutput.name)}.connectTo(${this._codeVariableName}.${this._inputRename(input.name)});\r\n`;
         }
 
-        return codeString;        
+        return codeString;
     }
-
 
     /**
      * Clone the current block to a new identical block
