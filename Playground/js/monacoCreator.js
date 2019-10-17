@@ -58,11 +58,16 @@ class MonacoCreator {
                 if (xhr.status === 200) {
                     require.config({ paths: { 'vs': 'node_modules/monaco-editor/min/vs' } });
                     require(['vs/editor/editor.main'], function () {
-                        if (this.monacoMode === "javascript") {
-                            monaco.languages.typescript.javascriptDefaults.addExtraLib(xhr.responseText, 'babylon.d.ts');
-                        } else {
-                            var typescript = monaco.languages.typescript;
+                        const typescript = monaco.languages.typescript;
 
+                        if (this.monacoMode === "javascript") {
+                            typescript.javascriptDefaults.setCompilerOptions({
+                                noLib: true,
+                                allowNonTsExtensions: true // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
+                            });
+
+                            typescript.javascriptDefaults.addExtraLib(xhr.responseText, 'babylon.d.ts');
+                        } else {
                             typescript.typescriptDefaults.setCompilerOptions({
                                 module: typescript.ModuleKind.AMD,
                                 target: typescript.ScriptTarget.ES5,
@@ -72,7 +77,6 @@ class MonacoCreator {
 
                                 allowNonTsExtensions: true // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
                             });
-
                             typescript.typescriptDefaults.addExtraLib(xhr.responseText, 'babylon.d.ts');
                         }
 
