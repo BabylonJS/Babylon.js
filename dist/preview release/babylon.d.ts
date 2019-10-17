@@ -47713,6 +47713,7 @@ declare module BABYLON {
         ROUGHNESSSTOREINMETALMAPGREEN: boolean;
         METALLNESSSTOREINMETALMAPBLUE: boolean;
         AOSTOREINMETALMAPRED: boolean;
+        METALLICF0FACTORFROMMETALLICMAP: boolean;
         ENVIRONMENTBRDF: boolean;
         ENVIRONMENTBRDF_RGBD: boolean;
         NORMAL: boolean;
@@ -47955,6 +47956,19 @@ declare module BABYLON {
          * Can also be used to scale the roughness values of the metallic texture.
          */
         protected _roughness: Nullable<number>;
+        /**
+         * Specifies the an F0 factor to help configuring the material F0.
+         * Instead of the default 4%, 8% * factor will be used. As the factor is defaulting
+         * to 0.5 the previously hard coded value stays the same.
+         * Can also be used to scale the F0 values of the metallic texture.
+         */
+        protected _metallicF0Factor: number;
+        /**
+         * Specifies whether the F0 factor can be fetched from the mettalic texture.
+         * If set to true, please adapt the metallicF0Factor to ensure it fits with
+         * your expectation as it multiplies with the texture data.
+         */
+        protected _useMetallicF0FactorFromMetallicTexture: boolean;
         /**
          * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
          * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
@@ -48438,6 +48452,19 @@ declare module BABYLON {
          * Can also be used to scale the roughness values of the metallic texture.
          */
         roughness: Nullable<number>;
+        /**
+         * Specifies the an F0 factor to help configuring the material F0.
+         * Instead of the default 4%, 8% * factor will be used. As the factor is defaulting
+         * to 0.5 the previously hard coded value stays the same.
+         * Can also be used to scale the F0 values of the metallic texture.
+         */
+        metallicF0Factor: number;
+        /**
+         * Specifies whether the F0 factor can be fetched from the mettalic texture.
+         * If set to true, please adapt the metallicF0Factor to ensure it fits with
+         * your expectation as it multiplies with the texture data.
+         */
+        useMetallicF0FactorFromMetallicTexture: boolean;
         /**
          * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
          * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
