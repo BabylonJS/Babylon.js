@@ -43769,12 +43769,19 @@ declare module BABYLON {
         }
 }
 declare module BABYLON {
+    /**
+     * Class used to define an additional view for the engine
+     * @see https://doc.babylonjs.com/how_to/multi_canvases
+     */
+    export class EngineView {
+        /** Defines the canvas where to render the view */
+        target: HTMLCanvasElement;
+        /** Defines the camera used to render the view */
+        camera: Camera;
+    }
         interface Engine {
             /** Gets or sets the list of views */
-            views: {
-                target: HTMLCanvasElement;
-                camera: Camera;
-            }[];
+            views: EngineView[];
             /**
              * Register a new child canvas
              * @param canvas defines the canvas to register
@@ -69066,6 +69073,34 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
         private _loadClearCoatPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1688)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_sheen implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadSheenPropertiesAsync;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
