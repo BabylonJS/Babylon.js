@@ -211,7 +211,7 @@ void main(void) {
             // Compute the converted reflectivity.
             surfaceReflectivityColor = mix(0.16 * reflectance * reflectance, baseColor, metallicRoughness.r);
         #else
-            vec3 metallicF0 = vec3(vReflectivityColor.a);
+            vec3 metallicF0 = vec3(vReflectivityColor.a, vReflectivityColor.a, vReflectivityColor.a);
             #ifdef METALLICF0FACTORFROMMETALLICMAP
                 #ifdef REFLECTIVITY
                     metallicF0 *= surfaceMetallicColorMap.a;
