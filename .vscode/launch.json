@@ -1,6 +1,6 @@
 {
     "version": "2.0.0",
-    "configurations": [
+    "configurations": [    
         {
             "name": "Launch Node Material Editor (Chrome)",
             "type": "chrome",
@@ -144,6 +144,19 @@
                 "--enable-unsafe-es3-apis"
             ]
         },
+        {
+            "name": "Launch Local Dev - Views mode (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/localDev/index-views.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },        
         {
             "name": "Launch Local Dev (Experimental Firefox)",
             "type": "firefox",
