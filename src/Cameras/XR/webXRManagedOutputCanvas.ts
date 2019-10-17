@@ -40,24 +40,27 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     /**
      * Initializes the canvas to be added/removed upon entering/exiting xr
      * @param engine the Babylon engine
-     * @param onStateChangedObservable the mechanism by which the canvas will be added/removed based on XR state
      * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
+     * @param onStateChangedObservable the mechanism by which the canvas will be added/removed based on XR state
      */
-    constructor(engine: ThinEngine, onStateChangedObservable: Observable<WebXRState>, canvas?: HTMLCanvasElement) {
+    constructor(engine: ThinEngine, canvas?: HTMLCanvasElement, onStateChangedObservable?: Observable<WebXRState>) {
         this._engine = engine;
         if (!canvas) {
             canvas = document.createElement('canvas');
             canvas.style.cssText = "position:absolute; bottom:0px;right:0px;z-index:10;width:90%;height:100%;background-color: #000000;";
         }
         this._setManagedOutputCanvas(canvas);
-        onStateChangedObservable.add((stateInfo) => {
-            if (stateInfo == WebXRState.ENTERING_XR) {
-                // The canvas is added to the screen before entering XR because currently the xr session must be initialized while the canvas is added render properly
-                this._addCanvas();
-            } else if (stateInfo == WebXRState.NOT_IN_XR) {
-                this._removeCanvas();
-            }
-        });
+
+        if (onStateChangedObservable) {
+            onStateChangedObservable.add((stateInfo) => {
+                if (stateInfo == WebXRState.ENTERING_XR) {
+                    // The canvas is added to the screen before entering XR because currently the xr session must be initialized while the canvas is added render properly
+                    this._addCanvas();
+                } else if (stateInfo == WebXRState.NOT_IN_XR) {
+                    this._removeCanvas();
+                }
+            });
+        }
     }
     /**
      * Disposes of the object

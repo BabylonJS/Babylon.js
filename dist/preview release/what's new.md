@@ -168,7 +168,7 @@
 - A scene's input manager not adding key listeners when the canvas is already focused ([Poolminer](https://github.com/Poolminer))
 - Runtime animation `goToFrame` when going back in time now correctly triggers future events when reached ([zakhenry](https://github.com/zakhenry))
 - Fixed bug in `Ray.intersectsTriangle` where the barycentric coordinates `bu` and `bv` being returned is actually `bv` and `bw`. ([bghgary](https://github.com/bghgary))
-- Do not call onError when creating a texture when falling back to another loader ([TrevorDev](https://github.com/TrevorDev))
+- Do not call `onError` when creating a texture when falling back to another loader ([TrevorDev](https://github.com/TrevorDev))
 - Context loss should not cause PBR materials to render black or instances to stop rendering ([TrevorDev](https://github.com/TrevorDev))
 - Only cast pointer ray input when pointer is locked in webVR ([TrevorDev](https://github.com/TrevorDev))
 - Fix Right Hand coordinates with directional lights and shadows, hemispheric lights and spot lights ([CedricGuillemet](https://github.com/CedricGuillemet))
@@ -202,3 +202,4 @@
 - `Tools.QueueNewFrame` was removed in favor of `Engine.QueueNewFrame` ([Deltakosh](https://github.com/deltakosh/))
 - Removed external data from Engine (`addExternalData`, `getExternalData`, `getOrAddExternalDataWithFactory`, `removeExternalData`)  ([Deltakosh](https://github.com/deltakosh/))
 - The glTF loader extensions that map to glTF 2.0 extensions will now be disabled if the extension is not present in `extensionsUsed`. ([bghgary](https://github.com/bghgary))
+- The STL loader does not create light or camera automatically, please use ```scene.createDefaultCameraOrLight();``` in your code [Sebavan](https://github.com/sebavan/)

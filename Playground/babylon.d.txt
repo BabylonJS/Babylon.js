@@ -40850,10 +40850,10 @@ declare module BABYLON {
         /**
          * Initializes the canvas to be added/removed upon entering/exiting xr
          * @param engine the Babylon engine
-         * @param onStateChangedObservable the mechanism by which the canvas will be added/removed based on XR state
          * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
+         * @param onStateChangedObservable the mechanism by which the canvas will be added/removed based on XR state
          */
-        constructor(engine: ThinEngine, onStateChangedObservable: Observable<WebXRState>, canvas?: HTMLCanvasElement);
+        constructor(engine: ThinEngine, canvas?: HTMLCanvasElement, onStateChangedObservable?: Observable<WebXRState>);
         /**
          * Disposes of the object
          */
@@ -40910,7 +40910,7 @@ declare module BABYLON {
          * @param xrSessionMode mode to initialize
          * @returns a promise which will resolve once the session has been initialized
          */
-        initializeSessionAsync(xrSessionMode: XRSessionMode): any;
+        initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures?: any): any;
         /**
          * Sets the reference space on the xr session
          * @param referenceSpace space to set
@@ -41039,7 +41039,7 @@ declare module BABYLON {
          * @param renderTarget the output canvas that will be used to enter XR mode
          * @returns promise that resolves after xr mode has entered
          */
-        enterXRAsync(sessionCreationOptions: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget): any;
+        enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget): any;
         /**
          * Updates the global position of the camera by moving the camera's container
          * This should be used instead of modifying the camera's position as it will be overwritten by an xrSessions's update frame
@@ -51183,6 +51183,17 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var _BabylonLoaderRegistered: boolean;
+    /**
+     * Helps setting up some configuration for the babylon file loader.
+     */
+    export class BabylonFileLoaderConfiguration {
+        /**
+         * The loader does not allow injecting custom physix engine into the plugins.
+         * Unfortunately in ES6, we need to manually inject them into the plugin.
+         * So you could set this variable to your engine import to make it work.
+         */
+        static LoaderInjectedPhysicsEngine: any;
+    }
 }
 declare module BABYLON {
     /**
