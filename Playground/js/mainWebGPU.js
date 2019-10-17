@@ -45,7 +45,7 @@ compileAndRun = function(parent, fpsLabel) {
             return;
         }
 
-        parent.monacoCreator.getRunCode((async function (code) {
+        parent.monacoCreator.getRunCode().then((async function (code) {
             try {
                 var createDefaultEngine = function () {
                     return new BABYLON.WebGPUEngine(canvas);
