@@ -170,11 +170,11 @@ class NativeTexture extends InternalTexture {
 }
 
 /** @hidden */
-declare var nativeEngine: INativeEngine;
+declare var _native: any;
 
 /** @hidden */
 export class NativeEngine extends Engine {
-    private readonly _native: INativeEngine = nativeEngine;
+    private readonly _native: INativeEngine = new _native.Engine();
 
     public getHardwareScalingLevel(): number {
         return 1.0;
