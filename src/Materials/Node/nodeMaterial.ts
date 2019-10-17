@@ -1055,7 +1055,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // Generate vertex shader
-        let codeString = "var nodeMaterial = new BABYLON.NodeMaterial(`node material`);\r\n";
+        let codeString = `var nodeMaterial = new BABYLON.NodeMaterial("${this.name || "node material"}");\r\n`;
         for (var node of vertexBlocks) {
             if (node.isInput && alreadyDumped.indexOf(node) === -1) {
                 codeString += node._dumpCode(uniqueNames, alreadyDumped);
@@ -1069,6 +1069,14 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
+        // Connections
+        codeString += "\r\n// Connections\r\n";
+        for (var node of alreadyDumped) {
+            codeString += node._dumpCodeForOutputConnections();
+        }
+
+        // Output nodes        
+        codeString += "\r\n// Output nodes\r\n";
         for (var node of this._vertexOutputNodes) {
             codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\r\n`;
         }
@@ -1076,6 +1084,7 @@ export class NodeMaterial extends PushMaterial {
         for (var node of this._fragmentOutputNodes) {
             codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\r\n`;
         }
+        
 
         codeString += `nodeMaterial.build();\r\n`;
 
