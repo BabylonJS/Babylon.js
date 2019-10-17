@@ -97,6 +97,8 @@
 - Added support for using HTTP range requests when loading `MSFT_lod` extension from a glTF binary. ([bghgary](https://github.com/bghgary))
 - Added a flag to enable/disable creation of instances for glTF loader. ([bghgary](https://github.com/bghgary))
 - Added an order property to glTF loader extensions to support reordering. ([bghgary](https://github.com/bghgary))
+- Added support for GLTF clearcoat extension [Sebavan](https://github.com/sebavan/)
+- Added support for GLTF specular extension [Sebavan](https://github.com/sebavan/)
 
 ### Materials
 
@@ -139,7 +141,7 @@
 - Added `Button.delegatePickingToChildren` to let buttons delegate hit testing to embedded controls ([Deltakosh](https://github.com/deltakosh/))
 - Added `Container.maxLayoutCycle` and `Container.logLayoutCycleErrors` to get more control over layout cycles ([Deltakosh](https://github.com/deltakosh/))
 - Added `StackPanel.ignoreLayoutWarnings` to disable console warnings when controls with percentage size are added to a StackPanel ([Deltakosh](https://github.com/deltakosh/))
-- Added `_getSVGAttribs` functionality for loading multiple svg icons from an external svg file via icon id. Fixed bug for Chrome.([lockphase](https://github.com/lockphase/))
+- Added `_getSVGAttribs` functionality for loading multiple svg icons from an external svg file via icon id. Fixed bug for Chrome. Strip icon id from image url for firefox.([lockphase](https://github.com/lockphase/))
 
 ### Particles
 

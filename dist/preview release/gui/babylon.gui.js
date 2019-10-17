@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -6319,6 +6319,7 @@ var Image = /** @class */ (function (_super) {
         if (url === void 0) { url = null; }
         var _this = _super.call(this, name) || this;
         _this.name = name;
+        _this._workingCanvas = null;
         _this._loaded = false;
         _this._stretch = Image.STRETCH_FILL;
         _this._autoScale = false;
@@ -6595,10 +6596,10 @@ var Image = /** @class */ (function (_super) {
         this._markAsDirty();
     };
     Image.prototype._extractNinePatchSliceDataFromImage = function () {
-        if (!Image._WorkingCanvas) {
-            Image._WorkingCanvas = document.createElement('canvas');
+        if (!this._workingCanvas) {
+            this._workingCanvas = document.createElement('canvas');
         }
-        var canvas = Image._WorkingCanvas;
+        var canvas = this._workingCanvas;
         var context = canvas.getContext('2d');
         var width = this._domImage.width;
         var height = this._domImage.height;
@@ -6647,7 +6648,7 @@ var Image = /** @class */ (function (_super) {
             this._loaded = false;
             this._source = value;
             if (value) {
-                this._svgCheck(value);
+                value = this._svgCheck(value);
             }
             this._domImage = document.createElement("img");
             this._domImage.onload = function () {
@@ -6693,6 +6694,10 @@ var Image = /** @class */ (function (_super) {
                     }
                 };
             }
+            return svgsrc;
+        }
+        else {
+            return value;
         }
     };
     /**
@@ -6795,10 +6800,10 @@ var Image = /** @class */ (function (_super) {
         if (!_super.prototype.contains.call(this, x, y)) {
             return false;
         }
-        if (!this._detectPointerOnOpaqueOnly || !Image._WorkingCanvas) {
+        if (!this._detectPointerOnOpaqueOnly || !this._workingCanvas) {
             return true;
         }
-        var canvas = Image._WorkingCanvas;
+        var canvas = this._workingCanvas;
         var context = canvas.getContext("2d");
         var width = this._currentMeasure.width | 0;
         var height = this._currentMeasure.height | 0;
@@ -6847,10 +6852,10 @@ var Image = /** @class */ (function (_super) {
         if (!this._detectPointerOnOpaqueOnly) {
             return;
         }
-        if (!Image._WorkingCanvas) {
-            Image._WorkingCanvas = document.createElement('canvas');
+        if (!this._workingCanvas) {
+            this._workingCanvas = document.createElement('canvas');
         }
-        var canvas = Image._WorkingCanvas;
+        var canvas = this._workingCanvas;
         var width = this._currentMeasure.width;
         var height = this._currentMeasure.height;
         var context = canvas.getContext("2d");
@@ -6863,7 +6868,7 @@ var Image = /** @class */ (function (_super) {
         if (!this._detectPointerOnOpaqueOnly) {
             return;
         }
-        var canvas = Image._WorkingCanvas;
+        var canvas = this._workingCanvas;
         context = canvas.getContext("2d");
         context.drawImage(this._domImage, sx, sy, sw, sh, tx - this._currentMeasure.left, ty - this._currentMeasure.top, tw, th);
     };
@@ -6960,7 +6965,6 @@ var Image = /** @class */ (function (_super) {
         this.onImageLoadedObservable.clear();
         this.onSVGAttributesComputedObservable.clear();
     };
-    Image._WorkingCanvas = null;
     // Static
     /** STRETCH_NONE */
     Image.STRETCH_NONE = 0;
