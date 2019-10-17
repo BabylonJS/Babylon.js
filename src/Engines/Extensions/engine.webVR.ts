@@ -152,7 +152,7 @@ Engine.prototype.initWebVRAsync = function(): Promise<IDisplayChangedEventArgs> 
         this._onVrDisplayDisconnect = () => {
             this._vrDisplay.cancelAnimationFrame(this._frameHandler);
             this._vrDisplay = undefined;
-            this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction);
+            this._frameHandler = Engine.QueueNewFrame(this._boundRenderFunction);
             notifyObservers();
         };
         this._onVrDisplayPresentChange = () => {
@@ -299,5 +299,5 @@ Engine.prototype.isVRPresenting = function() {
 };
 
 Engine.prototype._requestVRFrame = function() {
-    this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction, this._vrDisplay);
+    this._frameHandler = Engine.QueueNewFrame(this._boundRenderFunction, this._vrDisplay);
 };
