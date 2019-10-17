@@ -44541,12 +44541,19 @@ declare module BABYLON {
         }
 }
 declare module BABYLON {
+    /**
+     * Class used to define an additional view for the engine
+     * @see https://doc.babylonjs.com/how_to/multi_canvases
+     */
+    export class EngineView {
+        /** Defines the canvas where to render the view */
+        target: HTMLCanvasElement;
+        /** Defines the camera used to render the view */
+        camera: Camera;
+    }
         interface Engine {
             /** Gets or sets the list of views */
-            views: {
-                target: HTMLCanvasElement;
-                camera: Camera;
-            }[];
+            views: EngineView[];
             /**
              * Register a new child canvas
              * @param canvas defines the canvas to register
