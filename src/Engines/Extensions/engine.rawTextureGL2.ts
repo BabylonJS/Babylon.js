@@ -94,7 +94,11 @@ function _createRawTextureFunction(is3D: boolean) {
         texture.type = textureType;
         texture.generateMipMaps = generateMipMaps;
         texture.samplingMode = samplingMode;
-        texture.is3D = true;
+        if (is3D) {
+            texture.is3D = true;
+        } else {
+            texture.is2DArray = true;
+        }
 
         if (!this._doNotHandleContextLost) {
             texture._bufferView = data;
