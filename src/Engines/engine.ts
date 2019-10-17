@@ -1359,6 +1359,20 @@ export class Engine extends ThinEngine {
         super._rebuildBuffers();
     }
 
+    public _renderFrame() {
+        // Start new frame
+        this.beginFrame();
+
+        for (var index = 0; index < this._activeRenderLoops.length; index++) {
+            var renderFunction = this._activeRenderLoops[index];
+
+            renderFunction();
+        }
+
+        // Present
+        this.endFrame();  
+    }
+
     public _renderLoop(): void {
         if (!this._contextWasLost) {
             var shouldRender = true;
@@ -1367,33 +1381,32 @@ export class Engine extends ThinEngine {
             }
 
             if (shouldRender) {
-                // Start new frame
-                this.beginFrame();
+                // Child canvases
+                this._renderViews();      
 
-                for (var index = 0; index < this._activeRenderLoops.length; index++) {
-                    var renderFunction = this._activeRenderLoops[index];
-
-                    renderFunction();
-                }
-
-                // Present
-                this.endFrame();
+                // Main frame
+                this._renderFrame();
             }
         }
 
         if (this._activeRenderLoops.length > 0) {
             // Register new frame
             if (this.customAnimationFrameRequester) {
-                this.customAnimationFrameRequester.requestID = this._queueNewFrame(this.customAnimationFrameRequester.renderFunction || this._bindedRenderFunction, this.customAnimationFrameRequester);
+                this.customAnimationFrameRequester.requestID = this._queueNewFrame(this.customAnimationFrameRequester.renderFunction || this._boundRenderFunction, this.customAnimationFrameRequester);
                 this._frameHandler = this.customAnimationFrameRequester.requestID;
             } else if (this.isVRPresenting()) {
                 this._requestVRFrame();
             } else {
-                this._frameHandler = this._queueNewFrame(this._bindedRenderFunction, this.getHostWindow());
+                this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
             }
         } else {
             this._renderingQueueLaunched = false;
         }
+    }
+
+    /** @hidden */
+    public _renderViews() {
+        // Do nothing
     }
 
     /**
