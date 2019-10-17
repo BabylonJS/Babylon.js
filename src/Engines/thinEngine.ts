@@ -3273,6 +3273,7 @@ export class ThinEngine {
             this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
             if (this.webGLVersion > 1) {
                 this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
+                this._bindTextureDirectly(this._gl.TEXTURE_2D_ARRAY, null);
             }
         }
     }
@@ -3325,6 +3326,7 @@ export class ThinEngine {
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
                 if (this.webGLVersion > 1) {
                     this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
+                    this._bindTextureDirectly(this._gl.TEXTURE_2D_ARRAY, null);
                 }
             }
             return false;
