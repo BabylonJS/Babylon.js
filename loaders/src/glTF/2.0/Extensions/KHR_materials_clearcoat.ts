@@ -19,6 +19,8 @@ interface IKHR_materials_clearcoat {
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1677)
+ * [Playground Sample](https://www.babylonjs-playground.com/#7F7PN6)
+ * !!! Experimental Extension Subject to Changes !!!
  */
 export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
     /**
