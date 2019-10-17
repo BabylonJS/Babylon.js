@@ -2,7 +2,7 @@ export * from "./engine.occlusionQuery";
 export * from "./engine.transformFeedback";
 export * from "./engine.multiview";
 export * from "./engine.rawTexture";
-export * from "./engine.rawTexture2DArray";
+export * from "./engine.rawTextureGL2";
 export * from "./engine.dynamicTexture";
 export * from "./engine.videoTexture";
 export * from "./engine.multiRender";
