@@ -416,4 +416,3 @@ Engine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: Scen
 
     return texture;
 };
-

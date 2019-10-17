@@ -79,144 +79,90 @@ declare module "../../Engines/engine" {
     }
 }
 
-Engine.prototype.createRawTexture3D = function(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
-    var texture = new InternalTexture(this, InternalTextureSource.Raw3D);
-    texture.baseWidth = width;
-    texture.baseHeight = height;
-    texture.baseDepth = depth;
-    texture.width = width;
-    texture.height = height;
-    texture.depth = depth;
-    texture.format = format;
-    texture.type = textureType;
-    texture.generateMipMaps = generateMipMaps;
-    texture.samplingMode = samplingMode;
-    texture.is3D = true;
-
-    if (!this._doNotHandleContextLost) {
-        texture._bufferView = data;
-    }
-
-    this.updateRawTexture3D(texture, data, format, invertY, compression, textureType);
-    this._bindTextureDirectly(this._gl.TEXTURE_3D, texture, true);
-
-    // Filters
-    var filters = this._getSamplingParameters(samplingMode, generateMipMaps);
-
-    this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
-    this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_MIN_FILTER, filters.min);
-
-    if (generateMipMaps) {
-        this._gl.generateMipmap(this._gl.TEXTURE_3D);
-    }
-
-    this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
-
-    this._internalTexturesCache.push(texture);
-
-    return texture;
-};
-
-Engine.prototype.updateRawTexture3D = function(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
-    var internalType = this._getWebGLTextureType(textureType);
-    var internalFormat = this._getInternalFormat(format);
-    var internalSizedFomat = this._getRGBABufferInternalSizedFormat(textureType, format);
-
-    this._bindTextureDirectly(this._gl.TEXTURE_3D, texture, true);
-    this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
-
-    if (!this._doNotHandleContextLost) {
-        texture._bufferView = data;
+function _createRawTextureFunction(is3D: boolean) {
+    return function(this: Engine, data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
+        const target = is3D ? this._gl.TEXTURE_3D : this._gl.TEXTURE_2D_ARRAY;
+        const source = is3D ? InternalTextureSource.Raw3D : InternalTextureSource.Raw2DArray;
+        const texture = new InternalTexture(this, source);
+        texture.baseWidth = width;
+        texture.baseHeight = height;
+        texture.baseDepth = depth;
+        texture.width = width;
+        texture.height = height;
+        texture.depth = depth;
         texture.format = format;
-        texture.invertY = invertY;
-        texture._compression = compression;
-    }
+        texture.type = textureType;
+        texture.generateMipMaps = generateMipMaps;
+        texture.samplingMode = samplingMode;
+        texture.is3D = true;
 
-    if (texture.width % 4 !== 0) {
-        this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
-    }
+        if (!this._doNotHandleContextLost) {
+            texture._bufferView = data;
+        }
 
-    if (compression && data) {
-        this._gl.compressedTexImage3D(this._gl.TEXTURE_3D, 0, (<any>this.getCaps().s3tc)[compression], texture.width, texture.height, texture.depth, 0, data);
-    } else {
-        this._gl.texImage3D(this._gl.TEXTURE_3D, 0, internalSizedFomat, texture.width, texture.height, texture.depth, 0, internalFormat, internalType, data);
-    }
+        if (is3D) {
+            this.updateRawTexture3D(texture, data, format, invertY, compression, textureType);
+        } else {
+            this.updateRawTexture2DArray(texture, data, format, invertY, compression, textureType);
+        }
+        this._bindTextureDirectly(target, texture, true);
 
-    if (texture.generateMipMaps) {
-        this._gl.generateMipmap(this._gl.TEXTURE_3D);
-    }
-    this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
-    // this.resetTextureCache();
-    texture.isReady = true;
-};
+        // Filters
+        const filters = this._getSamplingParameters(samplingMode, generateMipMaps);
 
-Engine.prototype.createRawTexture2DArray = function(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
-    var texture = new InternalTexture(this, InternalTextureSource.Raw2DArray);
-    texture.baseWidth = width;
-    texture.baseHeight = height;
-    texture.baseDepth = depth;
-    texture.width = width;
-    texture.height = height;
-    texture.depth = depth;
-    texture.format = format;
-    texture.type = textureType;
-    texture.generateMipMaps = generateMipMaps;
-    texture.samplingMode = samplingMode;
-    texture.is2DArray = true;
+        this._gl.texParameteri(target, this._gl.TEXTURE_MAG_FILTER, filters.mag);
+        this._gl.texParameteri(target, this._gl.TEXTURE_MIN_FILTER, filters.min);
 
-    if (!this._doNotHandleContextLost) {
-        texture._bufferView = data;
-    }
+        if (generateMipMaps) {
+            this._gl.generateMipmap(target);
+        }
 
-    this.updateRawTexture2DArray(texture, data, format, invertY, compression, textureType);
-    this._bindTextureDirectly(this._gl.TEXTURE_2D_ARRAY, texture, true);
+        this._bindTextureDirectly(target, null);
 
-    // Filters
-    var filters = this._getSamplingParameters(samplingMode, generateMipMaps);
+        this._internalTexturesCache.push(texture);
 
-    this._gl.texParameteri(this._gl.TEXTURE_2D_ARRAY, this._gl.TEXTURE_MAG_FILTER, filters.mag);
-    this._gl.texParameteri(this._gl.TEXTURE_2D_ARRAY, this._gl.TEXTURE_MIN_FILTER, filters.min);
+        return texture;
+    };
+}
 
-    if (generateMipMaps) {
-        this._gl.generateMipmap(this._gl.TEXTURE_2D_ARRAY);
-    }
+Engine.prototype.createRawTexture2DArray = _createRawTextureFunction(false);
+Engine.prototype.createRawTexture3D = _createRawTextureFunction(true);
 
-    this._bindTextureDirectly(this._gl.TEXTURE_2D_ARRAY, null);
+function _updateRawTextureFunction(is3D: boolean) {
+    return function(this: Engine, texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
+        const target = is3D ? this._gl.TEXTURE_3D : this._gl.TEXTURE_2D_ARRAY;
+        var internalType = this._getWebGLTextureType(textureType);
+        var internalFormat = this._getInternalFormat(format);
+        var internalSizedFomat = this._getRGBABufferInternalSizedFormat(textureType, format);
 
-    this._internalTexturesCache.push(texture);
+        this._bindTextureDirectly(target, texture, true);
+        this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
 
-    return texture;
-};
+        if (!this._doNotHandleContextLost) {
+            texture._bufferView = data;
+            texture.format = format;
+            texture.invertY = invertY;
+            texture._compression = compression;
+        }
 
-Engine.prototype.updateRawTexture2DArray = function(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
-    var internalType = this._getWebGLTextureType(textureType);
-    var internalFormat = this._getInternalFormat(format);
-    var internalSizedFomat = this._getRGBABufferInternalSizedFormat(textureType, format);
+        if (texture.width % 4 !== 0) {
+            this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
+        }
 
-    this._bindTextureDirectly(this._gl.TEXTURE_2D_ARRAY, texture, true);
-    this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
+        if (compression && data) {
+            this._gl.compressedTexImage3D(target, 0, (<any>this.getCaps().s3tc)[compression], texture.width, texture.height, texture.depth, 0, data);
+        } else {
+            this._gl.texImage3D(target, 0, internalSizedFomat, texture.width, texture.height, texture.depth, 0, internalFormat, internalType, data);
+        }
 
-    if (!this._doNotHandleContextLost) {
-        texture._bufferView = data;
-        texture.format = format;
-        texture.invertY = invertY;
-        texture._compression = compression;
-    }
+        if (texture.generateMipMaps) {
+            this._gl.generateMipmap(target);
+        }
+        this._bindTextureDirectly(target, null);
+        // this.resetTextureCache();
+        texture.isReady = true;
+    };
+}
 
-    if (texture.width % 4 !== 0) {
-        this._gl.pixelStorei(this._gl.UNPACK_ALIGNMENT, 1);
-    }
-
-    if (compression && data) {
-        this._gl.compressedTexImage3D(this._gl.TEXTURE_2D_ARRAY, 0, (<any>this.getCaps().s3tc)[compression], texture.width, texture.height, texture.depth, 0, data);
-    } else {
-        this._gl.texImage3D(this._gl.TEXTURE_2D_ARRAY, 0, internalSizedFomat, texture.width, texture.height, texture.depth, 0, internalFormat, internalType, data);
-    }
-
-    if (texture.generateMipMaps) {
-        this._gl.generateMipmap(this._gl.TEXTURE_2D_ARRAY);
-    }
-    this._bindTextureDirectly(this._gl.TEXTURE_2D_ARRAY, null);
-    // this.resetTextureCache();
-    texture.isReady = true;
-};
+Engine.prototype.updateRawTexture2DArray = _updateRawTextureFunction(false);
+Engine.prototype.updateRawTexture3D = _updateRawTextureFunction(true);
