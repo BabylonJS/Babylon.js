@@ -157,7 +157,7 @@ class MonacoCreator {
                 worker(uri)
                 .then(function(languageService) {
                      languageService.getEmitOutput(uri.toString())
-                     .then((result) => {
+                     .then(function(result) {
                           var output = result.outputFiles[0].text;
                           var stub = "var createScene = function() { return Playground.CreateScene(engine, engine.getRenderingCanvas()); }";
                           callBack(output + stub);
