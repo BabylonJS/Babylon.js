@@ -53,14 +53,13 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHR_materials_clearcoat>(context, material, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
-            promises.push(this._loader.loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
-            promises.push(this._loadClearCoatPropertiesAsync(extensionContext, material, extension, babylonMaterial));
-            this._loader.loadMaterialAlphaProperties(context, material, babylonMaterial);
+            promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
+            promises.push(this._loadClearCoatPropertiesAsync(extensionContext, extension, babylonMaterial));
             return Promise.all(promises).then(() => { });
         });
     }
 
-    private _loadClearCoatPropertiesAsync(context: string, material: IMaterial, properties: IKHR_materials_clearcoat, babylonMaterial: Material): Promise<void> {
+    private _loadClearCoatPropertiesAsync(context: string, properties: IKHR_materials_clearcoat, babylonMaterial: Material): Promise<void> {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
@@ -69,7 +68,7 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
 
         babylonMaterial.clearCoat.isEnabled = true;
 
-        if (properties.clearcoatFactor) {
+        if (properties.clearcoatFactor != undefined) {
             babylonMaterial.clearCoat.intensity = properties.clearcoatFactor;
         }
         else {
@@ -83,7 +82,7 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
             }));
         }
 
-        if (properties.clearcoatRoughnessFactor) {
+        if (properties.clearcoatRoughnessFactor != undefined) {
             babylonMaterial.clearCoat.roughness = properties.clearcoatRoughnessFactor;
         }
         else {

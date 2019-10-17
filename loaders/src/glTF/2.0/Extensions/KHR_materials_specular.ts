@@ -49,19 +49,18 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHR_materials_specular>(context, material, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
-            promises.push(this._loader.loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
-            promises.push(this._loadSpecularPropertiesAsync(extensionContext, material, extension, babylonMaterial));
-            this._loader.loadMaterialAlphaProperties(context, material, babylonMaterial);
+            promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
+            promises.push(this._loadSpecularPropertiesAsync(extensionContext, extension, babylonMaterial));
             return Promise.all(promises).then(() => { });
         });
     }
 
-    private _loadSpecularPropertiesAsync(context: string, material: IMaterial, properties: IKHR_materials_specular, babylonMaterial: Material): Promise<void> {
+    private _loadSpecularPropertiesAsync(context: string, properties: IKHR_materials_specular, babylonMaterial: Material): Promise<void> {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
 
-        if (properties.specularFactor) {
+        if (properties.specularFactor !== undefined) {
             babylonMaterial.metallicF0Factor = properties.specularFactor;
         }
 
