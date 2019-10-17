@@ -53103,6 +53103,7 @@ declare module BABYLON {
         protected _outputRename(name: string): string;
         protected _dumpPropertiesCode(): string;
         /** @hidden */private _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]): string;
+        /** @hidden */private _dumpCodeForOutputConnections(): string;
         /**
          * Clone the current block to a new identical block
          * @param scene defines the hosting scene
@@ -59771,6 +59772,8 @@ declare module BABYLON {
          * Gets pipeline name
          */
         readonly name: string;
+        /** Gets the list of attached cameras */
+        readonly cameras: Camera[];
         /**
          * Initializes a PostProcessRenderPipeline
          * @param engine engine to add the pipeline to
