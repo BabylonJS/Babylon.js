@@ -2544,14 +2544,14 @@ var importNode = function (gltfRuntime, node, id, parent) {
                 var orthoCamera = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["FreeCamera"](node.camera, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero(), gltfRuntime.scene, false);
                 orthoCamera.name = node.name || "";
                 orthoCamera.mode = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Camera"].ORTHOGRAPHIC_CAMERA;
-                orthoCamera.attachControl(gltfRuntime.scene.getEngine().getRenderingCanvas());
+                orthoCamera.attachControl(gltfRuntime.scene.getEngine().getInputElement());
                 lastNode = orthoCamera;
             }
             else if (camera.type === "perspective") {
                 var perspectiveCamera = camera[camera.type];
                 var persCamera = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["FreeCamera"](node.camera, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero(), gltfRuntime.scene, false);
                 persCamera.name = node.name || "";
-                persCamera.attachControl(gltfRuntime.scene.getEngine().getRenderingCanvas());
+                persCamera.attachControl(gltfRuntime.scene.getEngine().getInputElement());
                 if (!perspectiveCamera.aspectRatio) {
                     perspectiveCamera.aspectRatio = gltfRuntime.scene.getEngine().getRenderWidth() / gltfRuntime.scene.getEngine().getRenderHeight();
                 }
@@ -4423,7 +4423,7 @@ __webpack_require__.r(__webpack_exports__);
 var NAME = "KHR_materials_clearcoat";
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1677)
- * [Playground Sample](https://www.babylonjs-playground.com/#7F7PN6)
+ * [Playground Sample](https://www.babylonjs-playground.com/frame.html#7F7PN6#8)
  * !!! Experimental Extension Subject to Changes !!!
  */
 var KHR_materials_clearcoat = /** @class */ (function () {
@@ -4613,7 +4613,7 @@ __webpack_require__.r(__webpack_exports__);
 var NAME = "KHR_materials_sheen";
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1688)
- * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#1)
+ * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
  * !!! Experimental Extension Subject to Changes !!!
  */
 var KHR_materials_sheen = /** @class */ (function () {
@@ -4693,6 +4693,7 @@ __webpack_require__.r(__webpack_exports__);
 var NAME = "KHR_materials_specular";
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1677)
+ * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
  * !!! Experimental Extension Subject to Changes !!!
  */
 var KHR_materials_specular = /** @class */ (function () {

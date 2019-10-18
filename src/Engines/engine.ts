@@ -463,6 +463,16 @@ export class Engine extends ThinEngine {
     private _onFullscreenChange: () => void;
     private _onPointerLockChange: () => void;
 
+    // Events
+
+    /**
+     * Gets the HTML element used to attach event listeners
+     * @returns a HTML element
+     */
+    public getInputElement(): Nullable<HTMLElement> {
+        return this._renderingCanvas;
+    }
+
     /**
      * Creates a new engine
      * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which alreay used the WebGL context
@@ -625,6 +635,17 @@ export class Engine extends ThinEngine {
             return null;
         }
         return this._renderingCanvas.getBoundingClientRect();
+    }
+
+    /**
+     * Gets the client rect of the HTML element used for events
+     * @returns a client rectanglee
+     */
+    public getInputElementClientRect(): Nullable<ClientRect> {
+        if (!this._renderingCanvas) {
+            return null;
+        }
+        return this.getInputElement()!.getBoundingClientRect();
     }
 
     /**
@@ -1361,17 +1382,11 @@ export class Engine extends ThinEngine {
 
     /** @hidden */
     public _renderFrame() {
-        // Start new frame
-        this.beginFrame();
-
         for (var index = 0; index < this._activeRenderLoops.length; index++) {
             var renderFunction = this._activeRenderLoops[index];
 
             renderFunction();
         }
-
-        // Present
-        this.endFrame();
     }
 
     public _renderLoop(): void {
@@ -1382,11 +1397,17 @@ export class Engine extends ThinEngine {
             }
 
             if (shouldRender) {
-                // Child canvases
-                this._renderViews();
+                // Start new frame
+                this.beginFrame();
 
-                // Main frame
-                this._renderFrame();
+                // Child canvases
+                if (!this._renderViews()) {
+                    // Main frame
+                    this._renderFrame();
+                }
+
+                // Present
+                this.endFrame();
             }
         }
 
@@ -1407,7 +1428,7 @@ export class Engine extends ThinEngine {
 
     /** @hidden */
     public _renderViews() {
-        // Do nothing
+        return false;
     }
 
     /**
