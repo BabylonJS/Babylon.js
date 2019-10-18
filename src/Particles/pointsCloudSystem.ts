@@ -473,9 +473,15 @@ export class PointsCloudSystem implements IDisposable {
         this._promises.push(new Promise((resolve) => {
             BaseTexture.WhenAllReady(textureList, () => {
                 let n = pointsGroup._textureNb;
+                if (n < 0) {
+                    n = 0;
+                }
+                if (n > textureList.length - 1) {
+                    n =  textureList.length - 1;
+                }
                 pointsGroup._groupImageData = textureList[n].readPixels();
                 pointsGroup._groupImgWidth = textureList[n].getSize().width;
-                pointsGroup._groupImgHeight = textureList[this.nbParticles].getSize().height;
+                pointsGroup._groupImgHeight = textureList[n].getSize().height;
                 this._setPointsColorOrUV(clone, pointsGroup, isVolume, true, true);
                 clone.dispose();
                 return resolve();
@@ -601,7 +607,7 @@ export class PointsCloudSystem implements IDisposable {
      * @param mesh is any Mesh object that will be used as a surface model for the points
      * @param nb (positive integer) the number of particles to be created from this model
      * @param colorWith determines whether a point is colored using color (default), uv, random, stated or none (invisible)
-     * @param color (color3) to be used when colorWith is stated
+     * @param color (color4) to be used when colorWith is stated or color (number) when used to specify texture position
      * @param range (number from 0 to 1) to determine the variation in shape and tone for a stated color
      * @returns the number of groups in the system
      */
@@ -647,17 +653,16 @@ export class PointsCloudSystem implements IDisposable {
      * Adds points to the PCS inside the model shape
      * @param mesh is any Mesh object that will be used as a surface model for the points
      * @param nb (positive integer) the number of particles to be created from this model
-     * @param colorWith determines whether a point is colored using color (default), uv, random, stated or none (invisible),
-     * @param color (color4) to be used when colorWith is stated
+     * @param colorWith determines whether a point is colored using color (default), uv, random, stated or none (invisible)
+     * @param color (color4) to be used when colorWith is stated or color (number) when used to specify texture position
      * @param range (number from 0 to 1) to determine the variation in shape and tone for a stated color
      * @returns the number of groups in the system
      */
-    public addVolumePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4, range?: number): number {
+    public addVolumePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4 | number, range?: number): number {
         var colored = colorWith ? colorWith : PointColor.Random;
         if (isNaN(colored) ||  colored < 0 || colored > 3) {
             colored = PointColor.Random;
         }
-        color = color ? color : new Color4(1, 1, 1, 1);
 
         var meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
         var meshInd = <IndicesArray>mesh.getIndices();
@@ -666,6 +671,12 @@ export class PointsCloudSystem implements IDisposable {
         var pointsGroup = new PointsGroup(this._groupCounter, null);
 
         pointsGroup._groupDensity = this._calculateDensity(nb, meshPos, meshInd);
+        if (colored === PointColor.Color) {
+            pointsGroup._textureNb = <number>color ? <number>color : 0;
+        }
+        else {
+            color = <Color4>color ? <Color4>color : new Color4(1, 1, 1, 1);
+        }
         switch (colored) {
             case PointColor.Color:
                 this._colorFromTexture(mesh, pointsGroup, true);
@@ -677,7 +688,7 @@ export class PointsCloudSystem implements IDisposable {
                 this._setPointsColorOrUV(mesh, pointsGroup, true);
                 break;
             case PointColor.Stated:
-                this._setPointsColorOrUV(mesh, pointsGroup, true, undefined, undefined, color, range);
+                this._setPointsColorOrUV(mesh, pointsGroup, true, undefined, undefined, <Color4>color, range);
                 break;
         }
         this.nbParticles += nb;
