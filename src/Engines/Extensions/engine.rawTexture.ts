@@ -497,7 +497,8 @@ Engine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: Scen
 function _makeCreateRawTextureFunction(is3D: boolean) {
     return function(this: Engine, data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
         var target = is3D ? this._gl.TEXTURE_3D : this._gl.TEXTURE_2D_ARRAY;
-        var texture = new InternalTexture(this, InternalTextureSource.Raw3D);
+        var source = is3D ? InternalTextureSource.Raw3D : InternalTextureSource.Raw2DArray;
+        var texture = new InternalTexture(this, source);
         texture.baseWidth = width;
         texture.baseHeight = height;
         texture.baseDepth = depth;
