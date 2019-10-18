@@ -151,6 +151,59 @@ namespace babylon
             }
         }
 
+        void GenerateMipmap(const uint8_t* const __restrict source, const int size, const int channels, uint8_t* __restrict dest)
+        {
+            int mipsize = size / 2;
+
+            for (int y = 0; y < mipsize; ++y)
+            {
+                for (int x = 0; x < mipsize; ++x)
+                {
+                    for (int c = 0; c < channels; ++c)
+                    {
+                        int index = channels * ((y * 2) * size + (x * 2)) + c;
+                        int sum_value = 4 >> 1;
+                        sum_value += source[index + channels * (0 * size + 0)];
+                        sum_value += source[index + channels * (0 * size + 1)];
+                        sum_value += source[index + channels * (1 * size + 0)];
+                        sum_value += source[index + channels * (1 * size + 1)];
+                        dest[channels * (y * mipsize + x) + c] = (uint8_t)(sum_value / 4);
+                    }
+                }
+            }
+        }
+
+        const bgfx::Memory* GenerateMipMaps(const bimg::ImageContainer& image)
+        {
+            bool widthIsPowerOf2 = ((image.m_width & (~image.m_width + 1)) == image.m_width);
+            bool supportedFormat = image.m_format == bimg::TextureFormat::RGB8 || image.m_format == bimg::TextureFormat::RGBA8 || image.m_format == bimg::TextureFormat::BGRA8;
+            if (image.m_width == image.m_height && image.m_width && widthIsPowerOf2 && supportedFormat)
+            {
+                auto channelCount = (image.m_format == bimg::TextureFormat::RGB8) ? 3 : 4;
+                auto mipMapCount = static_cast<uint32_t>(std::log2(image.m_width));
+                auto mipmapImageSize = image.m_size;
+                for (auto i = 1; i <= mipMapCount; i++)
+                {
+                    mipmapImageSize += image.m_size >> (2 * i);
+                }
+                auto imageDataRef = bgfx::alloc(mipmapImageSize);
+                uint8_t* destination = imageDataRef->data;
+                uint8_t* source = static_cast<uint8_t*>(image.m_data);
+                memcpy(destination, source, image.m_size);
+                destination += image.m_size;
+                auto mipmapSize = image.m_size;
+                for (auto i = 0; i < mipMapCount; i++)
+                {
+                    GenerateMipmap(source, image.m_width >> i, channelCount, destination);
+                    source = destination;
+                    mipmapSize >>= 2;
+                    destination += mipmapSize;
+                }
+                return imageDataRef;
+            }
+            return nullptr;
+        }
+
         enum class WebGLAttribType
         {
             BYTE = 5120,
@@ -799,14 +852,27 @@ namespace babylon
         textureData->Images.push_back(bimg::imageParse(&m_allocator, buffer.Data(), static_cast<uint32_t>(buffer.ByteLength())));
         auto& image = *textureData->Images.front();
 
+        bool useMipMap = false;
+        auto imageDataRef{ bgfx::makeRef(image.m_data, image.m_size) };
+        if (mipMap)
+        {
+            auto imageDataRefMipMap = GenerateMipMaps(image);
+            if (imageDataRefMipMap)
+            {
+                imageDataRef = imageDataRefMipMap;
+                useMipMap = true;
+            }
+            // TODO: log an warning message: "Could not generate mipmap for texture"
+        }
+
         textureData->Texture = bgfx::createTexture2D(
             image.m_width,
             image.m_height,
-            false, // TODO: generate mipmaps when requested
+            useMipMap,
             1,
             static_cast<bgfx::TextureFormat::Enum>(image.m_format),
             0,
-            bgfx::makeRef(image.m_data, image.m_size));
+            imageDataRef);
     }
 
     void NativeEngine::Impl::LoadCubeTexture(const Napi::CallbackInfo& info)
