@@ -742,10 +742,15 @@ export class ShaderMaterial extends Material {
      * @returns the cloned material
      */
     public clone(name: string): ShaderMaterial {
-        var newShaderMaterial = new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options);
+        var result = SerializationHelper.Clone(() => new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options), this);
 
-        return newShaderMaterial;
+        result.name = name;
+        result.id = name;
+
+        return result;
     }
+
+
 
     /**
      * Disposes the material
