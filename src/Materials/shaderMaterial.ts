@@ -76,7 +76,7 @@ export class ShaderMaterial extends Material {
     private _vectors2: { [name: string]: Vector2 } = {};
     private _vectors3: { [name: string]: Vector3 } = {};
     private _vectors4: { [name: string]: Vector4 } = {};
-    private _matrices: { [name: string]: Matrix } = {};    
+    private _matrices: { [name: string]: Matrix } = {};
     private _matrixArrays: { [name: string]: Float32Array } = {};
     private _matrices3x3: { [name: string]: Float32Array } = {};
     private _matrices2x2: { [name: string]: Float32Array } = {};
@@ -356,7 +356,7 @@ export class ShaderMaterial extends Material {
         this._matrixArrays[name] = float32Array;
 
         return this;
-    }    
+    }
 
     /**
      * Set a mat3 in the shader from a Float32Array.
@@ -684,7 +684,7 @@ export class ShaderMaterial extends Material {
             // MatrixArray
             for (name in this._matrixArrays) {
                 this._effect.setMatrices(name, this._matrixArrays[name]);
-            }            
+            }
 
             // Matrix 3x3
             for (name in this._matrices3x3) {
@@ -775,7 +775,6 @@ export class ShaderMaterial extends Material {
         result.name = name;
         result.id = name;
 
-
         // Texture
         for (var key in this._textures) {
             result.setTexture(key, this._textures[key]);
@@ -833,8 +832,6 @@ export class ShaderMaterial extends Material {
 
         return result;
     }
-
-
 
     /**
      * Disposes the material
@@ -956,7 +953,7 @@ export class ShaderMaterial extends Material {
         serializationObject.matrixArray = {};
         for (name in this._matrixArrays) {
             serializationObject.matrixArray[name] = this._matrixArrays[name];
-        }        
+        }
 
         // Matrix 3x3
         serializationObject.matrices3x3 = {};
@@ -1088,7 +1085,7 @@ export class ShaderMaterial extends Material {
         // MatrixArray
         for (name in source.matrixArray) {
             material._matrixArrays[name] = new Float32Array(source.matrixArray[name]);
-        }        
+        }
 
         // Matrix 3x3
         for (name in source.matrices3x3) {
