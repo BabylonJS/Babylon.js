@@ -18,6 +18,11 @@ declare module "../../Engines/engine" {
     export interface Engine {
 
         /**
+         * Gets or sets the  HTML element to use for attaching events
+         */
+        inputElement: Nullable<HTMLElement>;
+
+        /**
          * Gets the current engine view
          * @see https://doc.babylonjs.com/how_to/multi_canvases
          */
@@ -42,6 +47,10 @@ declare module "../../Engines/engine" {
         unRegisterView(canvas: HTMLCanvasElement): Engine;
     }
 }
+
+Engine.prototype.getInputElement = function(): Nullable<HTMLElement> {
+    return this.inputElement || this.getRenderingCanvas();
+};
 
 Engine.prototype.registerView = function(canvas: HTMLCanvasElement, camera?: Camera): EngineView {
     if (!this.views) {
@@ -87,13 +96,13 @@ Engine.prototype.unRegisterView = function(canvas: HTMLCanvasElement): Engine {
 
 Engine.prototype._renderViews = function() {
     if (!this.views) {
-        return;
+        return false;
     }
 
     let parent = this.getRenderingCanvas();
 
     if (!parent) {
-        return;
+        return false;
     }
 
     for (var view of this.views) {
@@ -118,14 +127,17 @@ Engine.prototype._renderViews = function() {
             scene.activeCamera = camera;
         }
 
+        // Set sizes
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+        parent.width = canvas.clientWidth;
+        parent.height = canvas.clientHeight;
+
         // Render the frame
         this._renderFrame();
 
         // Copy to target
-        canvas.width = canvas.clientWidth;
-        canvas.height = canvas.clientHeight;
-
-        context.drawImage(parent, 0, 0, parent.clientWidth, parent.clientHeight, 0, 0, canvas.clientWidth, canvas.clientHeight);
+        context.drawImage(parent, 0, 0);
 
         // Restore
         if (previewCamera && scene) {
@@ -134,4 +146,6 @@ Engine.prototype._renderViews = function() {
     }
 
     this.activeView = null;
+
+    return true;
 };
