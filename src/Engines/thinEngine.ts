@@ -345,7 +345,7 @@ export class ThinEngine {
     public _workingContext: Nullable<CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D>;
 
     /** @hidden */
-    public _bindedRenderFunction: any;
+    public _boundRenderFunction: any;
 
     private _vaoRecordInProgress = false;
     private _mustWipeVertexAttributes = false;
@@ -1036,7 +1036,7 @@ export class ThinEngine {
         }
 
         if (this._activeRenderLoops.length > 0) {
-           this._frameHandler = this._queueNewFrame(this._bindedRenderFunction, this.getHostWindow());
+           this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
         } else {
             this._renderingQueueLaunched = false;
         }
@@ -1113,8 +1113,8 @@ export class ThinEngine {
 
         if (!this._renderingQueueLaunched) {
             this._renderingQueueLaunched = true;
-            this._bindedRenderFunction = this._renderLoop.bind(this);
-            this._frameHandler = this._queueNewFrame(this._bindedRenderFunction, this.getHostWindow());
+            this._boundRenderFunction = this._renderLoop.bind(this);
+            this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
         }
     }
 
@@ -3579,7 +3579,7 @@ export class ThinEngine {
         this._currentBufferPointers = [];
         this._renderingCanvas = null;
         this._currentProgram = null;
-        this._bindedRenderFunction = null;
+        this._boundRenderFunction = null;
 
         Effect.ResetCache();
 

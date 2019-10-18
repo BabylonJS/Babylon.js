@@ -11243,7 +11243,7 @@ declare module BABYLON {
     /**
      * Strong typing of a pointer move action.
      */
-    export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, canvas: HTMLCanvasElement) => Nullable<PickingInfo>;
+    export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, element: HTMLElement) => Nullable<PickingInfo>;
     /**
      * Strong typing of a pointer up/down action.
      */
@@ -29268,7 +29268,7 @@ declare module BABYLON {
         /** @hidden */
         _workingContext: Nullable<CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D>;
         /** @hidden */
-        _bindedRenderFunction: any;
+        _boundRenderFunction: any;
         private _vaoRecordInProgress;
         private _mustWipeVertexAttributes;
         private _emptyTexture;
@@ -31374,6 +31374,11 @@ declare module BABYLON {
         private _onFullscreenChange;
         private _onPointerLockChange;
         /**
+         * Gets the HTML element used to attach event listeners
+         * @returns a HTML element
+         */
+        getInputElement(): Nullable<HTMLElement>;
+        /**
          * Creates a new engine
          * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which alreay used the WebGL context
          * @param antialias defines enable antialiasing (default: false)
@@ -31403,6 +31408,11 @@ declare module BABYLON {
          * @returns a client rectanglee
          */
         getRenderingCanvasClientRect(): Nullable<ClientRect>;
+        /**
+         * Gets the client rect of the HTML element used for events
+         * @returns a client rectanglee
+         */
+        getInputElementClientRect(): Nullable<ClientRect>;
         /**
          * Gets a boolean indicating that the engine is running in deterministic lock step mode
          * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
@@ -31727,7 +31737,11 @@ declare module BABYLON {
         /** @hidden */
         _convertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView;
         protected _rebuildBuffers(): void;
+        /** @hidden */
+        _renderFrame(): void;
         _renderLoop(): void;
+        /** @hidden */
+        _renderViews(): boolean;
         /**
          * Toggle full screen mode
          * @param requestPointerLock defines if a pointer lock should be requested from the user
@@ -41230,7 +41244,7 @@ declare module BABYLON {
         private _webVRpresenting;
         private _hasEnteredVR;
         private _fullscreenVRpresenting;
-        private _canvas;
+        private _inputElement;
         private _webVRCamera;
         private _vrDeviceOrientationCamera;
         private _deviceOrientationCamera;
@@ -41588,10 +41602,10 @@ declare module BABYLON {
         /**
          * Initializes the canvas to be added/removed upon entering/exiting xr
          * @param engine the Babylon engine
-         * @param onStateChangedObservable the mechanism by which the canvas will be added/removed based on XR state
          * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
+         * @param onStateChangedObservable the mechanism by which the canvas will be added/removed based on XR state
          */
-        constructor(engine: ThinEngine, onStateChangedObservable: Observable<WebXRState>, canvas?: HTMLCanvasElement);
+        constructor(engine: ThinEngine, canvas?: HTMLCanvasElement, onStateChangedObservable?: Observable<WebXRState>);
         /**
          * Disposes of the object
          */
@@ -41646,9 +41660,10 @@ declare module BABYLON {
         /**
          * Initializes an xr session
          * @param xrSessionMode mode to initialize
+         * @param optionalFeatures defines optional values to pass to the session builder
          * @returns a promise which will resolve once the session has been initialized
          */
-        initializeSessionAsync(xrSessionMode: XRSessionMode): any;
+        initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures?: any): any;
         /**
          * Sets the reference space on the xr session
          * @param referenceSpace space to set
@@ -41774,12 +41789,12 @@ declare module BABYLON {
         exitXRAsync(): Promise<void>;
         /**
          * Enters XR mode (This must be done within a user interaction in most browsers eg. button click)
-         * @param sessionCreationOptions options for the XR session
+         * @param sessionMode options for the XR session
          * @param referenceSpaceType frame of reference of the XR session
          * @param renderTarget the output canvas that will be used to enter XR mode
          * @returns promise that resolves after xr mode has entered
          */
-        enterXRAsync(sessionCreationOptions: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget): any;
+        enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget): any;
         /**
          * Updates the global position of the camera by moving the camera's container
          * This should be used instead of modifying the camera's position as it will be overwritten by an xrSessions's update frame
@@ -44533,6 +44548,44 @@ declare module BABYLON {
              * @returns the effective sample count (could be 0 if multisample render targets are not supported)
              */
             updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number): number;
+        }
+}
+declare module BABYLON {
+    /**
+     * Class used to define an additional view for the engine
+     * @see https://doc.babylonjs.com/how_to/multi_canvases
+     */
+    export class EngineView {
+        /** Defines the canvas where to render the view */
+        target: HTMLCanvasElement;
+        /** Defines an optional camera used to render the view (will use active camera else) */
+        camera?: Camera;
+    }
+        interface Engine {
+            /**
+             * Gets or sets the  HTML element to use for attaching events
+             */
+            inputElement: Nullable<HTMLElement>;
+            /**
+             * Gets the current engine view
+             * @see https://doc.babylonjs.com/how_to/multi_canvases
+             */
+            activeView: Nullable<EngineView>;
+            /** Gets or sets the list of views */
+            views: EngineView[];
+            /**
+             * Register a new child canvas
+             * @param canvas defines the canvas to register
+             * @param camera defines an optional camera to use with this canvas (it will overwrite the scene.camera for this view)
+             * @returns the associated view
+             */
+            registerView(canvas: HTMLCanvasElement, camera?: Camera): EngineView;
+            /**
+             * Remove a registered child canvas
+             * @param canvas defines the canvas to remove
+             * @returns the current engine
+             */
+            unRegisterView(canvas: HTMLCanvasElement): Engine;
         }
 }
 declare module BABYLON {
@@ -47712,6 +47765,7 @@ declare module BABYLON {
         ROUGHNESSSTOREINMETALMAPGREEN: boolean;
         METALLNESSSTOREINMETALMAPBLUE: boolean;
         AOSTOREINMETALMAPRED: boolean;
+        METALLICF0FACTORFROMMETALLICMAP: boolean;
         ENVIRONMENTBRDF: boolean;
         ENVIRONMENTBRDF_RGBD: boolean;
         NORMAL: boolean;
@@ -47954,6 +48008,19 @@ declare module BABYLON {
          * Can also be used to scale the roughness values of the metallic texture.
          */
         protected _roughness: Nullable<number>;
+        /**
+         * Specifies the an F0 factor to help configuring the material F0.
+         * Instead of the default 4%, 8% * factor will be used. As the factor is defaulting
+         * to 0.5 the previously hard coded value stays the same.
+         * Can also be used to scale the F0 values of the metallic texture.
+         */
+        protected _metallicF0Factor: number;
+        /**
+         * Specifies whether the F0 factor can be fetched from the mettalic texture.
+         * If set to true, please adapt the metallicF0Factor to ensure it fits with
+         * your expectation as it multiplies with the texture data.
+         */
+        protected _useMetallicF0FactorFromMetallicTexture: boolean;
         /**
          * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
          * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
@@ -48437,6 +48504,19 @@ declare module BABYLON {
          * Can also be used to scale the roughness values of the metallic texture.
          */
         roughness: Nullable<number>;
+        /**
+         * Specifies the an F0 factor to help configuring the material F0.
+         * Instead of the default 4%, 8% * factor will be used. As the factor is defaulting
+         * to 0.5 the previously hard coded value stays the same.
+         * Can also be used to scale the F0 values of the metallic texture.
+         */
+        metallicF0Factor: number;
+        /**
+         * Specifies whether the F0 factor can be fetched from the mettalic texture.
+         * If set to true, please adapt the metallicF0Factor to ensure it fits with
+         * your expectation as it multiplies with the texture data.
+         */
+        useMetallicF0FactorFromMetallicTexture: boolean;
         /**
          * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
          * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
@@ -53916,6 +53996,8 @@ declare module BABYLON {
         protected _dumpPropertiesCode(): string;
         /** @hidden */
         _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]): string;
+        /** @hidden */
+        _dumpCodeForOutputConnections(): string;
         /**
          * Clone the current block to a new identical block
          * @param scene defines the hosting scene
@@ -60648,6 +60730,8 @@ declare module BABYLON {
          * Gets pipeline name
          */
         readonly name: string;
+        /** Gets the list of attached cameras */
+        readonly cameras: Camera[];
         /**
          * Initializes a PostProcessRenderPipeline
          * @param engine engine to add the pipeline to
@@ -65063,7 +65147,7 @@ declare module BABYLON.GUI {
         private _focusedControl;
         private _blockNextFocusCheck;
         private _renderScale;
-        private _rootCanvas;
+        private _rootElement;
         private _cursorChanged;
         /**
         * Define type to string to ensure compatibility across browsers
@@ -66116,7 +66200,7 @@ declare module BABYLON.GUI {
      */
     export class Image extends Control {
         name?: string | undefined;
-        private static _WorkingCanvas;
+        private _workingCanvas;
         private _domImage;
         private _imageWidth;
         private _imageHeight;
@@ -70076,6 +70160,93 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
         private _loadUnlitPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1677)
+     * [Playground Sample](https://www.babylonjs-playground.com/frame.html#7F7PN6#8)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadClearCoatPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1688)
+     * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_sheen implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadSheenPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1677)
+     * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_specular implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadSpecularPropertiesAsync;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {

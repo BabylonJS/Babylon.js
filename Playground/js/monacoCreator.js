@@ -58,10 +58,26 @@ class MonacoCreator {
                 if (xhr.status === 200) {
                     require.config({ paths: { 'vs': 'node_modules/monaco-editor/min/vs' } });
                     require(['vs/editor/editor.main'], function () {
+                        const typescript = monaco.languages.typescript;
+
                         if (this.monacoMode === "javascript") {
-                            monaco.languages.typescript.javascriptDefaults.addExtraLib(xhr.responseText, 'babylon.d.ts');
+                            typescript.javascriptDefaults.setCompilerOptions({
+                                noLib: true,
+                                allowNonTsExtensions: true // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
+                            });
+
+                            typescript.javascriptDefaults.addExtraLib(xhr.responseText, 'babylon.d.ts');
                         } else {
-                            monaco.languages.typescript.typescriptDefaults.addExtraLib(xhr.responseText, 'babylon.d.ts');
+                            typescript.typescriptDefaults.setCompilerOptions({
+                                module: typescript.ModuleKind.AMD,
+                                target: typescript.ScriptTarget.ES5,
+                                noLib: true,
+                                noResolve: true,
+                                suppressOutputPathCheck: true,
+
+                                allowNonTsExtensions: true // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
+                            });
+                            typescript.typescriptDefaults.addExtraLib(xhr.responseText, 'babylon.d.ts');
                         }
 
                         this.parent.main.run();
@@ -133,75 +149,38 @@ class MonacoCreator {
 
     /**
      * Get the code in the editor
-     * @param {Function} callBack : Function that will be called after retrieving the code.
      */
-    getRunCode(callBack) {
-        if (this.parent.settingsPG.ScriptLanguage == "JS")
-            callBack(this.jsEditor.getValue());
-        else if (this.parent.settingsPG.ScriptLanguage == "TS") {
-            this.triggerCompile(this.JsEditor.getValue(), function (result) {
-                callBack(result + "var createScene = function() { return Playground.CreateScene(engine, engine.getRenderingCanvas()); }")
-            });
-        }
-    };
+    async getRunCode() {
+        var parent = this.parent;
 
-    /**
-     * Usefull function for TypeScript code
-     * @param {*} codeValue 
-     * @param {*} callback 
-     */
-    triggerCompile(codeValue, callback) {
-        if (this.compilerTriggerTimeoutID !== null) {
-            window.clearTimeout(this.compilerTriggerTimeoutID);
-        }
-        this.compilerTriggerTimeoutID = window.setTimeout(function () {
-            try {
+        if (parent.settingsPG.ScriptLanguage == "JS")
+            return this.jsEditor.getValue();
 
-                var output = this.transpileModule(codeValue, {
-                    module: ts.ModuleKind.AMD,
-                    target: ts.ScriptTarget.ES5,
-                    noLib: true,
-                    noResolve: true,
-                    suppressOutputPathCheck: true
-                });
-                if (typeof output === "string") {
-                    callback(output);
+        else if (parent.settingsPG.ScriptLanguage == "TS") {
+            const model = this.jsEditor.getModel();
+            const uri = model.uri;
+
+            const worker = await monaco.languages.typescript.getTypeScriptWorker();
+            const languageService = await worker(uri);
+
+            const uriStr = uri.toString();
+            const result = await languageService.getEmitOutput(uriStr);
+            const diagnostics = await Promise.all([languageService.getSyntacticDiagnostics(uriStr), languageService.getSemanticDiagnostics(uriStr)]);
+
+            diagnostics.forEach(function(diagset) {
+                if (diagset.length) {
+                    var diagnostic = diagset[0];
+                    var position = model.getPositionAt(diagnostic.start);
+                    
+                    parent.utils.showError(`Line ${position.lineNumber}:${position.column} - ${diagnostic.messageText}`);
+                    return;
                 }
-            }
-            catch (e) {
-                this.parent.utils.showError(e.message, e);
-            }
-        }.bind(this), 100);
-    };
-    
-    /**
-     * Usefull function for TypeScript code
-     * @param {*} input 
-     * @param {*} options 
-     */
-    transpileModule(input, options) {
-        var inputFileName = options.jsx ? "module.tsx" : "module.ts";
-        var sourceFile = ts.createSourceFile(inputFileName, input, options.target || ts.ScriptTarget.ES5);
-        // Output
-        var outputText;
-        var program = ts.createProgram([inputFileName], options, {
-            getSourceFile: function (fileName) { return fileName.indexOf("module") === 0 ? sourceFile : undefined; },
-            writeFile: function (_name, text) { outputText = text; },
-            getDefaultLibFileName: function () { return "lib.d.ts"; },
-            useCaseSensitiveFileNames: function () { return false; },
-            getCanonicalFileName: function (fileName) { return fileName; },
-            getCurrentDirectory: function () { return ""; },
-            getNewLine: function () { return "\r\n"; },
-            fileExists: function (fileName) { return fileName === inputFileName; },
-            readFile: function () { return ""; },
-            directoryExists: function () { return true; },
-            getDirectories: function () { return []; }
-        });
-        // Emit
-        program.emit();
-        if (outputText === undefined) {
-            throw new Error("Output generation failed");
+            });
+
+            const output = result.outputFiles[0].text;
+            const stub = "var createScene = function() { return Playground.CreateScene(engine, engine.getRenderingCanvas()); }";
+
+            return output + stub;
         }
-        return outputText;
-    }
+    };
 };

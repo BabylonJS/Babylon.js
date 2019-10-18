@@ -1828,6 +1828,108 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_unlit" {
         private _loadUnlitPropertiesAsync;
     }
 }
+declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_clearcoat" {
+    import { Nullable } from "babylonjs/types";
+    import { Material } from "babylonjs/Materials/material";
+    import { IMaterial } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
+    import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
+    import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1677)
+     * [Playground Sample](https://www.babylonjs-playground.com/frame.html#7F7PN6#8)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadClearCoatPropertiesAsync;
+    }
+}
+declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_sheen" {
+    import { Nullable } from "babylonjs/types";
+    import { Material } from "babylonjs/Materials/material";
+    import { IMaterial } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
+    import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
+    import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1688)
+     * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_sheen implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadSheenPropertiesAsync;
+    }
+}
+declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_specular" {
+    import { Nullable } from "babylonjs/types";
+    import { Material } from "babylonjs/Materials/material";
+    import { IMaterial } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
+    import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
+    import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1677)
+     * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_specular implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadSpecularPropertiesAsync;
+    }
+}
 declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_texture_transform" {
     import { Nullable } from "babylonjs/types";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
@@ -2040,6 +2142,9 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/index" {
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_lights_punctual";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_unlit";
+    export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_clearcoat";
+    export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_sheen";
+    export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_specular";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_texture_transform";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/MSFT_audio_emitter";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/MSFT_lod";
@@ -2304,7 +2409,6 @@ declare module "babylonjs-loaders/STL/stlFileLoader" {
     import { ISceneLoaderPlugin, ISceneLoaderPluginExtensions } from "babylonjs/Loading/sceneLoader";
     import { AssetContainer } from "babylonjs/assetContainer";
     import { Scene } from "babylonjs/scene";
-    import "babylonjs/Helpers/sceneHelpers";
     /**
      * STL file type loader.
      * This is a babylon scene loader plugin.
@@ -4124,6 +4228,93 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
         private _loadUnlitPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1677)
+     * [Playground Sample](https://www.babylonjs-playground.com/frame.html#7F7PN6#8)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadClearCoatPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1688)
+     * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_sheen implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadSheenPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1677)
+     * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_specular implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadSpecularPropertiesAsync;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {

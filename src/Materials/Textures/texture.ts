@@ -376,10 +376,10 @@ export class Texture extends BaseTexture {
             this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
-        this.url = url;
-        if (!this.name) {
+        if (!this.name || StringTools.StartsWith(this.name, "data:")) {
             this.name = url;
         }
+        this.url = url;
         this._buffer = buffer;
         this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
 
