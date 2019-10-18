@@ -18,11 +18,6 @@ namespace babylon
         m_impl->UpdateSize(width, height);
     }
 
-    void Runtime::UpdateRenderTarget()
-    {
-        m_impl->UpdateRenderTarget();
-    }
-
     void Runtime::Suspend()
     {
         m_impl->Suspend();

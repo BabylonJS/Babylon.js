@@ -1,7 +1,7 @@
 #include <Babylon/RuntimeWin32.h>
 #include "RuntimeImpl.h"
 
-#include "XrPlugin.h"
+#include "NativeXr.h"
 
 #include <filesystem>
 
@@ -32,7 +32,7 @@ namespace babylon
 
         Execute([](RuntimeImpl& runtime)
         {
-            InitializeXrPlugin(runtime.Env());
+            InitializeNativeXr(runtime.Env());
         });
 
         RuntimeImpl::BaseThreadProcedure();

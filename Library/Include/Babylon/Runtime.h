@@ -19,7 +19,6 @@ namespace babylon
         virtual ~Runtime();
 
         void UpdateSize(float width, float height);
-        void UpdateRenderTarget();
         void Suspend();
         void Resume();
 

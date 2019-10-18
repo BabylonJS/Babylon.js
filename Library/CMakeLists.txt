@@ -86,10 +86,10 @@ set(SOURCES
     "Source/Common${BABYLON_NATIVE_PLATFORM}.cpp"
     "Source/Console.cpp"
     "Source/Console.h"
-    "Source/NapiBridge.h"
     "Source/NativeEngine.cpp"
     "Source/NativeEngine.h"
-    "Source/NativeEngineImpl.h"
+    "Source/NativeWindow.cpp"
+    "Source/NativeWindow.h"
     "Source/ResourceLimits.cpp"
     "Source/ResourceLimits.h"
     "Source/Runtime.cpp"
@@ -118,8 +118,8 @@ endif()
 # Platform-specific XR plugin (only included when used)
 if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
     set(SOURCES ${SOURCES}
-        "Source/XrPlugin.cpp"
-        "Source/XrPlugin.h")
+        "Source/NativeXr.cpp"
+        "Source/NativeXr.h")
 endif()
 
 add_library(Library ${SOURCES})
