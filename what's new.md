@@ -64,7 +64,6 @@
 - All NPM packages have `latest` and `preview` streams ([RaananW](https://github.com/RaananW))
 - Added New Tools Tab in the inspector (env texture and screenshot tools so far) ([sebavan](http://www.github.com/sebavan))
 - Moved to gulp 4, updated dependencies to latest ([RaananW](https://github.com/RaananW))
-- Bumped Monaco Editor to 0.18.1 and improved TypeScript compilation pipeline in the Playground ([sailro](http://www.github.com/sailro))
 
 ### GUI
 - Added dead key support and before key add observable to InputText. [Doc](https://doc.babylonjs.com/how_to/gui#using-onbeforekeyaddobservable-for-extended-keyboard-layouts-and-input-masks) ([theom](https://github.com/theom))
