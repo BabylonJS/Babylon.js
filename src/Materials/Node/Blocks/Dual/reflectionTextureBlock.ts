@@ -430,7 +430,7 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
         super._deserialize(serializationObject, scene, rootUrl);
 
         if (serializationObject.texture) {
-            rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? rootUrl : "";
+            rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? "" : rootUrl;
             if (serializationObject.texture.isCube) {
                 this.texture = CubeTexture.Parse(serializationObject.texture, scene, rootUrl);
             } else {
