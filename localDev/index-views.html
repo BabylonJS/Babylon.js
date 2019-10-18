@@ -88,7 +88,7 @@
     </div>
 
     <script>
-        var canvas = document.getElementById("renderCanvas0");
+        var canvas = document.createElement("canvas");
         //	canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(canvas);
         var divFps = document.getElementById("fps");
 
@@ -125,6 +125,8 @@
                     }
 
                     BABYLONDEVTOOLS.Loader.debugShortcut(engine);
+
+                    engine.inputElement = document.getElementById("renderCanvas0");
 
                     // call the scene creation from the js.
                     if (typeof delayCreateScene !== "undefined") {
@@ -167,11 +169,6 @@
                             }
                         }
                     }
-
-                    // Resize
-                    window.addEventListener("resize", function() {
-                        engine.resize();
-                    });
                 }
                 else {
                     alert('BabylonJS is not supported.')

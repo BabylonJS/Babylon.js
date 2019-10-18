@@ -921,7 +921,7 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
 
                 orthoCamera.name = node.name || "";
                 orthoCamera.mode = Camera.ORTHOGRAPHIC_CAMERA;
-                orthoCamera.attachControl(<HTMLElement>gltfRuntime.scene.getEngine().getRenderingCanvas());
+                orthoCamera.attachControl(<HTMLElement>gltfRuntime.scene.getEngine().getInputElement());
 
                 lastNode = orthoCamera;
             }
@@ -930,7 +930,7 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
                 var persCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene, false);
 
                 persCamera.name = node.name || "";
-                persCamera.attachControl(<HTMLElement>gltfRuntime.scene.getEngine().getRenderingCanvas());
+                persCamera.attachControl(<HTMLElement>gltfRuntime.scene.getEngine().getInputElement());
 
                 if (!perspectiveCamera.aspectRatio) {
                     perspectiveCamera.aspectRatio = gltfRuntime.scene.getEngine().getRenderWidth() / gltfRuntime.scene.getEngine().getRenderHeight();
