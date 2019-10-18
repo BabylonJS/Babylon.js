@@ -131,7 +131,7 @@ export class SolidParticle {
     /**
      * Creates a Solid Particle object.
      * Don't create particles manually, use instead the Solid Particle System internal tools like _addParticle()
-     * @param particleIndex (integer) is the particle index in the Solid Particle System pool. 
+     * @param particleIndex (integer) is the particle index in the Solid Particle System pool.
      * @param particleId (integer) is the particle identifier. Unless some particles are removed from the SPS, it's the same value than the particle idx.
      * @param positionIndex (integer) is the starting index of the particle vertices in the SPS "positions" array.
      * @param indiceIndex (integer) is the starting index of the particle indices in the SPS "indices" array.
@@ -155,7 +155,31 @@ export class SolidParticle {
             this._boundingInfo = new BoundingInfo(modelBoundingInfo.minimum, modelBoundingInfo.maximum);
         }
     }
-
+    /**
+     * Copies the particle property values into the existing target : position, rotation, scaling, uvs, colors, pivot, parent, visibility, alive
+     * @param target the particle target
+     * @returns the current particle
+     */
+    public copyToRef(target: SolidParticle): SolidParticle {
+        target.position.copyFrom(this.position);
+        target.rotation.copyFrom(this.rotation);
+        if (this.rotationQuaternion) {
+            target.rotationQuaternion!.copyFrom(this.rotationQuaternion!);
+        }
+        target.scaling.copyFrom(this.scaling);
+        if (this.color) {
+            target.color!.copyFrom(this.color!);
+        }
+        target.uvs.copyFrom(this.uvs);
+        target.velocity.copyFrom(this.velocity);
+        target.pivot.copyFrom(this.pivot);
+        target.translateFromPivot = this.translateFromPivot;
+        target.alive = this.alive;
+        target.isVisible = this.isVisible;
+        target.parentId = this.parentId;
+        target.cullingStrategy = this.cullingStrategy;
+        return this;
+    }
     /**
      * Legacy support, changed scale to scaling
      */
