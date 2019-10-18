@@ -50229,13 +50229,13 @@ var Inspector = /** @class */ (function () {
             scene = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_3__["EngineStore"].LastCreatedScene;
         }
         this._Scene = scene;
-        var canvas = scene ? scene.getEngine().getRenderingCanvas() : babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_3__["EngineStore"].LastCreatedEngine.getRenderingCanvas();
+        var rootElement = scene ? scene.getEngine().getInputElement() : babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_3__["EngineStore"].LastCreatedEngine.getInputElement();
         if (options.embedMode && options.showExplorer && options.showInspector) {
             if (options.popup) {
                 this._CreateEmbedHost(scene, options, this._CreatePopup("INSPECTOR", "_EmbedHostWindow"), Inspector.OnSelectionChangeObservable);
             }
             else {
-                var parentControl = (options.globalRoot ? options.globalRoot : canvas.parentElement);
+                var parentControl = (options.globalRoot ? options.globalRoot : rootElement.parentElement);
                 if (!options.overlay && !this._NewCanvasContainer) {
                     this._CreateCanvasContainer(parentControl);
                 }
@@ -50269,7 +50269,7 @@ var Inspector = /** @class */ (function () {
             }
         }
         else {
-            var parentControl = (options.globalRoot ? options.globalRoot : canvas.parentElement);
+            var parentControl = (options.globalRoot ? options.globalRoot : rootElement.parentElement);
             if (!options.overlay && !this._NewCanvasContainer) {
                 this._CreateCanvasContainer(parentControl);
             }

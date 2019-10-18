@@ -2425,7 +2425,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param attachControl defines if attachControl must be called for the new active camera (default: true)
      */
     public switchActiveCamera(newCamera: Camera, attachControl = true): void {
-        var canvas = this._engine.getRenderingCanvas();
+        var canvas = this._engine.getInputElement();
 
         if (!canvas) {
             return;
@@ -4101,7 +4101,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.detachControl();
 
         // Detach cameras
-        var canvas = this._engine.getRenderingCanvas();
+        var canvas = this._engine.getInputElement();
 
         if (canvas) {
             var index;

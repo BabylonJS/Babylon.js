@@ -530,7 +530,7 @@ __webpack_require__.r(__webpack_exports__);
 var NAME = "KHR_materials_clearcoat";
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1677)
- * [Playground Sample](https://www.babylonjs-playground.com/#7F7PN6)
+ * [Playground Sample](https://www.babylonjs-playground.com/frame.html#7F7PN6#8)
  * !!! Experimental Extension Subject to Changes !!!
  */
 var KHR_materials_clearcoat = /** @class */ (function () {
@@ -720,7 +720,7 @@ __webpack_require__.r(__webpack_exports__);
 var NAME = "KHR_materials_sheen";
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1688)
- * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#1)
+ * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
  * !!! Experimental Extension Subject to Changes !!!
  */
 var KHR_materials_sheen = /** @class */ (function () {
@@ -800,6 +800,7 @@ __webpack_require__.r(__webpack_exports__);
 var NAME = "KHR_materials_specular";
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1677)
+ * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
  * !!! Experimental Extension Subject to Changes !!!
  */
 var KHR_materials_specular = /** @class */ (function () {

@@ -316,7 +316,7 @@ export class VRExperienceHelper {
     // Are we presenting in the fullscreen fallback?
     private _fullscreenVRpresenting = false;
 
-    private _canvas: Nullable<HTMLCanvasElement>;
+    private _inputElement: Nullable<HTMLElement>;
     private _webVRCamera: WebVRFreeCamera;
     private _vrDeviceOrientationCamera: Nullable<VRDeviceOrientationFreeCamera>;
     private _deviceOrientationCamera: Nullable<DeviceOrientationCamera>;
@@ -667,7 +667,7 @@ export class VRExperienceHelper {
         /** Options to modify the vr experience helper's behavior. */
         public webVROptions: VRExperienceHelperOptions = {}) {
         this._scene = scene;
-        this._canvas = scene.getEngine().getRenderingCanvas();
+        this._inputElement = scene.getEngine().getInputElement();
 
         // Parse options
         if (webVROptions.createFallbackVRDeviceOrientationFreeCamera === undefined) {
@@ -728,8 +728,8 @@ export class VRExperienceHelper {
             }
 
             this._scene.activeCamera = this._deviceOrientationCamera;
-            if (this._canvas) {
-                this._scene.activeCamera.attachControl(this._canvas);
+            if (this._inputElement) {
+                this._scene.activeCamera.attachControl(this._inputElement);
             }
         } else {
             this._existingCamera = this._scene.activeCamera;
@@ -914,11 +914,11 @@ export class VRExperienceHelper {
         } else if ((<any>document).msFullscreenElement !== undefined) {
             this._fullscreenVRpresenting = (<any>document).msFullscreenElement;
         }
-        if (!this._fullscreenVRpresenting && this._canvas) {
+        if (!this._fullscreenVRpresenting && this._inputElement) {
             this.exitVR();
             if (!this._useCustomVRButton && this._btnVR) {
-                this._btnVR.style.top = this._canvas.offsetTop + this._canvas.offsetHeight - 70 + "px";
-                this._btnVR.style.left = this._canvas.offsetLeft + this._canvas.offsetWidth - 100 + "px";
+                this._btnVR.style.top = this._inputElement.offsetTop + this._inputElement.offsetHeight - 70 + "px";
+                this._btnVR.style.left = this._inputElement.offsetLeft + this._inputElement.offsetWidth - 100 + "px";
                 // make sure the button is visible after setting its position
                 this.updateButtonVisibility();
             }
@@ -957,8 +957,8 @@ export class VRExperienceHelper {
     }
 
     private moveButtonToBottomRight() {
-        if (this._canvas && !this._useCustomVRButton && this._btnVR) {
-            const rect: ClientRect = this._canvas.getBoundingClientRect();
+        if (this._inputElement && !this._useCustomVRButton && this._btnVR) {
+            const rect: ClientRect = this._inputElement.getBoundingClientRect();
             this._btnVR.style.top = rect.top + rect.height - 70 + "px";
             this._btnVR.style.left = rect.left + rect.width - 100 + "px";
         }
@@ -1060,8 +1060,8 @@ export class VRExperienceHelper {
             });
         }
 
-        if (this._scene.activeCamera && this._canvas) {
-            this._scene.activeCamera.attachControl(this._canvas);
+        if (this._scene.activeCamera && this._inputElement) {
+            this._scene.activeCamera.attachControl(this._inputElement);
         }
 
         if (this._interactionsEnabled) {
@@ -1107,8 +1107,8 @@ export class VRExperienceHelper {
             if (this._deviceOrientationCamera) {
                 this._deviceOrientationCamera.position = this._position;
                 this._scene.activeCamera = this._deviceOrientationCamera;
-                if (this._canvas) {
-                    this._scene.activeCamera.attachControl(this._canvas);
+                if (this._inputElement) {
+                    this._scene.activeCamera.attachControl(this._inputElement);
                 }
 
                 // Restore angular sensibility
