@@ -110,6 +110,8 @@
         #define DEBUGMODE_GAMMA
     #elif DEBUGMODE == 62 && defined(METALLICWORKFLOW)
         gl_FragColor.rgb = vec3(metallicRoughness.r);
+    #elif DEBUGMODE == 71 && defined(METALLICWORKFLOW)
+        gl_FragColor.rgb = metallicF0;
     #elif DEBUGMODE == 63
         gl_FragColor.rgb = vec3(roughness);
     #elif DEBUGMODE == 64

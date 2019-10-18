@@ -1414,7 +1414,7 @@ declare module BABYLON.GUI {
      */
     export class Image extends Control {
         name?: string | undefined;
-        private static _WorkingCanvas;
+        private _workingCanvas;
         private _domImage;
         private _imageWidth;
         private _imageHeight;

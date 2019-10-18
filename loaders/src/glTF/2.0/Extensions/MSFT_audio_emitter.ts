@@ -93,10 +93,14 @@ interface ILoaderAnimationEvents {
  * [Specification](https://github.com/najadojo/glTF/tree/MSFT_audio_emitter/extensions/2.0/Vendor/MSFT_audio_emitter)
  */
 export class MSFT_audio_emitter implements IGLTFLoaderExtension {
-    /** The name of this extension. */
+    /**
+     * The name of this extension.
+     */
     public readonly name = NAME;
 
-    /** Defines whether this extension is enabled. */
+    /**
+     * Defines whether this extension is enabled.
+     */
     public enabled: boolean;
 
     private _loader: GLTFLoader;

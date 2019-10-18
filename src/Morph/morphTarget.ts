@@ -27,6 +27,7 @@ export class MorphTarget implements IAnimatable {
     private _tangents: Nullable<FloatArray> = null;
     private _uvs: Nullable<FloatArray> = null;
     private _influence: number;
+    private _uniqueId = 0;
 
     /**
      * Observable raised when the influence changes
@@ -89,6 +90,17 @@ export class MorphTarget implements IAnimatable {
         public name: string, influence = 0, scene: Nullable<Scene> = null) {
         this._scene = scene || EngineStore.LastCreatedScene;
         this.influence = influence;
+
+        if (this._scene) {
+            this._uniqueId = this._scene.getUniqueId();
+        }
+    }
+
+    /**
+     * Gets the unique ID of this manager
+     */
+    public get uniqueId(): number {
+        return this._uniqueId;
     }
 
     /**
@@ -205,6 +217,21 @@ export class MorphTarget implements IAnimatable {
      */
     public getUVs(): Nullable<FloatArray> {
         return this._uvs;
+    }
+
+    /**
+     * Clone the current target
+     * @returns a new MorphTarget
+     */
+    public clone(): MorphTarget {
+        let newOne = SerializationHelper.Clone(() => new MorphTarget(this.name, this.influence, this._scene), this);
+
+        newOne._positions = this._positions;
+        newOne._normals = this._normals;
+        newOne._tangents = this._tangents;
+        newOne._uvs = this._uvs;
+
+        return newOne;
     }
 
     /**

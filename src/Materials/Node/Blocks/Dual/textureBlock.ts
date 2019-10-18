@@ -51,6 +51,8 @@ export class TextureBlock extends NodeMaterialBlock {
 
         this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
         this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
+
+        this._inputs[0]._prioritizeVertex = true;
     }
 
     /**
@@ -373,6 +375,7 @@ export class TextureBlock extends NodeMaterialBlock {
         super._deserialize(serializationObject, scene, rootUrl);
 
         if (serializationObject.texture) {
+            rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? rootUrl : "";
             this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
         }
     }

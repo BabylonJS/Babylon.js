@@ -13,11 +13,20 @@ const NAME = "KHR_materials_unlit";
  * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
  */
 export class KHR_materials_unlit implements IGLTFLoaderExtension {
-    /** The name of this extension. */
+    /**
+     * The name of this extension.
+     */
     public readonly name = NAME;
 
-    /** Defines whether this extension is enabled. */
+    /**
+     * Defines whether this extension is enabled.
+     */
     public enabled: boolean;
+
+    /**
+     * Defines a number that determines the order the extensions are applied.
+     */
+    public order = 210;
 
     private _loader: GLTFLoader;
 

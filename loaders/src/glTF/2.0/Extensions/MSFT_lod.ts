@@ -20,11 +20,20 @@ interface IMSFTLOD {
  * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/MSFT_lod)
  */
 export class MSFT_lod implements IGLTFLoaderExtension {
-    /** The name of this extension. */
+    /**
+     * The name of this extension.
+     */
     public readonly name = NAME;
 
-    /** Defines whether this extension is enabled. */
+    /**
+     * Defines whether this extension is enabled.
+     */
     public enabled: boolean;
+
+    /**
+     * Defines a number that determines the order the extensions are applied.
+     */
+    public order = 100;
 
     /**
      * Maximum number of LODs to load, starting from the lowest LOD.
@@ -66,6 +75,8 @@ export class MSFT_lod implements IGLTFLoaderExtension {
 
     /** @hidden */
     public dispose() {
+        this._disposeUnusedMaterials();
+
         delete this._loader;
 
         this._nodeIndexLOD = null;
@@ -340,7 +351,8 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                 if (material._data) {
                     for (const drawMode in material._data) {
                         const data = material._data[drawMode];
-                        if (data.babylonMeshes.length === 0) {
+                        if (data.babylonMeshes.every((babylonMesh) => babylonMesh.material !== data.babylonMaterial)) {
+                            // TODO: check if texture is in use instead of force disposing textures
                             data.babylonMaterial.dispose(false, true);
                             delete material._data[drawMode];
                         }

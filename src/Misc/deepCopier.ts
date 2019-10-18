@@ -1,3 +1,5 @@
+import { StringTools } from './stringTools';
+
 var cloneValue = (source: any, destinationObject: any) => {
     if (!source) {
         return null;
@@ -30,6 +32,10 @@ export class DeepCopier {
         for (var prop in source) {
 
             if (prop[0] === "_" && (!mustCopyList || mustCopyList.indexOf(prop) === -1)) {
+                continue;
+            }
+
+            if (StringTools.EndsWith(prop, "Observable")) {
                 continue;
             }
 
