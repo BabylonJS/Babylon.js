@@ -3373,43 +3373,30 @@ export class ThinEngine {
             if (needToBind) {
                 this._bindTextureDirectly(this._gl.TEXTURE_2D_ARRAY, internalTexture, isPartOfTextureArray);
             }
-        } else if (internalTexture && internalTexture.is3D) {
+        } else if (internalTexture && (internalTexture.is3D || internalTexture.is2DArray)) {
+            let is3D = internalTexture.is3D;
+            let target = is3D ? this._gl.TEXTURE_3D : this._gl.TEXTURE_2D_ARRAY;
+
             if (needToBind) {
-                this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture, isPartOfTextureArray);
+                this._bindTextureDirectly(target, internalTexture, isPartOfTextureArray);
             }
 
             if (internalTexture && internalTexture._cachedWrapU !== texture.wrapU) {
                 internalTexture._cachedWrapU = texture.wrapU;
-                this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_S, this._getTextureWrapMode(texture.wrapU), internalTexture);
+                this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_S, this._getTextureWrapMode(texture.wrapU), internalTexture);
             }
 
             if (internalTexture && internalTexture._cachedWrapV !== texture.wrapV) {
                 internalTexture._cachedWrapV = texture.wrapV;
-                this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_T, this._getTextureWrapMode(texture.wrapV), internalTexture);
+                this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_T, this._getTextureWrapMode(texture.wrapV), internalTexture);
             }
 
-            if (internalTexture && internalTexture._cachedWrapR !== texture.wrapR) {
+            if (is3D && internalTexture && internalTexture._cachedWrapR !== texture.wrapR) {
                 internalTexture._cachedWrapR = texture.wrapR;
-                this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_R, this._getTextureWrapMode(texture.wrapR), internalTexture);
+                this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_R, this._getTextureWrapMode(texture.wrapR), internalTexture);
             }
 
-            this._setAnisotropicLevel(this._gl.TEXTURE_3D, texture);
-        } else if (internalTexture && internalTexture.is2DArray) {
-            if (needToBind) {
-                this._bindTextureDirectly(this._gl.TEXTURE_2D_ARRAY, internalTexture, isPartOfTextureArray);
-            }
-
-            if (internalTexture && internalTexture._cachedWrapU !== texture.wrapU) {
-                internalTexture._cachedWrapU = texture.wrapU;
-                this._setTextureParameterInteger(this._gl.TEXTURE_2D_ARRAY, this._gl.TEXTURE_WRAP_S, this._getTextureWrapMode(texture.wrapU), internalTexture);
-            }
-
-            if (internalTexture && internalTexture._cachedWrapV !== texture.wrapV) {
-                internalTexture._cachedWrapV = texture.wrapV;
-                this._setTextureParameterInteger(this._gl.TEXTURE_2D_ARRAY, this._gl.TEXTURE_WRAP_T, this._getTextureWrapMode(texture.wrapV), internalTexture);
-            }
-
-            this._setAnisotropicLevel(this._gl.TEXTURE_2D_ARRAY, texture);
+            this._setAnisotropicLevel(target, texture);
         } else if (internalTexture && internalTexture.isCube) {
             if (needToBind) {
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, internalTexture, isPartOfTextureArray);
