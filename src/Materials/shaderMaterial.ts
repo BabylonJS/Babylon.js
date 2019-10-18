@@ -747,6 +747,62 @@ export class ShaderMaterial extends Material {
         result.name = name;
         result.id = name;
 
+
+        // Texture
+        for (var key in this._textures) {
+            result.setTexture(key, this._textures[key]);
+        }
+
+        // Float
+        for (var key in this._floats) {
+            result.setFloat(key, this._floats[key]);
+        }
+
+        // Floats
+        for (var key in this._floatsArrays) {
+            result.setFloats(key, this._floatsArrays[key]);
+        }
+
+        // Color3
+        for (var key in this._colors3) {
+            result.setColor3(key, this._colors3[key]);
+        }
+
+        // Color4
+        for (var key in this._colors4) {
+            result.setColor4(key, this._colors4[key]);
+        }
+
+        // Vector2
+        for (var key in this._vectors2) {
+            result.setVector2(key, this._vectors2[key]);
+        }
+
+        // Vector3
+        for (var key in this._vectors3) {
+            result.setVector3(key, this._vectors3[key]);
+        }
+
+        // Vector4
+        for (var key in this._vectors4) {
+            result.setVector4(key, this._vectors4[key]);
+        }
+
+        // Matrix
+        for (var key in this._matrices) {
+            result.setMatrix(key,  this._matrices[key]);
+        }
+
+        // Matrix 3x3
+        for (var key in this._matrices3x3) {
+            result.setMatrix3x3(key, this._matrices3x3[key]);
+        }
+
+        // Matrix 2x2
+        for (var key in this._matrices2x2) {
+            result.setMatrix2x2(key, this._matrices2x2[key]);
+        }
+
         return result;
     }
 
@@ -814,7 +870,7 @@ export class ShaderMaterial extends Material {
             serializationObject.floats[name] = this._floats[name];
         }
 
-        // Float s
+        // Floats
         serializationObject.FloatArrays = {};
         for (name in this._floatsArrays) {
             serializationObject.FloatArrays[name] = this._floatsArrays[name];
