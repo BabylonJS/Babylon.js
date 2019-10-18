@@ -198,6 +198,26 @@ export class BaseTexture implements IAnimatable {
     }
 
     /**
+     * Define if the texture is a 2d array texture (webgl 2) or if false a 2d texture.
+     */
+    @serialize()
+    public get is2DArray(): boolean {
+        if (!this._texture) {
+            return false;
+        }
+
+        return this._texture.is2DArray;
+    }
+
+    public set is2DArray(value: boolean) {
+        if (!this._texture) {
+            return;
+        }
+
+        this._texture.is2DArray = value;
+    }
+
+    /**
      * Define if the texture contains data in gamma space (most of the png/jpg aside bump).
      * HDR texture are usually stored in linear space.
      * This only impacts the PBR and Background materials

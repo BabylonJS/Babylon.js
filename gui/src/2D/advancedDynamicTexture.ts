@@ -80,7 +80,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _focusedControl: Nullable<IFocusableControl>;
     private _blockNextFocusCheck = false;
     private _renderScale = 1;
-    private _rootCanvas: Nullable<HTMLCanvasElement>;
+    private _rootElement: Nullable<HTMLElement>;
     private _cursorChanged = false;
     /**
     * Define type to string to ensure compatibility across browsers
@@ -290,7 +290,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (!scene || !this._texture) {
             return;
         }
-        this._rootCanvas = scene.getEngine()!.getRenderingCanvas()!;
+        this._rootElement = scene.getEngine()!.getInputElement()!;
         this._renderObserver = scene.onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
         this._preKeyboardObserver = scene.onPreKeyboardObservable.add((info) => {
             if (!this._focusedControl) {
@@ -413,7 +413,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (!scene) {
             return;
         }
-        this._rootCanvas = null;
+        this._rootElement = null;
         scene.onBeforeCameraRenderObservable.remove(this._renderObserver);
         if (this._resizeObserver) {
             scene.getEngine().onResizeObservable.remove(this._resizeObserver);
@@ -576,8 +576,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
     /** @hidden */
     public _changeCursor(cursor: string) {
-        if (this._rootCanvas) {
-            this._rootCanvas.style.cursor = cursor;
+        if (this._rootElement) {
+            this._rootElement.style.cursor = cursor;
             this._cursorChanged = true;
         }
     }

@@ -1292,6 +1292,8 @@ export class NativeEngine extends Engine {
             internalTexture = this.emptyCubeTexture;
         } else if (texture.is3D) {
             internalTexture = this.emptyTexture3D;
+        } else if (texture.is2DArray) {
+            internalTexture = this.emptyTexture2DArray;
         } else {
             internalTexture = this.emptyTexture;
         }

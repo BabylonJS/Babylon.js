@@ -418,23 +418,23 @@ export class Effect implements IDisposable {
 
         if (!this._pipelineContext || this._pipelineContext.isAsync) {
             setTimeout(() => {
-                this._checkIsReady();
+                this._checkIsReady(null);
             }, 16);
         }
     }
 
-    private _checkIsReady() {
+    private _checkIsReady(previousPipelineContext: Nullable<IPipelineContext>) {
         try {
             if (this._isReadyInternal()) {
                 return;
             }
         } catch (e) {
-            this._processCompilationErrors(e);
+            this._processCompilationErrors(e, previousPipelineContext);
             return;
         }
 
         setTimeout(() => {
-            this._checkIsReady();
+            this._checkIsReady(previousPipelineContext);
         }, 16);
     }
 
@@ -504,8 +504,10 @@ export class Effect implements IDisposable {
         };
         this.onCompiled = () => {
             var scenes = this.getEngine().scenes;
-            for (var i = 0; i < scenes.length; i++) {
-                scenes[i].markAllMaterialsAsDirty(Constants.MATERIAL_AllDirtyFlag);
+            if (scenes) {
+                for (var i = 0; i < scenes.length; i++) {
+                    scenes[i].markAllMaterialsAsDirty(Constants.MATERIAL_AllDirtyFlag);
+                }
             }
 
             this._pipelineContext!._handlesSpectorRebuildCallback(onCompiled);
@@ -587,7 +589,7 @@ export class Effect implements IDisposable {
             });
 
             if (this._pipelineContext.isAsync) {
-                this._checkIsReady();
+                this._checkIsReady(previousPipelineContext);
             }
 
         } catch (e) {

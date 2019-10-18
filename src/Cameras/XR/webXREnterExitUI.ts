@@ -115,7 +115,7 @@ export class WebXREnterExitUI implements IDisposable {
             this._updateButtons(null);
         }
 
-        var renderCanvas = scene.getEngine().getRenderingCanvas();
+        var renderCanvas = scene.getEngine().getInputElement();
         if (renderCanvas && renderCanvas.parentNode) {
             renderCanvas.parentNode.appendChild(this._overlay);
             scene.onDisposeObservable.addOnce(() => {
@@ -136,7 +136,7 @@ export class WebXREnterExitUI implements IDisposable {
      * Disposes of the object
      */
     dispose() {
-        var renderCanvas = this.scene.getEngine().getRenderingCanvas();
+        var renderCanvas = this.scene.getEngine().getInputElement();
         if (renderCanvas && renderCanvas.parentNode && renderCanvas.parentNode.contains(this._overlay)) {
             renderCanvas.parentNode.removeChild(this._overlay);
         }

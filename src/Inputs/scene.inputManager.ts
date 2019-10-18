@@ -147,7 +147,7 @@ export class InputManager {
     }
 
     private _updatePointerPosition(evt: PointerEvent): void {
-        var canvasRect = this._scene.getEngine().getRenderingCanvasClientRect();
+        var canvasRect = this._scene.getEngine().getInputElementClientRect();
 
         if (!canvasRect) {
             return;
@@ -162,7 +162,7 @@ export class InputManager {
 
     private _processPointerMove(pickResult: Nullable<PickingInfo>, evt: PointerEvent) {
         let scene = this._scene;
-        var canvas = scene.getEngine().getRenderingCanvas();
+        var canvas = scene.getEngine().getInputElement();
 
         if (!canvas) {
             return;
@@ -447,7 +447,7 @@ export class InputManager {
     */
     public attachControl(attachUp = true, attachDown = true, attachMove = true): void {
         let scene = this._scene;
-        var canvas = scene.getEngine().getRenderingCanvas();
+        var canvas = scene.getEngine().getInputElement();
 
         if (!canvas) {
             return;
@@ -819,7 +819,7 @@ export class InputManager {
      */
     public detachControl() {
         const eventPrefix = Tools.GetPointerPrefix();
-        const canvas = this._scene.getEngine().getRenderingCanvas();
+        const canvas = this._scene.getEngine().getInputElement();
         const engine = this._scene.getEngine();
 
         if (!canvas) {
