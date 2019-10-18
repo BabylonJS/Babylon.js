@@ -12,7 +12,6 @@ import { BoundingInfo } from "../Culling/boundingInfo";
 import { Ray } from "../Culling/ray";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { StandardMaterial } from "../Materials/standardMaterial";
-import { Texture } from "./../Materials/Textures/texture";
 import { BaseTexture } from "./../Materials/Textures/baseTexture";
 import { Scalar } from "../Maths/math.scalar";
 
@@ -611,7 +610,7 @@ export class PointsCloudSystem implements IDisposable {
         if (isNaN(colored) ||  colored < 0 || colored > 3) {
             colored = PointColor.Random ;
         }
-        
+
         var meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
         var meshInd = <IndicesArray>mesh.getIndices();
 
