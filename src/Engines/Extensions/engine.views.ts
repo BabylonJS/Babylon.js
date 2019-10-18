@@ -1,5 +1,7 @@
 import { Engine } from "../engine";
 import { Camera } from '../../Cameras/camera';
+import { Nullable } from '../../types';
+import { Scene } from '../../scene';
 
 /**
  * Class used to define an additional view for the engine
@@ -8,12 +10,18 @@ import { Camera } from '../../Cameras/camera';
 export class EngineView {
     /** Defines the canvas where to render the view */
     target: HTMLCanvasElement;
-    /** Defines the camera used to render the view */
-    camera: Camera;
+    /** Defines an optional camera used to render the view (will use active camera else) */
+    camera?: Camera;
 }
 
 declare module "../../Engines/engine" {
     export interface Engine {
+
+        /**
+         * Gets the current engine view
+         * @see https://doc.babylonjs.com/how_to/multi_canvases
+         */
+        activeView: Nullable<EngineView>;
 
         /** Gets or sets the list of views */
         views: EngineView[];
@@ -21,10 +29,10 @@ declare module "../../Engines/engine" {
         /**
          * Register a new child canvas
          * @param canvas defines the canvas to register
-         * @param camera defines the camera to use with this canvas (it will overwrite the scene.camera for this view)
-         * @returns the current engine
+         * @param camera defines an optional camera to use with this canvas (it will overwrite the scene.camera for this view)
+         * @returns the associated view
          */
-        registerView(canvas: HTMLCanvasElement, camera: Camera): Engine;
+        registerView(canvas: HTMLCanvasElement, camera?: Camera): EngineView;
 
         /**
          * Remove a registered child canvas
@@ -35,24 +43,27 @@ declare module "../../Engines/engine" {
     }
 }
 
-Engine.prototype.registerView = function(canvas: HTMLCanvasElement, camera: Camera): Engine {
+Engine.prototype.registerView = function(canvas: HTMLCanvasElement, camera?: Camera): EngineView {
     if (!this.views) {
         this.views = [];
     }
 
     for (var view of this.views) {
         if (view.target === canvas) {
-            return this;
+            return view;
         }
     }
 
-    this.views.push({target: canvas, camera: camera});
+    let newView = {target: canvas, camera: camera};
+    this.views.push(newView);
 
-    camera.onDisposeObservable.add(() => {
-        this.unRegisterView(canvas);
-    });
+    if (camera) {
+        camera.onDisposeObservable.add(() => {
+            this.unRegisterView(canvas);
+        });
+    }
 
-    return this;
+    return newView;
 };
 
 Engine.prototype.unRegisterView = function(canvas: HTMLCanvasElement): Engine {
@@ -92,14 +103,20 @@ Engine.prototype._renderViews = function() {
             continue;
         }
         let camera = view.camera;
-        let scene = camera.getScene();
+        let previewCamera: Nullable<Camera> = null;
+        let scene: Nullable<Scene> = null;
+        if (camera) {
+            scene = camera.getScene();
 
-        if (scene.activeCameras.length) {
-            continue;
+            if (scene.activeCameras.length) {
+                continue;
+            }
+
+            this.activeView = view;
+
+            previewCamera = scene.activeCamera;
+            scene.activeCamera = camera;
         }
-
-        let previewCamera = scene.activeCamera;
-        scene.activeCamera = camera;
 
         // Render the frame
         this._renderFrame();
@@ -111,6 +128,10 @@ Engine.prototype._renderViews = function() {
         context.drawImage(parent, 0, 0, parent.clientWidth, parent.clientHeight, 0, 0, canvas.clientWidth, canvas.clientHeight);
 
         // Restore
-        scene.activeCamera = previewCamera;
+        if (previewCamera && scene) {
+            scene.activeCamera = previewCamera;
+        }
     }
+
+    this.activeView = null;
 };

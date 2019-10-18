@@ -44548,19 +44548,24 @@ declare module BABYLON {
     export class EngineView {
         /** Defines the canvas where to render the view */
         target: HTMLCanvasElement;
-        /** Defines the camera used to render the view */
-        camera: Camera;
+        /** Defines an optional camera used to render the view (will use active camera else) */
+        camera?: Camera;
     }
         interface Engine {
+            /**
+             * Gets the current engine view
+             * @see https://doc.babylonjs.com/how_to/multi_canvases
+             */
+            activeView: Nullable<EngineView>;
             /** Gets or sets the list of views */
             views: EngineView[];
             /**
              * Register a new child canvas
              * @param canvas defines the canvas to register
-             * @param camera defines the camera to use with this canvas (it will overwrite the scene.camera for this view)
-             * @returns the current engine
+             * @param camera defines an optional camera to use with this canvas (it will overwrite the scene.camera for this view)
+             * @returns the associated view
              */
-            registerView(canvas: HTMLCanvasElement, camera: Camera): Engine;
+            registerView(canvas: HTMLCanvasElement, camera?: Camera): EngineView;
             /**
              * Remove a registered child canvas
              * @param canvas defines the canvas to remove
