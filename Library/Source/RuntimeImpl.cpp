@@ -211,10 +211,10 @@ namespace babylon
         jsNative.Set(JS_RUNTIME_NAME, jsRuntime);
 
         auto jsWindow = NativeWindow::Create(env, m_nativeWindowPtr, 32, 32);
-        jsNative.Set(JS_WINDOW_NAME, jsWindow);
+        jsNative.Set(JS_WINDOW_NAME, jsWindow.Value());
 
         auto jsNativeEngineConstructor = NativeEngine::InitializeAndCreateConstructor(env);
-        jsNative.Set(JS_ENGINE_CONSTRUCTOR_NAME, jsNativeEngineConstructor);
+        jsNative.Set(JS_ENGINE_CONSTRUCTOR_NAME, jsNativeEngineConstructor.Value());
     }
 
     void RuntimeImpl::BaseThreadProcedure()

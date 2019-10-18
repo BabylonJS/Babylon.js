@@ -274,7 +274,7 @@ namespace babylon
         };
     }
 
-    Napi::Function NativeEngine::InitializeAndCreateConstructor(Napi::Env& env)
+    Napi::FunctionReference NativeEngine::InitializeAndCreateConstructor(Napi::Env& env)
     {
         auto& window = RuntimeImpl::GetNativeWindowFromJavaScript(env);
 
@@ -358,10 +358,7 @@ namespace babylon
                 InstanceMethod("getRenderHeight", &NativeEngine::GetRenderHeight),
             });
         
-        constructor = Napi::Persistent(func);
-        constructor.SuppressDestruct();
-        
-        return func;
+        return Napi::Persistent(func);
     }
 
     NativeEngine::NativeEngine(const Napi::CallbackInfo& info)

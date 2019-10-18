@@ -287,14 +287,12 @@ namespace babylon
         NativeEngine(const Napi::CallbackInfo& info);
         NativeEngine(const Napi::CallbackInfo& info, NativeWindow& nativeWindow);
 
-        static Napi::Function InitializeAndCreateConstructor(Napi::Env&);
+        static Napi::FunctionReference InitializeAndCreateConstructor(Napi::Env&);
 
         FrameBufferManager& GetFrameBufferManager();
         void Dispatch(std::function<void()>);
 
     private:
-        static inline Napi::FunctionReference constructor{};
-
         enum BlendMode {}; // TODO DEBUG
         enum class Filter {}; // TODO DEBUG
         enum class AddressMode {}; // TODO DEBUG

@@ -9,7 +9,7 @@ namespace babylon
     class NativeWindow : public Napi::ObjectWrap<NativeWindow>
     {
     public:
-        static Napi::Object Create(Napi::Env& env, void* windowPtr, size_t width, size_t height);
+        static Napi::ObjectReference Create(Napi::Env& env, void* windowPtr, size_t width, size_t height);
 
         NativeWindow(const Napi::CallbackInfo& info);
 

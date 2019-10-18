@@ -2,7 +2,7 @@
 
 namespace babylon
 {
-    Napi::Object NativeWindow::Create(Napi::Env& env, void* windowPtr, size_t width, size_t height)
+    Napi::ObjectReference NativeWindow::Create(Napi::Env& env, void* windowPtr, size_t width, size_t height)
     {
         constexpr auto JS_CLASS_NAME = "NativeWindow";
 
@@ -15,7 +15,7 @@ namespace babylon
                 // If JavaScript methods/accessors are introduced, they go here
             });
 
-        return constructor.New({ Napi::External<void>::New(env, windowPtr), Napi::Number::From(env, width), Napi::Number::From(env, height) });
+        return Napi::Persistent(constructor.New({ Napi::External<void>::New(env, windowPtr), Napi::Number::From(env, width), Napi::Number::From(env, height) }));
     }
 
     NativeWindow::NativeWindow(const Napi::CallbackInfo& info)
