@@ -12337,6 +12337,39 @@ declare module BABYLON {
              * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
              */
             updateRawTexture3D(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string>, textureType: number): void;
+            /**
+             * Creates a new raw 2D array texture
+             * @param data defines the data used to create the texture
+             * @param width defines the width of the texture
+             * @param height defines the height of the texture
+             * @param depth defines the number of layers of the texture
+             * @param format defines the format of the texture
+             * @param generateMipMaps defines if the engine must generate mip levels
+             * @param invertY defines if data must be stored with Y axis inverted
+             * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+             * @param compression defines the compressed used (can be null)
+             * @param textureType defines the compressed used (can be null)
+             * @returns a new raw 2D array texture (stored in an InternalTexture)
+             */
+            createRawTexture2DArray(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string>, textureType: number): InternalTexture;
+            /**
+             * Update a raw 2D array texture
+             * @param texture defines the texture to update
+             * @param data defines the data to store
+             * @param format defines the data format
+             * @param invertY defines if data must be stored with Y axis inverted
+             */
+            updateRawTexture2DArray(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean): void;
+            /**
+             * Update a raw 2D array texture
+             * @param texture defines the texture to update
+             * @param data defines the data to store
+             * @param format defines the data format
+             * @param invertY defines if data must be stored with Y axis inverted
+             * @param compression defines the used compression (can be null)
+             * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+             */
+            updateRawTexture2DArray(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string>, textureType: number): void;
         }
 }
 declare module BABYLON {
@@ -27414,6 +27447,10 @@ declare module BABYLON {
          */
         is3D: boolean;
         /**
+         * Define if the texture is a 2d array texture (webgl 2) or if false a 2d texture.
+         */
+        is2DArray: boolean;
+        /**
          * Define if the texture contains data in gamma space (most of the png/jpg aside bump).
          * HDR texture are usually stored in linear space.
          * This only impacts the PBR and Background materials
@@ -28733,6 +28770,7 @@ declare module BABYLON {
         private _emptyTexture;
         private _emptyCubeTexture;
         private _emptyTexture3D;
+        private _emptyTexture2DArray;
         /** @hidden */private _frameHandler: number;
         private _nextFreeTextureSlots;
         private _maxSimultaneousTextures;
@@ -28760,6 +28798,10 @@ declare module BABYLON {
          * Gets the default empty 3D texture
          */
         readonly emptyTexture3D: InternalTexture;
+        /**
+         * Gets the default empty 2D array texture
+         */
+        readonly emptyTexture2DArray: InternalTexture;
         /**
          * Gets the default empty cube texture
          */
@@ -29346,6 +29388,21 @@ declare module BABYLON {
          * @returns a new raw 3D texture (stored in an InternalTexture)
          */
         createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, textureType?: number): InternalTexture;
+        /**
+         * Creates a new raw 2D array texture
+         * @param data defines the data used to create the texture
+         * @param width defines the width of the texture
+         * @param height defines the height of the texture
+         * @param depth defines the number of layers of the texture
+         * @param format defines the format of the texture
+         * @param generateMipMaps defines if the engine must generate mip levels
+         * @param invertY defines if data must be stored with Y axis inverted
+         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+         * @param compression defines the compressed used (can be null)
+         * @param textureType defines the compressed used (can be null)
+         * @returns a new raw 2D array texture (stored in an InternalTexture)
+         */
+        createRawTexture2DArray(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, textureType?: number): InternalTexture;
         private _unpackFlipYCached;
         /**
          * In case you are sharing the context with other applications, it might
@@ -29706,13 +29763,17 @@ declare module BABYLON {
          */
         Raw3D = 10,
         /**
+         * Texture content is raw 2D array data
+         */
+        Raw2DArray = 11,
+        /**
          * Texture content is a depth texture
          */
-        Depth = 11,
+        Depth = 12,
         /**
          * Texture data comes from a raw cube data encoded with RGBD
          */
-        CubeRawRGBD = 12
+        CubeRawRGBD = 13
     }
     /**
      * Class used to store data associated with WebGL texture data for the engine
@@ -29732,6 +29793,10 @@ declare module BABYLON {
          * Defines if the texture contains 3D data
          */
         is3D: boolean;
+        /**
+         * Defines if the texture contains 2D array data
+         */
+        is2DArray: boolean;
         /**
          * Defines if the texture contains multiview data
          */
@@ -51995,6 +52060,37 @@ declare module BABYLON {
          * @param width defines the width of the texture
          * @param height defines the height of the texture
          * @param depth defines the depth of the texture
+         * @param format defines the texture format to use
+         * @param scene defines the hosting scene
+         * @param generateMipMaps defines a boolean indicating if mip levels should be generated (true by default)
+         * @param invertY defines if texture must be stored with Y axis inverted
+         * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
+         * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+         */
+        constructor(data: ArrayBufferView, width: number, height: number, depth: number, 
+        /** Gets or sets the texture format to use */
+        format: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, textureType?: number);
+        /**
+         * Update the texture with new data
+         * @param data defines the data to store in the texture
+         */
+        update(data: ArrayBufferView): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store 2D array textures containing user data
+     */
+    export class RawTexture2DArray extends Texture {
+        /** Gets or sets the texture format to use */
+        format: number;
+        private _engine;
+        /**
+         * Create a new RawTexture2DArray
+         * @param data defines the data of the texture
+         * @param width defines the width of the texture
+         * @param height defines the height of the texture
+         * @param depth defines the number of layers of the texture
          * @param format defines the texture format to use
          * @param scene defines the hosting scene
          * @param generateMipMaps defines a boolean indicating if mip levels should be generated (true by default)
