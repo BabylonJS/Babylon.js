@@ -21,7 +21,7 @@ import { Color3, TmpColors } from '../../Maths/math.color';
 
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
 import { Effect, IEffectCreationOptions } from "../../Materials/effect";
-import { Material } from "../../Materials/material";
+import { Material, IMaterialCompilationOptions } from "../../Materials/material";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { MaterialHelper } from "../../Materials/materialHelper";
@@ -99,6 +99,8 @@ export class PBRMaterialDefines extends MaterialDefines
     public ROUGHNESSSTOREINMETALMAPGREEN = false;
     public METALLNESSSTOREINMETALMAPBLUE = false;
     public AOSTOREINMETALMAPRED = false;
+    public METALLICF0FACTORFROMMETALLICMAP = false;
+
     public ENVIRONMENTBRDF = false;
     public ENVIRONMENTBRDF_RGBD = false;
 
@@ -397,6 +399,21 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * Can also be used to scale the roughness values of the metallic texture.
      */
     protected _roughness: Nullable<number> = null;
+
+    /**
+     * Specifies the an F0 factor to help configuring the material F0.
+     * Instead of the default 4%, 8% * factor will be used. As the factor is defaulting
+     * to 0.5 the previously hard coded value stays the same.
+     * Can also be used to scale the F0 values of the metallic texture.
+     */
+    protected _metallicF0Factor = 0.5;
+
+    /**
+     * Specifies whether the F0 factor can be fetched from the mettalic texture.
+     * If set to true, please adapt the metallicF0Factor to ensure it fits with
+     * your expectation as it multiplies with the texture data.
+     */
+    protected _useMetallicF0FactorFromMetallicTexture = false;
 
     /**
      * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
@@ -1356,7 +1373,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                             defines.USEIRRADIANCEMAP = true;
                             defines.USESPHERICALFROMREFLECTIONMAP = false;
                         }
-                        else if (reflectionTexture.sphericalPolynomial) {
+                        // Assume using spherical polynomial if the reflection texture is a cube map
+                        else if (reflectionTexture.isCube) {
                             defines.USESPHERICALFROMREFLECTIONMAP = true;
                             defines.USEIRRADIANCEMAP = false;
                             if (this._forceIrradianceInFragment || scene.getEngine().getCaps().maxVaryingVectors <= 8) {
@@ -1417,6 +1435,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         defines.ROUGHNESSSTOREINMETALMAPGREEN = !this._useRoughnessFromMetallicTextureAlpha && this._useRoughnessFromMetallicTextureGreen;
                         defines.METALLNESSSTOREINMETALMAPBLUE = this._useMetallnessFromMetallicTextureBlue;
                         defines.AOSTOREINMETALMAPRED = this._useAmbientOcclusionFromMetallicTextureRed;
+                        defines.METALLICF0FACTORFROMMETALLICMAP = this._useMetallicF0FactorFromMetallicTexture;
                     }
                     else if (this._reflectivityTexture) {
                         MaterialHelper.PrepareDefinesForMergedUV(this._reflectivityTexture, defines, "REFLECTIVITY");
@@ -1536,14 +1555,15 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Force shader compilation
      */
-    public forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<{ clipPlane: boolean }>): void {
-        let localOptions = {
+    public forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<IMaterialCompilationOptions>): void {
+        const localOptions = {
             clipPlane: false,
+            useInstances: false,
             ...options
         };
 
         const defines = new PBRMaterialDefines();
-        const effect = this._prepareEffect(mesh, defines, undefined, undefined, undefined, localOptions.clipPlane)!;
+        const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane)!;
         if (effect.isReady()) {
             if (onCompiled) {
                 onCompiled(this);
@@ -1790,7 +1810,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 if (defines.METALLICWORKFLOW) {
                     TmpColors.Color3[0].r = (this._metallic === undefined || this._metallic === null) ? 1 : this._metallic;
                     TmpColors.Color3[0].g = (this._roughness === undefined || this._roughness === null) ? 1 : this._roughness;
-                    ubo.updateColor4("vReflectivityColor", TmpColors.Color3[0], 0);
+
+                    // We are here deriving our default reflectance from a common value for none metallic surface.
+                    // Default specular reflectance at normal incidence.
+                    // 4% corresponds to index of refraction (IOR) of 1.50, approximately equal to glass.
+                    // We then use 8% combined with a factor of 0.5 to allow some variations around the 0.04 default value.
+                    const metallicF0 = 0.08 * this._metallicF0Factor;
+                    ubo.updateColor4("vReflectivityColor", TmpColors.Color3[0], metallicF0);
                 }
                 else {
                     ubo.updateColor4("vReflectivityColor", this._reflectivityColor, this._microSurface);

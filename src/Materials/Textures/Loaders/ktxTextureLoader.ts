@@ -72,7 +72,7 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
 
         // Need to invert vScale as invertY via UNPACK_FLIP_Y_WEBGL is not supported by compressed texture
         texture._invertVScale = !texture.invertY;
-        var engine = texture.getEngine();
+        var engine = texture.getEngine() as Engine;
         var ktx = new KhronosTextureContainer(data, 6);
 
         var loadMipmap = ktx.numberOfMipmapLevels > 1 && texture.generateMipMaps;

@@ -7,4 +7,5 @@ export * from "./webXRControllerPointerSelection";
 export * from "./webXRControllerModelLoader";
 export * from "./webXRController";
 export * from "./webXRManagedOutputCanvas";
+export * from "./webXRTypes";
 export * from "./webXRSessionManager";

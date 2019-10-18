@@ -406,9 +406,9 @@ export class SceneLoader {
             return plugin;
         }
 
-        let useArrayBuffer = registeredPlugin.isBinary;
+        const useArrayBuffer = registeredPlugin.isBinary;
 
-        let dataCallback = (data: any, responseURL?: string) => {
+        const dataCallback = (data: any, responseURL?: string) => {
             if (scene.isDisposed) {
                 onError("Scene has been disposed");
                 return;
@@ -419,7 +419,7 @@ export class SceneLoader {
 
         let request: Nullable<IFileRequest> = null;
         let pluginDisposed = false;
-        let onDisposeObservable = (plugin as any).onDisposeObservable as Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        const onDisposeObservable = (plugin as any).onDisposeObservable as Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
         if (onDisposeObservable) {
             onDisposeObservable.add(() => {
                 pluginDisposed = true;
@@ -437,7 +437,7 @@ export class SceneLoader {
             onProgress(SceneLoaderProgressEvent.FromProgressEvent(event));
         } : undefined;
 
-        let manifestChecked = () => {
+        const manifestChecked = () => {
             if (pluginDisposed) {
                 return;
             }
@@ -458,7 +458,7 @@ export class SceneLoader {
         const file = fileInfo.file || FilesInputStore.FilesToLoad[fileInfo.name.toLowerCase()];
 
         if (fileInfo.rootUrl.indexOf("file:") === -1 || (fileInfo.rootUrl.indexOf("file:") !== -1 && !file)) {
-            let engine = scene.getEngine();
+            const engine = scene.getEngine();
             let canUseOfflineSupport = engine.enableOfflineSupport;
             if (canUseOfflineSupport) {
                 // Also check for exceptions
@@ -891,6 +891,11 @@ export class SceneLoader {
 
         var errorHandler = (message: Nullable<string>, exception?: any) => {
             let errorMessage = "Unable to load assets from " + fileInfo.url + (message ? ": " + message : "");
+
+            if (exception && exception.message) {
+                errorMessage += ` (${exception.message})`;
+            }
+
             if (onError) {
                 onError(scene, errorMessage, exception);
             } else {

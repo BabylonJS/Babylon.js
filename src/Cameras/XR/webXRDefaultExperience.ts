@@ -4,9 +4,10 @@ import { WebXRInput } from './webXRInput';
 import { WebXRControllerModelLoader } from './webXRControllerModelLoader';
 import { WebXRControllerPointerSelection } from './webXRControllerPointerSelection';
 import { WebXRControllerTeleportation } from './webXRControllerTeleportation';
-import { WebXRManagedOutputCanvas } from './webXRManagedOutputCanvas';
+import { WebXRRenderTarget } from './webXRTypes';
 import { WebXREnterExitUI } from './webXREnterExitUI';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
+
 /**
  * Options for the default xr helper
  */
@@ -15,6 +16,11 @@ export class WebXRDefaultExperienceOptions {
      * Floor meshes that should be used for teleporting
      */
     public floorMeshes: Array<AbstractMesh>;
+
+    /**
+     * Enable or disable default UI to enter XR
+     */
+    public disableDefaultUI: boolean;
 }
 
 /**
@@ -46,9 +52,9 @@ export class WebXRDefaultExperience {
      */
     public enterExitUI: WebXREnterExitUI;
     /**
-     * Default output canvas xr should render to
+     * Default target xr should render to
      */
-    public outputCanvas: WebXRManagedOutputCanvas;
+    public renderTarget: WebXRRenderTarget;
 
     /**
      * Creates the default xr experience
@@ -67,15 +73,23 @@ export class WebXRDefaultExperience {
             result.input = new WebXRInput(xrHelper);
             result.controllerModelLoader = new WebXRControllerModelLoader(result.input);
             result.pointerSelection = new WebXRControllerPointerSelection(result.input);
-            result.teleportation = new WebXRControllerTeleportation(result.input, options.floorMeshes);
 
-            // Create output canvas manager (this controls where the xr frames will be rendered)
-            result.outputCanvas = new WebXRManagedOutputCanvas(xrHelper, scene.getEngine().getRenderingCanvas() as HTMLCanvasElement);
+            if (options.floorMeshes) {
+                result.teleportation = new WebXRControllerTeleportation(result.input, options.floorMeshes);
+            }
 
-            // Create ui for entering/exiting xr
-            return WebXREnterExitUI.CreateAsync(scene, result.baseExperience, {webXRManagedOutputCanvas: result.outputCanvas});
-        }).then((ui) => {
-            result.enterExitUI = ui;
+            // Create the WebXR output target
+            result.renderTarget = result.baseExperience.sessionManager.getWebXRRenderTarget(xrHelper.onStateChangedObservable);
+
+            if (!options.disableDefaultUI) {
+                // Create ui for entering/exiting xr
+                return WebXREnterExitUI.CreateAsync(scene, result.baseExperience, { renderTarget: result.renderTarget }).then((ui) => {
+                    result.enterExitUI = ui;
+                });
+            } else {
+                return;
+            }
+        }).then(() => {
             return result;
         });
     }
@@ -97,8 +111,8 @@ export class WebXRDefaultExperience {
         if (this.enterExitUI) {
             this.enterExitUI.dispose();
         }
-        if (this.outputCanvas) {
-            this.outputCanvas.dispose();
+        if (this.renderTarget) {
+            this.renderTarget.dispose();
         }
     }
 }

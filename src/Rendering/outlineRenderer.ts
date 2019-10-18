@@ -1,7 +1,6 @@
 import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { _InstancesBatch, Mesh } from "../Meshes/mesh";
-import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
@@ -57,11 +56,11 @@ declare module "../Meshes/abstractMesh" {
     }
 }
 
-Object.defineProperty(AbstractMesh.prototype, "renderOutline", {
-    get: function(this: AbstractMesh) {
+Object.defineProperty(Mesh.prototype, "renderOutline", {
+    get: function(this: Mesh) {
         return this._renderOutline;
     },
-    set: function(this: AbstractMesh, value: boolean) {
+    set: function(this: Mesh, value: boolean) {
         if (value) {
             // Lazy Load the component.
             this.getScene().getOutlineRenderer();
@@ -72,11 +71,11 @@ Object.defineProperty(AbstractMesh.prototype, "renderOutline", {
     configurable: true
 });
 
-Object.defineProperty(AbstractMesh.prototype, "renderOverlay", {
-    get: function(this: AbstractMesh) {
+Object.defineProperty(Mesh.prototype, "renderOverlay", {
+    get: function(this: Mesh) {
         return this._renderOverlay;
     },
-    set: function(this: AbstractMesh, value: boolean) {
+    set: function(this: Mesh, value: boolean) {
         if (value) {
             // Lazy Load the component.
             this.getScene().getOutlineRenderer();
@@ -291,7 +290,7 @@ export class OutlineRenderer implements ISceneComponent {
         return this._effect.isReady();
     }
 
-    private _beforeRenderingMesh(mesh: AbstractMesh, subMesh: SubMesh, batch: _InstancesBatch): void {
+    private _beforeRenderingMesh(mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch): void {
         // Outline - step 1
         this._savedDepthWrite = this._engine.getDepthWrite();
         if (mesh.renderOutline) {
@@ -324,13 +323,16 @@ export class OutlineRenderer implements ISceneComponent {
         }
     }
 
-    private _afterRenderingMesh(mesh: AbstractMesh, subMesh: SubMesh, batch: _InstancesBatch): void {
+    private _afterRenderingMesh(mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch): void {
         // Overlay
         if (mesh.renderOverlay) {
             var currentMode = this._engine.getAlphaMode();
+            let alphaBlendState = this._engine.alphaState.alphaBlend;
             this._engine.setAlphaMode(Constants.ALPHA_COMBINE);
             this.render(subMesh, batch, true);
             this._engine.setAlphaMode(currentMode);
+            this._engine.setDepthWrite(this._savedDepthWrite);
+            this._engine.alphaState.alphaBlend = alphaBlendState;
         }
 
         // Outline - step 2

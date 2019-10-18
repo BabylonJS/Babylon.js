@@ -15,7 +15,7 @@ import { Scene, IDisposable } from "babylonjs/scene";
 import { WebRequest } from "babylonjs/Misc/webRequest";
 import { IFileRequest } from "babylonjs/Misc/fileRequest";
 import { Logger } from 'babylonjs/Misc/logger';
-import { DataReader, IDataBuffer } from './dataReader';
+import { DataReader, IDataBuffer } from 'babylonjs/Misc/dataReader';
 
 /**
  * glTF validator object
@@ -85,6 +85,12 @@ export interface IGLTFLoaderExtension {
      * Defines whether this extension is enabled.
      */
     enabled: boolean;
+
+    /**
+     * Defines the order of this extension.
+     * The loader sorts the extensions using these values when loading.
+     */
+    order?: number;
 }
 
 /**
@@ -206,6 +212,11 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      * Defaults to false.
      */
     public useRangeRequests = false;
+
+    /**
+     * Defines if the loader should create instances when multiple glTF nodes point to the same glTF mesh. Defaults to true.
+     */
+    public createInstances = true;
 
     /**
      * Function called before loading a url referenced by the asset.
@@ -428,9 +439,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      */
     public name = "gltf";
 
-    /**
-     * Supported file extensions of the loader (.gltf, .glb)
-     */
+    /** @hidden */
     public extensions: ISceneLoaderPluginExtensions = {
         ".gltf": { isBinary: false },
         ".glb": { isBinary: true }
@@ -463,16 +472,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         this.onExtensionLoadedObservable.clear();
     }
 
-    /**
-     * The callback called when loading from a url.
-     * @param scene scene loading this url
-     * @param url url to load
-     * @param onSuccess callback called when the file successfully loads
-     * @param onProgress callback called while file is loading (if the server supports this mode)
-     * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
-     * @param onError callback called when the file fails to load
-     * @returns a file request object
-     */
+    /** @hidden */
     public requestFile(scene: Scene, url: string, onSuccess: (data: any, request?: WebRequest) => void, onProgress?: (ev: ProgressEvent) => void, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest {
         if (useArrayBuffer) {
             if (this.useRangeRequests) {
@@ -480,7 +480,6 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                     Logger.Warn("glTF validation is not supported when range requests are enabled");
                 }
 
-                let firstWebRequest: WebRequest | undefined;
                 const fileRequests = new Array<IFileRequest>();
                 const aggregatedFileRequest: IFileRequest = {
                     abort: () => fileRequests.forEach((fileRequest) => fileRequest.abort()),
@@ -491,7 +490,6 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                     readAsync: (byteOffset: number, byteLength: number) => {
                         return new Promise<ArrayBufferView>((resolve, reject) => {
                             fileRequests.push(scene._requestFile(url, (data, webRequest) => {
-                                firstWebRequest = firstWebRequest || webRequest;
                                 dataBuffer.byteLength = Number(webRequest!.getResponseHeader("Content-Range")!.split("/")[1]);
                                 resolve(new Uint8Array(data as ArrayBuffer));
                             }, onProgress, true, true, (error) => {
@@ -506,7 +504,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
                 this._unpackBinaryAsync(new DataReader(dataBuffer)).then((loaderData) => {
                     aggregatedFileRequest.onCompleteObservable.notifyObservers(aggregatedFileRequest);
-                    onSuccess(loaderData, firstWebRequest);
+                    onSuccess(loaderData);
                 }, onError);
 
                 return aggregatedFileRequest;
@@ -529,16 +527,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         }, onProgress, true, false, onError);
     }
 
-    /**
-     * The callback called when loading from a file object.
-     * @param scene scene loading this file
-     * @param file defines the file to load
-     * @param onSuccess defines the callback to call when data is loaded
-     * @param onProgress defines the callback to call during loading process
-     * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
-     * @param onError defines the callback to call when an error occurs
-     * @returns a file request object
-     */
+    /** @hidden */
     public readFile(scene: Scene, file: File, onSuccess: (data: any) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest {
         return scene._readFile(file, (data) => {
             this._validateAsync(scene, data, "file:", file.name);
@@ -555,94 +544,69 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         }, onProgress, useArrayBuffer, onError);
     }
 
-    /**
-     * Imports one or more meshes from the loaded glTF data and adds them to the scene
-     * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
-     * @param scene the scene the meshes should be added to
-     * @param data the glTF data to load
-     * @param rootUrl root url to load from
-     * @param onProgress event that fires when loading progress has occured
-     * @param fileName Defines the name of the file to load
-     * @returns a promise containg the loaded meshes, particles, skeletons and animations
-     */
+    /** @hidden */
     public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
-        this.onParsedObservable.notifyObservers(data);
-        this.onParsedObservable.clear();
+        return Promise.resolve().then(() => {
+            this.onParsedObservable.notifyObservers(data);
+            this.onParsedObservable.clear();
 
-        this._log(`Loading ${fileName || ""}`);
-        this._loader = this._getLoader(data);
-        return this._loader.importMeshAsync(meshesNames, scene, data, rootUrl, onProgress, fileName);
+            this._log(`Loading ${fileName || ""}`);
+            this._loader = this._getLoader(data);
+            return this._loader.importMeshAsync(meshesNames, scene, data, rootUrl, onProgress, fileName);
+        });
     }
 
-    /**
-     * Imports all objects from the loaded glTF data and adds them to the scene
-     * @param scene the scene the objects should be added to
-     * @param data the glTF data to load
-     * @param rootUrl root url to load from
-     * @param onProgress event that fires when loading progress has occured
-     * @param fileName Defines the name of the file to load
-     * @returns a promise which completes when objects have been loaded to the scene
-     */
+    /** @hidden */
     public loadAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void> {
-        this.onParsedObservable.notifyObservers(data);
-        this.onParsedObservable.clear();
+        return Promise.resolve().then(() => {
+            this.onParsedObservable.notifyObservers(data);
+            this.onParsedObservable.clear();
 
-        this._log(`Loading ${fileName || ""}`);
-        this._loader = this._getLoader(data);
-        return this._loader.loadAsync(scene, data, rootUrl, onProgress, fileName);
+            this._log(`Loading ${fileName || ""}`);
+            this._loader = this._getLoader(data);
+            return this._loader.loadAsync(scene, data, rootUrl, onProgress, fileName);
+        });
     }
 
-    /**
-     * Load into an asset container.
-     * @param scene The scene to load into
-     * @param data The data to import
-     * @param rootUrl The root url for scene and resources
-     * @param onProgress The callback when the load progresses
-     * @param fileName Defines the name of the file to load
-     * @returns The loaded asset container
-     */
+    /** @hidden */
     public loadAssetContainerAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer> {
-        this._log(`Loading ${fileName || ""}`);
-        this._loader = this._getLoader(data);
+        return Promise.resolve().then(() => {
+            this.onParsedObservable.notifyObservers(data);
+            this.onParsedObservable.clear();
 
-        // Get materials/textures when loading to add to container
-        const materials: Array<Material> = [];
-        this.onMaterialLoadedObservable.add((material) => {
-            materials.push(material);
-        });
-        const textures: Array<BaseTexture> = [];
-        this.onTextureLoadedObservable.add((texture) => {
-            textures.push(texture);
-        });
+            this._log(`Loading ${fileName || ""}`);
+            this._loader = this._getLoader(data);
 
-        return this._loader.importMeshAsync(null, scene, data, rootUrl, onProgress, fileName).then((result) => {
-            const container = new AssetContainer(scene);
-            Array.prototype.push.apply(container.meshes, result.meshes);
-            Array.prototype.push.apply(container.particleSystems, result.particleSystems);
-            Array.prototype.push.apply(container.skeletons, result.skeletons);
-            Array.prototype.push.apply(container.animationGroups, result.animationGroups);
-            Array.prototype.push.apply(container.materials, materials);
-            Array.prototype.push.apply(container.textures, textures);
-            container.removeAllFromScene();
-            return container;
+            // Get materials/textures when loading to add to container
+            const materials: Array<Material> = [];
+            this.onMaterialLoadedObservable.add((material) => {
+                materials.push(material);
+            });
+            const textures: Array<BaseTexture> = [];
+            this.onTextureLoadedObservable.add((texture) => {
+                textures.push(texture);
+            });
+
+            return this._loader.importMeshAsync(null, scene, data, rootUrl, onProgress, fileName).then((result) => {
+                const container = new AssetContainer(scene);
+                Array.prototype.push.apply(container.meshes, result.meshes);
+                Array.prototype.push.apply(container.particleSystems, result.particleSystems);
+                Array.prototype.push.apply(container.skeletons, result.skeletons);
+                Array.prototype.push.apply(container.animationGroups, result.animationGroups);
+                Array.prototype.push.apply(container.materials, materials);
+                Array.prototype.push.apply(container.textures, textures);
+                container.removeAllFromScene();
+                return container;
+            });
         });
     }
 
-    /**
-     * The callback that returns true if the data can be directly loaded.
-     * @param data string containing the file data
-     * @returns if the data can be loaded directly
-     */
+    /** @hidden */
     public canDirectLoad(data: string): boolean {
         return data.indexOf("asset") !== -1 && data.indexOf("version") !== -1;
     }
 
-    /**
-     * The callback that returns the data to pass to the plugin if the data can be directly loaded.
-     * @param scene scene loading this data
-     * @param data string containing the data
-     * @returns data to pass to the plugin
-     */
+    /** @hidden */
     public directLoad(scene: Scene, data: string): any {
         this._validateAsync(scene, data);
         return { json: this._parseJson(data) };
@@ -656,10 +620,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      */
     public rewriteRootURL?(rootUrl: string, responseURL?: string): string;
 
-    /**
-     * Instantiates a glTF file loader plugin.
-     * @returns the created plugin
-     */
+    /** @hidden */
     public createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync {
         return new GLTFFileLoader();
     }
