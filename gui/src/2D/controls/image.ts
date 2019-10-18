@@ -10,7 +10,7 @@ import { _TypeStore } from 'babylonjs/Misc/typeStore';
  * Class used to create 2D images
  */
 export class Image extends Control {
-    private static _WorkingCanvas: Nullable<HTMLCanvasElement> = null;
+    private _workingCanvas: Nullable<HTMLCanvasElement> = null;
 
     private _domImage: HTMLImageElement;
     private _imageWidth: number;
@@ -299,10 +299,10 @@ export class Image extends Control {
     }
 
     private _extractNinePatchSliceDataFromImage() {
-        if (!Image._WorkingCanvas) {
-            Image._WorkingCanvas = document.createElement('canvas');
+        if (!this._workingCanvas) {
+            this._workingCanvas = document.createElement('canvas');
         }
-        const canvas = Image._WorkingCanvas;
+        const canvas = this._workingCanvas;
         const context = canvas.getContext('2d')!;
         const width = this._domImage.width;
         const height = this._domImage.height;
@@ -360,7 +360,7 @@ export class Image extends Control {
         this._source = value;
 
         if (value) {
-            this._svgCheck(value);
+            value = this._svgCheck(value);
         }
 
         this._domImage = document.createElement("img");
@@ -377,7 +377,7 @@ export class Image extends Control {
     /**
      * Checks for svg document with icon id present
      */
-    private _svgCheck(value: string) {
+    private _svgCheck(value: string): string {
         if ((value.search(/.svg#/gi) !== -1) && (value.indexOf("#") === value.lastIndexOf("#"))) {
             var svgsrc = value.split('#')[0];
             var elemid = value.split('#')[1];
@@ -404,6 +404,9 @@ export class Image extends Control {
                     }
                 };
             }
+            return svgsrc;
+        } else {
+            return value;
         }
     }
 
@@ -515,11 +518,11 @@ export class Image extends Control {
             return false;
         }
 
-        if (!this._detectPointerOnOpaqueOnly || !Image._WorkingCanvas) {
+        if (!this._detectPointerOnOpaqueOnly || !this._workingCanvas) {
             return true;
         }
 
-        const canvas = Image._WorkingCanvas;
+        const canvas = this._workingCanvas;
         const context = canvas.getContext("2d")!;
         const width = this._currentMeasure.width | 0;
         const height = this._currentMeasure.height | 0;
@@ -578,10 +581,10 @@ export class Image extends Control {
             return;
         }
 
-        if (!Image._WorkingCanvas) {
-            Image._WorkingCanvas = document.createElement('canvas');
+        if (!this._workingCanvas) {
+            this._workingCanvas = document.createElement('canvas');
         }
-        const canvas = Image._WorkingCanvas;
+        const canvas = this._workingCanvas;
         const width = this._currentMeasure.width;
         const height = this._currentMeasure.height;
         const context = canvas.getContext("2d")!;
@@ -601,7 +604,7 @@ export class Image extends Control {
             return;
         }
 
-        const canvas = Image._WorkingCanvas!;
+        const canvas = this._workingCanvas!;
         context = canvas.getContext("2d")!;
 
         context.drawImage(this._domImage,

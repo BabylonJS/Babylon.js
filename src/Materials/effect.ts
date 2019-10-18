@@ -504,8 +504,10 @@ export class Effect implements IDisposable {
         };
         this.onCompiled = () => {
             var scenes = this.getEngine().scenes;
-            for (var i = 0; i < scenes.length; i++) {
-                scenes[i].markAllMaterialsAsDirty(Constants.MATERIAL_AllDirtyFlag);
+            if (scenes) {
+                for (var i = 0; i < scenes.length; i++) {
+                    scenes[i].markAllMaterialsAsDirty(Constants.MATERIAL_AllDirtyFlag);
+                }
             }
 
             this._pipelineContext!._handlesSpectorRebuildCallback(onCompiled);
