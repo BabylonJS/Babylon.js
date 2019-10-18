@@ -17,6 +17,7 @@ interface IKHR_materials_sheen {
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1688)
+ * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#1)
  * !!! Experimental Extension Subject to Changes !!!
  */
 export class KHR_materials_sheen implements IGLTFLoaderExtension {
