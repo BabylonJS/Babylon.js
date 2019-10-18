@@ -11243,7 +11243,7 @@ declare module BABYLON {
     /**
      * Strong typing of a pointer move action.
      */
-    export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, canvas: HTMLCanvasElement) => Nullable<PickingInfo>;
+    export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, element: HTMLElement) => Nullable<PickingInfo>;
     /**
      * Strong typing of a pointer up/down action.
      */
@@ -31374,6 +31374,11 @@ declare module BABYLON {
         private _onFullscreenChange;
         private _onPointerLockChange;
         /**
+         * Gets the HTML element used to attach event listeners
+         * @returns a HTML element
+         */
+        getInputElement(): Nullable<HTMLElement>;
+        /**
          * Creates a new engine
          * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which alreay used the WebGL context
          * @param antialias defines enable antialiasing (default: false)
@@ -31403,6 +31408,11 @@ declare module BABYLON {
          * @returns a client rectanglee
          */
         getRenderingCanvasClientRect(): Nullable<ClientRect>;
+        /**
+         * Gets the client rect of the HTML element used for events
+         * @returns a client rectanglee
+         */
+        getInputElementClientRect(): Nullable<ClientRect>;
         /**
          * Gets a boolean indicating that the engine is running in deterministic lock step mode
          * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
@@ -31731,7 +31741,7 @@ declare module BABYLON {
         _renderFrame(): void;
         _renderLoop(): void;
         /** @hidden */
-        _renderViews(): void;
+        _renderViews(): boolean;
         /**
          * Toggle full screen mode
          * @param requestPointerLock defines if a pointer lock should be requested from the user
@@ -41234,7 +41244,7 @@ declare module BABYLON {
         private _webVRpresenting;
         private _hasEnteredVR;
         private _fullscreenVRpresenting;
-        private _canvas;
+        private _inputElement;
         private _webVRCamera;
         private _vrDeviceOrientationCamera;
         private _deviceOrientationCamera;
@@ -44552,6 +44562,10 @@ declare module BABYLON {
         camera?: Camera;
     }
         interface Engine {
+            /**
+             * Gets or sets the  HTML element to use for attaching events
+             */
+            inputElement: Nullable<HTMLElement>;
             /**
              * Gets the current engine view
              * @see https://doc.babylonjs.com/how_to/multi_canvases

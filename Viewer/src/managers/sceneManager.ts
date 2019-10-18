@@ -666,7 +666,7 @@ export class SceneManager {
             this._engine.renderEvenInBackground = !!sceneConfig.renderInBackground;
         }
 
-        let canvas = this._engine.getRenderingCanvas();
+        let canvas = this._engine.getInputElement();
 
         if (canvas) {
             if (this.camera && sceneConfig.disableCameraControl) {
@@ -921,11 +921,9 @@ export class SceneManager {
                 camera.minZ = radius * 0.01;
                 camera.maxZ = radius * 1000;
                 camera.speed = radius * 0.2;
-                this.scene.activeCamera = camera;
-
-                let canvas = this.scene.getEngine().getRenderingCanvas();
+               this.scene.activeCamera = camera;
             }
-            let canvas = this.scene.getEngine().getRenderingCanvas();
+            let canvas = this.scene.getEngine().getInputElement();
             if (canvas) {
                 this.scene.activeCamera.attachControl(canvas);
             }
