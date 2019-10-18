@@ -73154,6 +73154,8 @@ var GraphEditor = /** @class */ (function (_super) {
         _this._copiedNodes = [];
         _this._mouseLocationX = 0;
         _this._mouseLocationY = 0;
+        _this._altKeyIsPressed = false;
+        _this._oldY = -1;
         /** @hidden */
         _this._toAdd = [];
         // setup the diagram engine
@@ -73194,6 +73196,7 @@ var GraphEditor = /** @class */ (function (_super) {
             return _this._nodes.filter(function (n) { return n.block === block; })[0];
         };
         _this.props.globalState.hostDocument.addEventListener("keydown", function (evt) {
+            _this._altKeyIsPressed = evt.altKey;
             if (!evt.ctrlKey) {
                 return;
             }
@@ -73308,6 +73311,8 @@ var GraphEditor = /** @class */ (function (_super) {
         return localNode;
     };
     GraphEditor.prototype.onWidgetKeyUp = function (evt) {
+        this._altKeyIsPressed = false;
+        this._oldY = -1;
         var widget = this.refs["test"];
         if (!widget || this.props.globalState.blockKeyboardEvents) {
             return;
@@ -73315,11 +73320,33 @@ var GraphEditor = /** @class */ (function (_super) {
         widget.onKeyUp(evt);
     };
     GraphEditor.prototype.componentDidMount = function () {
+        var _this = this;
         if (this.props.globalState.hostDocument) {
             var widget = this.refs["test"];
             widget.setState({ document: this.props.globalState.hostDocument });
             this._onWidgetKeyUpPointer = this.onWidgetKeyUp.bind(this);
             this.props.globalState.hostDocument.addEventListener("keyup", this._onWidgetKeyUpPointer, false);
+            var previousMouseMove_1 = widget.onMouseMove;
+            widget.onMouseMove = function (evt) {
+                if (_this._altKeyIsPressed && evt.buttons === 1) {
+                    if (_this._oldY < 0) {
+                        _this._oldY = evt.pageY;
+                    }
+                    var zoomDelta = (evt.pageY - _this._oldY) / 10;
+                    if (Math.abs(zoomDelta) > 5) {
+                        _this._engine.diagramModel.setZoomLevel(_this._engine.diagramModel.getZoomLevel() + zoomDelta);
+                        _this._engine.repaintCanvas();
+                        _this._oldY = evt.pageY;
+                    }
+                    return;
+                }
+                previousMouseMove_1(evt);
+            };
+            var previousMouseUp_1 = widget.onMouseUp;
+            widget.onMouseUp = function (evt) {
+                _this._oldY = -1;
+                previousMouseUp_1(evt);
+            };
             this._previewManager = new _components_preview_previewManager__WEBPACK_IMPORTED_MODULE_24__["PreviewManager"](this.props.globalState.hostDocument.getElementById("preview-canvas"), this.props.globalState);
         }
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
