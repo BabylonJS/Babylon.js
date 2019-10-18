@@ -76,7 +76,8 @@ export class ShaderMaterial extends Material {
     private _vectors2: { [name: string]: Vector2 } = {};
     private _vectors3: { [name: string]: Vector3 } = {};
     private _vectors4: { [name: string]: Vector4 } = {};
-    private _matrices: { [name: string]: Matrix } = {};
+    private _matrices: { [name: string]: Matrix } = {};    
+    private _matrixArrays: { [name: string]: Float32Array } = {};
     private _matrices3x3: { [name: string]: Float32Array } = {};
     private _matrices2x2: { [name: string]: Float32Array } = {};
     private _vectors2Arrays: { [name: string]: number[] } = {};
@@ -334,6 +335,28 @@ export class ShaderMaterial extends Material {
 
         return this;
     }
+
+    /**
+     * Set a float32Array in the shader from a matrix array.
+     * @param name Define the name of the uniform as defined in the shader
+     * @param value Define the value to give to the uniform
+     * @return the material itself allowing "fluent" like uniform updates
+     */
+    public setMatrices(name: string, value: Matrix[]): ShaderMaterial {
+        this._checkUniform(name);
+
+        let float32Array = new Float32Array(value.length * 16);
+
+        for (var index = 0; index < value.length; index++) {
+            let matrix = value[index];
+
+            matrix.copyToArray(float32Array, index * 16);
+        }
+
+        this._matrixArrays[name] = float32Array;
+
+        return this;
+    }    
 
     /**
      * Set a mat3 in the shader from a Float32Array.
@@ -658,6 +681,11 @@ export class ShaderMaterial extends Material {
                 this._effect.setMatrix(name, this._matrices[name]);
             }
 
+            // MatrixArray
+            for (name in this._matrixArrays) {
+                this._effect.setMatrices(name, this._matrixArrays[name]);
+            }            
+
             // Matrix 3x3
             for (name in this._matrices3x3) {
                 this._effect.setMatrix3x3(name, this._matrices3x3[name]);
@@ -924,6 +952,12 @@ export class ShaderMaterial extends Material {
             serializationObject.matrices[name] = this._matrices[name].asArray();
         }
 
+        // MatrixArray
+        serializationObject.matrixArray = {};
+        for (name in this._matrixArrays) {
+            serializationObject.matrixArray[name] = this._matrixArrays[name];
+        }        
+
         // Matrix 3x3
         serializationObject.matrices3x3 = {};
         for (name in this._matrices3x3) {
@@ -1050,6 +1084,11 @@ export class ShaderMaterial extends Material {
         for (name in source.matrices) {
             material.setMatrix(name, Matrix.FromArray(source.matrices[name]));
         }
+
+        // MatrixArray
+        for (name in source.matrixArray) {
+            material._matrixArrays[name] = new Float32Array(source.matrixArray[name]);
+        }        
 
         // Matrix 3x3
         for (name in source.matrices3x3) {
