@@ -92,6 +92,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     private _mouseLocationY = 0;
     private _onWidgetKeyUpPointer: any;
 
+    private _altKeyIsPressed = false;
+    private _oldY = -1;
+
     /** @hidden */
     public _toAdd: LinkModel[] | null = [];
 
@@ -159,6 +162,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     }
 
     onWidgetKeyUp(evt: any) {        
+        this._altKeyIsPressed = false;
+        this._oldY = -1;
+
         var widget = (this.refs["test"] as DiagramWidget);
 
         if (!widget || this.props.globalState.blockKeyboardEvents) {
@@ -174,6 +180,30 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             widget.setState({ document: this.props.globalState.hostDocument })
             this._onWidgetKeyUpPointer = this.onWidgetKeyUp.bind(this)
             this.props.globalState.hostDocument!.addEventListener("keyup", this._onWidgetKeyUpPointer, false);
+
+            let previousMouseMove = widget.onMouseMove;
+            widget.onMouseMove = (evt: any) => {
+                if (this._altKeyIsPressed && evt.buttons === 1) {
+                    if (this._oldY < 0) {
+                        this._oldY = evt.pageY;
+                    }
+
+                    let zoomDelta = (evt.pageY - this._oldY) / 10;
+                    if (Math.abs(zoomDelta) > 5) {
+                        this._engine.diagramModel.setZoomLevel(this._engine.diagramModel.getZoomLevel() + zoomDelta);
+                        this._engine.repaintCanvas();
+                        this._oldY = evt.pageY;      
+                    }
+                    return;
+                }
+                previousMouseMove(evt);
+            }
+
+            let previousMouseUp = widget.onMouseUp;
+            widget.onMouseUp = (evt: any) => {
+                this._oldY = -1;
+                previousMouseUp(evt);
+            }
 
             this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
         }
@@ -241,6 +271,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
 
         this.props.globalState.hostDocument!.addEventListener("keydown", evt => {
+            this._altKeyIsPressed = evt.altKey;
+
             if (!evt.ctrlKey) {
                 return;
             }
