@@ -1400,6 +1400,8 @@ declare module NODEEDITOR {
         private _mouseLocationX;
         private _mouseLocationY;
         private _onWidgetKeyUpPointer;
+        private _altKeyIsPressed;
+        private _oldY;
         /** @hidden */
         _toAdd: LinkModel[] | null;
         /**
