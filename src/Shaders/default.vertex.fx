@@ -16,6 +16,18 @@ attribute vec2 uv;
 #ifdef UV2
 attribute vec2 uv2;
 #endif
+#ifdef UV3
+attribute vec2 uv3;
+#endif
+#ifdef UV4
+attribute vec2 uv4;
+#endif
+#ifdef UV5
+attribute vec2 uv5;
+#endif
+#ifdef UV6
+attribute vec2 uv6;
+#endif
 #ifdef VERTEXCOLOR
 attribute vec4 color;
 #endif
@@ -33,6 +45,22 @@ attribute vec4 color;
 
 #ifdef MAINUV2
 	varying vec2 vMainUV2;
+#endif
+
+#ifdef UV3
+	varying vec2 vUV3;
+#endif
+
+#ifdef UV4
+	varying vec2 vUV4;
+#endif
+
+#ifdef UV5
+	varying vec2 vUV5;
+#endif
+
+#ifdef UV6
+	varying vec2 vUV6;
 #endif
 
 #if defined(DIFFUSE) && DIFFUSEDIRECTUV == 0
@@ -168,6 +196,22 @@ void main(void) {
 
 #ifdef MAINUV2
 	vMainUV2 = uv2;
+#endif
+
+#ifdef UV3
+	vUV3 = uv3;
+#endif
+
+#ifdef UV4
+	vUV4 = uv4;
+#endif
+
+#ifdef UV5
+	vUV5 = uv5;
+#endif
+
+#ifdef UV6
+	vUV6 = uv6;
 #endif
 
 #if defined(DIFFUSE) && DIFFUSEDIRECTUV == 0

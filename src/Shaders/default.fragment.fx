@@ -35,6 +35,22 @@ varying vec4 vColor;
 	varying vec2 vMainUV2;
 #endif
 
+#ifdef UV3
+	varying vec2 vUV3;
+#endif
+
+#ifdef UV4
+	varying vec2 vUV4;
+#endif
+
+#ifdef UV5
+	varying vec2 vUV5;
+#endif
+
+#ifdef UV6
+	varying vec2 vUV6;
+#endif
+
 // Helper functions
 #include<helperFunctions>
 
