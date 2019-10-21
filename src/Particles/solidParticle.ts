@@ -168,7 +168,12 @@ export class SolidParticle {
         }
         target.scaling.copyFrom(this.scaling);
         if (this.color) {
-            target.color!.copyFrom(this.color!);
+            if (target.color) {
+                target.color!.copyFrom(this.color!);
+            }
+            else {
+                target.color = this.color.clone();
+            }
         }
         target.uvs.copyFrom(this.uvs);
         target.velocity.copyFrom(this.velocity);

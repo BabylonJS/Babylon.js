@@ -105,6 +105,7 @@ export class SolidParticleSystem implements IDisposable {
     private _expandable: boolean = false;
     private _shapeCounter: number = 0;
     private _copy: SolidParticle = new SolidParticle(0, 0, 0, 0, null, 0, 0, this);
+    private _mustResetCopy: boolean = true;
     private _color: Color4 = new Color4(0, 0, 0, 0);
     private _computeParticleColor: boolean = true;
     private _computeParticleTexture: boolean = true;
@@ -418,19 +419,22 @@ export class SolidParticleSystem implements IDisposable {
         var c = 0;
         var n = 0;
 
-        this._resetCopy();
+        if (this._mustResetCopy) {
+            this._resetCopy();
+        }
         const copy = this._copy;
         const storeApart = (options && options.storage) ? true : false;
-        // in case the particle geometry must NOT be inserted in the SPS mesh geometry
-        if (storeApart) {
-            return copy;
-        }
         copy.idx = idx;
         copy.idxInShape = idxInShape;
 
         if (options && options.positionFunction) {        // call to custom positionFunction
             options.positionFunction(copy, idx, idxInShape);
             this._mustUnrotateFixedNormals = true;
+        }
+
+        // in case the particle geometry must NOT be inserted in the SPS mesh geometry
+        if (storeApart) {
+            return copy;
         }
 
         const rotMatrix = TmpVectors.Matrix[0];
@@ -739,6 +743,7 @@ export class SolidParticleSystem implements IDisposable {
         if (!this._expandable) {
             return this;
         }
+        this._mustResetCopy = false;
         var idxInShape = 0;
         var  currentShapeId = solidParticleArray[0].shapeId;
         const nb = solidParticleArray.length;
@@ -751,14 +756,15 @@ export class SolidParticleSystem implements IDisposable {
             var meshCol = model._shapeColors;
             var meshNor = model._normals;
             var bbInfo = sp._boundingInfo;
-            var particle = this._insertNewParticle(this.nbParticles, idxInShape, sp._model, shape, meshInd, meshUV, meshCol, meshNor, bbInfo, null, null);
-            sp.copyToRef(particle!);
+            sp.copyToRef(this._copy);
+            this._insertNewParticle(this.nbParticles, idxInShape, sp._model, shape, meshInd, meshUV, meshCol, meshNor, bbInfo, null, null);
             idxInShape++;
             if (currentShapeId != sp.shapeId) {
                 currentShapeId = sp.shapeId;
                 idxInShape = 0;
             }
         }
+        this._mustResetCopy = true;
         this._isNotBuilt = true;        // buildMesh() call is now expected for setParticles() to work
         return this;
     }
