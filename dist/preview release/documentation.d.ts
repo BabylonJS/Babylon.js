@@ -19129,6 +19129,7 @@ declare module BABYLON {
         private _vectors3;
         private _vectors4;
         private _matrices;
+        private _matrixArrays;
         private _matrices3x3;
         private _matrices2x2;
         private _vectors2Arrays;
@@ -19265,6 +19266,13 @@ declare module BABYLON {
          * @return the material itself allowing "fluent" like uniform updates
          */
         setMatrix(name: string, value: Matrix): ShaderMaterial;
+        /**
+         * Set a float32Array in the shader from a matrix array.
+         * @param name Define the name of the uniform as defined in the shader
+         * @param value Define the value to give to the uniform
+         * @return the material itself allowing "fluent" like uniform updates
+         */
+        setMatrices(name: string, value: Matrix[]): ShaderMaterial;
         /**
          * Set a mat3 in the shader from a Float32Array.
          * @param name Define the name of the uniform as defined in the shader
@@ -25440,6 +25448,7 @@ declare module BABYLON {
         private _expandable;
         private _shapeCounter;
         private _copy;
+        private _mustResetCopy;
         private _color;
         private _computeParticleColor;
         private _computeParticleTexture;
@@ -59033,21 +59042,21 @@ declare module BABYLON {
          * @param mesh is any Mesh object that will be used as a surface model for the points
          * @param nb (positive integer) the number of particles to be created from this model
          * @param colorWith determines whether a point is colored using color (default), uv, random, stated or none (invisible)
-         * @param color (color3) to be used when colorWith is stated
+         * @param color (color4) to be used when colorWith is stated or color (number) when used to specify texture position
          * @param range (number from 0 to 1) to determine the variation in shape and tone for a stated color
          * @returns the number of groups in the system
          */
-        addSurfacePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4, range?: number): number;
+        addSurfacePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4 | number, range?: number): number;
         /**
          * Adds points to the PCS inside the model shape
          * @param mesh is any Mesh object that will be used as a surface model for the points
          * @param nb (positive integer) the number of particles to be created from this model
-         * @param colorWith determines whether a point is colored using color (default), uv, random, stated or none (invisible),
-         * @param color (color4) to be used when colorWith is stated
+         * @param colorWith determines whether a point is colored using color (default), uv, random, stated or none (invisible)
+         * @param color (color4) to be used when colorWith is stated or color (number) when used to specify texture position
          * @param range (number from 0 to 1) to determine the variation in shape and tone for a stated color
          * @returns the number of groups in the system
          */
-        addVolumePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4, range?: number): number;
+        addVolumePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4 | number, range?: number): number;
         /**
          *  Sets all the particles : this method actually really updates the mesh according to the particle positions, rotations, colors, textures, etc.
          *  This method calls `updateParticle()` for each particle of the SPS.
@@ -59319,6 +59328,11 @@ declare module BABYLON {
          * @hidden
          */
         _groupDensity: number[];
+        /**
+         * Only when points are colored by texture carries pointer to texture list array
+         * @hidden
+         */
+        _textureNb: number;
         /**
          * Creates a points group object. This is an internal reference to produce particles for the PCS.
          * PCS internal tool, don't use it manually.
