@@ -1026,7 +1026,7 @@ namespace Napi {
                        size_t argc,
                        const napi_value* args,
                        napi_async_context context = nullptr) const;
-#endif
+#endif // NODE_ADDON_API_DISABLE_NODE_SPECIFIC
 
     Object New(const std::initializer_list<napi_value>& args) const;
     Object New(const std::vector<napi_value>& args) const;
@@ -1088,7 +1088,7 @@ namespace Napi {
     Buffer(napi_env env, napi_value value, size_t length, T* data);
     void EnsureInfo() const;
   };
-#endif
+#endif // NODE_ADDON_API_DISABLE_NODE_SPECIFIC
 
   /// Holds a counted reference to a value; initially a weak reference unless otherwise specified,
   /// may be changed to/from a strong reference by adjusting the refcount.
@@ -1211,7 +1211,7 @@ namespace Napi {
                              size_t argc,
                              const napi_value* args,
                              napi_async_context context = nullptr) const;
-#endif
+#endif // NODE_ADDON_API_DISABLE_NODE_SPECIFIC
 
     Object New(const std::initializer_list<napi_value>& args) const;
     Object New(const std::vector<napi_value>& args) const;
@@ -1871,7 +1871,7 @@ namespace Napi {
     std::string _error;
     bool _suppress_destruct;
   };
-#endif
+#endif // NODE_ADDON_API_DISABLE_NODE_SPECIFIC
 
   #if (NAPI_VERSION > 3)
   class ThreadSafeFunction {
@@ -2093,7 +2093,7 @@ namespace Napi {
       static uint32_t GetNapiVersion(Env env);
       static const napi_node_version* GetNodeVersion(Env env);
   };
-#endif
+#endif // NODE_ADDON_API_DISABLE_NODE_SPECIFIC
 
 } // namespace Napi
 

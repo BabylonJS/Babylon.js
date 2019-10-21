@@ -473,7 +473,7 @@ inline bool Value::IsBuffer() const {
   NAPI_THROW_IF_FAILED(_env, status, false);
   return result;
 }
-#endif
+#endif // NODE_ADDON_API_DISABLE_NODE_SPECIFIC
 
 inline bool Value::IsExternal() const {
   return Type() == napi_external;
@@ -1814,7 +1814,7 @@ inline Value Function::MakeCallback(
   NAPI_THROW_IF_FAILED(_env, status, Value());
   return Value(_env, result);
 }
-#endif
+#endif // NODE_ADDON_API_DISABLE_NODE_SPECIFIC
 
 inline Object Function::New(const std::initializer_list<napi_value>& args) const {
   return New(args.size(), args.begin());
@@ -1985,7 +1985,7 @@ inline void Buffer<T>::EnsureInfo() const {
     _data = static_cast<T*>(voidData);
   }
 }
-#endif
+#endif // NODE_ADDON_API_DISABLE_NODE_SPECIFIC
 
 ////////////////////////////////////////////////////////////////////////////////
 // Error class
@@ -2611,7 +2611,7 @@ inline Napi::Value FunctionReference::MakeCallback(
   }
   return scope.Escape(result);
 }
-#endif
+#endif // NODE_ADDON_API_DISABLE_NODE_SPECIFIC
 
 inline Object FunctionReference::New(const std::initializer_list<napi_value>& args) const {
   EscapableHandleScope scope(_env);
@@ -4147,7 +4147,7 @@ inline const napi_node_version* VersionManagement::GetNodeVersion(Env env) {
   NAPI_THROW_IF_FAILED(env, status, 0);
   return result;
 }
-#endif
+#endif // NODE_ADDON_API_DISABLE_NODE_SPECIFIC
 
 } // namespace Napi
 
