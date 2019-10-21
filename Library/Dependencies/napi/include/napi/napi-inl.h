@@ -1863,124 +1863,124 @@ inline void Promise::Deferred::Reject(napi_value value) const {
 inline Promise::Promise(napi_env env, napi_value value) : Object(env, value) {
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Buffer<T> class
-////////////////////////////////////////////////////////////////////////////////
-
-template <typename T>
-inline Buffer<T> Buffer<T>::New(napi_env env, size_t length) {
-  napi_value value;
-  void* data;
-  napi_status status = napi_create_buffer(env, length * sizeof (T), &data, &value);
-  NAPI_THROW_IF_FAILED(env, status, Buffer<T>());
-  return Buffer(env, value, length, static_cast<T*>(data));
-}
-
-template <typename T>
-inline Buffer<T> Buffer<T>::New(napi_env env, T* data, size_t length) {
-  napi_value value;
-  napi_status status = napi_create_external_buffer(
-    env, length * sizeof (T), data, nullptr, nullptr, &value);
-  NAPI_THROW_IF_FAILED(env, status, Buffer<T>());
-  return Buffer(env, value, length, data);
-}
-
-template <typename T>
-template <typename Finalizer>
-inline Buffer<T> Buffer<T>::New(napi_env env,
-                                T* data,
-                                size_t length,
-                                Finalizer finalizeCallback) {
-  napi_value value;
-  details::FinalizeData<T, Finalizer>* finalizeData =
-    new details::FinalizeData<T, Finalizer>({ finalizeCallback, nullptr });
-  napi_status status = napi_create_external_buffer(
-    env,
-    length * sizeof (T),
-    data,
-    details::FinalizeData<T, Finalizer>::Wrapper,
-    finalizeData,
-    &value);
-  if (status != napi_ok) {
-    delete finalizeData;
-    NAPI_THROW_IF_FAILED(env, status, Buffer());
-  }
-  return Buffer(env, value, length, data);
-}
-
-template <typename T>
-template <typename Finalizer, typename Hint>
-inline Buffer<T> Buffer<T>::New(napi_env env,
-                                T* data,
-                                size_t length,
-                                Finalizer finalizeCallback,
-                                Hint* finalizeHint) {
-  napi_value value;
-  details::FinalizeData<T, Finalizer, Hint>* finalizeData =
-    new details::FinalizeData<T, Finalizer, Hint>({ finalizeCallback, finalizeHint });
-  napi_status status = napi_create_external_buffer(
-    env,
-    length * sizeof (T),
-    data,
-    details::FinalizeData<T, Finalizer, Hint>::WrapperWithHint,
-    finalizeData,
-    &value);
-  if (status != napi_ok) {
-    delete finalizeData;
-    NAPI_THROW_IF_FAILED(env, status, Buffer());
-  }
-  return Buffer(env, value, length, data);
-}
-
-template <typename T>
-inline Buffer<T> Buffer<T>::Copy(napi_env env, const T* data, size_t length) {
-  napi_value value;
-  napi_status status = napi_create_buffer_copy(
-    env, length * sizeof (T), data, nullptr, &value);
-  NAPI_THROW_IF_FAILED(env, status, Buffer<T>());
-  return Buffer<T>(env, value);
-}
-
-template <typename T>
-inline Buffer<T>::Buffer() : Uint8Array(), _length(0), _data(nullptr) {
-}
-
-template <typename T>
-inline Buffer<T>::Buffer(napi_env env, napi_value value)
-  : Uint8Array(env, value), _length(0), _data(nullptr) {
-}
-
-template <typename T>
-inline Buffer<T>::Buffer(napi_env env, napi_value value, size_t length, T* data)
-  : Uint8Array(env, value), _length(length), _data(data) {
-}
-
-template <typename T>
-inline size_t Buffer<T>::Length() const {
-  EnsureInfo();
-  return _length;
-}
-
-template <typename T>
-inline T* Buffer<T>::Data() const {
-  EnsureInfo();
-  return _data;
-}
-
-template <typename T>
-inline void Buffer<T>::EnsureInfo() const {
-  // The Buffer instance may have been constructed from a napi_value whose
-  // length/data are not yet known. Fetch and cache these values just once,
-  // since they can never change during the lifetime of the Buffer.
-  if (_data == nullptr) {
-    size_t byteLength;
-    void* voidData;
-    napi_status status = napi_get_buffer_info(_env, _value, &voidData, &byteLength);
-    NAPI_THROW_IF_FAILED_VOID(_env, status);
-    _length = byteLength / sizeof (T);
-    _data = static_cast<T*>(voidData);
-  }
-}
+//////////////////////////////////////////////////////////////////////////////////
+//// Buffer<T> class
+//////////////////////////////////////////////////////////////////////////////////
+//
+//template <typename T>
+//inline Buffer<T> Buffer<T>::New(napi_env env, size_t length) {
+//  napi_value value;
+//  void* data;
+//  napi_status status = napi_create_buffer(env, length * sizeof (T), &data, &value);
+//  NAPI_THROW_IF_FAILED(env, status, Buffer<T>());
+//  return Buffer(env, value, length, static_cast<T*>(data));
+//}
+//
+//template <typename T>
+//inline Buffer<T> Buffer<T>::New(napi_env env, T* data, size_t length) {
+//  napi_value value;
+//  napi_status status = napi_create_external_buffer(
+//    env, length * sizeof (T), data, nullptr, nullptr, &value);
+//  NAPI_THROW_IF_FAILED(env, status, Buffer<T>());
+//  return Buffer(env, value, length, data);
+//}
+//
+//template <typename T>
+//template <typename Finalizer>
+//inline Buffer<T> Buffer<T>::New(napi_env env,
+//                                T* data,
+//                                size_t length,
+//                                Finalizer finalizeCallback) {
+//  napi_value value;
+//  details::FinalizeData<T, Finalizer>* finalizeData =
+//    new details::FinalizeData<T, Finalizer>({ finalizeCallback, nullptr });
+//  napi_status status = napi_create_external_buffer(
+//    env,
+//    length * sizeof (T),
+//    data,
+//    details::FinalizeData<T, Finalizer>::Wrapper,
+//    finalizeData,
+//    &value);
+//  if (status != napi_ok) {
+//    delete finalizeData;
+//    NAPI_THROW_IF_FAILED(env, status, Buffer());
+//  }
+//  return Buffer(env, value, length, data);
+//}
+//
+//template <typename T>
+//template <typename Finalizer, typename Hint>
+//inline Buffer<T> Buffer<T>::New(napi_env env,
+//                                T* data,
+//                                size_t length,
+//                                Finalizer finalizeCallback,
+//                                Hint* finalizeHint) {
+//  napi_value value;
+//  details::FinalizeData<T, Finalizer, Hint>* finalizeData =
+//    new details::FinalizeData<T, Finalizer, Hint>({ finalizeCallback, finalizeHint });
+//  napi_status status = napi_create_external_buffer(
+//    env,
+//    length * sizeof (T),
+//    data,
+//    details::FinalizeData<T, Finalizer, Hint>::WrapperWithHint,
+//    finalizeData,
+//    &value);
+//  if (status != napi_ok) {
+//    delete finalizeData;
+//    NAPI_THROW_IF_FAILED(env, status, Buffer());
+//  }
+//  return Buffer(env, value, length, data);
+//}
+//
+//template <typename T>
+//inline Buffer<T> Buffer<T>::Copy(napi_env env, const T* data, size_t length) {
+//  napi_value value;
+//  napi_status status = napi_create_buffer_copy(
+//    env, length * sizeof (T), data, nullptr, &value);
+//  NAPI_THROW_IF_FAILED(env, status, Buffer<T>());
+//  return Buffer<T>(env, value);
+//}
+//
+//template <typename T>
+//inline Buffer<T>::Buffer() : Uint8Array(), _length(0), _data(nullptr) {
+//}
+//
+//template <typename T>
+//inline Buffer<T>::Buffer(napi_env env, napi_value value)
+//  : Uint8Array(env, value), _length(0), _data(nullptr) {
+//}
+//
+//template <typename T>
+//inline Buffer<T>::Buffer(napi_env env, napi_value value, size_t length, T* data)
+//  : Uint8Array(env, value), _length(length), _data(data) {
+//}
+//
+//template <typename T>
+//inline size_t Buffer<T>::Length() const {
+//  EnsureInfo();
+//  return _length;
+//}
+//
+//template <typename T>
+//inline T* Buffer<T>::Data() const {
+//  EnsureInfo();
+//  return _data;
+//}
+//
+//template <typename T>
+//inline void Buffer<T>::EnsureInfo() const {
+//  // The Buffer instance may have been constructed from a napi_value whose
+//  // length/data are not yet known. Fetch and cache these values just once,
+//  // since they can never change during the lifetime of the Buffer.
+//  if (_data == nullptr) {
+//    size_t byteLength;
+//    void* voidData;
+//    napi_status status = napi_get_buffer_info(_env, _value, &voidData, &byteLength);
+//    NAPI_THROW_IF_FAILED_VOID(_env, status);
+//    _length = byteLength / sizeof (T);
+//    _data = static_cast<T*>(voidData);
+//  }
+//}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Error class

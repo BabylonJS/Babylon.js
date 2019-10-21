@@ -1044,38 +1044,38 @@ namespace Napi {
     Promise(napi_env env, napi_value value);
   };
 
-  template <typename T>
-  class Buffer : public Uint8Array {
-  public:
-    static Buffer<T> New(napi_env env, size_t length);
-    static Buffer<T> New(napi_env env, T* data, size_t length);
-
-    // Finalizer must implement `void operator()(Env env, T* data)`.
-    template <typename Finalizer>
-    static Buffer<T> New(napi_env env, T* data,
-                         size_t length,
-                         Finalizer finalizeCallback);
-    // Finalizer must implement `void operator()(Env env, T* data, Hint* hint)`.
-    template <typename Finalizer, typename Hint>
-    static Buffer<T> New(napi_env env, T* data,
-                         size_t length,
-                         Finalizer finalizeCallback,
-                         Hint* finalizeHint);
-
-    static Buffer<T> Copy(napi_env env, const T* data, size_t length);
-
-    Buffer();
-    Buffer(napi_env env, napi_value value);
-    size_t Length() const;
-    T* Data() const;
-
-  private:
-    mutable size_t _length;
-    mutable T* _data;
-
-    Buffer(napi_env env, napi_value value, size_t length, T* data);
-    void EnsureInfo() const;
-  };
+  //template <typename T>
+  //class Buffer : public Uint8Array {
+  //public:
+  //  static Buffer<T> New(napi_env env, size_t length);
+  //  static Buffer<T> New(napi_env env, T* data, size_t length);
+  //
+  //  // Finalizer must implement `void operator()(Env env, T* data)`.
+  //  template <typename Finalizer>
+  //  static Buffer<T> New(napi_env env, T* data,
+  //                       size_t length,
+  //                       Finalizer finalizeCallback);
+  //  // Finalizer must implement `void operator()(Env env, T* data, Hint* hint)`.
+  //  template <typename Finalizer, typename Hint>
+  //  static Buffer<T> New(napi_env env, T* data,
+  //                       size_t length,
+  //                       Finalizer finalizeCallback,
+  //                       Hint* finalizeHint);
+  //
+  //  static Buffer<T> Copy(napi_env env, const T* data, size_t length);
+  //
+  //  Buffer();
+  //  Buffer(napi_env env, napi_value value);
+  //  size_t Length() const;
+  //  T* Data() const;
+  //
+  //private:
+  //  mutable size_t _length;
+  //  mutable T* _data;
+  //
+  //  Buffer(napi_env env, napi_value value, size_t length, T* data);
+  //  void EnsureInfo() const;
+  //};
 
   /// Holds a counted reference to a value; initially a weak reference unless otherwise specified,
   /// may be changed to/from a strong reference by adjusting the refcount.
