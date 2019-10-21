@@ -1,7 +1,16 @@
 #ifndef SRC_NAPI_H_
 #define SRC_NAPI_H_
 
+#ifdef NODE_ADDON_API_DISABLE_NODE_SPECIFIC
+#define NAPI_NO_RETURN
+#endif
+
+#ifndef NODE_ADDON_API_DISABLE_NODE_SPECIFIC
+#include <node_api.h>
+#else
 #include "js_native_api.h"
+#endif
+
 #include <functional>
 #include <initializer_list>
 #include <memory>
@@ -1006,16 +1015,18 @@ namespace Napi {
     Value Call(napi_value recv, const std::vector<napi_value>& args) const;
     Value Call(napi_value recv, size_t argc, const napi_value* args) const;
 
-    //Value MakeCallback(napi_value recv,
-    //                   const std::initializer_list<napi_value>& args,
-    //                   napi_async_context context = nullptr) const;
-    //Value MakeCallback(napi_value recv,
-    //                   const std::vector<napi_value>& args,
-    //                   napi_async_context context = nullptr) const;
-    //Value MakeCallback(napi_value recv,
-    //                   size_t argc,
-    //                   const napi_value* args,
-    //                   napi_async_context context = nullptr) const;
+#ifndef NODE_ADDON_API_DISABLE_NODE_SPECIFIC
+    Value MakeCallback(napi_value recv,
+                       const std::initializer_list<napi_value>& args,
+                       napi_async_context context = nullptr) const;
+    Value MakeCallback(napi_value recv,
+                       const std::vector<napi_value>& args,
+                       napi_async_context context = nullptr) const;
+    Value MakeCallback(napi_value recv,
+                       size_t argc,
+                       const napi_value* args,
+                       napi_async_context context = nullptr) const;
+#endif
 
     Object New(const std::initializer_list<napi_value>& args) const;
     Object New(const std::vector<napi_value>& args) const;
@@ -1044,38 +1055,40 @@ namespace Napi {
     Promise(napi_env env, napi_value value);
   };
 
-  //template <typename T>
-  //class Buffer : public Uint8Array {
-  //public:
-  //  static Buffer<T> New(napi_env env, size_t length);
-  //  static Buffer<T> New(napi_env env, T* data, size_t length);
-  //
-  //  // Finalizer must implement `void operator()(Env env, T* data)`.
-  //  template <typename Finalizer>
-  //  static Buffer<T> New(napi_env env, T* data,
-  //                       size_t length,
-  //                       Finalizer finalizeCallback);
-  //  // Finalizer must implement `void operator()(Env env, T* data, Hint* hint)`.
-  //  template <typename Finalizer, typename Hint>
-  //  static Buffer<T> New(napi_env env, T* data,
-  //                       size_t length,
-  //                       Finalizer finalizeCallback,
-  //                       Hint* finalizeHint);
-  //
-  //  static Buffer<T> Copy(napi_env env, const T* data, size_t length);
-  //
-  //  Buffer();
-  //  Buffer(napi_env env, napi_value value);
-  //  size_t Length() const;
-  //  T* Data() const;
-  //
-  //private:
-  //  mutable size_t _length;
-  //  mutable T* _data;
-  //
-  //  Buffer(napi_env env, napi_value value, size_t length, T* data);
-  //  void EnsureInfo() const;
-  //};
+#ifndef NODE_ADDON_API_DISABLE_NODE_SPECIFIC
+  template <typename T>
+  class Buffer : public Uint8Array {
+  public:
+    static Buffer<T> New(napi_env env, size_t length);
+    static Buffer<T> New(napi_env env, T* data, size_t length);
+
+    // Finalizer must implement `void operator()(Env env, T* data)`.
+    template <typename Finalizer>
+    static Buffer<T> New(napi_env env, T* data,
+                         size_t length,
+                         Finalizer finalizeCallback);
+    // Finalizer must implement `void operator()(Env env, T* data, Hint* hint)`.
+    template <typename Finalizer, typename Hint>
+    static Buffer<T> New(napi_env env, T* data,
+                         size_t length,
+                         Finalizer finalizeCallback,
+                         Hint* finalizeHint);
+
+    static Buffer<T> Copy(napi_env env, const T* data, size_t length);
+
+    Buffer();
+    Buffer(napi_env env, napi_value value);
+    size_t Length() const;
+    T* Data() const;
+
+  private:
+    mutable size_t _length;
+    mutable T* _data;
+
+    Buffer(napi_env env, napi_value value, size_t length, T* data);
+    void EnsureInfo() const;
+  };
+#endif
 
   /// Holds a counted reference to a value; initially a weak reference unless otherwise specified,
   /// may be changed to/from a strong reference by adjusting the refcount.
@@ -1187,16 +1200,18 @@ namespace Napi {
     Napi::Value Call(napi_value recv, const std::vector<napi_value>& args) const;
     Napi::Value Call(napi_value recv, size_t argc, const napi_value* args) const;
 
-    //Napi::Value MakeCallback(napi_value recv,
-    //                         const std::initializer_list<napi_value>& args,
-    //                         napi_async_context context = nullptr) const;
-    //Napi::Value MakeCallback(napi_value recv,
-    //                         const std::vector<napi_value>& args,
-    //                         napi_async_context context = nullptr) const;
-    //Napi::Value MakeCallback(napi_value recv,
-    //                         size_t argc,
-    //                         const napi_value* args,
-    //                         napi_async_context context = nullptr) const;
+#ifndef NODE_ADDON_API_DISABLE_NODE_SPECIFIC
+    Napi::Value MakeCallback(napi_value recv,
+                             const std::initializer_list<napi_value>& args,
+                             napi_async_context context = nullptr) const;
+    Napi::Value MakeCallback(napi_value recv,
+                             const std::vector<napi_value>& args,
+                             napi_async_context context = nullptr) const;
+    Napi::Value MakeCallback(napi_value recv,
+                             size_t argc,
+                             const napi_value* args,
+                             napi_async_context context = nullptr) const;
+#endif
 
     Object New(const std::initializer_list<napi_value>& args) const;
     Object New(const std::vector<napi_value>& args) const;
@@ -1310,7 +1325,7 @@ namespace Napi {
     static Error New(napi_env env, const char* message);
     static Error New(napi_env env, const std::string& message);
 
-    static /*NAPI_NO_RETURN*/ void Fatal(const char* location, const char* message);
+    static NAPI_NO_RETURN void Fatal(const char* location, const char* message);
 
     Error();
     Error(napi_env env, napi_value value);
@@ -1754,107 +1769,109 @@ namespace Napi {
     napi_escapable_handle_scope _scope;
   };
 
-//#if (NAPI_VERSION > 2)
-//  class CallbackScope {
-//  public:
-//    CallbackScope(napi_env env, napi_callback_scope scope);
-//    CallbackScope(napi_env env, napi_async_context context);
-//    virtual ~CallbackScope();
-//
-//    operator napi_callback_scope() const;
-//
-//    Napi::Env Env() const;
-//
-//  private:
-//    napi_env _env;
-//    napi_callback_scope _scope;
-//  };
-//#endif
-//
-//  class AsyncContext {
-//  public:
-//    explicit AsyncContext(napi_env env, const char* resource_name);
-//    explicit AsyncContext(napi_env env, const char* resource_name, const Object& resource);
-//    virtual ~AsyncContext();
-//
-//    AsyncContext(AsyncContext&& other);
-//    AsyncContext& operator =(AsyncContext&& other);
-//    AsyncContext(const AsyncContext&) = delete;
-//    AsyncContext& operator =(AsyncContext&) = delete;
-//
-//    operator napi_async_context() const;
-//
-//  private:
-//    napi_env _env;
-//    napi_async_context _context;
-//  };
-//
-//  class AsyncWorker {
-//  public:
-//    virtual ~AsyncWorker();
-//
-//    // An async worker can be moved but cannot be copied.
-//    AsyncWorker(AsyncWorker&& other);
-//    AsyncWorker& operator =(AsyncWorker&& other);
-//    AsyncWorker(const AsyncWorker&) = delete;
-//    AsyncWorker& operator =(AsyncWorker&) = delete;
-//
-//    operator napi_async_work() const;
-//
-//    Napi::Env Env() const;
-//
-//    void Queue();
-//    void Cancel();
-//    void SuppressDestruct();
-//
-//    ObjectReference& Receiver();
-//    FunctionReference& Callback();
-//
-//  protected:
-//    explicit AsyncWorker(const Function& callback);
-//    explicit AsyncWorker(const Function& callback,
-//                         const char* resource_name);
-//    explicit AsyncWorker(const Function& callback,
-//                         const char* resource_name,
-//                         const Object& resource);
-//    explicit AsyncWorker(const Object& receiver,
-//                         const Function& callback);
-//    explicit AsyncWorker(const Object& receiver,
-//                         const Function& callback,
-//                         const char* resource_name);
-//    explicit AsyncWorker(const Object& receiver,
-//                         const Function& callback,
-//                         const char* resource_name,
-//                         const Object& resource);
-//
-//    explicit AsyncWorker(Napi::Env env);
-//    explicit AsyncWorker(Napi::Env env,
-//                         const char* resource_name);
-//    explicit AsyncWorker(Napi::Env env,
-//                         const char* resource_name,
-//                         const Object& resource);
-//
-//    virtual void Execute() = 0;
-//    virtual void OnOK();
-//    virtual void OnError(const Error& e);
-//    virtual void Destroy();
-//    virtual std::vector<napi_value> GetResult(Napi::Env env);
-//
-//    void SetError(const std::string& error);
-//
-//  private:
-//    static void OnExecute(napi_env env, void* this_pointer);
-//    static void OnWorkComplete(napi_env env,
-//                               napi_status status,
-//                               void* this_pointer);
-//
-//    napi_env _env;
-//    napi_async_work _work;
-//    ObjectReference _receiver;
-//    FunctionReference _callback;
-//    std::string _error;
-//    bool _suppress_destruct;
-//  };
+#ifndef NODE_ADDON_API_DISABLE_NODE_SPECIFIC
+#if (NAPI_VERSION > 2)
+  class CallbackScope {
+  public:
+    CallbackScope(napi_env env, napi_callback_scope scope);
+    CallbackScope(napi_env env, napi_async_context context);
+    virtual ~CallbackScope();
+
+    operator napi_callback_scope() const;
+
+    Napi::Env Env() const;
+
+  private:
+    napi_env _env;
+    napi_callback_scope _scope;
+  };
+#endif
+
+  class AsyncContext {
+  public:
+    explicit AsyncContext(napi_env env, const char* resource_name);
+    explicit AsyncContext(napi_env env, const char* resource_name, const Object& resource);
+    virtual ~AsyncContext();
+
+    AsyncContext(AsyncContext&& other);
+    AsyncContext& operator =(AsyncContext&& other);
+    AsyncContext(const AsyncContext&) = delete;
+    AsyncContext& operator =(AsyncContext&) = delete;
+
+    operator napi_async_context() const;
+
+  private:
+    napi_env _env;
+    napi_async_context _context;
+  };
+
+  class AsyncWorker {
+  public:
+    virtual ~AsyncWorker();
+
+    // An async worker can be moved but cannot be copied.
+    AsyncWorker(AsyncWorker&& other);
+    AsyncWorker& operator =(AsyncWorker&& other);
+    AsyncWorker(const AsyncWorker&) = delete;
+    AsyncWorker& operator =(AsyncWorker&) = delete;
+
+    operator napi_async_work() const;
+
+    Napi::Env Env() const;
+
+    void Queue();
+    void Cancel();
+    void SuppressDestruct();
+
+    ObjectReference& Receiver();
+    FunctionReference& Callback();
+
+  protected:
+    explicit AsyncWorker(const Function& callback);
+    explicit AsyncWorker(const Function& callback,
+                         const char* resource_name);
+    explicit AsyncWorker(const Function& callback,
+                         const char* resource_name,
+                         const Object& resource);
+    explicit AsyncWorker(const Object& receiver,
+                         const Function& callback);
+    explicit AsyncWorker(const Object& receiver,
+                         const Function& callback,
+                         const char* resource_name);
+    explicit AsyncWorker(const Object& receiver,
+                         const Function& callback,
+                         const char* resource_name,
+                         const Object& resource);
+
+    explicit AsyncWorker(Napi::Env env);
+    explicit AsyncWorker(Napi::Env env,
+                         const char* resource_name);
+    explicit AsyncWorker(Napi::Env env,
+                         const char* resource_name,
+                         const Object& resource);
+
+    virtual void Execute() = 0;
+    virtual void OnOK();
+    virtual void OnError(const Error& e);
+    virtual void Destroy();
+    virtual std::vector<napi_value> GetResult(Napi::Env env);
+
+    void SetError(const std::string& error);
+
+  private:
+    static void OnExecute(napi_env env, void* this_pointer);
+    static void OnWorkComplete(napi_env env,
+                               napi_status status,
+                               void* this_pointer);
+
+    napi_env _env;
+    napi_async_work _work;
+    ObjectReference _receiver;
+    FunctionReference _callback;
+    std::string _error;
+    bool _suppress_destruct;
+  };
+#endif
 
   #if (NAPI_VERSION > 3)
   class ThreadSafeFunction {
@@ -2063,18 +2080,20 @@ namespace Napi {
   };
   #endif
 
-  //// Memory management.
-  //class MemoryManagement {
-  //  public:
-  //    static int64_t AdjustExternalMemory(Env env, int64_t change_in_bytes);
-  //};
+#ifndef NODE_ADDON_API_DISABLE_NODE_SPECIFIC
+  // Memory management.
+  class MemoryManagement {
+    public:
+      static int64_t AdjustExternalMemory(Env env, int64_t change_in_bytes);
+  };
 
-  //// Version management
-  //class VersionManagement {
-  //  public:
-  //    static uint32_t GetNapiVersion(Env env);
-  //    static const napi_node_version* GetNodeVersion(Env env);
-  //};
+  // Version management
+  class VersionManagement {
+    public:
+      static uint32_t GetNapiVersion(Env env);
+      static const napi_node_version* GetNodeVersion(Env env);
+  };
+#endif
 
 } // namespace Napi
 

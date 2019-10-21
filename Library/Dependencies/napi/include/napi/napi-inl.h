@@ -462,17 +462,18 @@ inline bool Value::IsDataView() const {
   NAPI_THROW_IF_FAILED(_env, status, false);
   return result;
 }
+#ifndef NODE_ADDON_API_DISABLE_NODE_SPECIFIC
+inline bool Value::IsBuffer() const {
+  if (IsEmpty()) {
+    return false;
+  }
 
-//inline bool Value::IsBuffer() const {
-//  if (IsEmpty()) {
-//    return false;
-//  }
-//
-//  bool result;
-//  napi_status status = napi_is_buffer(_env, _value, &result);
-//  NAPI_THROW_IF_FAILED(_env, status, false);
-//  return result;
-//}
+  bool result;
+  napi_status status = napi_is_buffer(_env, _value, &result);
+  NAPI_THROW_IF_FAILED(_env, status, false);
+  return result;
+}
+#endif
 
 inline bool Value::IsExternal() const {
   return Type() == napi_external;
@@ -1787,31 +1788,33 @@ inline Value Function::Call(napi_value recv, size_t argc, const napi_value* args
   return Value(_env, result);
 }
 
-//inline Value Function::MakeCallback(
-//    napi_value recv,
-//    const std::initializer_list<napi_value>& args,
-//    napi_async_context context) const {
-//  return MakeCallback(recv, args.size(), args.begin(), context);
-//}
-//
-//inline Value Function::MakeCallback(
-//    napi_value recv,
-//    const std::vector<napi_value>& args,
-//    napi_async_context context) const {
-//  return MakeCallback(recv, args.size(), args.data(), context);
-//}
-//
-//inline Value Function::MakeCallback(
-//    napi_value recv,
-//    size_t argc,
-//    const napi_value* args,
-//    napi_async_context context) const {
-//  napi_value result;
-//  napi_status status = napi_make_callback(
-//    _env, context, recv, _value, argc, args, &result);
-//  NAPI_THROW_IF_FAILED(_env, status, Value());
-//  return Value(_env, result);
-//}
+#ifndef NODE_ADDON_API_DISABLE_NODE_SPECIFIC
+inline Value Function::MakeCallback(
+    napi_value recv,
+    const std::initializer_list<napi_value>& args,
+    napi_async_context context) const {
+  return MakeCallback(recv, args.size(), args.begin(), context);
+}
+
+inline Value Function::MakeCallback(
+    napi_value recv,
+    const std::vector<napi_value>& args,
+    napi_async_context context) const {
+  return MakeCallback(recv, args.size(), args.data(), context);
+}
+
+inline Value Function::MakeCallback(
+    napi_value recv,
+    size_t argc,
+    const napi_value* args,
+    napi_async_context context) const {
+  napi_value result;
+  napi_status status = napi_make_callback(
+    _env, context, recv, _value, argc, args, &result);
+  NAPI_THROW_IF_FAILED(_env, status, Value());
+  return Value(_env, result);
+}
+#endif
 
 inline Object Function::New(const std::initializer_list<napi_value>& args) const {
   return New(args.size(), args.begin());
@@ -1863,124 +1866,126 @@ inline void Promise::Deferred::Reject(napi_value value) const {
 inline Promise::Promise(napi_env env, napi_value value) : Object(env, value) {
 }
 
-//////////////////////////////////////////////////////////////////////////////////
-//// Buffer<T> class
-//////////////////////////////////////////////////////////////////////////////////
-//
-//template <typename T>
-//inline Buffer<T> Buffer<T>::New(napi_env env, size_t length) {
-//  napi_value value;
-//  void* data;
-//  napi_status status = napi_create_buffer(env, length * sizeof (T), &data, &value);
-//  NAPI_THROW_IF_FAILED(env, status, Buffer<T>());
-//  return Buffer(env, value, length, static_cast<T*>(data));
-//}
-//
-//template <typename T>
-//inline Buffer<T> Buffer<T>::New(napi_env env, T* data, size_t length) {
-//  napi_value value;
-//  napi_status status = napi_create_external_buffer(
-//    env, length * sizeof (T), data, nullptr, nullptr, &value);
-//  NAPI_THROW_IF_FAILED(env, status, Buffer<T>());
-//  return Buffer(env, value, length, data);
-//}
-//
-//template <typename T>
-//template <typename Finalizer>
-//inline Buffer<T> Buffer<T>::New(napi_env env,
-//                                T* data,
-//                                size_t length,
-//                                Finalizer finalizeCallback) {
-//  napi_value value;
-//  details::FinalizeData<T, Finalizer>* finalizeData =
-//    new details::FinalizeData<T, Finalizer>({ finalizeCallback, nullptr });
-//  napi_status status = napi_create_external_buffer(
-//    env,
-//    length * sizeof (T),
-//    data,
-//    details::FinalizeData<T, Finalizer>::Wrapper,
-//    finalizeData,
-//    &value);
-//  if (status != napi_ok) {
-//    delete finalizeData;
-//    NAPI_THROW_IF_FAILED(env, status, Buffer());
-//  }
-//  return Buffer(env, value, length, data);
-//}
-//
-//template <typename T>
-//template <typename Finalizer, typename Hint>
-//inline Buffer<T> Buffer<T>::New(napi_env env,
-//                                T* data,
-//                                size_t length,
-//                                Finalizer finalizeCallback,
-//                                Hint* finalizeHint) {
-//  napi_value value;
-//  details::FinalizeData<T, Finalizer, Hint>* finalizeData =
-//    new details::FinalizeData<T, Finalizer, Hint>({ finalizeCallback, finalizeHint });
-//  napi_status status = napi_create_external_buffer(
-//    env,
-//    length * sizeof (T),
-//    data,
-//    details::FinalizeData<T, Finalizer, Hint>::WrapperWithHint,
-//    finalizeData,
-//    &value);
-//  if (status != napi_ok) {
-//    delete finalizeData;
-//    NAPI_THROW_IF_FAILED(env, status, Buffer());
-//  }
-//  return Buffer(env, value, length, data);
-//}
-//
-//template <typename T>
-//inline Buffer<T> Buffer<T>::Copy(napi_env env, const T* data, size_t length) {
-//  napi_value value;
-//  napi_status status = napi_create_buffer_copy(
-//    env, length * sizeof (T), data, nullptr, &value);
-//  NAPI_THROW_IF_FAILED(env, status, Buffer<T>());
-//  return Buffer<T>(env, value);
-//}
-//
-//template <typename T>
-//inline Buffer<T>::Buffer() : Uint8Array(), _length(0), _data(nullptr) {
-//}
-//
-//template <typename T>
-//inline Buffer<T>::Buffer(napi_env env, napi_value value)
-//  : Uint8Array(env, value), _length(0), _data(nullptr) {
-//}
-//
-//template <typename T>
-//inline Buffer<T>::Buffer(napi_env env, napi_value value, size_t length, T* data)
-//  : Uint8Array(env, value), _length(length), _data(data) {
-//}
-//
-//template <typename T>
-//inline size_t Buffer<T>::Length() const {
-//  EnsureInfo();
-//  return _length;
-//}
-//
-//template <typename T>
-//inline T* Buffer<T>::Data() const {
-//  EnsureInfo();
-//  return _data;
-//}
-//
-//template <typename T>
-//inline void Buffer<T>::EnsureInfo() const {
-//  // The Buffer instance may have been constructed from a napi_value whose
-//  // length/data are not yet known. Fetch and cache these values just once,
-//  // since they can never change during the lifetime of the Buffer.
-//  if (_data == nullptr) {
-//    size_t byteLength;
-//    void* voidData;
-//    napi_status status = napi_get_buffer_info(_env, _value, &voidData, &byteLength);
-//    NAPI_THROW_IF_FAILED_VOID(_env, status);
-//    _length = byteLength / sizeof (T);
-//    _data = static_cast<T*>(voidData);
-//  }
-//}
+#ifndef NODE_ADDON_API_DISABLE_NODE_SPECIFIC
+////////////////////////////////////////////////////////////////////////////////
+// Buffer<T> class
+////////////////////////////////////////////////////////////////////////////////
+
+template <typename T>
+inline Buffer<T> Buffer<T>::New(napi_env env, size_t length) {
+  napi_value value;
+  void* data;
+  napi_status status = napi_create_buffer(env, length * sizeof (T), &data, &value);
+  NAPI_THROW_IF_FAILED(env, status, Buffer<T>());
+  return Buffer(env, value, length, static_cast<T*>(data));
+}
+
+template <typename T>
+inline Buffer<T> Buffer<T>::New(napi_env env, T* data, size_t length) {
+  napi_value value;
+  napi_status status = napi_create_external_buffer(
+    env, length * sizeof (T), data, nullptr, nullptr, &value);
+  NAPI_THROW_IF_FAILED(env, status, Buffer<T>());
+  return Buffer(env, value, length, data);
+}
+
+template <typename T>
+template <typename Finalizer>
+inline Buffer<T> Buffer<T>::New(napi_env env,
+                                T* data,
+                                size_t length,
+                                Finalizer finalizeCallback) {
+  napi_value value;
+  details::FinalizeData<T, Finalizer>* finalizeData =
+    new details::FinalizeData<T, Finalizer>({ finalizeCallback, nullptr });
+  napi_status status = napi_create_external_buffer(
+    env,
+    length * sizeof (T),
+    data,
+    details::FinalizeData<T, Finalizer>::Wrapper,
+    finalizeData,
+    &value);
+  if (status != napi_ok) {
+    delete finalizeData;
+    NAPI_THROW_IF_FAILED(env, status, Buffer());
+  }
+  return Buffer(env, value, length, data);
+}
+
+template <typename T>
+template <typename Finalizer, typename Hint>
+inline Buffer<T> Buffer<T>::New(napi_env env,
+                                T* data,
+                                size_t length,
+                                Finalizer finalizeCallback,
+                                Hint* finalizeHint) {
+  napi_value value;
+  details::FinalizeData<T, Finalizer, Hint>* finalizeData =
+    new details::FinalizeData<T, Finalizer, Hint>({ finalizeCallback, finalizeHint });
+  napi_status status = napi_create_external_buffer(
+    env,
+    length * sizeof (T),
+    data,
+    details::FinalizeData<T, Finalizer, Hint>::WrapperWithHint,
+    finalizeData,
+    &value);
+  if (status != napi_ok) {
+    delete finalizeData;
+    NAPI_THROW_IF_FAILED(env, status, Buffer());
+  }
+  return Buffer(env, value, length, data);
+}
+
+template <typename T>
+inline Buffer<T> Buffer<T>::Copy(napi_env env, const T* data, size_t length) {
+  napi_value value;
+  napi_status status = napi_create_buffer_copy(
+    env, length * sizeof (T), data, nullptr, &value);
+  NAPI_THROW_IF_FAILED(env, status, Buffer<T>());
+  return Buffer<T>(env, value);
+}
+
+template <typename T>
+inline Buffer<T>::Buffer() : Uint8Array(), _length(0), _data(nullptr) {
+}
+
+template <typename T>
+inline Buffer<T>::Buffer(napi_env env, napi_value value)
+  : Uint8Array(env, value), _length(0), _data(nullptr) {
+}
+
+template <typename T>
+inline Buffer<T>::Buffer(napi_env env, napi_value value, size_t length, T* data)
+  : Uint8Array(env, value), _length(length), _data(data) {
+}
+
+template <typename T>
+inline size_t Buffer<T>::Length() const {
+  EnsureInfo();
+  return _length;
+}
+
+template <typename T>
+inline T* Buffer<T>::Data() const {
+  EnsureInfo();
+  return _data;
+}
+
+template <typename T>
+inline void Buffer<T>::EnsureInfo() const {
+  // The Buffer instance may have been constructed from a napi_value whose
+  // length/data are not yet known. Fetch and cache these values just once,
+  // since they can never change during the lifetime of the Buffer.
+  if (_data == nullptr) {
+    size_t byteLength;
+    void* voidData;
+    napi_status status = napi_get_buffer_info(_env, _value, &voidData, &byteLength);
+    NAPI_THROW_IF_FAILED_VOID(_env, status);
+    _length = byteLength / sizeof (T);
+    _data = static_cast<T*>(voidData);
+  }
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Error class
@@ -2044,9 +2049,9 @@ inline Error Error::New(napi_env env, const std::string& message) {
   return Error::New<Error>(env, message.c_str(), message.size(), napi_create_error);
 }
 
-inline /*NAPI_NO_RETURN*/ void Error::Fatal(const char* location, const char* message) {
+inline NAPI_NO_RETURN void Error::Fatal(const char* location, const char* message) {
     // $HACK
-    //napi_fatal_error(location, NAPI_AUTO_LENGTH, message, NAPI_AUTO_LENGTH);
+      //napi_fatal_error(location, NAPI_AUTO_LENGTH, message, NAPI_AUTO_LENGTH);
     throw std::exception();
 }
 
@@ -2569,42 +2574,44 @@ inline Napi::Value FunctionReference::Call(
   return scope.Escape(result);
 }
 
-//inline Napi::Value FunctionReference::MakeCallback(
-//    napi_value recv,
-//    const std::initializer_list<napi_value>& args,
-//    napi_async_context context) const {
-//  EscapableHandleScope scope(_env);
-//  Napi::Value result = Value().MakeCallback(recv, args, context);
-//  if (scope.Env().IsExceptionPending()) {
-//    return Value();
-//  }
-//  return scope.Escape(result);
-//}
-//
-//inline Napi::Value FunctionReference::MakeCallback(
-//    napi_value recv,
-//    const std::vector<napi_value>& args,
-//    napi_async_context context) const {
-//  EscapableHandleScope scope(_env);
-//  Napi::Value result = Value().MakeCallback(recv, args, context);
-//  if (scope.Env().IsExceptionPending()) {
-//    return Value();
-//  }
-//  return scope.Escape(result);
-//}
-//
-//inline Napi::Value FunctionReference::MakeCallback(
-//    napi_value recv,
-//    size_t argc,
-//    const napi_value* args,
-//    napi_async_context context) const {
-//  EscapableHandleScope scope(_env);
-//  Napi::Value result = Value().MakeCallback(recv, argc, args, context);
-//  if (scope.Env().IsExceptionPending()) {
-//    return Value();
-//  }
-//  return scope.Escape(result);
-//}
+#ifndef NODE_ADDON_API_DISABLE_NODE_SPECIFIC
+inline Napi::Value FunctionReference::MakeCallback(
+    napi_value recv,
+    const std::initializer_list<napi_value>& args,
+    napi_async_context context) const {
+  EscapableHandleScope scope(_env);
+  Napi::Value result = Value().MakeCallback(recv, args, context);
+  if (scope.Env().IsExceptionPending()) {
+    return Value();
+  }
+  return scope.Escape(result);
+}
+
+inline Napi::Value FunctionReference::MakeCallback(
+    napi_value recv,
+    const std::vector<napi_value>& args,
+    napi_async_context context) const {
+  EscapableHandleScope scope(_env);
+  Napi::Value result = Value().MakeCallback(recv, args, context);
+  if (scope.Env().IsExceptionPending()) {
+    return Value();
+  }
+  return scope.Escape(result);
+}
+
+inline Napi::Value FunctionReference::MakeCallback(
+    napi_value recv,
+    size_t argc,
+    const napi_value* args,
+    napi_async_context context) const {
+  EscapableHandleScope scope(_env);
+  Napi::Value result = Value().MakeCallback(recv, argc, args, context);
+  if (scope.Env().IsExceptionPending()) {
+    return Value();
+  }
+  return scope.Escape(result);
+}
+#endif
 
 inline Object FunctionReference::New(const std::initializer_list<napi_value>& args) const {
   EscapableHandleScope scope(_env);
@@ -3513,633 +3520,634 @@ inline Value EscapableHandleScope::Escape(napi_value escapee) {
   return Value(_env, result);
 }
 
+#ifndef NODE_ADDON_API_DISABLE_NODE_SPECIFIC
+#if (NAPI_VERSION > 2)
+////////////////////////////////////////////////////////////////////////////////
+// CallbackScope class
+////////////////////////////////////////////////////////////////////////////////
 
-//#if (NAPI_VERSION > 2)
-//////////////////////////////////////////////////////////////////////////////////
-//// CallbackScope class
-//////////////////////////////////////////////////////////////////////////////////
-//
-//inline CallbackScope::CallbackScope(
-//  napi_env env, napi_callback_scope scope) : _env(env), _scope(scope) {
-//}
-//
-//inline CallbackScope::CallbackScope(napi_env env, napi_async_context context)
-//    : _env(env) {
-//  napi_status status = napi_open_callback_scope(
-//      _env, Object::New(env), context, &_scope);
-//  NAPI_THROW_IF_FAILED_VOID(_env, status);
-//}
-//
-//inline CallbackScope::~CallbackScope() {
-//  napi_close_callback_scope(_env, _scope);
-//}
-//
-//inline CallbackScope::operator napi_callback_scope() const {
-//  return _scope;
-//}
-//
-//inline Napi::Env CallbackScope::Env() const {
-//  return Napi::Env(_env);
-//}
-//#endif
-//
-//////////////////////////////////////////////////////////////////////////////////
-//// AsyncContext class
-//////////////////////////////////////////////////////////////////////////////////
-//
-//inline AsyncContext::AsyncContext(napi_env env, const char* resource_name)
-//  : AsyncContext(env, resource_name, Object::New(env)) {
-//}
-//
-//inline AsyncContext::AsyncContext(napi_env env,
-//		                  const char* resource_name,
-//                                  const Object& resource)
-//  : _env(env),
-//    _context(nullptr) {
-//  napi_value resource_id;
-//  napi_status status = napi_create_string_utf8(
-//      _env, resource_name, NAPI_AUTO_LENGTH, &resource_id);
-//  NAPI_THROW_IF_FAILED_VOID(_env, status);
-//
-//  status = napi_async_init(_env, resource, resource_id, &_context);
-//  NAPI_THROW_IF_FAILED_VOID(_env, status);
-//}
-//
-//inline AsyncContext::~AsyncContext() {
-//  if (_context != nullptr) {
-//    napi_async_destroy(_env, _context);
-//    _context = nullptr;
-//  }
-//}
-//
-//inline AsyncContext::AsyncContext(AsyncContext&& other) {
-//  _env = other._env;
-//  other._env = nullptr;
-//  _context = other._context;
-//  other._context = nullptr;
-//}
-//
-//inline AsyncContext& AsyncContext::operator =(AsyncContext&& other) {
-//  _env = other._env;
-//  other._env = nullptr;
-//  _context = other._context;
-//  other._context = nullptr;
-//  return *this;
-//}
-//
-//inline AsyncContext::operator napi_async_context() const {
-//  return _context;
-//}
-//
-//////////////////////////////////////////////////////////////////////////////////
-//// AsyncWorker class
-//////////////////////////////////////////////////////////////////////////////////
-//
-//inline AsyncWorker::AsyncWorker(const Function& callback)
-//  : AsyncWorker(callback, "generic") {
-//}
-//
-//inline AsyncWorker::AsyncWorker(const Function& callback,
-//                                const char* resource_name)
-//  : AsyncWorker(callback, resource_name, Object::New(callback.Env())) {
-//}
-//
-//inline AsyncWorker::AsyncWorker(const Function& callback,
-//                                const char* resource_name,
-//                                const Object& resource)
-//  : AsyncWorker(Object::New(callback.Env()),
-//                callback,
-//                resource_name,
-//                resource) {
-//}
-//
-//inline AsyncWorker::AsyncWorker(const Object& receiver,
-//                                const Function& callback)
-//  : AsyncWorker(receiver, callback, "generic") {
-//}
-//
-//inline AsyncWorker::AsyncWorker(const Object& receiver,
-//                                const Function& callback,
-//                                const char* resource_name)
-//  : AsyncWorker(receiver,
-//                callback,
-//                resource_name,
-//                Object::New(callback.Env())) {
-//}
-//
-//inline AsyncWorker::AsyncWorker(const Object& receiver,
-//                                const Function& callback,
-//                                const char* resource_name,
-//                                const Object& resource)
-//  : _env(callback.Env()),
-//    _receiver(Napi::Persistent(receiver)),
-//    _callback(Napi::Persistent(callback)),
-//    _suppress_destruct(false) {
-//  napi_value resource_id;
-//  napi_status status = napi_create_string_latin1(
-//      _env, resource_name, NAPI_AUTO_LENGTH, &resource_id);
-//  NAPI_THROW_IF_FAILED_VOID(_env, status);
-//
-//  status = napi_create_async_work(_env, resource, resource_id, OnExecute,
-//                                  OnWorkComplete, this, &_work);
-//  NAPI_THROW_IF_FAILED_VOID(_env, status);
-//}
-//
-//inline AsyncWorker::AsyncWorker(Napi::Env env)
-//  : AsyncWorker(env, "generic") {
-//}
-//
-//inline AsyncWorker::AsyncWorker(Napi::Env env,
-//                                const char* resource_name)
-//  : AsyncWorker(env, resource_name, Object::New(env)) {
-//}
-//
-//inline AsyncWorker::AsyncWorker(Napi::Env env,
-//                                const char* resource_name,
-//                                const Object& resource)
-//  : _env(env),
-//    _receiver(),
-//    _callback(),
-//    _suppress_destruct(false) {
-//  napi_value resource_id;
-//  napi_status status = napi_create_string_latin1(
-//      _env, resource_name, NAPI_AUTO_LENGTH, &resource_id);
-//  NAPI_THROW_IF_FAILED_VOID(_env, status);
-//
-//  status = napi_create_async_work(_env, resource, resource_id, OnExecute,
-//                                  OnWorkComplete, this, &_work);
-//  NAPI_THROW_IF_FAILED_VOID(_env, status);
-//}
-//
-//inline AsyncWorker::~AsyncWorker() {
-//  if (_work != nullptr) {
-//    napi_delete_async_work(_env, _work);
-//    _work = nullptr;
-//  }
-//}
-//
-//inline void AsyncWorker::Destroy() {
-//  delete this;
-//}
-//
-//inline AsyncWorker::AsyncWorker(AsyncWorker&& other) {
-//  _env = other._env;
-//  other._env = nullptr;
-//  _work = other._work;
-//  other._work = nullptr;
-//  _receiver = std::move(other._receiver);
-//  _callback = std::move(other._callback);
-//  _error = std::move(other._error);
-//  _suppress_destruct = other._suppress_destruct;
-//}
-//
-//inline AsyncWorker& AsyncWorker::operator =(AsyncWorker&& other) {
-//  _env = other._env;
-//  other._env = nullptr;
-//  _work = other._work;
-//  other._work = nullptr;
-//  _receiver = std::move(other._receiver);
-//  _callback = std::move(other._callback);
-//  _error = std::move(other._error);
-//  _suppress_destruct = other._suppress_destruct;
-//  return *this;
-//}
-//
-//inline AsyncWorker::operator napi_async_work() const {
-//  return _work;
-//}
-//
-//inline Napi::Env AsyncWorker::Env() const {
-//  return Napi::Env(_env);
-//}
-//
-//inline void AsyncWorker::Queue() {
-//  napi_status status = napi_queue_async_work(_env, _work);
-//  NAPI_THROW_IF_FAILED_VOID(_env, status);
-//}
-//
-//inline void AsyncWorker::Cancel() {
-//  napi_status status = napi_cancel_async_work(_env, _work);
-//  NAPI_THROW_IF_FAILED_VOID(_env, status);
-//}
-//
-//inline ObjectReference& AsyncWorker::Receiver() {
-//  return _receiver;
-//}
-//
-//inline FunctionReference& AsyncWorker::Callback() {
-//  return _callback;
-//}
-//
-//inline void AsyncWorker::SuppressDestruct() {
-//  _suppress_destruct = true;
-//}
-//
-//inline void AsyncWorker::OnOK() {
-//  if (!_callback.IsEmpty()) {
-//    _callback.Call(_receiver.Value(), GetResult(_callback.Env()));
-//  }
-//}
-//
-//inline void AsyncWorker::OnError(const Error& e) {
-//  if (!_callback.IsEmpty()) {
-//    _callback.Call(_receiver.Value(), std::initializer_list<napi_value>{ e.Value() });
-//  }
-//}
-//
-//inline void AsyncWorker::SetError(const std::string& error) {
-//  _error = error;
-//}
-//
-//inline std::vector<napi_value> AsyncWorker::GetResult(Napi::Env /*env*/) {
-//  return {};
-//}
-//// The OnExecute method receives an napi_env argument. However, do NOT
-//// use it within this method, as it does not run on the main thread and must
-//// not run any method that would cause JavaScript to run. In practice, this
-//// means that almost any use of napi_env will be incorrect.
-//inline void AsyncWorker::OnExecute(napi_env /*DO_NOT_USE*/, void* this_pointer) {
-//  AsyncWorker* self = static_cast<AsyncWorker*>(this_pointer);
-//#ifdef NAPI_CPP_EXCEPTIONS
-//  try {
-//    self->Execute();
-//  } catch (const std::exception& e) {
-//    self->SetError(e.what());
-//  }
-//#else // NAPI_CPP_EXCEPTIONS
-//  self->Execute();
-//#endif // NAPI_CPP_EXCEPTIONS
-//}
-//
-//inline void AsyncWorker::OnWorkComplete(
-//    napi_env /*env*/, napi_status status, void* this_pointer) {
-//  AsyncWorker* self = static_cast<AsyncWorker*>(this_pointer);
-//  if (status != napi_cancelled) {
-//    HandleScope scope(self->_env);
-//    details::WrapCallback([&] {
-//      if (self->_error.size() == 0) {
-//        self->OnOK();
-//      }
-//      else {
-//        self->OnError(Error::New(self->_env, self->_error));
-//      }
-//      return nullptr;
-//    });
-//  }
-//  if (!self->_suppress_destruct) {
-//    self->Destroy();
-//  }
-//}
-//
-//#if (NAPI_VERSION > 3)
-//////////////////////////////////////////////////////////////////////////////////
-//// ThreadSafeFunction class
-//////////////////////////////////////////////////////////////////////////////////
-//
-//// static
-//template <typename ResourceString>
-//inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
-//                                  const Function& callback,
-//                                  ResourceString resourceName,
-//                                  size_t maxQueueSize,
-//                                  size_t initialThreadCount) {
-//  return New(env, callback, Object(), resourceName, maxQueueSize,
-//             initialThreadCount);
-//}
-//
-//// static
-//template <typename ResourceString, typename ContextType>
-//inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
-//                                  const Function& callback,
-//                                  ResourceString resourceName,
-//                                  size_t maxQueueSize,
-//                                  size_t initialThreadCount,
-//                                  ContextType* context) {
-//  return New(env, callback, Object(), resourceName, maxQueueSize,
-//             initialThreadCount, context);
-//}
-//
-//// static
-//template <typename ResourceString, typename Finalizer>
-//inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
-//                                  const Function& callback,
-//                                  ResourceString resourceName,
-//                                  size_t maxQueueSize,
-//                                  size_t initialThreadCount,
-//                                  Finalizer finalizeCallback) {
-//  return New(env, callback, Object(), resourceName, maxQueueSize,
-//             initialThreadCount, finalizeCallback);
-//}
-//
-//// static
-//template <typename ResourceString, typename Finalizer,
-//          typename FinalizerDataType>
-//inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
-//                                  const Function& callback,
-//                                  ResourceString resourceName,
-//                                  size_t maxQueueSize,
-//                                  size_t initialThreadCount,
-//                                  Finalizer finalizeCallback,
-//                                  FinalizerDataType* data) {
-//  return New(env, callback, Object(), resourceName, maxQueueSize,
-//             initialThreadCount, finalizeCallback, data);
-//}
-//
-//// static
-//template <typename ResourceString, typename ContextType, typename Finalizer>
-//inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
-//                                  const Function& callback,
-//                                  ResourceString resourceName,
-//                                  size_t maxQueueSize,
-//                                  size_t initialThreadCount,
-//                                  ContextType* context,
-//                                  Finalizer finalizeCallback) {
-//  return New(env, callback, Object(), resourceName, maxQueueSize,
-//             initialThreadCount, context, finalizeCallback);
-//}
-//
-//// static
-//template <typename ResourceString, typename ContextType,
-//          typename Finalizer, typename FinalizerDataType>
-//inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
-//                                                  const Function& callback,
-//                                                  ResourceString resourceName,
-//                                                  size_t maxQueueSize,
-//                                                  size_t initialThreadCount,
-//                                                  ContextType* context,
-//                                                  Finalizer finalizeCallback,
-//                                                  FinalizerDataType* data) {
-//  return New(env, callback, Object(), resourceName, maxQueueSize,
-//             initialThreadCount, context, finalizeCallback, data);
-//}
-//
-//// static
-//template <typename ResourceString>
-//inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
-//                                  const Function& callback,
-//                                  const Object& resource,
-//                                  ResourceString resourceName,
-//                                  size_t maxQueueSize,
-//                                  size_t initialThreadCount) {
-//  return New(env, callback, resource, resourceName, maxQueueSize,
-//             initialThreadCount, static_cast<void*>(nullptr) /* context */);
-//}
-//
-//// static
-//template <typename ResourceString, typename ContextType>
-//inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
-//                                  const Function& callback,
-//                                  const Object& resource,
-//                                  ResourceString resourceName,
-//                                  size_t maxQueueSize,
-//                                  size_t initialThreadCount,
-//                                  ContextType* context) {
-//  return New(env, callback, resource, resourceName, maxQueueSize,
-//             initialThreadCount, context,
-//             [](Env, ContextType*) {} /* empty finalizer */);
-//}
-//
-//// static
-//template <typename ResourceString, typename Finalizer>
-//inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
-//                                  const Function& callback,
-//                                  const Object& resource,
-//                                  ResourceString resourceName,
-//                                  size_t maxQueueSize,
-//                                  size_t initialThreadCount,
-//                                  Finalizer finalizeCallback) {
-//  return New(env, callback, resource, resourceName, maxQueueSize,
-//             initialThreadCount, static_cast<void*>(nullptr) /* context */,
-//             finalizeCallback, static_cast<void*>(nullptr) /* data */,
-//             details::ThreadSafeFinalize<void, Finalizer>::Wrapper);
-//}
-//
-//// static
-//template <typename ResourceString, typename Finalizer,
-//          typename FinalizerDataType>
-//inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
-//                                  const Function& callback,
-//                                  const Object& resource,
-//                                  ResourceString resourceName,
-//                                  size_t maxQueueSize,
-//                                  size_t initialThreadCount,
-//                                  Finalizer finalizeCallback,
-//                                  FinalizerDataType* data) {
-//  return New(env, callback, resource, resourceName, maxQueueSize,
-//             initialThreadCount, static_cast<void*>(nullptr) /* context */,
-//             finalizeCallback, data,
-//             details::ThreadSafeFinalize<
-//                 void, Finalizer, FinalizerDataType>::FinalizeWrapperWithData);
-//}
-//
-//// static
-//template <typename ResourceString, typename ContextType, typename Finalizer>
-//inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
-//                                  const Function& callback,
-//                                  const Object& resource,
-//                                  ResourceString resourceName,
-//                                  size_t maxQueueSize,
-//                                  size_t initialThreadCount,
-//                                  ContextType* context,
-//                                  Finalizer finalizeCallback) {
-//  return New(env, callback, resource, resourceName, maxQueueSize,
-//             initialThreadCount, context, finalizeCallback,
-//             static_cast<void*>(nullptr) /* data */,
-//             details::ThreadSafeFinalize<
-//                 ContextType, Finalizer>::FinalizeWrapperWithContext);
-//}
-//
-//// static
-//template <typename ResourceString, typename ContextType,
-//          typename Finalizer, typename FinalizerDataType>
-//inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
-//                                                  const Function& callback,
-//                                                  const Object& resource,
-//                                                  ResourceString resourceName,
-//                                                  size_t maxQueueSize,
-//                                                  size_t initialThreadCount,
-//                                                  ContextType* context,
-//                                                  Finalizer finalizeCallback,
-//                                                  FinalizerDataType* data) {
-//  return New(env, callback, resource, resourceName, maxQueueSize,
-//             initialThreadCount, context, finalizeCallback, data,
-//             details::ThreadSafeFinalize<ContextType, Finalizer,
-//                 FinalizerDataType>::FinalizeFinalizeWrapperWithDataAndContext);
-//}
-//
-//inline ThreadSafeFunction::ThreadSafeFunction()
-//  : _tsfn(new napi_threadsafe_function(nullptr), _d) {
-//}
-//
-//inline ThreadSafeFunction::ThreadSafeFunction(
-//    napi_threadsafe_function tsfn)
-//  : _tsfn(new napi_threadsafe_function(tsfn), _d) {
-//}
-//
-//inline ThreadSafeFunction::ThreadSafeFunction(ThreadSafeFunction&& other)
-//  : _tsfn(std::move(other._tsfn)) {
-//  other._tsfn.reset();
-//}
-//
-//inline ThreadSafeFunction& ThreadSafeFunction::operator =(
-//    ThreadSafeFunction&& other) {
-//  if (*_tsfn != nullptr) {
-//    Error::Fatal("ThreadSafeFunction::operator =",
-//        "You cannot assign a new TSFN because existing one is still alive.");
-//    return *this;
-//  }
-//  _tsfn = std::move(other._tsfn);
-//  other._tsfn.reset();
-//  return *this;
-//}
-//
-//inline napi_status ThreadSafeFunction::BlockingCall() const {
-//  return CallInternal(nullptr, napi_tsfn_blocking);
-//}
-//
-//template <typename Callback>
-//inline napi_status ThreadSafeFunction::BlockingCall(
-//    Callback callback) const {
-//  return CallInternal(new CallbackWrapper(callback), napi_tsfn_blocking);
-//}
-//
-//template <typename DataType, typename Callback>
-//inline napi_status ThreadSafeFunction::BlockingCall(
-//    DataType* data, Callback callback) const {
-//  auto wrapper = [data, callback](Env env, Function jsCallback) {
-//    callback(env, jsCallback, data);
-//  };
-//  return CallInternal(new CallbackWrapper(wrapper), napi_tsfn_blocking);
-//}
-//
-//inline napi_status ThreadSafeFunction::NonBlockingCall() const {
-//  return CallInternal(nullptr, napi_tsfn_nonblocking);
-//}
-//
-//template <typename Callback>
-//inline napi_status ThreadSafeFunction::NonBlockingCall(
-//    Callback callback) const {
-//  return CallInternal(new CallbackWrapper(callback), napi_tsfn_nonblocking);
-//}
-//
-//template <typename DataType, typename Callback>
-//inline napi_status ThreadSafeFunction::NonBlockingCall(
-//    DataType* data, Callback callback) const {
-//  auto wrapper = [data, callback](Env env, Function jsCallback) {
-//    callback(env, jsCallback, data);
-//  };
-//  return CallInternal(new CallbackWrapper(wrapper), napi_tsfn_nonblocking);
-//}
-//
-//inline napi_status ThreadSafeFunction::Acquire() const {
-//  return napi_acquire_threadsafe_function(*_tsfn);
-//}
-//
-//inline napi_status ThreadSafeFunction::Release() {
-//  return napi_release_threadsafe_function(*_tsfn, napi_tsfn_release);
-//}
-//
-//inline napi_status ThreadSafeFunction::Abort() {
-//  return napi_release_threadsafe_function(*_tsfn, napi_tsfn_abort);
-//}
-//
-//inline ThreadSafeFunction::ConvertibleContext
-//ThreadSafeFunction::GetContext() const {
-//  void* context;
-//  napi_get_threadsafe_function_context(*_tsfn, &context);
-//  return ConvertibleContext({ context });
-//}
-//
-//// static
-//template <typename ResourceString, typename ContextType,
-//          typename Finalizer, typename FinalizerDataType>
-//inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
-//                                                  const Function& callback,
-//                                                  const Object& resource,
-//                                                  ResourceString resourceName,
-//                                                  size_t maxQueueSize,
-//                                                  size_t initialThreadCount,
-//                                                  ContextType* context,
-//                                                  Finalizer finalizeCallback,
-//                                                  FinalizerDataType* data,
-//                                                  napi_finalize wrapper) {
-//  static_assert(details::can_make_string<ResourceString>::value
-//      || std::is_convertible<ResourceString, napi_value>::value,
-//      "Resource name should be convertible to the string type");
-//
-//  ThreadSafeFunction tsfn;
-//  auto* finalizeData = new details::ThreadSafeFinalize<ContextType, Finalizer,
-//      FinalizerDataType>({ data, finalizeCallback, tsfn._tsfn.get() });
-//  napi_status status = napi_create_threadsafe_function(env, callback, resource,
-//      Value::From(env, resourceName), maxQueueSize, initialThreadCount,
-//      finalizeData, wrapper, context, CallJS, tsfn._tsfn.get());
-//  if (status != napi_ok) {
-//    delete finalizeData;
-//    NAPI_THROW_IF_FAILED(env, status, ThreadSafeFunction());
-//  }
-//
-//  return tsfn;
-//}
-//
-//inline napi_status ThreadSafeFunction::CallInternal(
-//    CallbackWrapper* callbackWrapper,
-//    napi_threadsafe_function_call_mode mode) const {
-//  napi_status status = napi_call_threadsafe_function(
-//      *_tsfn, callbackWrapper, mode);
-//  if (status != napi_ok && callbackWrapper != nullptr) {
-//    delete callbackWrapper;
-//  }
-//
-//  return status;
-//}
-//
-//// static
-//inline void ThreadSafeFunction::CallJS(napi_env env,
-//                                       napi_value jsCallback,
-//                                       void* /* context */,
-//                                       void* data) {
-//  if (env == nullptr && jsCallback == nullptr) {
-//    return;
-//  }
-//
-//  if (data != nullptr) {
-//    auto* callbackWrapper = static_cast<CallbackWrapper*>(data);
-//    (*callbackWrapper)(env, Function(env, jsCallback));
-//    delete callbackWrapper;
-//  } else if (jsCallback != nullptr) {
-//    Function(env, jsCallback).Call({});
-//  }
-//}
-//#endif
-//
-//////////////////////////////////////////////////////////////////////////////////
-//// Memory Management class
-//////////////////////////////////////////////////////////////////////////////////
-//
-//inline int64_t MemoryManagement::AdjustExternalMemory(Env env, int64_t change_in_bytes) {
-//  int64_t result;
-//  napi_status status = napi_adjust_external_memory(env, change_in_bytes, &result);
-//  NAPI_THROW_IF_FAILED(env, status, 0);
-//  return result;
-//}
-//
-//////////////////////////////////////////////////////////////////////////////////
-//// Version Management class
-//////////////////////////////////////////////////////////////////////////////////
-//
-//inline uint32_t VersionManagement::GetNapiVersion(Env env) {
-//  uint32_t result;
-//  napi_status status = napi_get_version(env, &result);
-//  NAPI_THROW_IF_FAILED(env, status, 0);
-//  return result;
-//}
-//
-//inline const napi_node_version* VersionManagement::GetNodeVersion(Env env) {
-//  const napi_node_version* result;
-//  napi_status status = napi_get_node_version(env, &result);
-//  NAPI_THROW_IF_FAILED(env, status, 0);
-//  return result;
-//}
+inline CallbackScope::CallbackScope(
+  napi_env env, napi_callback_scope scope) : _env(env), _scope(scope) {
+}
+
+inline CallbackScope::CallbackScope(napi_env env, napi_async_context context)
+    : _env(env) {
+  napi_status status = napi_open_callback_scope(
+      _env, Object::New(env), context, &_scope);
+  NAPI_THROW_IF_FAILED_VOID(_env, status);
+}
+
+inline CallbackScope::~CallbackScope() {
+  napi_close_callback_scope(_env, _scope);
+}
+
+inline CallbackScope::operator napi_callback_scope() const {
+  return _scope;
+}
+
+inline Napi::Env CallbackScope::Env() const {
+  return Napi::Env(_env);
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+// AsyncContext class
+////////////////////////////////////////////////////////////////////////////////
+
+inline AsyncContext::AsyncContext(napi_env env, const char* resource_name)
+  : AsyncContext(env, resource_name, Object::New(env)) {
+}
+
+inline AsyncContext::AsyncContext(napi_env env,
+		                  const char* resource_name,
+                                  const Object& resource)
+  : _env(env),
+    _context(nullptr) {
+  napi_value resource_id;
+  napi_status status = napi_create_string_utf8(
+      _env, resource_name, NAPI_AUTO_LENGTH, &resource_id);
+  NAPI_THROW_IF_FAILED_VOID(_env, status);
+
+  status = napi_async_init(_env, resource, resource_id, &_context);
+  NAPI_THROW_IF_FAILED_VOID(_env, status);
+}
+
+inline AsyncContext::~AsyncContext() {
+  if (_context != nullptr) {
+    napi_async_destroy(_env, _context);
+    _context = nullptr;
+  }
+}
+
+inline AsyncContext::AsyncContext(AsyncContext&& other) {
+  _env = other._env;
+  other._env = nullptr;
+  _context = other._context;
+  other._context = nullptr;
+}
+
+inline AsyncContext& AsyncContext::operator =(AsyncContext&& other) {
+  _env = other._env;
+  other._env = nullptr;
+  _context = other._context;
+  other._context = nullptr;
+  return *this;
+}
+
+inline AsyncContext::operator napi_async_context() const {
+  return _context;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AsyncWorker class
+////////////////////////////////////////////////////////////////////////////////
+
+inline AsyncWorker::AsyncWorker(const Function& callback)
+  : AsyncWorker(callback, "generic") {
+}
+
+inline AsyncWorker::AsyncWorker(const Function& callback,
+                                const char* resource_name)
+  : AsyncWorker(callback, resource_name, Object::New(callback.Env())) {
+}
+
+inline AsyncWorker::AsyncWorker(const Function& callback,
+                                const char* resource_name,
+                                const Object& resource)
+  : AsyncWorker(Object::New(callback.Env()),
+                callback,
+                resource_name,
+                resource) {
+}
+
+inline AsyncWorker::AsyncWorker(const Object& receiver,
+                                const Function& callback)
+  : AsyncWorker(receiver, callback, "generic") {
+}
+
+inline AsyncWorker::AsyncWorker(const Object& receiver,
+                                const Function& callback,
+                                const char* resource_name)
+  : AsyncWorker(receiver,
+                callback,
+                resource_name,
+                Object::New(callback.Env())) {
+}
+
+inline AsyncWorker::AsyncWorker(const Object& receiver,
+                                const Function& callback,
+                                const char* resource_name,
+                                const Object& resource)
+  : _env(callback.Env()),
+    _receiver(Napi::Persistent(receiver)),
+    _callback(Napi::Persistent(callback)),
+    _suppress_destruct(false) {
+  napi_value resource_id;
+  napi_status status = napi_create_string_latin1(
+      _env, resource_name, NAPI_AUTO_LENGTH, &resource_id);
+  NAPI_THROW_IF_FAILED_VOID(_env, status);
+
+  status = napi_create_async_work(_env, resource, resource_id, OnExecute,
+                                  OnWorkComplete, this, &_work);
+  NAPI_THROW_IF_FAILED_VOID(_env, status);
+}
+
+inline AsyncWorker::AsyncWorker(Napi::Env env)
+  : AsyncWorker(env, "generic") {
+}
+
+inline AsyncWorker::AsyncWorker(Napi::Env env,
+                                const char* resource_name)
+  : AsyncWorker(env, resource_name, Object::New(env)) {
+}
+
+inline AsyncWorker::AsyncWorker(Napi::Env env,
+                                const char* resource_name,
+                                const Object& resource)
+  : _env(env),
+    _receiver(),
+    _callback(),
+    _suppress_destruct(false) {
+  napi_value resource_id;
+  napi_status status = napi_create_string_latin1(
+      _env, resource_name, NAPI_AUTO_LENGTH, &resource_id);
+  NAPI_THROW_IF_FAILED_VOID(_env, status);
+
+  status = napi_create_async_work(_env, resource, resource_id, OnExecute,
+                                  OnWorkComplete, this, &_work);
+  NAPI_THROW_IF_FAILED_VOID(_env, status);
+}
+
+inline AsyncWorker::~AsyncWorker() {
+  if (_work != nullptr) {
+    napi_delete_async_work(_env, _work);
+    _work = nullptr;
+  }
+}
+
+inline void AsyncWorker::Destroy() {
+  delete this;
+}
+
+inline AsyncWorker::AsyncWorker(AsyncWorker&& other) {
+  _env = other._env;
+  other._env = nullptr;
+  _work = other._work;
+  other._work = nullptr;
+  _receiver = std::move(other._receiver);
+  _callback = std::move(other._callback);
+  _error = std::move(other._error);
+  _suppress_destruct = other._suppress_destruct;
+}
+
+inline AsyncWorker& AsyncWorker::operator =(AsyncWorker&& other) {
+  _env = other._env;
+  other._env = nullptr;
+  _work = other._work;
+  other._work = nullptr;
+  _receiver = std::move(other._receiver);
+  _callback = std::move(other._callback);
+  _error = std::move(other._error);
+  _suppress_destruct = other._suppress_destruct;
+  return *this;
+}
+
+inline AsyncWorker::operator napi_async_work() const {
+  return _work;
+}
+
+inline Napi::Env AsyncWorker::Env() const {
+  return Napi::Env(_env);
+}
+
+inline void AsyncWorker::Queue() {
+  napi_status status = napi_queue_async_work(_env, _work);
+  NAPI_THROW_IF_FAILED_VOID(_env, status);
+}
+
+inline void AsyncWorker::Cancel() {
+  napi_status status = napi_cancel_async_work(_env, _work);
+  NAPI_THROW_IF_FAILED_VOID(_env, status);
+}
+
+inline ObjectReference& AsyncWorker::Receiver() {
+  return _receiver;
+}
+
+inline FunctionReference& AsyncWorker::Callback() {
+  return _callback;
+}
+
+inline void AsyncWorker::SuppressDestruct() {
+  _suppress_destruct = true;
+}
+
+inline void AsyncWorker::OnOK() {
+  if (!_callback.IsEmpty()) {
+    _callback.Call(_receiver.Value(), GetResult(_callback.Env()));
+  }
+}
+
+inline void AsyncWorker::OnError(const Error& e) {
+  if (!_callback.IsEmpty()) {
+    _callback.Call(_receiver.Value(), std::initializer_list<napi_value>{ e.Value() });
+  }
+}
+
+inline void AsyncWorker::SetError(const std::string& error) {
+  _error = error;
+}
+
+inline std::vector<napi_value> AsyncWorker::GetResult(Napi::Env /*env*/) {
+  return {};
+}
+// The OnExecute method receives an napi_env argument. However, do NOT
+// use it within this method, as it does not run on the main thread and must
+// not run any method that would cause JavaScript to run. In practice, this
+// means that almost any use of napi_env will be incorrect.
+inline void AsyncWorker::OnExecute(napi_env /*DO_NOT_USE*/, void* this_pointer) {
+  AsyncWorker* self = static_cast<AsyncWorker*>(this_pointer);
+#ifdef NAPI_CPP_EXCEPTIONS
+  try {
+    self->Execute();
+  } catch (const std::exception& e) {
+    self->SetError(e.what());
+  }
+#else // NAPI_CPP_EXCEPTIONS
+  self->Execute();
+#endif // NAPI_CPP_EXCEPTIONS
+}
+
+inline void AsyncWorker::OnWorkComplete(
+    napi_env /*env*/, napi_status status, void* this_pointer) {
+  AsyncWorker* self = static_cast<AsyncWorker*>(this_pointer);
+  if (status != napi_cancelled) {
+    HandleScope scope(self->_env);
+    details::WrapCallback([&] {
+      if (self->_error.size() == 0) {
+        self->OnOK();
+      }
+      else {
+        self->OnError(Error::New(self->_env, self->_error));
+      }
+      return nullptr;
+    });
+  }
+  if (!self->_suppress_destruct) {
+    self->Destroy();
+  }
+}
+
+#if (NAPI_VERSION > 3)
+////////////////////////////////////////////////////////////////////////////////
+// ThreadSafeFunction class
+////////////////////////////////////////////////////////////////////////////////
+
+// static
+template <typename ResourceString>
+inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
+                                  const Function& callback,
+                                  ResourceString resourceName,
+                                  size_t maxQueueSize,
+                                  size_t initialThreadCount) {
+  return New(env, callback, Object(), resourceName, maxQueueSize,
+             initialThreadCount);
+}
+
+// static
+template <typename ResourceString, typename ContextType>
+inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
+                                  const Function& callback,
+                                  ResourceString resourceName,
+                                  size_t maxQueueSize,
+                                  size_t initialThreadCount,
+                                  ContextType* context) {
+  return New(env, callback, Object(), resourceName, maxQueueSize,
+             initialThreadCount, context);
+}
+
+// static
+template <typename ResourceString, typename Finalizer>
+inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
+                                  const Function& callback,
+                                  ResourceString resourceName,
+                                  size_t maxQueueSize,
+                                  size_t initialThreadCount,
+                                  Finalizer finalizeCallback) {
+  return New(env, callback, Object(), resourceName, maxQueueSize,
+             initialThreadCount, finalizeCallback);
+}
+
+// static
+template <typename ResourceString, typename Finalizer,
+          typename FinalizerDataType>
+inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
+                                  const Function& callback,
+                                  ResourceString resourceName,
+                                  size_t maxQueueSize,
+                                  size_t initialThreadCount,
+                                  Finalizer finalizeCallback,
+                                  FinalizerDataType* data) {
+  return New(env, callback, Object(), resourceName, maxQueueSize,
+             initialThreadCount, finalizeCallback, data);
+}
+
+// static
+template <typename ResourceString, typename ContextType, typename Finalizer>
+inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
+                                  const Function& callback,
+                                  ResourceString resourceName,
+                                  size_t maxQueueSize,
+                                  size_t initialThreadCount,
+                                  ContextType* context,
+                                  Finalizer finalizeCallback) {
+  return New(env, callback, Object(), resourceName, maxQueueSize,
+             initialThreadCount, context, finalizeCallback);
+}
+
+// static
+template <typename ResourceString, typename ContextType,
+          typename Finalizer, typename FinalizerDataType>
+inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
+                                                  const Function& callback,
+                                                  ResourceString resourceName,
+                                                  size_t maxQueueSize,
+                                                  size_t initialThreadCount,
+                                                  ContextType* context,
+                                                  Finalizer finalizeCallback,
+                                                  FinalizerDataType* data) {
+  return New(env, callback, Object(), resourceName, maxQueueSize,
+             initialThreadCount, context, finalizeCallback, data);
+}
+
+// static
+template <typename ResourceString>
+inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
+                                  const Function& callback,
+                                  const Object& resource,
+                                  ResourceString resourceName,
+                                  size_t maxQueueSize,
+                                  size_t initialThreadCount) {
+  return New(env, callback, resource, resourceName, maxQueueSize,
+             initialThreadCount, static_cast<void*>(nullptr) /* context */);
+}
+
+// static
+template <typename ResourceString, typename ContextType>
+inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
+                                  const Function& callback,
+                                  const Object& resource,
+                                  ResourceString resourceName,
+                                  size_t maxQueueSize,
+                                  size_t initialThreadCount,
+                                  ContextType* context) {
+  return New(env, callback, resource, resourceName, maxQueueSize,
+             initialThreadCount, context,
+             [](Env, ContextType*) {} /* empty finalizer */);
+}
+
+// static
+template <typename ResourceString, typename Finalizer>
+inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
+                                  const Function& callback,
+                                  const Object& resource,
+                                  ResourceString resourceName,
+                                  size_t maxQueueSize,
+                                  size_t initialThreadCount,
+                                  Finalizer finalizeCallback) {
+  return New(env, callback, resource, resourceName, maxQueueSize,
+             initialThreadCount, static_cast<void*>(nullptr) /* context */,
+             finalizeCallback, static_cast<void*>(nullptr) /* data */,
+             details::ThreadSafeFinalize<void, Finalizer>::Wrapper);
+}
+
+// static
+template <typename ResourceString, typename Finalizer,
+          typename FinalizerDataType>
+inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
+                                  const Function& callback,
+                                  const Object& resource,
+                                  ResourceString resourceName,
+                                  size_t maxQueueSize,
+                                  size_t initialThreadCount,
+                                  Finalizer finalizeCallback,
+                                  FinalizerDataType* data) {
+  return New(env, callback, resource, resourceName, maxQueueSize,
+             initialThreadCount, static_cast<void*>(nullptr) /* context */,
+             finalizeCallback, data,
+             details::ThreadSafeFinalize<
+                 void, Finalizer, FinalizerDataType>::FinalizeWrapperWithData);
+}
+
+// static
+template <typename ResourceString, typename ContextType, typename Finalizer>
+inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
+                                  const Function& callback,
+                                  const Object& resource,
+                                  ResourceString resourceName,
+                                  size_t maxQueueSize,
+                                  size_t initialThreadCount,
+                                  ContextType* context,
+                                  Finalizer finalizeCallback) {
+  return New(env, callback, resource, resourceName, maxQueueSize,
+             initialThreadCount, context, finalizeCallback,
+             static_cast<void*>(nullptr) /* data */,
+             details::ThreadSafeFinalize<
+                 ContextType, Finalizer>::FinalizeWrapperWithContext);
+}
+
+// static
+template <typename ResourceString, typename ContextType,
+          typename Finalizer, typename FinalizerDataType>
+inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
+                                                  const Function& callback,
+                                                  const Object& resource,
+                                                  ResourceString resourceName,
+                                                  size_t maxQueueSize,
+                                                  size_t initialThreadCount,
+                                                  ContextType* context,
+                                                  Finalizer finalizeCallback,
+                                                  FinalizerDataType* data) {
+  return New(env, callback, resource, resourceName, maxQueueSize,
+             initialThreadCount, context, finalizeCallback, data,
+             details::ThreadSafeFinalize<ContextType, Finalizer,
+                 FinalizerDataType>::FinalizeFinalizeWrapperWithDataAndContext);
+}
+
+inline ThreadSafeFunction::ThreadSafeFunction()
+  : _tsfn(new napi_threadsafe_function(nullptr), _d) {
+}
+
+inline ThreadSafeFunction::ThreadSafeFunction(
+    napi_threadsafe_function tsfn)
+  : _tsfn(new napi_threadsafe_function(tsfn), _d) {
+}
+
+inline ThreadSafeFunction::ThreadSafeFunction(ThreadSafeFunction&& other)
+  : _tsfn(std::move(other._tsfn)) {
+  other._tsfn.reset();
+}
+
+inline ThreadSafeFunction& ThreadSafeFunction::operator =(
+    ThreadSafeFunction&& other) {
+  if (*_tsfn != nullptr) {
+    Error::Fatal("ThreadSafeFunction::operator =",
+        "You cannot assign a new TSFN because existing one is still alive.");
+    return *this;
+  }
+  _tsfn = std::move(other._tsfn);
+  other._tsfn.reset();
+  return *this;
+}
+
+inline napi_status ThreadSafeFunction::BlockingCall() const {
+  return CallInternal(nullptr, napi_tsfn_blocking);
+}
+
+template <typename Callback>
+inline napi_status ThreadSafeFunction::BlockingCall(
+    Callback callback) const {
+  return CallInternal(new CallbackWrapper(callback), napi_tsfn_blocking);
+}
+
+template <typename DataType, typename Callback>
+inline napi_status ThreadSafeFunction::BlockingCall(
+    DataType* data, Callback callback) const {
+  auto wrapper = [data, callback](Env env, Function jsCallback) {
+    callback(env, jsCallback, data);
+  };
+  return CallInternal(new CallbackWrapper(wrapper), napi_tsfn_blocking);
+}
+
+inline napi_status ThreadSafeFunction::NonBlockingCall() const {
+  return CallInternal(nullptr, napi_tsfn_nonblocking);
+}
+
+template <typename Callback>
+inline napi_status ThreadSafeFunction::NonBlockingCall(
+    Callback callback) const {
+  return CallInternal(new CallbackWrapper(callback), napi_tsfn_nonblocking);
+}
+
+template <typename DataType, typename Callback>
+inline napi_status ThreadSafeFunction::NonBlockingCall(
+    DataType* data, Callback callback) const {
+  auto wrapper = [data, callback](Env env, Function jsCallback) {
+    callback(env, jsCallback, data);
+  };
+  return CallInternal(new CallbackWrapper(wrapper), napi_tsfn_nonblocking);
+}
+
+inline napi_status ThreadSafeFunction::Acquire() const {
+  return napi_acquire_threadsafe_function(*_tsfn);
+}
+
+inline napi_status ThreadSafeFunction::Release() {
+  return napi_release_threadsafe_function(*_tsfn, napi_tsfn_release);
+}
+
+inline napi_status ThreadSafeFunction::Abort() {
+  return napi_release_threadsafe_function(*_tsfn, napi_tsfn_abort);
+}
+
+inline ThreadSafeFunction::ConvertibleContext
+ThreadSafeFunction::GetContext() const {
+  void* context;
+  napi_get_threadsafe_function_context(*_tsfn, &context);
+  return ConvertibleContext({ context });
+}
+
+// static
+template <typename ResourceString, typename ContextType,
+          typename Finalizer, typename FinalizerDataType>
+inline ThreadSafeFunction ThreadSafeFunction::New(napi_env env,
+                                                  const Function& callback,
+                                                  const Object& resource,
+                                                  ResourceString resourceName,
+                                                  size_t maxQueueSize,
+                                                  size_t initialThreadCount,
+                                                  ContextType* context,
+                                                  Finalizer finalizeCallback,
+                                                  FinalizerDataType* data,
+                                                  napi_finalize wrapper) {
+  static_assert(details::can_make_string<ResourceString>::value
+      || std::is_convertible<ResourceString, napi_value>::value,
+      "Resource name should be convertible to the string type");
+
+  ThreadSafeFunction tsfn;
+  auto* finalizeData = new details::ThreadSafeFinalize<ContextType, Finalizer,
+      FinalizerDataType>({ data, finalizeCallback, tsfn._tsfn.get() });
+  napi_status status = napi_create_threadsafe_function(env, callback, resource,
+      Value::From(env, resourceName), maxQueueSize, initialThreadCount,
+      finalizeData, wrapper, context, CallJS, tsfn._tsfn.get());
+  if (status != napi_ok) {
+    delete finalizeData;
+    NAPI_THROW_IF_FAILED(env, status, ThreadSafeFunction());
+  }
+
+  return tsfn;
+}
+
+inline napi_status ThreadSafeFunction::CallInternal(
+    CallbackWrapper* callbackWrapper,
+    napi_threadsafe_function_call_mode mode) const {
+  napi_status status = napi_call_threadsafe_function(
+      *_tsfn, callbackWrapper, mode);
+  if (status != napi_ok && callbackWrapper != nullptr) {
+    delete callbackWrapper;
+  }
+
+  return status;
+}
+
+// static
+inline void ThreadSafeFunction::CallJS(napi_env env,
+                                       napi_value jsCallback,
+                                       void* /* context */,
+                                       void* data) {
+  if (env == nullptr && jsCallback == nullptr) {
+    return;
+  }
+
+  if (data != nullptr) {
+    auto* callbackWrapper = static_cast<CallbackWrapper*>(data);
+    (*callbackWrapper)(env, Function(env, jsCallback));
+    delete callbackWrapper;
+  } else if (jsCallback != nullptr) {
+    Function(env, jsCallback).Call({});
+  }
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+// Memory Management class
+////////////////////////////////////////////////////////////////////////////////
+
+inline int64_t MemoryManagement::AdjustExternalMemory(Env env, int64_t change_in_bytes) {
+  int64_t result;
+  napi_status status = napi_adjust_external_memory(env, change_in_bytes, &result);
+  NAPI_THROW_IF_FAILED(env, status, 0);
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Version Management class
+////////////////////////////////////////////////////////////////////////////////
+
+inline uint32_t VersionManagement::GetNapiVersion(Env env) {
+  uint32_t result;
+  napi_status status = napi_get_version(env, &result);
+  NAPI_THROW_IF_FAILED(env, status, 0);
+  return result;
+}
+
+inline const napi_node_version* VersionManagement::GetNodeVersion(Env env) {
+  const napi_node_version* result;
+  napi_status status = napi_get_node_version(env, &result);
+  NAPI_THROW_IF_FAILED(env, status, 0);
+  return result;
+}
+#endif
 
 } // namespace Napi
 

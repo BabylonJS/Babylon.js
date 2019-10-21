@@ -62,6 +62,7 @@ target_compile_definitions(napi PRIVATE NOMINMAX)
 target_compile_definitions(napi PRIVATE _CRT_SECURE_NO_WARNINGS)
 
 target_compile_definitions(napi PUBLIC NODE_ADDON_API_DISABLE_DEPRECATED)
+target_compile_definitions(napi PUBLIC NODE_ADDON_API_DISABLE_NODE_SPECIFIC)
 
 if(NAPI_JAVASCRIPT_ENGINE STREQUAL "Chakra")
     target_compile_definitions(napi PRIVATE USE_EDGEMODE_JSRT)
