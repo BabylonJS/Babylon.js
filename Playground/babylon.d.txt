@@ -55312,18 +55312,9 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the world normal component
-         */
-        readonly worldNormal: NodeMaterialConnectionPoint;
-        /**
-         * Gets the view direction input component
-         */
-        readonly viewDirection: NodeMaterialConnectionPoint;
-        /**
          * Gets the output component
          */
         readonly output: NodeMaterialConnectionPoint;
-        autoConfigure(material: NodeMaterial): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
