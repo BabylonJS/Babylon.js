@@ -1183,7 +1183,7 @@ export class NodeMaterial extends PushMaterial {
             let parsedBlock = source.blocks[blockIndex];
             let block = map[parsedBlock.id];
 
-            if (!block.isInput) {
+            if (block.inputs.length) {
                 continue;
             }
             this._restoreConnections(block, source, map);
