@@ -1,15 +1,32 @@
 #ifndef SRC_JS_NATIVE_API_V8_H_
 #define SRC_JS_NATIVE_API_V8_H_
 
-#include <string.h>
+// This file needs to be compatible with C compilers.
+#include <string.h>  // NOLINT(modernize-deprecated-headers)
 #include <napi/js_native_api_types.h>
 #include "js_native_api_v8_internals.h"
+
+static napi_status napi_clear_last_error(napi_env env);
 
 struct napi_env__ {
   explicit napi_env__(v8::Local<v8::Context> context)
       : isolate(context->GetIsolate()),
         context_persistent(isolate, context) {
     CHECK_EQ(isolate, context->GetIsolate());
+  }
+  virtual ~napi_env__() {
+    // First we must finalize those references that have `napi_finalizer`
+    // callbacks. The reason is that addons might store other references which
+    // they delete during their `napi_finalizer` callbacks. If we deleted such
+    // references here first, they would be doubly deleted when the
+    // `napi_finalizer` deleted them subsequently.
+    v8impl::RefTracker::FinalizeAll(&finalizing_reflist);
+    v8impl::RefTracker::FinalizeAll(&reflist);
+    if (instance_data.finalize_cb != nullptr) {
+      CallIntoModuleThrow([&](napi_env env) {
+        instance_data.finalize_cb(env, instance_data.data, instance_data.hint);
+      });
+    }
   }
   v8::Isolate* const isolate;  // Shortcut for context()->GetIsolate()
   v8impl::Persistent<v8::Context> context_persistent;
@@ -21,11 +38,45 @@ struct napi_env__ {
   inline void Ref() { refs++; }
   inline void Unref() { if ( --refs == 0) delete this; }
 
+  virtual bool can_call_into_js() const { return true; }
+
+  template <typename T, typename U>
+  void CallIntoModule(T&& call, U&& handle_exception) {
+    int open_handle_scopes_before = open_handle_scopes;
+    int open_callback_scopes_before = open_callback_scopes;
+    napi_clear_last_error(this);
+    call(this);
+    CHECK_EQ(open_handle_scopes, open_handle_scopes_before);
+    CHECK_EQ(open_callback_scopes, open_callback_scopes_before);
+    if (!last_exception.IsEmpty()) {
+      handle_exception(this, last_exception.Get(this->isolate));
+      last_exception.Reset();
+    }
+  }
+
+  template <typename T>
+  void CallIntoModuleThrow(T&& call) {
+    CallIntoModule(call, [&](napi_env env, v8::Local<v8::Value> value) {
+      env->isolate->ThrowException(value);
+    });
+  }
+
   v8impl::Persistent<v8::Value> last_exception;
+
+  // We store references in two different lists, depending on whether they have
+  // `napi_finalizer` callbacks, because we must first finalize the ones that
+  // have such a callback. See `~napi_env__()` above for details.
+  v8impl::RefTracker::RefList reflist;
+  v8impl::RefTracker::RefList finalizing_reflist;
   napi_extended_error_info last_error;
   int open_handle_scopes = 0;
   int open_callback_scopes = 0;
   int refs = 1;
+  struct {
+    void* data = nullptr;
+    void* hint = nullptr;
+    napi_finalize finalize_cb = nullptr;
+  } instance_data;
 };
 
 static inline napi_status napi_clear_last_error(napi_env env) {
@@ -68,11 +119,12 @@ napi_status napi_set_last_error(napi_env env, napi_status error_code,
   RETURN_STATUS_IF_FALSE((env), !((maybe).IsEmpty()), (status))
 
 // NAPI_PREAMBLE is not wrapped in do..while: try_catch must have function scope
-#define NAPI_PREAMBLE(env)                                       \
-  CHECK_ENV((env));                                              \
-  RETURN_STATUS_IF_FALSE((env), (env)->last_exception.IsEmpty(), \
-                         napi_pending_exception);                \
-  napi_clear_last_error((env));                                  \
+#define NAPI_PREAMBLE(env)                                          \
+  CHECK_ENV((env));                                                 \
+  RETURN_STATUS_IF_FALSE((env),                                     \
+      (env)->last_exception.IsEmpty() && (env)->can_call_into_js(), \
+      napi_pending_exception);                                      \
+  napi_clear_last_error((env));                                     \
   v8impl::TryCatch try_catch((env))
 
 #define CHECK_TO_TYPE(env, type, context, result, src, status)                \
@@ -109,24 +161,6 @@ napi_status napi_set_last_error(napi_env env, napi_status error_code,
     }                                                              \
   } while (0)
 
-#define NAPI_CALL_INTO_MODULE(env, call, handle_exception)                   \
-  do {                                                                       \
-    int open_handle_scopes = (env)->open_handle_scopes;                      \
-    int open_callback_scopes = (env)->open_callback_scopes;                  \
-    napi_clear_last_error((env));                                            \
-    call;                                                                    \
-    CHECK_EQ((env)->open_handle_scopes, open_handle_scopes);                 \
-    CHECK_EQ((env)->open_callback_scopes, open_callback_scopes);             \
-    if (!(env)->last_exception.IsEmpty()) {                                  \
-      handle_exception(                                                      \
-          v8::Local<v8::Value>::New((env)->isolate, (env)->last_exception)); \
-      (env)->last_exception.Reset();                                         \
-    }                                                                        \
-  } while (0)
-
-#define NAPI_CALL_INTO_MODULE_THROW(env, call) \
-  NAPI_CALL_INTO_MODULE((env), call, (env)->isolate->ThrowException)
-
 namespace v8impl {
 
 //=== Conversion between V8 Handles and napi_value ========================
@@ -142,7 +176,7 @@ inline napi_value JsValueFromV8LocalValue(v8::Local<v8::Value> local) {
 
 inline v8::Local<v8::Value> V8LocalValueFromJsValue(napi_value v) {
   v8::Local<v8::Value> local;
-  memcpy(&local, &v, sizeof(v));
+  memcpy(static_cast<void*>(&local), &v, sizeof(v));
   return local;
 }
 
@@ -159,8 +193,7 @@ class Finalizer {
       _finalize_hint(finalize_hint) {
   }
 
-  ~Finalizer() {
-  }
+  ~Finalizer() = default;
 
  public:
   static Finalizer* New(napi_env env,
@@ -180,6 +213,7 @@ class Finalizer {
   napi_finalize _finalize_callback;
   void* _finalize_data;
   void* _finalize_hint;
+  bool _finalize_ran = false;
 };
 
 class TryCatch : public v8::TryCatch {
