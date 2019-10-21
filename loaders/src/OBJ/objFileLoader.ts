@@ -212,7 +212,7 @@ export class MTLFileLoader {
             url += value;
         }
 
-        return new Texture(url, scene);
+        return new Texture(url, scene, false, OBJFileLoader.INVERT_TEXTURE_Y);
     }
 }
 
@@ -235,9 +235,17 @@ type MeshLoadOptions = {
      */
     OptimizeWithUV: boolean,
     /**
+     * Defines custom scaling of UV coordinates of loaded meshes.
+     */
+    UVScaling: Vector2;
+    /**
      * Invert model on y-axis (does a model scaling inversion)
      */
     InvertY: boolean,
+    /**
+     * Invert Y-Axis of referenced textures on load
+     */
+    InvertTextureY: boolean;
     /**
      * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
      */
@@ -265,11 +273,15 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     /**
      * Defines if UVs are optimized by default during load.
      */
-    public static OPTIMIZE_WITH_UV = false;
+    public static OPTIMIZE_WITH_UV = true;
     /**
      * Invert model on y-axis (does a model scaling inversion)
      */
     public static INVERT_Y = false;
+    /**
+     * Invert Y-Axis of referenced textures on load
+     */
+    public static INVERT_TEXTURE_Y = true;
     /**
      * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
      */
@@ -278,7 +290,10 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * Compute the normals for the model, even if normals are present in the file.
      */
     public static COMPUTE_NORMALS = false;
-
+    /**
+     * Defines custom scaling of UV coordinates of loaded meshes.
+     */
+    public static UV_SCALING = new Vector2(1, 1);
     /**
      * Skip loading the materials even if defined in the OBJ file (materials are ignored).
      */
@@ -348,6 +363,8 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             ComputeNormals: OBJFileLoader.COMPUTE_NORMALS,
             ImportVertexColors: OBJFileLoader.IMPORT_VERTEX_COLORS,
             InvertY: OBJFileLoader.INVERT_Y,
+            InvertTextureY: OBJFileLoader.INVERT_TEXTURE_Y,
+            UVScaling: OBJFileLoader.UV_SCALING,
             MaterialLoadingFailsSilently: OBJFileLoader.MATERIAL_LOADING_FAILS_SILENTLY,
             OptimizeWithUV: OBJFileLoader.OPTIMIZE_WITH_UV,
             SkipMaterials: OBJFileLoader.SKIP_MATERIALS
@@ -451,6 +468,23 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         return this.importMeshAsync(null, scene, data, rootUrl).then((result) => {
             var container = new AssetContainer(scene);
             result.meshes.forEach((mesh) => container.meshes.push(mesh));
+            result.meshes.forEach((mesh) => {
+                var material = mesh.material;
+                if (material) {
+                    // Materials
+                    if (container.materials.indexOf(material) == -1) {
+                        container.materials.push(material);
+
+                        // Textures
+                        var textures = material.getActiveTextures();
+                        textures.forEach((t) => {
+                            if (container.textures.indexOf(t) == -1) {
+                                container.textures.push(t);
+                            }
+                        });
+                    }
+                }
+            });
             container.removeAllFromScene();
             return container;
         });
@@ -515,7 +549,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             if (!arr[obj[0]]) { arr[obj[0]] = { normals: [], idx: [], uv: [] }; }
             var idx = arr[obj[0]].normals.indexOf(obj[1]);
 
-            if (idx != 1 && (obj[2] == arr[obj[0]].uv[idx])) {
+            if (idx != 1 && (obj[2] === arr[obj[0]].uv[idx])) {
                 return arr[obj[0]].idx[idx];
             }
             return -1;
@@ -558,7 +592,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             }
 
             //If it not exists
-            if (_index == -1) {
+            if (_index === -1) {
                 //Add an new indice.
                 //The array of indices is only an array with his length equal to the number of triangles - 1.
                 //We add vertices data in this order
@@ -616,8 +650,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         };
 
         /**
-         * Create triangles from polygons by recursion
-         * The best to understand how it works is to draw it in the same time you get the recursion.
+         * Create triangles from polygons
          * It is important to notice that a triangle is a polygon
          * We get 5 patterns of face defined in OBJ File :
          * facePattern1 = ["1","2","3","4","5","6"]
@@ -629,15 +662,11 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
          * @param face Array[String] The indices of elements
          * @param v Integer The variable to increment
          */
-        var getTriangles = (face: Array<string>, v: number) => {
+        var getTriangles = (faces: Array<string>, v: number) => {
             //Work for each element of the array
-            if (v + 1 < face.length) {
+            for (var faceIndex = v; faceIndex < faces.length - 1; faceIndex++) {
                 //Add on the triangle variable the indexes to obtain triangles
-                triangles.push(face[0], face[v], face[v + 1]);
-                //Incrementation for recursion
-                v += 1;
-                //Recursion
-                getTriangles(face, v);
+                triangles.push(faces[0], faces[faceIndex], faces[faceIndex + 1]);
             }
 
             //Result obtained after 2 iterations:
@@ -840,14 +869,14 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         var lines = data.split('\n');
         //Look at each line
         for (var i = 0; i < lines.length; i++) {
-            var line = lines[i].trim();
+            var line = lines[i].trim().replace(/\s\s/g, " ");
             var result;
 
             //Comment or newLine
             if (line.length === 0 || line.charAt(0) === '#') {
                 continue;
 
-            //Get information about one position possible for the vertices
+                //Get information about one position possible for the vertices
             } else if (this.vertexPattern.test(line)) {
                 result = line.match(/[^ ]+/g)!;  // match will return non-null due to passing regex pattern
 
@@ -892,8 +921,8 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 // ["vt 0.1 0.2 0.3", "0.1", "0.2"]
                 //Add the Vector in the list of uvs
                 uvs.push(new Vector2(
-                    parseFloat(result[1]),
-                    parseFloat(result[2])
+                    parseFloat(result[1]) * OBJFileLoader.UV_SCALING.x,
+                    parseFloat(result[2]) * OBJFileLoader.UV_SCALING.y
                 ));
 
                 //Identify patterns of faces
@@ -1068,7 +1097,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             //check meshesNames (stlFileLoader)
             if (meshesNames && meshesFromObj[j].name) {
                 if (meshesNames instanceof Array) {
-                    if (meshesNames.indexOf(meshesFromObj[j].name) == -1) {
+                    if (meshesNames.indexOf(meshesFromObj[j].name) === -1) {
                         continue;
                     }
                 }
@@ -1138,7 +1167,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                                 startIndex = _index + 1;
                             }
                             //If the material is not used dispose it
-                            if (_index == -1 && _indices.length == 0) {
+                            if (_index === -1 && _indices.length === 0) {
                                 //If the material is not needed, remove it
                                 materialsFromMTLFile.materials[n].dispose();
                             } else {

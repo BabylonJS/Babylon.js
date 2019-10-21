@@ -41,9 +41,8 @@ void main() {
     vec2 a = (vCurrentPosition.xy / vCurrentPosition.w) * 0.5 + 0.5;
 	vec2 b = (vPreviousPosition.xy / vPreviousPosition.w) * 0.5 + 0.5;
 
-    vec2 velocity = (a - b) * 0.5 + 0.5;
-	velocity *= 0.5 + 0.5;
-	velocity = vec2(pow(velocity.x, 3.0), pow(velocity.y, 3.0));
+    vec2 velocity = abs(a - b);
+    velocity = vec2(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b) * 0.5 + 0.5;
 
     gl_FragData[VELOCITY_INDEX] = vec4(velocity, 0.0, 1.0);
     #endif

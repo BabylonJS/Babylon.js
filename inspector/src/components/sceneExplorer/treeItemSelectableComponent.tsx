@@ -58,7 +58,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         const element = ReactDOM.findDOMNode(this) as Element;
 
         if (element) {
-            element.scrollIntoView();
+            element.scrollIntoView(false);
         }
     }
 
@@ -108,7 +108,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         const entity = this.props.entity;
 
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />
-        const children = Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
+        const children = entity.getClassName() === "MultiMaterial" ? [] : Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         const hasChildren = children.length > 0;
 
         if (!entity.reservedDataStore) {

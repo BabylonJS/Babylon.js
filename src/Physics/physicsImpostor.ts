@@ -1,7 +1,7 @@
 import { Nullable, IndicesArray } from "../types";
 import { Logger } from "../Misc/logger";
 import { ArrayTools } from "../Misc/arrayTools";
-import { Vector3, Matrix, Quaternion, Space } from "../Maths/math";
+import { Vector3, Matrix, Quaternion } from "../Maths/math.vector";
 import { TransformNode } from "../Meshes/transformNode";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -10,6 +10,7 @@ import { Bone } from "../Bones/bone";
 import { BoundingInfo } from "../Culling/boundingInfo";
 import { IPhysicsEngine } from "./IPhysicsEngine";
 import { PhysicsJoint, PhysicsJointData } from "./physicsJoint";
+import { Space } from '../Maths/math.axis';
 
 /**
  * The interface for the physics imposter parameters
@@ -70,6 +71,14 @@ export interface PhysicsImpostorParameters {
      * The collision margin around a soft object
      */
     damping?: number;
+    /**
+     * The path for a rope based on an extrusion
+     */
+    path?: any;
+    /**
+     * The shape of an extrusion used for a rope based on an extrusion
+     */
+    shape?: any;
 }
 
 /**
@@ -199,7 +208,7 @@ export class PhysicsImpostor {
     public static IDENTITY_QUATERNION = Quaternion.Identity();
 
     /** @hidden */
-    public _pluginData: any;
+    public _pluginData: any = {};
 
     private _physicsEngine: Nullable<IPhysicsEngine>;
     //The native cannon/oimo/energy physics body object.
@@ -214,6 +223,9 @@ export class PhysicsImpostor {
     private _deltaPosition: Vector3 = Vector3.Zero();
     private _deltaRotation: Quaternion;
     private _deltaRotationConjugated: Quaternion;
+
+    /** @hidden */
+    public _isFromLine: boolean;
 
     //If set, this is this impostor's parent
     private _parent: Nullable<PhysicsImpostor>;
@@ -283,7 +295,7 @@ export class PhysicsImpostor {
             return 0;
         }
         const plugin = this._physicsEngine.getPhysicsPlugin();
-        if (!plugin .setBodyPressure) {
+        if (!plugin.setBodyPressure) {
             return 0;
         }
         return plugin.getBodyPressure!(this);
@@ -430,6 +442,9 @@ export class PhysicsImpostor {
             Logger.Error("No object was provided. A physics object is obligatory");
             return;
         }
+        if (this.object.parent && _options.mass !== 0) {
+            Logger.Warn("A physics impostor has been created for an object which has a parent. Babylon physics currently works in local space so unexpected issues may occur.");
+        }
 
         // Legacy support for old syntax.
         if (!this._scene && object.getScene) {
@@ -471,6 +486,8 @@ export class PhysicsImpostor {
                 this._options.fixedPoints = (_options.fixedPoints === void 0) ? 0 : _options.fixedPoints;
                 this._options.margin = (_options.margin === void 0) ? 0 : _options.margin;
                 this._options.damping = (_options.damping === void 0) ? 0 : _options.damping;
+                this._options.path = (_options.path === void 0) ? null : _options.path;
+                this._options.shape = (_options.shape === void 0) ? null : _options.shape;
             }
             this._joints = [];
             //If the mesh has a parent, don't initialize the physicsBody. Instead wait for the parent to do that.
@@ -948,6 +965,51 @@ export class PhysicsImpostor {
     }
 
     /**
+     * Add an anchor to a cloth impostor
+     * @param otherImpostor rigid impostor to anchor to
+     * @param width ratio across width from 0 to 1
+     * @param height ratio up height from 0 to 1
+     * @param influence the elasticity between cloth impostor and anchor from 0, very stretchy to 1, little strech
+     * @param noCollisionBetweenLinkedBodies when true collisions between cloth impostor and anchor are ignored; default false
+     * @returns impostor the soft imposter
+     */
+    public addAnchor(otherImpostor: PhysicsImpostor, width: number, height: number, influence: number, noCollisionBetweenLinkedBodies: boolean): PhysicsImpostor {
+        if (!this._physicsEngine) {
+            return this;
+        }
+        const plugin = this._physicsEngine.getPhysicsPlugin();
+        if (!plugin.appendAnchor) {
+            return this;
+        }
+        if (this._physicsEngine) {
+            plugin.appendAnchor!(this, otherImpostor, width, height, influence, noCollisionBetweenLinkedBodies);
+        }
+        return this;
+    }
+
+    /**
+     * Add a hook to a rope impostor
+     * @param otherImpostor rigid impostor to anchor to
+     * @param length ratio across rope from 0 to 1
+     * @param influence the elasticity between rope impostor and anchor from 0, very stretchy to 1, little strech
+     * @param noCollisionBetweenLinkedBodies when true collisions between soft impostor and anchor are ignored; default false
+     * @returns impostor the rope imposter
+     */
+    public addHook(otherImpostor: PhysicsImpostor, length: number, influence: number, noCollisionBetweenLinkedBodies: boolean): PhysicsImpostor {
+        if (!this._physicsEngine) {
+            return this;
+        }
+        const plugin = this._physicsEngine.getPhysicsPlugin();
+        if (!plugin.appendAnchor) {
+            return this;
+        }
+        if (this._physicsEngine) {
+            plugin.appendHook!(this, otherImpostor, length, influence, noCollisionBetweenLinkedBodies);
+        }
+        return this;
+    }
+
+    /**
      * Will keep this body still, in a sleep mode.
      * @returns the physics imposter
      */
@@ -1180,6 +1242,10 @@ export class PhysicsImpostor {
      * Mesh-imposter type
      */
     public static MeshImpostor = 4;
+    /**
+     * Capsule-Impostor type (Ammo.js plugin only)
+     */
+    public static CapsuleImpostor = 6;
     /**
      * Cylinder-Imposter type
      */

@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { Vector3 } from "../Maths/math";
+import { Vector3 } from "../Maths/math.vector";
 import { IPhysicsEngine, PhysicsImpostorJoint, IPhysicsEnginePlugin } from "./IPhysicsEngine";
 import { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
 import { PhysicsJoint } from "./physicsJoint";
@@ -117,8 +117,7 @@ export class PhysicsEngine implements IPhysicsEngine {
             var removed = this._impostors.splice(index, 1);
             //Is it needed?
             if (removed.length) {
-                //this will also remove it from the world.
-                removed[0].physicsBody = null;
+                this.getPhysicsPlugin().removePhysicsBody(impostor);
             }
         }
     }

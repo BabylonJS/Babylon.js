@@ -3,7 +3,7 @@ import { Logger } from "../Misc/logger";
 import { Nullable } from "../types";
 import { PointerInfo } from "../Events/pointerEvents";
 import { Scene } from "../scene";
-import { Quaternion, Matrix, Vector3, Color3, Epsilon } from "../Maths/math";
+import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";
@@ -11,14 +11,15 @@ import { BoxBuilder } from "../Meshes/Builders/boxBuilder";
 import { LinesBuilder } from "../Meshes/Builders/linesBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { PivotTools } from "../Misc/pivotTools";
+import { Color3 } from '../Maths/math.color';
 
 import "../Meshes/Builders/boxBuilder";
 import { LinesMesh } from '../Meshes/linesMesh';
+import { Epsilon } from '../Maths/math.constants';
 
 /**
  * Bounding box gizmo
@@ -85,7 +86,12 @@ export class BoundingBoxGizmo extends Gizmo {
      * Relative bounding box pivot used when scaling the attached mesh. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
      */
     public scalePivot: Nullable<Vector3> = null;
+
+    /**
+     * Mesh used as a pivot to rotate the attached mesh
+     */
     private _anchorMesh: AbstractMesh;
+
     private _existingMeshScale = new Vector3();
 
     // Dragging
@@ -117,7 +123,7 @@ export class BoundingBoxGizmo extends Gizmo {
         super(gizmoLayer);
 
         // Do not update the gizmo's scale so it has a fixed size to the object its attached to
-        this._updateScale = false;
+        this.updateScale = false;
 
         this._anchorMesh = new AbstractMesh("anchor", gizmoLayer.utilityLayerScene);
         // Create Materials
@@ -382,9 +388,20 @@ export class BoundingBoxGizmo extends Gizmo {
     public updateBoundingBox() {
         if (this.attachedMesh) {
             PivotTools._RemoveAndStorePivotPoint(this.attachedMesh);
+
+            // Store original parent
             var originalParent = this.attachedMesh.parent;
             this.attachedMesh.setParent(null);
+
+            // Store original skelton override mesh
+            var originalSkeletonOverrideMesh = null;
+            if (this.attachedMesh.skeleton) {
+                originalSkeletonOverrideMesh = this.attachedMesh.skeleton.overrideMesh;
+                this.attachedMesh.skeleton.overrideMesh = null;
+            }
+
             this._update();
+
             // Rotate based on axis
             if (!this.attachedMesh.rotationQuaternion) {
                 this.attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.attachedMesh.rotation.y, this.attachedMesh.rotation.x, this.attachedMesh.rotation.z);
@@ -405,6 +422,8 @@ export class BoundingBoxGizmo extends Gizmo {
             boundingMinMax.max.subtractToRef(boundingMinMax.min, this._boundingDimensions);
 
             // Update gizmo to match bounding box scaling and rotation
+            // The position set here is the offset from the origin for the boundingbox when the attached mesh is at the origin
+            // The position of the gizmo is then set to the attachedMesh in gizmo._update
             this._lineBoundingBox.scaling.copyFrom(this._boundingDimensions);
             this._lineBoundingBox.position.set((boundingMinMax.max.x + boundingMinMax.min.x) / 2, (boundingMinMax.max.y + boundingMinMax.min.y) / 2, (boundingMinMax.max.z + boundingMinMax.min.z) / 2);
             this._rotateSpheresParent.position.copyFrom(this._lineBoundingBox.position);
@@ -412,10 +431,17 @@ export class BoundingBoxGizmo extends Gizmo {
             this._lineBoundingBox.computeWorldMatrix();
             this._anchorMesh.position.copyFrom(this._lineBoundingBox.absolutePosition);
 
-            // restore position/rotation values
+            // Restore position/rotation values
             this.attachedMesh.rotationQuaternion.copyFrom(this._tmpQuaternion);
             this.attachedMesh.position.copyFrom(this._tmpVector);
+
+            // Restore original parent
             this.attachedMesh.setParent(originalParent);
+
+            // Restore original skeleton override mesh
+            if (this.attachedMesh.skeleton) {
+                this.attachedMesh.skeleton.overrideMesh = originalSkeletonOverrideMesh;
+            }
         }
 
         this._updateRotationSpheres();

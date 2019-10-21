@@ -3,6 +3,7 @@ import { CameraInputsManager } from "./cameraInputsManager";
 import { FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKeyboardMoveInput";
 import { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
 import { FreeCameraTouchInput } from "../Cameras/Inputs/freeCameraTouchInput";
+import { Nullable } from '../types';
 
 /**
  * Default Inputs manager for the FreeCamera.
@@ -10,6 +11,10 @@ import { FreeCameraTouchInput } from "../Cameras/Inputs/freeCameraTouchInput";
  * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
+    /**
+     * @hidden
+     */
+    public _mouseInput: Nullable<FreeCameraMouseInput> = null;
     /**
      * Instantiates a new FreeCameraInputsManager.
      * @param camera Defines the camera the inputs belong to
@@ -33,7 +38,21 @@ export class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
      * @returns the current input manager
      */
     addMouse(touchEnabled = true): FreeCameraInputsManager {
-        this.add(new FreeCameraMouseInput(touchEnabled));
+        if (!this._mouseInput) {
+            this._mouseInput = new FreeCameraMouseInput(touchEnabled);
+            this.add(this._mouseInput);
+        }
+        return this;
+    }
+
+    /**
+     * Removes the mouse input support from the manager
+     * @returns the current input manager
+     */
+    removeMouse(): FreeCameraInputsManager {
+        if (this._mouseInput) {
+            this.remove(this._mouseInput);
+        }
         return this;
     }
 
@@ -44,5 +63,13 @@ export class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
     addTouch(): FreeCameraInputsManager {
         this.add(new FreeCameraTouchInput());
         return this;
+    }
+
+    /**
+     * Remove all attached input methods from a camera
+     */
+    public clear(): void {
+        super.clear();
+        this._mouseInput = null;
     }
 }

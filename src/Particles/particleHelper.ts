@@ -1,7 +1,8 @@
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Tools } from "../Misc/tools";
-import { Vector3, Color4 } from "../Maths/math";
+import { Vector3 } from "../Maths/math.vector";
+import { Color4 } from '../Maths/math.color';
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Texture } from "../Materials/Textures/texture";
 import { EngineStore } from "../Engines/engineStore";
@@ -9,7 +10,6 @@ import { IParticleSystem } from "./IParticleSystem";
 import { GPUParticleSystem } from "./gpuParticleSystem";
 import { ParticleSystemSet } from "./particleSystemSet";
 import { ParticleSystem } from "./particleSystem";
-import { Constants } from "../Engines/constants";
 /**
  * This class is made for on one-liner static method to help creating particle system set.
  */
@@ -17,7 +17,7 @@ export class ParticleHelper {
     /**
      * Gets or sets base Assets URL
      */
-    public static BaseAssetsUrl = Constants.PARTICLES_BaseAssetsUrl;
+    public static BaseAssetsUrl = ParticleSystemSet.BaseAssetsUrl;
 
     /**
      * Create a default particle system that you can tweak

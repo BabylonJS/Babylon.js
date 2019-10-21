@@ -27,18 +27,24 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     renderGridInformation() {
         const control = this.props.control;
 
-        if (!control.parent || !control.parent.parent) {
+        if (!control.parent) {
             return null;
         }
 
-        const gridParent = control.parent.parent;
+        const gridParent = control.parent;
 
         if ((gridParent as any).rowCount === undefined) {
             return null;
         }
 
         const grid = gridParent as Grid;
-        const cellInfos = grid.getChildCellInfo(control).split(":");
+        const childCellInfo = grid.getChildCellInfo(control);
+
+        if (childCellInfo === undefined) {
+            return null;
+        }
+
+        const cellInfos = childCellInfo.split(":");
 
         return (
             <LineContainerComponent globalState={this.props.globalState} title="GRID">

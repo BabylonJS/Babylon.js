@@ -13,10 +13,10 @@ import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { PBRMetallicRoughnessMaterial } from "babylonjs/Materials/PBR/pbrMetallicRoughnessMaterial";
 import { PostProcess } from "babylonjs/PostProcesses/postProcess";
-import { Engine } from "babylonjs/Engines/engine";
 import { Scene } from "babylonjs/scene";
 
 import { _Exporter } from "./glTFExporter";
+import { Constants } from 'babylonjs/Engines/constants';
 
 /**
  * Interface for storing specular glossiness factors
@@ -266,19 +266,17 @@ export class _GLTFMaterialExporter {
     }
 
     /**
-     * Gets the glTF alpha mode from the Babylon Material
-     * @param babylonMaterial Babylon Material
-     * @returns The Babylon alpha mode value
+     * Sets the glTF alpha mode to a glTF material from the Babylon Material
+     * @param glTFMaterial glTF material
+     * @param babylonMaterial Babylon material
      */
-    public _getAlphaMode(babylonMaterial: Material): MaterialAlphaMode {
+    private static _SetAlphaMode(glTFMaterial: IMaterial, babylonMaterial: Material & { alphaCutOff: number }): void {
         if (babylonMaterial.needAlphaBlending()) {
-            return MaterialAlphaMode.BLEND;
+            glTFMaterial.alphaMode = MaterialAlphaMode.BLEND;
         }
         else if (babylonMaterial.needAlphaTesting()) {
-            return MaterialAlphaMode.MASK;
-        }
-        else {
-            return MaterialAlphaMode.OPAQUE;
+            glTFMaterial.alphaMode = MaterialAlphaMode.MASK;
+            glTFMaterial.alphaCutoff = babylonMaterial.alphaCutOff;
         }
     }
 
@@ -295,8 +293,7 @@ export class _GLTFMaterialExporter {
     public _convertStandardMaterialAsync(babylonStandardMaterial: StandardMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<void> {
         const materialMap = this._exporter._materialMap;
         const materials = this._exporter._materials;
-        const alphaMode = this._getAlphaMode(babylonStandardMaterial);
-        let promises = [];
+        const promises = [];
         const glTFPbrMetallicRoughness = this._convertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
 
         const glTFMaterial: IMaterial = { name: babylonStandardMaterial.name };
@@ -347,7 +344,7 @@ export class _GLTFMaterialExporter {
         }
 
         if (babylonStandardMaterial.alpha < 1.0 || babylonStandardMaterial.opacityTexture) {
-            if (babylonStandardMaterial.alphaMode === Engine.ALPHA_COMBINE) {
+            if (babylonStandardMaterial.alphaMode === Constants.ALPHA_COMBINE) {
                 glTFMaterial.alphaMode = MaterialAlphaMode.BLEND;
             }
             else {
@@ -359,22 +356,7 @@ export class _GLTFMaterialExporter {
         }
 
         glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
-        if (alphaMode !== MaterialAlphaMode.OPAQUE) {
-            switch (alphaMode) {
-                case MaterialAlphaMode.BLEND: {
-                    glTFMaterial.alphaMode = MaterialAlphaMode.BLEND;
-                    break;
-                }
-                case MaterialAlphaMode.MASK: {
-                    glTFMaterial.alphaMode = MaterialAlphaMode.MASK;
-                    glTFMaterial.alphaCutoff = babylonStandardMaterial.alphaCutOff;
-                    break;
-                }
-                default: {
-                    Tools.Warn(`Unsupported alpha mode ${alphaMode}`);
-                }
-            }
-        }
+        _GLTFMaterialExporter._SetAlphaMode(glTFMaterial, babylonStandardMaterial);
 
         materials.push(glTFMaterial);
         materialMap[babylonStandardMaterial.uniqueId] = materials.length - 1;
@@ -420,18 +402,7 @@ export class _GLTFMaterialExporter {
         if (babylonPBRMetalRoughMaterial.doubleSided) {
             glTFMaterial.doubleSided = babylonPBRMetalRoughMaterial.doubleSided;
         }
-        let alphaMode: Nullable<MaterialAlphaMode> = null;
-        if (babylonPBRMetalRoughMaterial.transparencyMode != null) {
-            alphaMode = this._getAlphaMode(babylonPBRMetalRoughMaterial);
-            if (alphaMode) {
-                if (alphaMode !== MaterialAlphaMode.OPAQUE) { //glTF defaults to opaque
-                    glTFMaterial.alphaMode = alphaMode;
-                    if (alphaMode === MaterialAlphaMode.MASK) {
-                        glTFMaterial.alphaCutoff = babylonPBRMetalRoughMaterial.alphaCutOff;
-                    }
-                }
-            }
-        }
+        _GLTFMaterialExporter._SetAlphaMode(glTFMaterial, babylonPBRMetalRoughMaterial);
         if (hasTextureCoords) {
             if (babylonPBRMetalRoughMaterial.baseTexture != null) {
                 promises.push(this._exportTextureAsync(babylonPBRMetalRoughMaterial.baseTexture, mimeType).then((glTFTexture) => {
@@ -496,14 +467,14 @@ export class _GLTFMaterialExporter {
         return new Promise<string>((resolve, reject) => {
             let hostingScene: Scene;
 
-            const textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
+            const textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
             const engine = this._exporter._getLocalEngine();
 
             hostingScene = new Scene(engine);
 
             // Create a temporary texture with the texture buffer data
-            const tempTexture = engine.createRawTexture(buffer, width, height, Engine.TEXTUREFORMAT_RGBA, false, true, Texture.NEAREST_SAMPLINGMODE, null, textureType);
-            const postProcess = new PostProcess("pass", "pass", null, null, 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, undefined, Engine.TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
+            const tempTexture = engine.createRawTexture(buffer, width, height, Constants.TEXTUREFORMAT_RGBA, false, true, Texture.NEAREST_SAMPLINGMODE, null, textureType);
+            const postProcess = new PostProcess("pass", "pass", null, null, 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, undefined, Constants.TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
             postProcess.getEffect().executeWhenCompiled(() => {
                 postProcess.onApply = (effect) => {
                     effect._bindTexture("textureSampler", tempTexture);
@@ -1062,18 +1033,7 @@ export class _GLTFMaterialExporter {
         const materials = this._exporter._materials;
         let promises = [];
         if (metallicRoughness) {
-            let alphaMode: Nullable<MaterialAlphaMode> = null;
-            if (babylonPBRMaterial.transparencyMode != null) {
-                alphaMode = this._getAlphaMode(babylonPBRMaterial);
-                if (alphaMode) {
-                    if (alphaMode !== MaterialAlphaMode.OPAQUE) { //glTF defaults to opaque
-                        glTFMaterial.alphaMode = alphaMode;
-                        if (alphaMode === MaterialAlphaMode.MASK) {
-                            glTFMaterial.alphaCutoff = babylonPBRMaterial.alphaCutOff;
-                        }
-                    }
-                }
-            }
+            _GLTFMaterialExporter._SetAlphaMode(glTFMaterial, babylonPBRMaterial);
             if (!(_GLTFMaterialExporter.FuzzyEquals(metallicRoughness.baseColor, Color3.White(), _GLTFMaterialExporter._Epsilon) && babylonPBRMaterial.alpha >= _GLTFMaterialExporter._Epsilon)) {
                 glTFPbrMetallicRoughness.baseColorFactor = [
                     metallicRoughness.baseColor.r,
@@ -1149,7 +1109,7 @@ export class _GLTFMaterialExporter {
     }
 
     private getPixelsFromTexture(babylonTexture: BaseTexture): Uint8Array | Float32Array {
-        const pixels = babylonTexture.textureType === Engine.TEXTURETYPE_UNSIGNED_INT ? babylonTexture.readPixels() as Uint8Array : babylonTexture.readPixels() as Float32Array;
+        const pixels = babylonTexture.textureType === Constants.TEXTURETYPE_UNSIGNED_INT ? babylonTexture.readPixels() as Uint8Array : babylonTexture.readPixels() as Float32Array;
         return pixels;
     }
 
@@ -1249,6 +1209,7 @@ export class _GLTFMaterialExporter {
 
         let extension = mimeType === ImageMimeType.JPEG ? '.jpeg' : '.png';
         let textureName = baseTextureName + extension;
+        let originalTextureName = textureName;
         if (textureName in imageData) {
             textureName = `${baseTextureName}_${Tools.RandomId()}${extension}`;
         }
@@ -1261,7 +1222,7 @@ export class _GLTFMaterialExporter {
             };
             let foundIndex: Nullable<number> = null;
             for (let i = 0; i < images.length; ++i) {
-                if (images[i].uri === textureName) {
+                if (images[i].uri === originalTextureName) {
                     foundIndex = i;
                     break;
                 }

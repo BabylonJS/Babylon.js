@@ -1,11 +1,12 @@
 import { Observable } from 'babylonjs/Misc/observable';
-import { IFileRequest, Tools } from 'babylonjs/Misc/tools';
+import { Tools } from 'babylonjs/Misc/tools';
 import { isUrl, camelToKebab, kebabToCamel } from '../helper';
 
 import * as Handlebars from 'handlebars/dist/handlebars';
 import { EventManager } from './eventManager';
 import { ITemplateConfiguration } from '../configuration/interfaces';
 import { deepmerge } from '../helper/';
+import { IFileRequest } from 'babylonjs/Misc/fileRequest';
 
 /**
  * The object sent when an event is triggered
@@ -604,7 +605,7 @@ export class Template {
                             function: binding
                         });
                     } else if (typeof this._configuration.events[eventName] === 'object') {
-                        let selectorsArray: Array<string> = Object.keys(this._configuration.events[eventName] || {});
+                        let selectorsArray: Array<string> = Object.keys((this._configuration.events[eventName] as object) || {});
                         // strict null checl is working incorrectly, must override:
                         let event = this._configuration.events[eventName] || {};
                         selectorsArray.filter((selector) => event[selector]).forEach((selector) => {

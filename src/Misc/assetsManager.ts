@@ -9,6 +9,7 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { HDRCubeTexture } from "../Materials/Textures/hdrCubeTexture";
+import { EquiRectangularCubeTexture } from "../Materials/Textures/equiRectangularCubeTexture";
 import { Logger } from "../Misc/logger";
 import { AnimationGroup } from '../Animations/animationGroup';
 
@@ -672,7 +673,7 @@ export class HDRCubeTextureAssetTask extends AbstractAssetTask implements ITextu
      * @param onSuccess is a callback called when the task is successfully executed
      * @param onError is a callback called if an error occurs
      */
-    public run(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
+    public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
 
         var onload = () => {
             onSuccess();
@@ -683,6 +684,80 @@ export class HDRCubeTextureAssetTask extends AbstractAssetTask implements ITextu
         };
 
         this.texture = new HDRCubeTexture(this.url, scene, this.size, this.noMipmap, this.generateHarmonics, this.gammaSpace, this.reserved, onload, onerror);
+    }
+}
+
+/**
+ * Define a task used by AssetsManager to load Equirectangular cube textures
+ */
+export class EquiRectangularCubeTextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<EquiRectangularCubeTexture> {
+    /**
+     * Gets the loaded texture
+     */
+    public texture: EquiRectangularCubeTexture;
+
+    /**
+     * Callback called when the task is successful
+     */
+    public onSuccess: (task: EquiRectangularCubeTextureAssetTask) => void;
+    /**
+     * Callback called when the task is successful
+     */
+    public onError: (task: EquiRectangularCubeTextureAssetTask, message?: string, exception?: any) => void;
+
+    /**
+     * Creates a new EquiRectangularCubeTextureAssetTask object
+     * @param name defines the name of the task
+     * @param url defines the location of the file to load
+     * @param size defines the desired size (the more it increases the longer the generation will be)
+     * If the size is omitted this implies you are using a preprocessed cubemap.
+     * @param noMipmap defines if mipmaps should not be generated (default is false)
+     * @param gammaSpace specifies if the texture will be used in gamma or linear space
+     * (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space)
+     * (default is true)
+     */
+    constructor(
+        /**
+         * Defines the name of the task
+         */
+        public name: string,
+        /**
+         * Defines the location of the file to load
+         */
+        public url: string,
+        /**
+         * Defines the desired size (the more it increases the longer the generation will be)
+         */
+        public size: number,
+        /**
+         * Defines if mipmaps should not be generated (default is false)
+         */
+        public noMipmap: boolean = false,
+        /**
+         * Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space,
+         * but the standard material would require them in Gamma space) (default is true)
+         */
+        public gammaSpace: boolean = true) {
+        super(name);
+    }
+
+    /**
+     * Execute the current task
+     * @param scene defines the scene where you want your assets to be loaded
+     * @param onSuccess is a callback called when the task is successfully executed
+     * @param onError is a callback called if an error occurs
+     */
+    public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void {
+
+        const onload = () => {
+            onSuccess();
+        };
+
+        const onerror = (message?: string, exception?: any) => {
+            onError(message, exception);
+        };
+
+        this.texture = new EquiRectangularCubeTexture(this.url, scene, this.size, this.noMipmap, this.gammaSpace, onload, onerror);
     }
 }
 
@@ -743,6 +818,13 @@ export class AssetsManager {
      * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
     public useDefaultLoadingScreen = true;
+
+    /**
+     * Gets or sets a boolean defining if the AssetsManager should automatically hide the loading screen
+     * when all assets have been downloaded.
+     * If set to false, you need to manually call in hideLoadingUI() once your scene is ready.
+     */
+    public autoHideLoadingUI = true;
 
     /**
      * Creates a new AssetsManager
@@ -858,6 +940,24 @@ export class AssetsManager {
     }
 
     /**
+     *
+     * Add a EquiRectangularCubeTextureAssetTask to the list of active tasks
+     * @param taskName defines the name of the new task
+     * @param url defines the url of the file to load
+     * @param size defines the size you want for the cubemap (can be null)
+     * @param noMipmap defines if the texture must not receive mipmaps (false by default)
+     * @param gammaSpace Specifies if the texture will be used in gamma or linear space
+     * (the PBR material requires those textures in linear space, but the standard material would require them in Gamma space)
+     * @returns a new EquiRectangularCubeTextureAssetTask object
+     */
+    public addEquiRectangularCubeTextureAssetTask(taskName: string, url: string, size: number, noMipmap = false, gammaSpace = true): EquiRectangularCubeTextureAssetTask {
+        const task = new EquiRectangularCubeTextureAssetTask(taskName, url, size, noMipmap, gammaSpace);
+        this._tasks.push(task);
+
+        return task;
+    }
+
+    /**
      * Remove a task from the assets manager.
      * @param task the task to remove
      */
@@ -895,12 +995,15 @@ export class AssetsManager {
 
         if (this._waitingTasksCount === 0) {
             try {
+
+                var currentTasks = this._tasks.slice();
+
                 if (this.onFinish) {
-                    this.onFinish(this._tasks);
+                    // Calling onFinish with immutable array of tasks
+                    this.onFinish(currentTasks);
                 }
 
                 // Let's remove successfull tasks
-                var currentTasks = this._tasks.slice();
                 for (var task of currentTasks) {
                     if (task.taskState === AssetTaskState.DONE) {
                         let index = this._tasks.indexOf(task);
@@ -917,7 +1020,9 @@ export class AssetsManager {
                 console.log(e);
             }
             this._isLoading = false;
-            this._scene.getEngine().hideLoadingUI();
+            if (this.autoHideLoadingUI) {
+                this._scene.getEngine().hideLoadingUI();
+            }
         }
     }
 
@@ -1000,6 +1105,10 @@ export class AssetsManager {
      */
     public loadAsync(): Promise<void> {
         return new Promise((resolve, reject) => {
+            if (this._isLoading) {
+                resolve();
+                return;
+            }
             this.onTasksDoneObservable.addOnce((remainingTasks) => {
                 if (remainingTasks && remainingTasks.length) {
                     reject(remainingTasks);
@@ -1007,6 +1116,8 @@ export class AssetsManager {
                     resolve();
                 }
             });
+
+            this.load();
         });
     }
 }

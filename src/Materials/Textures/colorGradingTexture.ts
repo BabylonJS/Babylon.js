@@ -1,11 +1,10 @@
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Matrix } from "../../Maths/math";
+import { Matrix } from "../../Maths/math.vector";
 import { Engine } from "../../Engines/engine";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { _TimeToken } from "../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
 import { _TypeStore } from '../../Misc/typeStore';
 
@@ -84,13 +83,13 @@ export class ColorGradingTexture extends BaseTexture {
      * Occurs when the file being loaded is a .3dl LUT file.
      */
     private load3dlTexture() {
-        var engine = this._engine;
+        var engine = this._engine as Engine;
         var texture: InternalTexture;
         if (engine.webGLVersion === 1) {
-            texture = engine.createRawTexture(null, 1, 1, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
+            texture = engine.createRawTexture(null, 1, 1, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, null, Constants.TEXTURETYPE_UNSIGNED_INT);
         }
         else {
-            texture = engine.createRawTexture3D(null, 1, 1, 1, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
+            texture = engine.createRawTexture3D(null, 1, 1, 1, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, null, Constants.TEXTURETYPE_UNSIGNED_INT);
         }
 
         this._texture = texture;

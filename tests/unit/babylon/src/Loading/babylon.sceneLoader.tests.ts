@@ -121,7 +121,7 @@ describe('Babylon Scene Loader', function() {
                 expect(meshCount, "meshCount").to.equal(scene.meshes.length);
                 expect(materialCount, "materialCount").to.equal(scene.materials.length);
 
-                const filteredTextures = scene.textures.filter((texture) => texture !== scene._environmentBRDFTexture);
+                const filteredTextures = scene.textures.filter((texture) => texture !== scene.environmentBRDFTexture);
                 expect(textureCount, "textureCount").to.equal(filteredTextures.length);
             }));
 
@@ -139,7 +139,7 @@ describe('Babylon Scene Loader', function() {
                     disposed = true;
                 };
 
-                promises.push(BABYLON.Tools.DelayAsync(50).then(() => {
+                promises.push(BABYLON.Tools.DelayAsync(1).then(() => {
                     loader.dispose();
                     expect(ready, "ready").to.be.false;
                     expect(disposed, "disposed").to.be.true;
@@ -147,7 +147,7 @@ describe('Babylon Scene Loader', function() {
             });
 
             const scene = new BABYLON.Scene(subject);
-            promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox2.gltf", scene).then(() => {
+            promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then(() => {
                 ready = true;
             }));
 
@@ -184,7 +184,7 @@ describe('Babylon Scene Loader', function() {
             subject.runRenderLoop(() => {
                 for (const mesh of scene.meshes) {
                     if (mesh.material && mesh.isEnabled()) {
-                        expect(mesh.material.isReady(mesh), "mesh material is ready").to.be.true;
+                        expect(mesh.isReady(true), "mesh is ready").to.be.true;
                     }
                 }
             });
@@ -214,7 +214,7 @@ describe('Babylon Scene Loader', function() {
             subject.runRenderLoop(() => {
                 for (const mesh of scene.meshes) {
                     if (mesh.material && mesh.isEnabled()) {
-                        expect(mesh.material.isReady(mesh), "mesh material is ready").to.be.true;
+                        expect(mesh.isReady(true), "mesh is ready").to.be.true;
                     }
                 }
             });
@@ -276,14 +276,14 @@ describe('Babylon Scene Loader', function() {
             });
         });
 
-        it('Load TwoQuads with LODs', () => {
+        it('Load LevelOfDetail', () => {
             const scene = new BABYLON.Scene(subject);
             const promises = new Array<Promise<void>>();
 
             subject.runRenderLoop(() => {
                 for (const mesh of scene.meshes) {
                     if (mesh.material && mesh.isEnabled()) {
-                        expect(mesh.material.isReady(mesh), "mesh material is ready").to.be.true;
+                        expect(mesh.isReady(true), "mesh is ready").to.be.true;
                     }
                 }
             });
@@ -297,56 +297,50 @@ describe('Babylon Scene Loader', function() {
                         scene.getMeshByName("node1")
                     ];
 
-                    expect(meshes[0].material.name, "Material for node 0").to.equal("LOD0");
-                    expect(meshes[1].material.name, "Material for node 1").to.equal("LOD0");
+                    expect(meshes[0].material.name, "Material for node 0").to.equal("High");
+                    expect(meshes[1].material.name, "Material for node 1").to.equal("High");
 
                     expect(scene.materials, "scene.materials").to.have.lengthOf(1);
-                    const materials = [
-                        scene.getMaterialByName("LOD0")
-                    ];
-
-                    expect(materials[0].isReady(meshes[0]), "Material of LOD 0 is ready for node 0").to.be.true;
-                    expect(materials[0].isReady(meshes[1]), "Material of LOD 0 is ready for node 1").to.be.true;
                 }));
             });
 
-            promises.push(BABYLON.SceneLoader.AppendAsync("http://models.babylonjs.com/Tests/TwoQuads/", "TwoQuads.gltf", scene).then(() => {
+            promises.push(BABYLON.SceneLoader.AppendAsync("http://models.babylonjs.com/Tests/LevelOfDetail/", `LevelOfDetail.gltf`, scene).then(() => {
                 const meshes = [
                     scene.getMeshByName("node0"),
                     scene.getMeshByName("node1")
                 ];
 
-                expect(meshes[0].material.name, "Material for node 0").to.equal("LOD2");
-                expect(meshes[1].material.name, "Material for node 1").to.equal("LOD2");
+                expect(meshes[0].material.name, "Material for node 0").to.equal("Low");
+                expect(meshes[1].material.name, "Material for node 1").to.equal("Low");
 
                 expect(scene.materials, "scene.materials").to.have.lengthOf(3);
-                const materials = [
-                    scene.getMaterialByName("LOD0"),
-                    scene.getMaterialByName("LOD1"),
-                    scene.getMaterialByName("LOD2")
-                ];
+                const materialLow = scene.getMaterialByName("Low");
+                const materialMedium = scene.getMaterialByName("Medium");
+                const materialHigh = scene.getMaterialByName("High");
 
-                expect(materials[0].isReady(meshes[0]), "Material of LOD 0 is ready for node 0").to.be.false;
-                expect(materials[0].isReady(meshes[1]), "Material of LOD 0 is ready for node 1").to.be.false;
-                expect(materials[1].isReady(meshes[0]), "Material of LOD 1 is ready for node 0").to.be.false;
-                expect(materials[1].isReady(meshes[1]), "Material of LOD 1 is ready for node 1").to.be.false;
-                expect(materials[2].isReady(meshes[0]), "Material of LOD 2 is ready for node 0").to.be.true;
-                expect(materials[2].isReady(meshes[1]), "Material of LOD 2 is ready for node 1").to.be.true;
+                expect(materialLow.isReady(meshes[0]), "Material 'Low' is ready for node 0").to.be.true;
+                expect(materialLow.isReady(meshes[1]), "Material 'Low' is ready for node 1").to.be.true;
+                expect(materialMedium.isReady(meshes[0]), "Material 'Medium' is ready for node 0").to.be.true;
+                expect(materialMedium.isReady(meshes[1]), "Material 'Medium' is ready for node 1").to.be.true;
+                expect(materialHigh.isReady(meshes[0]), "Material 'High' is ready for node 0").to.be.true;
+                expect(materialHigh.isReady(meshes[1]), "Material 'High' is ready for node 1").to.be.true;
             }));
 
             return Promise.all(promises);
         });
 
-        it('Load TwoQuads with LODs and onMaterialLODsLoadedObservable', () => {
+        it('Load LevelOfDetail with onMaterialLODsLoadedObservable', () => {
             const scene = new BABYLON.Scene(subject);
             const promises = new Array<Promise<void>>();
+
+            const materialNames = [ "Low", "Medium", "High" ];
 
             BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
                 const observer = loader.onExtensionLoadedObservable.add((extension) => {
                     if (extension instanceof BABYLON.GLTF2.Loader.Extensions.MSFT_lod) {
                         loader.onExtensionLoadedObservable.remove(observer);
                         extension.onMaterialLODsLoadedObservable.add((indexLOD) => {
-                            const expectedMaterialName = `LOD${2 - indexLOD}`;
+                            const expectedMaterialName = materialNames[indexLOD];
                             expect(scene.getMeshByName("node0").material.name, "Material for node 0").to.equal(expectedMaterialName);
                             expect(scene.getMeshByName("node1").material.name, "Material for node 1").to.equal(expectedMaterialName);
                         });
@@ -356,14 +350,14 @@ describe('Babylon Scene Loader', function() {
                 promises.push(loader.whenCompleteAsync());
             });
 
-            promises.push(BABYLON.SceneLoader.AppendAsync("http://models.babylonjs.com/Tests/TwoQuads/", "TwoQuads.gltf", scene).then(() => {
+            promises.push(BABYLON.SceneLoader.AppendAsync("http://models.babylonjs.com/Tests/LevelOfDetail/", "LevelOfDetail.gltf", scene).then(() => {
                 // do nothing
             }));
 
             return Promise.all(promises);
         });
 
-        it('Load TwoQuads with LODs and dispose when onMaterialLODsLoadedObservable', () => {
+        it('Load LevelOfDetail with dispose when onMaterialLODsLoadedObservable', () => {
             const scene = new BABYLON.Scene(subject);
             const promises = new Array<Promise<void>>();
 
@@ -385,14 +379,14 @@ describe('Babylon Scene Loader', function() {
                 }));
             });
 
-            promises.push(BABYLON.SceneLoader.AppendAsync("http://models.babylonjs.com/Tests/TwoQuads/", "TwoQuads.gltf", scene).then(() => {
+            promises.push(BABYLON.SceneLoader.AppendAsync("http://models.babylonjs.com/Tests/LevelOfDetail/", "LevelOfDetail.gltf", scene).then(() => {
                 // do nothing
             }));
 
             return Promise.all(promises);
         });
 
-        it('Load TwoQuadsNoTextures with LODs', () => {
+        it('Load LevelOfDetailNoTextures', () => {
             const scene = new BABYLON.Scene(subject);
 
             const promises = new Array<Promise<any>>();
@@ -401,14 +395,30 @@ describe('Babylon Scene Loader', function() {
                 promises.push(loader.whenCompleteAsync());
             });
 
-            promises.push(BABYLON.SceneLoader.AppendAsync("http://models.babylonjs.com/Tests/TwoQuads/", "TwoQuadsNoTextures.gltf", scene));
+            promises.push(BABYLON.SceneLoader.AppendAsync("http://models.babylonjs.com/Tests/LevelOfDetail/", "LevelOfDetailNoTextures.gltf", scene));
+
+            return Promise.all(promises);
+        });
+
+        it('Load LevelOfDetail with useRangeRequests', () => {
+            const scene = new BABYLON.Scene(subject);
+            const promises = new Array<Promise<void>>();
+
+            BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
+                loader.useRangeRequests = true;
+                promises.push(loader.whenCompleteAsync());
+            });
+
+            promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/", "LevelOfDetail.glb", scene).then(() => {
+                // do nothing
+            }));
 
             return Promise.all(promises);
         });
 
         it('Load MultiPrimitive', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.ImportMeshAsync(null, "http://models.babylonjs.com/Tests/MultiPrimitive/", "MultiPrimitive.gltf", scene).then(result => {
+            return BABYLON.SceneLoader.ImportMeshAsync(null, "http://models.babylonjs.com/Tests/MultiPrimitive/", "MultiPrimitive.gltf", scene).then((result) => {
                 expect(result.meshes, "meshes").to.have.lengthOf(3);
 
                 const node = scene.getNodeByName("node");
@@ -513,6 +523,33 @@ describe('Babylon Scene Loader', function() {
             });
         });
 
+        it('Load Box with extras', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.AppendAsync("/Playground/scenes/Box/", "Box_extras.gltf", scene).then((scene) => {
+                expect(scene.meshes.length, "scene.meshes.length").to.equal(2);
+                expect(scene.materials.length, "scene.materials.length").to.equal(1);
+                const mesh = scene.getMeshByName("Box001");
+                expect(mesh, "Box001").to.exist;
+                expect(mesh.metadata, "Box001 metadata").to.exist;
+                expect(mesh.metadata.gltf, "Box001 metadata.gltf").to.exist;
+                expect(mesh.metadata.gltf.extras, "Box001 metadata.gltf.extras").to.exist;
+                expect(mesh.metadata.gltf.extras.kind, "Box001 extras.kind").to.equal("nice cube");
+                expect(mesh.metadata.gltf.extras.magic, "Box001 extras.magic").to.equal(42);
+                const camera = scene.getCameraByName("Camera");
+                expect(camera, "Camera").to.exist;
+                expect(camera.metadata, "Camera metadata").to.exist;
+                expect(mesh.metadata.gltf, "Camera metadata.gltf").to.exist;
+                expect(mesh.metadata.gltf.extras, "Camera metadata.gltf.extras").to.exist;
+                expect(camera.metadata.gltf.extras.custom, "Camera extras.custom").to.equal("cameraProp");
+                const material = scene.getMaterialByName("01___Default");
+                expect(material, "Material").to.exist;
+                expect(material.metadata, "Material metadata").to.exist;
+                expect(mesh.metadata.gltf, "Material metadata.gltf").to.exist;
+                expect(mesh.metadata.gltf.extras, "Material metadata.gltf.extras").to.exist;
+                expect(material.metadata.gltf.extras.custom, "Material extras.custom").to.equal("materialProp");
+            });
+        });
+
         // TODO: test animation group callback
         // TODO: test material instancing
         // TODO: test KHR_materials_pbrSpecularGlossiness
@@ -524,14 +561,14 @@ describe('Babylon Scene Loader', function() {
      */
     describe('#OBJ', () => {
         it('should load a tetrahedron (without colors)', () => {
-            var fileContents = `               
+            var fileContents = `
                 g tetrahedron
-                
+
                 v 1.00 1.00 1.00 0.666 0 0
                 v 2.00 1.00 1.00 0.666 0 0
                 v 1.00 2.00 1.00 0.666 0 0
                 v 1.00 1.00 2.00 0.666 0 0
-                
+
                 f 1 3 2
                 f 1 4 3
                 f 1 2 4
@@ -539,22 +576,22 @@ describe('Babylon Scene Loader', function() {
             `;
 
             var scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.LoadAssetContainerAsync('', 'data:' + fileContents, scene, ()=> {}, ".obj").then(container => {
+            return BABYLON.SceneLoader.LoadAssetContainerAsync('', 'data:' + fileContents, scene, () => { }, ".obj").then((container) => {
                 expect(container.meshes.length).to.eq(1);
                 let tetrahedron = container.meshes[0];
 
-                var positions : BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-                var colors : BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+                var positions: BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                var colors: BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.ColorKind);
 
                 expect(positions).to.deep.equal([1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2]);
-                assert.isNull(colors, 'expecting colors vertex buffer to be null')
-            })
-        })
+                assert.isNull(colors, 'expecting colors vertex buffer to be null');
+            });
+        });
 
         it('should parse leniently allowing extra spaces with vertex definitions', () => {
-            var fileContents = `               
+            var fileContents = `
                 g tetrahedron
-                
+
                 v  1.00 1.00 1.00 0.666 0 0
                 v  2.00 1.00 1.00 0.666 0 0
                 v  1.00 2.00 1.00 0.666 0 0
@@ -569,16 +606,16 @@ describe('Babylon Scene Loader', function() {
             `;
 
             var scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.LoadAssetContainerAsync('', 'data:' + fileContents, scene, ()=> {}, ".obj").then(container => {
+            return BABYLON.SceneLoader.LoadAssetContainerAsync('', 'data:' + fileContents, scene, () => { }, ".obj").then((container) => {
                 expect(container.meshes.length).to.eq(1);
                 let tetrahedron = container.meshes[0];
 
-                var positions : BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                var positions: BABYLON.FloatArray = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
 
                 expect(positions).to.deep.equal([1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2]);
-            })
-        })
-    })
+            });
+        });
+    });
 
     describe('#AssetContainer', () => {
         it('should be loaded from BoomBox GLTF', () => {

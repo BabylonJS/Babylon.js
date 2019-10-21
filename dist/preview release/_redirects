@@ -1,0 +1,2 @@
+# Redirect default Netlify subdomain to primary domain
+https://babylonjs-preview.netlify.com/* https://preview.babylonjs.com/:splat 301!

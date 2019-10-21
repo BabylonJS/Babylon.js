@@ -4,6 +4,7 @@ import { Scene } from "babylonjs/scene";
 import { IGLTFLoaderData } from "../glTFFileLoader";
 import { IGLTFRuntime, IGLTFTexture, IGLTFImage, IGLTFBufferView, EComponentType, IGLTFShader } from "./glTFLoaderInterfaces";
 import { GLTFLoader, GLTFLoaderBase } from "./glTFLoader";
+import { IDataBuffer } from 'babylonjs/Misc/dataReader';
 
 const BinaryExtensionBufferName = "binary_glTF";
 
@@ -20,7 +21,7 @@ interface IGLTFBinaryExtensionImage {
 
 /** @hidden */
 export class GLTFBinaryExtension extends GLTFLoaderExtension {
-    private _bin: ArrayBufferView;
+    private _bin: IDataBuffer;
 
     public constructor() {
         super("KHR_binary_glTF");
@@ -46,7 +47,7 @@ export class GLTFBinaryExtension extends GLTFLoaderExtension {
             return false;
         }
 
-        onSuccess(this._bin);
+        this._bin.readAsync(0, this._bin.byteLength).then(onSuccess, (error) => onError(error.message));
         return true;
     }
 

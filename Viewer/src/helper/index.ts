@@ -45,7 +45,8 @@ export function extendClassWithConfig(object: any, config: any) {
         if (key in object && typeof object[key] !== 'function') {
             // if (typeof object[key] === 'function') return;
             // if it is an object, iterate internally until reaching basic types
-            if (typeof object[key] === 'object') {
+            // but null is an object so if its null and config[key] is not an object eg. number, the number should be set
+            if ((typeof object[key] === 'object') && (object[key] !== null || typeof config[key] === "object")) {
                 extendClassWithConfig(object[key], config[key]);
             } else {
                 if (config[key] !== undefined) {

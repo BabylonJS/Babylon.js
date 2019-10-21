@@ -6,6 +6,9 @@ import { Scene, IDisposable } from "../scene";
 import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
+
+import "./animatable";
+
 /**
  * This class defines the direct association between an animation and a target
  */
@@ -18,6 +21,18 @@ export class TargetedAnimation {
      * Target to animate
      */
     public target: any;
+
+    /**
+     * Serialize the object
+     * @returns the JSON object representing the current entity
+     */
+    public serialize(): any {
+        var serializationObject: any = {};
+        serializationObject.animation = this.animation.serialize();
+        serializationObject.targetId = this.target.id;
+
+        return serializationObject;
+    }
 }
 
 /**
@@ -33,6 +48,7 @@ export class AnimationGroup implements IDisposable {
     private _isStarted: boolean;
     private _isPaused: boolean;
     private _speedRatio = 1;
+    private _loopAnimation = false;
 
     /**
      * Gets or sets the unique id of the node
@@ -48,6 +64,11 @@ export class AnimationGroup implements IDisposable {
      * Observer raised when one animation loops
      */
     public onAnimationLoopObservable = new Observable<TargetedAnimation>();
+
+    /**
+     * Observer raised when all animations have looped
+     */
+    public onAnimationGroupLoopObservable = new Observable<AnimationGroup>();
 
     /**
      * This observable will notify when all animations have ended.
@@ -116,6 +137,26 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
+     * Gets or sets if all animations should loop or not
+     */
+    public get loopAnimation(): boolean {
+        return this._loopAnimation;
+    }
+
+    public set loopAnimation(value: boolean) {
+        if (this._loopAnimation === value) {
+            return;
+        }
+
+        this._loopAnimation = value;
+
+        for (var index = 0; index < this._animatables.length; index++) {
+            let animatable = this._animatables[index];
+            animatable.loopAnimation = this._loopAnimation;
+        }
+    }
+
+    /**
      * Gets the targeted animations for this animation group
      */
     public get targetedAnimations(): Array<TargetedAnimation> {
@@ -153,10 +194,9 @@ export class AnimationGroup implements IDisposable {
      * @returns the TargetedAnimation object
      */
     public addTargetedAnimation(animation: Animation, target: any): TargetedAnimation {
-        let targetedAnimation = {
-            animation: animation,
-            target: target
-        };
+        let targetedAnimation = new TargetedAnimation();
+        targetedAnimation.animation = animation;
+        targetedAnimation.target = target;
 
         let keys = animation.getKeys();
         if (this._from > keys[0].frame) {
@@ -218,6 +258,28 @@ export class AnimationGroup implements IDisposable {
         return this;
     }
 
+    private _animationLoopCount: number;
+    private _animationLoopFlags: boolean[];
+
+    private _processLoop(animatable: Animatable, targetedAnimation: TargetedAnimation, index: number) {
+        animatable.onAnimationLoop = () => {
+            this.onAnimationLoopObservable.notifyObservers(targetedAnimation);
+
+            if (this._animationLoopFlags[index]) {
+                return;
+            }
+
+            this._animationLoopFlags[index] = true;
+
+            this._animationLoopCount++;
+            if (this._animationLoopCount === this._targetedAnimations.length) {
+                this.onAnimationGroupLoopObservable.notifyObservers(this);
+                this._animationLoopCount = 0;
+                this._animationLoopFlags = [];
+            }
+        };
+    }
+
     /**
      * Start all animations on given targets
      * @param loop defines if animations must loop
@@ -231,22 +293,33 @@ export class AnimationGroup implements IDisposable {
             return this;
         }
 
-        for (const targetedAnimation of this._targetedAnimations) {
+        this._loopAnimation = loop;
+
+        this._animationLoopCount = 0;
+        this._animationLoopFlags = [];
+
+        for (var index = 0; index < this._targetedAnimations.length; index++) {
+            const targetedAnimation = this._targetedAnimations[index];
             let animatable = this._scene.beginDirectAnimation(targetedAnimation.target, [targetedAnimation.animation], from !== undefined ? from : this._from, to !== undefined ? to : this._to, loop, speedRatio);
             animatable.onAnimationEnd = () => {
                 this.onAnimationEndObservable.notifyObservers(targetedAnimation);
                 this._checkAnimationGroupEnded(animatable);
             };
-            animatable.onAnimationLoop = () => {
-                this.onAnimationLoopObservable.notifyObservers(targetedAnimation);
-            };
+
+            this._processLoop(animatable, targetedAnimation, index);
             this._animatables.push(animatable);
         }
 
         this._speedRatio = speedRatio;
 
-        if (from !== undefined && to !== undefined && from > to && this._speedRatio > 0) {
-            this._speedRatio = -speedRatio;
+        if (from !== undefined && to !== undefined) {
+            if (from < to && this._speedRatio < 0) {
+                let temp = to;
+                to = from;
+                from = temp;
+            } else if (from > to && this._speedRatio > 0) {
+                this._speedRatio = -speedRatio;
+            }
         }
 
         this._isStarted = true;
@@ -288,10 +361,7 @@ export class AnimationGroup implements IDisposable {
         // only if all animatables are ready and exist
         if (this.isStarted && this._animatables.length === this._targetedAnimations.length) {
             if (loop !== undefined) {
-                for (var index = 0; index < this._animatables.length; index++) {
-                    let animatable = this._animatables[index];
-                    animatable.loopAnimation = loop;
-                }
+                this.loopAnimation = loop;
             }
             this.restart();
         } else {
@@ -425,6 +495,7 @@ export class AnimationGroup implements IDisposable {
         this.onAnimationGroupPauseObservable.clear();
         this.onAnimationGroupPlayObservable.clear();
         this.onAnimationLoopObservable.clear();
+        this.onAnimationGroupLoopObservable.clear();
     }
 
     private _checkAnimationGroupEnded(animatable: Animatable) {
@@ -455,6 +526,25 @@ export class AnimationGroup implements IDisposable {
         }
 
         return newGroup;
+    }
+
+    /**
+     * Serializes the animationGroup to an object
+     * @returns Serialized object
+     */
+    public serialize(): any {
+        var serializationObject: any = {};
+
+        serializationObject.name = this.name;
+        serializationObject.from = this.from;
+        serializationObject.to = this.to;
+        serializationObject.targetedAnimations = [];
+        for (var targetedAnimationIndex = 0; targetedAnimationIndex < this.targetedAnimations.length; targetedAnimationIndex++) {
+            var targetedAnimation = this.targetedAnimations[targetedAnimationIndex];
+            serializationObject.targetedAnimations[targetedAnimationIndex] = targetedAnimation.serialize();
+        }
+
+        return serializationObject;
     }
 
     // Statics

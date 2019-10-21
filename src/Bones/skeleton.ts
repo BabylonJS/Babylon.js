@@ -1,8 +1,7 @@
 import { Bone } from "./bone";
 
-import { IAnimatable } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
-import { Vector3, Matrix, Tmp } from "../Maths/math";
+import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Scene } from "../scene";
 import { Nullable } from "../types";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -16,6 +15,7 @@ import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { DeepCopier } from "../Misc/deepCopier";
 import { IInspectable } from '../Misc/iInspectable';
+import { IAnimatable } from '../Animations/animatable.interface';
 
 /**
  * Class used to handle skinning animations
@@ -58,9 +58,13 @@ export class Skeleton implements IAnimatable {
     private _lastAbsoluteTransformsUpdateId = -1;
 
     private _canUseTextureForBones = false;
+    private _uniqueId = 0;
 
     /** @hidden */
     public _numBonesWithLinkedTransformNode = 0;
+
+    /** @hidden */
+    public _hasWaitingData: Nullable<boolean> = null;
 
     /**
      * Specifies if the skeleton should be serialized
@@ -70,7 +74,7 @@ export class Skeleton implements IAnimatable {
     private _useTextureToStoreBoneMatrices = true;
     /**
      * Gets or sets a boolean indicating that bone matrices should be stored as a texture instead of using shader uniforms (default is true).
-     * Please note that this option is not available when needInitialSkinMatrix === true or if the hardware does not support it
+     * Please note that this option is not available if the hardware does not support it
      */
     public get useTextureToStoreBoneMatrices(): boolean {
         return this._useTextureToStoreBoneMatrices;
@@ -114,7 +118,14 @@ export class Skeleton implements IAnimatable {
      * Gets a boolean indicating that the skeleton effectively stores matrices into a texture
      */
     public get isUsingTextureForMatrices() {
-        return this.useTextureToStoreBoneMatrices && this._canUseTextureForBones && !this.needInitialSkinMatrix;
+        return this.useTextureToStoreBoneMatrices && this._canUseTextureForBones;
+    }
+
+    /**
+     * Gets the unique ID of this skeleton
+     */
+    public get uniqueId(): number {
+        return this._uniqueId;
     }
 
     /**
@@ -131,6 +142,7 @@ export class Skeleton implements IAnimatable {
         this.bones = [];
 
         this._scene = scene || EngineStore.LastCreatedScene;
+        this._uniqueId = this._scene.getUniqueId();
 
         this._scene.addSkeleton(this);
 
@@ -177,9 +189,14 @@ export class Skeleton implements IAnimatable {
 
     /**
      * Gets the list of transform matrices to send to shaders inside a texture (one matrix per bone)
+     * @param mesh defines the mesh to use to get the root matrix (if needInitialSkinMatrix === true)
      * @returns a raw texture containing the data
      */
-    public getTransformMatrixTexture(): Nullable<RawTexture> {
+    public getTransformMatrixTexture(mesh: AbstractMesh): Nullable<RawTexture> {
+        if (this.needInitialSkinMatrix && mesh._transformMatrixTexture) {
+            return mesh._transformMatrixTexture;
+        }
+
         return this._transformMatrixTexture;
     }
 
@@ -398,6 +415,7 @@ export class Skeleton implements IAnimatable {
 
         for (var index = 0; index < this.bones.length; index++) {
             var bone = this.bones[index];
+            bone._childUpdateId++;
             var parentBone = bone.getParent();
 
             if (parentBone) {
@@ -458,13 +476,29 @@ export class Skeleton implements IAnimatable {
 
                         if (!bone.getParent()) {
                             var matrix = bone.getBaseMatrix();
-                            matrix.multiplyToRef(poseMatrix, Tmp.Matrix[1]);
-                            bone._updateDifferenceMatrix(Tmp.Matrix[1]);
+                            matrix.multiplyToRef(poseMatrix, TmpVectors.Matrix[1]);
+                            bone._updateDifferenceMatrix(TmpVectors.Matrix[1]);
+                        }
+                    }
+
+                    if (this.isUsingTextureForMatrices) {
+                        const textureWidth = (this.bones.length + 1) * 4;
+                        if (!mesh._transformMatrixTexture || mesh._transformMatrixTexture.getSize().width !== textureWidth) {
+
+                            if (mesh._transformMatrixTexture) {
+                                mesh._transformMatrixTexture.dispose();
+                            }
+
+                            mesh._transformMatrixTexture = RawTexture.CreateRGBATexture(mesh._bonesTransformMatrices, (this.bones.length + 1) * 4, 1, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
                         }
                     }
                 }
 
                 this._computeTransformMatrices(mesh._bonesTransformMatrices, poseMatrix);
+
+                if (this.isUsingTextureForMatrices && mesh._transformMatrixTexture) {
+                    mesh._transformMatrixTexture.update(mesh._bonesTransformMatrices);
+                }
             }
         } else {
             if (!this._transformMatrices || this._transformMatrices.length !== 16 * (this.bones.length + 1)) {
@@ -510,13 +544,15 @@ export class Skeleton implements IAnimatable {
     /**
      * Clone the current skeleton
      * @param name defines the name of the new skeleton
-     * @param id defines the id of the enw skeleton
+     * @param id defines the id of the new skeleton
      * @returns the new skeleton
      */
-    public clone(name: string, id: string): Skeleton {
+    public clone(name: string, id?: string): Skeleton {
         var result = new Skeleton(name, id || name, this._scene);
 
         result.needInitialSkinMatrix = this.needInitialSkinMatrix;
+
+        result.overrideMesh = this.overrideMesh;
 
         for (var index = 0; index < this.bones.length; index++) {
             var source = this.bones[index];
@@ -529,6 +565,12 @@ export class Skeleton implements IAnimatable {
             }
 
             var bone = new Bone(source.name, result, parentBone, source.getBaseMatrix().clone(), source.getRestPose().clone());
+            bone._index = source._index;
+
+            if (source._linkedTransformNode) {
+                bone.linkTransformNode(source._linkedTransformNode);
+            }
+
             DeepCopier.DeepCopy(source.animations, bone.animations);
         }
 
@@ -680,6 +722,11 @@ export class Skeleton implements IAnimatable {
 
             if (parsedBone.animation) {
                 bone.animations.push(Animation.Parse(parsedBone.animation));
+            }
+
+            if (parsedBone.linkedTransformNodeId !== undefined && parsedBone.linkedTransformNodeId !== null) {
+                skeleton._hasWaitingData = true;
+                bone._waitingTransformNodeId = parsedBone.linkedTransformNodeId;
             }
         }
 

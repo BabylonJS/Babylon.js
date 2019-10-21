@@ -30,15 +30,19 @@ uniform Material
 	mat4 specularMatrix;
 	mat4 bumpMatrix; 
 	vec2 vTangentSpaceParams;
+	float pointSize;
 	mat4 refractionMatrix;
 	vec4 vRefractionInfos;
 	vec4 vSpecularColor;
 	vec3 vEmissiveColor;
+	float visibility;
 	vec4 vDiffuseColor;
-	float pointSize; 
 };
 
 uniform Scene {
-	mat4 viewProjection;
+    mat4 viewProjection;
+#ifdef MULTIVIEW
+	mat4 viewProjectionR;
+#endif 
 	mat4 view;
 };

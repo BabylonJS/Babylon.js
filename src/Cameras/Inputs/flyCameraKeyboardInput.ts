@@ -6,7 +6,7 @@ import { FlyCamera } from "../../Cameras/flyCamera";
 import { Engine } from "../../Engines/engine";
 import { KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
 import { Scene } from "../../scene";
-import { Vector3 } from "../../Maths/math";
+import { Vector3 } from "../../Maths/math.vector";
 
 /**
  * Listen to keyboard events to control the camera.

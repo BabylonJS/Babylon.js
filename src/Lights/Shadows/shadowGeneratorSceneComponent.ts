@@ -4,7 +4,6 @@ import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTextur
 import { ShadowGenerator } from "./shadowGenerator";
 import { SceneComponentConstants, ISceneSerializableComponent } from "../../sceneComponent";
 import { _TimeToken } from "../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { AbstractScene } from "../../abstractScene";
 // Adds the parser to the scene parsers.
 AbstractScene.AddParser(SceneComponentConstants.NAME_SHADOWGENERATOR, (parsedData: any, scene: Scene) => {
@@ -73,7 +72,7 @@ export class ShadowGeneratorSceneComponent implements ISceneSerializableComponen
     }
 
     /**
-     * Adds all the element from the container to the scene
+     * Adds all the elements from the container to the scene
      * @param container the container holding the elements
      */
     public addFromContainer(container: AbstractScene): void {
@@ -83,8 +82,9 @@ export class ShadowGeneratorSceneComponent implements ISceneSerializableComponen
     /**
      * Removes all the elements in the container from the scene
      * @param container contains the elements to remove
+     * @param dispose if the removed element should be disposed (default: false)
      */
-    public removeFromContainer(container: AbstractScene): void {
+    public removeFromContainer(container: AbstractScene, dispose?: boolean): void {
         // Nothing To Do Here. (directly attached to a light)
     }
 

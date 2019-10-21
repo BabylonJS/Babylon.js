@@ -1,9 +1,14 @@
 import { Scene } from "../../scene";
-import { Color3, Vector3, Epsilon } from "../../Maths/math";
+import { Vector3 } from "../../Maths/math.vector";
+import { Color3 } from '../../Maths/math.color';
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { GroundMesh } from "../groundMesh";
 import { Tools } from "../../Misc/tools";
+import { Nullable } from '../../types';
+import { EngineStore } from '../../Engines/engineStore';
+import { Epsilon } from '../../Maths/math.constants';
+import { CanvasGenerator } from '../../Misc/canvasGenerator';
 
 VertexData.CreateGround = function(options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number }): VertexData {
     var indices = [];
@@ -143,6 +148,14 @@ VertexData.CreateGroundFromHeightMap = function(options: { width: number, height
     var row, col;
     var filter = options.colorFilter || new Color3(0.3, 0.59, 0.11);
     var alphaFilter = options.alphaFilter || 0.0;
+    var invert = false;
+
+    if (options.minHeight > options.maxHeight) {
+        invert = true;
+        let temp = options.maxHeight;
+        options.maxHeight = options.minHeight;
+        options.minHeight = temp;
+    }
 
     // Vertices
     for (row = 0; row <= options.subdivisions; row++) {
@@ -158,6 +171,12 @@ VertexData.CreateGroundFromHeightMap = function(options: { width: number, height
             var g = options.buffer[pos + 1] / 255.0;
             var b = options.buffer[pos + 2] / 255.0;
             var a = options.buffer[pos + 3] / 255.0;
+
+            if (invert) {
+                r = 1.0 - r;
+                g = 1.0 - g;
+                b = 1.0 - b;
+            }
 
             var gradient = r * filter.r + g * filter.g + b * filter.b;
 
@@ -310,7 +329,7 @@ export class GroundBuilder {
      * @returns the tiled ground mesh
      * @see https://doc.babylonjs.com/how_to/set_shapes#tiled-ground
      */
-    public static CreateTiledGround(name: string, options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; }, updatable?: boolean }, scene: Scene): Mesh {
+    public static CreateTiledGround(name: string, options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; }, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
         var tiledGround = new Mesh(name, scene);
 
         var vertexData = VertexData.CreateTiledGround(options);
@@ -339,7 +358,7 @@ export class GroundBuilder {
      * @see https://doc.babylonjs.com/babylon101/height_map
      * @see https://doc.babylonjs.com/how_to/set_shapes#ground-from-a-height-map
      */
-    public static CreateGroundFromHeightMap(name: string, url: string, options: { width?: number, height?: number, subdivisions?: number, minHeight?: number, maxHeight?: number, colorFilter?: Color3, alphaFilter?: number, updatable?: boolean, onReady?: (mesh: GroundMesh) => void }, scene: Scene): GroundMesh {
+    public static CreateGroundFromHeightMap(name: string, url: string, options: { width?: number, height?: number, subdivisions?: number, minHeight?: number, maxHeight?: number, colorFilter?: Color3, alphaFilter?: number, updatable?: boolean, onReady?: (mesh: GroundMesh) => void }, scene: Nullable<Scene> = null): GroundMesh {
         var width = options.width || 10.0;
         var height = options.height || 10.0;
         var subdivisions = options.subdivisions || 1 | 0;
@@ -349,6 +368,8 @@ export class GroundBuilder {
         var alphaFilter = options.alphaFilter || 0.0;
         var updatable = options.updatable;
         var onReady = options.onReady;
+
+        scene = scene || EngineStore.LastCreatedScene!;
 
         var ground = new GroundMesh(name, scene);
         ground._subdivisionsX = subdivisions;
@@ -362,23 +383,21 @@ export class GroundBuilder {
 
         ground._setReady(false);
 
-        var onload = (img: HTMLImageElement) => {
+        var onload = (img: HTMLImageElement | ImageBitmap) => {
+            var bufferWidth = img.width;
+            var bufferHeight = img.height;
+
             // Getting height map data
-            var canvas = document.createElement("canvas");
+            var canvas = CanvasGenerator.CreateCanvas(bufferWidth, bufferHeight);
             var context = canvas.getContext("2d");
 
             if (!context) {
                 throw new Error("Unable to get 2d context for CreateGroundFromHeightMap");
             }
 
-            if (scene.isDisposed) {
+            if (scene!.isDisposed) {
                 return;
             }
-
-            var bufferWidth = img.width;
-            var bufferHeight = img.height;
-            canvas.width = bufferWidth;
-            canvas.height = bufferHeight;
 
             context.drawImage(img, 0, 0);
 

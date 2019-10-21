@@ -12,9 +12,9 @@ void main(void)
 {
     #ifdef GEOMETRY_SUPPORTED
     vec2 texelSize = 1.0 / screenSize;
-    vec2 velocityColor = texture2D(velocitySampler, vUV).rg;
+    vec2 velocityColor = texture2D(velocitySampler, vUV).rg * 2.0 - 1.0;
 	
-    vec2 velocity = vec2(pow(velocityColor.r, 1.0 / 3.0), pow(velocityColor.g, 1.0 / 3.0)) * 2.0 - 1.0;
+    vec2 velocity = vec2(pow(velocityColor.r, 3.0), pow(velocityColor.g, 3.0));
 	velocity *= motionScale * motionStrength;
 
     float speed = length(velocity / texelSize);
@@ -35,6 +35,7 @@ void main(void)
     }
 
 	gl_FragColor = result / float(samplesCount);
+    gl_FragColor.a = 1.0;
     #else
     gl_FragColor = texture2D(textureSampler, vUV);
     #endif

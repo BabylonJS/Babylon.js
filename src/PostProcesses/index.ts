@@ -28,3 +28,4 @@ export * from "./stereoscopicInterlacePostProcess";
 export * from "./tonemapPostProcess";
 export * from "./volumetricLightScatteringPostProcess";
 export * from "./vrDistortionCorrectionPostProcess";
+export * from "./vrMultiviewToSingleviewPostProcess";

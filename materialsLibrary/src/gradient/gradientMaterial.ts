@@ -1,11 +1,12 @@
 import { Nullable } from "babylonjs/types";
 import { serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Color3, Matrix } from "babylonjs/Maths/math";
-import { IAnimatable } from "babylonjs/Misc/tools";
+import { Matrix } from "babylonjs/Maths/math.vector";
+import { Color3 } from "babylonjs/Maths/math.color";
+import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
-import { EffectCreationOptions, EffectFallbacks } from "babylonjs/Materials/effect";
+import { IEffectCreationOptions } from "babylonjs/Materials/effect";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
 import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -16,6 +17,7 @@ import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 import "./gradient.fragment";
 import "./gradient.vertex";
+import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
 
 class GradientMaterialDefines extends MaterialDefines {
     public EMISSIVE = false;
@@ -183,7 +185,7 @@ export class GradientMaterial extends PushMaterial {
             var samplers: string[] = [];
             var uniformBuffers = new Array<string>();
 
-            MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
+            MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
@@ -192,7 +194,7 @@ export class GradientMaterial extends PushMaterial {
             });
 
             subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                <EffectCreationOptions>{
+                <IEffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,

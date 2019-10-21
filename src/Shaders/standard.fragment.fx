@@ -212,15 +212,7 @@ uniform vec2 dsOffsets[9];
 uniform float halfDestPixelSize;
 
 #ifdef FINAL_DOWN_SAMPLER
-vec4 pack(float value) {
-	const vec4 bit_shift = vec4(255.0 * 255.0 * 255.0, 255.0 * 255.0, 255.0, 1.0);
-	const vec4 bit_mask = vec4(0.0, 1.0 / 255.0, 1.0 / 255.0, 1.0 / 255.0);
-
-	vec4 res = fract(value * bit_shift);
-	res -= res.xxyz * bit_mask;
-
-	return res;
-}
+	#include<packingFunctions>
 #endif
 
 void main()
@@ -251,11 +243,14 @@ uniform float averageLuminance;
 void main()
 {
 	vec4 color = texture2D(textureAdderSampler, vUV);
+
+	#ifndef AUTO_EXPOSURE
 	vec4 adjustedColor = color / averageLuminance;
 
 	color = adjustedColor;
 	color.a = 1.0;
-
+	#endif
+	
 	gl_FragColor = color;
 }
 #endif

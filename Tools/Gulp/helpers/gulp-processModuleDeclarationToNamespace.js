@@ -232,8 +232,11 @@ module.exports = function(fileLocation, packageName, options, cb) {
         if (err) throw err;
 
         data += "";
-        // For Raanan, litteral import hack TO BETTER INTEGRATE
-        data = data.replace('import "../sass/main.scss";', "");
+        if (options.replacements) {
+            for (let replacement of options.replacements) {
+                data = data.replace(replacement.from, replacement.to);
+            }
+        }
 
         if (options.prependText) {
             data = options.prependText + '\n' + data.toString();
@@ -244,9 +247,6 @@ module.exports = function(fileLocation, packageName, options, cb) {
             newData = processData(data, packageName, options);
 
             var namespaceData = newData;
-            if (options.prependToNamespaceText) {
-                namespaceData = options.prependToNamespaceText + '\n' + namespaceData;
-            }
             fs.writeFileSync(fileLocation.replace('.module', ''), namespaceData);
         }
 

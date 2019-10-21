@@ -1,6 +1,6 @@
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Color3 } from "../Maths/math";
+import { Color3, Color4 } from "../Maths/math.color";
 import { Node } from "../node";
 import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
@@ -9,10 +9,11 @@ import { InstancedMesh } from "../Meshes/instancedMesh";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
+import { MaterialHelper } from '../Materials/materialHelper';
 
 import "../Shaders/color.fragment";
 import "../Shaders/color.vertex";
-import { MaterialHelper } from '../Materials/materialHelper';
+import { AbstractMesh } from './abstractMesh';
 
 /**
  * Line mesh
@@ -37,6 +38,8 @@ export class LinesMesh extends Mesh {
 
     private _colorShader: ShaderMaterial;
 
+    private color4: Color4;
+
     /**
      * Creates a new LinesMesh
      * @param name defines the name
@@ -53,16 +56,16 @@ export class LinesMesh extends Mesh {
         name: string,
         scene: Nullable<Scene> = null,
         parent: Nullable<Node> = null,
-        source?: LinesMesh,
+        source: Nullable<LinesMesh> = null,
         doNotCloneChildren?: boolean,
         /**
          * If vertex color should be applied to the mesh
          */
-        public useVertexColor?: boolean,
+        public readonly useVertexColor?: boolean,
         /**
          * If vertex alpha should be applied to the mesh
          */
-        public useVertexAlpha?: boolean
+        public readonly useVertexAlpha?: boolean
     ) {
         super(name, scene, parent, source, doNotCloneChildren);
 
@@ -89,6 +92,7 @@ export class LinesMesh extends Mesh {
 
         if (!useVertexColor) {
             options.uniforms.push("color");
+            this.color4 = new Color4();
         }
         else {
             options.defines.push("#define VERTEXCOLOR");
@@ -165,18 +169,21 @@ export class LinesMesh extends Mesh {
     }
 
     /** @hidden */
-    public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): LinesMesh {
+    public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh {
         if (!this._geometry) {
             return this;
         }
         const colorEffect = this._colorShader.getEffect();
 
         // VBOs
-        this._geometry._bind(colorEffect);
+        const indexToBind = this.isUnIndexed ? null : this._geometry.getIndexBuffer();
+        this._geometry._bind(colorEffect, indexToBind);
 
         // Color
         if (!this.useVertexColor) {
-            this._colorShader.setColor4("color", this.color.toColor4(this.alpha));
+            const { r, g, b } = this.color;
+            this.color4.set(r, g, b, this.alpha);
+            this._colorShader.setColor4("color", this.color4);
         }
 
         // Clip planes
@@ -185,7 +192,7 @@ export class LinesMesh extends Mesh {
     }
 
     /** @hidden */
-    public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): LinesMesh {
+    public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): Mesh {
         if (!this._geometry || !this._geometry.getVertexBuffers() || (!this._unIndexed && !this._geometry.getIndexBuffer())) {
             return this;
         }
@@ -193,7 +200,13 @@ export class LinesMesh extends Mesh {
         var engine = this.getScene().getEngine();
 
         // Draw order
-        engine.drawElementsType(Material.LineListDrawMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
+
+        if (this._unIndexed) {
+            engine.drawArraysType(Material.LineListDrawMode, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
+        }
+        else {
+            engine.drawElementsType(Material.LineListDrawMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
+        }
         return this;
     }
 
@@ -209,7 +222,7 @@ export class LinesMesh extends Mesh {
     /**
      * Returns a new LineMesh object cloned from the current one.
      */
-    public clone(name: string, newParent?: Node, doNotCloneChildren?: boolean): LinesMesh {
+    public clone(name: string, newParent: Nullable<Node> = null, doNotCloneChildren?: boolean): Nullable<AbstractMesh> {
         return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
     }
 

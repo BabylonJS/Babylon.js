@@ -7,7 +7,7 @@
 		exports["babylonjs-materials"] = factory(require("babylonjs"));
 	else
 		root["MATERIALS"] = factory(root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_effect__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_decorators__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -98,9 +98,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
-/*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
+/*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -117,6 +117,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__values", function() { return __values; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__read", function() { return __read; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__spread", function() { return __spread; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__spreadArrays", function() { return __spreadArrays; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__await", function() { return __await; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__asyncGenerator", function() { return __asyncGenerator; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__asyncDelegator", function() { return __asyncDelegator; });
@@ -169,8 +170,10 @@ function __rest(s, e) {
     for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
         t[p] = s[p];
     if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
-            t[p[i]] = s[p[i]];
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
     return t;
 }
 
@@ -263,6 +266,14 @@ function __spread() {
         ar = ar.concat(__read(arguments[i]));
     return ar;
 }
+
+function __spreadArrays() {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
 
 function __await(v) {
     return this instanceof __await ? (this.v = v, this) : new __await(v);
@@ -358,7 +369,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ShaderSpecialParts", function() { return ShaderSpecialParts; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CustomMaterial", function() { return CustomMaterial; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Materials/effect");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/decorators");
 /* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__);
 
 
@@ -377,7 +388,7 @@ var ShaderSpecialParts = /** @class */ (function () {
 }());
 
 var CustomMaterial = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CustomMaterial, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CustomMaterial, _super);
     function CustomMaterial(name, scene) {
         var _this = _super.call(this, name, scene) || this;
         _this.CustomParts = new ShaderSpecialParts();
@@ -455,17 +466,17 @@ var CustomMaterial = /** @class */ (function (_super) {
             .replace('#define CUSTOM_VERTEX_DEFINITIONS', (this._customUniform ? this._customUniform.join("\n") : "") + (this.CustomParts.Vertex_Definitions ? this.CustomParts.Vertex_Definitions : ""))
             .replace('#define CUSTOM_VERTEX_MAIN_BEGIN', (this.CustomParts.Vertex_MainBegin ? this.CustomParts.Vertex_MainBegin : ""))
             .replace('#define CUSTOM_VERTEX_UPDATE_POSITION', (this.CustomParts.Vertex_Before_PositionUpdated ? this.CustomParts.Vertex_Before_PositionUpdated : ""))
-            .replace('#define CUSTOM_VERTEX_UPDATE_NORMAL', (this.CustomParts.Vertex_Before_NormalUpdated ? this.CustomParts.Vertex_Before_NormalUpdated : ""));
-        // #define CUSTOM_VERTEX_MAIN_END
+            .replace('#define CUSTOM_VERTEX_UPDATE_NORMAL', (this.CustomParts.Vertex_Before_NormalUpdated ? this.CustomParts.Vertex_Before_NormalUpdated : ""))
+            .replace('#define CUSTOM_VERTEX_MAIN_END', (this.CustomParts.Vertex_MainEnd ? this.CustomParts.Vertex_MainEnd : ""));
         babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore[name + "PixelShader"] = this.FragmentShader
             .replace('#define CUSTOM_FRAGMENT_BEGIN', (this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""))
             .replace('#define CUSTOM_FRAGMENT_MAIN_BEGIN', (this.CustomParts.Fragment_MainBegin ? this.CustomParts.Fragment_MainBegin : ""))
             .replace('#define CUSTOM_FRAGMENT_DEFINITIONS', (this._customUniform ? this._customUniform.join("\n") : "") + (this.CustomParts.Fragment_Definitions ? this.CustomParts.Fragment_Definitions : ""))
             .replace('#define CUSTOM_FRAGMENT_UPDATE_DIFFUSE', (this.CustomParts.Fragment_Custom_Diffuse ? this.CustomParts.Fragment_Custom_Diffuse : ""))
             .replace('#define CUSTOM_FRAGMENT_UPDATE_ALPHA', (this.CustomParts.Fragment_Custom_Alpha ? this.CustomParts.Fragment_Custom_Alpha : ""))
+            .replace('#define CUSTOM_FRAGMENT_BEFORE_LIGHTS', (this.CustomParts.Fragment_Before_Lights ? this.CustomParts.Fragment_Before_Lights : ""))
+            .replace('#define CUSTOM_FRAGMENT_BEFORE_FOG', (this.CustomParts.Fragment_Before_Fog ? this.CustomParts.Fragment_Before_Fog : ""))
             .replace('#define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR', (this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : ""));
-        // #define CUSTOM_FRAGMENT_BEFORE_LIGHTS
-        // #define CUSTOM_FRAGMENT_BEFORE_FOG
         this._isCreatedShader = true;
         this._createdShaderName = name;
         return name;
@@ -509,6 +520,14 @@ var CustomMaterial = /** @class */ (function (_super) {
         this.CustomParts.Fragment_Custom_Alpha = shaderPart.replace("result", "alpha");
         return this;
     };
+    CustomMaterial.prototype.Fragment_Before_Lights = function (shaderPart) {
+        this.CustomParts.Fragment_Before_Lights = shaderPart;
+        return this;
+    };
+    CustomMaterial.prototype.Fragment_Before_Fog = function (shaderPart) {
+        this.CustomParts.Fragment_Before_Fog = shaderPart;
+        return this;
+    };
     CustomMaterial.prototype.Fragment_Before_FragColor = function (shaderPart) {
         this.CustomParts.Fragment_Before_FragColor = shaderPart.replace("result", "color");
         return this;
@@ -533,6 +552,10 @@ var CustomMaterial = /** @class */ (function (_super) {
         this.CustomParts.Vertex_Before_NormalUpdated = shaderPart.replace("result", "normalUpdated");
         return this;
     };
+    CustomMaterial.prototype.Vertex_MainEnd = function (shaderPart) {
+        this.CustomParts.Vertex_MainEnd = shaderPart;
+        return this;
+    };
     CustomMaterial.ShaderIndexer = 1;
     return CustomMaterial;
 }(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]));
@@ -546,7 +569,7 @@ babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].Registered
 /*!*************************!*\
   !*** ./custom/index.ts ***!
   \*************************/
-/*! exports provided: CustomShaderStructure, ShaderSpecialParts, CustomMaterial */
+/*! exports provided: CustomShaderStructure, ShaderSpecialParts, CustomMaterial, ShaderAlebdoParts, PBRCustomMaterial */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -558,7 +581,225 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CustomMaterial", function() { return _customMaterial__WEBPACK_IMPORTED_MODULE_0__["CustomMaterial"]; });
 
+/* harmony import */ var _pbrCustomMaterial__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./pbrCustomMaterial */ "./custom/pbrCustomMaterial.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ShaderAlebdoParts", function() { return _pbrCustomMaterial__WEBPACK_IMPORTED_MODULE_1__["ShaderAlebdoParts"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PBRCustomMaterial", function() { return _pbrCustomMaterial__WEBPACK_IMPORTED_MODULE_1__["PBRCustomMaterial"]; });
+
+
+
+
+
+/***/ }),
+
+/***/ "./custom/pbrCustomMaterial.ts":
+/*!*************************************!*\
+  !*** ./custom/pbrCustomMaterial.ts ***!
+  \*************************************/
+/*! exports provided: ShaderAlebdoParts, PBRCustomMaterial */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ShaderAlebdoParts", function() { return ShaderAlebdoParts; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PBRCustomMaterial", function() { return PBRCustomMaterial; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/decorators");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__);
+
+
+
+
+var ShaderAlebdoParts = /** @class */ (function () {
+    function ShaderAlebdoParts() {
+    }
+    return ShaderAlebdoParts;
+}());
+
+var PBRCustomMaterial = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PBRCustomMaterial, _super);
+    function PBRCustomMaterial(name, scene) {
+        var _this = _super.call(this, name, scene) || this;
+        _this.CustomParts = new ShaderAlebdoParts();
+        _this.customShaderNameResolve = _this.Builder;
+        _this.FragmentShader = babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore["pbrPixelShader"];
+        _this.VertexShader = babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore["pbrVertexShader"];
+        return _this;
+    }
+    PBRCustomMaterial.prototype.AttachAfterBind = function (mesh, effect) {
+        for (var el in this._newUniformInstances) {
+            var ea = el.toString().split('-');
+            if (ea[0] == 'vec2') {
+                effect.setVector2(ea[1], this._newUniformInstances[el]);
+            }
+            else if (ea[0] == 'vec3') {
+                effect.setVector3(ea[1], this._newUniformInstances[el]);
+            }
+            else if (ea[0] == 'vec4') {
+                effect.setVector4(ea[1], this._newUniformInstances[el]);
+            }
+            else if (ea[0] == 'mat4') {
+                effect.setMatrix(ea[1], this._newUniformInstances[el]);
+            }
+            else if (ea[0] == 'float') {
+                effect.setFloat(ea[1], this._newUniformInstances[el]);
+            }
+        }
+        for (var el in this._newSamplerInstances) {
+            var ea = el.toString().split('-');
+            if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady()) {
+                effect.setTexture(ea[1], this._newSamplerInstances[el]);
+            }
+        }
+    };
+    PBRCustomMaterial.prototype.ReviewUniform = function (name, arr) {
+        if (name == "uniform") {
+            for (var ind in this._newUniforms) {
+                if (this._customUniform[ind].indexOf('sampler') == -1) {
+                    arr.push(this._newUniforms[ind]);
+                }
+            }
+        }
+        if (name == "sampler") {
+            for (var ind in this._newUniforms) {
+                if (this._customUniform[ind].indexOf('sampler') != -1) {
+                    arr.push(this._newUniforms[ind]);
+                }
+            }
+        }
+        return arr;
+    };
+    PBRCustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines) {
+        var _this = this;
+        if (this._isCreatedShader) {
+            return this._createdShaderName;
+        }
+        this._isCreatedShader = false;
+        PBRCustomMaterial.ShaderIndexer++;
+        var name = "custom_" + PBRCustomMaterial.ShaderIndexer;
+        this.ReviewUniform("uniform", uniforms);
+        this.ReviewUniform("sampler", samplers);
+        var fn_afterBind = this._afterBind.bind(this);
+        this._afterBind = function (m, e) {
+            if (!e) {
+                return;
+            }
+            _this.AttachAfterBind(m, e);
+            try {
+                fn_afterBind(m, e);
+            }
+            catch (e) { }
+        };
+        babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore[name + "VertexShader"] = this.VertexShader
+            .replace('#define CUSTOM_VERTEX_BEGIN', (this.CustomParts.Vertex_Begin ? this.CustomParts.Vertex_Begin : ""))
+            .replace('#define CUSTOM_VERTEX_DEFINITIONS', (this._customUniform ? this._customUniform.join("\n") : "") + (this.CustomParts.Vertex_Definitions ? this.CustomParts.Vertex_Definitions : ""))
+            .replace('#define CUSTOM_VERTEX_MAIN_BEGIN', (this.CustomParts.Vertex_MainBegin ? this.CustomParts.Vertex_MainBegin : ""))
+            .replace('#define CUSTOM_VERTEX_UPDATE_POSITION', (this.CustomParts.Vertex_Before_PositionUpdated ? this.CustomParts.Vertex_Before_PositionUpdated : ""))
+            .replace('#define CUSTOM_VERTEX_UPDATE_NORMAL', (this.CustomParts.Vertex_Before_NormalUpdated ? this.CustomParts.Vertex_Before_NormalUpdated : ""))
+            .replace('#define CUSTOM_VERTEX_MAIN_END', (this.CustomParts.Vertex_MainEnd ? this.CustomParts.Vertex_MainEnd : ""));
+        babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore[name + "PixelShader"] = this.FragmentShader
+            .replace('#define CUSTOM_FRAGMENT_BEGIN', (this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""))
+            .replace('#define CUSTOM_FRAGMENT_MAIN_BEGIN', (this.CustomParts.Fragment_MainBegin ? this.CustomParts.Fragment_MainBegin : ""))
+            .replace('#define CUSTOM_FRAGMENT_DEFINITIONS', (this._customUniform ? this._customUniform.join("\n") : "") + (this.CustomParts.Fragment_Definitions ? this.CustomParts.Fragment_Definitions : ""))
+            .replace('#define CUSTOM_FRAGMENT_UPDATE_ALBEDO', (this.CustomParts.Fragment_Custom_Albedo ? this.CustomParts.Fragment_Custom_Albedo : ""))
+            .replace('#define CUSTOM_FRAGMENT_UPDATE_ALPHA', (this.CustomParts.Fragment_Custom_Alpha ? this.CustomParts.Fragment_Custom_Alpha : ""))
+            .replace('#define CUSTOM_FRAGMENT_BEFORE_LIGHTS', (this.CustomParts.Fragment_Before_Lights ? this.CustomParts.Fragment_Before_Lights : ""))
+            .replace('#define CUSTOM_FRAGMENT_UPDATE_METALLICROUGHNESS', (this.CustomParts.Fragment_Custom_MetallicRoughness ? this.CustomParts.Fragment_Custom_MetallicRoughness : ""))
+            .replace('#define CUSTOM_FRAGMENT_UPDATE_MICROSURFACE', (this.CustomParts.Fragment_Custom_MicroSurface ? this.CustomParts.Fragment_Custom_MicroSurface : ""))
+            .replace('#define CUSTOM_FRAGMENT_BEFORE_FOG', (this.CustomParts.Fragment_Before_Fog ? this.CustomParts.Fragment_Before_Fog : ""))
+            .replace('#define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR', (this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : ""));
+        this._isCreatedShader = true;
+        this._createdShaderName = name;
+        return name;
+    };
+    PBRCustomMaterial.prototype.AddUniform = function (name, kind, param) {
+        if (!this._customUniform) {
+            this._customUniform = new Array();
+            this._newUniforms = new Array();
+            this._newSamplerInstances = new Array();
+            this._newUniformInstances = new Array();
+        }
+        if (param) {
+            if (kind.indexOf("sampler") == -1) {
+                this._newUniformInstances[kind + "-" + name] = param;
+            }
+            else {
+                this._newUniformInstances[kind + "-" + name] = param;
+            }
+        }
+        this._customUniform.push("uniform " + kind + " " + name + ";");
+        this._newUniforms.push(name);
+        return this;
+    };
+    PBRCustomMaterial.prototype.Fragment_Begin = function (shaderPart) {
+        this.CustomParts.Fragment_Begin = shaderPart;
+        return this;
+    };
+    PBRCustomMaterial.prototype.Fragment_Definitions = function (shaderPart) {
+        this.CustomParts.Fragment_Definitions = shaderPart;
+        return this;
+    };
+    PBRCustomMaterial.prototype.Fragment_MainBegin = function (shaderPart) {
+        this.CustomParts.Fragment_MainBegin = shaderPart;
+        return this;
+    };
+    PBRCustomMaterial.prototype.Fragment_Custom_Albedo = function (shaderPart) {
+        this.CustomParts.Fragment_Custom_Albedo = shaderPart.replace("result", "surfaceAlbedo");
+        return this;
+    };
+    PBRCustomMaterial.prototype.Fragment_Custom_Alpha = function (shaderPart) {
+        this.CustomParts.Fragment_Custom_Alpha = shaderPart.replace("result", "alpha");
+        return this;
+    };
+    PBRCustomMaterial.prototype.Fragment_Before_Lights = function (shaderPart) {
+        this.CustomParts.Fragment_Before_Lights = shaderPart;
+        return this;
+    };
+    PBRCustomMaterial.prototype.Fragment_Custom_MetallicRoughness = function (shaderPart) {
+        this.CustomParts.Fragment_Custom_MetallicRoughness = shaderPart;
+        return this;
+    };
+    PBRCustomMaterial.prototype.Fragment_Custom_MicroSurface = function (shaderPart) {
+        this.CustomParts.Fragment_Custom_MicroSurface = shaderPart;
+        return this;
+    };
+    PBRCustomMaterial.prototype.Fragment_Before_Fog = function (shaderPart) {
+        this.CustomParts.Fragment_Before_Fog = shaderPart;
+        return this;
+    };
+    PBRCustomMaterial.prototype.Fragment_Before_FragColor = function (shaderPart) {
+        this.CustomParts.Fragment_Before_FragColor = shaderPart.replace("result", "color");
+        return this;
+    };
+    PBRCustomMaterial.prototype.Vertex_Begin = function (shaderPart) {
+        this.CustomParts.Vertex_Begin = shaderPart;
+        return this;
+    };
+    PBRCustomMaterial.prototype.Vertex_Definitions = function (shaderPart) {
+        this.CustomParts.Vertex_Definitions = shaderPart;
+        return this;
+    };
+    PBRCustomMaterial.prototype.Vertex_MainBegin = function (shaderPart) {
+        this.CustomParts.Vertex_MainBegin = shaderPart;
+        return this;
+    };
+    PBRCustomMaterial.prototype.Vertex_Before_PositionUpdated = function (shaderPart) {
+        this.CustomParts.Vertex_Before_PositionUpdated = shaderPart.replace("result", "positionUpdated");
+        return this;
+    };
+    PBRCustomMaterial.prototype.Vertex_Before_NormalUpdated = function (shaderPart) {
+        this.CustomParts.Vertex_Before_NormalUpdated = shaderPart.replace("result", "normalUpdated");
+        return this;
+    };
+    PBRCustomMaterial.prototype.Vertex_MainEnd = function (shaderPart) {
+        this.CustomParts.Vertex_MainEnd = shaderPart;
+        return this;
+    };
+    PBRCustomMaterial.ShaderIndexer = 1;
+    return PBRCustomMaterial;
+}(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["PBRMaterial"]));
+
+babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes["BABYLON.PBRCustomMaterial"] = PBRCustomMaterial;
 
 
 /***/ }),
@@ -567,7 +808,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!*********************************!*\
   !*** ./legacy/legacy-custom.ts ***!
   \*********************************/
-/*! exports provided: CustomShaderStructure, ShaderSpecialParts, CustomMaterial */
+/*! exports provided: CustomShaderStructure, ShaderSpecialParts, CustomMaterial, ShaderAlebdoParts, PBRCustomMaterial */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -578,6 +819,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ShaderSpecialParts", function() { return _custom_index__WEBPACK_IMPORTED_MODULE_0__["ShaderSpecialParts"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "CustomMaterial", function() { return _custom_index__WEBPACK_IMPORTED_MODULE_0__["CustomMaterial"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ShaderAlebdoParts", function() { return _custom_index__WEBPACK_IMPORTED_MODULE_0__["ShaderAlebdoParts"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PBRCustomMaterial", function() { return _custom_index__WEBPACK_IMPORTED_MODULE_0__["PBRCustomMaterial"]; });
 
 
 /**
@@ -596,14 +841,14 @@ if (typeof globalObject !== "undefined") {
 
 /***/ }),
 
-/***/ "babylonjs/Materials/effect":
+/***/ "babylonjs/Misc/decorators":
 /*!****************************************************************************************************!*\
   !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
   \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_effect__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_decorators__;
 
 /***/ })
 

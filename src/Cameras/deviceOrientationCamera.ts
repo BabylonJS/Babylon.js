@@ -1,9 +1,10 @@
 import { FreeCamera } from "./freeCamera";
 import { Scene } from "../scene";
-import { Quaternion, Vector3, Axis } from "../Maths/math";
+import { Quaternion, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 
 import "./Inputs/freeCameraDeviceOrientationInput";
+import { Axis } from '../Maths/math.axis';
 
 Node.AddNodeConstructor("DeviceOrientationCamera", (name, scene) => {
     return () => new DeviceOrientationCamera(name, Vector3.Zero(), scene);
@@ -18,6 +19,8 @@ export class DeviceOrientationCamera extends FreeCamera {
 
     private _initialQuaternion: Quaternion;
     private _quaternionCache: Quaternion;
+    private _tmpDragQuaternion = new Quaternion();
+    private _disablePointerInputWhenUsingDeviceOrientation = true;
 
     /**
      * Creates a new device orientation camera
@@ -29,6 +32,47 @@ export class DeviceOrientationCamera extends FreeCamera {
         super(name, position, scene);
         this._quaternionCache = new Quaternion();
         this.inputs.addDeviceOrientation();
+
+        // When the orientation sensor fires it's first event, disable mouse input
+        if (this.inputs._deviceOrientationInput) {
+            this.inputs._deviceOrientationInput._onDeviceOrientationChangedObservable.addOnce(() => {
+                if (this._disablePointerInputWhenUsingDeviceOrientation) {
+                    if (this.inputs._mouseInput) {
+                        this.inputs._mouseInput._allowCameraRotation = false;
+                        this.inputs._mouseInput.onPointerMovedObservable.add((e) => {
+                            if (this._dragFactor != 0) {
+                                if (!this._initialQuaternion) {
+                                    this._initialQuaternion = new Quaternion();
+                                }
+                                // Rotate the initial space around the y axis to allow users to "turn around" via touch/mouse
+                                Quaternion.FromEulerAnglesToRef(0, e.offsetX * this._dragFactor, 0, this._tmpDragQuaternion);
+                                this._initialQuaternion.multiplyToRef(this._tmpDragQuaternion, this._initialQuaternion);
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Gets or sets a boolean indicating that pointer input must be disabled on first orientation sensor update (Default: true)
+     */
+    public get disablePointerInputWhenUsingDeviceOrientation() {
+        return this._disablePointerInputWhenUsingDeviceOrientation;
+    }
+
+    public set disablePointerInputWhenUsingDeviceOrientation(value: boolean) {
+        this._disablePointerInputWhenUsingDeviceOrientation = value;
+    }
+
+    private _dragFactor = 0;
+    /**
+     * Enabled turning on the y axis when the orientation sensor is active
+     * @param dragFactor the factor that controls the turn speed (default: 1/300)
+     */
+    public enableHorizontalDragging(dragFactor = 1 / 300) {
+        this._dragFactor = dragFactor;
     }
 
     /**

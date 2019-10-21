@@ -1,4 +1,4 @@
-import { Matrix } from "../../Maths/math";
+import { Matrix } from "../../Maths/math.vector";
 /**
  * This represents all the required metrics to create a VR camera.
  * @see http://doc.babylonjs.com/babylon101/cameras#device-orientation-camera
@@ -58,6 +58,11 @@ export class VRCameraMetrics {
      * Define if the current vr camera should compensate the distortion of the lense or not.
      */
     public compensateDistortion = true;
+
+    /**
+     * Defines if multiview should be enabled when rendering (Default: false)
+     */
+    public multiviewEnabled = false;
 
     /**
      * Gets the rendering aspect ratio based on the provided resolutions.

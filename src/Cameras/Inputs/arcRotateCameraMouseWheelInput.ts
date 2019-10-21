@@ -4,6 +4,7 @@ import { EventState, Observer } from "../../Misc/observable";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
+import { Scalar } from '../../Maths/math.scalar';
 
 /**
  * Manage the mouse wheel inputs to control an arc rotate camera.
@@ -31,6 +32,16 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     private _wheel: Nullable<(p: PointerInfo, s: EventState) => void>;
     private _observer: Nullable<Observer<PointerInfo>>;
 
+    private computeDeltaFromMouseWheelLegacyEvent(mouseWheelDelta: number, radius: number) {
+        var delta = 0;
+        var wheelDelta = (mouseWheelDelta * 0.01 * this.wheelDeltaPercentage) * radius;
+        if (mouseWheelDelta > 0) {
+            delta = wheelDelta / (1.0 + this.wheelDeltaPercentage);
+        } else {
+            delta = wheelDelta * (1.0 + this.wheelDeltaPercentage);
+        }
+        return delta;
+    }
     /**
      * Attach the input controls to a specific dom element to get the input from.
      * @param element Defines the element the controls should be listened from
@@ -44,20 +55,31 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
             var delta = 0;
 
             let mouseWheelLegacyEvent = event as any;
+            let wheelDelta = 0;
+
             if (mouseWheelLegacyEvent.wheelDelta) {
-                if (this.wheelDeltaPercentage) {
-                    var wheelDelta = (mouseWheelLegacyEvent.wheelDelta * 0.01 * this.wheelDeltaPercentage) * this.camera.radius;
-                    if (mouseWheelLegacyEvent.wheelDelta > 0) {
-                        delta = wheelDelta / (1.0 + this.wheelDeltaPercentage);
-                    } else {
-                        delta = wheelDelta * (1.0 + this.wheelDeltaPercentage);
+                wheelDelta = mouseWheelLegacyEvent.wheelDelta;
+            } else {
+                wheelDelta = -(event.deltaY || event.detail) * 60;
+            }
+
+            if (this.wheelDeltaPercentage) {
+                delta = this.computeDeltaFromMouseWheelLegacyEvent(wheelDelta, this.camera.radius);
+
+                // If zooming in, estimate the target radius and use that to compute the delta for inertia
+                // this will stop multiple scroll events zooming in from adding too much inertia
+                if (delta > 0) {
+                    var estimatedTargetRadius = this.camera.radius;
+                    var targetInertia = this.camera.inertialRadiusOffset + delta;
+                    for (var i = 0; i < 20 && Math.abs(targetInertia) > 0.001; i++) {
+                        estimatedTargetRadius -= targetInertia;
+                        targetInertia *= this.camera.inertia;
                     }
-                } else {
-                    delta = mouseWheelLegacyEvent.wheelDelta / (this.wheelPrecision * 40);
+                    estimatedTargetRadius = Scalar.Clamp(estimatedTargetRadius, 0, Number.MAX_VALUE);
+                    delta = this.computeDeltaFromMouseWheelLegacyEvent(wheelDelta, estimatedTargetRadius);
                 }
             } else {
-                let deltaValue = event.deltaY || event.detail;
-                delta = -deltaValue / this.wheelPrecision;
+                delta = wheelDelta / (this.wheelPrecision * 40);
             }
 
             if (delta) {

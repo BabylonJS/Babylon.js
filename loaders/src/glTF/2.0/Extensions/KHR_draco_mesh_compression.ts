@@ -24,27 +24,32 @@ interface IBufferViewDraco extends IBufferView {
  * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression)
  */
 export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
-    /** The name of this extension. */
+    /**
+     * The name of this extension.
+     */
     public readonly name = NAME;
 
-    /** Defines whether this extension is enabled. */
-    public enabled = DracoCompression.DecoderAvailable;
+    /**
+     * The draco compression used to decode vertex data or DracoCompression.Default if not defined
+     */
+    public dracoCompression?: DracoCompression;
+
+    /**
+     * Defines whether this extension is enabled.
+     */
+    public enabled: boolean;
 
     private _loader: GLTFLoader;
-    private _dracoCompression?: DracoCompression;
 
     /** @hidden */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
+        this.enabled = DracoCompression.DecoderAvailable && this._loader.isExtensionUsed(NAME);
     }
 
     /** @hidden */
     public dispose(): void {
-        if (this._dracoCompression) {
-            this._dracoCompression.dispose();
-            delete this._dracoCompression;
-        }
-
+        delete this.dracoCompression;
         delete this._loader;
     }
 
@@ -90,11 +95,8 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
             var bufferView = ArrayItem.Get(extensionContext, this._loader.gltf.bufferViews, extension.bufferView) as IBufferViewDraco;
             if (!bufferView._dracoBabylonGeometry) {
                 bufferView._dracoBabylonGeometry = this._loader.loadBufferViewAsync(`#/bufferViews/${bufferView.index}`, bufferView).then((data) => {
-                    if (!this._dracoCompression) {
-                        this._dracoCompression = new DracoCompression();
-                    }
-
-                    return this._dracoCompression.decodeMeshAsync(data, attributes).then((babylonVertexData) => {
+                    const dracoCompression = this.dracoCompression || DracoCompression.Default;
+                    return dracoCompression.decodeMeshAsync(data, attributes).then((babylonVertexData) => {
                         const babylonGeometry = new Geometry(babylonMesh.name, this._loader.babylonScene);
                         babylonVertexData.applyToGeometry(babylonGeometry);
                         return babylonGeometry;

@@ -1,5 +1,5 @@
 import { Mesh } from "../Meshes/mesh";
-import { Vector3 } from "../Maths/math";
+import { Vector3 } from "../Maths/math.vector";
 
 /**
  * Class used to explode meshes (ie. to have a center and move them away from that center to better see the overall organization)

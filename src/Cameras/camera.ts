@@ -5,7 +5,7 @@ import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { CameraInputsManager } from "./cameraInputsManager";
 import { Scene } from "../scene";
-import { Matrix, Vector3, Viewport, Plane, Frustum } from "../Maths/math";
+import { Matrix, Vector3, Quaternion } from "../Maths/math.vector";
 import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -13,6 +13,9 @@ import { ICullable } from "../Culling/boundingInfo";
 import { Logger } from "../Misc/logger";
 import { _TypeStore } from '../Misc/typeStore';
 import { _DevTools } from '../Misc/devTools';
+import { Viewport } from '../Maths/math.viewport';
+import { Frustum } from '../Maths/math.frustum';
+import { Plane } from '../Maths/math.plane';
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
@@ -91,12 +94,6 @@ export class Camera extends Node {
      * Defines if by default attaching controls should prevent the default javascript event to continue.
      */
     public static ForceAttachControlToAlwaysPreventDefault = false;
-
-    /**
-     * @hidden
-     * Might be removed once multiview will be a thing
-     */
-    public static UseAlternateWebVRRendering = false;
 
     /**
      * Define the input manager associated with the camera.
@@ -183,7 +180,7 @@ export class Camera extends Node {
     public inertia = 0.9;
 
     /**
-     * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA or Camera.PERSPECTIVE_ORTHOGRAPHIC)
+     * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA or Camera.ORTHOGRAPHIC_CAMERA)
      */
     @serialize()
     public mode = Camera.PERSPECTIVE_CAMERA;
@@ -236,11 +233,15 @@ export class Camera extends Node {
     /**
      * Defines the list of custom render target which are rendered to and then used as the input to this camera's render. Eg. display another camera view on a TV in the main scene
      * This is pretty helpfull if you wish to make a camera render to a texture you could reuse somewhere
-     * else in the scene.
+     * else in the scene. (Eg. security camera)
+     *
+     * To change the final output target of the camera, camera.outputRenderTarget should be used instead (eg. webXR renders to a render target corrisponding to an HMD)
      */
     public customRenderTargets = new Array<RenderTargetTexture>();
     /**
      * When set, the camera will render to this render target instead of the default canvas
+     *
+     * If the desire is to use the output of a camera as a texture in the scene consider using camera.customRenderTargets instead
      */
     public outputRenderTarget: Nullable<RenderTargetTexture> = null;
 
@@ -271,8 +272,6 @@ export class Camera extends Node {
     protected _webvrViewMatrix = Matrix.Identity();
     /** @hidden */
     public _skipRendering = false;
-    /** @hidden */
-    public _alternateCamera: Camera;
 
     /** @hidden */
     public _projectionMatrix = new Matrix();
@@ -285,7 +284,7 @@ export class Camera extends Node {
 
     protected _globalPosition = Vector3.Zero();
 
-    /** hidden */
+    /** @hidden */
     public _computedViewMatrix = Matrix.Identity();
     private _doNotComputeProjectionMatrix = false;
     private _transformMatrix = Matrix.Zero();
@@ -651,12 +650,17 @@ export class Camera extends Node {
         this.updateCache();
         this._computedViewMatrix = this._getViewMatrix();
         this._currentRenderId = this.getScene().getRenderId();
-        this._childRenderId = this._currentRenderId;
+        this._childUpdateId++;
 
         this._refreshFrustumPlanes = true;
 
         if (this._cameraRigParams && this._cameraRigParams.vrPreViewMatrix) {
             this._computedViewMatrix.multiplyToRef(this._cameraRigParams.vrPreViewMatrix, this._computedViewMatrix);
+        }
+
+        // Notify parent camera if rig camera is changed
+        if (this.parent && (this.parent as Camera).onViewMatrixChangedObservable) {
+            (this.parent as Camera).onViewMatrixChangedObservable.notifyObservers((this.parent as Camera));
         }
 
         this.onViewMatrixChangedObservable.notifyObservers(this);
@@ -793,12 +797,22 @@ export class Camera extends Node {
      * Checks if a cullable object (mesh...) is in the camera frustum
      * This checks the bounding box center. See isCompletelyInFrustum for a full bounding check
      * @param target The object to check
+     * @param checkRigCameras If the rig cameras should be checked (eg. with webVR camera both eyes should be checked) (Default: false)
      * @returns true if the object is in frustum otherwise false
      */
-    public isInFrustum(target: ICullable): boolean {
+    public isInFrustum(target: ICullable, checkRigCameras = false): boolean {
         this._updateFrustumPlanes();
 
-        return target.isInFrustum(this._frustumPlanes);
+        if (checkRigCameras && this.rigCameras.length > 0) {
+            var result = false;
+            this.rigCameras.forEach((cam) => {
+                cam._updateFrustumPlanes();
+                result = result || target.isInFrustum(cam._frustumPlanes);
+            });
+            return result;
+        } else {
+            return target.isInFrustum(this._frustumPlanes);
+        }
     }
 
     /**
@@ -895,7 +909,7 @@ export class Camera extends Node {
     }
 
     /** @hidden */
-    public _isRightCamera = true;
+    public _isRightCamera = false;
     /**
      * Gets the right camera of a rig setup in case of Rigged Camera
      */
@@ -1147,6 +1161,17 @@ export class Camera extends Node {
     }
 
     /**
+     * Returns the current camera absolute rotation
+     */
+    public get absoluteRotation(): Quaternion {
+        var result = Quaternion.Zero();
+
+        this.getWorldMatrix().decompose(undefined, result);
+
+        return result;
+    }
+
+    /**
      * Gets the direction of the camera relative to a given local axis into a passed vector.
      * @param localAxis Defines the reference axis to provide a relative direction.
      * @param result Defines the vector to store the result in
@@ -1180,7 +1205,7 @@ export class Camera extends Node {
 
     /**
      * Compute the world  matrix of the camera.
-     * @returns the camera workd matrix
+     * @returns the camera world matrix
      */
     public computeWorldMatrix(): Matrix {
         return this.getWorldMatrix();

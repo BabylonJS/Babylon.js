@@ -1,7 +1,8 @@
 import { Scene } from "../../scene";
-import { Vector4, Vector3, Vector2 } from "../../Maths/math";
+import { Vector4, Vector3, Vector2 } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
+import { Nullable } from '../../types';
 
 VertexData.CreateIcoSphere = function(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
     var sideOrientation = options.sideOrientation || VertexData.DEFAULTSIDE;
@@ -283,7 +284,7 @@ export class IcoSphereBuilder {
      * @returns the icosahedron mesh
      * @see https://doc.babylonjs.com/how_to/polyhedra_shapes#icosphere
      */
-    public static CreateIcoSphere(name: string, options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Scene): Mesh {
+    public static CreateIcoSphere(name: string, options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
         var sphere = new Mesh(name, scene);
 
         options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);

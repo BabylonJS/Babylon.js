@@ -24,7 +24,10 @@ export class ShaderSpecialParts {
 
     // diffuseColor
     public Fragment_Custom_Diffuse: string;
-
+    // lights
+    public Fragment_Before_Lights: string;
+    // fog
+    public Fragment_Before_Fog: string;
     // alpha
     public Fragment_Custom_Alpha: string;
 
@@ -39,6 +42,9 @@ export class ShaderSpecialParts {
 
     // normalUpdated
     public Vertex_Before_NormalUpdated: string;
+
+    // mainEnd
+    public Vertex_MainEnd: string;
 }
 
 export class CustomMaterial extends StandardMaterial {
@@ -127,9 +133,8 @@ export class CustomMaterial extends StandardMaterial {
             .replace('#define CUSTOM_VERTEX_DEFINITIONS', (this._customUniform ? this._customUniform.join("\n") : "") + (this.CustomParts.Vertex_Definitions ? this.CustomParts.Vertex_Definitions : ""))
             .replace('#define CUSTOM_VERTEX_MAIN_BEGIN', (this.CustomParts.Vertex_MainBegin ? this.CustomParts.Vertex_MainBegin : ""))
             .replace('#define CUSTOM_VERTEX_UPDATE_POSITION', (this.CustomParts.Vertex_Before_PositionUpdated ? this.CustomParts.Vertex_Before_PositionUpdated : ""))
-            .replace('#define CUSTOM_VERTEX_UPDATE_NORMAL', (this.CustomParts.Vertex_Before_NormalUpdated ? this.CustomParts.Vertex_Before_NormalUpdated : ""));
-
-        // #define CUSTOM_VERTEX_MAIN_END
+            .replace('#define CUSTOM_VERTEX_UPDATE_NORMAL', (this.CustomParts.Vertex_Before_NormalUpdated ? this.CustomParts.Vertex_Before_NormalUpdated : ""))
+            .replace('#define CUSTOM_VERTEX_MAIN_END', (this.CustomParts.Vertex_MainEnd ? this.CustomParts.Vertex_MainEnd : ""));
 
         Effect.ShadersStore[name + "PixelShader"] = this.FragmentShader
             .replace('#define CUSTOM_FRAGMENT_BEGIN', (this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""))
@@ -137,11 +142,9 @@ export class CustomMaterial extends StandardMaterial {
             .replace('#define CUSTOM_FRAGMENT_DEFINITIONS', (this._customUniform ? this._customUniform.join("\n") : "") + (this.CustomParts.Fragment_Definitions ? this.CustomParts.Fragment_Definitions : ""))
             .replace('#define CUSTOM_FRAGMENT_UPDATE_DIFFUSE', (this.CustomParts.Fragment_Custom_Diffuse ? this.CustomParts.Fragment_Custom_Diffuse : ""))
             .replace('#define CUSTOM_FRAGMENT_UPDATE_ALPHA', (this.CustomParts.Fragment_Custom_Alpha ? this.CustomParts.Fragment_Custom_Alpha : ""))
+            .replace('#define CUSTOM_FRAGMENT_BEFORE_LIGHTS', (this.CustomParts.Fragment_Before_Lights ? this.CustomParts.Fragment_Before_Lights : ""))
+            .replace('#define CUSTOM_FRAGMENT_BEFORE_FOG', (this.CustomParts.Fragment_Before_Fog ? this.CustomParts.Fragment_Before_Fog : ""))
             .replace('#define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR', (this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : ""));
-
-        // #define CUSTOM_FRAGMENT_BEFORE_LIGHTS
-
-        // #define CUSTOM_FRAGMENT_BEFORE_FOG
 
         this._isCreatedShader = true;
         this._createdShaderName = name;
@@ -204,6 +207,16 @@ export class CustomMaterial extends StandardMaterial {
         return this;
     }
 
+    public Fragment_Before_Lights(shaderPart: string): CustomMaterial {
+        this.CustomParts.Fragment_Before_Lights = shaderPart;
+        return this;
+    }
+
+    public Fragment_Before_Fog(shaderPart: string): CustomMaterial {
+        this.CustomParts.Fragment_Before_Fog = shaderPart;
+        return this;
+    }
+
     public Fragment_Before_FragColor(shaderPart: string): CustomMaterial {
         this.CustomParts.Fragment_Before_FragColor = shaderPart.replace("result", "color");
         return this;
@@ -231,6 +244,11 @@ export class CustomMaterial extends StandardMaterial {
 
     public Vertex_Before_NormalUpdated(shaderPart: string): CustomMaterial {
         this.CustomParts.Vertex_Before_NormalUpdated = shaderPart.replace("result", "normalUpdated");
+        return this;
+    }
+
+    public Vertex_MainEnd(shaderPart: string): CustomMaterial {
+        this.CustomParts.Vertex_MainEnd = shaderPart;
         return this;
     }
 }

@@ -1,18 +1,19 @@
 import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { PointerInfo } from "../Events/pointerEvents";
-import { Quaternion, Matrix, Vector3, Color3 } from "../Maths/math";
+import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
+import { Color3 } from '../Maths/math.color';
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { LinesMesh } from "../Meshes/linesMesh";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 
 import "../Meshes/Builders/linesBuilder";
+import { RotationGizmo } from "./rotationGizmo";
 
 /**
  * Single plane rotation gizmo
@@ -34,43 +35,41 @@ export class PlaneRotationGizmo extends Gizmo {
      */
     public onSnapObservable = new Observable<{ snapDistance: number }>();
 
+    private _isEnabled: boolean = true;
+    private _parent: Nullable<RotationGizmo> = null;
+
     /**
      * Creates a PlaneRotationGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
      * @param planeNormal The normal of the plane which the gizmo will be able to rotate on
      * @param color The color of the gizmo
      * @param tessellation Amount of tessellation to be used when creating rotation circles
+     * @param useEulerRotation Use and update Euler angle instead of quaternion
      */
-    constructor(planeNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32) {
+    constructor(planeNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, parent: Nullable<RotationGizmo> = null, useEulerRotation = false) {
         super(gizmoLayer);
-
+        this._parent = parent;
         // Create Material
         var coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        coloredMaterial.disableLighting = true;
-        coloredMaterial.emissiveColor = color;
+        coloredMaterial.diffuseColor = color;
+        coloredMaterial.specularColor = color.subtract(new Color3(0.1, 0.1, 0.1));
 
         var hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        hoverMaterial.disableLighting = true;
-        hoverMaterial.emissiveColor = color.add(new Color3(0.3, 0.3, 0.3));
+        hoverMaterial.diffuseColor = color.add(new Color3(0.3, 0.3, 0.3));
 
         // Build mesh on root node
         var parentMesh = new AbstractMesh("", gizmoLayer.utilityLayerScene);
 
-        // Create circle out of lines
-        var radius = 0.8;
-        var points = new Array<Vector3>();
-        for (var i = 0; i < tessellation; i++) {
-            var radian = (2 * Math.PI) * (i / (tessellation - 1));
-            points.push(new Vector3(radius * Math.sin(radian), 0, radius * Math.cos(radian)));
-        }
-        let rotationMesh = Mesh.CreateLines("", points, gizmoLayer.utilityLayerScene);
-        rotationMesh.color = coloredMaterial.emissiveColor;
+        let drag = Mesh.CreateTorus("", 0.6, 0.03, tessellation, gizmoLayer.utilityLayerScene);
+        drag.visibility = 0;
+        let rotationMesh = Mesh.CreateTorus("", 0.6, 0.005, tessellation, gizmoLayer.utilityLayerScene);
+        rotationMesh.material = coloredMaterial;
 
         // Position arrow pointing in its drag axis
-        rotationMesh.scaling.scaleInPlace(0.26);
-        rotationMesh.material = coloredMaterial;
         rotationMesh.rotation.x = Math.PI / 2;
+        drag.rotation.x = Math.PI / 2;
         parentMesh.addChild(rotationMesh);
+        parentMesh.addChild(drag);
         parentMesh.lookAt(this._rootMesh.position.add(planeNormal));
 
         this._rootMesh.addChild(parentMesh);
@@ -101,9 +100,16 @@ export class PlaneRotationGizmo extends Gizmo {
         var amountToRotate = new Quaternion();
         this.dragBehavior.onDragObservable.add((event) => {
             if (this.attachedMesh) {
-                if (!this.attachedMesh.rotationQuaternion) {
+                if (!this.attachedMesh.rotationQuaternion || useEulerRotation) {
                     this.attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.attachedMesh.rotation.y, this.attachedMesh.rotation.x, this.attachedMesh.rotation.z);
                 }
+
+                // Remove parent priort to rotating
+                var attachedMeshParent = this.attachedMesh.parent;
+                if (attachedMeshParent) {
+                    this.attachedMesh.setParent(null);
+                }
+
                 // Calc angle over full 360 degree (https://stackoverflow.com/questions/43493711/the-angle-between-two-3d-vectors-with-a-result-range-0-360)
                 var newVector = event.dragPlanePoint.subtract(this.attachedMesh.absolutePosition).normalize();
                 var originalVector = lastDragPosition.subtract(this.attachedMesh.absolutePosition).normalize();
@@ -170,10 +176,21 @@ export class PlaneRotationGizmo extends Gizmo {
                     amountToRotate.multiplyToRef(this.attachedMesh.rotationQuaternion, this.attachedMesh.rotationQuaternion);
                 }
 
+                if (useEulerRotation) {
+                    this.attachedMesh.rotationQuaternion.toEulerAnglesToRef(tmpVector);
+                    this.attachedMesh.rotationQuaternion = null;
+                    this.attachedMesh.rotation.copyFrom(tmpVector);
+                }
+
                 lastDragPosition.copyFrom(event.dragPlanePoint);
                 if (snapped) {
                     tmpSnapEvent.snapDistance = angle;
                     this.onSnapObservable.notifyObservers(tmpSnapEvent);
+                }
+
+                // Restore parent
+                if (attachedMeshParent) {
+                    this.attachedMesh.setParent(attachedMeshParent);
                 }
             }
         });
@@ -187,10 +204,13 @@ export class PlaneRotationGizmo extends Gizmo {
             this._rootMesh.getChildMeshes().forEach((m) => {
                 m.material = material;
                 if ((<LinesMesh>m).color) {
-                    (<LinesMesh>m).color = material.emissiveColor;
+                    (<LinesMesh>m).color = material.diffuseColor;
                 }
             });
         });
+
+        var light = gizmoLayer._getSharedGizmoLight();
+        light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
     }
 
     protected _attachedMeshChanged(value: Nullable<AbstractMesh>) {
@@ -198,7 +218,23 @@ export class PlaneRotationGizmo extends Gizmo {
             this.dragBehavior.enabled = value ? true : false;
         }
     }
-
+    /**
+         * If the gizmo is enabled
+         */
+    public set isEnabled(value: boolean) {
+        this._isEnabled = value;
+        if (!value) {
+            this.attachedMesh = null;
+        }
+        else {
+            if (this._parent) {
+                this.attachedMesh = this._parent.attachedMesh;
+            }
+        }
+    }
+    public get isEnabled(): boolean {
+        return this._isEnabled;
+    }
     /**
      * Disposes of the gizmo
      */

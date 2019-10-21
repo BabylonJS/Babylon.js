@@ -26,6 +26,8 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
 
     constructor(props: ISkeletonPropertyGridComponentProps) {
         super(props);
+        
+        this.checkSkeletonViewerState(this.props);
     }
 
     switchSkeletonViewers() {
@@ -81,10 +83,6 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
         this._skeletonViewersEnabled = (this._skeletonViewers.length > 0);
     }
 
-    componentWillMount() {
-        this.checkSkeletonViewerState(this.props);
-    }
-
     shouldComponentUpdate(nextProps: ISkeletonPropertyGridComponentProps) {
         if (nextProps.skeleton !== this.props.skeleton) {
             this.checkSkeletonViewerState(nextProps);
@@ -93,16 +91,30 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
         return true;
     }
 
+    onOverrideMeshLink() {
+        if (!this.props.globalState.onSelectionChangedObservable) {
+            return;
+        }
+
+        const skeleton = this.props.skeleton;
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(skeleton.overrideMesh);
+    }        
+
     render() {
         const skeleton = this.props.skeleton;
 
         return (
             <div className="pane">
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={skeleton}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    lockObject={this.props.lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />                    
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={skeleton.id} />
                     <TextLineComponent label="Bone count" value={skeleton.bones.length.toString()} />
+                    {
+                        skeleton.overrideMesh &&
+                        <TextLineComponent label="Override mesh" value={skeleton.overrideMesh.name} onLink={() => this.onOverrideMeshLink()}/>
+                    }                        
                     <CheckBoxLineComponent label="Use texture to store matrices" target={skeleton} propertyName="useTextureToStoreBoneMatrices" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Debug mode" isSelected={() => this._skeletonViewersEnabled} onSelect={() => this.switchSkeletonViewers()} />
                 </LineContainerComponent>

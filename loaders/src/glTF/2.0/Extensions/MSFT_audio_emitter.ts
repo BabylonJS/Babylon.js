@@ -10,6 +10,7 @@ import { WeightedSound } from "babylonjs/Audio/weightedsound";
 import { IArrayItem, IScene, INode, IAnimation } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
+import { IProperty } from 'babylonjs-gltf2interface';
 
 const NAME = "MSFT_audio_emitter";
 
@@ -45,7 +46,7 @@ const enum AudioMimeType {
     WAV = "audio/wav",
 }
 
-interface IClip {
+interface IClip extends IProperty {
     uri?: string;
     bufferView?: number;
     mimeType?: AudioMimeType;
@@ -92,11 +93,15 @@ interface ILoaderAnimationEvents {
  * [Specification](https://github.com/najadojo/glTF/tree/MSFT_audio_emitter/extensions/2.0/Vendor/MSFT_audio_emitter)
  */
 export class MSFT_audio_emitter implements IGLTFLoaderExtension {
-    /** The name of this extension. */
+    /**
+     * The name of this extension.
+     */
     public readonly name = NAME;
 
-    /** Defines whether this extension is enabled. */
-    public enabled = true;
+    /**
+     * Defines whether this extension is enabled.
+     */
+    public enabled: boolean;
 
     private _loader: GLTFLoader;
     private _clips: Array<ILoaderClip>;
@@ -105,6 +110,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     /** @hidden */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
+        this.enabled = this._loader.isExtensionUsed(NAME);
     }
 
     /** @hidden */
@@ -205,7 +211,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
 
         let promise: Promise<ArrayBufferView>;
         if (clip.uri) {
-            promise = this._loader.loadUriAsync(context, clip.uri);
+            promise = this._loader.loadUriAsync(context, clip, clip.uri);
         }
         else {
             const bufferView = ArrayItem.Get(`${context}/bufferView`, this._loader.gltf.bufferViews, clip.bufferView);

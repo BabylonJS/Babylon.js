@@ -1,0 +1,300 @@
+.srd-node {
+    width: 200px;
+}
+
+.srd-node--selected {
+    .diagramBlock {
+        border-color: rgb(255, 255, 255) !important;
+    }
+}
+
+.srd-default-link--path-selected {
+    animation: 0s !important;
+    stroke: #ffffff !important;
+}
+      
+.srd-port {
+    grid-column: 1;
+    grid-row: 1;
+    background: #2796B2;
+    border-radius: 20px;
+    transform: scale(1);
+    width: 20px;
+    height: 20px;
+
+    &.connected {
+        background: #CAB422;
+    }
+
+    &:hover {
+        background: #DDDDDD !important;
+    }
+}
+
+.diagramBlock {
+    background: gray;
+    width: 100%;
+    border: 4px solid black;
+    border-radius: 12px;
+    display: grid;
+    grid-template-rows: 30px auto;
+    grid-template-columns: 50% 50%;    
+    color:white;
+
+    &.input {
+        background: #40866E;
+        color:white;
+
+        .value {
+            grid-row: 2;
+        }
+
+        .outputs {
+            transform: translateY(5px);
+        }
+
+        &.Float {
+            background: #cb9e27;
+        }
+
+        &.Vector2 {
+            background: #16bcb1;
+        }      
+        
+        &.Vector3 {
+            background: #b786cb;
+        }          
+
+        &.Color3 {
+            background: #b786cb;
+        }          
+
+        &.Vector4 {
+            background: #be5126;
+        }          
+
+        &.Color4 {
+            background: #be5126;
+        }          
+
+        &.Matrix {
+            background: #591990;
+        }
+    }
+
+    &.trigonometry {
+        background: rgb(64, 92, 134);
+        color:white;
+
+        .value {
+            grid-row: 2;
+        }
+    }
+
+     &.remap {
+        color:white;
+        background: #4086BB;
+
+        .value {
+            grid-row: 3;
+        }
+
+        .outputs, .inputs {
+            transform: translateY(5px);
+        }        
+    }
+
+    &.gradient {
+        .outputs, .inputs {
+            transform: translateY(5px);
+        }        
+        height: 70px;
+    }
+
+    &.attribute {
+        background: #40866E;
+    }
+
+    &.constant {
+        background: #646464 !important;
+    }
+
+    &.output {
+        background: rgb(106, 44, 131);
+        color:white;
+
+        .inputs { 
+            color:white;
+        }
+    }
+
+    .header {            
+        grid-row: 1;
+        grid-column: 1 / span 2;
+        border: 4px solid black;
+        border-top-right-radius: 7px;
+        border-top-left-radius: 7px;
+        font-size: 16px;
+        text-align: center;
+        margin-top: -1px;    
+        transform: scaleX(1.001);
+        
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        background: black;
+        color: white;
+    }
+
+    .value {
+        grid-row: 3;
+        grid-column: 1 / span 2;
+        height: 34px;
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        margin: 0 10px;
+
+        .value-text {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+    }
+
+    .inputs {
+        grid-row: 2;
+        grid-column: 1;
+        padding-bottom: 8px;
+
+        .input-port {
+            display: grid;
+            grid-template-columns: 12px calc(100% - 12px);
+            grid-template-rows: 100%;
+
+            .input-port-plug {
+                grid-column: 1;
+                grid-row: 1;
+                display: grid;
+                align-content: center;
+                margin-left: -11px;
+                position: relative;
+
+                &:hover {           
+                    .input-port-connection {
+                        background: greenyellow !important;
+                    }
+                }
+
+                .input-port-type {
+                    width: 15px;
+                    pointer-events: none;
+                    grid-column: 1;
+                    grid-row: 1;
+                    display: grid;
+                    align-items: center;
+                    justify-items: center;     
+                    transform: scale(1);
+
+                    img {
+                        width: 20px;
+                    }
+                }
+            }
+
+            .input-port-label {
+                grid-column: 2;
+                grid-row: 1;         
+                margin-bottom: 4px;    
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;   
+            }
+        }
+    }
+
+    .outputs {
+        grid-row: 2;
+        grid-column: 2;
+        padding-bottom: 8px;
+
+        .output-port {
+            display: grid;
+            grid-template-columns: calc(100% - 12px) 12px;
+            grid-template-rows: 100%;
+
+            .output-port-plug {
+                grid-column: 2;
+                grid-row: 1;
+                display: grid;
+                align-content: center;
+                position: relative;    
+                margin-left: 4px;
+
+                &:hover {           
+                    .output-port-connection {
+                        background: greenyellow !important;
+                    }
+                }
+
+                .output-port-type {
+                    pointer-events: none;
+                    grid-column: 1;
+                    grid-row: 1;
+                    display: grid;
+                    align-items: center;
+                    justify-items: center;
+                    transform: scale(1);
+
+                    img {
+                        width: 20px;
+                    }
+                }
+            }
+
+            .output-port-label {
+                text-align: right;
+                grid-column: 1;
+                grid-row: 1;                        
+                margin-bottom: 4px;   
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;   
+            }
+        }
+    }
+
+    &.texture-block {
+        display: grid;
+        grid-template-rows: 30px auto 1fr;
+        grid-template-columns: calc(100% - 60px) 60px;
+        background: #323232;
+        color: white;
+
+        .inputs {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .outputs {
+            grid-column: 2;
+            grid-row: 2 / span 2;            
+        }
+
+        .textureLine {
+            height: 140px;
+            grid-column: 1;
+            grid-row: 3;     
+            overflow: hidden;
+            border-bottom-left-radius: 7px;
+            border: black 4px solid;
+            border-left: 0px;
+            border-bottom: 0px;
+
+            canvas {
+                width: 100%;
+                height: 100%;
+            }
+        }
+    }
+}

@@ -5,7 +5,8 @@ import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManage
 import { FlyCamera } from "../../Cameras/flyCamera";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Scene } from "../../scene";
-import { Quaternion, Axis } from "../../Maths/math";
+import { Quaternion } from "../../Maths/math.vector";
+import { Axis } from '../../Maths/math.axis';
 /**
  * Listen to mouse events to control the camera.
  * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs

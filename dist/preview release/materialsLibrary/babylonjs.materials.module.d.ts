@@ -36,14 +36,15 @@ declare module "babylonjs-materials/cell/cell.vertex" {
 }
 declare module "babylonjs-materials/cell/cellMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { SubMesh } from "babylonjs/Meshes/subMesh";
     import { Mesh } from "babylonjs/Meshes/mesh";
     import { Scene } from "babylonjs/scene";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import "babylonjs-materials/cell/cell.fragment";
     import "babylonjs-materials/cell/cell.vertex";
     export class CellMaterial extends PushMaterial {
@@ -94,6 +95,8 @@ declare module "babylonjs-materials/custom/customMaterial" {
         Fragment_Definitions: string;
         Fragment_MainBegin: string;
         Fragment_Custom_Diffuse: string;
+        Fragment_Before_Lights: string;
+        Fragment_Before_Fog: string;
         Fragment_Custom_Alpha: string;
         Fragment_Before_FragColor: string;
         Vertex_Begin: string;
@@ -101,6 +104,7 @@ declare module "babylonjs-materials/custom/customMaterial" {
         Vertex_MainBegin: string;
         Vertex_Before_PositionUpdated: string;
         Vertex_Before_NormalUpdated: string;
+        Vertex_MainEnd: string;
     }
     export class CustomMaterial extends StandardMaterial {
         static ShaderIndexer: number;
@@ -123,16 +127,80 @@ declare module "babylonjs-materials/custom/customMaterial" {
         Fragment_MainBegin(shaderPart: string): CustomMaterial;
         Fragment_Custom_Diffuse(shaderPart: string): CustomMaterial;
         Fragment_Custom_Alpha(shaderPart: string): CustomMaterial;
+        Fragment_Before_Lights(shaderPart: string): CustomMaterial;
+        Fragment_Before_Fog(shaderPart: string): CustomMaterial;
         Fragment_Before_FragColor(shaderPart: string): CustomMaterial;
         Vertex_Begin(shaderPart: string): CustomMaterial;
         Vertex_Definitions(shaderPart: string): CustomMaterial;
         Vertex_MainBegin(shaderPart: string): CustomMaterial;
         Vertex_Before_PositionUpdated(shaderPart: string): CustomMaterial;
         Vertex_Before_NormalUpdated(shaderPart: string): CustomMaterial;
+        Vertex_MainEnd(shaderPart: string): CustomMaterial;
+    }
+}
+declare module "babylonjs-materials/custom/pbrCustomMaterial" {
+    import { Texture } from "babylonjs/Materials/Textures/texture";
+    import { Effect } from "babylonjs/Materials/effect";
+    import { PBRMaterialDefines } from "babylonjs/Materials/PBR/pbrBaseMaterial";
+    import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
+    import { Mesh } from "babylonjs/Meshes/mesh";
+    import { Scene } from "babylonjs/scene";
+    export class ShaderAlebdoParts {
+        constructor();
+        Fragment_Begin: string;
+        Fragment_Definitions: string;
+        Fragment_MainBegin: string;
+        Fragment_Custom_Albedo: string;
+        Fragment_Before_Lights: string;
+        Fragment_Custom_MetallicRoughness: string;
+        Fragment_Custom_MicroSurface: string;
+        Fragment_Before_Fog: string;
+        Fragment_Custom_Alpha: string;
+        Fragment_Before_FragColor: string;
+        Vertex_Begin: string;
+        Vertex_Definitions: string;
+        Vertex_MainBegin: string;
+        Vertex_Before_PositionUpdated: string;
+        Vertex_Before_NormalUpdated: string;
+        Vertex_MainEnd: string;
+    }
+    export class PBRCustomMaterial extends PBRMaterial {
+        static ShaderIndexer: number;
+        CustomParts: ShaderAlebdoParts;
+        _isCreatedShader: boolean;
+        _createdShaderName: string;
+        _customUniform: string[];
+        _newUniforms: string[];
+        _newUniformInstances: any[];
+        _newSamplerInstances: Texture[];
+        FragmentShader: string;
+        VertexShader: string;
+        AttachAfterBind(mesh: Mesh, effect: Effect): void;
+        ReviewUniform(name: string, arr: string[]): string[];
+        Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: PBRMaterialDefines): string;
+        constructor(name: string, scene: Scene);
+        AddUniform(name: string, kind: string, param: any): PBRCustomMaterial;
+        Fragment_Begin(shaderPart: string): PBRCustomMaterial;
+        Fragment_Definitions(shaderPart: string): PBRCustomMaterial;
+        Fragment_MainBegin(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_Albedo(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_Alpha(shaderPart: string): PBRCustomMaterial;
+        Fragment_Before_Lights(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_MetallicRoughness(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_MicroSurface(shaderPart: string): PBRCustomMaterial;
+        Fragment_Before_Fog(shaderPart: string): PBRCustomMaterial;
+        Fragment_Before_FragColor(shaderPart: string): PBRCustomMaterial;
+        Vertex_Begin(shaderPart: string): PBRCustomMaterial;
+        Vertex_Definitions(shaderPart: string): PBRCustomMaterial;
+        Vertex_MainBegin(shaderPart: string): PBRCustomMaterial;
+        Vertex_Before_PositionUpdated(shaderPart: string): PBRCustomMaterial;
+        Vertex_Before_NormalUpdated(shaderPart: string): PBRCustomMaterial;
+        Vertex_MainEnd(shaderPart: string): PBRCustomMaterial;
     }
 }
 declare module "babylonjs-materials/custom/index" {
     export * from "babylonjs-materials/custom/customMaterial";
+    export * from "babylonjs-materials/custom/pbrCustomMaterial";
 }
 declare module "babylonjs-materials/fire/fire.fragment" {
     import "babylonjs/Shaders/ShadersInclude/clipPlaneFragmentDeclaration";
@@ -163,14 +231,15 @@ declare module "babylonjs-materials/fire/fire.vertex" {
 }
 declare module "babylonjs-materials/fire/fireMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { SubMesh } from "babylonjs/Meshes/subMesh";
     import { Mesh } from "babylonjs/Meshes/mesh";
     import { Scene } from "babylonjs/scene";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import "babylonjs-materials/fire/fire.fragment";
     import "babylonjs-materials/fire/fire.vertex";
     export class FireMaterial extends PushMaterial {
@@ -242,8 +311,9 @@ declare module "babylonjs-materials/fur/fur.vertex" {
 }
 declare module "babylonjs-materials/fur/furMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Vector3, Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix, Vector3 } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { DynamicTexture } from "babylonjs/Materials/Textures/dynamicTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -338,8 +408,9 @@ declare module "babylonjs-materials/gradient/gradient.vertex" {
 }
 declare module "babylonjs-materials/gradient/gradientMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -388,7 +459,9 @@ declare module "babylonjs-materials/grid/grid.fragment" {
     };
 }
 declare module "babylonjs-materials/grid/grid.vertex" {
+    import "babylonjs/Shaders/ShadersInclude/instancesDeclaration";
     import "babylonjs/Shaders/ShadersInclude/fogVertexDeclaration";
+    import "babylonjs/Shaders/ShadersInclude/instancesVertex";
     import "babylonjs/Shaders/ShadersInclude/fogVertex";
     /** @hidden */
     export var gridVertexShader: {
@@ -397,7 +470,8 @@ declare module "babylonjs-materials/grid/grid.vertex" {
     };
 }
 declare module "babylonjs-materials/grid/gridMaterial" {
-    import { Color3, Vector3, Matrix } from "babylonjs/Maths/math";
+    import { Matrix, Vector3 } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -512,8 +586,9 @@ declare module "babylonjs-materials/lava/lava.vertex" {
 }
 declare module "babylonjs-materials/lava/lavaMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -598,8 +673,9 @@ declare module "babylonjs-materials/mix/mix.vertex" {
 }
 declare module "babylonjs-materials/mix/mixMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -704,8 +780,9 @@ declare module "babylonjs-materials/normal/normal.vertex" {
 }
 declare module "babylonjs-materials/normal/normalMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -780,7 +857,8 @@ declare module "babylonjs-materials/shadowOnly/shadowOnly.vertex" {
 }
 declare module "babylonjs-materials/shadowOnly/shadowOnlyMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Matrix } from "babylonjs/Maths/math";
+    import { Matrix } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { IShadowLight } from "babylonjs/Lights/shadowLight";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -848,8 +926,9 @@ declare module "babylonjs-materials/simple/simple.vertex" {
 }
 declare module "babylonjs-materials/simple/simpleMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -910,8 +989,8 @@ declare module "babylonjs-materials/sky/sky.vertex" {
 }
 declare module "babylonjs-materials/sky/skyMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Vector3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Vector3, Matrix } from "babylonjs/Maths/math.vector";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -1094,8 +1173,9 @@ declare module "babylonjs-materials/terrain/terrain.vertex" {
 }
 declare module "babylonjs-materials/terrain/terrainMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -1185,8 +1265,9 @@ declare module "babylonjs-materials/triPlanar/triplanar.vertex" {
 }
 declare module "babylonjs-materials/triPlanar/triPlanarMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -1239,6 +1320,8 @@ declare module "babylonjs-materials/triPlanar/index" {
 }
 declare module "babylonjs-materials/water/water.fragment" {
     import "babylonjs/Shaders/ShadersInclude/helperFunctions";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingDeclaration";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingFunctions";
     import "babylonjs/Shaders/ShadersInclude/lightFragmentDeclaration";
     import "babylonjs/Shaders/ShadersInclude/lightUboDeclaration";
     import "babylonjs/Shaders/ShadersInclude/lightsFragmentFunctions";
@@ -1278,8 +1361,9 @@ declare module "babylonjs-materials/water/water.vertex" {
 }
 declare module "babylonjs-materials/water/waterMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Vector2, Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix, Vector2 } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { SmartArray } from "babylonjs/Misc/smartArray";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { RenderTargetTexture } from "babylonjs/Materials/Textures/renderTargetTexture";
@@ -1356,6 +1440,11 @@ declare module "babylonjs-materials/water/waterMaterial" {
         * @param {number}: Defines the waves speed
         */
         waveSpeed: number;
+        /**
+         * Sets or gets wether or not automatic clipping should be enabled or not. Setting to true will save performances and
+         * will avoid calculating useless pixels in the pixel shader of the water material.
+         */
+        disableClipPlane: boolean;
         protected _renderTargets: SmartArray<RenderTargetTexture>;
         private _mesh;
         private _refractionRTT;
@@ -1366,6 +1455,8 @@ declare module "babylonjs-materials/water/waterMaterial" {
         private _renderId;
         private _useLogarithmicDepth;
         private _waitingRenderList;
+        private _imageProcessingConfiguration;
+        private _imageProcessingObserver;
         /**
          * Gets a boolean indicating that current material needs to register RTT
          */
@@ -1523,6 +1614,8 @@ declare module BABYLON {
         Fragment_Definitions: string;
         Fragment_MainBegin: string;
         Fragment_Custom_Diffuse: string;
+        Fragment_Before_Lights: string;
+        Fragment_Before_Fog: string;
         Fragment_Custom_Alpha: string;
         Fragment_Before_FragColor: string;
         Vertex_Begin: string;
@@ -1530,6 +1623,7 @@ declare module BABYLON {
         Vertex_MainBegin: string;
         Vertex_Before_PositionUpdated: string;
         Vertex_Before_NormalUpdated: string;
+        Vertex_MainEnd: string;
     }
     export class CustomMaterial extends BABYLON.StandardMaterial {
         static ShaderIndexer: number;
@@ -1552,12 +1646,69 @@ declare module BABYLON {
         Fragment_MainBegin(shaderPart: string): CustomMaterial;
         Fragment_Custom_Diffuse(shaderPart: string): CustomMaterial;
         Fragment_Custom_Alpha(shaderPart: string): CustomMaterial;
+        Fragment_Before_Lights(shaderPart: string): CustomMaterial;
+        Fragment_Before_Fog(shaderPart: string): CustomMaterial;
         Fragment_Before_FragColor(shaderPart: string): CustomMaterial;
         Vertex_Begin(shaderPart: string): CustomMaterial;
         Vertex_Definitions(shaderPart: string): CustomMaterial;
         Vertex_MainBegin(shaderPart: string): CustomMaterial;
         Vertex_Before_PositionUpdated(shaderPart: string): CustomMaterial;
         Vertex_Before_NormalUpdated(shaderPart: string): CustomMaterial;
+        Vertex_MainEnd(shaderPart: string): CustomMaterial;
+    }
+}
+declare module BABYLON {
+    export class ShaderAlebdoParts {
+        constructor();
+        Fragment_Begin: string;
+        Fragment_Definitions: string;
+        Fragment_MainBegin: string;
+        Fragment_Custom_Albedo: string;
+        Fragment_Before_Lights: string;
+        Fragment_Custom_MetallicRoughness: string;
+        Fragment_Custom_MicroSurface: string;
+        Fragment_Before_Fog: string;
+        Fragment_Custom_Alpha: string;
+        Fragment_Before_FragColor: string;
+        Vertex_Begin: string;
+        Vertex_Definitions: string;
+        Vertex_MainBegin: string;
+        Vertex_Before_PositionUpdated: string;
+        Vertex_Before_NormalUpdated: string;
+        Vertex_MainEnd: string;
+    }
+    export class PBRCustomMaterial extends BABYLON.PBRMaterial {
+        static ShaderIndexer: number;
+        CustomParts: ShaderAlebdoParts;
+        _isCreatedShader: boolean;
+        _createdShaderName: string;
+        _customUniform: string[];
+        _newUniforms: string[];
+        _newUniformInstances: any[];
+        _newSamplerInstances: BABYLON.Texture[];
+        FragmentShader: string;
+        VertexShader: string;
+        AttachAfterBind(mesh: BABYLON.Mesh, effect: BABYLON.Effect): void;
+        ReviewUniform(name: string, arr: string[]): string[];
+        Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: BABYLON.PBRMaterialDefines): string;
+        constructor(name: string, scene: BABYLON.Scene);
+        AddUniform(name: string, kind: string, param: any): PBRCustomMaterial;
+        Fragment_Begin(shaderPart: string): PBRCustomMaterial;
+        Fragment_Definitions(shaderPart: string): PBRCustomMaterial;
+        Fragment_MainBegin(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_Albedo(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_Alpha(shaderPart: string): PBRCustomMaterial;
+        Fragment_Before_Lights(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_MetallicRoughness(shaderPart: string): PBRCustomMaterial;
+        Fragment_Custom_MicroSurface(shaderPart: string): PBRCustomMaterial;
+        Fragment_Before_Fog(shaderPart: string): PBRCustomMaterial;
+        Fragment_Before_FragColor(shaderPart: string): PBRCustomMaterial;
+        Vertex_Begin(shaderPart: string): PBRCustomMaterial;
+        Vertex_Definitions(shaderPart: string): PBRCustomMaterial;
+        Vertex_MainBegin(shaderPart: string): PBRCustomMaterial;
+        Vertex_Before_PositionUpdated(shaderPart: string): PBRCustomMaterial;
+        Vertex_Before_NormalUpdated(shaderPart: string): PBRCustomMaterial;
+        Vertex_MainEnd(shaderPart: string): PBRCustomMaterial;
     }
 }
 declare module BABYLON {
@@ -2353,6 +2504,11 @@ declare module BABYLON {
         * @param {number}: Defines the waves speed
         */
         waveSpeed: number;
+        /**
+         * Sets or gets wether or not automatic clipping should be enabled or not. Setting to true will save performances and
+         * will avoid calculating useless pixels in the pixel shader of the water material.
+         */
+        disableClipPlane: boolean;
         protected _renderTargets: BABYLON.SmartArray<BABYLON.RenderTargetTexture>;
         private _mesh;
         private _refractionRTT;
@@ -2363,6 +2519,8 @@ declare module BABYLON {
         private _renderId;
         private _useLogarithmicDepth;
         private _waitingRenderList;
+        private _imageProcessingConfiguration;
+        private _imageProcessingObserver;
         /**
          * Gets a boolean indicating that current material needs to register RTT
          */

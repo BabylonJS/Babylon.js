@@ -1,9 +1,11 @@
 import { DeepImmutable } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
-import { Matrix, Vector3, Plane, Epsilon } from "../Maths/math";
+import { Matrix, Vector3 } from "../Maths/math.vector";
 import { BoundingSphere } from "../Culling/boundingSphere";
 
 import { ICullable } from "./boundingInfo";
+import { Epsilon } from '../Maths/math.constants';
+import { Plane } from '../Maths/math.plane';
 
 /**
  * Class used to store bounding box information
@@ -99,7 +101,9 @@ export class BoundingBox implements ICullable {
         max.addToRef(min, this.center).scaleInPlace(0.5);
         max.subtractToRef(min, this.extendSize).scaleInPlace(0.5);
 
-        this._update(worldMatrix || Matrix.IdentityReadOnly);
+        this._worldMatrix = worldMatrix || Matrix.IdentityReadOnly;
+
+        this._update(this._worldMatrix);
     }
 
     /**

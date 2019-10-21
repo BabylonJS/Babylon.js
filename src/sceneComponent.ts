@@ -9,6 +9,8 @@ import { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
 import { PickingInfo } from "./Collisions/pickingInfo";
 import { AbstractScene } from "./abstractScene";
 
+declare type Mesh = import("./Meshes/mesh").Mesh;
+
 /**
  * Groups all the scene component constants in one place to ease maintenance.
  * @hidden
@@ -121,7 +123,7 @@ export interface ISceneComponent {
  */
 export interface ISceneSerializableComponent extends ISceneComponent {
     /**
-     * Adds all the element from the container to the scene
+     * Adds all the elements from the container to the scene
      * @param container the container holding the elements
      */
     addFromContainer(container: AbstractScene): void;
@@ -129,8 +131,9 @@ export interface ISceneSerializableComponent extends ISceneComponent {
     /**
      * Removes all the elements in the container from the scene
      * @param container contains the elements to remove
+     * @param dispose if the removed element should be disposed (default: false)
      */
-    removeFromContainer(container: AbstractScene): void;
+    removeFromContainer(container: AbstractScene, dispose?: boolean): void;
 
     /**
      * Serializes the component data to the specified json object
@@ -160,6 +163,11 @@ export type ActiveMeshStageAction = (sourceMesh: AbstractMesh, mesh: AbstractMes
 export type CameraStageAction = (camera: Camera) => void;
 
 /**
+ * Strong typing of a Camera Frame buffer related stage step action
+ */
+export type CameraStageFrameBufferAction = (camera: Camera) => boolean;
+
+/**
  * Strong typing of a Render Target related stage step action
  */
 export type RenderTargetStageAction = (renderTarget: RenderTargetTexture) => void;
@@ -172,7 +180,7 @@ export type RenderingGroupStageAction = (renderingGroupId: number) => void;
 /**
  * Strong typing of a Mesh Render related stage step action
  */
-export type RenderingMeshStageAction = (mesh: AbstractMesh, subMesh: SubMesh, batch: _InstancesBatch) => void;
+export type RenderingMeshStageAction = (mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch) => void;
 
 /**
  * Strong typing of a simple stage step action
@@ -187,7 +195,7 @@ export type RenderTargetsStageAction = (renderTargets: SmartArrayNoDuplicate<Ren
 /**
  * Strong typing of a pointer move action.
  */
-export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, canvas: HTMLCanvasElement) => Nullable<PickingInfo>;
+export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, element: HTMLElement) => Nullable<PickingInfo>;
 
 /**
  * Strong typing of a pointer up/down action.
@@ -195,7 +203,7 @@ export type PointerMoveStageAction = (unTranslatedPointerX: number, unTranslated
 export type PointerUpDownStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: PointerEvent) => Nullable<PickingInfo>;
 
 /**
- * Repressentation of a stage in the scene (Basically a list of ordered steps)
+ * Representation of a stage in the scene (Basically a list of ordered steps)
  * @hidden
  */
 export class Stage<T extends Function> extends Array<{ index: number, component: ISceneComponent, action: T }> {

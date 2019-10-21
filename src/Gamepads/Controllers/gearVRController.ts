@@ -1,11 +1,9 @@
 import { Scene } from "../../scene";
-import { Vector3 } from "../../Maths/math";
+import { Vector3 } from "../../Maths/math.vector";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { SceneLoader } from "../../Loading/sceneLoader";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
-
 import { GamepadButtonChanges } from "../../Gamepads/gamepad";
 import { WebVRController } from "./webVRController";
 import { PoseEnabledControllerType, ExtendedGamepadButton, PoseEnabledControllerHelper } from "./poseEnabledController";
@@ -29,7 +27,7 @@ export class GearVRController extends WebVRController {
     public static readonly GAMEPAD_ID_PREFIX: string = 'Gear VR'; // id is 'Gear VR Controller'
 
     private readonly _buttonIndexToObservableNameMap = [
-        'onTrackpadChangedObservable', // Trackpad
+        'onPadStateChangedObservable', // Pad
         'onTriggerStateChangedObservable' // Trigger
     ];
 
@@ -86,7 +84,8 @@ export class GearVRController extends WebVRController {
 PoseEnabledControllerHelper._ControllerFactories.push({
     canCreate: (gamepadInfo) => {
         return gamepadInfo.id.indexOf(GearVRController.GAMEPAD_ID_PREFIX) === 0 ||
-            gamepadInfo.id.indexOf('Oculus Go') !== -1;
+            gamepadInfo.id.indexOf('Oculus Go') !== -1 ||
+            gamepadInfo.id.indexOf('Vive Focus') !== -1;
     },
     create: (gamepadInfo) => {
         return new GearVRController(gamepadInfo);

@@ -1,0 +1,210 @@
+trigger:
+- master
+
+pr:
+  autoCancel: true
+  branches:
+    include:
+    - master
+
+jobs:
+- job: WhatsNewUpdate
+  displayName: '1. What s New Update'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+    demands: npm
+  steps:
+  - task: Npm@1
+    displayName: 'npm install'
+    inputs:
+      workingDir: Tools/Gulp
+      verbose: false
+  - script: 'gulp tests-whatsnew --max-old-space-size=8192'
+    workingDirectory: Tools/Gulp
+    displayName: 'Whats new'
+    env:
+      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+      BROWSER_STACK_USERNAME: $(babylon.browserStack.userName)
+
+- job: DocumentationCheck
+  displayName: '2. Documentation Check'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+    demands: npm
+  steps:
+  - task: Npm@1
+    displayName: 'npm install'
+    inputs:
+      workingDir: Tools/Gulp
+      verbose: false
+  - script: 'gulp typedoc-check --max-old-space-size=8192'
+    workingDirectory: Tools/Gulp
+    displayName: 'Typedoc check'
+
+- job: Linting
+  displayName: '3. Linting'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+    demands: npm
+  steps:
+  - task: Npm@1
+    displayName: 'npm install'
+    inputs:
+      workingDir: Tools/Gulp
+      verbose: false
+  - script: 'gulp fullLint --max-old-space-size=8192'
+    workingDirectory: Tools/Gulp
+    displayName: 'Full Lint'
+
+- job: Build
+  displayName: '4. Build and Unit Tests'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+    demands: npm
+  steps:
+  - task: Npm@1
+    displayName: 'npm install'
+    inputs:
+      workingDir: Tools/Gulp
+      verbose: false
+  - script: 'gulp typescript-all --max-old-space-size=8192'
+    workingDirectory: Tools/Gulp
+    displayName: 'Typescript all'
+  - script: 'gulp tests-babylon-unit --max-old-space-size=8192'
+    workingDirectory: Tools/Gulp
+    displayName: 'Unit Tests'
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testRunner: JUnit
+      testResultsFiles: '.temp/testResults/UnitTests.xml'
+
+- job: TestsWebGL1
+  displayName: '5. Validation Tests WebGL1'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+    demands: npm
+  steps:
+  - task: Npm@1
+    displayName: 'npm install'
+    inputs:
+      workingDir: Tools/Gulp
+      verbose: false
+  - script: 'gulp typescript-all --max-old-space-size=8192'
+    workingDirectory: Tools/Gulp
+    displayName: 'Typescript all'
+  - script: |
+      export DISPLAY=:99
+      Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+      sleep 3 # give xvfb some time to start
+      gulp tests-validation-virtualscreenWebGL1 --max-old-space-size=8192
+    workingDirectory: Tools/Gulp
+    displayName: 'Visual Tests'
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testRunner: JUnit
+      testResultsFiles: '.temp/testResults/ValidationTests1.xml'
+
+- job: TestsWebGL2
+  displayName: '6. Validation Tests WebGL2'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+    demands: npm
+  steps:
+  - task: Npm@1
+    displayName: 'npm install'
+    inputs:
+      workingDir: Tools/Gulp
+      verbose: false
+  - script: 'gulp typescript-all --max-old-space-size=8192'
+    workingDirectory: Tools/Gulp
+    displayName: 'Typescript all'
+  - script: |
+      export DISPLAY=:99
+      Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+      sleep 3 # give xvfb some time to start
+      gulp tests-validation-virtualscreen --max-old-space-size=8192
+    workingDirectory: Tools/Gulp
+    displayName: 'Visual Tests'
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testRunner: JUnit
+      testResultsFiles: '.temp/testResults/ValidationTests2.xml'
+  # - script: 'gulp tests-validation-browserstack'
+  #   workingDirectory: Tools/Gulp
+  #   displayName: 'Browser Stack Tests'
+  #   env:
+  #     TRAVIS_BUILD_NUMBER: $(Build.BuildNumber)
+  #     BROWSER_STACK_USERNAME: $(babylon.browserStack.userName)
+  #     BROWSER_STACK_ACCESS_KEY: $(babylon.browserStack.userToken)
+
+- job: ModuleTests
+  displayName: '7. Module Tests'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+    demands: npm
+  steps:
+  - task: Npm@1
+    displayName: 'npm install'
+    inputs:
+      workingDir: Tools/Gulp
+      verbose: false
+  - script: 'gulp typescript-all --max-old-space-size=8192'
+    workingDirectory: Tools/Gulp
+    displayName: 'Typescript all'
+  - script: 'gulp tests-modules'
+    workingDirectory: Tools/Gulp
+    displayName: 'Tests modules'
+  - script: 'sudo gulp localdev-es6 --max-old-space-size=8192'
+    workingDirectory: Tools/Gulp
+    displayName: 'Npm link ES6'
+  - script: 'gulp tests-es6Modules --max-old-space-size=8192'
+    workingDirectory: Tools/Gulp
+    displayName: 'Tests ES6'
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testRunner: JUnit
+      testResultsFiles: '.temp/testResults/ModuleTestsVanilla.xml'
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testRunner: JUnit
+      testResultsFiles: '.temp/testResults/ModuleTestsWebpack.xml'
+
+- job: ViewerTests
+  displayName: '8. Viewer Tests'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+    demands: npm
+  steps:
+  - task: Npm@1
+    displayName: 'npm install'
+    inputs:
+      workingDir: Tools/Gulp
+      verbose: false
+  - script: 'gulp typescript-all --max-old-space-size=8192'
+    workingDirectory: Tools/Gulp
+    displayName: 'Typescript all'
+  - script: 'gulp tests-viewer-unit --max-old-space-size=8192'
+    workingDirectory: Tools/Gulp
+    displayName: 'Unit Tests'
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testRunner: JUnit
+      testResultsFiles: '.temp/testResults/ViewerUnitTests.xml'
+  - script: |
+      export DISPLAY=:99
+      Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+      sleep 3 # give xvfb some time to start
+      gulp tests-viewer-validation-virtualscreen --max-old-space-size=8192
+    workingDirectory: Tools/Gulp
+    displayName: 'Visual Tests'
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testRunner: JUnit
+      testResultsFiles: '.temp/testResults/ViewerValidationTests.xml'

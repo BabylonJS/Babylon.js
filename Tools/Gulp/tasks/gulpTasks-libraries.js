@@ -106,11 +106,24 @@ var buildAMDDTSFiles = function(libraries, settings, cb) {
 /**
  * Append Lose DTS Files allowing isolated Modules build
  */
-var appendLoseDTSFiles = function(settings) {
+var appendLoseDTSFiles = function(settings, moduleFile) {
     if (settings.build.loseDTSFiles) {
-        return gulp.src([config.computed.tempTypingsFilePath, path.join(settings.computed.srcDirectory, settings.build.loseDTSFiles.glob)])
-            .pipe(concat(config.computed.tempTypingsFileName))
-            .pipe(gulp.dest(config.computed.tempFolder));
+        let library = settings.libraries[0];
+        if (!library.preventLoadLibrary) {
+            // Convert Module to Namespace for globals
+            var outputDirectory = settings.computed.distDirectory;
+
+            // Find declaration path.
+            let fileName = settings.build.umd.processDeclaration.filename;
+            if (!moduleFile) {
+                fileName = fileName.replace(".module", "");
+            }
+
+            let fileLocation = path.join(outputDirectory, fileName);
+            return gulp.src([fileLocation, path.join(settings.computed.srcDirectory, settings.build.loseDTSFiles.glob)])
+                .pipe(concat(fileName))
+                .pipe(gulp.dest(outputDirectory));
+        }
     }
     return Promise.resolve();
 }
@@ -139,16 +152,21 @@ var processDTSFiles = function(libraries, settings, cb) {
 
         // Convert Module to Namespace for globals
         if (!commandLineOptions.noNamespace) {
-            processModuleDeclarationToNamespace(fileLocation, settings.build.umd.packageName, settings.build.umd.processDeclaration);
+            processModuleDeclarationToNamespace(fileLocation, settings.build.umd.packageName, settings.build.umd.processDeclaration, cb);
+        }
+        else {
+            cb();
         }
     }
-    cb();
+    else {
+        cb();
+    }
 }
 
 /**
  * Dynamic module creation In Serie for WebPack leaks.
  */
-function buildExternalLibraries(settings) {
+function buildExternalLibraries(settings, fast) {
     // Creates the required tasks.
     var tasks = [];
 
@@ -158,10 +176,17 @@ function buildExternalLibraries(settings) {
     var buildMax = function() { return buildExternalLibrariesMultiEntry(settings.libraries, settings, false) };
 
     var buildAMDDTS = function(cb) { return buildAMDDTSFiles(settings.libraries, settings, cb) };
-    var appendLoseDTS = function() { return appendLoseDTSFiles(settings) };
     var processDTS = function(cb) { return processDTSFiles(settings.libraries, settings, cb) };
+    var appendLoseDTS = [function() { return appendLoseDTSFiles(settings, true) }];
+    if (!commandLineOptions.noNamespace) {
+        appendLoseDTS.push(function() { return appendLoseDTSFiles(settings, false) });
+    }
 
-    tasks.push(cleanup, shaders, buildMin, buildMax, buildAMDDTS, appendLoseDTS, processDTS);
+    if (fast) {
+        tasks.push(buildMax);
+    } else {
+        tasks.push(cleanup, shaders, buildMin, buildMax, buildAMDDTS, processDTS, ...appendLoseDTS);
+    }
 
     return gulp.series.apply(this, tasks);
 }
@@ -179,6 +204,12 @@ config.modules.map(function(module) {
  * Back Compat Only, now name core as it is a lib
  */
 gulp.task("typescript", gulp.series("core"));
+
+/**
+ * Build the releasable files.
+ * Back Compat Only, now name core as it is a lib
+ */
+gulp.task("core-workers", buildExternalLibraries(config["core"], true));
 
 /**
  * Build all libs.

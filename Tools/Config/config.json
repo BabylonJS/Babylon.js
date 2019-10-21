@@ -13,8 +13,10 @@
         "packageES6DevFolderName": "packageES6Dev",
         "playgroundDirectory": "../../Playground/",
         "intellisenseFile": "babylon.d.txt",
+        "documentationFile": "documentation.d.ts",
         "intellisenseSources": [
             "../../dist/preview release/babylon.d.ts",
+            "../../dist/preview release/typedoc.d.ts",
             "../../dist/preview release/gui/babylon.gui.d.ts",
             "../../dist/preview release/loaders/babylonjs.loaders.d.ts",
             "../../dist/preview release/serializers/babylonjs.serializers.d.ts",
@@ -45,7 +47,8 @@
         "loaders",
         "serializers",
         "gui",
-        "inspector"
+        "inspector",
+        "nodeEditor"
     ],
     "es6modules": [
         "core",
@@ -56,7 +59,8 @@
         "serializers",
         "gui",
         "inspector",
-        "viewer"
+        "viewer",
+        "nodeEditor"
     ],
     "lintModules": [
         "core",
@@ -68,8 +72,8 @@
         "gui"
     ],
     "viewerModules": [
-        "viewer",
-        "viewer-assets"
+        "viewer-assets",
+        "viewer"
     ],
     "additionalNpmPackages": [
         {
@@ -117,7 +121,9 @@
                             "namespace": "BABYLON.Debug"
                         }
                     ],
-                    "hiddenConsts": ["Debug"]
+                    "hiddenConsts": [
+                        "Debug"
+                    ]
                 },
                 "requiredFiles": [
                     "readme.md"
@@ -528,6 +534,7 @@
             }
         ],
         "build": {
+            "ignoreInWorkerMode": true,
             "ignoreInTestMode": true,
             "mainFolder": "./inspector/",
             "uncheckedLintImports": [
@@ -547,11 +554,13 @@
                         "babylonjs": "BABYLON",
                         "babylonjs-loaders": "BABYLON",
                         "babylonjs-serializers": "BABYLON",
+                        "babylonjs-materials": "BABYLON",
                         "babylonjs-gltf2interface": "BABYLON.GLTF2",
                         "react": "React",
                         "babylonjs-gui": "BABYLON.GUI",
                         "@babylonjs/core": "BABYLON",
                         "@babylonjs/loaders": "BABYLON",
+                        "@babylonjs/materials": "BABYLON",
                         "@babylonjs/serializers": "BABYLON",
                         "@babylonjs/gui": "BABYLON.GUI",
                         "@fortawesome": false,
@@ -575,6 +584,60 @@
                 ],
                 "typings": "babylon.inspector.module.d.ts",
                 "index": "babylon.inspector.bundle.max.js"
+            }
+        }
+    },
+    "nodeEditor": {
+        "libraries": [
+            {
+                "output": "babylon.nodeEditor.js",
+                "entry": "./legacy/legacy.ts"
+            }
+        ],
+        "build": {            
+            "ignoreInWorkerMode": true,
+            "ignoreInTestMode": true,
+            "mainFolder": "./nodeEditor/",
+            "uncheckedLintImports": [
+                "react",
+                "react-dom",
+                "dagre",
+                "re-resizable",
+                "glTF",
+                "file-saver"
+            ],
+            "umd": {
+                "packageName": "babylonjs-node-editor",
+                "webpackRoot": "NODEEDITOR",
+                "processDeclaration": {
+                    "filename": "babylon.nodeEditor.module.d.ts",
+                    "moduleName": "NODEEDITOR",
+                    "importsToRemove": [],
+                    "classMap": {
+                        "babylonjs": "BABYLON",
+                        "react": "React",
+                        "@babylonjs/core": "BABYLON",
+                        "@fortawesome": false,
+                        "react-contextmenu": false
+                    }
+                }
+            },
+            "es6": {
+                "webpackBuild": true,
+                "buildDependencies": [
+                    "node_modules/re-resizable/lib/index.es5.js",
+                    "Tools/**/*"
+                ],
+                "packageName": "@babylonjs/node-editor",
+                "readme": "dist/preview release/nodeEditor/readme-es6.md",
+                "packagesFiles": [
+                    "babylon.nodeEditor.max.js",
+                    "babylon.nodeEditor.max.js.map",
+                    "babylon.nodeEditor.module.d.ts",
+                    "readme.md"
+                ],
+                "typings": "babylon.nodeEditor.module.d.ts",
+                "index": "babylon.nodeEditor.max.js"
             }
         }
     },
@@ -603,7 +666,7 @@
                 "processDeclaration": {
                     "moduleName": "BabylonViewer",
                     "doNotAppendNamespace": true,
-                    "prependText": "/// <reference path=\"./babylon.module.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.d.ts\"/>\ndeclare module \"babylonjs-loaders\"{ export=BABYLON;}\n",
+                    "prependText": "/// <reference path=\"./babylon.module.d.ts\"/>\n/// <reference path=\"./babylon.glTF2Interface.d.ts\"/>\n/// <reference path=\"./babylonjs.loaders.module.d.ts\"/>\n",
                     "importsToRemove": [
                         "pep",
                         "babylonjs-loaders"
@@ -611,7 +674,17 @@
                     "classMap": {
                         "babylonjs": "BABYLON",
                         "babylonjs-loaders": "BABYLON"
-                    }
+                    },
+                    "replacements": [
+                        {
+                            "from": "import(\"./configuration\")",
+                            "to": "import(\"babylonjs-viewer/configuration/configuration\")"
+                        },
+                        {
+                            "from": "import(\"./viewer\")",
+                            "to": "import(\"babylonjs-viewer/viewer/viewer\")"
+                        }
+                    ]
                 },
                 "requiredFiles": [
                     "dist/preview release/viewer/readme.md",
@@ -632,7 +705,7 @@
                             "outputDirectory": "/viewer/",
                             "addBabylonDeclaration": [
                                 "babylon.module.d.ts",
-                                "loaders/babylonjs.loaders.d.ts",
+                                "loaders/babylonjs.loaders.module.d.ts",
                                 "glTF2Interface/babylon.glTF2Interface.d.ts"
                             ]
                         }

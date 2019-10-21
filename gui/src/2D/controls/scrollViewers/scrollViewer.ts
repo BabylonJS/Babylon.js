@@ -10,6 +10,7 @@ import { Measure } from "../../measure";
 import { AdvancedDynamicTexture } from "../../advancedDynamicTexture";
 import { _ScrollViewerWindow } from "./scrollViewerWindow";
 import { ScrollBar } from "../sliders/scrollBar";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Class used to hold a viewer window and sliders in a grid
@@ -340,7 +341,7 @@ export class ScrollViewer extends Rectangle {
 
     /** @hidden */
     private _attachWheel() {
-        if (this._onPointerObserver) {
+        if (!this._host || this._onPointerObserver) {
             return;
         }
 
@@ -388,3 +389,4 @@ export class ScrollViewer extends Rectangle {
         super.dispose();
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.ScrollViewer"] = ScrollViewer;

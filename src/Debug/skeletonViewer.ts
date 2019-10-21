@@ -1,4 +1,5 @@
-import { Color3, Vector3, Matrix, Tmp } from "../Maths/math";
+import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
+import { Color3 } from '../Maths/math.color';
 import { Scene } from "../scene";
 import { Nullable } from "../types";
 import { Bone } from "../Bones/bone";
@@ -81,12 +82,12 @@ export class SkeletonViewer {
     }
 
     private _getBonePosition(position: Vector3, bone: Bone, meshMat: Matrix, x = 0, y = 0, z = 0): void {
-        var tmat = Tmp.Matrix[0];
+        var tmat = TmpVectors.Matrix[0];
         var parentBone = bone.getParent();
         tmat.copyFrom(bone.getLocalMatrix());
 
         if (x !== 0 || y !== 0 || z !== 0) {
-            var tmat2 = Tmp.Matrix[1];
+            var tmat2 = TmpVectors.Matrix[1];
             Matrix.IdentityToRef(tmat2);
             tmat2.setTranslationFromFloats(x, y, z);
             tmat2.multiplyToRef(tmat, tmat);
@@ -105,7 +106,9 @@ export class SkeletonViewer {
 
     private _getLinesForBonesWithLength(bones: Bone[], meshMat: Matrix): void {
         var len = bones.length;
-        var meshPos = this.mesh.position;
+
+        let mesh = this.mesh._effectiveMesh;
+        var meshPos = mesh.position;
         for (var i = 0; i < len; i++) {
             var bone = bones[i];
             var points = this._debugLines[i];
@@ -123,7 +126,9 @@ export class SkeletonViewer {
     private _getLinesForBonesNoLength(bones: Bone[], meshMat: Matrix): void {
         var len = bones.length;
         var boneNum = 0;
-        var meshPos = this.mesh.position;
+
+        let mesh = this.mesh._effectiveMesh;
+        var meshPos = mesh.position;
         for (var i = len - 1; i >= 0; i--) {
             var childBone = bones[i];
             var parentBone = childBone.getParent();
@@ -135,8 +140,8 @@ export class SkeletonViewer {
                 points = [Vector3.Zero(), Vector3.Zero()];
                 this._debugLines[boneNum] = points;
             }
-            childBone.getAbsolutePositionToRef(this.mesh, points[0]);
-            parentBone.getAbsolutePositionToRef(this.mesh, points[1]);
+            childBone.getAbsolutePositionToRef(mesh, points[0]);
+            parentBone.getAbsolutePositionToRef(mesh, points[1]);
             points[0].subtractInPlace(meshPos);
             points[1].subtractInPlace(meshPos);
             boneNum++;
@@ -153,10 +158,12 @@ export class SkeletonViewer {
             this.skeleton.computeAbsoluteTransforms();
         }
 
+        let mesh = this.mesh._effectiveMesh;
+
         if (this.skeleton.bones[0].length === undefined) {
-            this._getLinesForBonesNoLength(this.skeleton.bones, this.mesh.getWorldMatrix());
+            this._getLinesForBonesNoLength(this.skeleton.bones, mesh.getWorldMatrix());
         } else {
-            this._getLinesForBonesWithLength(this.skeleton.bones, this.mesh.getWorldMatrix());
+            this._getLinesForBonesWithLength(this.skeleton.bones, mesh.getWorldMatrix());
         }
         const targetScene = this._utilityLayer.utilityLayerScene;
 

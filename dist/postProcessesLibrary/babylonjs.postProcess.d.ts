@@ -1,4 +1,10 @@
-
+declare module BABYLON {
+    /** @hidden */
+    export var asciiartPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
 declare module BABYLON {
     /**
      * AsciiArtFontTexture is the helper class used to easily create your ascii art font texture.
@@ -6,7 +12,7 @@ declare module BABYLON {
      * It basically takes care rendering the font front the given font size to a texture.
      * This is used later on in the postprocess.
      */
-    class AsciiArtFontTexture extends BaseTexture {
+    export class AsciiArtFontTexture extends BABYLON.BaseTexture {
         private _font;
         private _text;
         private _charSize;
@@ -21,7 +27,7 @@ declare module BABYLON {
          * @param text the caracter set to use in the rendering.
          * @param scene the scene that owns the texture
          */
-        constructor(name: string, font: string, text: string, scene?: Nullable<Scene>);
+        constructor(name: string, font: string, text: string, scene?: BABYLON.Nullable<BABYLON.Scene>);
         /**
          * Gets the max char width of a font.
          * @param font the font to use, use the W3C CSS notation
@@ -45,12 +51,12 @@ declare module BABYLON {
          * @param scene the scene to create the texture for
          * @return the parsed texture
          */
-        static Parse(source: any, scene: Scene): AsciiArtFontTexture;
+        static Parse(source: any, scene: BABYLON.Scene): AsciiArtFontTexture;
     }
     /**
      * Option available in the Ascii Art Post Process.
      */
-    interface IAsciiArtPostProcessOptions {
+    export interface IAsciiArtPostProcessOptions {
         /**
          * The font to use following the w3c font definition.
          */
@@ -76,7 +82,7 @@ declare module BABYLON {
      * Simmply add it to your scene and let the nerd that lives in you have fun.
      * Example usage: var pp = new AsciiArtPostProcess("myAscii", "20px Monospace", camera);
      */
-    class AsciiArtPostProcess extends PostProcess {
+    export class AsciiArtPostProcess extends BABYLON.PostProcess {
         /**
          * The font texture used to render the char in the post process.
          */
@@ -97,11 +103,16 @@ declare module BABYLON {
          * @camera the camera to apply the post process to.
          * @param options can either be the font name or an option object following the IAsciiArtPostProcessOptions format
          */
-        constructor(name: string, camera: Camera, options?: string | IAsciiArtPostProcessOptions);
+        constructor(name: string, camera: BABYLON.Camera, options?: string | IAsciiArtPostProcessOptions);
     }
 }
-
-
+declare module BABYLON {
+    /** @hidden */
+    export var digitalrainPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
 declare module BABYLON {
     /**
      * DigitalRainFontTexture is the helper class used to easily create your digital rain font texture.
@@ -109,7 +120,7 @@ declare module BABYLON {
      * It basically takes care rendering the font front the given font size to a texture.
      * This is used later on in the postprocess.
      */
-    class DigitalRainFontTexture extends BaseTexture {
+    export class DigitalRainFontTexture extends BABYLON.BaseTexture {
         private _font;
         private _text;
         private _charSize;
@@ -124,7 +135,7 @@ declare module BABYLON {
          * @param text the caracter set to use in the rendering.
          * @param scene the scene that owns the texture
          */
-        constructor(name: string, font: string, text: string, scene?: Nullable<Scene>);
+        constructor(name: string, font: string, text: string, scene?: BABYLON.Nullable<BABYLON.Scene>);
         /**
          * Gets the max char width of a font.
          * @param font the font to use, use the W3C CSS notation
@@ -148,12 +159,12 @@ declare module BABYLON {
          * @param scene the scene to create the texture for
          * @return the parsed texture
          */
-        static Parse(source: any, scene: Scene): DigitalRainFontTexture;
+        static Parse(source: any, scene: BABYLON.Scene): DigitalRainFontTexture;
     }
     /**
      * Option available in the Digital Rain Post Process.
      */
-    interface IDigitalRainPostProcessOptions {
+    export interface IDigitalRainPostProcessOptions {
         /**
          * The font to use following the w3c font definition.
          */
@@ -175,7 +186,7 @@ declare module BABYLON {
      * Simmply add it to your scene and let the nerd that lives in you have fun.
      * Example usage: var pp = new DigitalRainPostProcess("digitalRain", "20px Monospace", camera);
      */
-    class DigitalRainPostProcess extends PostProcess {
+    export class DigitalRainPostProcess extends BABYLON.PostProcess {
         /**
          * The font texture used to render the char in the post process.
          */
@@ -196,6 +207,101 @@ declare module BABYLON {
          * @camera the camera to apply the post process to.
          * @param options can either be the font name or an option object following the IDigitalRainPostProcessOptions format
          */
-        constructor(name: string, camera: Camera, options?: string | IDigitalRainPostProcessOptions);
+        constructor(name: string, camera: BABYLON.Camera, options?: string | IDigitalRainPostProcessOptions);
     }
 }
+declare module BABYLON {
+    /** @hidden */
+    export var oceanPostProcessPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * Option available in the Ocean Post Process.
+     */
+    export interface IOceanPostProcessOptions {
+        /**
+         * The size of the reflection RTT (number if square, or {width: number, height:number} or {ratio:} to define a ratio from the main scene)
+         */
+        reflectionSize?: number | {
+            width: number;
+            height: number;
+        } | {
+            ratio: number;
+        };
+        /**
+         * The size of the refraction RTT (number if square, or {width: number, height:number} or {ratio:} to define a ratio from the main scene)
+         */
+        refractionSize?: number | {
+            width: number;
+            height: number;
+        } | {
+            ratio: number;
+        };
+    }
+    /**
+     * OceanPostProcess helps rendering an infinite ocean surface that can reflect and refract environment.
+     *
+     * Simmply add it to your scene and let the nerd that lives in you have fun.
+     * Example usage:
+     *  var pp = new OceanPostProcess("myOcean", camera);
+     *  pp.reflectionEnabled = true;
+     *  pp.refractionEnabled = true;
+     */
+    export class OceanPostProcess extends BABYLON.PostProcess {
+        /**
+         * Gets a boolean indicating if the real-time reflection is enabled on the ocean.
+         */
+        /**
+        * Sets weither or not the real-time reflection is enabled on the ocean.
+        * Is set to true, the reflection mirror texture will be used as reflection texture.
+        */
+        reflectionEnabled: boolean;
+        /**
+         * Gets a boolean indicating if the real-time refraction is enabled on the ocean.
+         */
+        /**
+        * Sets weither or not the real-time refraction is enabled on the ocean.
+        * Is set to true, the refraction render target texture will be used as refraction texture.
+        */
+        refractionEnabled: boolean;
+        /**
+         * Gets wether or not the post-processes is supported by the running hardware.
+         * This requires draw buffer supports.
+         */
+        readonly isSupported: boolean;
+        /**
+         * This is the reflection mirror texture used to display reflections on the ocean.
+         * By default, render list is empty.
+         */
+        reflectionTexture: BABYLON.MirrorTexture;
+        /**
+         * This is the refraction render target texture used to display refraction on the ocean.
+         * By default, render list is empty.
+         */
+        refractionTexture: BABYLON.RenderTargetTexture;
+        private _time;
+        private _cameraRotation;
+        private _cameraViewMatrix;
+        private _reflectionEnabled;
+        private _refractionEnabled;
+        private _geometryRenderer;
+        /**
+         * Instantiates a new Ocean Post Process.
+         * @param name the name to give to the postprocess.
+         * @camera the camera to apply the post process to.
+         * @param options optional object following the IOceanPostProcessOptions format used to customize reflection and refraction render targets sizes.
+         */
+        constructor(name: string, camera: BABYLON.TargetCamera, options?: IOceanPostProcessOptions);
+        /**
+         * Returns the appropriate defines according to the current configuration.
+         */
+        private _getDefines;
+        /**
+         * Computes the current camera rotation as the shader requires a camera rotation.
+         */
+        private _computeCameraRotation;
+    }
+}

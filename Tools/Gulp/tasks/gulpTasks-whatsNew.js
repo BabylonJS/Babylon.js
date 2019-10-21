@@ -6,23 +6,32 @@ var fs = require("fs");
  * Tests the whats new file to ensure changes have been made in the PR.
  */
 gulp.task("tests-whatsnew", function(done) {
-    // Only checks on Travis
-    if (!process.env.TRAVIS) {
-        done();
-        return;
+    // Check status on azure
+    if (!process.env["AZURE_PULLREQUESTID"]) {
+        // Only checks on Travis
+        if (!process.env.TRAVIS) {
+            done();
+            return;
+        }
+
+        // Only checks on Pull Requests
+        if (process.env.TRAVIS_PULL_REQUEST == "false") {
+            done();
+            return;
+        }
+
+        // Do not check deploy
+        if (process.env.TRAVIS_BRANCH == "preview") {
+            done();
+            return;
+        }
     }
 
-    // Only checks on Pull Requests
-    if (process.env.TRAVIS_PULL_REQUEST == "false") {
+    // Only on PR not once in.
+    if (process.env.BROWSER_STACK_USERNAME !== "$(babylon.browserStack.userName)") {
         done();
         return;
-    }
-
-    // Do not check deploy
-    if (process.env.TRAVIS_BRANCH == "preview") {
-        done();
-        return;
-    }
+    };
 
     // Compare what's new with the current one in the preview release folder.
     const https = require("https");

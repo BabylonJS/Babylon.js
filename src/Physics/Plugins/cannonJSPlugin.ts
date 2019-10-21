@@ -1,6 +1,6 @@
 import { Nullable, FloatArray } from "../../types";
 import { Logger } from "../../Misc/logger";
-import { Vector3, Matrix, Quaternion } from "../../Maths/math";
+import { Vector3, Matrix, Quaternion } from "../../Maths/math.vector";
 import { VertexBuffer } from "../../Meshes/buffer";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "../../Physics/IPhysicsEngine";
@@ -21,6 +21,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     private _fixedTimeStep: number = 1 / 60;
     private _cannonRaycastResult: any;
     private _raycastResult: PhysicsRaycastResult;
+    private _physicsBodysToRemoveAfterStep = new Array<any>();
     //See https://github.com/schteppe/CANNON.js/blob/gh-pages/demos/collisionFilter.html
     public BJSCANNON: any;
 
@@ -54,6 +55,16 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
 
     public executeStep(delta: number): void {
         this.world.step(this._fixedTimeStep, this._useDeltaForWorldStep ? delta : 0, 3);
+        this._removeMarkedPhysicsBodiesFromWorld();
+    }
+
+    private _removeMarkedPhysicsBodiesFromWorld(): void {
+        if (this._physicsBodysToRemoveAfterStep.length > 0) {
+            this._physicsBodysToRemoveAfterStep.forEach((physicsBody) => {
+                this.world.remove(physicsBody);
+            });
+            this._physicsBodysToRemoveAfterStep = [];
+        }
     }
 
     public applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
@@ -71,6 +82,9 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     }
 
     public generatePhysicsBody(impostor: PhysicsImpostor) {
+        // When calling forceUpdate generatePhysicsBody is called again, ensure that the updated body does not instantly collide with removed body
+        this._removeMarkedPhysicsBodiesFromWorld();
+
         //parent-child relationship. Does this impostor has a parent impostor?
         if (impostor.parent) {
             if (impostor.physicsBody) {
@@ -165,7 +179,11 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         impostor.physicsBody.removeEventListener("collide", impostor.onCollide);
         this.world.removeEventListener("preStep", impostor.beforeStep);
         this.world.removeEventListener("postStep", impostor.afterStep);
-        this.world.remove(impostor.physicsBody);
+
+        // Only remove the physics body after the physics step to avoid disrupting cannon's internal state
+        if (this._physicsBodysToRemoveAfterStep.indexOf(impostor.physicsBody) === -1) {
+            this._physicsBodysToRemoveAfterStep.push(impostor.physicsBody);
+        }
     }
 
     public generateJoint(impostorJoint: PhysicsImpostorJoint) {

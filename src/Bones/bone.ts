@@ -1,11 +1,12 @@
 import { Skeleton } from "./skeleton";
 
-import { Vector3, Quaternion, Matrix, Space } from "../Maths/math";
+import { Vector3, Quaternion, Matrix } from "../Maths/math.vector";
 import { ArrayTools } from "../Misc/arrayTools";
 import { Nullable } from "../types";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { TransformNode } from "../Meshes/transformNode";
 import { Node } from "../node";
+import { Space } from '../Maths/math.axis';
 
 declare type Animation = import("../Animations/animation").Animation;
 declare type AnimationPropertiesOverride = import("../Animations/animationPropertiesOverride").AnimationPropertiesOverride;
@@ -60,6 +61,9 @@ export class Bone extends Node {
     public _linkedTransformNode: Nullable<TransformNode> = null;
 
     /** @hidden */
+    public _waitingTransformNodeId: Nullable<string> = null;
+
+    /** @hidden */
     get _matrix(): Matrix {
         this._compose();
         return this._localMatrix;
@@ -87,7 +91,7 @@ export class Bone extends Node {
          */
         public name: string, skeleton: Skeleton, parentBone: Nullable<Bone> = null, localMatrix: Nullable<Matrix> = null,
         restPose: Nullable<Matrix> = null, baseMatrix: Nullable<Matrix> = null, index: Nullable<number> = null) {
-        super(name, skeleton.getScene(), false);
+        super(name, skeleton.getScene());
         this._skeleton = skeleton;
         this._localMatrix = localMatrix ? localMatrix.clone() : Matrix.Identity();
         this._restPose = restPose ? restPose : this._localMatrix.clone();
@@ -135,6 +139,14 @@ export class Bone extends Node {
      */
     public getChildren(): Array<Bone> {
         return this.children;
+    }
+
+    /**
+     * Gets the node index in matrix array generated for rendering
+     * @returns the node index
+     */
+    public getIndex(): number {
+        return this._index === null ? this.getSkeleton().bones.indexOf(this) : this._index;
     }
 
     /**
@@ -242,6 +254,14 @@ export class Bone extends Node {
 
     // Properties (matches AbstractMesh properties)
 
+    /**
+     * Gets the node used to drive the bone's transformation
+     * @returns a transform node or null
+     */
+    public getTransformNode() {
+        return this._linkedTransformNode;
+    }
+
     /** Gets or sets current position (in local space) */
     public get position(): Vector3 {
         this._decompose();
@@ -311,6 +331,11 @@ export class Bone extends Node {
             return;
         }
 
+        if (!this._localScaling) {
+            this._needToCompose = false;
+            return;
+        }
+
         this._needToCompose = false;
         Matrix.ComposeToRef(this._localScaling, this._localRotation, this._localPosition, this._localMatrix);
     }
@@ -365,11 +390,12 @@ export class Bone extends Node {
      */
     public markAsDirty(): void {
         this._currentRenderId++;
-        this._childRenderId++;
+        this._childUpdateId++;
         this._skeleton._markAsDirty();
     }
 
-    private _markAsDirtyAndCompose() {
+    /** @hidden */
+    public _markAsDirtyAndCompose() {
         this.markAsDirty();
         this._needToCompose = true;
     }

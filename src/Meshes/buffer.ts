@@ -1,16 +1,18 @@
 import { Nullable, DataArray } from "../types";
 import { Engine } from "../Engines/engine";
+import { DataBuffer } from './dataBuffer';
 
 /**
  * Class used to store data that will be store in GPU memory
  */
 export class Buffer {
     private _engine: Engine;
-    private _buffer: Nullable<WebGLBuffer>;
+    private _buffer: Nullable<DataBuffer>;
     /** @hidden */
     public _data: Nullable<DataArray>;
     private _updatable: boolean;
     private _instanced: boolean;
+    private _divisor: number;
 
     /**
      * Gets the byte stride.
@@ -26,8 +28,9 @@ export class Buffer {
      * @param postponeInternalCreation whether to postpone creating the internal WebGL buffer (optional)
      * @param instanced whether the buffer is instanced (optional)
      * @param useBytes set to true if the stride in in bytes (optional)
+     * @param divisor sets an optional divisor for instances (1 by default)
      */
-    constructor(engine: any, data: DataArray, updatable: boolean, stride = 0, postponeInternalCreation = false, instanced = false, useBytes = false) {
+    constructor(engine: any, data: DataArray, updatable: boolean, stride = 0, postponeInternalCreation = false, instanced = false, useBytes = false, divisor?: number) {
         if (engine.getScene) { // old versions of VertexBuffer accepted 'mesh' instead of 'engine'
             this._engine = engine.getScene().getEngine();
         }
@@ -37,6 +40,7 @@ export class Buffer {
 
         this._updatable = updatable;
         this._instanced = instanced;
+        this._divisor = divisor || 1;
 
         this._data = data;
 
@@ -54,15 +58,16 @@ export class Buffer {
      * @param size defines the size in floats of attributes (position is 3 for instance)
      * @param stride defines the stride size in floats in the buffer (the offset to apply to reach next value when data is interleaved)
      * @param instanced defines if the vertex buffer contains indexed data
-     * @param useBytes defines if the offset and stride are in bytes
+     * @param useBytes defines if the offset and stride are in bytes     *
+     * @param divisor sets an optional divisor for instances (1 by default)
      * @returns the new vertex buffer
      */
-    public createVertexBuffer(kind: string, offset: number, size: number, stride?: number, instanced?: boolean, useBytes = false): VertexBuffer {
+    public createVertexBuffer(kind: string, offset: number, size: number, stride?: number, instanced?: boolean, useBytes = false, divisor?: number): VertexBuffer {
         const byteOffset = useBytes ? offset : offset * Float32Array.BYTES_PER_ELEMENT;
         const byteStride = stride ? (useBytes ? stride : stride * Float32Array.BYTES_PER_ELEMENT) : this.byteStride;
 
         // a lot of these parameters are ignored as they are overriden by the buffer
-        return new VertexBuffer(this._engine, this, kind, this._updatable, true, byteStride, instanced === undefined ? this._instanced : instanced, byteOffset, size, undefined, undefined, true);
+        return new VertexBuffer(this._engine, this, kind, this._updatable, true, byteStride, instanced === undefined ? this._instanced : instanced, byteOffset, size, undefined, undefined, true, this._divisor || divisor);
     }
 
     // Properties
@@ -87,7 +92,7 @@ export class Buffer {
      * Gets underlying native buffer
      * @returns underlying native buffer
      */
-    public getBuffer(): Nullable<WebGLBuffer> {
+    public getBuffer(): Nullable<DataBuffer> {
         return this._buffer;
     }
 
@@ -273,8 +278,10 @@ export class VertexBuffer {
      * @param type the type of the component (optional)
      * @param normalized whether the data contains normalized data (optional)
      * @param useBytes set to true if stride and offset are in bytes (optional)
+     * @param divisor defines the instance divisor to use (1 by default)
      */
-    constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number, type?: number, normalized = false, useBytes = false) {
+    constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number,
+        instanced?: boolean, offset?: number, size?: number, type?: number, normalized = false, useBytes = false, divisor = 1) {
         if (data instanceof Buffer) {
             this._buffer = data;
             this._ownsBuffer = false;
@@ -315,7 +322,7 @@ export class VertexBuffer {
         this.normalized = normalized;
 
         this._instanced = instanced !== undefined ? instanced : false;
-        this._instanceDivisor = instanced ? 1 : 0;
+        this._instanceDivisor = instanced ? divisor : 0;
     }
 
     /** @hidden */
@@ -357,7 +364,7 @@ export class VertexBuffer {
      * Gets underlying native buffer
      * @returns underlying native buffer
      */
-    public getBuffer(): Nullable<WebGLBuffer> {
+    public getBuffer(): Nullable<DataBuffer> {
         return this._buffer.getBuffer();
     }
 
@@ -553,6 +560,7 @@ export class VertexBuffer {
             case VertexBuffer.UNSIGNED_SHORT:
                 return 2;
             case VertexBuffer.INT:
+            case VertexBuffer.UNSIGNED_INT:
             case VertexBuffer.FLOAT:
                 return 4;
             default:
@@ -567,7 +575,7 @@ export class VertexBuffer {
      * @param byteStride the byte stride of the data
      * @param componentCount the number of components per element
      * @param componentType the type of the component
-     * @param count the total number of components
+     * @param count the number of values to enumerate
      * @param normalized whether the data is normalized
      * @param callback the callback function called for each value
      */
@@ -616,7 +624,7 @@ export class VertexBuffer {
             case VertexBuffer.SHORT: {
                 let value = dataView.getInt16(byteOffset, true);
                 if (normalized) {
-                    value = Math.max(value / 16383, -1);
+                    value = Math.max(value / 32767, -1);
                 }
                 return value;
             }
@@ -626,6 +634,12 @@ export class VertexBuffer {
                     value = value / 65535;
                 }
                 return value;
+            }
+            case VertexBuffer.INT: {
+                return dataView.getInt32(byteOffset, true);
+            }
+            case VertexBuffer.UNSIGNED_INT: {
+                return dataView.getUint32(byteOffset, true);
             }
             case VertexBuffer.FLOAT: {
                 return dataView.getFloat32(byteOffset, true);

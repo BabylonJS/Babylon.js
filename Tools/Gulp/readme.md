@@ -25,7 +25,7 @@ npm update
 ## Build all the distributed files and tests (release build):
 
 ```
-gulp
+npm run build
 ```
 Will generate all the files of the dist/preview release folder.
 
@@ -44,7 +44,7 @@ gulp tests-all
 
 ## Run Integrated Web Server and watch for changes (dev build):
 ```
-gulp run
+npm start
 ```
 
 you can now freely test in the following URLs:

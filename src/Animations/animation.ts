@@ -1,19 +1,33 @@
 import { IEasingFunction, EasingFunction } from "./easing";
-import { Vector3, Quaternion, Vector2, Color3, Size, Matrix } from "../Maths/math";
+import { Vector3, Quaternion, Vector2, Matrix } from "../Maths/math.vector";
+import { Color3, Color4 } from '../Maths/math.color';
 import { Scalar } from "../Maths/math.scalar";
 
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { IAnimatable } from "../Misc/tools";
 import { SerializationHelper } from "../Misc/decorators";
 import { _TypeStore } from '../Misc/typeStore';
 import { IAnimationKey, AnimationKeyInterpolation } from './animationKey';
 import { AnimationRange } from './animationRange';
 import { AnimationEvent } from './animationEvent';
 import { Node } from "../node";
+import { IAnimatable } from './animatable.interface';
+import { Size } from '../Maths/math.size';
 
 declare type Animatable = import("./animatable").Animatable;
 declare type RuntimeAnimation = import("./runtimeAnimation").RuntimeAnimation;
+
+/**
+ * @hidden
+ */
+export class _IAnimationState {
+    key: number;
+    repeatCount: number;
+    workValue?: any;
+    loopMode?: number;
+    offsetValue?: any;
+    highLimitValue?: any;
+}
 
 /**
  * Class used to store any kind of animation
@@ -81,6 +95,8 @@ export class Animation {
             dataType = Animation.ANIMATIONTYPE_VECTOR2;
         } else if (from instanceof Color3) {
             dataType = Animation.ANIMATIONTYPE_COLOR3;
+        } else if (from instanceof Color4) {
+            dataType = Animation.ANIMATIONTYPE_COLOR4;
         } else if (from instanceof Size) {
             dataType = Animation.ANIMATIONTYPE_SIZE;
         }
@@ -558,6 +574,17 @@ export class Animation {
     }
 
     /**
+     * Interpolates a Color4 linearly
+     * @param startValue Start value of the animation curve
+     * @param endValue End value of the animation curve
+     * @param gradient Scalar amount to interpolate
+     * @returns Interpolated Color3 value
+     */
+    public color4InterpolateFunction(startValue: Color4, endValue: Color4, gradient: number): Color4 {
+        return Color4.Lerp(startValue, endValue, gradient);
+    }
+
+    /**
      * @hidden Internal use only
      */
     public _getKeyValue(value: any): any {
@@ -571,18 +598,17 @@ export class Animation {
     /**
      * @hidden Internal use only
      */
-    public _interpolate(currentFrame: number, repeatCount: number, workValue?: any, loopMode?: number, offsetValue?: any, highLimitValue?: any): any {
-        if (loopMode === Animation.ANIMATIONLOOPMODE_CONSTANT && repeatCount > 0) {
-            return highLimitValue.clone ? highLimitValue.clone() : highLimitValue;
+    public _interpolate(currentFrame: number, state: _IAnimationState): any {
+        if (state.loopMode === Animation.ANIMATIONLOOPMODE_CONSTANT && state.repeatCount > 0) {
+            return state.highLimitValue.clone ? state.highLimitValue.clone() : state.highLimitValue;
         }
 
-        const keys = this.getKeys();
+        const keys = this._keys;
         if (keys.length === 1) {
             return this._getKeyValue(keys[0].value);
         }
 
-        // Try to get a hash to find the right key
-        var startKeyIndex = Math.max(0, Math.min(keys.length - 1, Math.floor(keys.length * (currentFrame - keys[0].frame) / (keys[keys.length - 1].frame - keys[0].frame)) - 1));
+        var startKeyIndex = state.key;
 
         if (keys[startKeyIndex].frame >= currentFrame) {
             while (startKeyIndex - 1 >= 0 && keys[startKeyIndex].frame >= currentFrame) {
@@ -594,6 +620,7 @@ export class Animation {
             var endKey = keys[key + 1];
 
             if (endKey.frame >= currentFrame) {
+                state.key = key;
                 var startKey = keys[key];
                 var startValue = this._getKeyValue(startKey.value);
                 if (startKey.interpolation === AnimationKeyInterpolation.STEP) {
@@ -618,71 +645,80 @@ export class Animation {
                     // Float
                     case Animation.ANIMATIONTYPE_FLOAT:
                         var floatValue = useTangent ? this.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent * frameDelta, endValue, endKey.inTangent * frameDelta, gradient) : this.floatInterpolateFunction(startValue, endValue, gradient);
-                        switch (loopMode) {
+                        switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
                                 return floatValue;
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return offsetValue * repeatCount + floatValue;
+                                return state.offsetValue * state.repeatCount + floatValue;
                         }
                         break;
                     // Quaternion
                     case Animation.ANIMATIONTYPE_QUATERNION:
                         var quatValue = useTangent ? this.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.quaternionInterpolateFunction(startValue, endValue, gradient);
-                        switch (loopMode) {
+                        switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
                                 return quatValue;
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return quatValue.addInPlace(offsetValue.scale(repeatCount));
+                                return quatValue.addInPlace(state.offsetValue.scale(state.repeatCount));
                         }
 
                         return quatValue;
                     // Vector3
                     case Animation.ANIMATIONTYPE_VECTOR3:
                         var vec3Value = useTangent ? this.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.vector3InterpolateFunction(startValue, endValue, gradient);
-                        switch (loopMode) {
+                        switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
                                 return vec3Value;
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return vec3Value.add(offsetValue.scale(repeatCount));
+                                return vec3Value.add(state.offsetValue.scale(state.repeatCount));
                         }
                     // Vector2
                     case Animation.ANIMATIONTYPE_VECTOR2:
                         var vec2Value = useTangent ? this.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient) : this.vector2InterpolateFunction(startValue, endValue, gradient);
-                        switch (loopMode) {
+                        switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
                                 return vec2Value;
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return vec2Value.add(offsetValue.scale(repeatCount));
+                                return vec2Value.add(state.offsetValue.scale(state.repeatCount));
                         }
                     // Size
                     case Animation.ANIMATIONTYPE_SIZE:
-                        switch (loopMode) {
+                        switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
                                 return this.sizeInterpolateFunction(startValue, endValue, gradient);
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return this.sizeInterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                                return this.sizeInterpolateFunction(startValue, endValue, gradient).add(state.offsetValue.scale(state.repeatCount));
                         }
                     // Color3
                     case Animation.ANIMATIONTYPE_COLOR3:
-                        switch (loopMode) {
+                        switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
                                 return this.color3InterpolateFunction(startValue, endValue, gradient);
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                return this.color3InterpolateFunction(startValue, endValue, gradient).add(offsetValue.scale(repeatCount));
+                                return this.color3InterpolateFunction(startValue, endValue, gradient).add(state.offsetValue.scale(state.repeatCount));
+                        }
+                    // Color4
+                    case Animation.ANIMATIONTYPE_COLOR4:
+                        switch (state.loopMode) {
+                            case Animation.ANIMATIONLOOPMODE_CYCLE:
+                            case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                                return this.color4InterpolateFunction(startValue, endValue, gradient);
+                            case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                                return this.color4InterpolateFunction(startValue, endValue, gradient).add(state.offsetValue.scale(state.repeatCount));
                         }
                     // Matrix
                     case Animation.ANIMATIONTYPE_MATRIX:
-                        switch (loopMode) {
+                        switch (state.loopMode) {
                             case Animation.ANIMATIONLOOPMODE_CYCLE:
                             case Animation.ANIMATIONLOOPMODE_CONSTANT:
                                 if (Animation.AllowMatricesInterpolation) {
-                                    return this.matrixInterpolateFunction(startValue, endValue, gradient, workValue);
+                                    return this.matrixInterpolateFunction(startValue, endValue, gradient, state.workValue);
                                 }
                             case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                 return startValue;
@@ -789,6 +825,7 @@ export class Animation {
                 case Animation.ANIMATIONTYPE_MATRIX:
                 case Animation.ANIMATIONTYPE_VECTOR3:
                 case Animation.ANIMATIONTYPE_COLOR3:
+                case Animation.ANIMATIONTYPE_COLOR4:
                     key.values = animationKey.value.asArray();
                     break;
             }
@@ -817,113 +854,47 @@ export class Animation {
     /**
      * Float animation type
      */
-    private static _ANIMATIONTYPE_FLOAT = 0;
+    public static readonly ANIMATIONTYPE_FLOAT = 0;
     /**
      * Vector3 animation type
      */
-    private static _ANIMATIONTYPE_VECTOR3 = 1;
+    public static readonly ANIMATIONTYPE_VECTOR3 = 1;
     /**
      * Quaternion animation type
      */
-    private static _ANIMATIONTYPE_QUATERNION = 2;
+    public static readonly ANIMATIONTYPE_QUATERNION = 2;
     /**
      * Matrix animation type
      */
-    private static _ANIMATIONTYPE_MATRIX = 3;
+    public static readonly ANIMATIONTYPE_MATRIX = 3;
     /**
      * Color3 animation type
      */
-    private static _ANIMATIONTYPE_COLOR3 = 4;
+    public static readonly ANIMATIONTYPE_COLOR3 = 4;
+    /**
+     * Color3 animation type
+     */
+    public static readonly ANIMATIONTYPE_COLOR4 = 7;
     /**
      * Vector2 animation type
      */
-    private static _ANIMATIONTYPE_VECTOR2 = 5;
+    public static readonly ANIMATIONTYPE_VECTOR2 = 5;
     /**
      * Size animation type
      */
-    private static _ANIMATIONTYPE_SIZE = 6;
+    public static readonly ANIMATIONTYPE_SIZE = 6;
     /**
      * Relative Loop Mode
      */
-    private static _ANIMATIONLOOPMODE_RELATIVE = 0;
+    public static readonly ANIMATIONLOOPMODE_RELATIVE = 0;
     /**
      * Cycle Loop Mode
      */
-    private static _ANIMATIONLOOPMODE_CYCLE = 1;
+    public static readonly ANIMATIONLOOPMODE_CYCLE = 1;
     /**
      * Constant Loop Mode
      */
-    private static _ANIMATIONLOOPMODE_CONSTANT = 2;
-
-    /**
-     * Get the float animation type
-     */
-    public static get ANIMATIONTYPE_FLOAT(): number {
-        return Animation._ANIMATIONTYPE_FLOAT;
-    }
-
-    /**
-     * Get the Vector3 animation type
-     */
-    public static get ANIMATIONTYPE_VECTOR3(): number {
-        return Animation._ANIMATIONTYPE_VECTOR3;
-    }
-
-    /**
-     * Get the Vector2 animation type
-     */
-    public static get ANIMATIONTYPE_VECTOR2(): number {
-        return Animation._ANIMATIONTYPE_VECTOR2;
-    }
-
-    /**
-     * Get the Size animation type
-     */
-    public static get ANIMATIONTYPE_SIZE(): number {
-        return Animation._ANIMATIONTYPE_SIZE;
-    }
-
-    /**
-     * Get the Quaternion animation type
-     */
-    public static get ANIMATIONTYPE_QUATERNION(): number {
-        return Animation._ANIMATIONTYPE_QUATERNION;
-    }
-
-    /**
-     * Get the Matrix animation type
-     */
-    public static get ANIMATIONTYPE_MATRIX(): number {
-        return Animation._ANIMATIONTYPE_MATRIX;
-    }
-
-    /**
-     * Get the Color3 animation type
-     */
-    public static get ANIMATIONTYPE_COLOR3(): number {
-        return Animation._ANIMATIONTYPE_COLOR3;
-    }
-
-    /**
-     * Get the Relative Loop Mode
-     */
-    public static get ANIMATIONLOOPMODE_RELATIVE(): number {
-        return Animation._ANIMATIONLOOPMODE_RELATIVE;
-    }
-
-    /**
-     * Get the Cycle Loop Mode
-     */
-    public static get ANIMATIONLOOPMODE_CYCLE(): number {
-        return Animation._ANIMATIONLOOPMODE_CYCLE;
-    }
-
-    /**
-     * Get the Constant Loop Mode
-     */
-    public static get ANIMATIONLOOPMODE_CONSTANT(): number {
-        return Animation._ANIMATIONLOOPMODE_CONSTANT;
-    }
+    public static readonly ANIMATIONLOOPMODE_CONSTANT = 2;
 
     /** @hidden */
     public static _UniversalLerp(left: any, right: any, amount: number): any {
@@ -995,6 +966,9 @@ export class Animation {
                     break;
                 case Animation.ANIMATIONTYPE_COLOR3:
                     data = Color3.FromArray(key.values);
+                    break;
+                case Animation.ANIMATIONTYPE_COLOR4:
+                    data = Color4.FromArray(key.values);
                     break;
                 case Animation.ANIMATIONTYPE_VECTOR3:
                 default:

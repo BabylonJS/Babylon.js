@@ -107,7 +107,7 @@ varying vec3 vNormalW;
     {
         // Schlick fresnel approximation, extended with basic smoothness term so that rough surfaces do not approach reflectance90 at grazing angle
         float weight = mix(FRESNEL_MAXIMUM_ON_ROUGH, 1.0, smoothness);
-        return reflectance0 + weight * (reflectance90 - reflectance0) * pow(clamp(1.0 - VdotN, 0., 1.), 5.0);
+        return reflectance0 + weight * (reflectance90 - reflectance0) * pow5(saturate(1.0 - VdotN));
     }
 #endif
 
@@ -163,7 +163,7 @@ vec4 reflectionColor = vec4(1., 1., 1., 1.);
             reflectionLOD = reflectionLOD * log2(vReflectionMicrosurfaceInfos.x) * vReflectionMicrosurfaceInfos.y + vReflectionMicrosurfaceInfos.z;
             reflectionColor = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
         #else
-            float lodReflectionNormalized = clamp(reflectionLOD, 0., 1.);
+            float lodReflectionNormalized = saturate(reflectionLOD);
             float lodReflectionNormalizedDoubled = lodReflectionNormalized * 2.0;
 
             vec4 reflectionSpecularMid = sampleReflection(reflectionSampler, reflectionCoords);
@@ -249,16 +249,16 @@ float finalAlpha = alpha;
     vec3 reflectionReflectance90 = vReflectionControl.zzz;
     float VdotN = dot(normalize(vEyePosition), normalW);
 
-    vec3 planarReflectionFresnel = fresnelSchlickEnvironmentGGX(clamp(VdotN, 0.0, 1.0), reflectionReflectance0, reflectionReflectance90, 1.0);
+    vec3 planarReflectionFresnel = fresnelSchlickEnvironmentGGX(saturate(VdotN), reflectionReflectance0, reflectionReflectance90, 1.0);
     reflectionAmount *= planarReflectionFresnel;
 
     #ifdef REFLECTIONFALLOFF
-        float reflectionDistanceFalloff = 1.0 - clamp(length(vPositionW.xyz - vBackgroundCenter) * vReflectionControl.w, 0.0, 1.0);
+        float reflectionDistanceFalloff = 1.0 - saturate(length(vPositionW.xyz - vBackgroundCenter) * vReflectionControl.w);
         reflectionDistanceFalloff *= reflectionDistanceFalloff;
         reflectionAmount *= reflectionDistanceFalloff;
     #endif
 
-    finalColor = mix(finalColor, reflectionColor.rgb, clamp(reflectionAmount, 0., 1.));
+    finalColor = mix(finalColor, reflectionColor.rgb, saturate(reflectionAmount));
 #endif
 
 #ifdef OPACITYFRESNEL
@@ -266,7 +266,7 @@ float finalAlpha = alpha;
 
     // Fade out the floor plane as the angle between the floor and the camera tends to 0 (starting from startAngle)
     const float startAngle = 0.1;
-    float fadeFactor = clamp(viewAngleToFloor/startAngle, 0.0, 1.0);
+    float fadeFactor = saturate(viewAngleToFloor/startAngle);
 
     finalAlpha *= fadeFactor * fadeFactor;
 #endif

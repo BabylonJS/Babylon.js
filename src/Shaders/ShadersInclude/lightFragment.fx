@@ -1,5 +1,5 @@
 ﻿#ifdef LIGHT{X}
-    #if defined(SHADOWONLY) || (defined(LIGHTMAP) && defined(LIGHTMAPEXCLUDED{X}) && defined(LIGHTMAPNOSPECULAR{X}))
+    #if defined(SHADOWONLY) || defined(LIGHTMAP) && defined(LIGHTMAPEXCLUDED{X}) && defined(LIGHTMAPNOSPECULAR{X})
         //No light calculation
     #else
         #ifdef PBR
@@ -56,6 +56,8 @@
             // Diffuse contribution
             #ifdef HEMILIGHT{X}
                 info.diffuse = computeHemisphericDiffuseLighting(preInfo, light{X}.vLightDiffuse.rgb, light{X}.vLightGround);
+            #elif defined(SS_TRANSLUCENCY)
+                info.diffuse = computeDiffuseAndTransmittedLighting(preInfo, light{X}.vLightDiffuse.rgb, transmittance);
             #else
                 info.diffuse = computeDiffuseLighting(preInfo, light{X}.vLightDiffuse.rgb);
             #endif
@@ -183,15 +185,15 @@
                 specularBase += computeCustomSpecularLighting(info, specularBase, shadow);
             #endif
         #elif defined(LIGHTMAP) && defined(LIGHTMAPEXCLUDED{X})
-            diffuseBase += lightmapColor * shadow;
+            diffuseBase += lightmapColor.rgb * shadow;
             #ifdef SPECULARTERM
                 #ifndef LIGHTMAPNOSPECULAR{X}
-                    specularBase += info.specular * shadow * lightmapColor;
+                    specularBase += info.specular * shadow * lightmapColor.rgb;
                 #endif
             #endif
             #ifdef CLEARCOAT
                 #ifndef LIGHTMAPNOSPECULAR{X}
-                    clearCoatBase += info.clearCoat.rgb * shadow * lightmapColor;
+                    clearCoatBase += info.clearCoat.rgb * shadow * lightmapColor.rgb;
                 #endif
             #endif
             #ifdef SHEEN

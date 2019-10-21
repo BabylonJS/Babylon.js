@@ -1,7 +1,8 @@
 import { Nullable, float } from "../types";
-import { IAnimatable, Tools, IValueGradient, ColorGradient, FactorGradient, Color3Gradient } from "../Misc/tools";
+import { FactorGradient, ColorGradient, Color3Gradient, IValueGradient, GradientHelper } from "../Misc/gradients";
 import { Observable } from "../Misc/observable";
-import { Color4, Color3, Vector3, Matrix, Tmp } from "../Maths/math";
+import { Vector3, Matrix } from "../Maths/math.vector";
+import { Color4, Color3, TmpColors } from '../Maths/math.color';
 import { Scalar } from "../Maths/math.scalar";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Buffer } from "../Meshes/buffer";
@@ -12,7 +13,7 @@ import { ParticleSystem } from "./particleSystem";
 import { Engine } from "../Engines/engine";
 import { BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
 import { Scene, IDisposable } from "../scene";
-import { Effect, EffectCreationOptions } from "../Materials/effect";
+import { Effect, IEffectCreationOptions } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
@@ -21,6 +22,7 @@ import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Constants } from "../Engines/constants";
 import { EngineStore } from "../Engines/engineStore";
 import { DeepCopier } from "../Misc/deepCopier";
+import { IAnimatable } from '../Animations/animatable.interface';
 
 import "../Shaders/gpuUpdateParticles.fragment";
 import "../Shaders/gpuUpdateParticles.vertex";
@@ -67,7 +69,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _randomTexture2: RawTexture;
 
     private _attributesStrideSize: number;
-    private _updateEffectOptions: EffectCreationOptions;
+    private _updateEffectOptions: IEffectCreationOptions;
 
     private _randomTextureSize: number;
     private _actualFrame = 0;
@@ -1105,7 +1107,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         for (var x = 0; x < this._rawTextureWidth; x++) {
             var ratio = x / this._rawTextureWidth;
 
-            Tools.GetCurrentGradient(ratio, factorGradients, (currentGradient, nextGradient, scale) => {
+            GradientHelper.GetCurrentGradient(ratio, factorGradients, (currentGradient, nextGradient, scale) => {
                 data[x] = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
             });
         }
@@ -1139,12 +1141,12 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         let data = new Uint8Array(this._rawTextureWidth * 4);
-        let tmpColor = Tmp.Color4[0];
+        let tmpColor = TmpColors.Color4[0];
 
         for (var x = 0; x < this._rawTextureWidth; x++) {
             var ratio = x / this._rawTextureWidth;
 
-            Tools.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {
+            GradientHelper.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {
 
                 Color4.LerpToRef((<ColorGradient>currentGradient).color1, (<ColorGradient>nextGradient).color1, scale, tmpColor);
                 data[x * 4] = tmpColor.r * 255;
@@ -1480,7 +1482,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     public clone(name: string, newEmitter: any): GPUParticleSystem {
         var result = new GPUParticleSystem(name, { capacity: this._capacity, randomTextureSize: this._randomTextureSize }, this._scene);
 
-        DeepCopier.DeepCopy(this, result);
+        DeepCopier.DeepCopy(this, result, ["particles", "customShader", "noiseTexture", "particleTexture", "onDisposeObservable"]);
 
         if (newEmitter === undefined) {
             newEmitter = this.emitter;
@@ -1489,6 +1491,70 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         result.emitter = newEmitter;
         if (this.particleTexture) {
             result.particleTexture = new Texture(this.particleTexture.url, this._scene);
+        }
+
+        result.noiseTexture = this.noiseTexture;
+
+        // Clone gradients
+        if (this._colorGradients) {
+            this._colorGradients.forEach((v) => {
+                result.addColorGradient(v.gradient, v.color1, v.color2);
+            });
+        }
+        if (this._dragGradients) {
+            this._dragGradients.forEach((v) => {
+                result.addDragGradient(v.gradient, v.factor1);
+            });
+        }
+        if (this._angularSpeedGradients) {
+            this._angularSpeedGradients.forEach((v) => {
+                result.addAngularSpeedGradient(v.gradient, v.factor1);
+            });
+        }
+        if (this._emitRateGradients) {
+            this._emitRateGradients.forEach((v) => {
+                result.addEmitRateGradient(v.gradient, v.factor1, v.factor2);
+            });
+        }
+        if (this._lifeTimeGradients) {
+            this._lifeTimeGradients.forEach((v) => {
+                result.addLifeTimeGradient(v.gradient, v.factor1, v.factor2);
+            });
+        }
+        if (this._limitVelocityGradients) {
+            this._limitVelocityGradients.forEach((v) => {
+                result.addLimitVelocityGradient(v.gradient, v.factor1);
+            });
+        }
+        if (this._sizeGradients) {
+            this._sizeGradients.forEach((v) => {
+                result.addSizeGradient(v.gradient, v.factor1);
+            });
+        }
+        if (this._startSizeGradients) {
+            this._startSizeGradients.forEach((v) => {
+                result.addStartSizeGradient(v.gradient, v.factor1, v.factor2);
+            });
+        }
+        if (this._velocityGradients) {
+            this._velocityGradients.forEach((v) => {
+                result.addVelocityGradient(v.gradient, v.factor1);
+            });
+        }
+        if (this._rampGradients) {
+            this._rampGradients.forEach((v) => {
+                result.addRampGradient(v.gradient, v.color);
+            });
+        }
+        if (this._colorRemapGradients) {
+            this._colorRemapGradients.forEach((v) => {
+                result.addColorRemapGradient(v.gradient, v.factor1, v.factor2!);
+            });
+        }
+        if (this._alphaRemapGradients) {
+            this._alphaRemapGradients.forEach((v) => {
+                result.addAlphaRemapGradient(v.gradient, v.factor1, v.factor2!);
+            });
         }
 
         return result;

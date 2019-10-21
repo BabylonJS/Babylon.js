@@ -1,15 +1,15 @@
 import { serialize, SerializationHelper } from "../Misc/decorators";
-import { Tools, IAnimatable } from "../Misc/tools";
+import { Tools } from "../Misc/tools";
+import { IAnimatable } from '../Animations/animatable.interface';
 import { SmartArray } from "../Misc/smartArray";
 import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Plane, Matrix } from "../Maths/math";
+import { Matrix } from "../Maths/math.vector";
 import { EngineStore } from "../Engines/engineStore";
 import { BaseSubMesh, SubMesh } from "../Meshes/subMesh";
 import { Geometry } from "../Meshes/geometry";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
 import { UniformBuffer } from "./uniformBuffer";
 import { Effect } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -18,10 +18,28 @@ import { MaterialDefines } from "./materialDefines";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { IInspectable } from '../Misc/iInspectable';
+import { Plane } from '../Maths/math.plane';
 
+declare type Mesh = import("../Meshes/mesh").Mesh;
 declare type Animation = import("../Animations/animation").Animation;
+declare type InstancedMesh = import('../Meshes/instancedMesh').InstancedMesh;
 
 declare var BABYLON: any;
+
+/**
+ * Options for compiling materials.
+ */
+export interface IMaterialCompilationOptions {
+    /**
+     * Defines whether clip planes are enabled.
+     */
+    clipPlane: boolean;
+
+    /**
+     * Defines whether instances are enabled.
+     */
+    useInstances: boolean;
+}
 
 /**
  * Base class for the main features of a material in Babylon.js
@@ -213,17 +231,17 @@ export class Material implements IAnimatable {
     /**
      * Callback triggered when the material is compiled
      */
-    public onCompiled: (effect: Effect) => void;
+    public onCompiled: Nullable<(effect: Effect) => void> = null;
 
     /**
      * Callback triggered when an error occurs
      */
-    public onError: (effect: Effect, errors: string) => void;
+    public onError: Nullable<(effect: Effect, errors: string) => void> = null;
 
     /**
      * Callback triggered to get the render target textures
      */
-    public getRenderTargetTextures: () => SmartArray<RenderTargetTexture>;
+    public getRenderTargetTextures: Nullable<() => SmartArray<RenderTargetTexture>> = null;
 
     /**
      * Gets a boolean indicating that current material needs to register RTT
@@ -245,7 +263,7 @@ export class Material implements IAnimatable {
     /**
      * Stores the animations for the material
      */
-    public animations: Array<Animation>;
+    public animations: Nullable<Array<Animation>> = null;
 
     /**
     * An event triggered when the material is disposed
@@ -255,8 +273,8 @@ export class Material implements IAnimatable {
     /**
      * An observer which watches for dispose events
      */
-    private _onDisposeObserver: Nullable<Observer<Material>>;
-    private _onUnBindObservable: Nullable<Observable<Material>>;
+    private _onDisposeObserver: Nullable<Observer<Material>> = null;
+    private _onUnBindObservable: Nullable<Observable<Material>> = null;
 
     /**
      * Called during a dispose event
@@ -284,7 +302,7 @@ export class Material implements IAnimatable {
     /**
      * An observer which watches for bind events
      */
-    private _onBindObserver: Nullable<Observer<AbstractMesh>>;
+    private _onBindObserver: Nullable<Observer<AbstractMesh>> = null;
 
     /**
      * Called during a bind event
@@ -494,7 +512,7 @@ export class Material implements IAnimatable {
      * @hidden
      * Stores the effects for the material
      */
-    public _effect: Nullable<Effect>;
+    public _effect: Nullable<Effect> = null;
 
     /**
      * @hidden
@@ -505,7 +523,7 @@ export class Material implements IAnimatable {
     /**
      * Specifies if uniform buffers should be used
      */
-    private _useUBO: boolean;
+    private _useUBO: boolean = false;
 
     /**
      * Stores a reference to the scene
@@ -520,7 +538,7 @@ export class Material implements IAnimatable {
     /**
      * Specifies if the depth write state should be cached
      */
-    private _cachedDepthWriteState: boolean;
+    private _cachedDepthWriteState: boolean = false;
 
     /**
      * Stores the uniform buffer
@@ -531,7 +549,7 @@ export class Material implements IAnimatable {
     public _indexInSceneMaterialArray = -1;
 
     /** @hidden */
-    public meshMap: Nullable<{ [id: string]: AbstractMesh | undefined }>;
+    public meshMap: Nullable<{ [id: string]: AbstractMesh | undefined }> = null;
 
     /**
      * Creates a material instance
@@ -849,10 +867,12 @@ export class Material implements IAnimatable {
      * @param mesh defines the mesh associated with this material
      * @param onCompiled defines a function to execute once the material is compiled
      * @param options defines the options to configure the compilation
+     * @param onError defines a function to execute if the material fails compiling
      */
-    public forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<{ clipPlane: boolean }>): void {
+    public forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<IMaterialCompilationOptions>, onError?: (reason: string) => void): void {
         let localOptions = {
             clipPlane: false,
+            useInstances: false,
             ...options
         };
 
@@ -875,13 +895,19 @@ export class Material implements IAnimatable {
             }
 
             if (this._storeEffectOnSubMeshes) {
-                if (this.isReadyForSubMesh(mesh, subMesh)) {
+                if (this.isReadyForSubMesh(mesh, subMesh, localOptions.useInstances)) {
                     if (onCompiled) {
                         onCompiled(this);
                     }
                 }
                 else {
-                    setTimeout(checkReady, 16);
+                    if (subMesh.effect && subMesh.effect.getCompilationError() && subMesh.effect.allFallbacksProcessed()) {
+                        if (onError) {
+                            onError(subMesh.effect.getCompilationError());
+                        }
+                    } else {
+                        setTimeout(checkReady, 16);
+                    }
                 }
             } else {
                 if (this.isReady()) {
@@ -908,14 +934,17 @@ export class Material implements IAnimatable {
      * @param options defines additional options for compiling the shaders
      * @returns a promise that resolves when the compilation completes
      */
-    public forceCompilationAsync(mesh: AbstractMesh, options?: Partial<{ clipPlane: boolean }>): Promise<void> {
-        return new Promise((resolve) => {
+    public forceCompilationAsync(mesh: AbstractMesh, options?: Partial<IMaterialCompilationOptions>): Promise<void> {
+        return new Promise((resolve, reject) => {
             this.forceCompilation(mesh, () => {
                 resolve();
-            }, options);
+            }, options, (reason) => {
+                reject(reason);
+            });
         });
     }
 
+    private static readonly _AllDirtyCallBack = (defines: MaterialDefines) => defines.markAllAsDirty();
     private static readonly _ImageProcessingDirtyCallBack = (defines: MaterialDefines) => defines.markAsImageProcessingDirty();
     private static readonly _TextureDirtyCallBack = (defines: MaterialDefines) => defines.markAsTexturesDirty();
     private static readonly _FresnelDirtyCallBack = (defines: MaterialDefines) => defines.markAsFresnelDirty();
@@ -1007,6 +1036,13 @@ export class Material implements IAnimatable {
     }
 
     /**
+ * Indicates that we need to re-calculated for all submeshes
+ */
+    protected _markAllSubMeshesAsAllDirty() {
+        this._markAllSubMeshesAsDirty(Material._AllDirtyCallBack);
+    }
+
+    /**
      * Indicates that image processing needs to be re-calculated for all submeshes
      */
     protected _markAllSubMeshesAsImageProcessingDirty() {
@@ -1091,7 +1127,7 @@ export class Material implements IAnimatable {
             else {
                 const meshes = scene.meshes;
                 for (let mesh of meshes) {
-                    if (mesh.material === this) {
+                    if (mesh.material === this && !(mesh as InstancedMesh).sourceMesh) {
                         mesh.material = null;
                         this.releaseVertexArrayObject(mesh, forceDisposeEffect);
                     }
@@ -1104,7 +1140,7 @@ export class Material implements IAnimatable {
         // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
         if (forceDisposeEffect && this._effect) {
             if (!this._storeEffectOnSubMeshes) {
-                scene.getEngine()._releaseEffect(this._effect);
+                this._effect.dispose();
             }
 
             this._effect = null;
@@ -1127,12 +1163,11 @@ export class Material implements IAnimatable {
     private releaseVertexArrayObject(mesh: AbstractMesh, forceDisposeEffect?: boolean) {
         if ((<Mesh>mesh).geometry) {
             var geometry = <Geometry>((<Mesh>mesh).geometry);
-            const scene = this.getScene();
             if (this._storeEffectOnSubMeshes) {
                 for (var subMesh of mesh.subMeshes) {
                     geometry._releaseVertexArrayObject(subMesh._materialEffect);
                     if (forceDisposeEffect && subMesh._materialEffect) {
-                        scene.getEngine()._releaseEffect(subMesh._materialEffect);
+                        subMesh._materialEffect.dispose();
                     }
                 }
             } else {
@@ -1156,7 +1191,7 @@ export class Material implements IAnimatable {
      * @param rootUrl defines the root URL to use to load textures
      * @returns a new material
      */
-    public static Parse(parsedMaterial: any, scene: Scene, rootUrl: string): any {
+    public static Parse(parsedMaterial: any, scene: Scene, rootUrl: string): Nullable<Material> {
         if (!parsedMaterial.customType) {
             parsedMaterial.customType = "BABYLON.StandardMaterial";
         }
@@ -1164,7 +1199,7 @@ export class Material implements IAnimatable {
             parsedMaterial.customType = "BABYLON.LegacyPBRMaterial";
             if (!BABYLON.LegacyPBRMaterial) {
                 Logger.Error("Your scene is trying to load a legacy version of the PBRMaterial, please, include it from the materials library.");
-                return;
+                return null;
             }
         }
 

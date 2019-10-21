@@ -1,4 +1,5 @@
 import { SerializationHelper, serialize, expandToProperty } from "../../Misc/decorators";
+import { Scene } from '../../scene';
 
 /**
  * @hidden
@@ -6,6 +7,8 @@ import { SerializationHelper, serialize, expandToProperty } from "../../Misc/dec
 export interface IMaterialBRDFDefines {
     BRDF_V_HEIGHT_CORRELATED: boolean;
     MS_BRDF_ENERGY_CONSERVATION: boolean;
+    SPHERICAL_HARMONICS: boolean;
+    SPECULAR_GLOSSINESS_ENERGY_CONSERVATION: boolean;
 
     /** @hidden */
     _areMiscDirty: boolean;
@@ -16,16 +19,41 @@ export interface IMaterialBRDFDefines {
  */
 export class PBRBRDFConfiguration {
 
-    @serialize()
-    private _useEnergyConservation = true;
+    /**
+     * Default value used for the energy conservation.
+     * This should only be changed to adapt to the type of texture in scene.environmentBRDFTexture.
+     */
+    public static DEFAULT_USE_ENERGY_CONSERVATION = true;
+
+    /**
+     * Default value used for the Smith Visibility Height Correlated mode.
+     * This should only be changed to adapt to the type of texture in scene.environmentBRDFTexture.
+     */
+    public static DEFAULT_USE_SMITH_VISIBILITY_HEIGHT_CORRELATED = true;
+
+    /**
+     * Default value used for the IBL diffuse part.
+     * This can help switching back to the polynomials mode globally which is a tiny bit
+     * less GPU intensive at the drawback of a lower quality.
+     */
+    public static DEFAULT_USE_SPHERICAL_HARMONICS = true;
+
+    /**
+     * Default value used for activating energy conservation for the specular workflow.
+     * If activated, the albedo color is multiplied with (1. - maxChannel(specular color)).
+     * If deactivated, a material is only physically plausible, when (albedo color + specular color) < 1.
+     */
+    public static DEFAULT_USE_SPECULAR_GLOSSINESS_INPUT_ENERGY_CONSERVATION = true;
+
+    private _useEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_ENERGY_CONSERVATION;
     /**
      * Defines if the material uses energy conservation.
      */
-    @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public useEnergyConservation = true;
-
     @serialize()
-    private _useSmithVisibilityHeightCorrelated = true;
+    @expandToProperty("_markAllSubMeshesAsMiscDirty")
+    public useEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_ENERGY_CONSERVATION;
+
+    private _useSmithVisibilityHeightCorrelated = PBRBRDFConfiguration.DEFAULT_USE_SMITH_VISIBILITY_HEIGHT_CORRELATED;
     /**
      * LEGACY Mode set to false
      * Defines if the material uses height smith correlated visibility term.
@@ -34,8 +62,32 @@ export class PBRBRDFConfiguration {
      * or https://assets.babylonjs.com/environments/uncorrelatedBRDF.dds to have more precision
      * Not relying on height correlated will also disable energy conservation.
      */
+    @serialize()
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public useSmithVisibilityHeightCorrelated = true;
+    public useSmithVisibilityHeightCorrelated = PBRBRDFConfiguration.DEFAULT_USE_SMITH_VISIBILITY_HEIGHT_CORRELATED;
+
+    private _useSphericalHarmonics = PBRBRDFConfiguration.DEFAULT_USE_SPHERICAL_HARMONICS;
+    /**
+     * LEGACY Mode set to false
+     * Defines if the material uses spherical harmonics vs spherical polynomials for the
+     * diffuse part of the IBL.
+     * The harmonics despite a tiny bigger cost has been proven to provide closer results
+     * to the ground truth.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsMiscDirty")
+    public useSphericalHarmonics = PBRBRDFConfiguration.DEFAULT_USE_SPHERICAL_HARMONICS;
+
+    private _useSpecularGlossinessInputEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_SPECULAR_GLOSSINESS_INPUT_ENERGY_CONSERVATION;
+    /**
+     * Defines if the material uses energy conservation, when the specular workflow is active.
+     * If activated, the albedo color is multiplied with (1. - maxChannel(specular color)).
+     * If deactivated, a material is only physically plausible, when (albedo color + specular color) < 1.
+     * In the deactivated case, the material author has to ensure energy conservation, for a physically plausible rendering.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsMiscDirty")
+    public useSpecularGlossinessInputEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_SPECULAR_GLOSSINESS_INPUT_ENERGY_CONSERVATION;
 
     /** @hidden */
     private _internalMarkAllSubMeshesAsMiscDirty: () => void;
@@ -60,6 +112,8 @@ export class PBRBRDFConfiguration {
     public prepareDefines(defines: IMaterialBRDFDefines): void {
         defines.BRDF_V_HEIGHT_CORRELATED = this._useSmithVisibilityHeightCorrelated;
         defines.MS_BRDF_ENERGY_CONSERVATION = this._useEnergyConservation && this._useSmithVisibilityHeightCorrelated;
+        defines.SPHERICAL_HARMONICS = this._useSphericalHarmonics;
+        defines.SPECULAR_GLOSSINESS_ENERGY_CONSERVATION = this._useSpecularGlossinessInputEnergyConservation;
     }
 
     /**
@@ -67,7 +121,7 @@ export class PBRBRDFConfiguration {
     * @returns "PBRClearCoatConfiguration"
     */
     public getClassName(): string {
-        return "PBRClearCoatConfiguration";
+        return "PBRBRDFConfiguration";
     }
 
     /**
@@ -87,10 +141,12 @@ export class PBRBRDFConfiguration {
     }
 
     /**
-     * Parses a BRDF Configuration from a serialized object.
+     * Parses a anisotropy Configuration from a serialized object.
      * @param source - Serialized object.
+     * @param scene Defines the scene we are parsing for
+     * @param rootUrl Defines the rootUrl to load from
      */
-    public parse(source: any): void {
-        SerializationHelper.Parse(() => this, source, null);
+    public parse(source: any, scene: Scene, rootUrl: string): void {
+        SerializationHelper.Parse(() => this, source, scene, rootUrl);
     }
 }

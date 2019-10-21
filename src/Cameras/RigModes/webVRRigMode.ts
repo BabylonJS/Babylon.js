@@ -1,5 +1,6 @@
 import { Camera } from "../camera";
-import { Matrix, Viewport } from "../../Maths/math";
+import { Matrix } from "../../Maths/math.vector";
+import { Viewport } from '../../Maths/math.viewport';
 
 Camera._setWebVRRigMode = function(camera: Camera, rigParams: any) {
     if (rigParams.vrDisplay) {
@@ -29,10 +30,5 @@ Camera._setWebVRRigMode = function(camera: Camera, rigParams: any) {
         camera._rigCameras[1].getProjectionMatrix = camera._getWebVRProjectionMatrix;
         camera._rigCameras[1].parent = camera;
         camera._rigCameras[1]._getViewMatrix = camera._getWebVRViewMatrix;
-
-        if (Camera.UseAlternateWebVRRendering) {
-            camera._rigCameras[1]._skipRendering = true;
-            camera._rigCameras[0]._alternateCamera = camera._rigCameras[1];
-        }
     }
 };

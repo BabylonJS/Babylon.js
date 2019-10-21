@@ -2,12 +2,12 @@ import { serialize } from "../../../Misc/decorators";
 import { Observable } from "../../../Misc/observable";
 import { Nullable } from "../../../types";
 import { Scene } from "../../../scene";
-import { Matrix, Vector3, Vector2, Color3, Color4 } from "../../../Maths/math";
+import { Matrix, Vector3, Vector2 } from "../../../Maths/math.vector";
+import { Color4, Color3 } from '../../../Maths/math.color';
 import { Engine } from "../../../Engines/engine";
 import { VertexBuffer } from "../../../Meshes/buffer";
 import { SceneComponentConstants } from "../../../sceneComponent";
 import { _TimeToken } from "../../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../../States/index";
 
 import { Material } from "../../../Materials/material";
 import { Effect } from "../../../Materials/effect";
@@ -15,7 +15,10 @@ import { Texture } from "../../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneComponent";
 
+import "../../../Engines/Extensions/engine.renderTarget";
+import "../../../Engines/Extensions/engine.renderTargetCube";
 import "../../../Shaders/procedural.vertex";
+import { DataBuffer } from '../../../Meshes/dataBuffer';
 
 /**
  * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes calmpler' images.
@@ -60,7 +63,7 @@ export class ProceduralTexture extends Texture {
     private _currentRefreshId = -1;
     private _refreshRate = 1;
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
-    private _indexBuffer: Nullable<WebGLBuffer>;
+    private _indexBuffer: Nullable<DataBuffer>;
     private _uniforms = new Array<string>();
     private _samplers = new Array<string>();
     private _fragment: any;
@@ -141,7 +144,7 @@ export class ProceduralTexture extends Texture {
 
     /**
      * The effect that is created when initializing the post process.
-     * @returns The created effect corrisponding the the postprocess.
+     * @returns The created effect corresponding the the postprocess.
      */
     public getEffect(): Effect {
         return this._effect;
@@ -201,9 +204,7 @@ export class ProceduralTexture extends Texture {
         if (this._effect === undefined) {
             return;
         }
-
-        var engine = this._engine;
-        engine._releaseEffect(this._effect);
+        this._effect.dispose();
     }
 
     protected _getDefines(): string {

@@ -1,6 +1,6 @@
 import { ISmartArrayLike } from "../../Misc/smartArray";
 import { Scene } from "../../scene";
-import { Vector3 } from "../../Maths/math";
+import { Vector3 } from "../../Maths/math.vector";
 import { SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Ray } from "../../Culling/ray";
@@ -121,7 +121,7 @@ AbstractMesh.prototype.createOrUpdateSubmeshesOctree = function(maxCapacity = 64
  */
 export class OctreeSceneComponent {
     /**
-     * The component name helpfull to identify the component in the list of scene components.
+     * The component name help to identify the component in the list of scene components.
      */
     public readonly name = SceneComponentConstants.NAME_OCTREE;
 

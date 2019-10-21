@@ -261,4 +261,20 @@ export class MaterialFlags {
         this._AnisotropicTextureEnabled = value;
         Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
+
+    private static _ThicknessTextureEnabled = true;
+    /**
+     * Are thickness textures enabled in the application.
+     */
+    public static get ThicknessTextureEnabled(): boolean {
+        return this._ThicknessTextureEnabled;
+    }
+    public static set ThicknessTextureEnabled(value: boolean) {
+        if (this._ThicknessTextureEnabled === value) {
+            return;
+        }
+
+        this._ThicknessTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
 }

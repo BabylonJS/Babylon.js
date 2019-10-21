@@ -3,8 +3,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 
 export interface IBooleanLineComponentProps {
-    label: string,
-    value: boolean
+    label: string;
+    value: boolean;
 }
 
 export class BooleanLineComponent extends React.Component<IBooleanLineComponentProps> {

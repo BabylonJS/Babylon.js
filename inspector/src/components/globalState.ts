@@ -8,6 +8,8 @@ import { Scene } from "babylonjs/scene";
 import { Light } from "babylonjs/Lights/light";
 import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
+import { ReplayRecorder } from './replayRecorder';
+import { Tools } from '../tools';
 
 export class GlobalState {
     public onSelectionChangedObservable: Observable<any>;
@@ -25,6 +27,48 @@ export class GlobalState {
 
     public blockMutationUpdates = false;
     public selectedLineContainerTitle = "";
+
+    public recorder = new ReplayRecorder();
+
+    private _onlyUseEulers: Nullable<boolean> = null;
+
+    public get onlyUseEulers(): boolean {
+        if (this._onlyUseEulers === null) {
+            this._onlyUseEulers = Tools.ReadLocalBooleanSettings("settings_onlyUseEulers", true);
+        }
+
+        return this._onlyUseEulers!;
+    }
+
+    public set onlyUseEulers(value: boolean) {
+        this._onlyUseEulers = value;
+
+        Tools.StoreLocalBooleanSettings("settings_onlyUseEulers", value);
+    }
+
+    private _ignoreBackfacesForPicking: Nullable<boolean> = null;
+
+    public get ignoreBackfacesForPicking(): boolean {
+        if (this._ignoreBackfacesForPicking === null) {
+            this._ignoreBackfacesForPicking = Tools.ReadLocalBooleanSettings("settings_ignoreBackfacesForPicking", false);
+        }
+
+        return this._ignoreBackfacesForPicking!;
+    }
+
+    public set ignoreBackfacesForPicking(value: boolean) {
+        this._ignoreBackfacesForPicking = value;
+
+        Tools.StoreLocalBooleanSettings("settings_ignoreBackfacesForPicking", value);
+    }
+
+    public init(propertyChangedObservable: Observable<PropertyChangedEvent>) {
+        this.onPropertyChangedObservable = propertyChangedObservable;
+
+        propertyChangedObservable.add(event => {
+            this.recorder.record(event);
+        })
+    }
 
     public prepareGLTFPlugin(loader: GLTFFileLoader) {
         var loaderState = this.glTFLoaderDefaults;
@@ -65,6 +109,7 @@ export class GlobalState {
                 light.reservedDataStore.lightGizmo = new LightGizmo();
                 this.lightGizmos.push(light.reservedDataStore.lightGizmo)
                 light.reservedDataStore.lightGizmo.light = light;
+                light.reservedDataStore.lightGizmo.material.reservedDataStore = {hidden: true};
             }
         } else if (light.reservedDataStore && light.reservedDataStore.lightGizmo) {
             this.lightGizmos.splice(this.lightGizmos.indexOf(light.reservedDataStore.lightGizmo), 1);

@@ -9,8 +9,8 @@ For usage documentation please visit http://doc.babylonjs.com/overviews/gui
 
 Compiled js files (minified and source) are offered on our public CDN here:
 
-* https://cdn.babylonjs.com/gui/babylon.gui.js
-* https://cdn.babylonjs.com/gui/babylon.gui.min.js
+* https://preview.babylonjs.com/gui/babylon.gui.js
+* https://preview.babylonjs.com/gui/babylon.gui.min.js
 
 ## NPM
 
@@ -26,8 +26,7 @@ If using TypeScript, the typing needs to be added to tsconfig.json:
     ....
     "types": [
         "babylonjs",
-        "babylonjs-gui",
-        "angularFTW"
+        "babylonjs-gui"
     ],
     ....
 ```

@@ -1,8 +1,8 @@
 import { Nullable } from "../../../types";
 import { serialize, serializeAsTexture, SerializationHelper } from "../../../Misc/decorators";
-import { IAnimatable } from "../../../Misc/tools";
+import { IAnimatable } from '../../../Animations/animatable.interface';
 import { Logger } from "../../../Misc/logger";
-import { Vector2, Vector3, Matrix, Vector4 } from "../../../Maths/math";
+import { Vector2, Vector3, Matrix, Vector4 } from "../../../Maths/math.vector";
 import { Scalar } from "../../../Maths/math.scalar";
 import { Camera } from "../../../Cameras/camera";
 import { Effect } from "../../../Materials/effect";
@@ -19,8 +19,11 @@ import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRendere
 import { Scene } from "../../../scene";
 import { Constants } from "../../../Engines/constants";
 import { _TypeStore } from '../../../Misc/typeStore';
+import { MotionBlurPostProcess } from "../../motionBlurPostProcess";
 
 declare type Animation = import("../../../Animations/animation").Animation;
+
+import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
 import "../../../Shaders/standard.fragment";
 /**
@@ -146,10 +149,19 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     public horizontalBlur: boolean = false;
 
     /**
-     * Sets the overall exposure used by the pipeline
+     * Gets the overall exposure used by the pipeline
      */
     @serialize()
-    public exposure: number = 1.0;
+    public get exposure(): number {
+        return this._fixedExposure;
+    }
+    /**
+     * Sets the overall exposure used by the pipeline
+     */
+    public set exposure(value: number) {
+        this._fixedExposure = value;
+        this._currentExposure = value;
+    }
 
     /**
      * Texture used typically to simulate "dirty" on camera lens
@@ -194,6 +206,26 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
      */
     @serialize()
     public hdrIncreaseRate: number = 0.5;
+    /**
+     * Gets wether or not the exposure of the overall pipeline should be automatically adjusted by the HDR post-process
+     */
+    @serialize()
+    public get hdrAutoExposure(): boolean {
+        return this._hdrAutoExposure;
+    }
+    /**
+     * Sets wether or not the exposure of the overall pipeline should be automatically adjusted by the HDR post-process
+     */
+    public set hdrAutoExposure(value: boolean) {
+        this._hdrAutoExposure = value;
+        if (this.hdrPostProcess) {
+            const defines = ["#define HDR"];
+            if (value) {
+                defines.push("#define AUTO_EXPOSURE");
+            }
+            this.hdrPostProcess.updateEffect(defines.join("\n"));
+        }
+    }
 
     /**
      * Lens color texture used by the lens flare effect. Mandatory if lens flare effect enabled
@@ -222,6 +254,11 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     @serialize()
     public lensFlareDistortionStrength: number = 16.0;
     /**
+     * Configures the blur intensity used for for lens flare (halo)
+     */
+    @serialize()
+    public lensFlareBlurWidth: number = 512.0;
+    /**
      * Lens star texture must be used to simulate rays on the flares and is available
      * in the documentation
      */
@@ -246,10 +283,41 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     public depthOfFieldBlurWidth: number = 64.0;
 
     /**
-     * For motion blur, defines how much the image is blurred by the movement
+     * Gets how much the image is blurred by the movement while using the motion blur post-process
      */
     @serialize()
-    public motionStrength: number = 1.0;
+    public get motionStrength(): number {
+        return this._motionStrength;
+    }
+    /**
+     * Sets how much the image is blurred by the movement while using the motion blur post-process
+     */
+    public set motionStrength(strength: number) {
+        this._motionStrength = strength;
+
+        if (this._isObjectBasedMotionBlur && this.motionBlurPostProcess) {
+            (this.motionBlurPostProcess as MotionBlurPostProcess).motionStrength = strength;
+        }
+    }
+
+    /**
+     * Gets wether or not the motion blur post-process is object based or screen based.
+     */
+    @serialize()
+    public get objectBasedMotionBlur(): boolean {
+        return this._isObjectBasedMotionBlur;
+    }
+    /**
+     * Sets wether or not the motion blur post-process should be object based or screen based
+     */
+    public set objectBasedMotionBlur(value: boolean) {
+        const shouldRebuild = this._isObjectBasedMotionBlur !== value;
+        this._isObjectBasedMotionBlur = value;
+
+        if (shouldRebuild) {
+            this._buildPipeline();
+        }
+    }
 
     /**
      * List of animations for the pipeline (IAnimatable implementation)
@@ -263,9 +331,16 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     private _currentDepthOfFieldSource: Nullable<PostProcess> = null;
     private _basePostProcess: Nullable<PostProcess>;
 
+    private _fixedExposure: number = 1.0;
+    private _currentExposure: number = 1.0;
+    private _hdrAutoExposure: boolean = false;
     private _hdrCurrentLuminance: number = 1.0;
+    private _motionStrength: number = 1.0;
+    private _isObjectBasedMotionBlur: boolean = false;
 
     private _floatTextureType: number;
+
+    private _camerasToBeAttached: Array<Camera> = [];
 
     @serialize()
     private _ratio: number;
@@ -444,7 +519,11 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
 
     public set motionBlurSamples(samples: number) {
         if (this.motionBlurPostProcess) {
-            this.motionBlurPostProcess.updateEffect("#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + samples.toFixed(1));
+            if (this._isObjectBasedMotionBlur) {
+                (this.motionBlurPostProcess as MotionBlurPostProcess).motionBlurSamples = samples;
+            } else {
+                this.motionBlurPostProcess.updateEffect("#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + samples.toFixed(1));
+            }
         }
 
         this._motionBlurSamples = samples;
@@ -478,7 +557,9 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
      */
     constructor(name: string, scene: Scene, ratio: number, originalPostProcess: Nullable<PostProcess> = null, cameras?: Camera[]) {
         super(scene.getEngine(), name);
-        this._cameras = cameras || [];
+        this._cameras = cameras || scene.cameras;
+        this._cameras = this._cameras.slice();
+        this._camerasToBeAttached = this._cameras.slice();
 
         // Initialize
         this._scene = scene;
@@ -498,6 +579,11 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         var scene = this._scene;
 
         this._disposePostProcesses();
+        if (this._cameras !== null) {
+            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
+            // get back cameras to be used to reattach pipeline
+            this._cameras = this._camerasToBeAttached.slice();
+        }
         this._reset();
 
         // Create pass post-process
@@ -675,7 +761,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             effect.setTextureFromPostProcess("otherSampler", this._vlsEnabled ? this._currentDepthOfFieldSource : this.originalPostProcess);
             effect.setTexture("lensSampler", this.lensTexture);
 
-            effect.setFloat("exposure", this.exposure);
+            effect.setFloat("exposure", this._currentExposure);
 
             this._currentDepthOfFieldSource = this.textureAdderFinalPostProcess;
         };
@@ -824,7 +910,11 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
 
     // Create HDR post-process
     private _createHdrPostProcess(scene: Scene, ratio: number): void {
-        this.hdrPostProcess = new PostProcess("HDR", "standard", ["averageLuminance"], ["textureAdderSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define HDR", Constants.TEXTURETYPE_UNSIGNED_INT);
+        const defines = ["#define HDR"];
+        if (this._hdrAutoExposure) {
+            defines.push("#define AUTO_EXPOSURE");
+        }
+        this.hdrPostProcess = new PostProcess("HDR", "standard", ["averageLuminance"], ["textureAdderSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, defines.join("\n"), Constants.TEXTURETYPE_UNSIGNED_INT);
 
         var outputLiminance = 1;
         var time = 0;
@@ -851,9 +941,12 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
                 }
             }
 
-            outputLiminance = Scalar.Clamp(outputLiminance, this.hdrMinimumLuminance, 1e20);
-
-            effect.setFloat("averageLuminance", outputLiminance);
+            if (this.hdrAutoExposure) {
+                this._currentExposure = this._fixedExposure / outputLiminance;
+            } else {
+                outputLiminance = Scalar.Clamp(outputLiminance, this.hdrMinimumLuminance, 1e20);
+                effect.setFloat("averageLuminance", outputLiminance);
+            }
 
             lastTime = time;
 
@@ -868,7 +961,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         this.lensFlarePostProcess = new PostProcess("HDRLensFlare", "standard", ["strength", "ghostDispersal", "haloWidth", "resolution", "distortionStrength"], ["lensColorSampler"], ratio / 2, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define LENS_FLARE", Constants.TEXTURETYPE_UNSIGNED_INT);
         this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRLensFlare", () => { return this.lensFlarePostProcess; }, true));
 
-        this._createBlurPostProcesses(scene, ratio / 4, 2);
+        this._createBlurPostProcesses(scene, ratio / 4, 2, "lensFlareBlurWidth");
 
         this.lensFlareComposePostProcess = new PostProcess("HDRLensFlareCompose", "standard", ["lensStarMatrix"], ["otherSampler", "lensDirtSampler", "lensStarSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define LENS_FLARE_COMPOSE", Constants.TEXTURETYPE_UNSIGNED_INT);
         this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRLensFlareCompose", () => { return this.lensFlareComposePostProcess; }, true));
@@ -952,36 +1045,43 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
 
     // Create motion blur post-process
     private _createMotionBlurPostProcess(scene: Scene, ratio: number): void {
-        this.motionBlurPostProcess = new PostProcess("HDRMotionBlur", "standard",
-            ["inverseViewProjection", "prevViewProjection", "screenSize", "motionScale", "motionStrength"],
-            ["depthSampler"],
-            ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + this.motionBlurSamples.toFixed(1), Constants.TEXTURETYPE_UNSIGNED_INT);
+        if (this._isObjectBasedMotionBlur) {
+            const mb = new MotionBlurPostProcess("HDRMotionBlur", scene, ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Constants.TEXTURETYPE_UNSIGNED_INT);
+            mb.motionStrength = this.motionStrength;
+            mb.motionBlurSamples = this.motionBlurSamples;
+            this.motionBlurPostProcess = mb;
+        } else {
+            this.motionBlurPostProcess = new PostProcess("HDRMotionBlur", "standard",
+                ["inverseViewProjection", "prevViewProjection", "screenSize", "motionScale", "motionStrength"],
+                ["depthSampler"],
+                ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + this.motionBlurSamples.toFixed(1), Constants.TEXTURETYPE_UNSIGNED_INT);
 
-        var motionScale: number = 0;
-        var prevViewProjection = Matrix.Identity();
-        var invViewProjection = Matrix.Identity();
-        var viewProjection = Matrix.Identity();
-        var screenSize = Vector2.Zero();
+            var motionScale: number = 0;
+            var prevViewProjection = Matrix.Identity();
+            var invViewProjection = Matrix.Identity();
+            var viewProjection = Matrix.Identity();
+            var screenSize = Vector2.Zero();
 
-        this.motionBlurPostProcess.onApply = (effect: Effect) => {
-            viewProjection = scene.getProjectionMatrix().multiply(scene.getViewMatrix());
+            this.motionBlurPostProcess.onApply = (effect: Effect) => {
+                viewProjection = scene.getProjectionMatrix().multiply(scene.getViewMatrix());
 
-            viewProjection.invertToRef(invViewProjection);
-            effect.setMatrix("inverseViewProjection", invViewProjection);
+                viewProjection.invertToRef(invViewProjection);
+                effect.setMatrix("inverseViewProjection", invViewProjection);
 
-            effect.setMatrix("prevViewProjection", prevViewProjection);
-            prevViewProjection = viewProjection;
+                effect.setMatrix("prevViewProjection", prevViewProjection);
+                prevViewProjection = viewProjection;
 
-            screenSize.x = (<PostProcess>this.motionBlurPostProcess).width;
-            screenSize.y = (<PostProcess>this.motionBlurPostProcess).height;
-            effect.setVector2("screenSize", screenSize);
+                screenSize.x = (<PostProcess>this.motionBlurPostProcess).width;
+                screenSize.y = (<PostProcess>this.motionBlurPostProcess).height;
+                effect.setVector2("screenSize", screenSize);
 
-            motionScale = scene.getEngine().getFps() / 60.0;
-            effect.setFloat("motionScale", motionScale);
-            effect.setFloat("motionStrength", this.motionStrength);
+                motionScale = scene.getEngine().getFps() / 60.0;
+                effect.setFloat("motionScale", motionScale);
+                effect.setFloat("motionStrength", this.motionStrength);
 
-            effect.setTexture("depthSampler", this._getDepthTexture());
-        };
+                effect.setTexture("depthSampler", this._getDepthTexture());
+            };
+        }
 
         this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRMotionBlur", () => { return this.motionBlurPostProcess; }, true));
     }

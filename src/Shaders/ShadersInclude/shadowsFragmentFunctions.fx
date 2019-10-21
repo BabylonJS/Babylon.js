@@ -1,11 +1,18 @@
 #ifdef SHADOWS
     #ifndef SHADOWFLOAT
+        // Dupplicate to prevent include in include issues
         float unpack(vec4 color)
         {
             const vec4 bit_shift = vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0);
             return dot(color, bit_shift);
         }
     #endif
+
+    float computeFallOff(float value, vec2 clipSpace, float frustumEdgeFalloff)
+    {
+        float mask = smoothstep(1.0 - frustumEdgeFalloff, 1.0, clamp(dot(clipSpace, clipSpace), 0., 1.));
+        return mix(value, 1.0, mask);
+    }
 
     float computeShadowCube(vec3 lightPosition, samplerCube shadowSampler, float darkness, vec2 depthValues)
     {

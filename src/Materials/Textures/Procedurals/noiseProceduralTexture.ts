@@ -2,7 +2,6 @@ import { Nullable } from "../../../types";
 import { Scene } from "../../../scene";
 import { EngineStore } from "../../../Engines/engineStore";
 import { _TimeToken } from "../../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../../States/index";
 import { Texture } from "../../../Materials/Textures/texture";
 import { ProceduralTexture } from "./proceduralTexture";
 import { _TypeStore } from '../../../Misc/typeStore';

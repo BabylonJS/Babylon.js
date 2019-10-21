@@ -2,31 +2,6 @@
     "root": "",
     "tests": [
         {
-            "title": "Diffuse",
-            "createMesh": true,
-            "createMaterial": true,
-            "configuration": {
-                "extends": "extended",
-                "castShadow": true,
-                "model": {
-                    "material": {
-                        "albedoColor": {
-                            "r": 0,
-                            "g": 0,
-                            "b": 1
-                        },
-                        "reflectivityColor": {
-                            "r": 0,
-                            "g": 0,
-                            "b": 0
-                        },
-                        "microSurface": 0
-                    }
-                }
-            },
-            "referenceImage": "Diffuse.png"
-        },
-        {
             "title": "BrainStem Environment",
             "configuration": {
                 "extends": "extended"

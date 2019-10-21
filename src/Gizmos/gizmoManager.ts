@@ -5,9 +5,8 @@ import { Scene, IDisposable } from "../scene";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { Color3 } from "../Maths/math";
+import { Color3 } from '../Maths/math.color';
 import { SixDofDragBehavior } from "../Behaviors/Meshes/sixDofDragBehavior";
 
 import { Gizmo } from "./gizmo";
@@ -46,6 +45,20 @@ export class GizmoManager implements IDisposable {
      * If pointer events should perform attaching/detaching a gizmo, if false this can be done manually via attachToMesh. (Default: true)
      */
     public usePointerToAttachGizmos = true;
+
+    /**
+     * Utility layer that the bounding box gizmo belongs to
+     */
+    public get keepDepthUtilityLayer() {
+        return this._defaultKeepDepthUtilityLayer;
+    }
+
+    /**
+     * Utility layer that all gizmos besides bounding box belong to
+     */
+    public get utilityLayer() {
+        return this._defaultUtilityLayer;
+    }
 
     /**
      * Instatiates a gizmo manager
@@ -184,6 +197,9 @@ export class GizmoManager implements IDisposable {
                 this._attachedMesh.addBehavior(this.boundingBoxDragBehavior);
             }
         } else if (this.gizmos.boundingBoxGizmo) {
+            if (this._attachedMesh) {
+                this._attachedMesh.removeBehavior(this.boundingBoxDragBehavior);
+            }
             this.gizmos.boundingBoxGizmo.attachedMesh = null;
         }
         this._gizmosEnabled.boundingBoxGizmo = value;

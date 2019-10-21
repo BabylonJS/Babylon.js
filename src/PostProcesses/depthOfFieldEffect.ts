@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { Vector2 } from "../Maths/math";
+import { Vector2 } from "../Maths/math.vector";
 import { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
@@ -142,6 +142,14 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
         this._dofMerge = new DepthOfFieldMergePostProcess("dofMerge", this._circleOfConfusion, this._circleOfConfusion, this._depthOfFieldBlurX, ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
         this._dofMerge.autoClear = false;
         this._effects.push(this._dofMerge);
+    }
+
+    /**
+    * Get the current class name of the current effet
+    * @returns "DepthOfFieldEffect"
+    */
+    public getClassName(): string {
+        return "DepthOfFieldEffect";
     }
 
     /**

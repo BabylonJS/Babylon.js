@@ -146,7 +146,6 @@
 - Added support for MSFT_audio_emitter ([najadojo](http://www.github.com/najadojo))
 - Added support for custom loader extensions ([bghgary](http://www.github.com/bghgary))
 - Added support for validating assets using [glTF-Validator](https://github.com/KhronosGroup/glTF-Validator) ([bghgary](http://www.github.com/bghgary))
-- Added automatically renormalizes skinweights when loading geometry. Calls core mesh functions to do this ([Bolloxim](https://github.com/Bolloxim))
 
 ### glTF Serializer
 - Added support for exporting the scale, rotation and offset texture properties ([kcoley](http://www.github.com/kcoley))
@@ -193,7 +192,7 @@
 - Fixed issue where VRExperienceHelper.onExitingVR observable was being fired twice ([atulyar](https://github.com/atulyar))
 - Avoid firing onExitingVR observable multiple times when calling exitVR() and add observables to Viewer that can be used instead of the ones in VRExperienceHelper ([atulyar](https://github.com/atulyar))
 - GizmoManager should hide existing gizmos if a non-attachable mesh is selected ([TrevorDev](https://github.com/TrevorDev))
-- Ignore isPickable = false for vr ray casting if the mesh's name matches the specified floorMeshName to maintain backwards compatability ([TrevorDev](https://github.com/TrevorDev))
+- Ignore isPickable = false for vr ray casting if the mesh's name matches the specified floorMeshName to maintain backwards compatibility ([TrevorDev](https://github.com/TrevorDev))
 - Fix File Loading if hosted from `file:`-Protocol ([ltetzlaff](https://github.com/ltetzlaff))
 - Do not throw error when updating a controller with no left stick ([TrevorDev](https://github.com/TrevorDev))
 - Exiting VR can result in messed up view ([TrevorDev](https://github.com/TrevorDev))
@@ -205,7 +204,7 @@
 - Spring Joint could not be removed ([TrevorDev](https://github.com/TrevorDev))
 - Sometimes duplicate controller models are loaded in VR ([TrevorDev](https://github.com/TrevorDev))
 - Particle emit rate and start size over time do not reset on every particle system start ([TrevorDev](https://github.com/TrevorDev))
-- SSAO2 now correctly takes diffuse texture alpha value into account. ([CraigFeldspar](https://github.com/CraigFeldspar))
+- SSAO2 now correctly takes diffuse texture alpha value into account ([CraigFeldspar](https://github.com/CraigFeldspar))
 
 ### Core Engine
 
@@ -236,7 +235,7 @@
 - Animation navbar now updates correctly when a new model is loaded ([RaananW](https://github.com/RaananW))
 - Non-normalized meshes didn't center and focus correctly ([RaananW](https://github.com/RaananW))
 - Meshes with skeletons could have incorrect animations ([RaananW](https://github.com/RaananW))
-- Removed element IDs from viewer's templates to allow muitiple viewers in a single page ([RaananW](https://github.com/RaananW))
+- Removed element IDs from viewer's templates to allow multiple viewers in a single page ([RaananW](https://github.com/RaananW))
 - Viewer is not using Engine.LastCreatedScene anymore, to support multiple viewers in a single page ([RaananW](https://github.com/RaananW))
 - Template location was ignored if html was defined ([RaananW](https://github.com/RaananW))
 - Drag and Drop only worked if a model was already loaded before ([RaananW](https://github.com/RaananW))

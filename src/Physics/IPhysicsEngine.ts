@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { Vector3, Quaternion } from "../Maths/math";
+import { Vector3, Quaternion } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
 import { PhysicsJoint, IMotorEnabledJoint } from "./physicsJoint";
@@ -52,6 +52,8 @@ export interface IPhysicsEnginePlugin {
     setBodyVelocityIterations?(impostor: PhysicsImpostor, velocityIterations: number): void;
     getBodyPositionIterations?(impostor: PhysicsImpostor): number;
     setBodyPositionIterations?(impostor: PhysicsImpostor, positionIterations: number): void;
+    appendAnchor?(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, width: number, height: number, influence: number, noCollisionBetweenLinkedBodies: boolean): void;
+    appendHook?(impostor: PhysicsImpostor, otherImpostor: PhysicsImpostor, length: number, influence: number, noCollisionBetweenLinkedBodies: boolean): void;
     sleepBody(impostor: PhysicsImpostor): void;
     wakeUpBody(impostor: PhysicsImpostor): void;
     raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
