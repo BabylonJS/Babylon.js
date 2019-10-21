@@ -62,7 +62,7 @@ class MonacoCreator {
 
                         if (this.monacoMode === "javascript") {
                             typescript.javascriptDefaults.setCompilerOptions({
-                                noLib: true,
+                                noLib: false,
                                 allowNonTsExtensions: true // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
                             });
 
@@ -71,7 +71,7 @@ class MonacoCreator {
                             typescript.typescriptDefaults.setCompilerOptions({
                                 module: typescript.ModuleKind.AMD,
                                 target: typescript.ScriptTarget.ES5,
-                                noLib: true,
+                                noLib: false,
                                 noResolve: true,
                                 suppressOutputPathCheck: true,
 
