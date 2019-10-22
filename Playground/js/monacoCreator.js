@@ -169,11 +169,13 @@ class MonacoCreator {
 
             diagnostics.forEach(function(diagset) {
                 if (diagset.length) {
-                    var diagnostic = diagset[0];
-                    var position = model.getPositionAt(diagnostic.start);
+                    const diagnostic = diagset[0];
+                    const position = model.getPositionAt(diagnostic.start);
                     
-                    parent.utils.showError(`Line ${position.lineNumber}:${position.column} - ${diagnostic.messageText}`);
-                    return;
+                    const error = new EvalError(diagnostic.messageText);
+                    error.lineNumber = position.lineNumber;
+                    error.columnNumber = position.column;
+                    throw error;
                 }
             });
 
