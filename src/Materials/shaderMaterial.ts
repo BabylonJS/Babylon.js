@@ -775,6 +775,21 @@ export class ShaderMaterial extends Material {
         result.name = name;
         result.id = name;
 
+        // Shader code path
+        if (typeof result._shaderPath === 'object') {
+            result._shaderPath = { ...result._shaderPath };
+        }
+
+        // Options
+        this._options = { ...this._options };
+
+        (Object.keys(this._options) as Array<keyof IShaderMaterialOptions>).forEach((propName) => {
+            const propValue = this._options[propName];
+            if (Array.isArray(propValue)) {
+                (<string[]>this._options[propName]) = propValue.slice(0);
+            }
+        });
+
         // Texture
         for (var key in this._textures) {
             result.setTexture(key, this._textures[key]);
