@@ -342,15 +342,21 @@ export class ShaderMaterial extends Material {
      * @param value Define the value to give to the uniform
      * @return the material itself allowing "fluent" like uniform updates
      */
-    public setMatrices(name: string, value: Matrix[]): ShaderMaterial {
+    public setMatrices(name: string, value: Matrix[] | Float32Array): ShaderMaterial {
         this._checkUniform(name);
 
-        let float32Array = new Float32Array(value.length * 16);
+        let float32Array;
 
-        for (var index = 0; index < value.length; index++) {
-            let matrix = value[index];
+        if (Array.isArray(value)) {
+            float32Array = new Float32Array(value.length * 16);
 
-            matrix.copyToArray(float32Array, index * 16);
+            for (var index = 0; index < value.length; index++) {
+                let matrix = value[index];
+
+                matrix.copyToArray(float32Array, index * 16);
+            }
+        } else {
+            float32Array = value;
         }
 
         this._matrixArrays[name] = float32Array;
