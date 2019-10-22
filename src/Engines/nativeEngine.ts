@@ -946,11 +946,8 @@ export class NativeEngine extends Engine {
                     return;
                 }
 
-                this._native.loadTexture(webGLTexture, data, !noMipmap);
+                this._native.loadTexture(webGLTexture, data, !noMipmap, invertY);
 
-                if (invertY) {
-                    throw new Error("Support for textures with inverted Y coordinates not yet implemented.");
-                }
                 //this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
 
                 texture.baseWidth = this._native.getTextureWidth(webGLTexture);
