@@ -1078,24 +1078,48 @@ namespace babylon
     void NativeEngine::SetTextureSampling(const Napi::CallbackInfo& info)
     {
         const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
-        const auto filter = static_cast<Filter>(info[1].As<Napi::Number>().Uint32Value());
+        auto filter = static_cast<uint32_t>(info[1].As<Napi::Number>().Uint32Value());
 
-        // STUB: Stub.
+        constexpr uint32_t filterCount = 12;
+        constexpr std::array<uint32_t, filterCount> bgfxFiltering = {
+            BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIN_POINT,                            /** nearest is mag = nearest and min = nearest and mip = linear */
+            BGFX_SAMPLER_MIP_POINT,                                                     /** Bilinear is mag = linear and min = linear and mip = nearest */
+            0,                                                                          /** Trilinear is mag = linear and min = linear and mip = linear */
+            BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT,   /** mag = nearest and min = nearest and mip = nearest */
+            BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT,                            /** mag = nearest and min = linear and mip = nearest */
+            BGFX_SAMPLER_MAG_POINT,                                                     /** mag = nearest and min = linear and mip = linear */
+            BGFX_SAMPLER_MAG_POINT,                                                     /** mag = nearest and min = linear and mip = none */
+            BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIN_POINT,                            /** mag = nearest and min = nearest and mip = none */
+            BGFX_SAMPLER_MIP_POINT | BGFX_SAMPLER_MIP_POINT,                            /** mag = linear and min = nearest and mip = nearest */
+            BGFX_SAMPLER_MIN_POINT,                                                     /** mag = linear and min = nearest and mip = linear */
+            0,                                                                          /** mag = linear and min = linear and mip = none */
+            BGFX_SAMPLER_MIN_POINT };                                                   /** mag = linear and min = nearest and mip = none */
+        filter = std::min(filter, filterCount);
+
+        textureData->Flags &= ~(BGFX_SAMPLER_MIN_MASK | BGFX_SAMPLER_MAG_MASK | BGFX_SAMPLER_MIP_MASK);
+        textureData->Flags |= bgfxFiltering[filter];
     }
 
     void NativeEngine::SetTextureWrapMode(const Napi::CallbackInfo& info)
     {
         const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
-        const auto addressModeU = static_cast<uint32_t>(info[1].As<Napi::Number>().Uint32Value());
-        const auto addressModeV = static_cast<uint32_t>(info[2].As<Napi::Number>().Uint32Value());
-        const auto addressModeW = static_cast<uint32_t>(info[3].As<Napi::Number>().Uint32Value());
+        auto addressModeU = static_cast<uint32_t>(info[1].As<Napi::Number>().Uint32Value());
+        auto addressModeV = static_cast<uint32_t>(info[2].As<Napi::Number>().Uint32Value());
+        auto addressModeW = static_cast<uint32_t>(info[3].As<Napi::Number>().Uint32Value());
 
-        constexpr std::array<uint32_t, 3> bgfxSamplers = {BGFX_SAMPLER_U_CLAMP, 0, BGFX_SAMPLER_U_MIRROR};
-        uint32_t flags = bgfxSamplers[addressModeU] + 
+        constexpr uint32_t addressModeCount = 3;
+        constexpr std::array<uint32_t, addressModeCount> bgfxSamplers = {0, BGFX_SAMPLER_U_CLAMP, BGFX_SAMPLER_U_MIRROR};
+
+        addressModeU = std::min(addressModeU, addressModeCount);
+        addressModeV = std::min(addressModeV, addressModeCount);
+        addressModeW = std::min(addressModeW, addressModeCount);
+
+        uint32_t addressMode = bgfxSamplers[addressModeU] + 
             (bgfxSamplers[addressModeV] << BGFX_SAMPLER_V_SHIFT) +
             (bgfxSamplers[addressModeW] << BGFX_SAMPLER_W_SHIFT);
 
-        textureData->Flags = flags;
+        textureData->Flags &= ~(BGFX_SAMPLER_U_MASK | BGFX_SAMPLER_V_MASK | BGFX_SAMPLER_W_MASK);
+        textureData->Flags |= addressMode;
     }
 
     void NativeEngine::SetTextureAnisotropicLevel(const Napi::CallbackInfo& info)
