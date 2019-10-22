@@ -172,8 +172,7 @@ class MonacoCreator {
                     var diagnostic = diagset[0];
                     var position = model.getPositionAt(diagnostic.start);
                     
-                    parent.utils.showError(`Line ${position.lineNumber}:${position.column} - ${diagnostic.messageText}`);
-                    return;
+                    throw new Error(`Line ${position.lineNumber}:${position.column} - ${diagnostic.messageText}`);
                 }
             });
 
