@@ -118,6 +118,22 @@ export class ShaderMaterial extends Material {
     }
 
     /**
+     * Gets the shader path used to define the shader code
+     * It can be modified to trigger a new compilation
+     */
+    public get shaderPath(): any {
+        return this._shaderPath;
+    }
+
+    /**
+     * Sets the shader path used to define the shader code
+     * It can be modified to trigger a new compilation
+     */
+    public set shaderPath(shaderPath: any) {
+        this._shaderPath = shaderPath;
+    }
+
+    /**
      * Gets the options used to compile the shader.
      * They can be modified to trigger a new compilation
      */
@@ -342,21 +358,15 @@ export class ShaderMaterial extends Material {
      * @param value Define the value to give to the uniform
      * @return the material itself allowing "fluent" like uniform updates
      */
-    public setMatrices(name: string, value: Matrix[] | Float32Array): ShaderMaterial {
+    public setMatrices(name: string, value: Matrix[]): ShaderMaterial {
         this._checkUniform(name);
 
-        let float32Array;
+        let float32Array = new Float32Array(value.length * 16);
 
-        if (Array.isArray(value)) {
-            float32Array = new Float32Array(value.length * 16);
+        for (var index = 0; index < value.length; index++) {
+            let matrix = value[index];
 
-            for (var index = 0; index < value.length; index++) {
-                let matrix = value[index];
-
-                matrix.copyToArray(float32Array, index * 16);
-            }
-        } else {
-            float32Array = value;
+            matrix.copyToArray(float32Array, index * 16);
         }
 
         this._matrixArrays[name] = float32Array;
