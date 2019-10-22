@@ -11,7 +11,7 @@ import { GlobalState } from './globalState';
 import { GenericNodeFactory } from './components/diagram/generic/genericNodeFactory';
 import { GenericNodeModel } from './components/diagram/generic/genericNodeModel';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
-import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
+import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointCompatibilityStates } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
 import { NodeListComponent } from './components/nodeList/nodeListComponent';
 import { PropertyTabComponent } from './components/propertyTab/propertyTabComponent';
 import { Portal } from './portal';
@@ -501,7 +501,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                                         }
                                     }
     
-                                    if (link.output.connection.canConnectTo(link.input.connection)) {
+                                    let compatibilityState = link.output.connection.checkCompatibilityState(link.input.connection);
+                                    if (compatibilityState === NodeMaterialConnectionPointCompatibilityStates.Compatible) {
                                         if (isFragmentOutput) {
                                             this.applyFragmentOutputConstraints(link.input);
                                         }
@@ -509,7 +510,19 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                                         link.output.connection.connectTo(link.input.connection);
                                     } else {
                                         (evt.entity as AdvancedLinkModel).remove();
-                                        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Cannot connect two different connection types");    
+
+                                        let message = "";
+
+                                        switch (compatibilityState) {
+                                            case NodeMaterialConnectionPointCompatibilityStates.TypeIncompatible:
+                                                message = "Cannot connect two different connection types";
+                                                break;
+                                            case NodeMaterialConnectionPointCompatibilityStates.TargetIncompatible:
+                                                message = "Source block can only work in fragment shader whereas destination block is currently aimed for the vertex shader";
+                                                break;
+                                        }
+
+                                        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(message);    
                                     }
     
                                     this.forceUpdate();
