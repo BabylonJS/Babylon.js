@@ -87,8 +87,8 @@ typedef enum {
 // in file js_native_api_v8.cc. Please also update the definition of
 // `napi_status` in doc/api/n-api.md to reflect the newly added value(s).
 
-typedef napi_value(*napi_callback)(napi_env env,
-                                   napi_callback_info info);
+typedef napi_value (*napi_callback)(napi_env env,
+                                    napi_callback_info info);
 typedef void (*napi_finalize)(napi_env env,
                               void* finalize_data,
                               void* finalize_hint);
