@@ -1094,7 +1094,7 @@ namespace babylon
             BGFX_SAMPLER_MIN_POINT,                                                     /** mag = linear and min = nearest and mip = linear */
             0,                                                                          /** mag = linear and min = linear and mip = none */
             BGFX_SAMPLER_MIN_POINT };                                                   /** mag = linear and min = nearest and mip = none */
-        filter = std::min(filter, filterCount);
+        filter = std::min(filter, filterCount - 1);
 
         textureData->Flags &= ~(BGFX_SAMPLER_MIN_MASK | BGFX_SAMPLER_MAG_MASK | BGFX_SAMPLER_MIP_MASK);
         textureData->Flags |= bgfxFiltering[filter];
@@ -1110,9 +1110,9 @@ namespace babylon
         constexpr uint32_t addressModeCount = 3;
         constexpr std::array<uint32_t, addressModeCount> bgfxSamplers = {0, BGFX_SAMPLER_U_CLAMP, BGFX_SAMPLER_U_MIRROR};
 
-        addressModeU = std::min(addressModeU, addressModeCount);
-        addressModeV = std::min(addressModeV, addressModeCount);
-        addressModeW = std::min(addressModeW, addressModeCount);
+        addressModeU = std::min(addressModeU, addressModeCount - 1);
+        addressModeV = std::min(addressModeV, addressModeCount - 1);
+        addressModeW = std::min(addressModeW, addressModeCount - 1);
 
         uint32_t addressMode = bgfxSamplers[addressModeU] + 
             (bgfxSamplers[addressModeV] << BGFX_SAMPLER_V_SHIFT) +
