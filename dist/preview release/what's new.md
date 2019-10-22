@@ -76,6 +76,7 @@
 - Added playground ts-local (TypeScript support for local playground) ([pjoe](https://github.com/pjoe/))
 - Added RGBD Texture tools [Sebavan](https://github.com/sebavan/)
 - Bumped Monaco Editor to 0.18.1 and improved TypeScript compilation pipeline in the playground ([sailro](http://www.github.com/sailro))
+- Added support for clickable errors in the playground ([sailro](http://www.github.com/sailro))
 
 ### Meshes
 
