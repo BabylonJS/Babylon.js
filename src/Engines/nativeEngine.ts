@@ -948,8 +948,6 @@ export class NativeEngine extends Engine {
 
                 this._native.loadTexture(webGLTexture, data, !noMipmap, invertY);
 
-                //this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
-
                 texture.baseWidth = this._native.getTextureWidth(webGLTexture);
                 texture.baseHeight = this._native.getTextureHeight(webGLTexture);
                 texture.width = texture.baseWidth;
