@@ -206,20 +206,20 @@ namespace babylon
             return nullptr;
         }
 
-		void VerticalFlip(bimg::ImageContainer& image)
-		{
-			uint32_t rowLength = image.m_size / image.m_height;
-			uint8_t* ptr = static_cast<uint8_t*>(image.m_data);
-			for (uint32_t y = 0; y < (image.m_height >> 1); y++)
-			{
-				uint32_t rowSource = y * rowLength;
-				uint32_t rowDestination = (image.m_height - y - 1) * rowLength;
-				for (uint32_t row = 0; row < rowLength; row++)
-				{
-					std::swap(ptr[rowSource + row], ptr[rowDestination + row]);
-				}
-			}
-		}
+        void VerticalFlip(bimg::ImageContainer& image)
+        {
+            uint32_t rowLength = image.m_size / image.m_height;
+            uint8_t* ptr = static_cast<uint8_t*>(image.m_data);
+            for (uint32_t y = 0; y < (image.m_height >> 1); y++)
+            {
+                uint32_t rowSource = y * rowLength;
+                uint32_t rowDestination = (image.m_height - y - 1) * rowLength;
+                for (uint32_t row = 0; row < rowLength; row++)
+                {
+                    std::swap(ptr[rowSource + row], ptr[rowDestination + row]);
+                }
+            }
+        }
 
         enum class WebGLAttribType
         {
@@ -436,29 +436,29 @@ namespace babylon
     {
         const auto& vertexArray = *(info[0].As<Napi::External<VertexArray>>().Data());
 
-		if (vertexArray.indexBuffer.handle.idx != bgfx::kInvalidHandle)
-		{
-			bgfx::setIndexBuffer(vertexArray.indexBuffer.handle);
-		}
+        if (vertexArray.indexBuffer.handle.idx != bgfx::kInvalidHandle)
+        {
+            bgfx::setIndexBuffer(vertexArray.indexBuffer.handle);
+        }
 
         const auto& vertexBuffers = vertexArray.vertexBuffers;
         for (uint8_t index = 0; index < vertexBuffers.size(); ++index)
         {
             const auto& vertexBuffer = vertexBuffers[index];
-			if (vertexBuffer.handle.idx != bgfx::kInvalidHandle) // TODO : why does this happen?
-			{
-				bgfx::setVertexBuffer(index, vertexBuffer.handle, vertexBuffer.startVertex, UINT32_MAX, vertexBuffer.declHandle);
-			}
+            if (vertexBuffer.handle.idx != bgfx::kInvalidHandle) // TODO : why does this happen?
+            {
+                bgfx::setVertexBuffer(index, vertexBuffer.handle, vertexBuffer.startVertex, UINT32_MAX, vertexBuffer.declHandle);
+            }
         }
     }
 
     Napi::Value NativeEngine::CreateIndexBuffer(const Napi::CallbackInfo& info)
     {
         const Napi::TypedArray data = info[0].As<Napi::TypedArray>();
-		if (!data.ElementLength())
-		{
-			return Napi::Value::From(info.Env(), static_cast<uint32_t>(bgfx::kInvalidHandle));
-		}
+        if (!data.ElementLength())
+        {
+            return Napi::Value::From(info.Env(), static_cast<uint32_t>(bgfx::kInvalidHandle));
+        }
         const bgfx::Memory* ref = bgfx::copy(data.As<Napi::Uint8Array>().Data(), static_cast<uint32_t>(data.ByteLength()));
         const uint16_t flags = data.TypedArrayType() == napi_typedarray_type::napi_uint16_array ? 0 : BGFX_BUFFER_INDEX32;
         const bgfx::IndexBufferHandle handle = bgfx::createIndexBuffer(ref, flags);
@@ -468,10 +468,10 @@ namespace babylon
     void NativeEngine::DeleteIndexBuffer(const Napi::CallbackInfo& info)
     {
         const bgfx::IndexBufferHandle handle{ static_cast<uint16_t>(info[0].As<Napi::Number>().Uint32Value()) };
-		if (handle.idx != bgfx::kInvalidHandle)
-		{
-			bgfx::destroy(handle);
-		}
+        if (handle.idx != bgfx::kInvalidHandle)
+        {
+            bgfx::destroy(handle);
+        }
     }
 
     void NativeEngine::RecordIndexBuffer(const Napi::CallbackInfo& info)
@@ -950,19 +950,19 @@ namespace babylon
         const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
         const auto buffer = info[1].As<Napi::ArrayBuffer>();
         const auto mipMap = info[2].As<Napi::Boolean>().Value();
-		const auto invertY = info[3].As<Napi::Boolean>().Value();
+        const auto invertY = info[3].As<Napi::Boolean>().Value();
 
         textureData->Images.push_back(bimg::imageParse(&m_allocator, buffer.Data(), static_cast<uint32_t>(buffer.ByteLength())));
         auto& image = *textureData->Images.front();
 
         bool useMipMap = false;
         
-		if (invertY)
-		{
-			VerticalFlip(image);
-		}
+        if (invertY)
+        {
+            VerticalFlip(image);
+        }
 
-		auto imageDataRef{ bgfx::makeRef(image.m_data, image.m_size) };
+        auto imageDataRef{ bgfx::makeRef(image.m_data, image.m_size) };
 
         if (mipMap)
         {
@@ -1086,11 +1086,16 @@ namespace babylon
     void NativeEngine::SetTextureWrapMode(const Napi::CallbackInfo& info)
     {
         const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
-        const auto addressModeU = static_cast<AddressMode>(info[1].As<Napi::Number>().Uint32Value());
-        const auto addressModeV = static_cast<AddressMode>(info[2].As<Napi::Number>().Uint32Value());
-        const auto addressModeW = static_cast<AddressMode>(info[3].As<Napi::Number>().Uint32Value());
+        const auto addressModeU = static_cast<uint32_t>(info[1].As<Napi::Number>().Uint32Value());
+        const auto addressModeV = static_cast<uint32_t>(info[2].As<Napi::Number>().Uint32Value());
+        const auto addressModeW = static_cast<uint32_t>(info[3].As<Napi::Number>().Uint32Value());
 
-        // STUB: Stub.
+        constexpr std::array<uint32_t, 3> bgfxSamplers = {BGFX_SAMPLER_U_CLAMP, 0, BGFX_SAMPLER_U_MIRROR};
+        uint32_t flags = bgfxSamplers[addressModeU] + 
+            (bgfxSamplers[addressModeV] << BGFX_SAMPLER_V_SHIFT) +
+            (bgfxSamplers[addressModeW] << BGFX_SAMPLER_W_SHIFT);
+
+        textureData->Flags = flags;
     }
 
     void NativeEngine::SetTextureAnisotropicLevel(const Napi::CallbackInfo& info)
@@ -1106,7 +1111,7 @@ namespace babylon
         const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
         const auto textureData = info[1].As<Napi::External<TextureData>>().Data();
 
-        bgfx::setTexture(uniformData->Stage, uniformData->Handle, textureData->Texture);
+        bgfx::setTexture(uniformData->Stage, uniformData->Handle, textureData->Texture, textureData->Flags);
     }
 
     void NativeEngine::DeleteTexture(const Napi::CallbackInfo& info)

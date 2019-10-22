@@ -15,7 +15,7 @@ function CreateSpheresAsync() {
     for (var i = 0; i < size; i++) {
         for (var j = 0; j < size; j++) {
             for (var k = 0; k < size; k++) {
-                var sphere = BABYLON.Mesh.CreateBox("sphere" + i + j + k, 0.7);//32, 0.9, scene);
+                var sphere = BABYLON.Mesh.CreateSphere("sphere" + i + j + k, 32, 0.9, scene);
                 sphere.position.x = i;
                 sphere.position.y = j;
                 sphere.position.z = k;
@@ -26,84 +26,74 @@ function CreateSpheresAsync() {
     return Promise.resolve();
 }
 
-function CreatePlane(width, height) {
-	var positions = [];
+function CreatePlane(width, height, uvScale) {
+    var positions = [];
     var normals = [];
     var uvs = [];
-	
 
-	var halfWidth = width / 2.0;
+    var halfWidth = width / 2.0;
     var halfHeight = height / 2.0;
 
-	// face A
+    // face A
     positions.push(-halfWidth, -halfHeight, 0);
     normals.push(0, 0, -1);
-    uvs.push(0.0, 0.0);
+    uvs.push(uvScale, 0.0);
 
     positions.push(-halfWidth, halfHeight, 0);
     normals.push(0, 0, -1);
-    uvs.push(0.0, 1.0);
+    uvs.push(uvScale, uvScale);
 
     positions.push(halfWidth, halfHeight, 0);
     normals.push(0, 0, -1.0);
-    uvs.push(1.0, 1.0);
+    uvs.push(0.0, uvScale);
 
-	// face B
-
+    // face B
     positions.push(-halfWidth, -halfHeight, 0);
     normals.push(0, 0, -1.0);
-    uvs.push(0.0, 0.0);
+    uvs.push(uvScale, 0.0);
 
     positions.push(halfWidth, halfHeight, 0);
     normals.push(0, 0, -1.0);
-    uvs.push(1.0, 1.0);
+    uvs.push(0.0, uvScale);
 
     positions.push(halfWidth, -halfHeight, 0);
     normals.push(0, 0, -1.0);
-    uvs.push(1.0, 0.0);
-	
-	
-	var vertexData = new BABYLON.VertexData();
+    uvs.push(0.0, 0.0);
+    
+    var vertexData = new BABYLON.VertexData();
 
     vertexData.positions = positions;
     vertexData.normals = normals;
     vertexData.uvs = uvs;
-	
-	
-	var plane = new BABYLON.Mesh("Plane01", scene);
-	vertexData.applyToMesh(plane, false);
-	
-    var myMaterial = new BABYLON.StandardMaterial("myMaterial", scene);
-    myMaterial.fillMode = BABYLON.Material.PointFillMode;
-    myMaterial.pointSize = 10;
-    //plane.material = myMaterial;
-	
-	return plane;
+    
+    var plane = new BABYLON.Mesh("Plane01", scene);
+    vertexData.applyToMesh(plane, false);
+    
+    return plane;
 }
 
 function CreatePlanes()
 {
-	let width = 5;
-	let height = 5;
+    let width = 5;
+    let height = 5;
 
-	var plane1 = CreatePlane(width, height);
-	plane1.position.x = -6.0;
-	plane1.position.y = 6.0;
+	let mode = [BABYLON.Texture.CLAMP_ADDRESSMODE, BABYLON.Texture.WRAP_ADDRESSMODE, BABYLON.Texture.MIRROR_ADDRESSMODE];
+    for (var y = 0; y < 3; y++) {
+        for (var x = 0; x < 3; x++) {
+            var plane = CreatePlane(width, height, 3);
+            plane.position.x = -6.0 + x * 6.0;
+            plane.position.y = -6.0 + y * 6.0;
 
-	var myMaterial = new BABYLON.StandardMaterial("myMaterial", scene);
-    myMaterial.diffuseTexture = new BABYLON.Texture("https://github.com/BabylonJS/Babylon.js/raw/master/Playground/textures/rock.png", scene);
-    plane1.material = myMaterial;
+            var myMaterial = new BABYLON.StandardMaterial("myMaterial", scene);
+            myMaterial.diffuseTexture = new BABYLON.Texture("https://github.com/CedricGuillemet/dump/raw/master/Custom_UV_Checker.png", scene);
+			myMaterial.diffuseTexture.wrapU = mode[x];
+			myMaterial.diffuseTexture.wrapV = mode[y];
 
+            plane.material = myMaterial;
+        }
+    }
 
-	var plane2 = CreatePlane(width, height);
-	plane2.position.x = 0.0;
-	plane2.position.y = 6.0;
-
-	var plane3 = CreatePlane(width, height);
-	plane3.position.x = 6.0;
-	plane3.position.y = 6.0;
-
-	return Promise.resolve();
+    return Promise.resolve();
 }
 
 function CreateInputHandling(scene) {

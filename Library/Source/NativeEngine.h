@@ -229,6 +229,7 @@ namespace babylon
 
         std::vector<bimg::ImageContainer*> Images{};
         bgfx::TextureHandle Texture{ bgfx::kInvalidHandle };
+        uint32_t Flags{0};
     };
 
     struct ProgramData final
@@ -295,7 +296,6 @@ namespace babylon
     private:
         enum BlendMode {}; // TODO DEBUG
         enum class Filter {}; // TODO DEBUG
-        enum class AddressMode {}; // TODO DEBUG
 
         Napi::Value GetEngine(const Napi::CallbackInfo& info); // TODO: Hack, temporary method. Remove as part of the change to get rid of NapiBridge.
         void RequestAnimationFrame(const Napi::CallbackInfo& info);
