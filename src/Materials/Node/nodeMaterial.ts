@@ -463,6 +463,15 @@ export class NodeMaterial extends PushMaterial {
         node._preparationId = this._buildId;
 
         if (this.attachedBlocks.indexOf(node) === -1) {
+            if (node.isUnique) {
+                const className = node.getClassName();
+
+                for (var other of this.attachedBlocks) {
+                    if (other.getClassName() === className) {
+                        throw `Cannot have multiple blocks of type ${className} in the same NodeMaterial`;
+                    }
+                }
+            }
             this.attachedBlocks.push(node);
         }
 

@@ -641,7 +641,17 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         } else {
             let block = BlockTools.GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial);   
             
-            if (block) {                
+            if (block) {       
+                if (block.isUnique) {
+                    const className = block.getClassName();
+                    for (var other of this._blocks) {
+                        if (other !== block && other.getClassName() === className) {
+                            this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`You can only have one ${className} per graph`);                                
+                            return;
+                        }
+                    }
+                } 
+
                 this._toAdd = [];
                 block.autoConfigure(this.props.globalState.nodeMaterial);       
                 nodeModel = this.createNodeFromObject({ nodeMaterialBlock: block });
