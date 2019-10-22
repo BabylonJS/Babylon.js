@@ -621,6 +621,9 @@ body {
     border-radius: 5px;
     color:white;
 }
+#errorZone #gotoLocation {
+    cursor: pointer;
+}
 #errorZone button {
     position:absolute;
     top : 3px;

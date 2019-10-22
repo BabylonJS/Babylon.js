@@ -76,6 +76,7 @@
 - Added playground ts-local (TypeScript support for local playground) ([pjoe](https://github.com/pjoe/))
 - Added RGBD Texture tools [Sebavan](https://github.com/sebavan/)
 - Bumped Monaco Editor to 0.18.1 and improved TypeScript compilation pipeline in the playground ([sailro](http://www.github.com/sailro))
+- Added support for clickable errors in the playground ([sailro](http://www.github.com/sailro))
 
 ### Meshes
 
@@ -108,6 +109,7 @@
 
 - Added `ShaderMaterial.setColor4Array` ([JonathanTron](https://github.com/JonathanTron/))
 - Added `ShaderMaterial.setArray4` ([JonathanTron](https://github.com/JonathanTron/))
+- Added get/set accessors for `ShaderMaterial._shaderPath` ([Popov72](https://github.com/Popov72))
 - Added `scene.environmentIntensity` to control the IBL strength overall in a scene ([Sebavan](https://github.com/sebavan/))
 - Added support of image processing for `WaterMaterial` ([julien-moreau](https://github.com/julien-moreau))
 - Added `pbrBRDFConfiguration.useSpecularGlossinessInputEnergyConservation` to allow Specular-Workflow energy conservation to be turned off ([ColorDigital-PS](https://github.com/ColorDigital-PS)).
@@ -201,6 +203,7 @@
 - Fixed a single frame drop after leaving webxr on some devices ([RaananW](https://github.com/RaananW/))
 - Fixed bug where vignette aspect ratio would be wrong when rendering direct to canvas
 - Fixed Path2 length computation ([Poolminer](https://github.com/Poolminer/))
+- Cloning of `ShaderMaterial` also clone `shaderPath` and `options` properties ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
