@@ -646,7 +646,10 @@ namespace babylon
     {
         const auto& vertexArray = *(info[0].As<Napi::External<VertexArray>>().Data());
 
-        bgfx::setIndexBuffer(vertexArray.indexBuffer.handle);
+		if (vertexArray.indexBuffer.handle.idx != bgfx::kInvalidHandle)
+		{
+			bgfx::setIndexBuffer(vertexArray.indexBuffer.handle);
+		}
 
         const auto& vertexBuffers = vertexArray.vertexBuffers;
         for (uint8_t index = 0; index < vertexBuffers.size(); ++index)
@@ -659,6 +662,10 @@ namespace babylon
     Napi::Value NativeEngine::Impl::CreateIndexBuffer(const Napi::CallbackInfo& info)
     {
         const Napi::TypedArray data = info[0].As<Napi::TypedArray>();
+		if (!data.ElementLength())
+		{
+			return Napi::Value::From(info.Env(), static_cast<uint32_t>(bgfx::kInvalidHandle));
+		}
         const bgfx::Memory* ref = bgfx::copy(data.As<Napi::Uint8Array>().Data(), static_cast<uint32_t>(data.ByteLength()));
         const uint16_t flags = data.TypedArrayType() == napi_typedarray_type::napi_uint16_array ? 0 : BGFX_BUFFER_INDEX32;
         const bgfx::IndexBufferHandle handle = bgfx::createIndexBuffer(ref, flags);

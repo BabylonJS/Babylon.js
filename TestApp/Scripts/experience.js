@@ -25,6 +25,63 @@ function CreateSpheresAsync() {
     return Promise.resolve();
 }
 
+function CreatePlane() {
+	var positions = [];
+    var normals = [];
+    var uvs = [];
+	
+	let width = 10;
+	let height = 10;
+	
+	var halfWidth = width / 2.0;
+    var halfHeight = height / 2.0;
+
+	// face A
+    positions.push(-halfWidth, -halfHeight, 0);
+    normals.push(0, 0, -1);
+    uvs.push(0.0, 0.0);
+
+    positions.push(-halfWidth, halfHeight, 0);
+    normals.push(0, 0, -1);
+    uvs.push(0.0, 1.0);
+
+    positions.push(halfWidth, halfHeight, 0);
+    normals.push(0, 0, -1.0);
+    uvs.push(1.0, 1.0);
+
+	// face B
+
+    positions.push(-halfWidth, -halfHeight, 0);
+    normals.push(0, 0, -1.0);
+    uvs.push(0.0, 0.0);
+
+    positions.push(halfWidth, halfHeight, 0);
+    normals.push(0, 0, -1.0);
+    uvs.push(1.0, 1.0);
+
+    positions.push(halfWidth, -halfHeight, 0);
+    normals.push(0, 0, -1.0);
+    uvs.push(1.0, 0.0);
+	
+	
+	var vertexData = new BABYLON.VertexData();
+
+    vertexData.positions = positions;
+    vertexData.normals = normals;
+    vertexData.uvs = uvs;
+	
+	
+	var plane = new BABYLON.Mesh("Plane01", scene);
+	vertexData.applyToMesh(plane, false);
+	
+    var myMaterial = new BABYLON.StandardMaterial("myMaterial", scene);
+    myMaterial.fillMode = BABYLON.Material.PointFillMode;
+    myMaterial.pointSize = 10;
+    plane.material = myMaterial;
+	
+	return Promise.resolve();
+}
+
 function CreateInputHandling(scene) {
     var inputManager = new InputManager();
     var priorX = inputManager.pointerX;
@@ -48,7 +105,8 @@ function CreateInputHandling(scene) {
 var engine = new BABYLON.NativeEngine();
 var scene = new BABYLON.Scene(engine);
 
-CreateBoxAsync().then(function () {
+CreatePlane().then(function () {
+//CreateBoxAsync().then(function () {
 //CreateSpheresAsync().then(function () {
 //BABYLON.SceneLoader.AppendAsync("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Box/glTF/Box.gltf").then(function () {
 //BABYLON.SceneLoader.AppendAsync("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/BoxTextured/glTF/BoxTextured.gltf").then(function () {
