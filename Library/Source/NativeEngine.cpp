@@ -569,7 +569,7 @@ namespace babylon
         {
             uint32_t Width{};
             uint32_t Height{};
-        } m_size;
+        } m_backBufferSize;
 
         bx::DefaultAllocator m_allocator;
         uint64_t m_engineState;
@@ -584,7 +584,7 @@ namespace babylon
     NativeEngine::Impl::Impl(void* nativeWindowPtr, RuntimeImpl& runtimeImpl)
         : m_runtimeImpl{ runtimeImpl }
         , m_currentProgram{ nullptr }
-        , m_size{ 1024, 768 }
+        , m_backBufferSize{ 1024, 768 }
         , m_engineState{ BGFX_STATE_DEFAULT }
         , m_viewClearState{ 0 }
     {
@@ -593,13 +593,13 @@ namespace babylon
         bgfx::setPlatformData(init.platformData);
 
         init.type = bgfx::RendererType::Direct3D11;
-        init.resolution.width = m_size.Width;
-        init.resolution.height = m_size.Height;
+        init.resolution.width = m_backBufferSize.Width;
+        init.resolution.height = m_backBufferSize.Height;
         init.resolution.reset = BGFX_RESET_VSYNC;
         bgfx::init(init);
 
         bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
-        bgfx::setViewRect(0, 0, 0, m_size.Width, m_size.Height);
+        bgfx::setViewRect(0, 0, 0, m_backBufferSize.Width, m_backBufferSize.Height);
     }
 
     void NativeEngine::Impl::Initialize(Napi::Env& env)
@@ -612,17 +612,18 @@ namespace babylon
         auto w = static_cast<uint32_t>(width);
         auto h = static_cast<uint32_t>(height);
 
-        if (w != m_size.Width || h != m_size.Height)
+        if (w != m_backBufferSize.Width || h != m_backBufferSize.Height)
         {
-            m_size = { w, h };
+			m_backBufferSize = { w, h };
             UpdateRenderTarget();
         }
     }
 
     void NativeEngine::Impl::UpdateRenderTarget()
     {
-        bgfx::reset(m_size.Width, m_size.Height, BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X4);
-        bgfx::setViewRect(0, 0, 0, m_size.Width, m_size.Height);
+        bgfx::reset(m_backBufferSize.Width, m_backBufferSize.Height, BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X4);
+        bgfx::setViewRect(0, 0, 0, m_backBufferSize.Width, m_backBufferSize.Height);
+		bgfx::frame(); // force the backbuffer resize now
     }
 
     // NativeEngine definitions
@@ -1378,14 +1379,14 @@ namespace babylon
 
     Napi::Value NativeEngine::Impl::GetRenderWidth(const Napi::CallbackInfo& info)
     {
-        // TODO CHECK: Is this not just the size?  What is this?
-        return Napi::Value::From(info.Env(), m_size.Width);
+        assert(m_backBufferSize.Width == bgfx::getStats()->width); // ensure the stored width value corresponds to bgfx back buffer width
+        return Napi::Value::From(info.Env(), m_backBufferSize.Width);
     }
 
     Napi::Value NativeEngine::Impl::GetRenderHeight(const Napi::CallbackInfo& info)
     {
-        // TODO CHECK: Is this not just the size?  What is this?
-        return Napi::Value::From(info.Env(), m_size.Height);
+		assert(m_backBufferSize.Height == bgfx::getStats()->height); // ensure the stored height value corresponds to bgfx back buffer height
+        return Napi::Value::From(info.Env(), m_backBufferSize.Height);
     }
 
     void NativeEngine::Impl::DispatchAnimationFrameAsync(Napi::FunctionReference callback)
