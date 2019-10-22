@@ -1,5 +1,11 @@
 var engine = null;
 
+handleException = function(parent, e) {
+    parent.utils.showError(e.message, e);
+    // Also log error in console to help debug playgrounds
+    console.error(e);
+}
+
 /**
  * Compile the script in the editor, and run the preview in the canvas
  */
@@ -172,12 +178,11 @@ compileAndRun = function(parent, fpsLabel) {
                     }
                 }
             }
+        }).catch(e => {
+            handleException(parent, e);
         });
-
     } catch (e) {
-        parent.utils.showError(e.message, e);
-        // Also log error in console to help debug playgrounds
-        console.error(e);
+        handleException(parent, e);
     }
 };
 
