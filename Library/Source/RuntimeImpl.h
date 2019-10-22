@@ -5,19 +5,26 @@
 #include <arcana/threading/dispatcher.h>
 #include <arcana/threading/task.h>
 
+namespace Napi
+{
+    class Env;
+}
+
 namespace babylon
 {
     class Env;
-    class NativeEngine;
+    class NativeWindow;
 
-    class RuntimeImpl
+    class RuntimeImpl final
     {
     public:
+        static RuntimeImpl& GetRuntimeImplFromJavaScript(Napi::Env);
+        static NativeWindow& GetNativeWindowFromJavaScript(Napi::Env);
+
         RuntimeImpl(void* nativeWindowPtr, const std::string& rootUrl);
         virtual ~RuntimeImpl();
 
         void UpdateSize(float width, float height);
-        void UpdateRenderTarget();
         void Suspend();
         void Resume();
 
@@ -46,6 +53,7 @@ namespace babylon
         std::scoped_lock<std::mutex> AcquireTaskLock();
 
     private:
+        void InitializeJavaScriptVariables();
         void BaseThreadProcedure();
         void ThreadProcedure();
 
@@ -56,7 +64,7 @@ namespace babylon
         std::condition_variable m_suspendVariable;
         bool m_suspended{ false };
 
-        std::unique_ptr<NativeEngine> m_engine{};
+        void* m_nativeWindowPtr{};
 
         std::thread m_thread{};
 

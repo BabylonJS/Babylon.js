@@ -40,23 +40,53 @@ elseif(BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
         "Source/UWP/App.cpp"
         "Source/UWP/App.h")
 
-elseif(BABYLON_NATIVE_PLATFORM STREQUAL "Apple")
-    set(PLIST_FILE "${CMAKE_CURRENT_LIST_DIR}/Source/macOS/Info.plist")
+elseif(APPLE)
+    find_library(JSCORE_LIBRARY JavaScriptCore)
+    if(IOS)
+        set(PLIST_FILE "${CMAKE_CURRENT_LIST_DIR}/Source/iOS/Info.plist")
 
-    set(STORYBOARD "${CMAKE_CURRENT_LIST_DIR}/Source/macOS/Base.lproj/Main.storyboard")
-    set(RESOURCE_FILES ${STORYBOARD})
+        set(STORYBOARD "${CMAKE_CURRENT_LIST_DIR}/Source/iOS/Base.lproj/Main.storyboard"
+                       "${CMAKE_CURRENT_LIST_DIR}/Source/iOS/Base.lproj/LaunchScreen.storyboard")
+        set(RESOURCE_FILES ${STORYBOARD} ${SCRIPTS})
+        set(ADDITIONAL_LIBRARIES z)
+        set(SOURCES
+            ${SOURCES}
+            "Source/iOS/AppDelegate.swift"
+            "Source/iOS/ViewController.swift"
+            "Source/iOS/LibNativeBridge.h"
+            "Source/iOS/LibNativeBridge.mm")
+    else()
+        set(PLIST_FILE "${CMAKE_CURRENT_LIST_DIR}/Source/macOS/Info.plist")
+        set(STORYBOARD "${CMAKE_CURRENT_LIST_DIR}/Source/macOS/Base.lproj/Main.storyboard")
 
-    set(SOURCES
-        ${SOURCES}
-        "Source/macOS/main.m"
-        "Source/macOS/AppDelegate.m"
-        "Source/macOS/AppDelegate.h"
-        "Source/macOS/ViewController.mm"
-        "Source/macOS/ViewController.h")        
+        set(STORYBOARD "${CMAKE_CURRENT_LIST_DIR}/Source/macOS/Base.lproj/Main.storyboard")
+        set(RESOURCE_FILES ${STORYBOARD})
+
+        set(SOURCES
+            ${SOURCES}
+            "Source/macOS/main.m"
+            "Source/macOS/AppDelegate.m"
+            "Source/macOS/AppDelegate.h"
+            "Source/macOS/ViewController.mm"
+            "Source/macOS/ViewController.h")
+    endif()
+
+    set(ADDITIONAL_LIBRARIES ${ADDITIONAL_LIBRARIES} ${JSCORE_LIBRARY})
+    set(JSSCRIPT "${CMAKE_CURRENT_LIST_DIR}/Scripts/babylon.glTF2FileLoader.js"
+        "${CMAKE_CURRENT_LIST_DIR}/Scripts/babylon.max.js"
+        "${CMAKE_CURRENT_LIST_DIR}/Scripts/experience.js"
+        "${CMAKE_CURRENT_LIST_DIR}/Scripts/playground_runner.js")
+    set(RESOURCE_FILES ${STORYBOARD} ${JSSCRIPT})
 endif()
 
-set(WIN32_EXECUTABLE TRUE)
-add_executable(TestApp WIN32 ${SOURCES} ${RESOURCE_FILES})
+if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
+    set(WIN32_EXECUTABLE TRUE)
+    add_executable(TestApp WIN32 ${SOURCES} ${RESOURCE_FILES})
+else()
+    add_executable(TestApp ${SOURCES} ${RESOURCE_FILES})
+endif()
+
+
 set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT TestApp)
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SOURCES})
@@ -71,15 +101,42 @@ endif()
 
 target_include_directories(TestApp PRIVATE "Source")
 
-target_link_libraries(TestApp PRIVATE Library)
+target_link_libraries(TestApp PRIVATE Library ${ADDITIONAL_LIBRARIES})
 
-if(BABYLON_NATIVE_PLATFORM STREQUAL "Apple")
-    set_target_properties(TestApp PROPERTIES
-        MACOSX_BUNDLE true
-        MACOSX_BUNDLE_INFO_PLIST "${PLIST_FILE}"
-        XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES
-        RESOURCE "${RESOURCE_FILES}"
-        FOLDER "TestApp")
+if(APPLE)
+    if(IOS)
+        set_target_properties(TestApp PROPERTIES
+            MACOSX_BUNDLE true
+            MACOSX_BUNDLE_INFO_PLIST "${PLIST_FILE}"
+            XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES
+            RESOURCE "${RESOURCE_FILES}"
+
+            XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 9.0
+            XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "com.BabylonNative.TestApp.iOS"
+
+            XCODE_ATTRIBUTE_ENABLE_BITCODE NO
+
+            XCODE_ATTRIBUTE_SWIFT_VERSION "4.0"
+            XCODE_ATTRIBUTE_SWIFT_OBJC_BRIDGING_HEADER "${CMAKE_CURRENT_LIST_DIR}/Source/iOS/LibNativeBridge.h"
+            XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "@executable_path/Frameworks"
+            XCODE_ATTRIBUTE_ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES YES
+
+            # CMake seems to add a custom flag "-Wno-unknown-pragmas" to the Swift compiler. That flag is used for Clang,
+            # So we need to make sure we override it with nothing here in order to compile Swift.
+            XCODE_ATTRIBUTE_OTHER_SWIFT_FLAGS "")
+
+            # Swift support
+            set(CMAKE_Swift_COMPILER_FORCED TRUE)
+            set(CMAKE_Swift_LANGUAGE_VERSION 4.0)
+            enable_language(Swift)
+    else()
+        set_target_properties(TestApp PROPERTIES
+            MACOSX_BUNDLE true
+            MACOSX_BUNDLE_INFO_PLIST "${PLIST_FILE}"
+            XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES
+            RESOURCE "${RESOURCE_FILES}"
+            FOLDER "TestApp")
+    endif()
 endif()
 
 if(WINDOWS_STORE)

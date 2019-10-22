@@ -239,7 +239,8 @@ void App::OnKeyPressed(CoreWindow^, KeyEventArgs^ args)
 
 void App::OnDpiChanged(DisplayInformation^ /*sender*/, Object^ /*args*/)
 {
-    m_runtime->UpdateRenderTarget();
+    // TODO: Implement.
+    //m_runtime->UpdateRenderTarget();
 }
 
 void App::OnOrientationChanged(DisplayInformation^ sender, Object^ args)

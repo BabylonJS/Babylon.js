@@ -1,16 +1,43 @@
 #include "RuntimeImpl.h"
-#include "NativeEngine.h"
+
 #include "Console.h"
+#include "NativeEngine.h"
+#include "NativeWindow.h"
 #include "Window.h"
 #include "XMLHttpRequest.h"
+
 #include <curl/curl.h>
 #include <napi/env.h>
 #include <sstream>
 
 namespace babylon
 {
+    namespace
+    {
+        static constexpr auto JS_NATIVE_NAME = "_native";
+        static constexpr auto JS_RUNTIME_NAME = "runtime";
+        static constexpr auto JS_WINDOW_NAME = "window";
+        static constexpr auto JS_ENGINE_CONSTRUCTOR_NAME = "Engine";
+    }
+
+    RuntimeImpl& RuntimeImpl::GetRuntimeImplFromJavaScript(Napi::Env env)
+    {
+        return *env.Global()
+            .Get(JS_NATIVE_NAME).ToObject()
+            .Get(JS_RUNTIME_NAME).As<Napi::External<RuntimeImpl>>()
+            .Data();
+    }
+
+    NativeWindow& RuntimeImpl::GetNativeWindowFromJavaScript(Napi::Env env)
+    {
+        return *NativeWindow::Unwrap(
+            env.Global()
+            .Get(JS_NATIVE_NAME).ToObject()
+            .Get(JS_WINDOW_NAME).ToObject());
+    }
+
     RuntimeImpl::RuntimeImpl(void* nativeWindowPtr, const std::string& rootUrl)
-        : m_engine{ std::make_unique<NativeEngine>(nativeWindowPtr, *this) }
+        : m_nativeWindowPtr{ nativeWindowPtr }
         , m_thread{ [this] { ThreadProcedure(); } }
         , m_rootUrl{ rootUrl }
     {
@@ -28,12 +55,11 @@ namespace babylon
 
     void RuntimeImpl::UpdateSize(float width, float height)
     {
-        m_dispatcher.queue([width, height, this] { m_engine->UpdateSize(width, height); });
-    }
-
-    void RuntimeImpl::UpdateRenderTarget()
-    {
-        m_dispatcher.queue([this] { m_engine->UpdateRenderTarget(); });
+        m_dispatcher.queue([width, height, this]
+        {
+            auto& window = RuntimeImpl::GetNativeWindowFromJavaScript(*m_env);
+            window.Resize(static_cast<size_t>(width), static_cast<size_t>(height));
+        });
     }
 
     void RuntimeImpl::Suspend()
@@ -130,7 +156,6 @@ namespace babylon
         {
             Env().Eval(script.data(), url.data());
         });
-        
     }
 
     void RuntimeImpl::Eval(const std::string& string, const std::string& sourceUrl)
@@ -175,6 +200,23 @@ namespace babylon
         return std::scoped_lock{ m_taskMutex };
     }
 
+    void RuntimeImpl::InitializeJavaScriptVariables()
+    {
+        auto& env = *m_env;
+
+        auto jsNative = Napi::Object::New(env);
+        env.Global().Set(JS_NATIVE_NAME, jsNative);
+
+        auto jsRuntime = Napi::External<RuntimeImpl>::New(env, this);
+        jsNative.Set(JS_RUNTIME_NAME, jsRuntime);
+
+        auto jsWindow = NativeWindow::Create(env, m_nativeWindowPtr, 32, 32);
+        jsNative.Set(JS_WINDOW_NAME, jsWindow.Value());
+
+        auto jsNativeEngineConstructor = NativeEngine::InitializeAndCreateConstructor(env);
+        jsNative.Set(JS_ENGINE_CONSTRUCTOR_NAME, jsNativeEngineConstructor.Value());
+    }
+
     void RuntimeImpl::BaseThreadProcedure()
     {
         m_dispatcher.set_affinity(std::this_thread::get_id());
@@ -192,13 +234,13 @@ namespace babylon
         m_env = &env;
         auto hostScopeGuard = gsl::finally([this] { m_env = nullptr; });
 
+        InitializeJavaScriptVariables();
+
         Console::Initialize(env);
 
         XMLHttpRequest::Initialize(env, *this);
 
         Window window{ *this };
-
-        m_engine->Initialize(env);
 
         // TODO: Handle device lost/restored.
 
@@ -206,8 +248,8 @@ namespace babylon
         {
             // check if suspended
             {
-                std::unique_lock<std::mutex> lck(m_suspendMutex);
-                m_suspendVariable.wait(lck, [this](){ return !m_suspended;});
+                std::unique_lock<std::mutex> lock(m_suspendMutex);
+                m_suspendVariable.wait(lock, [this](){ return !m_suspended;});
             }
             m_dispatcher.blocking_tick(m_cancelSource);
         }
@@ -216,4 +258,3 @@ namespace babylon
     template arcana::task<std::string, std::exception_ptr> RuntimeImpl::LoadUrlAsync(const std::string& url);
     template arcana::task<std::vector<char>, std::exception_ptr> RuntimeImpl::LoadUrlAsync(const std::string& url);
 }
-

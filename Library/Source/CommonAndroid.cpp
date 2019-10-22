@@ -3,12 +3,12 @@
 namespace babylon
 {
 
-    std::filesystem::path GetModulePath()
+    Filepath GetModulePath()
     {
-        return std::filesystem::path{ "." };
+        return Filepath{ "." };
     }
 
-    std::string GetUrlFromPath(const std::filesystem::path& path)
+    std::string GetUrlFromPath(const Filepath& path)
     {
         // stub
         return std::string("");

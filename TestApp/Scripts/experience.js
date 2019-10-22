@@ -3,6 +3,7 @@ var turntable = false;
 var logfps = true;
 var ibl = false;
 var rtt = false;
+var xr = false;
 
 function CreateBoxAsync() {
     BABYLON.Mesh.CreateBox("box1", 0.7);
@@ -14,7 +15,7 @@ function CreateSpheresAsync() {
     for (var i = 0; i < size; i++) {
         for (var j = 0; j < size; j++) {
             for (var k = 0; k < size; k++) {
-                var sphere = BABYLON.Mesh.CreateSphere("sphere" + i + j + k, 32, 0.9, scene);
+                var sphere = BABYLON.Mesh.CreateBox("sphere" + i + j + k, 0.7);//32, 0.9, scene);
                 sphere.position.x = i;
                 sphere.position.y = j;
                 sphere.position.z = k;
@@ -25,14 +26,12 @@ function CreateSpheresAsync() {
     return Promise.resolve();
 }
 
-function CreatePlane() {
+function CreatePlane(width, height) {
 	var positions = [];
     var normals = [];
     var uvs = [];
 	
-	let width = 10;
-	let height = 10;
-	
+
 	var halfWidth = width / 2.0;
     var halfHeight = height / 2.0;
 
@@ -77,8 +76,33 @@ function CreatePlane() {
     var myMaterial = new BABYLON.StandardMaterial("myMaterial", scene);
     myMaterial.fillMode = BABYLON.Material.PointFillMode;
     myMaterial.pointSize = 10;
-    plane.material = myMaterial;
+    //plane.material = myMaterial;
 	
+	return plane;
+}
+
+function CreatePlanes()
+{
+	let width = 5;
+	let height = 5;
+
+	var plane1 = CreatePlane(width, height);
+	plane1.position.x = -6.0;
+	plane1.position.y = 6.0;
+
+	var myMaterial = new BABYLON.StandardMaterial("myMaterial", scene);
+    myMaterial.diffuseTexture = new BABYLON.Texture("https://github.com/BabylonJS/Babylon.js/raw/master/Playground/textures/rock.png", scene);
+    plane1.material = myMaterial;
+
+
+	var plane2 = CreatePlane(width, height);
+	plane2.position.x = 0.0;
+	plane2.position.y = 6.0;
+
+	var plane3 = CreatePlane(width, height);
+	plane3.position.x = 6.0;
+	plane3.position.y = 6.0;
+
 	return Promise.resolve();
 }
 
@@ -105,7 +129,7 @@ function CreateInputHandling(scene) {
 var engine = new BABYLON.NativeEngine();
 var scene = new BABYLON.Scene(engine);
 
-CreatePlane().then(function () {
+CreatePlanes().then(function () {
 //CreateBoxAsync().then(function () {
 //CreateSpheresAsync().then(function () {
 //BABYLON.SceneLoader.AppendAsync("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Box/glTF/Box.gltf").then(function () {
@@ -169,7 +193,7 @@ CreatePlane().then(function () {
 
     if (turntable) {
         scene.beforeRender = function () {
-            scene.meshes[0].rotation.y += 0.005 * scene.getAnimationRatio();
+            scene.meshes[0].rotate(BABYLON.Vector3.Up(), 0.005 * scene.getAnimationRatio());
         };
     }
 
@@ -185,6 +209,19 @@ CreatePlane().then(function () {
     engine.runRenderLoop(function () {
         scene.render();
     });
+
+    if (xr) {
+        setTimeout(function () {
+            scene.createDefaultXRExperienceAsync({ disableDefaultUI: true }).then((xr) => {
+                setTimeout(function () {
+                    scene.meshes[0].position = scene.activeCamera.getFrontPosition(2);
+                    scene.meshes[0].rotate(BABYLON.Vector3.Up(), 3.14159);
+                }, 5000);
+                return xr.baseExperience.enterXRAsync("immersive-vr", "unbounded", xr.renderTarget);
+            });
+        }, 5000);
+    }
+    
 }, function (ex) {
     console.log(ex.message, ex.stack);
 });

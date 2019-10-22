@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.13.2)
 # set targetPlatform, will be passed in from gradle when this sample is completed
 # openGL Supportability
 # platform         status
@@ -18,35 +18,34 @@ cmake_minimum_required(VERSION 3.6)
 #                    with the right header and lib files. No need to use ES3 dynamic
 #                    detection.
 #   [24, infinite)   ES2 & ES3 & Vulkan
-
+project(BabylonNative)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+set(BABYLON_NATIVE_PLATFORM "Android")
 set(OPENGL_LIB GLESv3)
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(ANDROID_STL "c++_shared")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -latomic")
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/src/")
 
+set(BABYLON_NATIVE_TESTAPP_DIR "${CMAKE_CURRENT_LIST_DIR}/../..")
+add_subdirectory(${BABYLON_NATIVE_TESTAPP_DIR}/../../Library/ ${BABYLON_NATIVE_TESTAPP_DIR}/../../build/Android_${CMAKE_ANDROID_ARCH_ABI}/)
+
 add_library(BabylonNativeJNI SHARED
             src/main/cpp/BabylonNativeJNI.cpp
-            ${CMAKE_CURRENT_LIST_DIR}/../../../../Library/Dependencies/napi/source/js_native_api_v8.cc
-            ${CMAKE_CURRENT_LIST_DIR}/../../../../Library/Dependencies/napi/source/env_v8.cc
-            ${CMAKE_CURRENT_LIST_DIR}/../../../../Library/Dependencies/napi/source/env.cc
-            ${CMAKE_CURRENT_LIST_DIR}/../../Shared/InputManager.cpp
-         )
+            ${BABYLON_NATIVE_TESTAPP_DIR}/../../Library/Dependencies/napi/source/js_native_api_v8.cc
+            ${BABYLON_NATIVE_TESTAPP_DIR}/../../Library/Dependencies/napi/source/env_v8.cc
+            ${BABYLON_NATIVE_TESTAPP_DIR}/../../Library/Dependencies/napi/source/env.cc
+            ${BABYLON_NATIVE_TESTAPP_DIR}/Shared/InputManager.cpp)
 
 target_compile_definitions(BabylonNativeJNI PUBLIC NODE_ADDON_API_DISABLE_DEPRECATED)
 
 target_include_directories(BabylonNativeJNI
         PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}/../../../../Library/Include
-        ${CMAKE_CURRENT_LIST_DIR}/../../../../Library/Dependencies/v8/include
-        ${CMAKE_CURRENT_LIST_DIR}/../../../../Library/Dependencies/napi/include
-        ${CMAKE_CURRENT_LIST_DIR}/../../Shared
-        )
+        ${BABYLON_NATIVE_TESTAPP_DIR}/../../Library/Include
+        ${BABYLON_NATIVE_TESTAPP_DIR}/../../Library/Dependencies/v8/include
+        ${BABYLON_NATIVE_TESTAPP_DIR}/../../Library/Dependencies/napi/include
+        ${BABYLON_NATIVE_TESTAPP_DIR}/Shared)
 
 add_definitions(-DANDROID_STL=c++_shared)
 
@@ -56,23 +55,5 @@ target_link_libraries(BabylonNativeJNI
         EGL
         log
         -lz
-        ${CMAKE_CURRENT_LIST_DIR}/../../../../build/Android_${CMAKE_ANDROID_ARCH_ABI}/libLibrary.a # BabylonNative
-        ${CMAKE_CURRENT_LIST_DIR}/../../../../build/Library/Dependencies/bgfx.cmake/libbgfx.a
-        ${CMAKE_CURRENT_LIST_DIR}/../../../../build/Library/Dependencies/bgfx.cmake/libbimg.a
-        ${CMAKE_CURRENT_LIST_DIR}/../../../../build/Library/Dependencies/bgfx.cmake/libbx.a
-        ${CMAKE_CURRENT_LIST_DIR}/../../../../build/Library/Dependencies/bgfx.cmake/libedtaa3.a
-        ${CMAKE_CURRENT_LIST_DIR}/../../../../build/Library/Dependencies/bgfx.cmake/libetc1.a
-        ${CMAKE_CURRENT_LIST_DIR}/../../../../build/Library/Dependencies/bgfx.cmake/libetc2.a
-        ${CMAKE_CURRENT_LIST_DIR}/../../../../build/Library/Dependencies/bgfx.cmake/libiqa.a
-        ${CMAKE_CURRENT_LIST_DIR}/../../../../build/Library/Dependencies/bgfx.cmake/libnvtt.a
-        ${CMAKE_CURRENT_LIST_DIR}/../../../../build/Library/Dependencies/bgfx.cmake/libpvrtc.a
-        ${CMAKE_CURRENT_LIST_DIR}/../../../../build/Library/Dependencies/bgfx.cmake/libsquish.a
-        ${CMAKE_CURRENT_LIST_DIR}/../../../../build/Library/Dependencies/bgfx.cmake/libastc.a
-        ${CMAKE_CURRENT_LIST_DIR}/../../../../build/Library/Dependencies/bgfx.cmake/libastc-codec.a
-        ${CMAKE_CURRENT_LIST_DIR}/../../../../build/Library/Dependencies/SPIRV-Cross/libspirv-cross-core.a
-        ${CMAKE_CURRENT_LIST_DIR}/../../../../build/Library/Dependencies/SPIRV-Cross/libspirv-cross-glsl.a
-        ${CMAKE_CURRENT_LIST_DIR}/../../../../build/Library/Dependencies/curl/lib/libcurl.a
-        ${CMAKE_CURRENT_LIST_DIR}/src/main/jniLibs/${CMAKE_ANDROID_ARCH_ABI}/libv8.cr.so
-        ${CMAKE_CURRENT_LIST_DIR}/src/main/jniLibs/${CMAKE_ANDROID_ARCH_ABI}/libv8_libplatform.cr.so
-        ${CMAKE_CURRENT_LIST_DIR}/src/main/jniLibs/${CMAKE_ANDROID_ARCH_ABI}/libc++_shared.so
-        m)
+        Library
+        ${CMAKE_CURRENT_LIST_DIR}/src/main/jniLibs/${CMAKE_ANDROID_ARCH_ABI}/libv8.so)
