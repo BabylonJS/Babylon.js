@@ -18885,6 +18885,15 @@ declare module BABYLON {
          */
         constructor(name: string, scene: Scene, shaderPath: any, options?: Partial<IShaderMaterialOptions>);
         /**
+         * Gets the shader path used to define the shader code
+         * It can be modified to trigger a new compilation
+         */
+        /**
+        * Sets the shader path used to define the shader code
+        * It can be modified to trigger a new compilation
+        */
+        shaderPath: any;
+        /**
          * Gets the options used to compile the shader.
          * They can be modified to trigger a new compilation
          */
