@@ -71,7 +71,7 @@ interface INativeEngine {
     setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
 
     createTexture(): WebGLTexture;
-    loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | ArrayBufferView | Blob, mipMap: boolean): void;
+    loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | ArrayBufferView | Blob, mipMap: boolean, invertY: boolean): void;
     loadCubeTexture(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, flipY : boolean): void;
     getTextureWidth(texture: WebGLTexture): number;
     getTextureHeight(texture: WebGLTexture): number;
@@ -946,12 +946,7 @@ export class NativeEngine extends Engine {
                     return;
                 }
 
-                this._native.loadTexture(webGLTexture, data, !noMipmap);
-
-                if (invertY) {
-                    throw new Error("Support for textures with inverted Y coordinates not yet implemented.");
-                }
-                //this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
+                this._native.loadTexture(webGLTexture, data, !noMipmap, invertY);
 
                 texture.baseWidth = this._native.getTextureWidth(webGLTexture);
                 texture.baseHeight = this._native.getTextureHeight(webGLTexture);
