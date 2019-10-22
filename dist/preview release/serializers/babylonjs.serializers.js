@@ -4470,7 +4470,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!******************!*\
   !*** ./index.ts ***!
   \******************/
-/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, OBJExport, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, STLExport, KHR_texture_transform, KHR_lights_punctual */
+/*! exports provided: OBJExport, __IGLTFExporterExtension, GLTFData, GLTF2Export, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, STLExport, KHR_texture_transform, KHR_lights_punctual */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";

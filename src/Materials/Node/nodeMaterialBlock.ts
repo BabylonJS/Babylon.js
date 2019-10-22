@@ -22,6 +22,7 @@ export class NodeMaterialBlock {
     private _target: NodeMaterialBlockTargets;
     private _isFinalMerger = false;
     private _isInput = false;
+    protected _isUnique = false;
 
     /** @hidden */
     public _codeVariableName = "";
@@ -43,6 +44,13 @@ export class NodeMaterialBlock {
      * Gets or sets the unique id of the node
      */
     public uniqueId: number;
+
+    /**
+     * Gets a boolean indicating that this block can only be used once per NodeMaterial
+     */
+    public get isUnique() {
+        return this._isUnique;
+    }
 
     /**
      * Gets a boolean indicating that this block is an end block (e.g. it is generating a system value)

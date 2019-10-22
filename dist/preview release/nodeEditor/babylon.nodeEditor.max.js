@@ -73609,6 +73609,16 @@ var GraphEditor = /** @class */ (function (_super) {
         else {
             var block = _blockTools__WEBPACK_IMPORTED_MODULE_19__["BlockTools"].GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial);
             if (block) {
+                if (block.isUnique) {
+                    var className = block.getClassName();
+                    for (var _i = 0, _a = this._blocks; _i < _a.length; _i++) {
+                        var other = _a[_i];
+                        if (other !== block && other.getClassName() === className) {
+                            this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("You can only have one " + className + " per graph");
+                            return;
+                        }
+                    }
+                }
                 this._toAdd = [];
                 block.autoConfigure(this.props.globalState.nodeMaterial);
                 nodeModel = this.createNodeFromObject({ nodeMaterialBlock: block });
