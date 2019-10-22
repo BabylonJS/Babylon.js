@@ -54384,6 +54384,17 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Enum used to define the compatibility state between two connection points
+     */
+    export enum NodeMaterialConnectionPointCompatibilityStates {
+        /** Points are compatibles */
+        Compatible = 0,
+        /** Points are incompatible because of their types */
+        TypeIncompatible = 1,
+        /** Points are incompatible because of their targets (vertex vs fragment) */
+        TargetIncompatible = 2
+    }
+    /**
      * Defines a connection point for a block
      */
     export class NodeMaterialConnectionPoint {
@@ -54477,11 +54488,17 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets an boolean indicating if the current point can be connected to another point
+         * Gets a boolean indicating if the current point can be connected to another point
          * @param connectionPoint defines the other connection point
-         * @returns true if the connection is possible
+         * @returns a boolean
          */
         canConnectTo(connectionPoint: NodeMaterialConnectionPoint): boolean;
+        /**
+         * Gets a number indicating if the current point can be connected to another point
+         * @param connectionPoint defines the other connection point
+         * @returns a number defining the compatibility state
+         */
+        checkCompatibilityState(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPointCompatibilityStates;
         /**
          * Connect this point to another connection point
          * @param connectionPoint defines the other connection point
@@ -54814,6 +54831,28 @@ declare module BABYLON {
          * Gets the cutoff input component
          */
         readonly cutoff: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to test if the fragment shader is front facing
+     */
+    export class FrontFacingBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new FrontFacingBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -56161,28 +56200,6 @@ declare module BABYLON {
          * Gets the gradient operand input component
          */
         readonly gradient: NodeMaterialConnectionPoint;
-        /**
-         * Gets the output component
-         */
-        readonly output: NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to test if the fragment shader is front facing
-     */
-    export class FrontFacingBlock extends NodeMaterialBlock {
-        /**
-         * Creates a new FrontFacingBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
         /**
          * Gets the output component
          */
