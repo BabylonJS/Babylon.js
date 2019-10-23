@@ -13,14 +13,14 @@ namespace
         }
     }
 
-    void Log(const char* pszFormat, ...)
+    void Log(const wchar_t* format, ...)
     {
         va_list argList;
-        va_start(argList, pszFormat);
+        va_start(argList, format);
 
-        char message[1024];
-        StringCchVPrintfA(message, std::size(message), pszFormat, argList);
-        OutputDebugStringA(message);
+        wchar_t message[1024];
+        StringCchVPrintfW(message, std::size(message), format, argList);
+        OutputDebugStringW(message);
 
         va_end(argList);
     }
@@ -63,7 +63,7 @@ namespace babylon
             JsErrorCode errorCode = JsDisposeRuntime(m_jsRuntime);
             if (errorCode != JsErrorCode::JsNoError)
             {
-                Log("Failed to dispose runtime with error code (%u)\n", errorCode);
+                Log(L"Failed to dispose runtime with error code (%u)\n", errorCode);
             }
         }
 
