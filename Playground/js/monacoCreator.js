@@ -62,7 +62,7 @@ class MonacoCreator {
 
                         if (this.monacoMode === "javascript") {
                             typescript.javascriptDefaults.setCompilerOptions({
-                                noLib: true,
+                                noLib: false,
                                 allowNonTsExtensions: true // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
                             });
 
@@ -71,7 +71,7 @@ class MonacoCreator {
                             typescript.typescriptDefaults.setCompilerOptions({
                                 module: typescript.ModuleKind.AMD,
                                 target: typescript.ScriptTarget.ES5,
-                                noLib: true,
+                                noLib: false,
                                 noResolve: true,
                                 suppressOutputPathCheck: true,
 
@@ -169,11 +169,13 @@ class MonacoCreator {
 
             diagnostics.forEach(function(diagset) {
                 if (diagset.length) {
-                    var diagnostic = diagset[0];
-                    var position = model.getPositionAt(diagnostic.start);
+                    const diagnostic = diagset[0];
+                    const position = model.getPositionAt(diagnostic.start);
                     
-                    parent.utils.showError(`Line ${position.lineNumber}:${position.column} - ${diagnostic.messageText}`);
-                    return;
+                    const error = new EvalError(diagnostic.messageText);
+                    error.lineNumber = position.lineNumber;
+                    error.columnNumber = position.column;
+                    throw error;
                 }
             });
 
