@@ -35082,7 +35082,6 @@ declare module BABYLON {
         soundCollection: Array<Sound>;
         private _outputAudioNode;
         private _scene;
-        private _isMainTrack;
         private _connectedAnalyser;
         private _options;
         private _isInitialized;
@@ -53197,6 +53196,7 @@ declare module BABYLON {
         private _target;
         private _isFinalMerger;
         private _isInput;
+        protected _isUnique: boolean;
         /** @hidden */private _codeVariableName: string;
         /** @hidden */private _inputs: NodeMaterialConnectionPoint[];
         /** @hidden */private _outputs: NodeMaterialConnectionPoint[];
@@ -53209,6 +53209,10 @@ declare module BABYLON {
          * Gets or sets the unique id of the node
          */
         uniqueId: number;
+        /**
+         * Gets a boolean indicating that this block can only be used once per NodeMaterial
+         */
+        readonly isUnique: boolean;
         /**
          * Gets a boolean indicating that this block is an end block (e.g. it is generating a system value)
          */
@@ -53383,7 +53387,7 @@ declare module BABYLON {
         protected _outputRename(name: string): string;
         protected _dumpPropertiesCode(): string;
         /** @hidden */private _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]): string;
-        /** @hidden */private _dumpCodeForOutputConnections(): string;
+        /** @hidden */private _dumpCodeForOutputConnections(alreadyDumped: NodeMaterialBlock[]): string;
         /**
          * Clone the current block to a new identical block
          * @param scene defines the hosting scene
