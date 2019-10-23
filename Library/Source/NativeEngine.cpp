@@ -720,8 +720,6 @@ namespace babylon
 
         // TODO: zOffset
         const auto zOffset = info[1].As<Napi::Number>().FloatValue();
-
-        bgfx::setState(m_engineState);
     }
 
     void NativeEngine::SetZOffset(const Napi::CallbackInfo& info)
@@ -741,27 +739,29 @@ namespace babylon
     {
         const auto enable = info[0].As<Napi::Boolean>().Value();
 
-        // STUB: Stub.
+        m_engineState &= ~BGFX_STATE_DEPTH_TEST_MASK;
+        m_engineState |= enable ? BGFX_STATE_DEPTH_TEST_LESS : BGFX_STATE_DEPTH_TEST_ALWAYS;
     }
 
     Napi::Value NativeEngine::GetDepthWrite(const Napi::CallbackInfo& info)
     {
-        // STUB: Stub.
-        return{};
+        return Napi::Value::From(info.Env(), !!(m_engineState & BGFX_STATE_WRITE_Z));
     }
 
     void NativeEngine::SetDepthWrite(const Napi::CallbackInfo& info)
     {
         const auto enable = info[0].As<Napi::Boolean>().Value();
 
-        // STUB: Stub.
+        m_engineState &= ~BGFX_STATE_WRITE_Z;
+        m_engineState |= enable ? BGFX_STATE_WRITE_Z : 0;
     }
 
     void NativeEngine::SetColorWrite(const Napi::CallbackInfo& info)
     {
         const auto enable = info[0].As<Napi::Boolean>().Value();
 
-        // STUB: Stub.
+        m_engineState &= ~(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
+        m_engineState |= enable ? (BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A) : 0;
     }
 
     void NativeEngine::SetBlendMode(const Napi::CallbackInfo& info)
@@ -770,8 +770,6 @@ namespace babylon
 
         m_engineState &= ~BGFX_STATE_BLEND_MASK;
         m_engineState |= ALPHA_MODE[blendMode];
-
-        bgfx::setState(m_engineState);
     }
 
     void NativeEngine::SetMatrix(const Napi::CallbackInfo& info)
@@ -971,7 +969,7 @@ namespace babylon
                 imageDataRef = imageDataRefMipMap;
                 useMipMap = true;
             }
-            // TODO: log an warning message: "Could not generate mipmap for texture"
+            // TODO: log a warning message: "Could not generate mipmap for texture"
         }
 
         textureData->Texture = bgfx::createTexture2D(
@@ -1239,6 +1237,7 @@ namespace babylon
             bgfx::setUniform({ it.first }, value.Data.data(), value.ElementLength);
         }
 
+        bgfx::setState(m_engineState);
         bgfx::submit(m_frameBufferManager.IsFrameBufferBound() ? m_frameBufferManager.GetBound().ViewId : 0, m_currentProgram->Program, 0, true);
     }
 
