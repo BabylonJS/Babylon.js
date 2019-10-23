@@ -36,7 +36,7 @@ namespace babylon
             }
             else
             {
-                T next = m_queue.back();
+                T next = m_queue.front();
                 m_queue.pop();
                 return next;
             }
@@ -169,6 +169,11 @@ namespace babylon
 
     struct FrameBufferManager final
     {
+        FrameBufferManager(RecycleSet<bgfx::ViewId>& viewIdSet) 
+            : m_idSet{ viewIdSet }
+        {
+        }
+
         FrameBufferData* CreateNew(bgfx::FrameBufferHandle frameBufferHandle, uint16_t width, uint16_t height)
         {
             return new FrameBufferData(frameBufferHandle, m_idSet, width, height);
@@ -204,7 +209,7 @@ namespace babylon
         }
 
     private:
-        RecycleSet<bgfx::ViewId> m_idSet{ 1 };
+        RecycleSet<bgfx::ViewId>& m_idSet;
         FrameBufferData* m_boundFrameBuffer{ nullptr };
     };
 
@@ -356,6 +361,7 @@ namespace babylon
         void Clear(const Napi::CallbackInfo& info);
         Napi::Value GetRenderWidth(const Napi::CallbackInfo& info);
         Napi::Value GetRenderHeight(const Napi::CallbackInfo& info);
+        void SetViewPort(const Napi::CallbackInfo& info);
 
         void UpdateSize(size_t width, size_t height);
         void DispatchAnimationFrameAsync(Napi::FunctionReference callback);
@@ -370,8 +376,11 @@ namespace babylon
         bx::DefaultAllocator m_allocator;
         uint64_t m_engineState;
         ViewClearState m_viewClearState;
+        bgfx::ViewId m_currentBackbufferViewId{ 0 };
+        std::vector<bgfx::ViewId> m_viewportIds;
+        RecycleSet<bgfx::ViewId> m_viewidSet{ 1 };
 
-        FrameBufferManager m_frameBufferManager{};
+        FrameBufferManager m_frameBufferManager{ m_viewidSet };
 
         NativeWindow::OnResizeCallbackTicket m_resizeCallbackTicket;
 

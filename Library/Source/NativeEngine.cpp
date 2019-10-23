@@ -290,6 +290,7 @@ namespace babylon
         bgfx::init(init);
         bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
         bgfx::setViewRect(0, 0, 0, init.resolution.width, init.resolution.height);
+        bgfx::touch(0);
 
         // Initialize the JavaScript side.
         Napi::HandleScope scope{ env };
@@ -357,6 +358,7 @@ namespace babylon
                 InstanceMethod("clear", &NativeEngine::Clear),
                 InstanceMethod("getRenderWidth", &NativeEngine::GetRenderWidth),
                 InstanceMethod("getRenderHeight", &NativeEngine::GetRenderHeight),
+                InstanceMethod("setViewPort", &NativeEngine::SetViewPort),
             });
         
         return Napi::Persistent(func);
@@ -387,6 +389,7 @@ namespace babylon
         {
             bgfx::reset(w, h, BGFX_RESET_FLAGS);
             bgfx::setViewRect(0, 0, 0, w, h);
+            bgfx::touch(0);
         }
     }
 
@@ -1223,7 +1226,7 @@ namespace babylon
         }
 
         bgfx::setState(m_engineState);
-        bgfx::submit(m_frameBufferManager.IsFrameBufferBound() ? m_frameBufferManager.GetBound().ViewId : 0, m_currentProgram->Program, 0, true);
+        bgfx::submit(m_frameBufferManager.IsFrameBufferBound() ? m_frameBufferManager.GetBound().ViewId : m_currentBackbufferViewId, m_currentProgram->Program, 0, true);
     }
 
     void NativeEngine::Draw(const Napi::CallbackInfo& info)
@@ -1259,6 +1262,38 @@ namespace babylon
         return Napi::Value::From(info.Env(), bgfx::getStats()->height);
     }
 
+    void NativeEngine::SetViewPort(const Napi::CallbackInfo& info)
+    {
+        const auto x = info[0].As<Napi::Number>().FloatValue();
+        const auto y = info[1].As<Napi::Number>().FloatValue();
+        const auto width = info[2].As<Napi::Number>().FloatValue();
+        const auto height = info[3].As<Napi::Number>().FloatValue();
+
+        const auto backbufferWidth = bgfx::getStats()->width;
+        const auto backbufferHeight = bgfx::getStats()->height;
+        auto newViewId = m_viewidSet.Get();
+        m_viewportIds.push_back(newViewId);
+        m_currentBackbufferViewId = newViewId;
+        bgfx::setViewFrameBuffer(m_currentBackbufferViewId, BGFX_INVALID_HANDLE);
+        bgfx::setViewClear(m_currentBackbufferViewId, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
+        if (bgfx::getCaps()->originBottomLeft)
+        {
+            bgfx::setViewRect(m_currentBackbufferViewId, 
+                static_cast<uint16_t>(x * backbufferWidth), 
+                static_cast<uint16_t>((1.f - y - height) * backbufferHeight), 
+                static_cast<uint16_t>(width * backbufferWidth), 
+                static_cast<uint16_t>(height * backbufferHeight));
+        }
+        else
+        {
+            bgfx::setViewRect(m_currentBackbufferViewId, 
+                static_cast<uint16_t>(x * backbufferWidth), 
+                static_cast<uint16_t>(y * backbufferHeight), 
+                static_cast<uint16_t>(width * backbufferWidth), 
+                static_cast<uint16_t>(height * backbufferHeight));
+        }
+    }
+
     void NativeEngine::DispatchAnimationFrameAsync(Napi::FunctionReference callback)
     {
         // The purpose of encapsulating the callbackPtr in a std::shared_ptr is because, under the hood, the lambda is
@@ -1270,6 +1305,15 @@ namespace babylon
             //bgfx_test(static_cast<uint16_t>(m_size.Width), static_cast<uint16_t>(m_size.Height));
 
             callbackPtr->Call({});
+
+            // recycle viewIds used as viewports
+            for (auto id : m_viewportIds)
+            {
+                m_viewidSet.Recycle(id);
+            }
+            m_viewportIds.clear();
+            m_currentBackbufferViewId = 0;
+
             bgfx::frame();
         });
     }
