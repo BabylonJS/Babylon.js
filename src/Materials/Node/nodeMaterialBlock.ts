@@ -588,8 +588,14 @@ export class NodeMaterialBlock {
     }
 
     /** @hidden */
-    public _dumpCodeForOutputConnections() {
+    public _dumpCodeForOutputConnections(alreadyDumped: NodeMaterialBlock[]) {
         let codeString = "";
+
+        if (alreadyDumped.indexOf(this) !== -1) {
+            return codeString;
+        }
+
+        alreadyDumped.push(this);
 
         for (var input of this.inputs) {
             if (!input.isConnected) {
@@ -599,6 +605,7 @@ export class NodeMaterialBlock {
             var connectedOutput = input.connectedPoint!;
             var connectedBlock = connectedOutput.ownerBlock;
 
+            codeString += connectedBlock._dumpCodeForOutputConnections(alreadyDumped);
             codeString += `${connectedBlock._codeVariableName}.${connectedBlock._outputRename(connectedOutput.name)}.connectTo(${this._codeVariableName}.${this._inputRename(input.name)});\r\n`;
         }
 
