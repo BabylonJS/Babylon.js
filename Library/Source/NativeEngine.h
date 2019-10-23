@@ -373,11 +373,6 @@ namespace babylon
 
         FrameBufferManager m_frameBufferManager{};
 
-        struct
-        {
-            uint32_t Width{};
-            uint32_t Height{};
-        } m_renderTargetSize{};
         NativeWindow::OnResizeCallbackTicket m_resizeCallbackTicket;
 
         // Scratch vector used for data alignment.

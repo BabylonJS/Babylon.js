@@ -16,6 +16,7 @@ namespace bgfx
 
 #define BGFX_UNIFORM_FRAGMENTBIT UINT8_C(0x10) // Copy-pasta from bgfx_p.h
 #define BGFX_UNIFORM_SAMPLERBIT  UINT8_C(0x20) // Copy-pasta from bgfx_p.h
+#define BGFX_RESET_FLAGS (BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X4 | BGFX_RESET_MAXANISOTROPY)
 
 #include <bimg/bimg.h>
 #include <bimg/decode.h>
@@ -300,7 +301,7 @@ namespace babylon
         init.type = bgfx::RendererType::Direct3D11;
         init.resolution.width = static_cast<uint32_t>(window.GetWidth());
         init.resolution.height = static_cast<uint32_t>(window.GetHeight());
-        init.resolution.reset = BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X4 | BGFX_RESET_MAXANISOTROPY;
+        init.resolution.reset = BGFX_RESET_FLAGS;
         bgfx::init(init);
         bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
         bgfx::setViewRect(0, 0, 0, init.resolution.width, init.resolution.height);
@@ -393,16 +394,14 @@ namespace babylon
 
     void NativeEngine::UpdateSize(size_t width, size_t height)
     {
-        auto w = static_cast<uint32_t>(width);
-        auto h = static_cast<uint32_t>(height);
+        const auto w = static_cast<uint16_t>(width);
+        const auto h = static_cast<uint16_t>(height);
 
-        auto& size = m_renderTargetSize;
-        if (w != size.Width || h != size.Height)
+        auto bgfxStats = bgfx::getStats();
+        if (w != bgfxStats->width || h != bgfxStats->height)
         {
-            size = { w, h };
-
-            bgfx::reset(size.Width, size.Height, BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X4);
-            bgfx::setViewRect(0, 0, 0, size.Width, size.Height);
+            bgfx::reset(w, h, BGFX_RESET_FLAGS);
+            bgfx::setViewRect(0, 0, 0, w, h);
         }
     }
 
@@ -1268,14 +1267,12 @@ namespace babylon
 
     Napi::Value NativeEngine::GetRenderWidth(const Napi::CallbackInfo& info)
     {
-        // TODO CHECK: Is this not just the size?  What is this?
-        return Napi::Value::From(info.Env(), m_renderTargetSize.Width);
+        return Napi::Value::From(info.Env(), bgfx::getStats()->width);
     }
 
     Napi::Value NativeEngine::GetRenderHeight(const Napi::CallbackInfo& info)
     {
-        // TODO CHECK: Is this not just the size?  What is this?
-        return Napi::Value::From(info.Env(), m_renderTargetSize.Height);
+        return Napi::Value::From(info.Env(), bgfx::getStats()->height);
     }
 
     void NativeEngine::DispatchAnimationFrameAsync(Napi::FunctionReference callback)
