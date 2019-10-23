@@ -229,7 +229,8 @@ namespace babylon
 
         std::vector<bimg::ImageContainer*> Images{};
         bgfx::TextureHandle Texture{ bgfx::kInvalidHandle };
-        uint32_t Flags{0};
+        uint32_t Flags{ 0 };
+        uint8_t AnisotropicLevel{ 0 };
     };
 
     struct ProgramData final

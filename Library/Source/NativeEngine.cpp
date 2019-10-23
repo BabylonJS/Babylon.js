@@ -300,7 +300,7 @@ namespace babylon
         init.type = bgfx::RendererType::Direct3D11;
         init.resolution.width = static_cast<uint32_t>(window.GetWidth());
         init.resolution.height = static_cast<uint32_t>(window.GetHeight());
-        init.resolution.reset = BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X4;
+        init.resolution.reset = BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X4 | BGFX_RESET_MAXANISOTROPY;
         bgfx::init(init);
         bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
         bgfx::setViewRect(0, 0, 0, init.resolution.width, init.resolution.height);
@@ -1097,7 +1097,15 @@ namespace babylon
         filter = std::min(filter, filterCount - 1);
 
         textureData->Flags &= ~(BGFX_SAMPLER_MIN_MASK | BGFX_SAMPLER_MAG_MASK | BGFX_SAMPLER_MIP_MASK);
-        textureData->Flags |= bgfxFiltering[filter];
+
+        if (textureData->AnisotropicLevel > 1)
+        {
+            textureData->Flags |= BGFX_SAMPLER_MIN_ANISOTROPIC | BGFX_SAMPLER_MAG_ANISOTROPIC;
+        }
+        else
+        {
+            textureData->Flags |= bgfxFiltering[filter];
+        }
     }
 
     void NativeEngine::SetTextureWrapMode(const Napi::CallbackInfo& info)
@@ -1127,7 +1135,14 @@ namespace babylon
         const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
         const auto value = info[1].As<Napi::Number>().Uint32Value();
 
-        // STUB: Stub.
+        textureData->AnisotropicLevel = value;
+
+        // if Anisotropic is set to 0 after being >1, then set texture flags back to linear
+        textureData->Flags &= ~(BGFX_SAMPLER_MIN_MASK | BGFX_SAMPLER_MAG_MASK | BGFX_SAMPLER_MIP_MASK);
+        if (value)
+        {
+            textureData->Flags |= BGFX_SAMPLER_MIN_ANISOTROPIC | BGFX_SAMPLER_MAG_ANISOTROPIC;
+        }
     }
 
     void NativeEngine::SetTexture(const Napi::CallbackInfo& info)
