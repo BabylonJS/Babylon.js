@@ -281,8 +281,8 @@ export class NativeEngine extends Engine {
     }
 
     public clear(color: Color4, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
-        if (color == null) { 
-            return; 
+        if (color == null) {
+            return;
         }
         this._native.clear(color.r, color.g, color.b, color.a, backBuffer, depth, stencil);
     }
@@ -492,7 +492,6 @@ export class NativeEngine extends Engine {
     }
 
     public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
-        // TODO: Implement.
         this._cachedViewport = viewport;
         this._native.setViewPort(viewport.x, viewport.y, viewport.width, viewport.height);
     }
