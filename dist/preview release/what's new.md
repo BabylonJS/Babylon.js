@@ -204,6 +204,7 @@
 - Fixed bug where vignette aspect ratio would be wrong when rendering direct to canvas
 - Fixed Path2 length computation ([Poolminer](https://github.com/Poolminer/))
 - Cloning of `ShaderMaterial` also clone `shaderPath` and `options` properties ([Popov72](https://github.com/Popov72))
+- Prevent an infinite loop when calling `engine.dispose()` in a scene with multiple `SoundTracks` defined ([kirbysayshi](https://github.com/kirbysayshi))
 
 ## Breaking changes
 
