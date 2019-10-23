@@ -35,7 +35,6 @@ export class SoundTrack {
 
     private _outputAudioNode: Nullable<GainNode>;
     private _scene: Scene;
-    private _isMainTrack: boolean = false;
     private _connectedAnalyser: Analyser;
     private _options: ISoundTrackOptions;
     private _isInitialized = false;
@@ -51,7 +50,7 @@ export class SoundTrack {
         this.soundCollection = new Array();
         this._options = options;
 
-        if (!this._isMainTrack && this._scene.soundTracks) {
+        if (!this._options.mainTrack && this._scene.soundTracks) {
             this._scene.soundTracks.push(this);
             this.id = this._scene.soundTracks.length - 1;
         }
@@ -64,7 +63,6 @@ export class SoundTrack {
 
             if (this._options) {
                 if (this._options.volume) { this._outputAudioNode.gain.value = this._options.volume; }
-                if (this._options.mainTrack) { this._isMainTrack = this._options.mainTrack; }
             }
 
             this._isInitialized = true;

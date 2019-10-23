@@ -228,6 +228,11 @@ export class PointsGroup {
      * @hidden
      */
     public _groupDensity: number[];
+    /**
+     * Only when points are colored by texture carries pointer to texture list array
+     * @hidden
+     */
+    public _textureNb: number;
 
     /**
      * Creates a points group object. This is an internal reference to produce particles for the PCS.

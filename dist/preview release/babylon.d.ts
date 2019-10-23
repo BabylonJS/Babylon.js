@@ -19154,6 +19154,15 @@ declare module BABYLON {
          */
         constructor(name: string, scene: Scene, shaderPath: any, options?: Partial<IShaderMaterialOptions>);
         /**
+         * Gets the shader path used to define the shader code
+         * It can be modified to trigger a new compilation
+         */
+        /**
+        * Sets the shader path used to define the shader code
+        * It can be modified to trigger a new compilation
+        */
+        shaderPath: any;
+        /**
          * Gets the options used to compile the shader.
          * They can be modified to trigger a new compilation
          */
@@ -25448,6 +25457,7 @@ declare module BABYLON {
         private _expandable;
         private _shapeCounter;
         private _copy;
+        private _mustResetCopy;
         private _color;
         private _computeParticleColor;
         private _computeParticleTexture;
@@ -35779,7 +35789,6 @@ declare module BABYLON {
         soundCollection: Array<Sound>;
         private _outputAudioNode;
         private _scene;
-        private _isMainTrack;
         private _connectedAnalyser;
         private _options;
         private _isInitialized;
@@ -54025,6 +54034,7 @@ declare module BABYLON {
         private _target;
         private _isFinalMerger;
         private _isInput;
+        protected _isUnique: boolean;
         /** @hidden */
         _codeVariableName: string;
         /** @hidden */
@@ -54041,6 +54051,10 @@ declare module BABYLON {
          * Gets or sets the unique id of the node
          */
         uniqueId: number;
+        /**
+         * Gets a boolean indicating that this block can only be used once per NodeMaterial
+         */
+        readonly isUnique: boolean;
         /**
          * Gets a boolean indicating that this block is an end block (e.g. it is generating a system value)
          */
@@ -54217,7 +54231,7 @@ declare module BABYLON {
         /** @hidden */
         _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]): string;
         /** @hidden */
-        _dumpCodeForOutputConnections(): string;
+        _dumpCodeForOutputConnections(alreadyDumped: NodeMaterialBlock[]): string;
         /**
          * Clone the current block to a new identical block
          * @param scene defines the hosting scene
@@ -54374,6 +54388,17 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Enum used to define the compatibility state between two connection points
+     */
+    export enum NodeMaterialConnectionPointCompatibilityStates {
+        /** Points are compatibles */
+        Compatible = 0,
+        /** Points are incompatible because of their types */
+        TypeIncompatible = 1,
+        /** Points are incompatible because of their targets (vertex vs fragment) */
+        TargetIncompatible = 2
+    }
+    /**
      * Defines a connection point for a block
      */
     export class NodeMaterialConnectionPoint {
@@ -54467,11 +54492,17 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets an boolean indicating if the current point can be connected to another point
+         * Gets a boolean indicating if the current point can be connected to another point
          * @param connectionPoint defines the other connection point
-         * @returns true if the connection is possible
+         * @returns a boolean
          */
         canConnectTo(connectionPoint: NodeMaterialConnectionPoint): boolean;
+        /**
+         * Gets a number indicating if the current point can be connected to another point
+         * @param connectionPoint defines the other connection point
+         * @returns a number defining the compatibility state
+         */
+        checkCompatibilityState(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPointCompatibilityStates;
         /**
          * Connect this point to another connection point
          * @param connectionPoint defines the other connection point
@@ -54804,6 +54835,28 @@ declare module BABYLON {
          * Gets the cutoff input component
          */
         readonly cutoff: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to test if the fragment shader is front facing
+     */
+    export class FrontFacingBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new FrontFacingBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -56155,37 +56208,6 @@ declare module BABYLON {
          * Gets the output component
          */
         readonly output: NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Block used to test if the fragment shader is front facing
-     */
-    export class FrontFacingBlock extends NodeMaterialBlock {
-        /**
-         * Creates a new FrontFacingBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the world normal component
-         */
-        readonly worldNormal: NodeMaterialConnectionPoint;
-        /**
-         * Gets the view direction input component
-         */
-        readonly viewDirection: NodeMaterialConnectionPoint;
-        /**
-         * Gets the output component
-         */
-        readonly output: NodeMaterialConnectionPoint;
-        autoConfigure(material: NodeMaterial): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -59041,21 +59063,21 @@ declare module BABYLON {
          * @param mesh is any Mesh object that will be used as a surface model for the points
          * @param nb (positive integer) the number of particles to be created from this model
          * @param colorWith determines whether a point is colored using color (default), uv, random, stated or none (invisible)
-         * @param color (color3) to be used when colorWith is stated
+         * @param color (color4) to be used when colorWith is stated or color (number) when used to specify texture position
          * @param range (number from 0 to 1) to determine the variation in shape and tone for a stated color
          * @returns the number of groups in the system
          */
-        addSurfacePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4, range?: number): number;
+        addSurfacePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4 | number, range?: number): number;
         /**
          * Adds points to the PCS inside the model shape
          * @param mesh is any Mesh object that will be used as a surface model for the points
          * @param nb (positive integer) the number of particles to be created from this model
-         * @param colorWith determines whether a point is colored using color (default), uv, random, stated or none (invisible),
-         * @param color (color4) to be used when colorWith is stated
+         * @param colorWith determines whether a point is colored using color (default), uv, random, stated or none (invisible)
+         * @param color (color4) to be used when colorWith is stated or color (number) when used to specify texture position
          * @param range (number from 0 to 1) to determine the variation in shape and tone for a stated color
          * @returns the number of groups in the system
          */
-        addVolumePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4, range?: number): number;
+        addVolumePoints(mesh: Mesh, nb: number, colorWith?: number, color?: Color4 | number, range?: number): number;
         /**
          *  Sets all the particles : this method actually really updates the mesh according to the particle positions, rotations, colors, textures, etc.
          *  This method calls `updateParticle()` for each particle of the SPS.
@@ -59327,6 +59349,11 @@ declare module BABYLON {
          * @hidden
          */
         _groupDensity: number[];
+        /**
+         * Only when points are colored by texture carries pointer to texture list array
+         * @hidden
+         */
+        _textureNb: number;
         /**
          * Creates a points group object. This is an internal reference to produce particles for the PCS.
          * PCS internal tool, don't use it manually.
