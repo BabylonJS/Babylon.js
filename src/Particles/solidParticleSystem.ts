@@ -105,7 +105,6 @@ export class SolidParticleSystem implements IDisposable {
     private _expandable: boolean = false;
     private _shapeCounter: number = 0;
     private _copy: SolidParticle = new SolidParticle(0, 0, 0, 0, null, 0, 0, this);
-    private _mustResetCopy: boolean = true;
     private _color: Color4 = new Color4(0, 0, 0, 0);
     private _computeParticleColor: boolean = true;
     private _computeParticleTexture: boolean = true;
@@ -218,6 +217,7 @@ export class SolidParticleSystem implements IDisposable {
             }
         }
         this._isNotBuilt = false;
+        this.recomputeNormals = false;
         return this.mesh;
     }
 
@@ -419,9 +419,7 @@ export class SolidParticleSystem implements IDisposable {
         var c = 0;
         var n = 0;
 
-        if (this._mustResetCopy) {
-            this._resetCopy();
-        }
+        this._resetCopy();
         const copy = this._copy;
         const storeApart = (options && options.storage) ? true : false;
         copy.idx = idx;
@@ -442,6 +440,7 @@ export class SolidParticleSystem implements IDisposable {
         const tmpRotated = TmpVectors.Vector3[1];
         const pivotBackTranslation = TmpVectors.Vector3[2];
         const scaledPivot = TmpVectors.Vector3[3];
+        Matrix.IdentityToRef(rotMatrix);
         copy.getRotationMatrix(rotMatrix);
 
         copy.pivot.multiplyToRef(copy.scaling, scaledPivot);
@@ -453,9 +452,10 @@ export class SolidParticleSystem implements IDisposable {
             pivotBackTranslation.copyFrom(scaledPivot);
         }
 
+        var someVertexFunction = (options && options.vertexFunction);
         for (i = 0; i < shape.length; i++) {
             tmpVertex.copyFrom(shape[i]);
-            if (options && options.vertexFunction) {
+            if (someVertexFunction) {
                 options.vertexFunction(copy, tmpVertex, i);
             }
 
@@ -490,10 +490,7 @@ export class SolidParticleSystem implements IDisposable {
             c += 4;
 
             if (!this.recomputeNormals && meshNor) {
-                tmpVertex.x = meshNor[n];
-                tmpVertex.y = meshNor[n + 1];
-                tmpVertex.z = meshNor[n + 2];
-                Vector3.TransformNormalToRef(tmpVertex, rotMatrix, tmpVertex);
+                Vector3.TransformNormalFromFloatsToRef(meshNor[n], meshNor[n + 1], meshNor[n + 2], rotMatrix, tmpVertex);
                 normals.push(tmpVertex.x, tmpVertex.y, tmpVertex.z);
                 n += 3;
             }
@@ -730,7 +727,7 @@ export class SolidParticleSystem implements IDisposable {
             this._index += shape.length;
         }
         this.nbParticles -= nb;
-        this._isNotBuilt = true;        // buildMesh() is now expected for setParticles() to work
+        this._isNotBuilt = true;        // buildMesh() call is now expected for setParticles() to work
         return removed;
     }
 
@@ -743,7 +740,6 @@ export class SolidParticleSystem implements IDisposable {
         if (!this._expandable) {
             return this;
         }
-        this._mustResetCopy = false;
         var idxInShape = 0;
         var  currentShapeId = solidParticleArray[0].shapeId;
         const nb = solidParticleArray.length;
@@ -755,16 +751,17 @@ export class SolidParticleSystem implements IDisposable {
             var meshUV = model._shapeUV;
             var meshCol = model._shapeColors;
             var meshNor = model._normals;
+            var noNor = (meshNor) ? false : true;
+            this.recomputeNormals = (noNor || this.recomputeNormals);
             var bbInfo = sp._boundingInfo;
-            sp.copyToRef(this._copy);
-            this._insertNewParticle(this.nbParticles, idxInShape, sp._model, shape, meshInd, meshUV, meshCol, meshNor, bbInfo, null, null);
+            var newPart = this._insertNewParticle(this.nbParticles, idxInShape, model, shape, meshInd, meshUV, meshCol, meshNor, bbInfo, null, null);
+            sp.copyToRef(newPart!);
             idxInShape++;
             if (currentShapeId != sp.shapeId) {
                 currentShapeId = sp.shapeId;
                 idxInShape = 0;
             }
         }
-        this._mustResetCopy = true;
         this._isNotBuilt = true;        // buildMesh() call is now expected for setParticles() to work
         return this;
     }
@@ -796,11 +793,21 @@ export class SolidParticleSystem implements IDisposable {
             sp = this._addParticle(this.nbParticles, this._lastParticleId, currentPos, currentInd, modelShape, this._shapeCounter, i, bbInfo, storage);
             sp.position.copyFrom(currentCopy.position);
             sp.rotation.copyFrom(currentCopy.rotation);
-            if (currentCopy.rotationQuaternion && sp.rotationQuaternion) {
-                sp.rotationQuaternion.copyFrom(currentCopy.rotationQuaternion);
+            if (currentCopy.rotationQuaternion) {
+                if (sp.rotationQuaternion) {
+                    sp.rotationQuaternion.copyFrom(currentCopy.rotationQuaternion);
+                }
+                else {
+                    sp.rotationQuaternion = currentCopy.rotationQuaternion.clone();
+                }
             }
-            if (currentCopy.color && sp.color) {
-                sp.color.copyFrom(currentCopy.color);
+            if (currentCopy.color) {
+                if (sp.color) {
+                    sp.color.copyFrom(currentCopy.color);
+                }
+                else {
+                    sp.color = currentCopy.color.clone();
+                }
             }
             sp.scaling.copyFrom(currentCopy.scaling);
             sp.uvs.copyFrom(currentCopy.uvs);
