@@ -35789,7 +35789,6 @@ declare module BABYLON {
         soundCollection: Array<Sound>;
         private _outputAudioNode;
         private _scene;
-        private _isMainTrack;
         private _connectedAnalyser;
         private _options;
         private _isInitialized;
@@ -54232,7 +54231,7 @@ declare module BABYLON {
         /** @hidden */
         _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]): string;
         /** @hidden */
-        _dumpCodeForOutputConnections(): string;
+        _dumpCodeForOutputConnections(alreadyDumped: NodeMaterialBlock[]): string;
         /**
          * Clone the current block to a new identical block
          * @param scene defines the hosting scene
