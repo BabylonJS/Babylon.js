@@ -22,6 +22,7 @@ export class NodeMaterialBlock {
     private _target: NodeMaterialBlockTargets;
     private _isFinalMerger = false;
     private _isInput = false;
+    protected _isUnique = false;
 
     /** @hidden */
     public _codeVariableName = "";
@@ -43,6 +44,13 @@ export class NodeMaterialBlock {
      * Gets or sets the unique id of the node
      */
     public uniqueId: number;
+
+    /**
+     * Gets a boolean indicating that this block can only be used once per NodeMaterial
+     */
+    public get isUnique() {
+        return this._isUnique;
+    }
 
     /**
      * Gets a boolean indicating that this block is an end block (e.g. it is generating a system value)
@@ -580,8 +588,14 @@ export class NodeMaterialBlock {
     }
 
     /** @hidden */
-    public _dumpCodeForOutputConnections() {
+    public _dumpCodeForOutputConnections(alreadyDumped: NodeMaterialBlock[]) {
         let codeString = "";
+
+        if (alreadyDumped.indexOf(this) !== -1) {
+            return codeString;
+        }
+
+        alreadyDumped.push(this);
 
         for (var input of this.inputs) {
             if (!input.isConnected) {
@@ -591,6 +605,7 @@ export class NodeMaterialBlock {
             var connectedOutput = input.connectedPoint!;
             var connectedBlock = connectedOutput.ownerBlock;
 
+            codeString += connectedBlock._dumpCodeForOutputConnections(alreadyDumped);
             codeString += `${connectedBlock._codeVariableName}.${connectedBlock._outputRename(connectedOutput.name)}.connectTo(${this._codeVariableName}.${this._inputRename(input.name)});\r\n`;
         }
 

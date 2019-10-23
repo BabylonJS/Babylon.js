@@ -463,6 +463,15 @@ export class NodeMaterial extends PushMaterial {
         node._preparationId = this._buildId;
 
         if (this.attachedBlocks.indexOf(node) === -1) {
+            if (node.isUnique) {
+                const className = node.getClassName();
+
+                for (var other of this.attachedBlocks) {
+                    if (other.getClassName() === className) {
+                        throw `Cannot have multiple blocks of type ${className} in the same NodeMaterial`;
+                    }
+                }
+            }
             this.attachedBlocks.push(node);
         }
 
@@ -1070,9 +1079,13 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // Connections
+        alreadyDumped = [];
         codeString += "\r\n// Connections\r\n";
-        for (var node of alreadyDumped) {
-            codeString += node._dumpCodeForOutputConnections();
+        for (var node of this._vertexOutputNodes) {
+            codeString += node._dumpCodeForOutputConnections(alreadyDumped);
+        }
+        for (var node of this._fragmentOutputNodes) {
+            codeString += node._dumpCodeForOutputConnections(alreadyDumped);
         }
 
         // Output nodes
