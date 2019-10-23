@@ -131,7 +131,7 @@ namespace babylon
                 AppendBytes(bytes, sampler.name);
                 AppendBytes(bytes, static_cast<uint8_t>(bgfx::UniformType::Sampler | BGFX_UNIFORM_SAMPLERBIT));
 
-                // These values (num, regIndex, regCount) are not used by D3D11 pipeline.
+                // TODO : These values (num, regIndex, regCount) are only used by Vulkan and should be set for that API
                 AppendBytes(bytes, static_cast<uint8_t>(0));
                 AppendBytes(bytes, static_cast<uint16_t>(0));
                 AppendBytes(bytes, static_cast<uint16_t>(0));
@@ -205,21 +205,6 @@ namespace babylon
                 return imageDataRef;
             }
             return nullptr;
-        }
-
-        void VerticalFlip(bimg::ImageContainer& image)
-        {
-            uint32_t rowLength = image.m_size / image.m_height;
-            uint8_t* ptr = static_cast<uint8_t*>(image.m_data);
-            for (uint32_t y = 0; y < (image.m_height >> 1); y++)
-            {
-                uint32_t rowSource = y * rowLength;
-                uint32_t rowDestination = (image.m_height - y - 1) * rowLength;
-                for (uint32_t row = 0; row < rowLength; row++)
-                {
-                    std::swap(ptr[rowSource + row], ptr[rowDestination + row]);
-                }
-            }
         }
 
         enum class WebGLAttribType
@@ -956,7 +941,7 @@ namespace babylon
         
         if (invertY)
         {
-            VerticalFlip(image);
+            FlipYInImageBytes(gsl::make_span(static_cast<uint8_t*>(image.m_data), image.m_size), image.m_height, image.m_size / image.m_height);
         }
 
         auto imageDataRef{ bgfx::makeRef(image.m_data, image.m_size) };
