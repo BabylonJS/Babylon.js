@@ -51,7 +51,7 @@ export class SoundTrack {
         this.soundCollection = new Array();
         this._options = options;
 
-        if (!this.options.mainTrack && this._scene.soundTracks) {
+        if (!this._options.mainTrack && this._scene.soundTracks) {
             this._scene.soundTracks.push(this);
             this.id = this._scene.soundTracks.length - 1;
         }
