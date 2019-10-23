@@ -1079,9 +1079,13 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // Connections
+        alreadyDumped = [];
         codeString += "\r\n// Connections\r\n";
-        for (var node of alreadyDumped) {
-            codeString += node._dumpCodeForOutputConnections();
+        for (var node of this._vertexOutputNodes) {
+            codeString += node._dumpCodeForOutputConnections(alreadyDumped);
+        }
+        for (var node of this._fragmentOutputNodes) {
+            codeString += node._dumpCodeForOutputConnections(alreadyDumped);
         }
 
         // Output nodes
