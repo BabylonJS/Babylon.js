@@ -155,14 +155,14 @@ declare module "../meshes/mesh" {
             residualTexture: Nullable<MultiRenderTarget>;
             /** Radiosity patches */
             radiosityPatches: Patch[];
-        }
+        };
 
         /** Inits the `radiosityInfo` object */
-        initForRadiosity() : void
+        initForRadiosity() : void;
         /** Gets radiosity texture
          * @return the radiosity texture. Can be fully black if the radiosity process has not been run yet.
          */
-        getRadiosityTexture(): Nullable<Texture>
+        getRadiosityTexture(): Nullable<Texture>;
     }
 }
 
@@ -179,13 +179,19 @@ Mesh.prototype.initForRadiosity = function() {
         _patchOffset: 0,
         residualTexture: null,
         radiosityPatches: []
-    }
-}
+    };
+};
 
 Mesh.prototype.getRadiosityTexture = function() {
     return this.radiosityInfo && this.radiosityInfo.residualTexture ? this.radiosityInfo.residualTexture.textures[4] : null;
-}
+};
 
+declare interface RadiosityRendererOptions {
+    near?: number,
+    far?: number,
+    bias?: number,
+    normalBias?: number,
+}
 
 /**
  * Radiosity Renderer
@@ -213,6 +219,7 @@ export class RadiosityRenderer {
     private _filterMinEnergy: number = 1e-5;
     private _patchMapResolution: number = 1024;
 
+    private _options: RadiosityRendererOptions;
     /**
      * Verbosity level for performance of the renderer
      * Accepted values are 0, 1, 2 or 3
@@ -238,6 +245,8 @@ export class RadiosityRenderer {
 
     private _near: number;
     private _far: number;
+    private _bias: number;
+    private _normalBias: number;
     private _frameBuffer0: WebGLFramebuffer;
     private _frameBuffer1: WebGLFramebuffer;
 
@@ -273,16 +282,20 @@ export class RadiosityRenderer {
         return a * a * Math.PI / 4;
     }
 
+
     /**
      * Instanciates a radiosity renderer
      * @param scene The current scene
      * @param meshes The meshes to include in the radiosity solver
      */
-    constructor(scene: Scene, meshes?: Mesh[]) {
+    constructor(scene: Scene, meshes?: Mesh[], options?: RadiosityRendererOptions) {
+        this._options = options || {};
         this._scene = scene;
-        this._near = 0.1;
+        this._near = this._options.near || 0.1;
+        this._far = this._options.far || 10000;
+        this._bias = this._options.bias || 1e-4;
+        this._normalBias = this._options.normalBias || 1e-4;
         this.meshes = meshes || [];
-        this._far = 10000;
 
         this.resetRenderState();
 
@@ -339,7 +352,7 @@ export class RadiosityRenderer {
      * @param areaThreshold Maximum area of a triangle in the resulting scene
      */
     public createHTScene(areaThreshold: number) {
-        let htMeshes = []
+        let htMeshes = [];
 
         for (let i = this.meshes.length - 1; i >= 0; i--) {
             htMeshes.push(RadiosityUtils.RetesselateMesh(this.meshes[i], areaThreshold, this._scene));
@@ -409,9 +422,9 @@ export class RadiosityRenderer {
                 7,
                 this._scene,
                 {
-                    samplingModes: [Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.LINEAR_LINEAR_MIPNEAREST, Texture.LINEAR_LINEAR_MIPNEAREST, Texture.LINEAR_LINEAR_MIPNEAREST, Texture.LINEAR_LINEAR_MIPNEAREST],
+                    samplingModes: [Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.NEAREST_NEAREST, Texture.LINEAR_LINEAR, Texture.LINEAR_LINEAR, Texture.LINEAR_LINEAR, Texture.LINEAR_LINEAR],
                     types: [Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_UNSIGNED_INT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT],
-                    generateMipMaps: true
+                    generateMipMaps: false
                 }
             );
 
@@ -463,6 +476,13 @@ export class RadiosityRenderer {
                     }
                 }
 
+                for (index = 0; index < transparentSubMeshes.length; index++) {
+                    this._currentRenderedMap = transparentSubMeshes.data[index].getRenderingMesh().radiosityInfo.residualTexture as MultiRenderTarget;
+                    if (this.renderPatchInfo(uniformCb, transparentSubMeshes.data[index], transparentSubMeshes.data[index])) {
+                        this._scene.onAfterRenderObservable.add(this.buildPatchesForSubMesh.bind(this, transparentSubMeshes.data[index]), -1, false, null, true);
+                    }
+                }
+
             };
 
             this._scene.customRenderTargets.push(residualTexture);
@@ -503,6 +523,7 @@ export class RadiosityRenderer {
         this._radiosityEffectsManager.shootEffect.setVector3("shootNormal", patch.normal);
         this._radiosityEffectsManager.shootEffect.setVector3("shootEnergy", patch.residualEnergy);
         this._radiosityEffectsManager.shootEffect.setFloat("shootDArea", deltaArea);
+        this._radiosityEffectsManager.shootEffect.setFloat("normalBias", this._normalBias);
         this._radiosityEffectsManager.shootEffect.setMatrix("view", patch.viewMatrix);
 
         if (RadiosityRenderer.PERFORMANCE_LOGS_LEVEL >= 3) {
@@ -611,6 +632,7 @@ export class RadiosityRenderer {
                 return true;
             }
             this.renderPatches(this._renderState.shooterPatches, this._renderState.shooterMeshes[0], this._renderState.shooterIndex, this._renderState.shooterIndex + 1);
+            return false;
             this._renderState.shooterIndex++;
         }
 
@@ -666,7 +688,6 @@ export class RadiosityRenderer {
 
         return hasShot;
     }
-
 
     /**
      * Gathers radiance the next "most bright" mesh
@@ -760,11 +781,7 @@ export class RadiosityRenderer {
 
             let patchMapDate = Date.now();
 
-            if (this.useHemicube) {
-                this.renderVisibilityMapCube();
-            } else {
-                this._patchMap.render(false);
-            }
+            this.renderVisibilityMapCube();
 
             if (RadiosityRenderer.PERFORMANCE_LOGS_LEVEL >= 2) {
                 duration = Date.now() - patchMapDate;
@@ -807,12 +824,12 @@ export class RadiosityRenderer {
             }
         }
         var buffer = new Float32Array(data);
-        gl.bindTexture(gl.TEXTURE_2D, (<InternalTexture>residualEnergyTexture._texture)._webGLTexture);
+        engine._bindTextureDirectly(gl.TEXTURE_2D, residualEnergyTexture._texture!);
         gl.texSubImage2D(
             gl.TEXTURE_2D, 0, 0, 0, mrt.getRenderWidth(), mrt.getRenderHeight(), gl.RGBA,
             gl.FLOAT, buffer);
         gl.generateMipmap(gl.TEXTURE_2D);
-        gl.bindTexture(gl.TEXTURE_2D, null);
+        engine._bindTextureDirectly(gl.TEXTURE_2D, null);
     }
 
     private nextShooter(trackShooters = false): Nullable<Mesh> {
@@ -1016,34 +1033,36 @@ export class RadiosityRenderer {
     }
 
     private buildVisibilityMapCube() {
-        this._patchMap = new RenderTargetTexture("patch", this._patchMapResolution, this._scene, false, true, this.useDepthCompare ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT, true, Texture.NEAREST_SAMPLINGMODE, true, false, false, Constants.TEXTUREFORMAT_RGBA, false);
+        this._patchMap = new RenderTargetTexture("patch", this._patchMapResolution, this._scene, false, true, Constants.TEXTURETYPE_FLOAT, true, Texture.NEAREST_SAMPLINGMODE, true, false, false, Constants.TEXTUREFORMAT_RGBA, false);
+        // this._patchMap = new RenderTargetTexture("patch", this._patchMapResolution, this._scene, false, true, Constants.TEXTURETYPE_FLOAT, true, undefined, true, false);
+        // this._patchMap.createDepthStencilTexture(Constants.LESS, true);
         this._patchMap.renderList = this.meshes;
+        this._patchMap.wrapU = Texture.CLAMP_ADDRESSMODE;
+        this._patchMap.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this._patchMap.anisotropicFilteringLevel = 1;
+        // this._patchMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
         this._patchMap.renderParticles = false;
-        this._patchMap.activeCamera = null;
         this._patchMap.ignoreCameraViewport = true;
+        this._patchMap.activeCamera = null;
         this._patchMap.useCameraPostProcesses = false;
     }
 
     private _setCubeVisibilityUniforms(effect: Effect, patch: Patch, mesh: Mesh, view: Matrix, projection: Matrix) {
-        if (this.useHemicube) {
-            effect.setMatrix("view", view);
-            effect.setMatrix("projection", projection);
-        } else {
-            effect.setMatrix("view", patch.viewMatrix);
-        }
+        effect.setMatrix("view", view);
+        effect.setMatrix("projection", projection);
         effect.setFloat2("nearFar", this._near, this._far);
-        effect.setTexture("itemBuffer", (<MultiRenderTarget>mesh.radiosityInfo.residualTexture).textures[2]);
+        effect.setFloat("bias", this._bias);
     }
 
     private renderVisibilityMapCube() {
-        let scene = this._scene;
         let engine = this._scene.getEngine();
 
         let gl = engine._gl;
         let internalTexture = <InternalTexture>this._patchMap._texture;
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, internalTexture._framebuffer);
-        engine.setState(false, 0, true, scene.useRightHandedSystem); // TODO : BFC
+        engine.setState(false); // TODO : BFC
+        // engine.setState(true, 0, true, !this._scene.useRightHandedSystem); // TODO : BFC
 
         let viewMatrices = [this._currentPatch.viewMatrix,
             this._currentPatch.viewMatrixPX,
@@ -1116,9 +1135,9 @@ export class RadiosityRenderer {
             this.useDepthCompare ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT,
             false,
             Texture.NEAREST_SAMPLINGMODE);
+        this._patchMap.activeCamera = null;
         this._patchMap.renderList = this.meshes;
         this._patchMap.renderParticles = false;
-        this._patchMap.activeCamera = null;
         this._patchMap.ignoreCameraViewport = true;
         this._patchMap.useCameraPostProcesses = false;
 

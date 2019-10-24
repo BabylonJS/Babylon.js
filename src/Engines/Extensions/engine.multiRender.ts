@@ -75,7 +75,7 @@ Engine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: Inte
     for (var i = 0; i < textures.length; i++) {
         var texture = textures[i];
         if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
-            this._bindTextureDirectly(gl.TEXTURE_2D, texture);
+            this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
             gl.generateMipmap(gl.TEXTURE_2D);
             this._bindTextureDirectly(gl.TEXTURE_2D, null);
         }

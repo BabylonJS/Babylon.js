@@ -154,25 +154,12 @@ export class RadiosityEffectsManager {
 	 */
     public isVisiblityEffectReady(): boolean {
         let attribs = [VertexBuffer.PositionKind, VertexBuffer.UV2Kind];
-        let uniforms = ["world", "mBones", "nearFar"];
-        let defines = [];
-        uniforms.push("view");
-        if (this.useHemicube) {
-            uniforms.push("projection");
-            defines.push("#define HEMICUBE");
-        }
-
-        if (this.useDepthCompare) {
-            defines.push("#define DEPTH_COMPARE");
-        }
-
-        // Get correct effect
-        var join = defines.join("\n");
+        let uniforms = ["world", "view", "projection", "nearFar", "bias"];
 
         this.visibilityEffect = this._scene.getEngine().createEffect("visibility",
             attribs,
             uniforms,
-            ["diffuseSampler", "itemBuffer"], join);
+            [], "");
 
         return this.visibilityEffect.isReady();
     }
@@ -183,7 +170,7 @@ export class RadiosityEffectsManager {
      */
     public isShootEffectReady(): boolean {
         var attribs = [VertexBuffer.PositionKind, VertexBuffer.UV2Kind];
-        var uniforms = ["view", "shootPos", "shootNormal", "shootEnergy", "shootDArea", "nearFar", "gatheringScale", "residualScale"];
+        var uniforms = ["view", "shootPos", "shootNormal", "shootEnergy", "shootDArea", "nearFar", "gatheringScale", "residualScale", "normalBias"];
         var samplers = ["itemBuffer", "worldPosBuffer", "worldNormalBuffer", "idBuffer", "residualBuffer", "gatheringBuffer"];
         var defines = [];
         if (this.useDepthCompare) {

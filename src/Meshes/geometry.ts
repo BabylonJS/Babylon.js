@@ -355,7 +355,7 @@ export class Geometry implements IGetSetVerticesData {
 
     /** @hidden */
     public _bind(effect: Nullable<Effect>, indexToBind?: Nullable<DataBuffer>): void {
-        if (!effect) {
+        if (!effect || !effect.isReady()) {
             return;
         }
 

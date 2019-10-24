@@ -1,15 +1,22 @@
-﻿// Attributes
-in vec2 vUV2;
-uniform sampler2D itemBuffer;
+﻿// Uniforms
+uniform vec2 nearFar;
+uniform float bias;
 
-#ifdef DEPTH_COMPARE
-in vec4 proj;
-#endif
+// Inputs
+in vec4 vDepthMetric;
+in vec3 vView;
 
 void main(void) {
-	#ifdef DEPTH_COMPARE
-	gl_FragColor = vec4(proj.z / proj.w, 0.0, 0.0, 1.0);
-	#else
-	gl_FragColor = vec4(texture(itemBuffer, vUV2).xyz, 1.0);
-	#endif
+	// gl_FragColor = vec4(vDepthMetric, 0.0, 0.0, 1.0);
+
+	// get distance between fragment and light source
+	// float lightDistance = length(vView);
+	
+	// // map to [0;1] range by dividing by far_plane
+	// lightDistance = (lightDistance + nearFar.x) / nearFar.y;
+	// lightDistance += bias;
+	
+	// // gl_FragColor = vec4(vDepthMetric, 0.0, 0.0, 1.0);
+	// gl_FragColor = vec4(vDepthMetric.z / vDepthMetric.w, 0.0, 0.0, 1.0);
+	gl_FragColor = vec4(vDepthMetric.z / vDepthMetric.w, 0.0, 0.0, 1.0);
 }

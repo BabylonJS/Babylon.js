@@ -33,13 +33,14 @@ class SettingsPG {
         this.vsTheme = localStorage.getItem("bjs-playground-theme") || 'light';
         // Editor language
         this.scriptLanguage = localStorage.getItem("bjs-playground-scriptLanguage") || 'JS';
-        this.defaultScene = "scripts/basic scene.js";
+        // TODO : change
+        this.defaultScene = "scripts/radiosity.js";
         if (this.scriptLanguage == "JS") {
-            this.defaultScene = "scripts/basic scene.js";
+            this.defaultScene = "scripts/radiosity.js";
             this.parent.monacoCreator.monacoMode = "javascript";
         }
         else if (this.scriptLanguage == "TS") {
-            this.defaultScene = "scripts/basic scene.txt";
+            this.defaultScene = "scripts/radiosity.txt";
             this.parent.monacoCreator.monacoMode = "typescript";
         }
     }
