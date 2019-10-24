@@ -88,8 +88,6 @@ CreateBoxAsync().then(function () {
 //BABYLON.SceneLoader.AppendAsync("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/CesiumMan/glTF/CesiumMan.gltf").then(function () {
     BABYLON.Tools.Log("Loaded");
 
-    
-
     scene.createDefaultCamera(true);
     scene.activeCamera.alpha += Math.PI;
     
