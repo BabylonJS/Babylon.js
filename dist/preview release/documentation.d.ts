@@ -25457,7 +25457,6 @@ declare module BABYLON {
         private _expandable;
         private _shapeCounter;
         private _copy;
-        private _mustResetCopy;
         private _color;
         private _computeParticleColor;
         private _computeParticleTexture;
@@ -61678,7 +61677,6 @@ declare module BABYLON {
         private _blurHPostProcess;
         private _blurVPostProcess;
         private _ssaoCombinePostProcess;
-        private _firstUpdate;
         /**
          * Gets active scene
          */
