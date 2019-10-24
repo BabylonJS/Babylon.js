@@ -2050,9 +2050,9 @@ inline Error Error::New(napi_env env, const std::string& message) {
 }
 
 inline NAPI_NO_RETURN void Error::Fatal(const char* location, const char* message) {
-    // $HACK
-      //napi_fatal_error(location, NAPI_AUTO_LENGTH, message, NAPI_AUTO_LENGTH);
-    throw std::exception();
+  // $HACK
+  //napi_fatal_error(location, NAPI_AUTO_LENGTH, message, NAPI_AUTO_LENGTH);
+  throw std::exception();
 }
 
 inline Error::Error() : ObjectReference() {
