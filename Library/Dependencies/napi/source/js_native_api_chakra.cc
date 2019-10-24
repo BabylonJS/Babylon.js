@@ -487,30 +487,6 @@ napi_status napi_get_last_error_info(napi_env env,
   return napi_ok;
 }
 
-// TODO
-//void napi_fatal_error(const char* location, size_t location_len, const char* message, size_t message_len) {
-//  const char* location_string = location;
-//  const char* message_string = message;
-//
-//  if (location_len != NAPI_AUTO_LENGTH) {
-//    char* location_nullterminated = static_cast<char*>(
-//      malloc((location_len + 1) * sizeof(char)));
-//    strncpy(location_nullterminated, location, location_len);
-//    location_nullterminated[location_len] = 0;
-//    location_string = location_nullterminated;
-//  }
-//
-//  if (message_len != NAPI_AUTO_LENGTH) {
-//    char* message_nullterminated = static_cast<char*>(
-//      malloc((message_len + 1) * sizeof(char)));
-//    strncpy(message_nullterminated, message, message_len);
-//    message_nullterminated[message_len] = 0;
-//    message_string = message_nullterminated;
-//  }
-//
-//  node::FatalError(location_string, message_string);
-//}
-
 napi_status napi_create_function(napi_env env,
                                  const char* utf8name,
                                  size_t length,
