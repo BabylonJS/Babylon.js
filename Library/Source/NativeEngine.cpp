@@ -754,7 +754,7 @@ namespace babylon
 
     void NativeEngine::SetBlendMode(const Napi::CallbackInfo& info)
     {
-        const auto blendMode = static_cast<BlendMode>(info[0].As<Napi::Number>().Int32Value());
+        const auto blendMode = info[0].As<Napi::Number>().Int32Value();
 
         m_engineState &= ~BGFX_STATE_BLEND_MASK;
         m_engineState |= ALPHA_MODE[blendMode];
@@ -1067,18 +1067,18 @@ namespace babylon
 
         constexpr uint32_t filterCount = 12;
         constexpr std::array<uint32_t, filterCount> bgfxFiltering = {
-            BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIN_POINT,                            /** nearest is mag = nearest and min = nearest and mip = linear */
-            BGFX_SAMPLER_MIP_POINT,                                                     /** Bilinear is mag = linear and min = linear and mip = nearest */
-            0,                                                                          /** Trilinear is mag = linear and min = linear and mip = linear */
-            BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT,   /** mag = nearest and min = nearest and mip = nearest */
-            BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT,                            /** mag = nearest and min = linear and mip = nearest */
-            BGFX_SAMPLER_MAG_POINT,                                                     /** mag = nearest and min = linear and mip = linear */
-            BGFX_SAMPLER_MAG_POINT,                                                     /** mag = nearest and min = linear and mip = none */
-            BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIN_POINT,                            /** mag = nearest and min = nearest and mip = none */
-            BGFX_SAMPLER_MIP_POINT | BGFX_SAMPLER_MIP_POINT,                            /** mag = linear and min = nearest and mip = nearest */
-            BGFX_SAMPLER_MIN_POINT,                                                     /** mag = linear and min = nearest and mip = linear */
-            0,                                                                          /** mag = linear and min = linear and mip = none */
-            BGFX_SAMPLER_MIN_POINT };                                                   /** mag = linear and min = nearest and mip = none */
+            BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIN_POINT,                            // nearest is mag = nearest and min = nearest and mip = linear
+            BGFX_SAMPLER_MIP_POINT,                                                     // Bilinear is mag = linear and min = linear and mip = nearest
+            0,                                                                          // Trilinear is mag = linear and min = linear and mip = linear
+            BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT,   // mag = nearest and min = nearest and mip = nearest
+            BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT,                            // mag = nearest and min = linear and mip = nearest
+            BGFX_SAMPLER_MAG_POINT,                                                     // mag = nearest and min = linear and mip = linear
+            BGFX_SAMPLER_MAG_POINT,                                                     // mag = nearest and min = linear and mip = none
+            BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIN_POINT,                            // mag = nearest and min = nearest and mip = none
+            BGFX_SAMPLER_MIP_POINT | BGFX_SAMPLER_MIP_POINT,                            // mag = linear and min = nearest and mip = nearest
+            BGFX_SAMPLER_MIN_POINT,                                                     // mag = linear and min = nearest and mip = linear
+            0,                                                                          // mag = linear and min = linear and mip = none
+            BGFX_SAMPLER_MIN_POINT };                                                   // mag = linear and min = nearest and mip = none
         filter = std::min(filter, filterCount - 1);
 
         textureData->Flags &= ~(BGFX_SAMPLER_MIN_MASK | BGFX_SAMPLER_MAG_MASK | BGFX_SAMPLER_MIP_MASK);
@@ -1271,27 +1271,19 @@ namespace babylon
 
         const auto backbufferWidth = bgfx::getStats()->width;
         const auto backbufferHeight = bgfx::getStats()->height;
+        const float yOrigin = bgfx::getCaps()->originBottomLeft ? (1.f - y - height) : y;
+
         auto newViewId = m_viewidSet.Get();
         m_viewportIds.push_back(newViewId);
         m_currentBackbufferViewId = newViewId;
         bgfx::setViewFrameBuffer(m_currentBackbufferViewId, BGFX_INVALID_HANDLE);
         bgfx::setViewClear(m_currentBackbufferViewId, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
-        if (bgfx::getCaps()->originBottomLeft)
-        {
-            bgfx::setViewRect(m_currentBackbufferViewId, 
-                static_cast<uint16_t>(x * backbufferWidth), 
-                static_cast<uint16_t>((1.f - y - height) * backbufferHeight), 
-                static_cast<uint16_t>(width * backbufferWidth), 
-                static_cast<uint16_t>(height * backbufferHeight));
-        }
-        else
-        {
-            bgfx::setViewRect(m_currentBackbufferViewId, 
-                static_cast<uint16_t>(x * backbufferWidth), 
-                static_cast<uint16_t>(y * backbufferHeight), 
-                static_cast<uint16_t>(width * backbufferWidth), 
-                static_cast<uint16_t>(height * backbufferHeight));
-        }
+        
+        bgfx::setViewRect(m_currentBackbufferViewId, 
+            static_cast<uint16_t>(x * backbufferWidth), 
+            static_cast<uint16_t>(yOrigin * backbufferHeight),
+            static_cast<uint16_t>(width * backbufferWidth), 
+            static_cast<uint16_t>(height * backbufferHeight));
     }
 
     void NativeEngine::DispatchAnimationFrameAsync(Napi::FunctionReference callback)

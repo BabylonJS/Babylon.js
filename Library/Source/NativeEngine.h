@@ -300,8 +300,6 @@ namespace babylon
         void Dispatch(std::function<void()>);
 
     private:
-        enum BlendMode {}; // TODO DEBUG
-
         Napi::Value GetEngine(const Napi::CallbackInfo& info); // TODO: Hack, temporary method. Remove as part of the change to get rid of NapiBridge.
         void RequestAnimationFrame(const Napi::CallbackInfo& info);
         Napi::Value CreateVertexArray(const Napi::CallbackInfo& info);
