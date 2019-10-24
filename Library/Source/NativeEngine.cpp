@@ -184,7 +184,7 @@ namespace babylon
                 auto channelCount = (image.m_format == bimg::TextureFormat::RGB8) ? 3 : 4;
                 auto mipMapCount = static_cast<uint32_t>(std::log2(image.m_width));
                 auto mipmapImageSize = image.m_size;
-                for (auto i = 1u; i <= mipMapCount; i++)
+                for (uint32_t i = 1; i <= mipMapCount; i++)
                 {
                     mipmapImageSize += image.m_size >> (2 * i);
                 }
@@ -194,7 +194,7 @@ namespace babylon
                 memcpy(destination, source, image.m_size);
                 destination += image.m_size;
                 auto mipmapSize = image.m_size;
-                for (auto i = 0u; i < mipMapCount; i++)
+                for (uint32_t i = 0; i < mipMapCount; i++)
                 {
                     GenerateMipmap(source, image.m_width >> i, channelCount, destination);
                     source = destination;

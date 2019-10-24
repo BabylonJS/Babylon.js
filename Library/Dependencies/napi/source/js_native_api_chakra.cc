@@ -5,9 +5,9 @@
 #include <vector>
 
 namespace {
-constexpr unsigned int CP_LATIN1 = 28591;
+constexpr UINT CP_LATIN1 = 28591;
 
-std::wstring NarrowToWide(std::string_view value, unsigned int codePage = CP_UTF8) {
+std::wstring NarrowToWide(std::string_view value, UINT codePage = CP_UTF8) {
   if (value.size() == 0) {
     return {};
   }
@@ -25,7 +25,7 @@ JsErrorCode JsCreateString(_In_ const char* content, _In_ size_t length, _Out_ J
   return JsPointerToString(str.data(), str.size(), value);
 }
 
-JsErrorCode JsCopyString(_In_ JsValueRef value, _Out_opt_ char* buffer, _In_ size_t bufferSize, _Out_opt_ size_t* length, unsigned int codePage = CP_UTF8) {
+JsErrorCode JsCopyString(_In_ JsValueRef value, _Out_opt_ char* buffer, _In_ size_t bufferSize, _Out_opt_ size_t* length, UINT codePage = CP_UTF8) {
   const wchar_t* stringValue;
   size_t stringLength;
   CHECK_JSRT_ERROR_CODE(JsStringToPointer(value, &stringValue, &stringLength));
@@ -321,10 +321,11 @@ static napi_status SetErrorCode(napi_env env, JsValueRef error, napi_value code,
       CHECK_JSRT(env, JsGetProperty(error, namePropId, &nameValue));
 
       args[1] = nameValue;
-      CHECK_JSRT(env, JsCallFunction(pushFunction,
-                                args.data(),
-                                args.size(),
-                                nullptr));
+      CHECK_JSRT(env,
+        JsCallFunction(pushFunction,
+                       args.data(),
+                       static_cast<unsigned short>(args.size()),
+                       nullptr));
     }
 
     const char* openBracket = " [";
@@ -332,17 +333,17 @@ static napi_status SetErrorCode(napi_env env, JsValueRef error, napi_value code,
     CHECK_JSRT(env, JsCreateString(openBracket, NAPI_AUTO_LENGTH, &openBracketValue));
 
     args[1] = openBracketValue;
-    CHECK_JSRT(env, JsCallFunction(pushFunction, args.data(), args.size(), nullptr));
+    CHECK_JSRT(env, JsCallFunction(pushFunction, args.data(), static_cast<unsigned short>(args.size()), nullptr));
 
     args[1] = codeValue;
-    CHECK_JSRT(env, JsCallFunction(pushFunction, args.data(), args.size(), nullptr));
+    CHECK_JSRT(env, JsCallFunction(pushFunction, args.data(), static_cast<unsigned short>(args.size()), nullptr));
 
     const char* closeBracket = "]";
     JsValueRef closeBracketValue = JS_INVALID_REFERENCE;
     CHECK_JSRT(env, JsCreateString(closeBracket, NAPI_AUTO_LENGTH, &closeBracketValue));
 
     args[1] = closeBracketValue;
-    CHECK_JSRT(env, JsCallFunction(pushFunction, args.data(), args.size(), nullptr));
+    CHECK_JSRT(env, JsCallFunction(pushFunction, args.data(), static_cast<unsigned short>(args.size()), nullptr));
 
     JsValueRef emptyValue = JS_INVALID_REFERENCE;
     CHECK_JSRT(env, JsCreateString("", 0, &emptyValue));
@@ -357,10 +358,11 @@ static napi_status SetErrorCode(napi_env env, JsValueRef error, napi_value code,
     CHECK_JSRT(env, JsGetProperty(nameArray, joinPropId, &joinFunction));
 
     args[1] = emptyValue;
-    CHECK_JSRT(env, JsCallFunction(joinFunction,
-                              args.data(),
-                              args.size(),
-                              &nameValue));
+    CHECK_JSRT(env,
+      JsCallFunction(joinFunction,
+                     args.data(),
+                     static_cast<unsigned short>(args.size()),
+                     &nameValue));
 
     CHECK_JSRT(env, JsSetProperty(error, namePropId, nameValue, true));
   }
@@ -710,7 +712,7 @@ NAPI_EXTERN napi_status napi_has_own_property(napi_env env,
   CHECK_ARG(env, result);
   JsValueRef hasOwnPropertyResult;
   std::array<JsValueRef, 2> hasOwnPropertyFuncArgs{ object, key };
-  CHECK_JSRT(env, JsCallFunction(env->has_own_property_function, hasOwnPropertyFuncArgs.data(), hasOwnPropertyFuncArgs.size(), &hasOwnPropertyResult));
+  CHECK_JSRT(env, JsCallFunction(env->has_own_property_function, hasOwnPropertyFuncArgs.data(), static_cast<unsigned short>(hasOwnPropertyFuncArgs.size()), &hasOwnPropertyResult));
   CHECK_JSRT(env, JsBooleanToBool(hasOwnPropertyResult, result));
   return napi_ok;
 }
@@ -930,7 +932,7 @@ napi_status napi_get_array_length(napi_env env,
   CHECK_JSRT(env, JsGetProperty(arrayRef, propertyIdRef, &lengthRef));
   double sizeInDouble;
   CHECK_JSRT(env, JsNumberToDouble(lengthRef, &sizeInDouble));
-  *result = static_cast<unsigned int>(sizeInDouble);
+  *result = static_cast<uint32_t>(sizeInDouble);
   return napi_ok;
 }
 
@@ -978,7 +980,7 @@ napi_status napi_create_array_with_length(napi_env env,
                                           napi_value* result) {
   CHECK_ENV(env);
   CHECK_ARG(env, result);
-  CHECK_JSRT(env, JsCreateArray(length, reinterpret_cast<JsValueRef*>(result)));
+  CHECK_JSRT(env, JsCreateArray(static_cast<unsigned int>(length), reinterpret_cast<JsValueRef*>(result)));
   return napi_ok;
 }
 
