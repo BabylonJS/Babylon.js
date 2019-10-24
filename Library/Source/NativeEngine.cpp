@@ -356,6 +356,9 @@ namespace babylon
                 InstanceMethod("clear", &NativeEngine::Clear),
                 InstanceMethod("getRenderWidth", &NativeEngine::GetRenderWidth),
                 InstanceMethod("getRenderHeight", &NativeEngine::GetRenderHeight),
+                InstanceMethod("decodeImage", &NativeEngine::DecodeImage),
+                InstanceMethod("getImageData", &NativeEngine::GetImageData),
+                InstanceMethod("encodeImage", &NativeEngine::EncodeImage),
             });
         
         return Napi::Persistent(func);
@@ -915,6 +918,60 @@ namespace babylon
     Napi::Value NativeEngine::CreateTexture(const Napi::CallbackInfo& info)
     {
         return Napi::External<TextureData>::New(info.Env(), new TextureData());
+    }
+
+    Napi::Value NativeEngine::DecodeImage(const Napi::CallbackInfo& info)
+    {
+        auto imageData = new ImageData();
+        const auto buffer = info[0].As<Napi::ArrayBuffer>();
+
+        imageData->Image.reset(bimg::imageParse(&m_allocator, buffer.Data(), static_cast<uint32_t>(buffer.ByteLength())));
+
+        return Napi::External<ImageData>::New(info.Env(), imageData);
+    }
+
+    Napi::Value NativeEngine::GetImageData(const Napi::CallbackInfo& info)
+    {
+        const auto imageData = info[0].As<Napi::External<ImageData>>().Data();
+        const auto buffer = info[0].As<Napi::ArrayBuffer>();
+
+        if (!imageData->Image || !imageData->Image->m_size)
+        {
+            return {};
+        }
+        auto data = Napi::Int8Array::New(info.Env(), imageData->Image->m_size);
+
+        const auto ptr = static_cast<uint8_t*>(imageData->Image->m_data);
+        for (uint32_t i = 0; i < imageData->Image->m_size; i++)
+        {
+            data[i] = ptr[i];
+        }
+
+        return data;
+    }
+
+    Napi::Value NativeEngine::EncodeImage(const Napi::CallbackInfo& info)
+    {
+        const auto imageData = info[0].As<Napi::External<ImageData>>().Data();
+        if (!imageData->Image || !imageData->Image->m_size)
+        {
+            return {};
+        }
+
+        const auto image = imageData->Image.get();
+        bx::MemoryBlock mb(&m_allocator);
+        bx::MemoryWriter writer(&mb);
+        bimg::imageWritePng(&writer, image->m_width, image->m_height, image->m_size/image->m_height, image->m_data, image->m_format, false);
+        
+        auto data = Napi::Int8Array::New(info.Env(), mb.getSize());
+
+        const auto ptr = static_cast<uint8_t*>(mb.more());
+        for (uint32_t i = 0; i < imageData->Image->m_size; i++)
+        {
+            data[i] = ptr[i];
+        }
+
+        return data;
     }
 
     void NativeEngine::LoadTexture(const Napi::CallbackInfo& info)

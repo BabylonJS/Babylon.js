@@ -46,8 +46,28 @@ function CreateInputHandling(scene) {
     });
 }
 
+function DecodeEncodeImage(url)
+{
+    let onLoadFileError = function(request, exception) {
+        console.log("Failed to retrieve " + url + ".", exception);
+    };
+    var onload = function(data, responseURL) {
+        if (typeof (data) === "string") {
+            throw new Error("Decode Image from string data not yet implemented.");
+        }
+        var image = engine._native.decodeImage(data);
+        var imageData = engine._native.getImageData(image);
+        console.log("Image data length is " + imageData.length);
+        var encoded = engine._native.encodeImage(image);
+        console.log("Encoded Image data length is " + encoded.length);
+    }
+    BABYLON.Tools.LoadFile(url, onload, undefined, undefined, /*useArrayBuffer*/true, onLoadFileError);
+}
+
 var engine = new BABYLON.NativeEngine();
 var scene = new BABYLON.Scene(engine);
+
+DecodeEncodeImage("https://github.com/BabylonJS/Babylon.js/raw/master/tests/validation/ReferenceImages/Billboard.png");
 
 CreateBoxAsync().then(function () {
 //CreateSpheresAsync().then(function () {
@@ -67,6 +87,8 @@ CreateBoxAsync().then(function () {
 //BABYLON.SceneLoader.AppendAsync("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/RiggedFigure/glTF/RiggedFigure.gltf").then(function () {
 //BABYLON.SceneLoader.AppendAsync("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/CesiumMan/glTF/CesiumMan.gltf").then(function () {
     BABYLON.Tools.Log("Loaded");
+
+    
 
     scene.createDefaultCamera(true);
     scene.activeCamera.alpha += Math.PI;

@@ -231,6 +231,18 @@ namespace babylon
         bgfx::TextureHandle Texture{ bgfx::kInvalidHandle };
     };
 
+    struct ImageData final
+    {
+        ~ImageData()
+        {
+            if (Image)
+            {
+                bimg::imageFree(Image.get());
+            }
+        }
+        std::unique_ptr<bimg::ImageContainer> Image;
+    };
+
     struct ProgramData final
     {
         ~ProgramData()
@@ -360,6 +372,9 @@ namespace babylon
         void UpdateSize(size_t width, size_t height);
         void DispatchAnimationFrameAsync(Napi::FunctionReference callback);
 
+        Napi::Value DecodeImage(const Napi::CallbackInfo& info);
+        Napi::Value GetImageData(const Napi::CallbackInfo& info);
+        Napi::Value EncodeImage(const Napi::CallbackInfo& info);
 
         ShaderCompiler m_shaderCompiler;
 
