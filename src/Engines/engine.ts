@@ -1587,7 +1587,9 @@ export class Engine extends ThinEngine {
             byteOffset = 0;
         }
 
-        if (byteLength === undefined) {
+        const dataLength = (data as number[]).length || (data as ArrayBuffer).byteLength;
+
+        if (byteLength === undefined || byteLength >= dataLength && byteOffset === 0) {
             if (data instanceof Array) {
                 this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, new Float32Array(data));
             } else {

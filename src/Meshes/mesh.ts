@@ -75,6 +75,7 @@ class _InstanceDataStorage {
     public previousBatch: Nullable<_InstancesBatch>;
     public hardwareInstancedRendering: boolean;
     public sideOrientation: number;
+    public manualUpdate: boolean;
 }
 
 /**
@@ -367,6 +368,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._unIndexed = value;
             this._markSubMeshesAsAttributesDirty();
         }
+    }
+
+    /** Gets the array buffer used to store the instanced buffer used for instances' world matrices */
+    public get worldMatrixInstancedBuffer() {
+        return this._instanceDataStorage.instancesData;
+    }
+
+    /** Gets or sets a boolean indicating that the update of the instance buffer of the world matrices is manual */
+    public get manualUpdateOfWorldMatrixInstancedBuffer() {
+        return this._instanceDataStorage.manualUpdate;
+    }
+
+    public set manualUpdateOfWorldMatrixInstancedBuffer(value: boolean) {
+        this._instanceDataStorage.manualUpdate = value;
     }
 
     /**
@@ -1535,20 +1550,25 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var instancesCount = 0;
 
         let renderSelf = batch.renderSelf[subMesh._id];
-        var world = this._effectiveMesh.getWorldMatrix();
-        if (renderSelf) {
-            world.copyToArray(instanceStorage.instancesData, offset);
-            offset += 16;
-            instancesCount++;
-        }
 
-        if (visibleInstances) {
-            for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
-                var instance = visibleInstances[instanceIndex];
-                instance.getWorldMatrix().copyToArray(instanceStorage.instancesData, offset);
+        if (!this._instanceDataStorage.manualUpdate) {
+            var world = this._effectiveMesh.getWorldMatrix();
+            if (renderSelf) {
+                world.copyToArray(instanceStorage.instancesData, offset);
                 offset += 16;
                 instancesCount++;
             }
+
+            if (visibleInstances) {
+                for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
+                    var instance = visibleInstances[instanceIndex];
+                    instance.getWorldMatrix().copyToArray(instanceStorage.instancesData, offset);
+                    offset += 16;
+                    instancesCount++;
+                }
+            }
+        } else {
+            instancesCount = (renderSelf ? 1 : 0) + visibleInstances.length;
         }
 
         if (!instancesBuffer || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {

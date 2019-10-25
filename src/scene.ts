@@ -3310,12 +3310,14 @@ export class Scene extends AbstractScene implements IAnimatable {
     public getCollidingSubMeshCandidates: (mesh: AbstractMesh, collider: Collider) => ISmartArrayLike<SubMesh>;
 
     private _activeMeshesFrozen = false;
+    private _skipEvaluateActiveMeshesCompletely = false;
 
     /**
      * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
+     * @param skipEvaluateActiveMeshes defines an optional boolean indicating that the evaluate active meshes step must be completely skipped
      * @returns the current scene
      */
-    public freezeActiveMeshes(): Scene {
+    public freezeActiveMeshes(skipEvaluateActiveMeshes = false): Scene {
         this.executeWhenReady(() => {
             if (!this.activeCamera) {
                 return;
@@ -3327,6 +3329,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             this._evaluateActiveMeshes();
             this._activeMeshesFrozen = true;
+            this._skipEvaluateActiveMeshesCompletely = skipEvaluateActiveMeshes;
 
             for (var index = 0; index < this._activeMeshes.length; index++) {
                 this._activeMeshes.data[index]._freeze();
@@ -3359,10 +3362,12 @@ export class Scene extends AbstractScene implements IAnimatable {
     private _evaluateActiveMeshes(): void {
         if (this._activeMeshesFrozen && this._activeMeshes.length) {
 
-            const len = this._activeMeshes.length;
-            for (let i = 0; i < len; i++) {
-                let mesh = this._activeMeshes.data[i];
-                mesh.computeWorldMatrix();
+            if (!this._skipEvaluateActiveMeshesCompletely) {
+                const len = this._activeMeshes.length;
+                for (let i = 0; i < len; i++) {
+                    let mesh = this._activeMeshes.data[i];
+                    mesh.computeWorldMatrix();
+                }
             }
 
             return;

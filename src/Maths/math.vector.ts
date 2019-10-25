@@ -3756,9 +3756,24 @@ export class Matrix {
      * @returns the current matrix
      */
     public copyToArray(array: Float32Array, offset: number = 0): Matrix {
-        for (var index = 0; index < 16; index++) {
-            array[offset + index] = this._m[index];
-        }
+        let source = this._m;
+        array[offset] = source[0];
+        array[offset + 1] = source[1];
+        array[offset + 2] = source[2];
+        array[offset + 3] = source[3];
+        array[offset + 4] = source[4];
+        array[offset + 5] = source[5];
+        array[offset + 6] = source[6];
+        array[offset + 7] = source[7];
+        array[offset + 8] = source[8];
+        array[offset + 9] = source[9];
+        array[offset + 10] = source[10];
+        array[offset + 11] = source[11];
+        array[offset + 12] = source[12];
+        array[offset + 13] = source[13];
+        array[offset + 14] = source[14];
+        array[offset + 15] = source[15];
+
         return this;
     }
 
