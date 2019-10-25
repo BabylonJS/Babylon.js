@@ -19,6 +19,10 @@ class Utils {
     };
 
     toLocationError(errorMessage, errorEvent) {
+        if (!errorEvent) {
+            return null;
+        }
+
         // Do we have any location info?
         if (errorEvent.hasOwnProperty('lineNumber') && errorEvent.hasOwnProperty('columnNumber'))
             return errorEvent;
