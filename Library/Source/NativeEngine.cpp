@@ -968,7 +968,7 @@ namespace babylon
             static_cast<bgfx::TextureFormat::Enum>(image.m_format),
             0,
             imageDataRef);
-        return Napi::Value::From(info.Env(), (textureData->Texture.idx != bgfx::kInvalidHandle));
+        return Napi::Value::From(info.Env(), bgfx::isValid(textureData->Texture));
     }
 
     Napi::Value NativeEngine::LoadCubeTexture(const Napi::CallbackInfo& info)
@@ -1045,7 +1045,7 @@ namespace babylon
             format,                                         // Self-explanatory
             0x0,                                            // Flags
             allPixels);                                     // Memory
-        return Napi::Value::From(info.Env(), (textureData->Texture.idx != bgfx::kInvalidHandle));
+        return Napi::Value::From(info.Env(), bgfx::isValid(textureData->Texture));
     }
 
     Napi::Value NativeEngine::GetTextureWidth(const Napi::CallbackInfo& info)
