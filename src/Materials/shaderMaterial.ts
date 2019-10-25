@@ -600,10 +600,9 @@ export class ShaderMaterial extends Material {
 
             if (this._options.uniforms.indexOf("viewProjection") !== -1) {
                 this._effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
-            }
-
-            if (this._multiview) {
-                this._effect.setMatrix("viewProjectionR", this.getScene()._transformMatrixR);
+                if (this._multiview) {
+                    this._effect.setMatrix("viewProjectionR", this.getScene()._transformMatrixR);
+                }
             }
 
             // Bones
