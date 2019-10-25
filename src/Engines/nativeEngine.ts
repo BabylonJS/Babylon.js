@@ -71,8 +71,8 @@ interface INativeEngine {
     setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
 
     createTexture(): WebGLTexture;
-    loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | ArrayBufferView | Blob, mipMap: boolean, invertY: boolean): any;
-    loadCubeTexture(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, flipY : boolean): any;
+    loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | ArrayBufferView | Blob, mipMap: boolean, invertY: boolean): boolean;
+    loadCubeTexture(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, flipY : boolean): boolean;
     getTextureWidth(texture: WebGLTexture): number;
     getTextureHeight(texture: WebGLTexture): number;
     setTextureSampling(texture: WebGLTexture, filter: number): void; // filter is a NativeFilter.XXXX value.
@@ -959,8 +959,7 @@ export class NativeEngine extends Engine {
                     return;
                 }
 
-                let nativeHandle = this._native.loadTexture(webGLTexture, data, !noMipmap, invertY);
-                if (nativeHandle === this.INVALID_HANDLE) {
+                if (!this._native.loadTexture(webGLTexture, data, !noMipmap, invertY)) {
                     throw new Error("Could not load a native texture.");
                 }
 
@@ -1075,8 +1074,7 @@ export class NativeEngine extends Engine {
                 texture.getEngine().updateTextureSamplingMode(Texture.TRILINEAR_SAMPLINGMODE, texture);
                 texture._isRGBD = true;
                 texture.invertY = true;
-                let nativeHandle = this._native.loadCubeTexture(texture._webGLTexture!, imageData, true);
-                if (nativeHandle === this.INVALID_HANDLE) {
+                if (!this._native.loadCubeTexture(texture._webGLTexture!, imageData, true)) {
                     throw new Error("Could not load a native cube texture.");
                 }
 
