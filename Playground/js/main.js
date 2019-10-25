@@ -8,10 +8,13 @@ handleException = function(parent, e) {
     console.error(e);
 }
 
-fastEval = function(code) {
+fastEval = function(code, parent) {
     var head = document.getElementsByTagName('head')[0];
     var script = document.createElement('script');
     script.setAttribute('type', 'text/javascript');
+    script.onerror = (message) => {
+        parent.utils.showError(message);
+    }
 
     script.innerHTML = code;
 
@@ -86,7 +89,7 @@ compileAndRun = function(parent, fpsLabel) {
                 engine = createDefaultEngine();
                 scene = new BABYLON.Scene(engine);
                 var runScript = null;
-                fastEval("runScript = function(scene, canvas) {" + code + "}");
+                fastEval("runScript = function(scene, canvas) {" + code + "}", parent);
                 runScript(scene, canvas);
 
                 parent.zipTool.ZipCode = "var engine = " + defaultEngineZip + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
@@ -101,14 +104,14 @@ compileAndRun = function(parent, fpsLabel) {
                 }
 
                 // Create engine
-                fastEval("engine = " + createEngineFunction + "()");
+                fastEval("engine = " + createEngineFunction + "()", parent);
                 if (!engine) {
                     parent.utils.showError("createEngine function must return an engine.", null);
                     return;
                 }                
 
                 // Execute the code
-                fastEval(code);
+                fastEval(code, parent);
 
                 if (!scene) {
                     parent.utils.showError(createSceneFunction + " function must return a scene.", null);
