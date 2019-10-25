@@ -432,7 +432,7 @@ namespace babylon
         for (uint8_t index = 0; index < vertexBuffers.size(); ++index)
         {
             const auto& vertexBuffer = vertexBuffers[index];
-            if (vertexBuffer.handle.idx != bgfx::kInvalidHandle) // TODO : why does this happen?
+            if (vertexBuffer.handle.idx != bgfx::kInvalidHandle)
             {
                 bgfx::setVertexBuffer(index, vertexBuffer.handle, vertexBuffer.startVertex, UINT32_MAX, vertexBuffer.declHandle);
             }
@@ -442,7 +442,7 @@ namespace babylon
     Napi::Value NativeEngine::CreateIndexBuffer(const Napi::CallbackInfo& info)
     {
         const Napi::TypedArray data = info[0].As<Napi::TypedArray>();
-        if (!data.ElementLength())
+        if (data.ElementLength() == 0)
         {
             return Napi::Value::From(info.Env(), static_cast<uint32_t>(bgfx::kInvalidHandle));
         }
