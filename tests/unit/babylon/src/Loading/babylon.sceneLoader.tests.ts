@@ -517,9 +517,9 @@ describe('Babylon Scene Loader', function() {
                 expect(result.meshes.length, "meshes.length").to.equal(scene.meshes.length);
                 expect(result.particleSystems.length, "particleSystems.length").to.equal(0);
                 expect(result.animationGroups.length, "animationGroups.length").to.equal(3);
-                expect(scene.soundTracks.length, "scene.soundTracks.length").to.equal(1);
-                expect(scene.soundTracks[0].soundCollection.length, "scene.soundTracks[0].soundCollection.length").to.equal(3);
-                expect(scene.soundTracks[0].soundCollection[0].onEndedObservable.hasObservers(), "scene.soundTracks[0].soundCollection[0].onEndedObservable.hasObservers()").to.be.true;
+                expect(scene.soundTracks.length, "scene.soundTracks.length").to.equal(0);
+                expect(scene.mainSoundTrack.soundCollection.length, "scene.mainSoundTrack.soundCollection.length").to.equal(3);
+                expect(scene.mainSoundTrack.soundCollection[0].onEndedObservable.hasObservers(), "scene.mainSoundTrack.soundCollection[0].onEndedObservable.hasObservers()").to.be.true;
             });
         });
 
