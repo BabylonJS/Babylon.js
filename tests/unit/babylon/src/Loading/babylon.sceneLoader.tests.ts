@@ -139,7 +139,7 @@ describe('Babylon Scene Loader', function() {
                     disposed = true;
                 };
 
-                promises.push(BABYLON.Tools.DelayAsync(50).then(() => {
+                promises.push(BABYLON.Tools.DelayAsync(1).then(() => {
                     loader.dispose();
                     expect(ready, "ready").to.be.false;
                     expect(disposed, "disposed").to.be.true;
@@ -147,7 +147,7 @@ describe('Babylon Scene Loader', function() {
             });
 
             const scene = new BABYLON.Scene(subject);
-            promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox2.gltf", scene).then(() => {
+            promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then(() => {
                 ready = true;
             }));
 
@@ -184,7 +184,7 @@ describe('Babylon Scene Loader', function() {
             subject.runRenderLoop(() => {
                 for (const mesh of scene.meshes) {
                     if (mesh.material && mesh.isEnabled()) {
-                        expect(mesh.material.isReady(mesh), "mesh material is ready").to.be.true;
+                        expect(mesh.isReady(true), "mesh is ready").to.be.true;
                     }
                 }
             });
@@ -214,7 +214,7 @@ describe('Babylon Scene Loader', function() {
             subject.runRenderLoop(() => {
                 for (const mesh of scene.meshes) {
                     if (mesh.material && mesh.isEnabled()) {
-                        expect(mesh.material.isReady(mesh), "mesh material is ready").to.be.true;
+                        expect(mesh.isReady(true), "mesh is ready").to.be.true;
                     }
                 }
             });
@@ -283,7 +283,7 @@ describe('Babylon Scene Loader', function() {
             subject.runRenderLoop(() => {
                 for (const mesh of scene.meshes) {
                     if (mesh.material && mesh.isEnabled()) {
-                        expect(mesh.material.isReady(mesh), "mesh material is ready").to.be.true;
+                        expect(mesh.isReady(true), "mesh is ready").to.be.true;
                     }
                 }
             });
@@ -517,9 +517,9 @@ describe('Babylon Scene Loader', function() {
                 expect(result.meshes.length, "meshes.length").to.equal(scene.meshes.length);
                 expect(result.particleSystems.length, "particleSystems.length").to.equal(0);
                 expect(result.animationGroups.length, "animationGroups.length").to.equal(3);
-                expect(scene.soundTracks.length, "scene.soundTracks.length").to.equal(1);
-                expect(scene.soundTracks[0].soundCollection.length, "scene.soundTracks[0].soundCollection.length").to.equal(3);
-                expect(scene.soundTracks[0].soundCollection[0].onEndedObservable.hasObservers(), "scene.soundTracks[0].soundCollection[0].onEndedObservable.hasObservers()").to.be.true;
+                expect(scene.soundTracks.length, "scene.soundTracks.length").to.equal(0);
+                expect(scene.mainSoundTrack.soundCollection.length, "scene.mainSoundTrack.soundCollection.length").to.equal(3);
+                expect(scene.mainSoundTrack.soundCollection[0].onEndedObservable.hasObservers(), "scene.mainSoundTrack.soundCollection[0].onEndedObservable.hasObservers()").to.be.true;
             });
         });
 

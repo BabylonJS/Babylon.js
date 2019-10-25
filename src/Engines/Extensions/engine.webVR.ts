@@ -6,6 +6,20 @@ import { Observable } from '../../Misc/observable';
 import { Tools } from '../../Misc/tools';
 import { DomManagement } from '../../Misc/domManagement';
 
+/**
+ * Interface used to define additional presentation attributes
+ */
+export interface IVRPresentationAttributes {
+    /**
+     * Defines a boolean indicating that we want to get 72hz mode on Oculus Browser (default is off eg. 60hz)
+     */
+    highRefreshRate: boolean;
+    /**
+     * Enables foveation in VR to improve perf. 0 none, 1 low, 2 medium, 3 high (Default is 1)
+     */
+    foveationLevel: number;
+}
+
 declare module "../../Engines/engine" {
     export interface Engine {
         /** @hidden */
@@ -75,6 +89,11 @@ declare module "../../Engines/engine" {
         _getVRDisplaysAsync(): Promise<IDisplayChangedEventArgs>;
 
         /**
+         * Gets or sets the presentation attributes used to configure VR rendering
+         */
+        vrPresentationAttributes?: IVRPresentationAttributes;
+
+        /**
          * Call this function to switch to webVR mode
          * Will do nothing if webVR is not supported or if there is no webVR device
          * @see http://doc.babylonjs.com/how_to/webvr_camera
@@ -133,7 +152,7 @@ Engine.prototype.initWebVRAsync = function(): Promise<IDisplayChangedEventArgs> 
         this._onVrDisplayDisconnect = () => {
             this._vrDisplay.cancelAnimationFrame(this._frameHandler);
             this._vrDisplay = undefined;
-            this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction);
+            this._frameHandler = Engine.QueueNewFrame(this._boundRenderFunction);
             notifyObservers();
         };
         this._onVrDisplayPresentChange = () => {
@@ -186,7 +205,17 @@ Engine.prototype.enableVR = function() {
         };
 
         this.onVRRequestPresentStart.notifyObservers(this);
-        this._vrDisplay.requestPresent([{ source: this.getRenderingCanvas() }]).then(onResolved).catch(onRejected);
+
+        var presentationAttributes = {
+            highRefreshRate: this.vrPresentationAttributes ? this.vrPresentationAttributes.highRefreshRate : false,
+            foveationLevel: this.vrPresentationAttributes ? this.vrPresentationAttributes.foveationLevel : 1,
+        };
+
+        this._vrDisplay.requestPresent([{
+            source: this.getRenderingCanvas(),
+            attributes: presentationAttributes,
+            ...presentationAttributes
+        }]).then(onResolved).catch(onRejected);
     }
 };
 
@@ -270,5 +299,5 @@ Engine.prototype.isVRPresenting = function() {
 };
 
 Engine.prototype._requestVRFrame = function() {
-    this._frameHandler = Engine.QueueNewFrame(this._bindedRenderFunction, this._vrDisplay);
+    this._frameHandler = Engine.QueueNewFrame(this._boundRenderFunction, this._vrDisplay);
 };

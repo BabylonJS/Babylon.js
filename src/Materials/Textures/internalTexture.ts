@@ -59,6 +59,10 @@ export enum InternalTextureSource {
      */
     Raw3D,
     /**
+     * Texture content is raw 2D array data
+     */
+    Raw2DArray,
+    /**
      * Texture content is a depth texture
      */
     Depth,
@@ -91,6 +95,10 @@ export class InternalTexture {
      * Defines if the texture contains 3D data
      */
     public is3D: boolean = false;
+    /**
+     * Defines if the texture contains 2D array data
+     */
+    public is2DArray: boolean = false;
     /**
      * Defines if the texture contains multiview data
      */
@@ -329,6 +337,14 @@ export class InternalTexture {
 
             case InternalTextureSource.Raw3D:
                 proxy = this._engine.createRawTexture3D(this._bufferView, this.baseWidth, this.baseHeight, this.baseDepth, this.format, this.generateMipMaps,
+                    this.invertY, this.samplingMode, this._compression);
+                proxy._swapAndDie(this);
+
+                this.isReady = true;
+                return;
+
+            case InternalTextureSource.Raw2DArray:
+                proxy = this._engine.createRawTexture2DArray(this._bufferView, this.baseWidth, this.baseHeight, this.baseDepth, this.format, this.generateMipMaps,
                     this.invertY, this.samplingMode, this._compression);
                 proxy._swapAndDie(this);
 

@@ -20,6 +20,7 @@ import { PerformanceMonitor } from '../Misc/performanceMonitor';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { PerfCounter } from '../Misc/perfCounter';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
+import { Logger } from '../Misc/logger';
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -462,6 +463,16 @@ export class Engine extends ThinEngine {
     private _onFullscreenChange: () => void;
     private _onPointerLockChange: () => void;
 
+    // Events
+
+    /**
+     * Gets the HTML element used to attach event listeners
+     * @returns a HTML element
+     */
+    public getInputElement(): Nullable<HTMLElement> {
+        return this._renderingCanvas;
+    }
+
     /**
      * Creates a new engine
      * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which alreay used the WebGL context
@@ -476,7 +487,7 @@ export class Engine extends ThinEngine {
             return;
         }
 
-        options = options || {};
+        options = this._creationOptions;
 
         Engine.Instances.push(this);
 
@@ -624,6 +635,17 @@ export class Engine extends ThinEngine {
             return null;
         }
         return this._renderingCanvas.getBoundingClientRect();
+    }
+
+    /**
+     * Gets the client rect of the HTML element used for events
+     * @returns a client rectanglee
+     */
+    public getInputElementClientRect(): Nullable<ClientRect> {
+        if (!this._renderingCanvas) {
+            return null;
+        }
+        return this.getInputElement()!.getBoundingClientRect();
     }
 
     /**
@@ -1358,6 +1380,15 @@ export class Engine extends ThinEngine {
         super._rebuildBuffers();
     }
 
+    /** @hidden */
+    public _renderFrame() {
+        for (var index = 0; index < this._activeRenderLoops.length; index++) {
+            var renderFunction = this._activeRenderLoops[index];
+
+            renderFunction();
+        }
+    }
+
     public _renderLoop(): void {
         if (!this._contextWasLost) {
             var shouldRender = true;
@@ -1369,10 +1400,10 @@ export class Engine extends ThinEngine {
                 // Start new frame
                 this.beginFrame();
 
-                for (var index = 0; index < this._activeRenderLoops.length; index++) {
-                    var renderFunction = this._activeRenderLoops[index];
-
-                    renderFunction();
+                // Child canvases
+                if (!this._renderViews()) {
+                    // Main frame
+                    this._renderFrame();
                 }
 
                 // Present
@@ -1383,16 +1414,21 @@ export class Engine extends ThinEngine {
         if (this._activeRenderLoops.length > 0) {
             // Register new frame
             if (this.customAnimationFrameRequester) {
-                this.customAnimationFrameRequester.requestID = this._queueNewFrame(this.customAnimationFrameRequester.renderFunction || this._bindedRenderFunction, this.customAnimationFrameRequester);
+                this.customAnimationFrameRequester.requestID = this._queueNewFrame(this.customAnimationFrameRequester.renderFunction || this._boundRenderFunction, this.customAnimationFrameRequester);
                 this._frameHandler = this.customAnimationFrameRequester.requestID;
             } else if (this.isVRPresenting()) {
                 this._requestVRFrame();
             } else {
-                this._frameHandler = this._queueNewFrame(this._bindedRenderFunction, this.getHostWindow());
+                this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
             }
         } else {
             this._renderingQueueLaunched = false;
         }
+    }
+
+    /** @hidden */
+    public _renderViews() {
+        return false;
     }
 
     /**
@@ -1551,7 +1587,9 @@ export class Engine extends ThinEngine {
             byteOffset = 0;
         }
 
-        if (byteLength === undefined) {
+        const dataLength = (data as number[]).length || (data as ArrayBuffer).byteLength;
+
+        if (byteLength === undefined || byteLength >= dataLength && byteOffset === 0) {
             if (data instanceof Array) {
                 this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, new Float32Array(data));
             } else {
@@ -1881,6 +1919,52 @@ export class Engine extends ThinEngine {
         this._bindUnboundFramebuffer(null);
 
         return samples;
+    }
+
+    /**
+     * Updates a depth texture Comparison Mode and Function.
+     * If the comparison Function is equal to 0, the mode will be set to none.
+     * Otherwise, this only works in webgl 2 and requires a shadow sampler in the shader.
+     * @param texture The texture to set the comparison function for
+     * @param comparisonFunction The comparison function to set, 0 if no comparison required
+     */
+    public updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void {
+        if (this.webGLVersion === 1) {
+            Logger.Error("WebGL 1 does not support texture comparison.");
+            return;
+        }
+
+        var gl = this._gl;
+
+        if (texture.isCube) {
+            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture, true);
+
+            if (comparisonFunction === 0) {
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.NONE);
+            }
+            else {
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
+                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+            }
+
+            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
+        } else {
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
+
+            if (comparisonFunction === 0) {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.NONE);
+            }
+            else {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+            }
+
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+        }
+
+        texture._comparisonFunction = comparisonFunction;
     }
 
     /**

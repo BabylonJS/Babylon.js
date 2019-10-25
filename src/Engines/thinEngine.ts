@@ -128,14 +128,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-alpha.24";
+        return "babylonjs@4.1.0-alpha.26";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-alpha.24";
+        return "4.1.0-alpha.26";
     }
 
     /**
@@ -226,6 +226,7 @@ export class ThinEngine {
     protected _renderingCanvas: Nullable<HTMLCanvasElement>;
     protected _windowIsBackground = false;
     protected _webGLVersion = 1.0;
+    protected _creationOptions: EngineOptions;
 
     protected _highPrecisionShadersAllowed = true;
     /** @hidden */
@@ -344,7 +345,7 @@ export class ThinEngine {
     public _workingContext: Nullable<CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D>;
 
     /** @hidden */
-    public _bindedRenderFunction: any;
+    public _boundRenderFunction: any;
 
     private _vaoRecordInProgress = false;
     private _mustWipeVertexAttributes = false;
@@ -352,6 +353,7 @@ export class ThinEngine {
     private _emptyTexture: Nullable<InternalTexture>;
     private _emptyCubeTexture: Nullable<InternalTexture>;
     private _emptyTexture3D: Nullable<InternalTexture>;
+    private _emptyTexture2DArray: Nullable<InternalTexture>;
 
     /** @hidden */
     public _frameHandler: number;
@@ -412,6 +414,17 @@ export class ThinEngine {
         }
 
         return this._emptyTexture3D;
+    }
+
+    /**
+     * Gets the default empty 2D array texture
+     */
+    public get emptyTexture2DArray(): InternalTexture {
+        if (!this._emptyTexture2DArray) {
+            this._emptyTexture2DArray = this.createRawTexture2DArray(new Uint8Array(4), 1, 1, 1, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+        }
+
+        return this._emptyTexture2DArray;
     }
 
     /**
@@ -640,6 +653,7 @@ export class ThinEngine {
         // Detect if we are running on a faulty buggy desktop OS.
         this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
+        this._creationOptions = options;
         console.log(`Babylon.js v${ThinEngine.Version} - ${this.description}`);
     }
 
@@ -1022,7 +1036,7 @@ export class ThinEngine {
         }
 
         if (this._activeRenderLoops.length > 0) {
-           this._frameHandler = this._queueNewFrame(this._bindedRenderFunction, this.getHostWindow());
+           this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
         } else {
             this._renderingQueueLaunched = false;
         }
@@ -1099,8 +1113,8 @@ export class ThinEngine {
 
         if (!this._renderingQueueLaunched) {
             this._renderingQueueLaunched = true;
-            this._bindedRenderFunction = this._renderLoop.bind(this);
-            this._frameHandler = this._queueNewFrame(this._bindedRenderFunction, this.getHostWindow());
+            this._boundRenderFunction = this._renderLoop.bind(this);
+            this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
         }
     }
 
@@ -2202,6 +2216,19 @@ export class ThinEngine {
     }
 
     /**
+     * Set the value of an uniform to a number (int)
+     * @param uniform defines the webGL uniform location where to store the value
+     * @param value defines the int number to store
+     */
+    public setInt(uniform: Nullable<WebGLUniformLocation>, value: number): void {
+        if (!uniform) {
+            return;
+        }
+
+        this._gl.uniform1i(uniform, value);
+    }
+
+    /**
      * Set the value of an uniform to an array of int32
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of int32 to store
@@ -2254,11 +2281,11 @@ export class ThinEngine {
     }
 
     /**
-     * Set the value of an uniform to an array of float32
+     * Set the value of an uniform to an array of number
      * @param uniform defines the webGL uniform location where to store the value
-     * @param array defines the array of float32 to store
+     * @param array defines the array of number to store
      */
-    public setFloatArray(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
+    public setArray(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void {
         if (!uniform) {
             return;
         }
@@ -2267,63 +2294,11 @@ export class ThinEngine {
     }
 
     /**
-     * Set the value of an uniform to an array of float32 (stored as vec2)
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param array defines the array of float32 to store
-     */
-    public setFloatArray2(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
-        if (!uniform || array.length % 2 !== 0) {
-            return;
-        }
-
-        this._gl.uniform2fv(uniform, array);
-    }
-
-    /**
-     * Set the value of an uniform to an array of float32 (stored as vec3)
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param array defines the array of float32 to store
-     */
-    public setFloatArray3(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
-        if (!uniform || array.length % 3 !== 0) {
-            return;
-        }
-
-        this._gl.uniform3fv(uniform, array);
-    }
-
-    /**
-     * Set the value of an uniform to an array of float32 (stored as vec4)
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param array defines the array of float32 to store
-     */
-    public setFloatArray4(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void {
-        if (!uniform || array.length % 4 !== 0) {
-            return;
-        }
-
-        this._gl.uniform4fv(uniform, array);
-    }
-
-    /**
-     * Set the value of an uniform to an array of number
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param array defines the array of number to store
-     */
-    public setArray(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._gl.uniform1fv(uniform, <any>array);
-    }
-
-    /**
      * Set the value of an uniform to an array of number (stored as vec2)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of number to store
      */
-    public setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
+    public setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void {
         if (!uniform || array.length % 2 !== 0) {
             return;
         }
@@ -2336,7 +2311,7 @@ export class ThinEngine {
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of number to store
      */
-    public setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
+    public setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void {
         if (!uniform || array.length % 3 !== 0) {
             return;
         }
@@ -2349,7 +2324,7 @@ export class ThinEngine {
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of number to store
      */
-    public setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[]): void {
+    public setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void {
         if (!uniform || array.length % 4 !== 0) {
             return;
         }
@@ -2397,19 +2372,6 @@ export class ThinEngine {
     }
 
     /**
-     * Set the value of an uniform to a number (int)
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param value defines the int number to store
-     */
-    public setInt(uniform: Nullable<WebGLUniformLocation>, value: number): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._gl.uniform1i(uniform, value);
-    }
-
-    /**
      * Set the value of an uniform to a number (float)
      * @param uniform defines the webGL uniform location where to store the value
      * @param value defines the float number to store
@@ -2452,19 +2414,6 @@ export class ThinEngine {
     }
 
     /**
-     * Set the value of an uniform to a boolean
-     * @param uniform defines the webGL uniform location where to store the value
-     * @param bool defines the boolean to store
-     */
-    public setBool(uniform: Nullable<WebGLUniformLocation>, bool: number): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._gl.uniform1i(uniform, bool);
-    }
-
-    /**
      * Set the value of an uniform to a vec4
      * @param uniform defines the webGL uniform location where to store the value
      * @param x defines the 1st component of the value
@@ -2478,19 +2427,6 @@ export class ThinEngine {
         }
 
         this._gl.uniform4f(uniform, x, y, z, w);
-    }
-
-    /**
-     * Sets a Color4 on a uniform variable
-     * @param uniform defines the uniform location
-     * @param color4 defines the value to be set
-     */
-    public setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: IColor4Like): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._gl.uniform4f(uniform, color4.r, color4.g, color4.b, color4.a);
     }
 
     // States
@@ -2930,6 +2866,24 @@ export class ThinEngine {
         throw _DevTools.WarnImport("Engine.RawTexture");
     }
 
+    /**
+     * Creates a new raw 2D array texture
+     * @param data defines the data used to create the texture
+     * @param width defines the width of the texture
+     * @param height defines the height of the texture
+     * @param depth defines the number of layers of the texture
+     * @param format defines the format of the texture
+     * @param generateMipMaps defines if the engine must generate mip levels
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+     * @param compression defines the compressed used (can be null)
+     * @param textureType defines the compressed used (can be null)
+     * @returns a new raw 2D array texture (stored in an InternalTexture)
+     */
+    public createRawTexture2DArray(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
+        throw _DevTools.WarnImport("Engine.RawTexture");
+    }
+
     private _unpackFlipYCached: Nullable<boolean> = null;
 
     /**
@@ -2962,68 +2916,20 @@ export class ThinEngine {
      */
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
         var filters = this._getSamplingParameters(samplingMode, texture.generateMipMaps);
-
+        var target = this._gl.TEXTURE_2D;
         if (texture.isCube) {
-            this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
-            this._setTextureParameterInteger(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MIN_FILTER, filters.min);
-            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
+            target = this._gl.TEXTURE_CUBE_MAP;
         } else if (texture.is3D) {
-            this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
-            this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_MIN_FILTER, filters.min);
-            this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
-        } else {
-            this._setTextureParameterInteger(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
-            this._setTextureParameterInteger(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+            target = this._gl.TEXTURE_3D;
+        } else if (texture.is2DArray) {
+            target = this._gl.TEXTURE_2D_ARRAY;
         }
+
+        this._setTextureParameterInteger(target, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
+        this._setTextureParameterInteger(target, this._gl.TEXTURE_MIN_FILTER, filters.min);
+        this._bindTextureDirectly(target, null);
 
         texture.samplingMode = samplingMode;
-    }
-
-    /**
-     * Updates a depth texture Comparison Mode and Function.
-     * If the comparison Function is equal to 0, the mode will be set to none.
-     * Otherwise, this only works in webgl 2 and requires a shadow sampler in the shader.
-     * @param texture The texture to set the comparison function for
-     * @param comparisonFunction The comparison function to set, 0 if no comparison required
-     */
-    public updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void {
-        if (this.webGLVersion === 1) {
-            Logger.Error("WebGL 1 does not support texture comparison.");
-            return;
-        }
-
-        var gl = this._gl;
-
-        if (texture.isCube) {
-            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture, true);
-
-            if (comparisonFunction === 0) {
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.NONE);
-            }
-            else {
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
-            }
-
-            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
-        } else {
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
-
-            if (comparisonFunction === 0) {
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.NONE);
-            }
-            else {
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
-            }
-
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
-        }
-
-        texture._comparisonFunction = comparisonFunction;
     }
 
     /** @hidden */
@@ -3361,6 +3267,7 @@ export class ThinEngine {
             this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
             if (this.webGLVersion > 1) {
                 this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
+                this._bindTextureDirectly(this._gl.TEXTURE_2D_ARRAY, null);
             }
         }
     }
@@ -3413,6 +3320,7 @@ export class ThinEngine {
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
                 if (this.webGLVersion > 1) {
                     this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
+                    this._bindTextureDirectly(this._gl.TEXTURE_2D_ARRAY, null);
                 }
             }
             return false;
@@ -3440,6 +3348,9 @@ export class ThinEngine {
         else if (texture.is3D) {
             internalTexture = this.emptyTexture3D;
         }
+        else if (texture.is2DArray) {
+            internalTexture = this.emptyTexture2DArray;
+        }
         else {
             internalTexture = this.emptyTexture;
         }
@@ -3462,29 +3373,31 @@ export class ThinEngine {
             if (needToBind) {
                 this._bindTextureDirectly(this._gl.TEXTURE_2D_ARRAY, internalTexture, isPartOfTextureArray);
             }
-        } else if (internalTexture && internalTexture.is3D) {
+        } else if (internalTexture && (internalTexture.is3D || internalTexture.is2DArray)) {
+            let is3D = internalTexture.is3D;
+            let target = is3D ? this._gl.TEXTURE_3D : this._gl.TEXTURE_2D_ARRAY;
+
             if (needToBind) {
-                this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture, isPartOfTextureArray);
+                this._bindTextureDirectly(target, internalTexture, isPartOfTextureArray);
             }
 
             if (internalTexture && internalTexture._cachedWrapU !== texture.wrapU) {
                 internalTexture._cachedWrapU = texture.wrapU;
-                this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_S, this._getTextureWrapMode(texture.wrapU), internalTexture);
+                this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_S, this._getTextureWrapMode(texture.wrapU), internalTexture);
             }
 
             if (internalTexture && internalTexture._cachedWrapV !== texture.wrapV) {
                 internalTexture._cachedWrapV = texture.wrapV;
-                this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_T, this._getTextureWrapMode(texture.wrapV), internalTexture);
+                this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_T, this._getTextureWrapMode(texture.wrapV), internalTexture);
             }
 
-            if (internalTexture && internalTexture._cachedWrapR !== texture.wrapR) {
+            if (is3D && internalTexture && internalTexture._cachedWrapR !== texture.wrapR) {
                 internalTexture._cachedWrapR = texture.wrapR;
-                this._setTextureParameterInteger(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_R, this._getTextureWrapMode(texture.wrapR), internalTexture);
+                this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_R, this._getTextureWrapMode(texture.wrapR), internalTexture);
             }
 
-            this._setAnisotropicLevel(this._gl.TEXTURE_3D, texture);
-        }
-        else if (internalTexture && internalTexture.isCube) {
+            this._setAnisotropicLevel(target, texture);
+        } else if (internalTexture && internalTexture.isCube) {
             if (needToBind) {
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, internalTexture, isPartOfTextureArray);
             }
@@ -3666,7 +3579,7 @@ export class ThinEngine {
         this._currentBufferPointers = [];
         this._renderingCanvas = null;
         this._currentProgram = null;
-        this._bindedRenderFunction = null;
+        this._boundRenderFunction = null;
 
         Effect.ResetCache();
 
