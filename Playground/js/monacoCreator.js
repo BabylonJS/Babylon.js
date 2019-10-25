@@ -70,7 +70,7 @@ class MonacoCreator {
                         } else {
                             typescript.typescriptDefaults.setCompilerOptions({
                                 module: typescript.ModuleKind.AMD,
-                                target: typescript.ScriptTarget.ES5,
+                                target: typescript.ScriptTarget.ES6,
                                 noLib: false,
                                 noResolve: true,
                                 suppressOutputPathCheck: true,
@@ -119,6 +119,49 @@ class MonacoCreator {
         };
         editorOptions.minimap.enabled = document.getElementById("minimapToggle1280").classList.contains('checked');
         this.jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
+
+        monaco.languages.registerColorProvider(this.monacoMode, {
+            provideColorPresentations: (model, colorInfo) => {
+                const color = colorInfo.color;
+                
+                const precision = 100.0;
+                const converter = (n) => Math.round(n * precision) / precision;
+                
+                let label;
+                if (color.alpha === undefined || color.alpha === 1.0) {
+                    label = `(${converter(color.red)}, ${converter(color.green)}, ${converter(color.blue)})`;
+                } else {
+                    label = `(${converter(color.red)}, ${converter(color.green)}, ${converter(color.blue)}, ${converter(color.alpha)})`;
+                }
+        
+                return [ { label: label } ];
+            },
+
+            provideDocumentColors: () => {
+                const digitGroup = "\\s*(\\d*(?:\\.\\d+)?)\\s*";
+                // we add \n{0} to workaround a Monaco bug, when setting regex options on their side
+                const regex = `BABYLON\\.Color(?:3|4)\\s*\\(${digitGroup},${digitGroup},${digitGroup}(?:,${digitGroup})?\\)\\n{0}`;
+                const matches = this.jsEditor.getModel().findMatches(regex, null, true, true, null, true);
+
+                const converter = (g) => g === undefined ? undefined : Number(g);
+
+                return matches.map(match => ({
+                    color: { 
+                        red: converter(match.matches[1]), 
+                        green: converter(match.matches[2]), 
+                        blue: converter(match.matches[3]),
+                        alpha: converter(match.matches[4])
+                    },
+                    range:{
+                        startLineNumber: match.range.startLineNumber,
+                        startColumn: match.range.startColumn + match.matches[0].indexOf("("),
+                        endLineNumber: match.range.startLineNumber,
+                        endColumn: match.range.endColumn
+                    }
+                }));
+            }
+        });
+
         this.jsEditor.setValue(oldCode);
         this.jsEditor.onKeyUp(function () {
             this.parent.utils.markDirty();
