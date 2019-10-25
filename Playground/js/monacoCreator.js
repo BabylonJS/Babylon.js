@@ -129,9 +129,9 @@ class MonacoCreator {
                 
                 let label;
                 if (color.alpha === undefined || color.alpha === 1.0) {
-                    label = `(${converter(color.red)}, ${converter(color.green)}, ${converter(color.blue)})`
+                    label = `(${converter(color.red)}, ${converter(color.green)}, ${converter(color.blue)})`;
                 } else {
-                    label = `(${converter(color.red)}, ${converter(color.green)}, ${converter(color.blue)}, ${converter(color.alpha)})`
+                    label = `(${converter(color.red)}, ${converter(color.green)}, ${converter(color.blue)}, ${converter(color.alpha)})`;
                 }
         
                 return [ { label: label } ];
