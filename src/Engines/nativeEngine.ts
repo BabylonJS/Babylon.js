@@ -1075,8 +1075,10 @@ export class NativeEngine extends Engine {
                 texture.getEngine().updateTextureSamplingMode(Texture.TRILINEAR_SAMPLINGMODE, texture);
                 texture._isRGBD = true;
                 texture.invertY = true;
-                this._native.loadCubeTexture(texture._webGLTexture!, imageData, true);
-
+                let nativeHandle = this._native.loadCubeTexture(texture._webGLTexture!, imageData, true);
+                if (nativeHandle === this.INVALID_HANDLE) {
+                    throw new Error("Could not load a native cube texture.");
+                }
                 texture.isReady = true;
                 if (onLoad) {
                     onLoad();
