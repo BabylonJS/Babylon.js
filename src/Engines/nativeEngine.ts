@@ -71,8 +71,8 @@ interface INativeEngine {
     setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
 
     createTexture(): WebGLTexture;
-    loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | ArrayBufferView | Blob, mipMap: boolean): void;
-    loadCubeTexture(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, flipY : boolean): void;
+    loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | ArrayBufferView | Blob, mipMap: boolean): any;
+    loadCubeTexture(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, flipY : boolean): any;
     getTextureWidth(texture: WebGLTexture): number;
     getTextureHeight(texture: WebGLTexture): number;
     setTextureSampling(texture: WebGLTexture, filter: number): void; // filter is a NativeFilter.XXXX value.
@@ -175,6 +175,8 @@ declare var _native: any;
 /** @hidden */
 export class NativeEngine extends Engine {
     private readonly _native: INativeEngine = new _native.Engine();
+    /** Defines the invalid handle returned by bgfx when resource creation goes wrong */
+    private readonly INVALID_HANDLE = 65535;
 
     public getHardwareScalingLevel(): number {
         return 1.0;
@@ -288,6 +290,9 @@ export class NativeEngine extends Engine {
         buffer.references = 1;
         buffer.is32Bits = (data.BYTES_PER_ELEMENT === 4);
         buffer.nativeIndexBuffer = this._native.createIndexBuffer(data);
+        if (buffer.nativeVertexBuffer == this.INVALID_HANDLE) {
+            throw new Error("Could not create a native index buffer.");
+        }
         return buffer;
     }
 
@@ -295,6 +300,9 @@ export class NativeEngine extends Engine {
         const buffer = new NativeDataBuffer();
         buffer.references = 1;
         buffer.nativeVertexBuffer = this._native.createVertexBuffer(ArrayBuffer.isView(data) ? data : new Float32Array(data));
+        if (buffer.nativeVertexBuffer == this.INVALID_HANDLE) {
+            throw new Error("Could not create a native vertex buffer.");
+        }
         return buffer;
     }
 
@@ -946,7 +954,10 @@ export class NativeEngine extends Engine {
                     return;
                 }
 
-                this._native.loadTexture(webGLTexture, data, !noMipmap);
+                let nativeHandle = this._native.loadTexture(webGLTexture, data, !noMipmap);
+                if (nativeHandle == this.INVALID_HANDLE) {
+                    throw new Error("Could not load a native texture.");
+                }
 
                 if (invertY) {
                     throw new Error("Support for textures with inverted Y coordinates not yet implemented.");
