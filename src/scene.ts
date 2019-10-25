@@ -2004,6 +2004,10 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         newMesh._resyncLightSources();
 
+        if (!newMesh.parent) {
+            newMesh._addToSceneRootNodes();
+        }
+
         this.onNewMeshAddedObservable.notifyObservers(newMesh);
 
         if (recursive) {
@@ -2025,6 +2029,10 @@ export class Scene extends AbstractScene implements IAnimatable {
             // Remove from the scene if mesh found
             this.meshes[index] = this.meshes[this.meshes.length - 1];
             this.meshes.pop();
+
+            if (!toRemove.parent) {
+                toRemove._removeFromSceneRootNodes();
+            }
         }
 
         this.onMeshRemovedObservable.notifyObservers(toRemove);
@@ -2043,6 +2051,10 @@ export class Scene extends AbstractScene implements IAnimatable {
     public addTransformNode(newTransformNode: TransformNode) {
         newTransformNode._indexInSceneTransformNodesArray = this.transformNodes.length;
         this.transformNodes.push(newTransformNode);
+
+        if (!newTransformNode.parent) {
+            newTransformNode._addToSceneRootNodes();
+        }
 
         this.onNewTransformNodeAddedObservable.notifyObservers(newTransformNode);
     }
@@ -2063,6 +2075,9 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             toRemove._indexInSceneTransformNodesArray = -1;
             this.transformNodes.pop();
+            if (!toRemove.parent) {
+                toRemove._removeFromSceneRootNodes();
+            }
         }
 
         this.onTransformNodeRemovedObservable.notifyObservers(toRemove);
@@ -2117,6 +2132,10 @@ export class Scene extends AbstractScene implements IAnimatable {
             // Remove from the scene if mesh found
             this.lights.splice(index, 1);
             this.sortLightsByPriority();
+
+            if (!toRemove.parent) {
+                toRemove._removeFromSceneRootNodes();
+            }
         }
         this.onLightRemovedObservable.notifyObservers(toRemove);
         return index;
@@ -2132,6 +2151,9 @@ export class Scene extends AbstractScene implements IAnimatable {
         if (index !== -1) {
             // Remove from the scene if mesh found
             this.cameras.splice(index, 1);
+            if (!toRemove.parent) {
+                toRemove._removeFromSceneRootNodes();
+            }
         }
         // Remove from activeCameras
         var index2 = this.activeCameras.indexOf(toRemove);
@@ -2272,6 +2294,10 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.lights.push(newLight);
         this.sortLightsByPriority();
 
+        if (!newLight.parent) {
+            newLight._addToSceneRootNodes();
+        }
+
         // Add light to all meshes (To support if the light is removed and then readded)
         for (var mesh of this.meshes) {
             if (mesh.lightSources.indexOf(newLight) === -1) {
@@ -2299,6 +2325,10 @@ export class Scene extends AbstractScene implements IAnimatable {
     public addCamera(newCamera: Camera): void {
         this.cameras.push(newCamera);
         this.onNewCameraAddedObservable.notifyObservers(newCamera);
+
+        if (!newCamera.parent) {
+            newCamera._addToSceneRootNodes();
+        }
     }
 
     /**
@@ -2395,7 +2425,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param attachControl defines if attachControl must be called for the new active camera (default: true)
      */
     public switchActiveCamera(newCamera: Camera, attachControl = true): void {
-        var canvas = this._engine.getRenderingCanvas();
+        var canvas = this._engine.getInputElement();
 
         if (!canvas) {
             return;
@@ -3175,7 +3205,6 @@ export class Scene extends AbstractScene implements IAnimatable {
                 }
 
                 // Dispatch
-                this._activeIndices.addCount(subMesh.indexCount, false);
                 this._renderingManager.dispatch(subMesh, mesh, material);
             }
         }
@@ -3281,12 +3310,14 @@ export class Scene extends AbstractScene implements IAnimatable {
     public getCollidingSubMeshCandidates: (mesh: AbstractMesh, collider: Collider) => ISmartArrayLike<SubMesh>;
 
     private _activeMeshesFrozen = false;
+    private _skipEvaluateActiveMeshesCompletely = false;
 
     /**
      * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
+     * @param skipEvaluateActiveMeshes defines an optional boolean indicating that the evaluate active meshes step must be completely skipped
      * @returns the current scene
      */
-    public freezeActiveMeshes(): Scene {
+    public freezeActiveMeshes(skipEvaluateActiveMeshes = false): Scene {
         this.executeWhenReady(() => {
             if (!this.activeCamera) {
                 return;
@@ -3298,6 +3329,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             this._evaluateActiveMeshes();
             this._activeMeshesFrozen = true;
+            this._skipEvaluateActiveMeshesCompletely = skipEvaluateActiveMeshes;
 
             for (var index = 0; index < this._activeMeshes.length; index++) {
                 this._activeMeshes.data[index]._freeze();
@@ -3330,10 +3362,12 @@ export class Scene extends AbstractScene implements IAnimatable {
     private _evaluateActiveMeshes(): void {
         if (this._activeMeshesFrozen && this._activeMeshes.length) {
 
-            const len = this._activeMeshes.length;
-            for (let i = 0; i < len; i++) {
-                let mesh = this._activeMeshes.data[i];
-                mesh.computeWorldMatrix();
+            if (!this._skipEvaluateActiveMeshesCompletely) {
+                const len = this._activeMeshes.length;
+                for (let i = 0; i < len; i++) {
+                    let mesh = this._activeMeshes.data[i];
+                    mesh.computeWorldMatrix();
+                }
             }
 
             return;
@@ -4072,7 +4106,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         this.detachControl();
 
         // Detach cameras
-        var canvas = this._engine.getRenderingCanvas();
+        var canvas = this._engine.getInputElement();
 
         if (canvas) {
             var index;

@@ -1,4 +1,4 @@
-import { StringTools } from 'babylonjs/Misc/stringTools';
+import { StringTools } from './stringTools';
 
 /**
  * Interface for a data buffer

@@ -67,15 +67,7 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
         this.updateAfterTextureLoad();
     }
 
-	/**
-	 * Replaces the texture of the node
-	 * @param file the file of the texture to use
-	 */
-    replaceTexture(file: File) {
-        if (!this.props.node) {
-            return;
-        }
-
+    _prepareTexture() {
         let texture = this.props.node.texture as BaseTexture;
 
         if (texture && texture.isCube !== this.state.loadAsCubeTexture) {
@@ -84,7 +76,6 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
         }
 
         if (!texture) {
-
             if (!this.state.loadAsCubeTexture) {
                 this.props.node.texture = new Texture(null, this.props.globalState.nodeMaterial.getScene(), false, this.props.node instanceof ReflectionTextureNodeModel);
                 texture = this.props.node.texture;
@@ -94,8 +85,21 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
                 texture = this.props.node.texture;
                 texture.coordinatesMode = Texture.CUBIC_MODE;
             }
+        }  
+    }
+
+	/**
+	 * Replaces the texture of the node
+	 * @param file the file of the texture to use
+	 */
+    replaceTexture(file: File) {
+        if (!this.props.node) {
+            return;
         }
 
+        this._prepareTexture();
+
+        let texture = this.props.node.texture as BaseTexture;
         Tools.ReadFile(file, (data) => {
             var blob = new Blob([data], { type: "octet/stream" });
 
@@ -117,14 +121,9 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
     }
 
     replaceTextureWithUrl(url: string) {
-        let texture = this.props.node.texture as BaseTexture;
-        if (!texture) {
-            this.props.node.texture = new Texture(url, this.props.globalState.nodeMaterial.getScene(), false, false, undefined, () => {
-                this.updateAfterTextureLoad();
-            });
-            return;
-        }
+        this._prepareTexture();
 
+        let texture = this.props.node.texture as BaseTexture;       
         if (texture.isCube || this.props.node instanceof ReflectionTextureNodeModel) {
             let extension: string | undefined = undefined;
             if (url.toLowerCase().indexOf(".dds") > 0) {

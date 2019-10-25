@@ -95,9 +95,9 @@ export class PreviewManager {
             this._scene.render();
         });
 
-        let cameraLastRotation = 0;
+   //     let cameraLastRotation = 0;
         let lastOffsetX:number | undefined = undefined; 
-        const lightRotationParallaxSpeed = 0.5;        
+     //   const lightRotationParallaxSpeed = 0.5;        
         const lightRotationSpeed = 0.01;        
 
         this._scene.onPointerObservable.add(evt => {
@@ -123,17 +123,17 @@ export class PreviewManager {
             lastOffsetX = evt.event.offsetX;
         });
 
-        this._scene.registerBeforeRender(() => {
-            if (this._camera.alpha === cameraLastRotation) {
-                return;
-            }
-            if (!this._globalState.controlCamera) {
-                return;
-            }
-            var rotateLighting = (this._camera.alpha - cameraLastRotation) * lightRotationParallaxSpeed; 
-            this._lightParent.rotate(Vector3.Up(), rotateLighting);
-            cameraLastRotation = this._camera.alpha;
-        });
+        // this._scene.registerBeforeRender(() => {
+        //     if (this._camera.alpha === cameraLastRotation) {
+        //         return;
+        //     }
+        //     if (!this._globalState.controlCamera) {
+        //         return;
+        //     }
+        //     var rotateLighting = (this._camera.alpha - cameraLastRotation) * lightRotationParallaxSpeed; 
+        //     this._lightParent.rotate(Vector3.Up(), rotateLighting);
+        //     cameraLastRotation = this._camera.alpha;
+        // });
     }
 
     private _handleAnimations() {

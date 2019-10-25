@@ -10,6 +10,7 @@ import { Constants } from "../../Engines/constants";
 import { _TypeStore } from '../../Misc/typeStore';
 
 import "../../Engines/Extensions/engine.cubeTexture";
+import { StringTools } from '../../Misc/stringTools';
 
 /**
  * Class for creating a cube texture
@@ -250,6 +251,9 @@ export class CubeTexture extends BaseTexture {
             this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
+        if (!this.name || StringTools.StartsWith(this.name, "data:")) {
+            this.name = url;
+        }
         this.url = url;
         this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
         this._prefiltered = false;

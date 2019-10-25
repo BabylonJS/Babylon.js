@@ -18,10 +18,14 @@ interface ObjectWithMetadata {
  * Store glTF extras (if present) in BJS objects' metadata
  */
 export class ExtrasAsMetadata implements IGLTFLoaderExtension {
-    /** The name of this extension. */
+    /**
+     * The name of this extension.
+     */
     public readonly name = NAME;
 
-    /** Defines whether this extension is enabled. */
+    /**
+     * Defines whether this extension is enabled.
+     */
     public enabled = true;
 
     private _loader: GLTFLoader;

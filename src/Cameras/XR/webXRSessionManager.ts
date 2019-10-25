@@ -4,6 +4,25 @@ import { Nullable } from "../../types";
 import { IDisposable, Scene } from "../../scene";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import { WebXRRenderTarget, WebXRState } from './webXRTypes';
+import { WebXRManagedOutputCanvas } from './webXRManagedOutputCanvas';
+
+interface IRenderTargetProvider {
+    getRenderTargetForEye(eye: XREye): RenderTargetTexture;
+}
+
+class RenderTargetProvider implements IRenderTargetProvider {
+    private _texture: RenderTargetTexture;
+
+    public constructor(texture: RenderTargetTexture) {
+        this._texture = texture;
+    }
+
+    public getRenderTargetForEye(eye: XREye): RenderTargetTexture {
+        return this._texture;
+    }
+}
+
 /**
  * Manages an XRSession to work with Babylon's engine
  * @see https://doc.babylonjs.com/how_to/webxr
@@ -28,15 +47,14 @@ export class WebXRSessionManager implements IDisposable {
      */
     public referenceSpace: XRReferenceSpace;
 
-    /** @hidden */
-    public _sessionRenderTargetTexture: Nullable<RenderTargetTexture> = null;
-
     /**
      * Current XR frame
      */
     public currentFrame: Nullable<XRFrame>;
+
     private _xrNavigator: any;
     private baseLayer: Nullable<XRWebGLLayer> = null;
+    private _rttProvider: Nullable<IRenderTargetProvider>;
 
     private _sessionEnded: boolean = false;
 
@@ -66,10 +84,11 @@ export class WebXRSessionManager implements IDisposable {
     /**
      * Initializes an xr session
      * @param xrSessionMode mode to initialize
+     * @param optionalFeatures defines optional values to pass to the session builder
      * @returns a promise which will resolve once the session has been initialized
      */
-    public initializeSessionAsync(xrSessionMode: XRSessionMode) {
-        return this._xrNavigator.xr.requestSession(xrSessionMode).then((session: XRSession) => {
+    public initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures: any = {}) {
+        return this._xrNavigator.xr.requestSession(xrSessionMode, optionalFeatures).then((session: XRSession) => {
             this.session = session;
             this._sessionEnded = false;
 
@@ -77,7 +96,7 @@ export class WebXRSessionManager implements IDisposable {
             this.session.addEventListener("end", () => {
                 this._sessionEnded = true;
                 // Remove render target texture and notify frame obervers
-                this._sessionRenderTargetTexture = null;
+                this._rttProvider = null;
 
                 // Restore frame buffer to avoid clear on xr framebuffer after session end
                 this.scene.getEngine().restoreDefaultFramebuffer();
@@ -98,6 +117,17 @@ export class WebXRSessionManager implements IDisposable {
     public setReferenceSpaceAsync(referenceSpace: XRReferenceSpaceType) {
         return this.session.requestReferenceSpace(referenceSpace).then((referenceSpace: XRReferenceSpace) => {
             this.referenceSpace = referenceSpace;
+        }, (rejectionReason) => {
+            Logger.Error("XR.requestReferenceSpace failed for the following reason: ");
+            Logger.Error(rejectionReason);
+            Logger.Log("Defaulting to universally-supported \"viewer\" reference space type.");
+
+            return this.session.requestReferenceSpace("viewer").then((referenceSpace: XRReferenceSpace) => {
+                this.referenceSpace = referenceSpace;
+            }, (rejectionReason) => {
+                Logger.Error(rejectionReason);
+                throw "XR initialization failed: required \"viewer\" reference space type not supported.";
+            });
         });
     }
 
@@ -131,13 +161,29 @@ export class WebXRSessionManager implements IDisposable {
                 this.scene.getEngine()._renderLoop();
             }
         };
-        // Create render target texture from xr's webgl render target
-        this._sessionRenderTargetTexture = WebXRSessionManager._CreateRenderTargetTextureFromSession(this.session, this.scene, this.baseLayer!);
+
+        if (this._xrNavigator.xr.native) {
+            this._rttProvider = this._xrNavigator.xr.getNativeRenderTargetProvider(this.session, (width: number, height: number) => {
+                return this.scene.getEngine().createRenderTargetTexture({ width: width, height: height }, false);
+            });
+        } else {
+            // Create render target texture from xr's webgl render target
+            this._rttProvider = new RenderTargetProvider(WebXRSessionManager._CreateRenderTargetTextureFromSession(this.session, this.scene, this.baseLayer!));
+        }
 
         // Stop window's animation frame and trigger sessions animation frame
-        window.cancelAnimationFrame(this.scene.getEngine()._frameHandler);
+        if (window.cancelAnimationFrame) { window.cancelAnimationFrame(this.scene.getEngine()._frameHandler); }
         this.scene.getEngine()._renderLoop();
         return Promise.resolve();
+    }
+
+    /**
+     * Gets the correct render target texture to be rendered this frame for this eye
+     * @param eye the eye for which to get the render target
+     * @returns the render target for the specified eye
+     */
+    public getRenderTargetTextureForEye(eye: XREye) : RenderTargetTexture {
+        return this._rttProvider!.getRenderTargetForEye(eye);
     }
 
     /**
@@ -146,9 +192,9 @@ export class WebXRSessionManager implements IDisposable {
      */
     public exitXRAsync() {
         if (this.session) {
-            this.session.end();
+            return this.session.end();
         }
-        return new Promise(() => { });
+        return Promise.resolve();
     }
 
     /**
@@ -166,6 +212,20 @@ export class WebXRSessionManager implements IDisposable {
                 Logger.Warn(e);
                 return Promise.resolve(false);
             });
+        }
+    }
+
+    /**
+     * Creates a WebXRRenderTarget object for the XR session
+     * @param onStateChangedObservable optional, mechanism for enabling/disabling XR rendering canvas, used only on Web
+     * @returns a WebXR render target to which the session can render
+     */
+    public getWebXRRenderTarget(onStateChangedObservable?: Observable<WebXRState>) : WebXRRenderTarget {
+        if (this._xrNavigator.xr.native) {
+            return this._xrNavigator.xr.getWebXRRenderTarget(this.scene.getEngine());
+        }
+        else {
+            return new WebXRManagedOutputCanvas(this.scene.getEngine(), this.scene.getEngine().getRenderingCanvas() as HTMLCanvasElement, onStateChangedObservable!);
         }
     }
 

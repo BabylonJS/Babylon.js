@@ -166,6 +166,25 @@ export class PBRMaterial extends PBRBaseMaterial {
     public roughness: Nullable<number>;
 
     /**
+     * Specifies the an F0 factor to help configuring the material F0.
+     * Instead of the default 4%, 8% * factor will be used. As the factor is defaulting
+     * to 0.5 the previously hard coded value stays the same.
+     * Can also be used to scale the F0 values of the metallic texture.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public metallicF0Factor = 0.5;
+
+    /**
+     * Specifies whether the F0 factor can be fetched from the mettalic texture.
+     * If set to true, please adapt the metallicF0Factor to ensure it fits with
+     * your expectation as it multiplies with the texture data.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public useMetallicF0FactorFromMetallicTexture = false;
+
+    /**
      * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
      * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
      */

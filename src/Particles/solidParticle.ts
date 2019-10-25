@@ -16,6 +16,10 @@ export class SolidParticle {
      */
     public idx: number = 0;
     /**
+     * particle identifier
+     */
+    public id: number = 0;
+    /**
      * The color of the particle
      */
     public color: Nullable<Color4> = new Color4(1.0, 1.0, 1.0, 1.0);
@@ -127,7 +131,8 @@ export class SolidParticle {
     /**
      * Creates a Solid Particle object.
      * Don't create particles manually, use instead the Solid Particle System internal tools like _addParticle()
-     * @param particleIndex (integer) is the particle index in the Solid Particle System pool. It's also the particle identifier.
+     * @param particleIndex (integer) is the particle index in the Solid Particle System pool.
+     * @param particleId (integer) is the particle identifier. Unless some particles are removed from the SPS, it's the same value than the particle idx.
      * @param positionIndex (integer) is the starting index of the particle vertices in the SPS "positions" array.
      * @param indiceIndex (integer) is the starting index of the particle indices in the SPS "indices" array.
      * @param model (ModelShape) is a reference to the model shape on what the particle is designed.
@@ -136,8 +141,9 @@ export class SolidParticle {
      * @param sps defines the sps it is associated to
      * @param modelBoundingInfo is the reference to the model BoundingInfo used for intersection computations.
      */
-    constructor(particleIndex: number, positionIndex: number, indiceIndex: number, model: Nullable<ModelShape>, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo: Nullable<BoundingInfo> = null) {
+    constructor(particleIndex: number, particleId: number, positionIndex: number, indiceIndex: number, model: Nullable<ModelShape>, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo: Nullable<BoundingInfo> = null) {
         this.idx = particleIndex;
+        this.id = particleId;
         this._pos = positionIndex;
         this._ind = indiceIndex;
         this._model = <ModelShape>model;
@@ -149,7 +155,41 @@ export class SolidParticle {
             this._boundingInfo = new BoundingInfo(modelBoundingInfo.minimum, modelBoundingInfo.maximum);
         }
     }
-
+    /**
+     * Copies the particle property values into the existing target : position, rotation, scaling, uvs, colors, pivot, parent, visibility, alive
+     * @param target the particle target
+     * @returns the current particle
+     */
+    public copyToRef(target: SolidParticle): SolidParticle {
+        target.position.copyFrom(this.position);
+        target.rotation.copyFrom(this.rotation);
+        if (this.rotationQuaternion) {
+            if (target.rotationQuaternion) {
+                target.rotationQuaternion!.copyFrom(this.rotationQuaternion!);
+            }
+            else {
+                target.rotationQuaternion = this.rotationQuaternion.clone();
+            }
+        }
+        target.scaling.copyFrom(this.scaling);
+        if (this.color) {
+            if (target.color) {
+                target.color!.copyFrom(this.color!);
+            }
+            else {
+                target.color = this.color.clone();
+            }
+        }
+        target.uvs.copyFrom(this.uvs);
+        target.velocity.copyFrom(this.velocity);
+        target.pivot.copyFrom(this.pivot);
+        target.translateFromPivot = this.translateFromPivot;
+        target.alive = this.alive;
+        target.isVisible = this.isVisible;
+        target.parentId = this.parentId;
+        target.cullingStrategy = this.cullingStrategy;
+        return this;
+    }
     /**
      * Legacy support, changed scale to scaling
      */

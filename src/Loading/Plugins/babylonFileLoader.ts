@@ -34,6 +34,18 @@ import { StringTools } from '../../Misc/stringTools';
 /** @hidden */
 export var _BabylonLoaderRegistered = true;
 
+/**
+ * Helps setting up some configuration for the babylon file loader.
+ */
+export class BabylonFileLoaderConfiguration {
+    /**
+     * The loader does not allow injecting custom physix engine into the plugins.
+     * Unfortunately in ES6, we need to manually inject them into the plugin.
+     * So you could set this variable to your engine import to make it work.
+     */
+    public static LoaderInjectedPhysicsEngine: any = undefined;
+}
+
 var parseMaterialById = (id: string, parsedData: any, scene: Scene, rootUrl: string) => {
     for (var index = 0, cache = parsedData.materials.length; index < cache; index++) {
         var parsedMaterial = parsedData.materials[index];
@@ -703,11 +715,11 @@ SceneLoader.RegisterPlugin({
             if (parsedData.physicsEnabled) {
                 var physicsPlugin;
                 if (parsedData.physicsEngine === "cannon") {
-                    physicsPlugin = new CannonJSPlugin();
+                    physicsPlugin = new CannonJSPlugin(undefined, undefined, BabylonFileLoaderConfiguration.LoaderInjectedPhysicsEngine);
                 } else if (parsedData.physicsEngine === "oimo") {
-                    physicsPlugin = new OimoJSPlugin();
+                    physicsPlugin = new OimoJSPlugin(undefined, BabylonFileLoaderConfiguration.LoaderInjectedPhysicsEngine);
                 } else if (parsedData.physicsEngine === "ammo") {
-                    physicsPlugin = new AmmoJSPlugin();
+                    physicsPlugin = new AmmoJSPlugin(undefined, BabylonFileLoaderConfiguration.LoaderInjectedPhysicsEngine, undefined);
                 }
                 log = "\tPhysics engine " + (parsedData.physicsEngine ? parsedData.physicsEngine : "oimo") + " enabled\n";
                 //else - default engine, which is currently oimo
