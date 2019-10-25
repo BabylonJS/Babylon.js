@@ -14,9 +14,7 @@ fastEval = function(code) {
     var script = document.createElement('script');
     script.setAttribute('type', 'text/javascript');
 
-    script.innerHTML = `try {
-        ${code};
-    }
+    script.innerHTML = `try {${code};}
     catch(e) {
         handleException(globalParent, e);
     }`;
