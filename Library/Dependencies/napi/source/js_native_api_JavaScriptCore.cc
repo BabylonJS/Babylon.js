@@ -342,6 +342,17 @@ napi_status napi_create_array_with_length(napi_env env,
   return napi_ok;
 }
 
+
+napi_status napi_create_typedarray(napi_env env,
+                                   napi_typedarray_type type,
+                                   size_t length,
+                                   napi_value arraybuffer,
+                                   size_t byte_offset,
+                                   napi_value* result) {
+  assert(0);
+  return napi_ok;
+}
+
 napi_status napi_create_string_utf16(napi_env env,
                    const char16_t* str,
                    size_t length,
