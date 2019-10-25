@@ -455,6 +455,7 @@ export class TransformNode extends Node {
             this._isWorldMatrixFrozen = false;  // no guarantee world is not already frozen, switch off temporarily
             this.computeWorldMatrix(true);
         }
+        this._isDirty = false;
         this._isWorldMatrixFrozen = true;
         return this;
     }
