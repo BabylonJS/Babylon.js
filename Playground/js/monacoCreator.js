@@ -122,7 +122,7 @@ class MonacoCreator {
 
         monaco.languages.registerColorProvider(this.monacoMode, {
             provideColorPresentations: (model, colorInfo) => {
-                var color = colorInfo.color;
+                const color = colorInfo.color;
                 
                 const precision = 100.0;
                 const converter = (n) => Math.round(n * precision) / precision;
