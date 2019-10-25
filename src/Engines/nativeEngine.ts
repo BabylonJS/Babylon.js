@@ -89,7 +89,10 @@ interface INativeEngine {
     drawIndexed(fillMode: number, indexStart: number, indexCount: number): void;
     draw(fillMode: number, vertexStart: number, vertexCount: number): void;
 
-    clear(r: number, g: number, b: number, a: number, backBuffer: boolean, depth: boolean, stencil: boolean): void;
+    clear(flags: number): void;
+    clearColor(r: number, g: number, b: number, a: number): void;
+    clearDepth(depth: number): void;
+    clearStencil(stencil: number): void;
 
     getRenderWidth(): number;
     getRenderHeight(): number;
@@ -145,6 +148,13 @@ class NativeFilter {
     public static readonly MINLINEAR_MAGPOINT_MIPPOINT = 10;
 }
 
+// these flags match bgfx.
+class NativeClearFlags
+{
+    public static readonly CLEAR_COLOR = 1;
+    public static readonly CLEAR_DEPTH = 2;
+    public static readonly CLEAR_STENCIL = 4;
+}
 // TODO: change this to match bgfx.
 // Must match AddressMode enum in SpectreEngine.h.
 class NativeAddressMode {
@@ -281,10 +291,20 @@ export class NativeEngine extends Engine {
     }
 
     public clear(color: Color4, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
-        if (color == null) {
-            return;
+        var mode = 0;
+        if (backBuffer && color) {
+            this._native.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
+            mode |= NativeClearFlags.CLEAR_COLOR;
         }
-        this._native.clear(color.r, color.g, color.b, color.a, backBuffer, depth, stencil);
+        if (depth) {
+            this._native.clearDepth(1.0);
+            mode |= NativeClearFlags.CLEAR_DEPTH;
+        }
+        if (stencil) {
+            this._native.clearStencil(0);
+            mode |= NativeClearFlags.CLEAR_STENCIL;
+        }
+        this._native.clear(mode);
     }
 
     public createIndexBuffer(indices: IndicesArray): NativeDataBuffer {
