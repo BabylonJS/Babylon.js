@@ -19,6 +19,13 @@ export class BRDFTextureTools {
             scene.useDelayedTextureLoading = false;
 
             var texture = Texture.CreateFromBase64String(this._environmentBRDFBase64Texture, "EnvironmentBRDFTexture", scene, true, false, Texture.BILINEAR_SAMPLINGMODE);
+            // BRDF Texture should not be cached here due to pre processing and redundant scene caches.
+            var texturesCache = scene.getEngine().getLoadedTexturesCache();
+            var index = texturesCache.indexOf(texture.getInternalTexture()!);
+            if (index !== -1) {
+                texturesCache.splice(index, 1);
+            }
+
             texture.isRGBD = true;
             texture.wrapU = Texture.CLAMP_ADDRESSMODE;
             texture.wrapV = Texture.CLAMP_ADDRESSMODE;

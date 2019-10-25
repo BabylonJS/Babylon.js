@@ -97,15 +97,10 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                                             }        
                                             {
                                                 !cantDisplaySlider &&
-                                                <SliderLineComponent key={block.name} label={block.name} target={block} propertyName="value" step={0.1} minimum={block.min} maximum={block.max} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                                                <SliderLineComponent key={block.name} label={block.name} target={block} propertyName="value" step={(block.max - block.min) / 100.0} minimum={block.min} maximum={block.max} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                                             }
                                         </>
-                                    );                                
-                                return (
-                                    <FloatLineComponent key={block.name} lockObject={this.props.lockObject} label={block.name} target={block} propertyName="value" 
-                                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                                    />
-                                )
+                                    );  
                             case NodeMaterialBlockConnectionPointTypes.Color3:
                             case NodeMaterialBlockConnectionPointTypes.Color4:
                                 return (

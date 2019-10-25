@@ -1,9 +1,9 @@
-import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
-import { _TypeStore } from '../../../Misc/typeStore';
+import { NodeMaterialBlock } from '../../nodeMaterialBlock';
+import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
+import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
+import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
+import { _TypeStore } from '../../../../Misc/typeStore';
 /**
  * Block used to test if the fragment shader is front facing
  */
@@ -35,6 +35,10 @@ export class FrontFacingBlock extends NodeMaterialBlock {
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
+
+        if (state.target === NodeMaterialBlockTargets.Vertex) {
+            throw "FrontFacingBlock must only be used in a fragment shader";
+        }
 
         let output = this._outputs[0];
 

@@ -118,6 +118,22 @@ export class ShaderMaterial extends Material {
     }
 
     /**
+     * Gets the shader path used to define the shader code
+     * It can be modified to trigger a new compilation
+     */
+    public get shaderPath(): any {
+        return this._shaderPath;
+    }
+
+    /**
+     * Sets the shader path used to define the shader code
+     * It can be modified to trigger a new compilation
+     */
+    public set shaderPath(shaderPath: any) {
+        this._shaderPath = shaderPath;
+    }
+
+    /**
      * Gets the options used to compile the shader.
      * They can be modified to trigger a new compilation
      */
@@ -774,6 +790,21 @@ export class ShaderMaterial extends Material {
 
         result.name = name;
         result.id = name;
+
+        // Shader code path
+        if (typeof result._shaderPath === 'object') {
+            result._shaderPath = { ...result._shaderPath };
+        }
+
+        // Options
+        this._options = { ...this._options };
+
+        (Object.keys(this._options) as Array<keyof IShaderMaterialOptions>).forEach((propName) => {
+            const propValue = this._options[propName];
+            if (Array.isArray(propValue)) {
+                (<string[]>this._options[propName]) = propValue.slice(0);
+            }
+        });
 
         // Texture
         for (var key in this._textures) {

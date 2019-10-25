@@ -42,7 +42,7 @@ declare module "babylonjs-node-editor/blockTools" {
     import { PerturbNormalBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/perturbNormalBlock';
     import { LengthBlock } from 'babylonjs/Materials/Node/Blocks/lengthBlock';
     import { DistanceBlock } from 'babylonjs/Materials/Node/Blocks/distanceBlock';
-    import { FrontFacingBlock } from 'babylonjs/Materials/Node/Blocks/frontFacingBlock';
+    import { FrontFacingBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/frontFacingBlock';
     import { NegateBlock } from 'babylonjs/Materials/Node/Blocks/negateBlock';
     import { PowBlock } from 'babylonjs/Materials/Node/Blocks/powBlock';
     import { Scene } from 'babylonjs/scene';

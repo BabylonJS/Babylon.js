@@ -71,7 +71,7 @@ interface INativeEngine {
     setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
 
     createTexture(): WebGLTexture;
-    loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | ArrayBufferView | Blob, mipMap: boolean): any;
+    loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | ArrayBufferView | Blob, mipMap: boolean, invertY: boolean): any;
     loadCubeTexture(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, flipY : boolean): any;
     getTextureWidth(texture: WebGLTexture): number;
     getTextureHeight(texture: WebGLTexture): number;
@@ -93,6 +93,8 @@ interface INativeEngine {
 
     getRenderWidth(): number;
     getRenderHeight(): number;
+
+    setViewPort(x: number, y: number, width: number, height: number): void;
 }
 
 class NativePipelineContext implements IPipelineContext {
@@ -281,6 +283,9 @@ export class NativeEngine extends Engine {
     }
 
     public clear(color: Color4, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+        if (color == null) {
+            return;
+        }
         this._native.clear(color.r, color.g, color.b, color.a, backBuffer, depth, stencil);
     }
 
@@ -290,7 +295,7 @@ export class NativeEngine extends Engine {
         buffer.references = 1;
         buffer.is32Bits = (data.BYTES_PER_ELEMENT === 4);
         buffer.nativeIndexBuffer = this._native.createIndexBuffer(data);
-        if (buffer.nativeVertexBuffer == this.INVALID_HANDLE) {
+        if (buffer.nativeVertexBuffer === this.INVALID_HANDLE) {
             throw new Error("Could not create a native index buffer.");
         }
         return buffer;
@@ -300,7 +305,7 @@ export class NativeEngine extends Engine {
         const buffer = new NativeDataBuffer();
         buffer.references = 1;
         buffer.nativeVertexBuffer = this._native.createVertexBuffer(ArrayBuffer.isView(data) ? data : new Float32Array(data));
-        if (buffer.nativeVertexBuffer == this.INVALID_HANDLE) {
+        if (buffer.nativeVertexBuffer === this.INVALID_HANDLE) {
             throw new Error("Could not create a native vertex buffer.");
         }
         return buffer;
@@ -495,8 +500,8 @@ export class NativeEngine extends Engine {
     }
 
     public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
-        // TODO: Implement.
         this._cachedViewport = viewport;
+        this._native.setViewPort(viewport.x, viewport.y, viewport.width, viewport.height);
     }
 
     public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
@@ -954,15 +959,10 @@ export class NativeEngine extends Engine {
                     return;
                 }
 
-                let nativeHandle = this._native.loadTexture(webGLTexture, data, !noMipmap);
-                if (nativeHandle == this.INVALID_HANDLE) {
+                let nativeHandle = this._native.loadTexture(webGLTexture, data, !noMipmap, invertY);
+                if (nativeHandle === this.INVALID_HANDLE) {
                     throw new Error("Could not load a native texture.");
                 }
-
-                if (invertY) {
-                    throw new Error("Support for textures with inverted Y coordinates not yet implemented.");
-                }
-                //this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
 
                 texture.baseWidth = this._native.getTextureWidth(webGLTexture);
                 texture.baseHeight = this._native.getTextureHeight(webGLTexture);
