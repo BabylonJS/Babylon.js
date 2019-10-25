@@ -930,7 +930,7 @@ namespace babylon
         return Napi::External<TextureData>::New(info.Env(), new TextureData());
     }
 
-    void NativeEngine::LoadTexture(const Napi::CallbackInfo& info)
+    Napi::Value NativeEngine::LoadTexture(const Napi::CallbackInfo& info)
     {
         const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
         const auto buffer = info[1].As<Napi::ArrayBuffer>();
@@ -968,9 +968,10 @@ namespace babylon
             static_cast<bgfx::TextureFormat::Enum>(image.m_format),
             0,
             imageDataRef);
+        return Napi::Value::From(info.Env(), static_cast<uint32_t>(textureData->Texture.idx));
     }
 
-    void NativeEngine::LoadCubeTexture(const Napi::CallbackInfo& info)
+    Napi::Value NativeEngine::LoadCubeTexture(const Napi::CallbackInfo& info)
     {
         const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
         const auto mipLevelsArray = info[1].As<Napi::Array>();
@@ -1044,6 +1045,7 @@ namespace babylon
             format,                                         // Self-explanatory
             0x0,                                            // Flags
             allPixels);                                     // Memory
+        return Napi::Value::From(info.Env(), static_cast<uint32_t>(textureData->Texture.idx));
     }
 
     Napi::Value NativeEngine::GetTextureWidth(const Napi::CallbackInfo& info)
@@ -1065,8 +1067,7 @@ namespace babylon
         const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
         auto filter = static_cast<uint32_t>(info[1].As<Napi::Number>().Uint32Value());
 
-        constexpr uint32_t filterCount = 12;
-        constexpr std::array<uint32_t, filterCount> bgfxFiltering = {
+        constexpr std::array<uint32_t, 12> bgfxFiltering = {
             BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIN_POINT,                            // nearest is mag = nearest and min = nearest and mip = linear
             BGFX_SAMPLER_MIP_POINT,                                                     // Bilinear is mag = linear and min = linear and mip = nearest
             0,                                                                          // Trilinear is mag = linear and min = linear and mip = linear
@@ -1079,7 +1080,6 @@ namespace babylon
             BGFX_SAMPLER_MIN_POINT,                                                     // mag = linear and min = nearest and mip = linear
             0,                                                                          // mag = linear and min = linear and mip = none
             BGFX_SAMPLER_MIN_POINT };                                                   // mag = linear and min = nearest and mip = none
-        filter = std::min(filter, filterCount - 1);
 
         textureData->Flags &= ~(BGFX_SAMPLER_MIN_MASK | BGFX_SAMPLER_MAG_MASK | BGFX_SAMPLER_MIP_MASK);
 
@@ -1100,12 +1100,7 @@ namespace babylon
         auto addressModeV = static_cast<uint32_t>(info[2].As<Napi::Number>().Uint32Value());
         auto addressModeW = static_cast<uint32_t>(info[3].As<Napi::Number>().Uint32Value());
 
-        constexpr uint32_t addressModeCount = 3;
-        constexpr std::array<uint32_t, addressModeCount> bgfxSamplers = {0, BGFX_SAMPLER_U_CLAMP, BGFX_SAMPLER_U_MIRROR};
-
-        addressModeU = std::min(addressModeU, addressModeCount - 1);
-        addressModeV = std::min(addressModeV, addressModeCount - 1);
-        addressModeW = std::min(addressModeW, addressModeCount - 1);
+        constexpr std::array<uint32_t, 3> bgfxSamplers = {0, BGFX_SAMPLER_U_CLAMP, BGFX_SAMPLER_U_MIRROR};
 
         uint32_t addressMode = bgfxSamplers[addressModeU] + 
             (bgfxSamplers[addressModeV] << BGFX_SAMPLER_V_SHIFT) +

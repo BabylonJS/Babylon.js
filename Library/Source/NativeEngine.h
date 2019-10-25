@@ -341,8 +341,8 @@ namespace babylon
         void SetFloat4(const Napi::CallbackInfo& info);
         void SetBool(const Napi::CallbackInfo& info);
         Napi::Value CreateTexture(const Napi::CallbackInfo& info);
-        void LoadTexture(const Napi::CallbackInfo& info);
-        void LoadCubeTexture(const Napi::CallbackInfo& info);
+        Napi::Value LoadTexture(const Napi::CallbackInfo& info);
+        Napi::Value LoadCubeTexture(const Napi::CallbackInfo& info);
         Napi::Value GetTextureWidth(const Napi::CallbackInfo& info);
         Napi::Value GetTextureHeight(const Napi::CallbackInfo& info);
         void SetTextureSampling(const Napi::CallbackInfo& info);
