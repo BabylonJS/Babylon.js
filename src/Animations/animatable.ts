@@ -660,6 +660,10 @@ Scene.prototype.beginDirectAnimation = function(target: any, animations: Animati
         speedRatio = 1.0;
     }
 
+    if (from > to && speedRatio > 0) {
+        speedRatio *= -1;
+    }
+
     var animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animations, onAnimationLoop);
 
     return animatable;
