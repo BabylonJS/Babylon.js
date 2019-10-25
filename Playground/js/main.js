@@ -1,9 +1,21 @@
 var engine = null;
+var canas = null;
+var scene = null;
 
 handleException = function(parent, e) {
     parent.utils.showError(e.message, e);
     // Also log error in console to help debug playgrounds
     console.error(e);
+}
+
+fastEval = function(code) {
+    var head = document.getElementsByTagName('head')[0];
+    var script = document.createElement('script');
+    script.setAttribute('type', 'text/javascript');
+
+    script.innerHTML = code;
+
+    head.appendChild(script);
 }
 
 /**
@@ -37,7 +49,7 @@ compileAndRun = function(parent, fpsLabel) {
             engine = null;
         }
 
-        var canvas = document.getElementById("renderCanvas");
+        canvas = document.getElementById("renderCanvas");
         document.getElementById("errorZone").style.display = 'none';
         document.getElementById("errorZone").innerHTML = "";
         document.getElementById("statusBar").innerHTML = "Loading assets... Please wait.";
@@ -47,11 +59,10 @@ compileAndRun = function(parent, fpsLabel) {
         var createSceneFunction;
 
         parent.monacoCreator.getRunCode().then(code => {
-            var createDefaultEngine = function () {
+            createDefaultEngine = function () {
                 return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
             }
 
-            var scene;
             var defaultEngineZip = "new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true })";
 
             if (code.indexOf("createEngine") !== -1) {
@@ -75,33 +86,29 @@ compileAndRun = function(parent, fpsLabel) {
                 engine = createDefaultEngine();
                 scene = new BABYLON.Scene(engine);
                 var runScript = null;
-                eval("runScript = function(scene, canvas) {" + code + "}");
+                fastEval("runScript = function(scene, canvas) {" + code + "}");
                 runScript(scene, canvas);
 
                 parent.zipTool.ZipCode = "var engine = " + defaultEngineZip + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
             } else {
-                var __createScene = null;
                 if (parent.settingsPG.ScriptLanguage == "JS") {
-                    code += "\n" + "__createScene = " + createSceneFunction + ";";
+                    code += "\n" + "scene = " + createSceneFunction + "();";
                 }
                 else {
-                    __createScene = createSceneFunction;
                     var startCar = code.search('var ' + createSceneFunction);
                     code = code.substr(0, startCar) + code.substr(startCar + 4);
+                    code += "\n" + "scene = " + createSceneFunction + "();";
                 }
 
-                // Execute the code
-                eval(code);
-
                 // Create engine
-                eval("engine = " + createEngineFunction + "()");
+                fastEval("engine = " + createEngineFunction + "()");
                 if (!engine) {
                     parent.utils.showError("createEngine function must return an engine.", null);
                     return;
-                }
+                }                
 
-                // Create scene
-                eval("scene = " + __createScene + "()");
+                // Execute the code
+                fastEval(code);
 
                 if (!scene) {
                     parent.utils.showError(createSceneFunction + " function must return a scene.", null);
