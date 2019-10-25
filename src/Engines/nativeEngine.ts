@@ -1079,6 +1079,7 @@ export class NativeEngine extends Engine {
                 if (nativeHandle === this.INVALID_HANDLE) {
                     throw new Error("Could not load a native cube texture.");
                 }
+
                 texture.isReady = true;
                 if (onLoad) {
                     onLoad();
