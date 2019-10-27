@@ -508,6 +508,7 @@ export class Path3D {
     /**
      * Returns the position of the closest virtual point on this path to an arbitrary Vector3, from 0.0 to 1.0
      * @param target the vector of which to get the closest position to
+     * @returns the position of the closest virtual point on this path to the target vector
      */
     public getClosestPositionTo(target: Vector3) {
         let smallestDistance = Number.MAX_VALUE;
