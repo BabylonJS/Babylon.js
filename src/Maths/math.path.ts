@@ -509,17 +509,17 @@ export class Path3D {
      * Returns the position of the closest virtual point on this path, from 0.0 to 1.0
      * @param target the vector of which to get the closest position to
      */
-    public getClosestPositionTo(target: Vector3){
+    public getClosestPositionTo(target: Vector3) {
         let smallestDistance = Number.MAX_VALUE;
         let closestPosition = 0.0;
-        for(let i=0; i<this._curve.length - 1; i++){
+        for (let i = 0; i < this._curve.length - 1; i++) {
             let point = this._curve[i + 0];
             let tangent = this._curve[i + 1].subtract(point).normalize();
             let subLength = this._distances[i + 1] - this._distances[i + 0];
             let subPosition = Math.min(Math.max(Vector3.Dot(tangent, target.subtract(point).normalize()), 0.0) * Vector3.Distance(point, target) / subLength, 1.0);
             let distance = Vector3.Distance(point.add(tangent.scale(subPosition * subLength)), target);
 
-            if(distance < smallestDistance){
+            if (distance < smallestDistance) {
                 smallestDistance = distance;
                 closestPosition = (this._distances[i + 0] + subLength * subPosition) / this.length();
             }
