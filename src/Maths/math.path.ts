@@ -506,7 +506,7 @@ export class Path3D {
     }
 
     /**
-     * Returns the position of the closest virtual point on this path, from 0.0 to 1.0
+     * Returns the position of the closest virtual point on this path to an arbitrary Vector3, from 0.0 to 1.0
      * @param target the vector of which to get the closest position to
      */
     public getClosestPositionTo(target: Vector3) {
