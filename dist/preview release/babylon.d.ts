@@ -41882,9 +41882,28 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * COnfiguration object for WebXR output canvas
+     */
+    export class WebXRManagedOutputCanvasOptions {
+        /**
+         * Options for this XR Layer output
+         */
+        canvasOptions: XRWebGLLayerOptions;
+        /**
+         * CSS styling for a newly created canvas (if not provided)
+         */
+        newCanvasCssStyle?: string;
+        /**
+         * Get the default values of the configuration object
+         * @returns default values of this configuration object
+         */
+        static GetDefaults(): WebXRManagedOutputCanvasOptions;
+    }
+    /**
      * Creates a canvas that is added/removed from the webpage when entering/exiting XR
      */
     export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
+        private configuration;
         private _engine;
         private _canvas;
         /**
@@ -41906,8 +41925,9 @@ declare module BABYLON {
          * @param engine the Babylon engine
          * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
          * @param onStateChangedObservable the mechanism by which the canvas will be added/removed based on XR state
+         * @param configuration optional configuration for this canvas output. defaults will be used if not provided
          */
-        constructor(engine: ThinEngine, canvas?: HTMLCanvasElement, onStateChangedObservable?: Observable<WebXRState>);
+        constructor(engine: ThinEngine, canvas?: HTMLCanvasElement, onStateChangedObservable?: Observable<WebXRState>, configuration?: WebXRManagedOutputCanvasOptions);
         /**
          * Disposes of the object
          */
@@ -42003,9 +42023,10 @@ declare module BABYLON {
         /**
          * Creates a WebXRRenderTarget object for the XR session
          * @param onStateChangedObservable optional, mechanism for enabling/disabling XR rendering canvas, used only on Web
+         * @param options optional options to provide when creating a new render target
          * @returns a WebXR render target to which the session can render
          */
-        getWebXRRenderTarget(onStateChangedObservable?: Observable<WebXRState>): WebXRRenderTarget;
+        getWebXRRenderTarget(onStateChangedObservable?: Observable<WebXRState>, options?: WebXRManagedOutputCanvasOptions): WebXRRenderTarget;
         /**
          * @hidden
          * Converts the render layer of xrSession to a render target
@@ -42974,6 +42995,70 @@ declare module BABYLON {
          * @param input xr input that creates the controllers
          */
         constructor(input: WebXRInput);
+    }
+}
+declare module BABYLON {
+    /**
+     * Options for the default xr helper
+     */
+    export class WebXRDefaultExperienceOptions {
+        /**
+         * Floor meshes that should be used for teleporting
+         */
+        floorMeshes: Array<AbstractMesh>;
+        /**
+         * Enable or disable default UI to enter XR
+         */
+        disableDefaultUI: boolean;
+        /**
+         * optional configuration for the output canvas
+         */
+        outputCanvasOptions?: WebXRManagedOutputCanvasOptions;
+    }
+    /**
+     * Default experience which provides a similar setup to the previous webVRExperience
+     */
+    export class WebXRDefaultExperience {
+        /**
+         * Base experience
+         */
+        baseExperience: WebXRExperienceHelper;
+        /**
+         * Input experience extension
+         */
+        input: WebXRInput;
+        /**
+         * Loads the controller models
+         */
+        controllerModelLoader: WebXRControllerModelLoader;
+        /**
+         * Enables laser pointer and selection
+         */
+        pointerSelection: WebXRControllerPointerSelection;
+        /**
+         * Enables teleportation
+         */
+        teleportation: WebXRControllerTeleportation;
+        /**
+         * Enables ui for enetering/exiting xr
+         */
+        enterExitUI: WebXREnterExitUI;
+        /**
+         * Default target xr should render to
+         */
+        renderTarget: WebXRRenderTarget;
+        /**
+         * Creates the default xr experience
+         * @param scene scene
+         * @param options options for basic configuration
+         * @returns resulting WebXRDefaultExperience
+         */
+        static CreateAsync(scene: Scene, options: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
+        private constructor();
+        /**
+         * DIsposes of the experience helper
+         */
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -49479,66 +49564,6 @@ declare module BABYLON {
          * @param callback defines the method to call once ready to upload
          */
         loadData(data: ArrayBuffer, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed: boolean) => void): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Options for the default xr helper
-     */
-    export class WebXRDefaultExperienceOptions {
-        /**
-         * Floor meshes that should be used for teleporting
-         */
-        floorMeshes: Array<AbstractMesh>;
-        /**
-         * Enable or disable default UI to enter XR
-         */
-        disableDefaultUI: boolean;
-    }
-    /**
-     * Default experience which provides a similar setup to the previous webVRExperience
-     */
-    export class WebXRDefaultExperience {
-        /**
-         * Base experience
-         */
-        baseExperience: WebXRExperienceHelper;
-        /**
-         * Input experience extension
-         */
-        input: WebXRInput;
-        /**
-         * Loads the controller models
-         */
-        controllerModelLoader: WebXRControllerModelLoader;
-        /**
-         * Enables laser pointer and selection
-         */
-        pointerSelection: WebXRControllerPointerSelection;
-        /**
-         * Enables teleportation
-         */
-        teleportation: WebXRControllerTeleportation;
-        /**
-         * Enables ui for enetering/exiting xr
-         */
-        enterExitUI: WebXREnterExitUI;
-        /**
-         * Default target xr should render to
-         */
-        renderTarget: WebXRRenderTarget;
-        /**
-         * Creates the default xr experience
-         * @param scene scene
-         * @param options options for basic configuration
-         * @returns resulting WebXRDefaultExperience
-         */
-        static CreateAsync(scene: Scene, options: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
-        private constructor();
-        /**
-         * DIsposes of the experience helper
-         */
-        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -65095,9 +65120,18 @@ interface XRPose {
     emulatedPosition: boolean;
 }
 
+interface XRWebGLLayerOptions {
+    antialias ?: boolean;
+    depth ?: boolean;
+    stencil ?: boolean;
+    alpha ?: boolean;
+    multiview ?: boolean;
+    framebufferScaleFactor ?: number;
+}
+
 declare var XRWebGLLayer: {
     prototype: XRWebGLLayer;
-    new(session: XRSession, context: WebGLRenderingContext | undefined): XRWebGLLayer;
+    new(session: XRSession, context: WebGLRenderingContext | undefined, options?: XRWebGLLayerOptions): XRWebGLLayer;
 };
 interface XRWebGLLayer {
     framebuffer: WebGLFramebuffer;

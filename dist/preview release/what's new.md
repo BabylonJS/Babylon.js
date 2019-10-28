@@ -68,6 +68,7 @@
 - Ambiant and metallic maps are displayed correctly on PBR material even when using ORM packed texture ([Deltakosh](https://github.com/deltakosh/))
 - Added support for inspectable strings ([Deltakosh](https://github.com/deltakosh/))
 - Added support for CreateScreenshotUsingRenderTarget ([13djwright](https://github.com/13djwright/))
+- Added support for `Material.depthFunction` property ([Popov72](https://github.com/Popov72))
 
 ### Tools
 
@@ -136,9 +137,11 @@
 ### WebXR / WebVR
 
 - Compliance with the mozilla WebXR emulator ([RaananW](https://github.com/RaananW/))
+- Use the same icon as in VR ([RaananW](https://github.com/RaananW/))
 - Gamepad object is now exposed in the WebXRController class ([RaananW](https://github.com/RaananW/))
 - If canvas does not have WebXR support the scene will still render (mainly Firefox) ([RaananW](https://github.com/RaananW/))
 - Added support for foveated rendering in Oculus Quest ([Deltakosh](https://github.com/deltakosh/))
+- Added option to configure the output canvas ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
@@ -210,6 +213,7 @@
 - Cloning of `ShaderMaterial` also clone `shaderPath` and `options` properties ([Popov72](https://github.com/Popov72))
 - Prevent an infinite loop when calling `engine.dispose()` in a scene with multiple `SoundTracks` defined ([kirbysayshi](https://github.com/kirbysayshi))
 - Fixed missing properties in serialization / parsing of `coneParticleEmitter` ([Popov72](https://github.com/Popov72))
+- Fix a bug with exit VR and Edge ([RaananW](https://github.com/RaananW/))
 
 ## Breaking changes
 
