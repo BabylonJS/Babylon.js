@@ -3,6 +3,27 @@ import { Observable } from "../../Misc/observable";
 import { ThinEngine } from '../../Engines/thinEngine';
 import { WebXRState, WebXRRenderTarget } from "./webXRTypes";
 
+export class WebXRManagedOutputCanvasOptions {
+    public canvasOptions: XRWebGLLayerOptions;
+
+    public newCanvasCssStyle?: string;
+
+    public static GetDefaults(): WebXRManagedOutputCanvasOptions {
+        const defaults = new WebXRManagedOutputCanvasOptions();
+        defaults.canvasOptions = {
+            antialias: true,
+            depth: true,
+            stencil: false,
+            alpha: true,
+            multiview: false,
+            framebufferScaleFactor: 1
+        };
+
+        defaults.newCanvasCssStyle = "position:absolute; bottom:0px;right:0px;z-index:10;width:90%;height:100%;background-color: #000000;";
+
+        return defaults;
+    }
+}
 /**
  * Creates a canvas that is added/removed from the webpage when entering/exiting XR
  */
@@ -26,14 +47,20 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
      * @returns a promise that will resolve once the XR Layer has been created
      */
     public initializeXRLayerAsync(xrSession: any) {
+
+        const createLayer = () => {
+            return this.xrLayer = new XRWebGLLayer(xrSession, this.canvasContext, this.configuration.canvasOptions);
+        };
+
         // support canvases without makeXRCompatible
         if (!(this.canvasContext as any).makeXRCompatible) {
-            this.xrLayer = new XRWebGLLayer(xrSession, this.canvasContext);
+            this.xrLayer = createLayer();
             return Promise.resolve(true);
         }
 
         return (this.canvasContext as any).makeXRCompatible().then(() => {
-            this.xrLayer = new XRWebGLLayer(xrSession, this.canvasContext);
+            this.xrLayer = createLayer();
+            return this.xrLayer;
         });
     }
 
@@ -43,11 +70,11 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
      * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
      * @param onStateChangedObservable the mechanism by which the canvas will be added/removed based on XR state
      */
-    constructor(engine: ThinEngine, canvas?: HTMLCanvasElement, onStateChangedObservable?: Observable<WebXRState>) {
+    constructor(engine: ThinEngine, canvas?: HTMLCanvasElement, onStateChangedObservable?: Observable<WebXRState>, private configuration: WebXRManagedOutputCanvasOptions = WebXRManagedOutputCanvasOptions.GetDefaults()) {
         this._engine = engine;
         if (!canvas) {
             canvas = document.createElement('canvas');
-            canvas.style.cssText = "position:absolute; bottom:0px;right:0px;z-index:10;width:90%;height:100%;background-color: #000000;";
+            canvas.style.cssText = this.configuration.newCanvasCssStyle || "position:absolute; bottom:0px;right:0px;";
         }
         this._setManagedOutputCanvas(canvas);
 
