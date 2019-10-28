@@ -1,6 +1,30 @@
 #include <napi/env.h>
 #include "js_native_api_chakra.h"
 #include <jsrt.h>
+#include <strsafe.h>
+
+namespace
+{
+    void ThrowIfFailed(JsErrorCode errorCode)
+    {
+        if (errorCode != JsErrorCode::JsNoError)
+        {
+            throw std::exception();
+        }
+    }
+
+    void Log(const wchar_t* format, ...)
+    {
+        va_list argList;
+        va_start(argList, format);
+
+        wchar_t message[1024];
+        StringCchVPrintfW(message, std::size(message), format, argList);
+        OutputDebugStringW(message);
+
+        va_end(argList);
+    }
+}
 
 namespace babylon
 {
@@ -11,43 +35,68 @@ namespace babylon
             : m_executeOnScriptThread{ std::move(executeOnScriptThread) }
         {
             // Create the runtime. We're only going to use one runtime for this host.
-            JsCreateRuntime(JsRuntimeAttributeNone, nullptr, &m_jsRuntime);
+            ThrowIfFailed(JsCreateRuntime(JsRuntimeAttributeNone, nullptr, &m_jsRuntime));
 
             // Create a single execution context.
             JsContextRef context;
-            JsCreateContext(m_jsRuntime, &context);
+            ThrowIfFailed(JsCreateContext(m_jsRuntime, &context));
 
             // Now set the execution context as being the current one on this thread.
-            JsSetCurrentContext(context);
+            ThrowIfFailed(JsSetCurrentContext(context));
 
             // Set up ES6 Promise.
-            JsSetPromiseContinuationCallback(&napi_env_local::PromiseContinuationCallback, this);
+            ThrowIfFailed(JsSetPromiseContinuationCallback(&napi_env_local::PromiseContinuationCallback, this));
 
             // UWP namespace projection; all UWP under Windows namespace should work.
-            JsProjectWinRTNamespace(L"Windows");
+            ThrowIfFailed(JsProjectWinRTNamespace(L"Windows"));
 
 #ifdef _DEBUG
             // Put Chakra in debug mode.
-            JsStartDebugging();
+            ThrowIfFailed(JsStartDebugging());
 #endif
+
+            CacheHasOwnPropertyFunction();
         }
 
         ~napi_env_local()
         {
-            JsDisposeRuntime(m_jsRuntime);
+            JsErrorCode errorCode = JsDisposeRuntime(m_jsRuntime);
+            if (errorCode != JsErrorCode::JsNoError)
+            {
+                Log(L"Failed to dispose runtime with error code (%u)\n", errorCode);
+            }
         }
 
     private:
         static void CALLBACK PromiseContinuationCallback(JsValueRef task, void* callbackState)
         {
-            JsAddRef(task, nullptr);
+            ThrowIfFailed(JsAddRef(task, nullptr));
             reinterpret_cast<napi_env_local*>(callbackState)->m_executeOnScriptThread([task]()
             {
                 JsValueRef undefined;
-                JsGetUndefinedValue(&undefined);
-                JsCallFunction(task, &undefined, 1, nullptr);
-                JsRelease(task, nullptr);
+                ThrowIfFailed(JsGetUndefinedValue(&undefined));
+                ThrowIfFailed(JsCallFunction(task, &undefined, 1, nullptr));
+                ThrowIfFailed(JsRelease(task, nullptr));
             });
+        }
+
+        void CacheHasOwnPropertyFunction()
+        {
+            JsPropertyIdRef propertyId;
+
+            JsValueRef global;
+            ThrowIfFailed(JsGetGlobalObject(&global));
+
+            JsValueRef object;
+            ThrowIfFailed(JsGetPropertyIdFromName(L"Object", &propertyId));
+            ThrowIfFailed(JsGetProperty(global, propertyId, &object));
+
+            JsValueRef prototype;
+            ThrowIfFailed(JsGetPrototype(object, &prototype));
+
+            JsValueRef hasOwnPropertyFunc;
+            ThrowIfFailed(JsGetPropertyIdFromName(L"hasOwnProperty", &propertyId));
+            ThrowIfFailed(JsGetProperty(prototype, propertyId, &has_own_property_function));
         }
 
         std::function<void(std::function<void()>)> m_executeOnScriptThread;

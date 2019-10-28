@@ -60,48 +60,67 @@ namespace babylon
             : m_viewId{ viewId }
         {}
 
-        bool Update(const Napi::CallbackInfo& info)
+        void UpdateFlags(const Napi::CallbackInfo& info)
         {
-            auto r = info[0].As<Napi::Number>().FloatValue();
-            auto g = info[1].As<Napi::Number>().FloatValue();
-            auto b = info[2].As<Napi::Number>().FloatValue();
-            auto a = info[3].IsUndefined() ? 1.f : info[3].As<Napi::Number>().FloatValue();
-            auto backBuffer = info[4].IsUndefined() ? true : info[4].As<Napi::Boolean>().Value();
-            auto depth = info[5].IsUndefined() ? true : info[5].As<Napi::Boolean>().Value();
-            auto stencil = info[6].IsUndefined() ? true : info[6].As<Napi::Boolean>().Value();
-
-            return Update(r, g, b, a, backBuffer, depth, stencil);
+            const auto flags = static_cast<uint16_t>(info[0].As<Napi::Number>().Uint32Value());
+            const bool needToUpdate = m_flags != flags;
+            if (needToUpdate)
+            {
+                m_flags = flags;
+                Update();
+            }
         }
         
-        bool Update(float r, float g, float b, float a = 1.f, bool backBuffer = true, bool depth = true, bool stencil = true)
+        void UpdateColor(const Napi::CallbackInfo& info)
         {
-            bool needToUpdate = r != m_red
+            const auto r = info[0].As<Napi::Number>().FloatValue();
+            const auto g = info[1].As<Napi::Number>().FloatValue();
+            const auto b = info[2].As<Napi::Number>().FloatValue();
+            const auto a = info[3].IsUndefined() ? 1.f : info[3].As<Napi::Number>().FloatValue();
+            UpdateColor(r, g, b, a);
+        }
+
+        void UpdateColor(float r, float g, float b, float a = 1.f)
+        {
+            const bool needToUpdate = r != m_red
                 || g != m_green
                 || b != m_blue
-                || a != m_alpha
-                || backBuffer != m_backBuffer
-                || depth != m_depth
-                || stencil != m_stencil;
+                || a != m_alpha;
             if (needToUpdate)
             {
                 m_red = r;
                 m_green = g;
                 m_blue = b;
                 m_alpha = a;
-                m_backBuffer = backBuffer;
-                m_depth = depth;
-                m_stencil = stencil;
-
                 Update();
             }
+        }
 
-            return needToUpdate;
+        void UpdateDepth(const Napi::CallbackInfo& info)
+        {
+            const auto depth = info[0].As<Napi::Number>().FloatValue();
+            const bool needToUpdate = m_depth != depth;
+            if (needToUpdate)
+            {
+                m_depth = depth;
+                Update();
+            }
+        }
+
+        void UpdateStencil(const Napi::CallbackInfo& info)
+        {
+            const auto stencil = static_cast<uint8_t>(info[0].As<Napi::Number>().Int32Value());
+            const bool needToUpdate = m_stencil != stencil;
+            if (needToUpdate)
+            {
+                m_stencil = stencil;
+                Update();
+            }
         }
 
         void Update() const
         {
-            // TODO: Backbuffer, depth, and stencil.
-            bgfx::setViewClear(m_viewId, BGFX_CLEAR_COLOR | (m_depth ? BGFX_CLEAR_DEPTH : 0x0), Color());
+            bgfx::setViewClear(m_viewId, m_flags, Color(), m_depth, m_stencil);
             bgfx::touch(m_viewId);
         }
 
@@ -111,9 +130,9 @@ namespace babylon
         float m_green{ 51.f / 255.f };
         float m_blue{ 85.f / 255.f };
         float m_alpha{ 1.f };
-        bool m_backBuffer{ true };
-        bool m_depth{ true };
-        bool m_stencil{ true };
+        float m_depth{ 1.f };
+        uint16_t m_flags{ BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH };
+        uint8_t m_stencil{ 0 };
 
         uint32_t Color() const
         {
@@ -238,6 +257,18 @@ namespace babylon
         uint8_t AnisotropicLevel{ 0 };
     };
 
+    struct ImageData final
+    {
+        ~ImageData()
+        {
+            if (Image)
+            {
+                bimg::imageFree(Image.get());
+            }
+        }
+        std::unique_ptr<bimg::ImageContainer> Image;
+    };
+
     struct ProgramData final
     {
         ~ProgramData()
@@ -357,6 +388,9 @@ namespace babylon
         void DrawIndexed(const Napi::CallbackInfo& info);
         void Draw(const Napi::CallbackInfo& info);
         void Clear(const Napi::CallbackInfo& info);
+        void ClearColor(const Napi::CallbackInfo& info);
+        void ClearStencil(const Napi::CallbackInfo& info);
+        void ClearDepth(const Napi::CallbackInfo& info);
         Napi::Value GetRenderWidth(const Napi::CallbackInfo& info);
         Napi::Value GetRenderHeight(const Napi::CallbackInfo& info);
         void SetViewPort(const Napi::CallbackInfo& info);
@@ -364,6 +398,9 @@ namespace babylon
         void UpdateSize(size_t width, size_t height);
         void DispatchAnimationFrameAsync(Napi::FunctionReference callback);
 
+        Napi::Value DecodeImage(const Napi::CallbackInfo& info);
+        Napi::Value GetImageData(const Napi::CallbackInfo& info);
+        Napi::Value EncodeImage(const Napi::CallbackInfo& info);
 
         ShaderCompiler m_shaderCompiler;
 

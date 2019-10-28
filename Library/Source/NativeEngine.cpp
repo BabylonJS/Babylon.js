@@ -356,9 +356,15 @@ namespace babylon
                 InstanceMethod("drawIndexed", &NativeEngine::DrawIndexed),
                 InstanceMethod("draw", &NativeEngine::Draw),
                 InstanceMethod("clear", &NativeEngine::Clear),
+                InstanceMethod("clearColor", &NativeEngine::ClearColor),
+                InstanceMethod("clearDepth", &NativeEngine::ClearDepth),
+                InstanceMethod("clearStencil", &NativeEngine::ClearStencil),
                 InstanceMethod("getRenderWidth", &NativeEngine::GetRenderWidth),
                 InstanceMethod("getRenderHeight", &NativeEngine::GetRenderHeight),
                 InstanceMethod("setViewPort", &NativeEngine::SetViewPort),
+                InstanceMethod("decodeImage", &NativeEngine::DecodeImage),
+                InstanceMethod("getImageData", &NativeEngine::GetImageData),
+                InstanceMethod("encodeImage", &NativeEngine::EncodeImage),
             });
         
         return Napi::Persistent(func);
@@ -930,7 +936,56 @@ namespace babylon
         return Napi::External<TextureData>::New(info.Env(), new TextureData());
     }
 
-    Napi::Value NativeEngine::LoadTexture(const Napi::CallbackInfo& info)
+    Napi::Value NativeEngine::DecodeImage(const Napi::CallbackInfo& info)
+    {
+        auto imageData = new ImageData();
+        const auto buffer = info[0].As<Napi::ArrayBuffer>();
+
+        imageData->Image.reset(bimg::imageParse(&m_allocator, buffer.Data(), static_cast<uint32_t>(buffer.ByteLength())));
+
+        return Napi::External<ImageData>::New(info.Env(), imageData);
+    }
+
+    Napi::Value NativeEngine::GetImageData(const Napi::CallbackInfo& info)
+    {
+        const auto imageData = info[0].As<Napi::External<ImageData>>().Data();
+        const auto buffer = info[0].As<Napi::ArrayBuffer>();
+
+        if (!imageData->Image || !imageData->Image->m_size)
+        {
+            return info.Env().Undefined();
+        }
+        auto data = Napi::Int8Array::New(info.Env(), imageData->Image->m_size);
+
+        const auto ptr = static_cast<uint8_t*>(imageData->Image->m_data);
+        for (uint32_t i = 0; i < imageData->Image->m_size; i++)
+        {
+            data[i] = ptr[i];
+        }
+
+        return data;
+    }
+
+    Napi::Value NativeEngine::EncodeImage(const Napi::CallbackInfo& info)
+    {
+        const auto imageData = info[0].As<Napi::External<ImageData>>().Data();
+        if (!imageData->Image || !imageData->Image->m_size)
+        {
+            return info.Env().Undefined();
+        }
+
+        const auto image = imageData->Image.get();
+        bx::MemoryBlock mb(&m_allocator);
+        bx::MemoryWriter writer(&mb);
+        bimg::imageWritePng(&writer, image->m_width, image->m_height, image->m_size/image->m_height, image->m_data, image->m_format, false);
+        
+        auto data = Napi::Int8Array::New(info.Env(), mb.getSize());
+        memcpy(data.Data(), static_cast<uint8_t*>(mb.more()), imageData->Image->m_size);
+
+        return data;
+    }
+
+	Napi::Value NativeEngine::LoadTexture(const Napi::CallbackInfo& info)
     {
         const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
         const auto buffer = info[1].As<Napi::ArrayBuffer>();
@@ -1239,11 +1294,47 @@ namespace babylon
     {
         if (m_frameBufferManager.IsFrameBufferBound())
         {
-            m_frameBufferManager.GetBound().ViewClearState.Update(info);
+            m_frameBufferManager.GetBound().ViewClearState.UpdateFlags(info);
         }
         else
         {
-            m_viewClearState.Update(info);
+            m_viewClearState.UpdateFlags(info);
+        }
+    }
+
+    void NativeEngine::ClearColor(const Napi::CallbackInfo& info)
+    {
+        if (m_frameBufferManager.IsFrameBufferBound())
+        {
+            m_frameBufferManager.GetBound().ViewClearState.UpdateColor(info);
+        }
+        else
+        {
+            m_viewClearState.UpdateColor(info);
+        }
+    }
+
+    void NativeEngine::ClearStencil(const Napi::CallbackInfo& info)
+    {
+        if (m_frameBufferManager.IsFrameBufferBound())
+        {
+            m_frameBufferManager.GetBound().ViewClearState.UpdateStencil(info);
+        }
+        else
+        {
+            m_viewClearState.UpdateStencil(info);
+        }
+    }
+
+    void NativeEngine::ClearDepth(const Napi::CallbackInfo& info)
+    {
+        if (m_frameBufferManager.IsFrameBufferBound())
+        {
+            m_frameBufferManager.GetBound().ViewClearState.UpdateDepth(info);
+        }
+        else
+        {
+            m_viewClearState.UpdateDepth(info);
         }
     }
 
