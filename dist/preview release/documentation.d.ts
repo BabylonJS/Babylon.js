@@ -19227,6 +19227,7 @@ declare module BABYLON {
         private _cachedWorldViewMatrix;
         private _cachedWorldViewProjectionMatrix;
         private _renderId;
+        private _multiview;
         /**
          * Instantiate a new shader material.
          * The ShaderMaterial object has the necessary methods to pass data from your scene to the Vertex and Fragment Shaders and returns a material that can be applied to any mesh.
@@ -20596,6 +20597,10 @@ declare module BABYLON {
          */
         forceDepthWrite: boolean;
         /**
+         * Specifies the depth function that should be used. 0 means the default engine function
+         */
+        depthFunction: number;
+        /**
          * Specifies if there should be a separate pass for culling
          */
         separateCullingPass: boolean;
@@ -20665,6 +20670,10 @@ declare module BABYLON {
          * Specifies if the depth write state should be cached
          */
         private _cachedDepthWriteState;
+        /**
+         * Specifies if the depth function state should be cached
+         */
+        private _cachedDepthFunctionState;
         /**
          * Stores the uniform buffer
          */
@@ -28430,7 +28439,7 @@ declare module BABYLON {
          */
         uniformsNames: string[];
         /**
-         * Uniform buffer varible names that will be set in the shader.
+         * Uniform buffer variable names that will be set in the shader.
          */
         uniformBuffersNames: string[];
         /**
