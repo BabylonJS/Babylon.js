@@ -1,6 +1,7 @@
 var engine = null;
 var canas = null;
 var scene = null;
+var globalParent = null;
 
 handleException = function(parent, e) {
     parent.utils.showError(e.message, e);
@@ -13,7 +14,10 @@ fastEval = function(code) {
     var script = document.createElement('script');
     script.setAttribute('type', 'text/javascript');
 
-    script.innerHTML = code;
+    script.innerHTML = `try {${code};}
+    catch(e) {
+        handleException(globalParent, e);
+    }`;
 
     head.appendChild(script);
 }
@@ -27,6 +31,7 @@ compileAndRun = function(parent, fpsLabel) {
 
     try {
         parent.menuPG.hideWaitDiv();
+        globalParent = parent;
 
         if (!BABYLON.Engine.isSupported()) {
             parent.utils.showError("Your browser does not support WebGL. Please, try to update it, or install a compatible one.", null);
