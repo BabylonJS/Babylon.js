@@ -138,8 +138,8 @@
                 ],
                 "typings": "babylon.module.d.ts",
                 "index": "babylon.js",
-                "dependencies": [],
-                "devDependencies": []
+                "dependencies": {},
+                "devDependencies": {}
             },
             "es6": {
                 "packageName": "@babylonjs/core",
