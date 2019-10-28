@@ -936,19 +936,15 @@ namespace babylon
     Napi::Value NativeEngine::GetImageData(const Napi::CallbackInfo& info)
     {
         const auto imageData = info[0].As<Napi::External<ImageData>>().Data();
-        const auto buffer = info[0].As<Napi::ArrayBuffer>();
 
         if (!imageData->Image || !imageData->Image->m_size)
         {
             return info.Env().Undefined();
         }
-        auto data = Napi::Int8Array::New(info.Env(), imageData->Image->m_size);
 
+        auto data = Napi::Int8Array::New(info.Env(), imageData->Image->m_size);
         const auto ptr = static_cast<uint8_t*>(imageData->Image->m_data);
-        for (uint32_t i = 0; i < imageData->Image->m_size; i++)
-        {
-            data[i] = ptr[i];
-        }
+        memcpy(data.Data(), ptr, imageData->Image->m_size);
 
         return data;
     }
