@@ -776,7 +776,7 @@ export class VRExperienceHelper {
                 if (!this.isInVRMode) {
                     this.enterVR();
                 } else {
-                    this.exitVR();
+                    this._scene.getEngine().disableVR();
                 }
             });
         }
@@ -1107,9 +1107,6 @@ export class VRExperienceHelper {
             if (this._deviceOrientationCamera) {
                 this._deviceOrientationCamera.position = this._position;
                 this._scene.activeCamera = this._deviceOrientationCamera;
-                if (this._inputElement) {
-                    this._scene.activeCamera.attachControl(this._inputElement);
-                }
 
                 // Restore angular sensibility
                 if (this._cachedAngularSensibility.angularSensibilityX) {
@@ -1127,6 +1124,9 @@ export class VRExperienceHelper {
             } else if (this._existingCamera) {
                 this._existingCamera.position = this._position;
                 this._scene.activeCamera = this._existingCamera;
+                if (this._inputElement) {
+                    this._scene.activeCamera.attachControl(this._inputElement);
+                }
 
                 // Restore angular sensibility
                 if (this._cachedAngularSensibility.angularSensibilityX) {
