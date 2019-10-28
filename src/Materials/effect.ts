@@ -30,7 +30,7 @@ export interface IEffectCreationOptions {
      */
     uniformsNames: string[];
     /**
-     * Uniform buffer varible names that will be set in the shader.
+     * Uniform buffer variable names that will be set in the shader.
      */
     uniformBuffersNames: string[];
     /**
