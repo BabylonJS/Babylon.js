@@ -218,6 +218,7 @@ export class WebXRSessionManager implements IDisposable {
     /**
      * Creates a WebXRRenderTarget object for the XR session
      * @param onStateChangedObservable optional, mechanism for enabling/disabling XR rendering canvas, used only on Web
+     * @param options optional options to provide when creating a new render target
      * @returns a WebXR render target to which the session can render
      */
     public getWebXRRenderTarget(onStateChangedObservable?: Observable<WebXRState>, options?: WebXRManagedOutputCanvasOptions) : WebXRRenderTarget {
