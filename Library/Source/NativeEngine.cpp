@@ -940,7 +940,7 @@ namespace babylon
 
         if (!imageData->Image || !imageData->Image->m_size)
         {
-            return {};
+            return info.Env().Undefined();
         }
         auto data = Napi::Int8Array::New(info.Env(), imageData->Image->m_size);
 
@@ -958,7 +958,7 @@ namespace babylon
         const auto imageData = info[0].As<Napi::External<ImageData>>().Data();
         if (!imageData->Image || !imageData->Image->m_size)
         {
-            return {};
+            return info.Env().Undefined();
         }
 
         const auto image = imageData->Image.get();
@@ -967,12 +967,7 @@ namespace babylon
         bimg::imageWritePng(&writer, image->m_width, image->m_height, image->m_size/image->m_height, image->m_data, image->m_format, false);
         
         auto data = Napi::Int8Array::New(info.Env(), mb.getSize());
-
-        const auto ptr = static_cast<uint8_t*>(mb.more());
-        for (uint32_t i = 0; i < imageData->Image->m_size; i++)
-        {
-            data[i] = ptr[i];
-        }
+        memcpy(data.Data(), static_cast<uint8_t*>(mb.more()), imageData->Image->m_size);
 
         return data;
     }
