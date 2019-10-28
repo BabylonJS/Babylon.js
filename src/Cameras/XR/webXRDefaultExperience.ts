@@ -23,6 +23,9 @@ export class WebXRDefaultExperienceOptions {
      */
     public disableDefaultUI: boolean;
 
+    /**
+     * optional configuration for the output canvas
+     */
     public outputCanvasOptions? : WebXRManagedOutputCanvasOptions;
 }
 
