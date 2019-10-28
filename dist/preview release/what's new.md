@@ -43,6 +43,7 @@
 - Supports custom materials to generate glow through ```referenceMeshToUseItsOwnMaterial``` in the ```GlowLayer``` ([sebavan](http://www.github.com/sebavan))
 - Added `RawTexture2DArray` to enable use of WebGL2 2D array textures by custom shaders ([atg](https://github.com/atg))
 - Added multiview support for the shader material (and the line-mesh class) ([RaananW](https://github.com/RaananW/))
+- Added various (interpolation) functions to Path3D, also `alignTangentsWithPath`, `slice`, `getClosestPositionTo` ([Poolminer](https://github.com/Poolminer/))
 
 ### Engine
 
@@ -207,6 +208,7 @@
 - Fixed Path2 length computation ([Poolminer](https://github.com/Poolminer/))
 - Cloning of `ShaderMaterial` also clone `shaderPath` and `options` properties ([Popov72](https://github.com/Popov72))
 - Prevent an infinite loop when calling `engine.dispose()` in a scene with multiple `SoundTracks` defined ([kirbysayshi](https://github.com/kirbysayshi))
+- Fixed missing properties in serialization / parsing of `coneParticleEmitter` ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
