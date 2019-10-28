@@ -354,6 +354,9 @@ namespace babylon
                 InstanceMethod("drawIndexed", &NativeEngine::DrawIndexed),
                 InstanceMethod("draw", &NativeEngine::Draw),
                 InstanceMethod("clear", &NativeEngine::Clear),
+                InstanceMethod("clearColor", &NativeEngine::ClearColor),
+                InstanceMethod("clearDepth", &NativeEngine::ClearDepth),
+                InstanceMethod("clearStencil", &NativeEngine::ClearStencil),
                 InstanceMethod("getRenderWidth", &NativeEngine::GetRenderWidth),
                 InstanceMethod("getRenderHeight", &NativeEngine::GetRenderHeight),
             });
@@ -1178,11 +1181,47 @@ namespace babylon
     {
         if (m_frameBufferManager.IsFrameBufferBound())
         {
-            m_frameBufferManager.GetBound().ViewClearState.Update(info);
+            m_frameBufferManager.GetBound().ViewClearState.UpdateFlags(info);
         }
         else
         {
-            m_viewClearState.Update(info);
+            m_viewClearState.UpdateFlags(info);
+        }
+    }
+
+    void NativeEngine::ClearColor(const Napi::CallbackInfo& info)
+    {
+        if (m_frameBufferManager.IsFrameBufferBound())
+        {
+            m_frameBufferManager.GetBound().ViewClearState.UpdateColor(info);
+        }
+        else
+        {
+            m_viewClearState.UpdateColor(info);
+        }
+    }
+
+    void NativeEngine::ClearStencil(const Napi::CallbackInfo& info)
+    {
+        if (m_frameBufferManager.IsFrameBufferBound())
+        {
+            m_frameBufferManager.GetBound().ViewClearState.UpdateStencil(info);
+        }
+        else
+        {
+            m_viewClearState.UpdateStencil(info);
+        }
+    }
+
+    void NativeEngine::ClearDepth(const Napi::CallbackInfo& info)
+    {
+        if (m_frameBufferManager.IsFrameBufferBound())
+        {
+            m_frameBufferManager.GetBound().ViewClearState.UpdateDepth(info);
+        }
+        else
+        {
+            m_viewClearState.UpdateDepth(info);
         }
     }
 
