@@ -3,11 +3,17 @@ import { Observable } from "../../Misc/observable";
 import { ThinEngine } from '../../Engines/thinEngine';
 import { WebXRState, WebXRRenderTarget } from "./webXRTypes";
 
+/**
+ * COnfiguration object for WebXR output canvas
+ */
 export class WebXRManagedOutputCanvasOptions {
     public canvasOptions: XRWebGLLayerOptions;
 
     public newCanvasCssStyle?: string;
 
+    /**
+     *Get the default values of the configuration object
+     */
     public static GetDefaults(): WebXRManagedOutputCanvasOptions {
         const defaults = new WebXRManagedOutputCanvasOptions();
         defaults.canvasOptions = {
