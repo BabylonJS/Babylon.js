@@ -13,6 +13,9 @@ attribute vec4 color;
 
 #include<instancesDeclaration>
 uniform mat4 viewProjection;
+#ifdef MULTIVIEW
+	uniform mat4 viewProjectionR;
+#endif 
 
 // Output
 #ifdef VERTEXCOLOR
@@ -24,7 +27,15 @@ void main(void) {
 #include<bonesVertex>
     vec4 worldPos = finalWorld * vec4(position, 1.0);
 
+#ifdef MULTIVIEW
+	if (gl_ViewID_OVR == 0u) {
+		gl_Position = viewProjection * worldPos;
+	} else {
+		gl_Position = viewProjectionR * worldPos;
+	}
+#else
 	gl_Position = viewProjection * worldPos;
+#endif
 
 #include<clipPlaneVertex>
 
