@@ -66,6 +66,7 @@
 - Ambiant and metallic maps are displayed correctly on PBR material even when using ORM packed texture ([Deltakosh](https://github.com/deltakosh/))
 - Added support for inspectable strings ([Deltakosh](https://github.com/deltakosh/))
 - Added support for CreateScreenshotUsingRenderTarget ([13djwright](https://github.com/13djwright/))
+- Added support for `Material.depthFunction` property ([Popov72](https://github.com/Popov72))
 
 ### Tools
 
