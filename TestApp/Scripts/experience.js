@@ -4,7 +4,6 @@ var logfps = true;
 var ibl = false;
 var rtt = false;
 var xr = false;
-var viewports = false;
 
 function CreateBoxAsync() {
     BABYLON.Mesh.CreateBox("box1", 0.7);
@@ -21,99 +20,6 @@ function CreateSpheresAsync() {
                 sphere.position.y = j;
                 sphere.position.z = k;
             }
-        }
-    }
-
-    return Promise.resolve();
-}
-
-function CreatePlane(width, height, uvScale) {
-    var positions = [];
-    var normals = [];
-    var uvs = [];
-
-    var halfWidth = width / 2.0;
-    var halfHeight = height / 2.0;
-
-    // face A
-    positions.push(-halfWidth, -halfHeight, 0);
-    normals.push(0, 0, -1);
-    uvs.push(uvScale, 0.0);
-
-    positions.push(-halfWidth, halfHeight, 0);
-    normals.push(0, 0, -1);
-    uvs.push(uvScale, uvScale);
-
-    positions.push(halfWidth, halfHeight, 0);
-    normals.push(0, 0, -1.0);
-    uvs.push(0.0, uvScale);
-
-    // face B
-    positions.push(-halfWidth, -halfHeight, 0);
-    normals.push(0, 0, -1.0);
-    uvs.push(uvScale, 0.0);
-
-    positions.push(halfWidth, halfHeight, 0);
-    normals.push(0, 0, -1.0);
-    uvs.push(0.0, uvScale);
-
-    positions.push(halfWidth, -halfHeight, 0);
-    normals.push(0, 0, -1.0);
-    uvs.push(0.0, 0.0);
-    
-    var vertexData = new BABYLON.VertexData();
-
-    vertexData.positions = positions;
-    vertexData.normals = normals;
-    vertexData.uvs = uvs;
-    
-    var plane = new BABYLON.Mesh("Plane01", scene);
-    vertexData.applyToMesh(plane, false);
-    
-    return plane;
-}
-
-function CreatePlanesAddressMode()
-{
-    let width = 5;
-    let height = 5;
-
-    let mode = [BABYLON.Texture.CLAMP_ADDRESSMODE, BABYLON.Texture.WRAP_ADDRESSMODE, BABYLON.Texture.MIRROR_ADDRESSMODE];
-    for (var y = 0; y < 3; y++) {
-        for (var x = 0; x < 3; x++) {
-            var plane = CreatePlane(width, height, 3);
-            plane.position.x = -6.0 + x * 6.0;
-            plane.position.y = -6.0 + y * 6.0;
-
-            var myMaterial = new BABYLON.StandardMaterial("myMaterial", scene);
-            myMaterial.diffuseTexture = new BABYLON.Texture("https://github.com/CedricGuillemet/dump/raw/master/Custom_UV_Checker.png", scene);
-            myMaterial.diffuseTexture.wrapU = mode[x];
-            myMaterial.diffuseTexture.wrapV = mode[y];
-
-            plane.material = myMaterial;
-        }
-    }
-
-    return Promise.resolve();
-}
-
-function CreatePlanesFiltering()
-{
-    let width = 5;
-    let height = 5;
-
-    let mode = [BABYLON.Texture.CLAMP_ADDRESSMODE, BABYLON.Texture.WRAP_ADDRESSMODE, BABYLON.Texture.MIRROR_ADDRESSMODE];
-    for (var y = 0; y < 2; y++) {
-        for (var x = 0; x < 12; x++) {
-            var plane = CreatePlane(width, height, y?0.5:2.0);
-            plane.position.x = -6.0 + x * 6.0;
-            plane.position.y = -6.0 + y * 6.0;
-
-            var myMaterial = new BABYLON.StandardMaterial("myMaterial", scene);
-            myMaterial.diffuseTexture = new BABYLON.Texture("https://github.com/CedricGuillemet/dump/raw/master/Custom_UV_Checker.png", scene);
-            myMaterial.diffuseTexture.samplingmode  = x;
-
-            plane.material = myMaterial;
         }
     }
 
@@ -144,8 +50,6 @@ var engine = new BABYLON.NativeEngine();
 var scene = new BABYLON.Scene(engine);
 
 CreateBoxAsync().then(function () {
-//CreatePlanesFiltering().then(function () {
-//CreatePlanesAddressMode().then(function () {
 //CreateSpheresAsync().then(function () {
 //BABYLON.SceneLoader.AppendAsync("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Box/glTF/Box.gltf").then(function () {
 //BABYLON.SceneLoader.AppendAsync("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/BoxTextured/glTF/BoxTextured.gltf").then(function () {
@@ -164,35 +68,9 @@ CreateBoxAsync().then(function () {
 //BABYLON.SceneLoader.AppendAsync("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/CesiumMan/glTF/CesiumMan.gltf").then(function () {
     BABYLON.Tools.Log("Loaded");
 
-    if (viewports) {
-        // camera positions set for sponza
-        var camera1 = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(3, 2, -6), scene);
-        camera1.setTarget(BABYLON.Vector3.Zero());
-    
-        var camera2 = new BABYLON.FreeCamera("camera2", new BABYLON.Vector3(0, 4, -10), scene);
-        camera2.setTarget(BABYLON.Vector3.Zero());
-
-        var camera3 = new BABYLON.FreeCamera("camera3", new BABYLON.Vector3(-7, 2, -0.5), scene);
-        camera3.setTarget(BABYLON.Vector3.Zero());
-
-        var camera4 = new BABYLON.FreeCamera("camera4", new BABYLON.Vector3(-4, 3, -4), scene);
-        camera4.setTarget(BABYLON.Vector3.Zero());
-
-        scene.activeCameras.push(camera1);
-        scene.activeCameras.push(camera2);
-        scene.activeCameras.push(camera3);
-        scene.activeCameras.push(camera4);
-
-        camera1.viewport = new BABYLON.Viewport(0, 0.5, 0.5, 0.5);
-        camera2.viewport = new BABYLON.Viewport(0.5, 0.5, 0.5, 0.5);
-        camera3.viewport = new BABYLON.Viewport(0, 0, 0.5, 0.5);
-        camera4.viewport = new BABYLON.Viewport(0.5, 0, 0.5, 0.5);
-    }
-    else {
-        scene.createDefaultCamera(true);
-        scene.activeCamera.alpha += Math.PI;
-        CreateInputHandling(scene);
-    }
+	scene.createDefaultCamera(true);
+	scene.activeCamera.alpha += Math.PI;
+	CreateInputHandling(scene);
 
     if (ibl) {
         scene.createDefaultEnvironment({ createGround: false, createSkybox: false });
