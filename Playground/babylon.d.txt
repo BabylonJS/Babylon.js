@@ -4738,6 +4738,8 @@ declare module BABYLON {
         private _normals;
         private _binormals;
         private _raw;
+        private _alignTangentsWithPath;
+        private readonly _pointAtData;
         /**
         * new Path3D(path, normal, raw)
         * Creates a Path3D. A Path3D is a logical math object, so not a mesh.
@@ -4745,17 +4747,27 @@ declare module BABYLON {
         * @param path an array of Vector3, the curve axis of the Path3D
         * @param firstNormal (options) Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
         * @param raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
+        * @param alignTangentsWithPath (optional, default false) : boolean, if true the tangents will be aligned with the path.
         */
         constructor(
         /**
          * an array of Vector3, the curve axis of the Path3D
          */
-        path: Vector3[], firstNormal?: Nullable<Vector3>, raw?: boolean);
+        path: Vector3[], firstNormal?: Nullable<Vector3>, raw?: boolean, alignTangentsWithPath?: boolean);
         /**
          * Returns the Path3D array of successive Vector3 designing its curve.
          * @returns the Path3D array of successive Vector3 designing its curve.
          */
         getCurve(): Vector3[];
+        /**
+         * Returns the Path3D array of successive Vector3 designing its curve.
+         * @returns the Path3D array of successive Vector3 designing its curve.
+         */
+        getPoints(): Vector3[];
+        /**
+         * @returns the computed length (float) of the path.
+         */
+        length(): number;
         /**
          * Returns an array populated with tangent vectors on each Path3D curve point.
          * @returns an array populated with tangent vectors on each Path3D curve point.
@@ -4777,16 +4789,93 @@ declare module BABYLON {
          */
         getDistances(): number[];
         /**
+         * Returns an interpolated point along this path
+         * @param position the position of the point along this path, from 0.0 to 1.0
+         * @returns a new Vector3 as the point
+         */
+        getPointAt(position: number): Vector3;
+        /**
+         * Returns the tangent vector of an interpolated Path3D curve point at the specified position along this path.
+         * @param position the position of the point along this path, from 0.0 to 1.0
+         * @param interpolated (optional, default false) : boolean, if true returns an interpolated tangent instead of the tangent of the previous path point.
+         * @returns a tangent vector corresponding to the interpolated Path3D curve point, if not interpolated, the tangent is taken from the precomputed tangents array.
+         */
+        getTangentAt(position: number, interpolated?: boolean): Vector3;
+        /**
+         * Returns the tangent vector of an interpolated Path3D curve point at the specified position along this path.
+         * @param position the position of the point along this path, from 0.0 to 1.0
+         * @param interpolated (optional, default false) : boolean, if true returns an interpolated normal instead of the normal of the previous path point.
+         * @returns a normal vector corresponding to the interpolated Path3D curve point, if not interpolated, the normal is taken from the precomputed normals array.
+         */
+        getNormalAt(position: number, interpolated?: boolean): Vector3;
+        /**
+         * Returns the binormal vector of an interpolated Path3D curve point at the specified position along this path.
+         * @param position the position of the point along this path, from 0.0 to 1.0
+         * @param interpolated (optional, default false) : boolean, if true returns an interpolated binormal instead of the binormal of the previous path point.
+         * @returns a binormal vector corresponding to the interpolated Path3D curve point, if not interpolated, the binormal is taken from the precomputed binormals array.
+         */
+        getBinormalAt(position: number, interpolated?: boolean): Vector3;
+        /**
+         * Returns the distance (float) of an interpolated Path3D curve point at the specified position along this path.
+         * @param position the position of the point along this path, from 0.0 to 1.0
+         * @returns the distance of the interpolated Path3D curve point at the specified position along this path.
+         */
+        getDistanceAt(position: number): number;
+        /**
+         * Returns the array index of the previous point of an interpolated point along this path
+         * @param position the position of the point to interpolate along this path, from 0.0 to 1.0
+         * @returns the array index
+         */
+        getPreviousPointIndexAt(position: number): number;
+        /**
+         * Returns the position of an interpolated point relative to the two path points it lies between, from 0.0 (point A) to 1.0 (point B)
+         * @param position the position of the point to interpolate along this path, from 0.0 to 1.0
+         * @returns the sub position
+         */
+        getSubPositionAt(position: number): number;
+        /**
+         * Returns the position of the closest virtual point on this path to an arbitrary Vector3, from 0.0 to 1.0
+         * @param target the vector of which to get the closest position to
+         * @returns the position of the closest virtual point on this path to the target vector
+         */
+        getClosestPositionTo(target: Vector3): number;
+        /**
+         * Returns a sub path (slice) of this path
+         * @param start the position of the fist path point, from 0.0 to 1.0, or a negative value, which will get wrapped around from the end of the path to 0.0 to 1.0 values
+         * @param end the position of the last path point, from 0.0 to 1.0, or a negative value, which will get wrapped around from the end of the path to 0.0 to 1.0 values
+         * @returns a sub path (slice) of this path
+         */
+        slice(start?: number, end?: number): Path3D;
+        /**
          * Forces the Path3D tangent, normal, binormal and distance recomputation.
          * @param path path which all values are copied into the curves points
          * @param firstNormal which should be projected onto the curve
+         * @param alignTangentsWithPath (optional, default false) : boolean, if true the tangents will be aligned with the path
          * @returns the same object updated.
          */
-        update(path: Vector3[], firstNormal?: Nullable<Vector3>): Path3D;
+        update(path: Vector3[], firstNormal?: Nullable<Vector3>, alignTangentsWithPath?: boolean): Path3D;
         private _compute;
         private _getFirstNonNullVector;
         private _getLastNonNullVector;
         private _normalVector;
+        /**
+         * Updates the point at data for an interpolated point along this curve
+         * @param position the position of the point along this curve, from 0.0 to 1.0
+         * @interpolateTNB wether to compute the interpolated tangent, normal and binormal
+         * @returns the (updated) point at data
+         */
+        private _updatePointAtData;
+        /**
+         * Updates the point at data from the specified parameters
+         * @param position where along the path the interpolated point is, from 0.0 to 1.0
+         * @param point the interpolated point
+         * @param parentIndex the index of an existing curve point that is on, or else positionally the first behind, the interpolated point
+         */
+        private _setPointAtData;
+        /**
+         * Updates the point at interpolation matrix for the tangents, normals and binormals
+         */
+        private _updateInterpolationMatrix;
     }
     /**
      * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
@@ -44359,6 +44448,8 @@ declare module BABYLON {
     /** @hidden */
     export class NativeEngine extends Engine {
         private readonly _native;
+        /** Defines the invalid handle returned by bgfx when resource creation goes wrong */
+        private readonly INVALID_HANDLE;
         getHardwareScalingLevel(): number;
         constructor();
         /**
@@ -44373,7 +44464,7 @@ declare module BABYLON {
          * @param depth
          * @param stencil
          */private _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>): void;
-        clear(color: Color4, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
+        clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
         createIndexBuffer(indices: IndicesArray): NativeDataBuffer;
         createVertexBuffer(data: DataArray): NativeDataBuffer;
         recordVertexArrayObject(vertexBuffers: {

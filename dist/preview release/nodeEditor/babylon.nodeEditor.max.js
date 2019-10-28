@@ -7,7 +7,7 @@
 		exports["babylonjs-node-editor"] = factory(require("babylonjs"));
 	else
 		root["NODEEDITOR"] = factory(root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_Textures_texture__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -296,7 +296,6 @@ var PREFIX_TO_STYLE = {
   'fas': 'solid',
   'far': 'regular',
   'fal': 'light',
-  'fad': 'duotone',
   'fab': 'brands',
   'fa': 'solid'
 };
@@ -304,11 +303,10 @@ var STYLE_TO_PREFIX = {
   'solid': 'fas',
   'regular': 'far',
   'light': 'fal',
-  'duotone': 'fad',
   'brands': 'fab'
 };
 var LAYERS_TEXT_CLASSNAME = 'fa-layers-text';
-var FONT_FAMILY_PATTERN = /Font Awesome 5 (Solid|Regular|Light|Duotone|Brands|Free|Pro)/;
+var FONT_FAMILY_PATTERN = /Font Awesome 5 (Solid|Regular|Light|Brands|Free|Pro)/;
 var FONT_WEIGHT_TO_PREFIX = {
   '900': 'fas',
   '400': 'far',
@@ -318,13 +316,7 @@ var FONT_WEIGHT_TO_PREFIX = {
 var oneToTen = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 var oneToTwenty = oneToTen.concat([11, 12, 13, 14, 15, 16, 17, 18, 19, 20]);
 var ATTRIBUTES_WATCHED_FOR_MUTATION = ['class', 'data-prefix', 'data-icon', 'data-fa-transform', 'data-fa-mask'];
-var DUOTONE_CLASSES = {
-  GROUP: 'group',
-  SWAP_OPACITY: 'swap-opacity',
-  PRIMARY: 'primary',
-  SECONDARY: 'secondary'
-};
-var RESERVED_CLASSES = ['xs', 'sm', 'lg', 'fw', 'ul', 'li', 'border', 'pull-left', 'pull-right', 'spin', 'pulse', 'rotate-90', 'rotate-180', 'rotate-270', 'flip-horizontal', 'flip-vertical', 'flip-both', 'stack', 'stack-1x', 'stack-2x', 'inverse', 'layers', 'layers-text', 'layers-counter', DUOTONE_CLASSES.GROUP, DUOTONE_CLASSES.SWAP_OPACITY, DUOTONE_CLASSES.PRIMARY, DUOTONE_CLASSES.SECONDARY].concat(oneToTen.map(function (n) {
+var RESERVED_CLASSES = ['xs', 'sm', 'lg', 'fw', 'ul', 'li', 'border', 'pull-left', 'pull-right', 'spin', 'pulse', 'rotate-90', 'rotate-180', 'rotate-270', 'flip-horizontal', 'flip-vertical', 'flip-both', 'stack', 'stack-1x', 'stack-2x', 'inverse', 'layers', 'layers-text', 'layers-counter'].concat(oneToTen.map(function (n) {
   return "".concat(n, "x");
 })).concat(oneToTwenty.map(function (n) {
   return "w-".concat(n);
@@ -848,25 +840,6 @@ var ALL_SPACE = {
   width: '100%',
   height: '100%'
 };
-
-function fillBlack(abstract) {
-  var force = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-
-  if (abstract.attributes && (abstract.attributes.fill || force)) {
-    abstract.attributes.fill = 'black';
-  }
-
-  return abstract;
-}
-
-function deGroup(abstract) {
-  if (abstract.tag === 'g') {
-    return abstract.children;
-  } else {
-    return [abstract];
-  }
-}
-
 function makeIconMasking (_ref) {
   var children = _ref.children,
       attributes = _ref.attributes,
@@ -888,16 +861,15 @@ function makeIconMasking (_ref) {
       fill: 'white'
     })
   };
-  var maskInnerGroupChildrenMixin = mainPath.children ? {
-    children: mainPath.children.map(fillBlack)
-  } : {};
   var maskInnerGroup = {
     tag: 'g',
     attributes: _objectSpread({}, trans.inner),
-    children: [fillBlack(_objectSpread({
-      tag: mainPath.tag,
-      attributes: _objectSpread({}, mainPath.attributes, trans.path)
-    }, maskInnerGroupChildrenMixin))]
+    children: [{
+      tag: 'path',
+      attributes: _objectSpread({}, mainPath.attributes, trans.path, {
+        fill: 'black'
+      })
+    }]
   };
   var maskOuterGroup = {
     tag: 'g',
@@ -922,7 +894,7 @@ function makeIconMasking (_ref) {
       attributes: {
         id: clipId
       },
-      children: deGroup(maskPath)
+      children: [maskPath]
     }, maskTag]
   };
   children.push(defs, {
@@ -1197,7 +1169,7 @@ var p = config.measurePerformance && PERFORMANCE && PERFORMANCE.mark && PERFORMA
   mark: noop$1,
   measure: noop$1
 };
-var preamble = "FA \"5.11.2\"";
+var preamble = "FA \"5.9.0\"";
 
 var begin = function begin(name) {
   p.mark("".concat(preamble, " ").concat(name, " begins"));
@@ -1383,7 +1355,7 @@ function getCanonicalIcon(values) {
 
     if (styles$1[cls]) {
       acc.prefix = cls;
-    } else if (config.autoFetchSvg && ['fas', 'far', 'fal', 'fad', 'fab', 'fa'].indexOf(cls) > -1) {
+    } else if (config.autoFetchSvg && ['fas', 'far', 'fal', 'fab', 'fa'].indexOf(cls) > -1) {
       acc.prefix = cls;
     } else if (iconName) {
       var shim = acc.prefix === 'fa' ? byOldName(iconName) : {};
@@ -1463,7 +1435,6 @@ var mutators = {
 
     var forSvg = new RegExp("".concat(config.familyPrefix, "-.*"));
     delete abstract[0].attributes.style;
-    delete abstract[0].attributes.id;
     var splitClasses = abstract[0].attributes.class.split(' ').reduce(function (acc, cls) {
       if (cls === config.replacementClass || cls.match(forSvg)) {
         acc.toSvg.push(cls);
@@ -1847,55 +1818,6 @@ var missing = {
 };
 
 var styles$2 = namespace.styles;
-function asFoundIcon(icon) {
-  var width = icon[0];
-  var height = icon[1];
-
-  var _icon$slice = icon.slice(4),
-      _icon$slice2 = _slicedToArray(_icon$slice, 1),
-      vectorData = _icon$slice2[0];
-
-  var element = null;
-
-  if (Array.isArray(vectorData)) {
-    element = {
-      tag: 'g',
-      attributes: {
-        class: "".concat(config.familyPrefix, "-").concat(DUOTONE_CLASSES.GROUP)
-      },
-      children: [{
-        tag: 'path',
-        attributes: {
-          class: "".concat(config.familyPrefix, "-").concat(DUOTONE_CLASSES.SECONDARY),
-          fill: 'currentColor',
-          d: vectorData[0]
-        }
-      }, {
-        tag: 'path',
-        attributes: {
-          class: "".concat(config.familyPrefix, "-").concat(DUOTONE_CLASSES.PRIMARY),
-          fill: 'currentColor',
-          d: vectorData[1]
-        }
-      }]
-    };
-  } else {
-    element = {
-      tag: 'path',
-      attributes: {
-        fill: 'currentColor',
-        d: vectorData
-      }
-    };
-  }
-
-  return {
-    found: true,
-    width: width,
-    height: height,
-    icon: element
-  };
-}
 function findIcon(iconName, prefix) {
   return new picked(function (resolve, reject) {
     var val = {
@@ -1907,13 +1829,22 @@ function findIcon(iconName, prefix) {
 
     if (iconName && prefix && styles$2[prefix] && styles$2[prefix][iconName]) {
       var icon = styles$2[prefix][iconName];
-      return resolve(asFoundIcon(icon));
-    }
-
-    var headers = {};
-
-    if (_typeof(WINDOW.FontAwesomeKitConfig) === 'object' && typeof window.FontAwesomeKitConfig.token === 'string') {
-      headers['fa-kit-token'] = WINDOW.FontAwesomeKitConfig.token;
+      var width = icon[0];
+      var height = icon[1];
+      var vectorData = icon.slice(4);
+      val = {
+        found: true,
+        width: width,
+        height: height,
+        icon: {
+          tag: 'path',
+          attributes: {
+            fill: 'currentColor',
+            d: vectorData[0]
+          }
+        }
+      };
+      return resolve(val);
     }
 
     if (iconName && prefix && !config.showMissingIcons) {
@@ -2100,7 +2031,7 @@ function replaceForPosition(node, position) {
       return resolve();
     } else if (fontFamily) {
       var content = styles.getPropertyValue('content');
-      var prefix = ~['Solid', 'Regular', 'Light', 'Duotone', 'Brands'].indexOf(fontFamily[1]) ? STYLE_TO_PREFIX[fontFamily[1].toLowerCase()] : FONT_WEIGHT_TO_PREFIX[fontWeight];
+      var prefix = ~['Light', 'Regular', 'Solid', 'Brands'].indexOf(fontFamily[1]) ? STYLE_TO_PREFIX[fontFamily[1].toLowerCase()] : FONT_WEIGHT_TO_PREFIX[fontWeight];
       var hexValue = toHex(content.length === 3 ? content.substr(1, 1) : content);
       var iconName = byUnicode(prefix, hexValue);
       var iconIdentifier = iconName; // Only convert the pseudo element in this :before/:after position into an icon if we haven't
@@ -2177,7 +2108,7 @@ function searchPseudoElements (root) {
   });
 }
 
-var baseStyles = "svg:not(:root).svg-inline--fa {\n  overflow: visible;\n}\n\n.svg-inline--fa {\n  display: inline-block;\n  font-size: inherit;\n  height: 1em;\n  overflow: visible;\n  vertical-align: -0.125em;\n}\n.svg-inline--fa.fa-lg {\n  vertical-align: -0.225em;\n}\n.svg-inline--fa.fa-w-1 {\n  width: 0.0625em;\n}\n.svg-inline--fa.fa-w-2 {\n  width: 0.125em;\n}\n.svg-inline--fa.fa-w-3 {\n  width: 0.1875em;\n}\n.svg-inline--fa.fa-w-4 {\n  width: 0.25em;\n}\n.svg-inline--fa.fa-w-5 {\n  width: 0.3125em;\n}\n.svg-inline--fa.fa-w-6 {\n  width: 0.375em;\n}\n.svg-inline--fa.fa-w-7 {\n  width: 0.4375em;\n}\n.svg-inline--fa.fa-w-8 {\n  width: 0.5em;\n}\n.svg-inline--fa.fa-w-9 {\n  width: 0.5625em;\n}\n.svg-inline--fa.fa-w-10 {\n  width: 0.625em;\n}\n.svg-inline--fa.fa-w-11 {\n  width: 0.6875em;\n}\n.svg-inline--fa.fa-w-12 {\n  width: 0.75em;\n}\n.svg-inline--fa.fa-w-13 {\n  width: 0.8125em;\n}\n.svg-inline--fa.fa-w-14 {\n  width: 0.875em;\n}\n.svg-inline--fa.fa-w-15 {\n  width: 0.9375em;\n}\n.svg-inline--fa.fa-w-16 {\n  width: 1em;\n}\n.svg-inline--fa.fa-w-17 {\n  width: 1.0625em;\n}\n.svg-inline--fa.fa-w-18 {\n  width: 1.125em;\n}\n.svg-inline--fa.fa-w-19 {\n  width: 1.1875em;\n}\n.svg-inline--fa.fa-w-20 {\n  width: 1.25em;\n}\n.svg-inline--fa.fa-pull-left {\n  margin-right: 0.3em;\n  width: auto;\n}\n.svg-inline--fa.fa-pull-right {\n  margin-left: 0.3em;\n  width: auto;\n}\n.svg-inline--fa.fa-border {\n  height: 1.5em;\n}\n.svg-inline--fa.fa-li {\n  width: 2em;\n}\n.svg-inline--fa.fa-fw {\n  width: 1.25em;\n}\n\n.fa-layers svg.svg-inline--fa {\n  bottom: 0;\n  left: 0;\n  margin: auto;\n  position: absolute;\n  right: 0;\n  top: 0;\n}\n\n.fa-layers {\n  display: inline-block;\n  height: 1em;\n  position: relative;\n  text-align: center;\n  vertical-align: -0.125em;\n  width: 1em;\n}\n.fa-layers svg.svg-inline--fa {\n  -webkit-transform-origin: center center;\n          transform-origin: center center;\n}\n\n.fa-layers-counter, .fa-layers-text {\n  display: inline-block;\n  position: absolute;\n  text-align: center;\n}\n\n.fa-layers-text {\n  left: 50%;\n  top: 50%;\n  -webkit-transform: translate(-50%, -50%);\n          transform: translate(-50%, -50%);\n  -webkit-transform-origin: center center;\n          transform-origin: center center;\n}\n\n.fa-layers-counter {\n  background-color: #ff253a;\n  border-radius: 1em;\n  -webkit-box-sizing: border-box;\n          box-sizing: border-box;\n  color: #fff;\n  height: 1.5em;\n  line-height: 1;\n  max-width: 5em;\n  min-width: 1.5em;\n  overflow: hidden;\n  padding: 0.25em;\n  right: 0;\n  text-overflow: ellipsis;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top right;\n          transform-origin: top right;\n}\n\n.fa-layers-bottom-right {\n  bottom: 0;\n  right: 0;\n  top: auto;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: bottom right;\n          transform-origin: bottom right;\n}\n\n.fa-layers-bottom-left {\n  bottom: 0;\n  left: 0;\n  right: auto;\n  top: auto;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: bottom left;\n          transform-origin: bottom left;\n}\n\n.fa-layers-top-right {\n  right: 0;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top right;\n          transform-origin: top right;\n}\n\n.fa-layers-top-left {\n  left: 0;\n  right: auto;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top left;\n          transform-origin: top left;\n}\n\n.fa-lg {\n  font-size: 1.3333333333em;\n  line-height: 0.75em;\n  vertical-align: -0.0667em;\n}\n\n.fa-xs {\n  font-size: 0.75em;\n}\n\n.fa-sm {\n  font-size: 0.875em;\n}\n\n.fa-1x {\n  font-size: 1em;\n}\n\n.fa-2x {\n  font-size: 2em;\n}\n\n.fa-3x {\n  font-size: 3em;\n}\n\n.fa-4x {\n  font-size: 4em;\n}\n\n.fa-5x {\n  font-size: 5em;\n}\n\n.fa-6x {\n  font-size: 6em;\n}\n\n.fa-7x {\n  font-size: 7em;\n}\n\n.fa-8x {\n  font-size: 8em;\n}\n\n.fa-9x {\n  font-size: 9em;\n}\n\n.fa-10x {\n  font-size: 10em;\n}\n\n.fa-fw {\n  text-align: center;\n  width: 1.25em;\n}\n\n.fa-ul {\n  list-style-type: none;\n  margin-left: 2.5em;\n  padding-left: 0;\n}\n.fa-ul > li {\n  position: relative;\n}\n\n.fa-li {\n  left: -2em;\n  position: absolute;\n  text-align: center;\n  width: 2em;\n  line-height: inherit;\n}\n\n.fa-border {\n  border: solid 0.08em #eee;\n  border-radius: 0.1em;\n  padding: 0.2em 0.25em 0.15em;\n}\n\n.fa-pull-left {\n  float: left;\n}\n\n.fa-pull-right {\n  float: right;\n}\n\n.fa.fa-pull-left,\n.fas.fa-pull-left,\n.far.fa-pull-left,\n.fal.fa-pull-left,\n.fab.fa-pull-left {\n  margin-right: 0.3em;\n}\n.fa.fa-pull-right,\n.fas.fa-pull-right,\n.far.fa-pull-right,\n.fal.fa-pull-right,\n.fab.fa-pull-right {\n  margin-left: 0.3em;\n}\n\n.fa-spin {\n  -webkit-animation: fa-spin 2s infinite linear;\n          animation: fa-spin 2s infinite linear;\n}\n\n.fa-pulse {\n  -webkit-animation: fa-spin 1s infinite steps(8);\n          animation: fa-spin 1s infinite steps(8);\n}\n\n@-webkit-keyframes fa-spin {\n  0% {\n    -webkit-transform: rotate(0deg);\n            transform: rotate(0deg);\n  }\n  100% {\n    -webkit-transform: rotate(360deg);\n            transform: rotate(360deg);\n  }\n}\n\n@keyframes fa-spin {\n  0% {\n    -webkit-transform: rotate(0deg);\n            transform: rotate(0deg);\n  }\n  100% {\n    -webkit-transform: rotate(360deg);\n            transform: rotate(360deg);\n  }\n}\n.fa-rotate-90 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=1)\";\n  -webkit-transform: rotate(90deg);\n          transform: rotate(90deg);\n}\n\n.fa-rotate-180 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2)\";\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n\n.fa-rotate-270 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=3)\";\n  -webkit-transform: rotate(270deg);\n          transform: rotate(270deg);\n}\n\n.fa-flip-horizontal {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=0, mirror=1)\";\n  -webkit-transform: scale(-1, 1);\n          transform: scale(-1, 1);\n}\n\n.fa-flip-vertical {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)\";\n  -webkit-transform: scale(1, -1);\n          transform: scale(1, -1);\n}\n\n.fa-flip-both, .fa-flip-horizontal.fa-flip-vertical {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)\";\n  -webkit-transform: scale(-1, -1);\n          transform: scale(-1, -1);\n}\n\n:root .fa-rotate-90,\n:root .fa-rotate-180,\n:root .fa-rotate-270,\n:root .fa-flip-horizontal,\n:root .fa-flip-vertical,\n:root .fa-flip-both {\n  -webkit-filter: none;\n          filter: none;\n}\n\n.fa-stack {\n  display: inline-block;\n  height: 2em;\n  position: relative;\n  width: 2.5em;\n}\n\n.fa-stack-1x,\n.fa-stack-2x {\n  bottom: 0;\n  left: 0;\n  margin: auto;\n  position: absolute;\n  right: 0;\n  top: 0;\n}\n\n.svg-inline--fa.fa-stack-1x {\n  height: 1em;\n  width: 1.25em;\n}\n.svg-inline--fa.fa-stack-2x {\n  height: 2em;\n  width: 2.5em;\n}\n\n.fa-inverse {\n  color: #fff;\n}\n\n.sr-only {\n  border: 0;\n  clip: rect(0, 0, 0, 0);\n  height: 1px;\n  margin: -1px;\n  overflow: hidden;\n  padding: 0;\n  position: absolute;\n  width: 1px;\n}\n\n.sr-only-focusable:active, .sr-only-focusable:focus {\n  clip: auto;\n  height: auto;\n  margin: 0;\n  overflow: visible;\n  position: static;\n  width: auto;\n}\n\n.svg-inline--fa .fa-primary {\n  fill: var(--fa-primary-color, currentColor);\n  opacity: 1;\n  opacity: var(--fa-primary-opacity, 1);\n}\n\n.svg-inline--fa .fa-secondary {\n  fill: var(--fa-secondary-color, currentColor);\n  opacity: 0.4;\n  opacity: var(--fa-secondary-opacity, 0.4);\n}\n\n.svg-inline--fa.fa-swap-opacity .fa-primary {\n  opacity: 0.4;\n  opacity: var(--fa-secondary-opacity, 0.4);\n}\n\n.svg-inline--fa.fa-swap-opacity .fa-secondary {\n  opacity: 1;\n  opacity: var(--fa-primary-opacity, 1);\n}\n\n.svg-inline--fa mask .fa-primary,\n.svg-inline--fa mask .fa-secondary {\n  fill: black;\n}\n\n.fad.fa-inverse {\n  color: #fff;\n}";
+var baseStyles = "svg:not(:root).svg-inline--fa {\n  overflow: visible;\n}\n\n.svg-inline--fa {\n  display: inline-block;\n  font-size: inherit;\n  height: 1em;\n  overflow: visible;\n  vertical-align: -0.125em;\n}\n.svg-inline--fa.fa-lg {\n  vertical-align: -0.225em;\n}\n.svg-inline--fa.fa-w-1 {\n  width: 0.0625em;\n}\n.svg-inline--fa.fa-w-2 {\n  width: 0.125em;\n}\n.svg-inline--fa.fa-w-3 {\n  width: 0.1875em;\n}\n.svg-inline--fa.fa-w-4 {\n  width: 0.25em;\n}\n.svg-inline--fa.fa-w-5 {\n  width: 0.3125em;\n}\n.svg-inline--fa.fa-w-6 {\n  width: 0.375em;\n}\n.svg-inline--fa.fa-w-7 {\n  width: 0.4375em;\n}\n.svg-inline--fa.fa-w-8 {\n  width: 0.5em;\n}\n.svg-inline--fa.fa-w-9 {\n  width: 0.5625em;\n}\n.svg-inline--fa.fa-w-10 {\n  width: 0.625em;\n}\n.svg-inline--fa.fa-w-11 {\n  width: 0.6875em;\n}\n.svg-inline--fa.fa-w-12 {\n  width: 0.75em;\n}\n.svg-inline--fa.fa-w-13 {\n  width: 0.8125em;\n}\n.svg-inline--fa.fa-w-14 {\n  width: 0.875em;\n}\n.svg-inline--fa.fa-w-15 {\n  width: 0.9375em;\n}\n.svg-inline--fa.fa-w-16 {\n  width: 1em;\n}\n.svg-inline--fa.fa-w-17 {\n  width: 1.0625em;\n}\n.svg-inline--fa.fa-w-18 {\n  width: 1.125em;\n}\n.svg-inline--fa.fa-w-19 {\n  width: 1.1875em;\n}\n.svg-inline--fa.fa-w-20 {\n  width: 1.25em;\n}\n.svg-inline--fa.fa-pull-left {\n  margin-right: 0.3em;\n  width: auto;\n}\n.svg-inline--fa.fa-pull-right {\n  margin-left: 0.3em;\n  width: auto;\n}\n.svg-inline--fa.fa-border {\n  height: 1.5em;\n}\n.svg-inline--fa.fa-li {\n  width: 2em;\n}\n.svg-inline--fa.fa-fw {\n  width: 1.25em;\n}\n\n.fa-layers svg.svg-inline--fa {\n  bottom: 0;\n  left: 0;\n  margin: auto;\n  position: absolute;\n  right: 0;\n  top: 0;\n}\n\n.fa-layers {\n  display: inline-block;\n  height: 1em;\n  position: relative;\n  text-align: center;\n  vertical-align: -0.125em;\n  width: 1em;\n}\n.fa-layers svg.svg-inline--fa {\n  -webkit-transform-origin: center center;\n          transform-origin: center center;\n}\n\n.fa-layers-counter, .fa-layers-text {\n  display: inline-block;\n  position: absolute;\n  text-align: center;\n}\n\n.fa-layers-text {\n  left: 50%;\n  top: 50%;\n  -webkit-transform: translate(-50%, -50%);\n          transform: translate(-50%, -50%);\n  -webkit-transform-origin: center center;\n          transform-origin: center center;\n}\n\n.fa-layers-counter {\n  background-color: #ff253a;\n  border-radius: 1em;\n  -webkit-box-sizing: border-box;\n          box-sizing: border-box;\n  color: #fff;\n  height: 1.5em;\n  line-height: 1;\n  max-width: 5em;\n  min-width: 1.5em;\n  overflow: hidden;\n  padding: 0.25em;\n  right: 0;\n  text-overflow: ellipsis;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top right;\n          transform-origin: top right;\n}\n\n.fa-layers-bottom-right {\n  bottom: 0;\n  right: 0;\n  top: auto;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: bottom right;\n          transform-origin: bottom right;\n}\n\n.fa-layers-bottom-left {\n  bottom: 0;\n  left: 0;\n  right: auto;\n  top: auto;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: bottom left;\n          transform-origin: bottom left;\n}\n\n.fa-layers-top-right {\n  right: 0;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top right;\n          transform-origin: top right;\n}\n\n.fa-layers-top-left {\n  left: 0;\n  right: auto;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top left;\n          transform-origin: top left;\n}\n\n.fa-lg {\n  font-size: 1.3333333333em;\n  line-height: 0.75em;\n  vertical-align: -0.0667em;\n}\n\n.fa-xs {\n  font-size: 0.75em;\n}\n\n.fa-sm {\n  font-size: 0.875em;\n}\n\n.fa-1x {\n  font-size: 1em;\n}\n\n.fa-2x {\n  font-size: 2em;\n}\n\n.fa-3x {\n  font-size: 3em;\n}\n\n.fa-4x {\n  font-size: 4em;\n}\n\n.fa-5x {\n  font-size: 5em;\n}\n\n.fa-6x {\n  font-size: 6em;\n}\n\n.fa-7x {\n  font-size: 7em;\n}\n\n.fa-8x {\n  font-size: 8em;\n}\n\n.fa-9x {\n  font-size: 9em;\n}\n\n.fa-10x {\n  font-size: 10em;\n}\n\n.fa-fw {\n  text-align: center;\n  width: 1.25em;\n}\n\n.fa-ul {\n  list-style-type: none;\n  margin-left: 2.5em;\n  padding-left: 0;\n}\n.fa-ul > li {\n  position: relative;\n}\n\n.fa-li {\n  left: -2em;\n  position: absolute;\n  text-align: center;\n  width: 2em;\n  line-height: inherit;\n}\n\n.fa-border {\n  border: solid 0.08em #eee;\n  border-radius: 0.1em;\n  padding: 0.2em 0.25em 0.15em;\n}\n\n.fa-pull-left {\n  float: left;\n}\n\n.fa-pull-right {\n  float: right;\n}\n\n.fa.fa-pull-left,\n.fas.fa-pull-left,\n.far.fa-pull-left,\n.fal.fa-pull-left,\n.fab.fa-pull-left {\n  margin-right: 0.3em;\n}\n.fa.fa-pull-right,\n.fas.fa-pull-right,\n.far.fa-pull-right,\n.fal.fa-pull-right,\n.fab.fa-pull-right {\n  margin-left: 0.3em;\n}\n\n.fa-spin {\n  -webkit-animation: fa-spin 2s infinite linear;\n          animation: fa-spin 2s infinite linear;\n}\n\n.fa-pulse {\n  -webkit-animation: fa-spin 1s infinite steps(8);\n          animation: fa-spin 1s infinite steps(8);\n}\n\n@-webkit-keyframes fa-spin {\n  0% {\n    -webkit-transform: rotate(0deg);\n            transform: rotate(0deg);\n  }\n  100% {\n    -webkit-transform: rotate(360deg);\n            transform: rotate(360deg);\n  }\n}\n\n@keyframes fa-spin {\n  0% {\n    -webkit-transform: rotate(0deg);\n            transform: rotate(0deg);\n  }\n  100% {\n    -webkit-transform: rotate(360deg);\n            transform: rotate(360deg);\n  }\n}\n.fa-rotate-90 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=1)\";\n  -webkit-transform: rotate(90deg);\n          transform: rotate(90deg);\n}\n\n.fa-rotate-180 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2)\";\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n\n.fa-rotate-270 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=3)\";\n  -webkit-transform: rotate(270deg);\n          transform: rotate(270deg);\n}\n\n.fa-flip-horizontal {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=0, mirror=1)\";\n  -webkit-transform: scale(-1, 1);\n          transform: scale(-1, 1);\n}\n\n.fa-flip-vertical {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)\";\n  -webkit-transform: scale(1, -1);\n          transform: scale(1, -1);\n}\n\n.fa-flip-both, .fa-flip-horizontal.fa-flip-vertical {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)\";\n  -webkit-transform: scale(-1, -1);\n          transform: scale(-1, -1);\n}\n\n:root .fa-rotate-90,\n:root .fa-rotate-180,\n:root .fa-rotate-270,\n:root .fa-flip-horizontal,\n:root .fa-flip-vertical,\n:root .fa-flip-both {\n  -webkit-filter: none;\n          filter: none;\n}\n\n.fa-stack {\n  display: inline-block;\n  height: 2em;\n  position: relative;\n  width: 2.5em;\n}\n\n.fa-stack-1x,\n.fa-stack-2x {\n  bottom: 0;\n  left: 0;\n  margin: auto;\n  position: absolute;\n  right: 0;\n  top: 0;\n}\n\n.svg-inline--fa.fa-stack-1x {\n  height: 1em;\n  width: 1.25em;\n}\n.svg-inline--fa.fa-stack-2x {\n  height: 2em;\n  width: 2.5em;\n}\n\n.fa-inverse {\n  color: #fff;\n}\n\n.sr-only {\n  border: 0;\n  clip: rect(0, 0, 0, 0);\n  height: 1px;\n  margin: -1px;\n  overflow: hidden;\n  padding: 0;\n  position: absolute;\n  width: 1px;\n}\n\n.sr-only-focusable:active, .sr-only-focusable:focus {\n  clip: auto;\n  height: auto;\n  margin: 0;\n  overflow: visible;\n  position: static;\n  width: auto;\n}";
 
 function css () {
   var dfp = DEFAULT_FAMILY_PREFIX;
@@ -2188,9 +2119,8 @@ function css () {
 
   if (fp !== dfp || rc !== drc) {
     var dPatt = new RegExp("\\.".concat(dfp, "\\-"), 'g');
-    var customPropPatt = new RegExp("\\--".concat(dfp, "\\-"), 'g');
     var rPatt = new RegExp("\\.".concat(drc), 'g');
-    s = s.replace(dPatt, ".".concat(fp, "-")).replace(customPropPatt, "--".concat(fp, "-")).replace(rPatt, ".".concat(rc));
+    s = s.replace(dPatt, ".".concat(fp, "-")).replace(rPatt, ".".concat(rc));
   }
 
   return s;
@@ -2246,6 +2176,24 @@ function () {
 
   return Library;
 }();
+
+function prepIcon(icon) {
+  var width = icon[0];
+  var height = icon[1];
+  var vectorData = icon.slice(4);
+  return {
+    found: true,
+    width: width,
+    height: height,
+    icon: {
+      tag: 'path',
+      attributes: {
+        fill: 'currentColor',
+        d: vectorData[0]
+      }
+    }
+  };
+}
 
 function ensureCss() {
   if (config.autoAddCss && !_cssInserted) {
@@ -2400,8 +2348,8 @@ var icon = resolveIcons(function (iconDefinition) {
 
     return makeInlineSvgAbstract({
       icons: {
-        main: asFoundIcon(icon),
-        mask: mask ? asFoundIcon(mask.icon) : {
+        main: prepIcon(icon),
+        mask: mask ? prepIcon(mask.icon) : {
           found: false,
           width: null,
           height: null,
@@ -2477,9 +2425,6 @@ var counter = function counter(content) {
   });
 };
 var layer = function layer(assembler) {
-  var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-  var _params$classes4 = params.classes,
-      classes = _params$classes4 === void 0 ? [] : _params$classes4;
   return apiObject({
     type: 'layer'
   }, function () {
@@ -2493,7 +2438,7 @@ var layer = function layer(assembler) {
     return [{
       tag: 'span',
       attributes: {
-        class: ["".concat(config.familyPrefix, "-layers")].concat(_toConsumableArray(classes)).join(' ')
+        class: "".concat(config.familyPrefix, "-layers")
       },
       children: children
     }];
@@ -5117,7 +5062,7 @@ var _iconsCache = {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FontAwesomeIcon", function() { return FontAwesomeIcon; });
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FontAwesomeIcon", function() { return FontAwesomeIcon; });
 /* harmony import */ var _fortawesome_fontawesome_svg_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @fortawesome/fontawesome-svg-core */ "../../node_modules/@fortawesome/fontawesome-svg-core/index.es.js");
 /* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! prop-types */ "../../node_modules/prop-types/index.js");
 /* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_1__);
@@ -5231,62 +5176,143 @@ function _nonIterableSpread() {
   throw new TypeError("Invalid attempt to spread non-iterable instance");
 }
 
-// Get CSS class list from a props object
-function classList(props) {
-  var _classes;
+var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
-  var spin = props.spin,
-      pulse = props.pulse,
-      fixedWidth = props.fixedWidth,
-      inverse = props.inverse,
-      border = props.border,
-      listItem = props.listItem,
-      flip = props.flip,
-      size = props.size,
-      rotation = props.rotation,
-      pull = props.pull; // map of CSS class names to properties
-
-  var classes = (_classes = {
-    'fa-spin': spin,
-    'fa-pulse': pulse,
-    'fa-fw': fixedWidth,
-    'fa-inverse': inverse,
-    'fa-border': border,
-    'fa-li': listItem,
-    'fa-flip-horizontal': flip === 'horizontal' || flip === 'both',
-    'fa-flip-vertical': flip === 'vertical' || flip === 'both'
-  }, _defineProperty(_classes, "fa-".concat(size), typeof size !== 'undefined' && size !== null), _defineProperty(_classes, "fa-rotate-".concat(rotation), typeof rotation !== 'undefined' && rotation !== null), _defineProperty(_classes, "fa-pull-".concat(pull), typeof pull !== 'undefined' && pull !== null), _defineProperty(_classes, 'fa-swap-opacity', props.swapOpacity), _classes); // map over all the keys in the classes object
-  // return an array of the keys where the value for the key is not null
-
-  return Object.keys(classes).map(function (key) {
-    return classes[key] ? key : null;
-  }).filter(function (key) {
-    return key;
-  });
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
 
-// Camelize taken from humps
-// humps is copyright © 2012+ Dom Christie
-// Released under the MIT license.
-// Performant way to determine if object coerces to a number
-function _isNumerical(obj) {
-  obj = obj - 0; // eslint-disable-next-line no-self-compare
+var humps = createCommonjsModule(function (module) {
+(function(global) {
 
-  return obj === obj;
-}
+  var _processKeys = function(convert, obj, options) {
+    if(!_isObject(obj) || _isDate(obj) || _isRegExp(obj) || _isBoolean(obj) || _isFunction(obj)) {
+      return obj;
+    }
 
-function camelize(string) {
-  if (_isNumerical(string)) {
-    return string;
-  } // eslint-disable-next-line no-useless-escape
+    var output,
+        i = 0,
+        l = 0;
 
+    if(_isArray(obj)) {
+      output = [];
+      for(l=obj.length; i<l; i++) {
+        output.push(_processKeys(convert, obj[i], options));
+      }
+    }
+    else {
+      output = {};
+      for(var key in obj) {
+        if(Object.prototype.hasOwnProperty.call(obj, key)) {
+          output[convert(key, options)] = _processKeys(convert, obj[key], options);
+        }
+      }
+    }
+    return output;
+  };
 
-  string = string.replace(/[\-_\s]+(.)?/g, function (match, chr) {
-    return chr ? chr.toUpperCase() : '';
-  }); // Ensure 1st char is always lowercase
+  // String conversion methods
 
-  return string.substr(0, 1).toLowerCase() + string.substr(1);
-}
+  var separateWords = function(string, options) {
+    options = options || {};
+    var separator = options.separator || '_';
+    var split = options.split || /(?=[A-Z])/;
+
+    return string.split(split).join(separator);
+  };
+
+  var camelize = function(string) {
+    if (_isNumerical(string)) {
+      return string;
+    }
+    string = string.replace(/[\-_\s]+(.)?/g, function(match, chr) {
+      return chr ? chr.toUpperCase() : '';
+    });
+    // Ensure 1st char is always lowercase
+    return string.substr(0, 1).toLowerCase() + string.substr(1);
+  };
+
+  var pascalize = function(string) {
+    var camelized = camelize(string);
+    // Ensure 1st char is always uppercase
+    return camelized.substr(0, 1).toUpperCase() + camelized.substr(1);
+  };
+
+  var decamelize = function(string, options) {
+    return separateWords(string, options).toLowerCase();
+  };
+
+  // Utilities
+  // Taken from Underscore.js
+
+  var toString = Object.prototype.toString;
+
+  var _isFunction = function(obj) {
+    return typeof(obj) === 'function';
+  };
+  var _isObject = function(obj) {
+    return obj === Object(obj);
+  };
+  var _isArray = function(obj) {
+    return toString.call(obj) == '[object Array]';
+  };
+  var _isDate = function(obj) {
+    return toString.call(obj) == '[object Date]';
+  };
+  var _isRegExp = function(obj) {
+    return toString.call(obj) == '[object RegExp]';
+  };
+  var _isBoolean = function(obj) {
+    return toString.call(obj) == '[object Boolean]';
+  };
+
+  // Performant way to determine if obj coerces to a number
+  var _isNumerical = function(obj) {
+    obj = obj - 0;
+    return obj === obj;
+  };
+
+  // Sets up function which handles processing keys
+  // allowing the convert function to be modified by a callback
+  var _processor = function(convert, options) {
+    var callback = options && 'process' in options ? options.process : options;
+
+    if(typeof(callback) !== 'function') {
+      return convert;
+    }
+
+    return function(string, options) {
+      return callback(string, convert, options);
+    }
+  };
+
+  var humps = {
+    camelize: camelize,
+    decamelize: decamelize,
+    pascalize: pascalize,
+    depascalize: decamelize,
+    camelizeKeys: function(object, options) {
+      return _processKeys(_processor(camelize, options), object);
+    },
+    decamelizeKeys: function(object, options) {
+      return _processKeys(_processor(decamelize, options), object, options);
+    },
+    pascalizeKeys: function(object, options) {
+      return _processKeys(_processor(pascalize, options), object);
+    },
+    depascalizeKeys: function () {
+      return this.decamelizeKeys.apply(this, arguments);
+    }
+  };
+
+  if (module.exports) {
+    module.exports = humps;
+  } else {
+    global.humps = humps;
+  }
+
+})(commonjsGlobal);
+});
 
 function capitalize(val) {
   return val.charAt(0).toUpperCase() + val.slice(1);
@@ -5299,7 +5325,7 @@ function styleToObject(style) {
     return s;
   }).reduce(function (acc, pair) {
     var i = pair.indexOf(':');
-    var prop = camelize(pair.slice(0, i));
+    var prop = humps.camelize(pair.slice(0, i));
     var value = pair.slice(i + 1).trim();
     prop.startsWith('webkit') ? acc[capitalize(prop)] = value : acc[prop] = value;
     return acc;
@@ -5333,7 +5359,7 @@ function convert(createElement, element) {
         if (key.indexOf('aria-') === 0 || key.indexOf('data-') === 0) {
           acc.attrs[key.toLowerCase()] = val;
         } else {
-          acc.attrs[camelize(key)] = val;
+          acc.attrs[humps.camelize(key)] = val;
         }
 
     }
@@ -5365,27 +5391,45 @@ function log () {
   }
 }
 
-// Normalize icon arguments
+function objectWithKey(key, value) {
+  return Array.isArray(value) && value.length > 0 || !Array.isArray(value) && value ? _defineProperty({}, key, value) : {};
+}
+
+function classList(props) {
+  var _classes;
+
+  var classes = (_classes = {
+    'fa-spin': props.spin,
+    'fa-pulse': props.pulse,
+    'fa-fw': props.fixedWidth,
+    'fa-inverse': props.inverse,
+    'fa-border': props.border,
+    'fa-li': props.listItem,
+    'fa-flip-horizontal': props.flip === 'horizontal' || props.flip === 'both',
+    'fa-flip-vertical': props.flip === 'vertical' || props.flip === 'both'
+  }, _defineProperty(_classes, "fa-".concat(props.size), props.size !== null), _defineProperty(_classes, "fa-rotate-".concat(props.rotation), props.rotation !== null), _defineProperty(_classes, "fa-pull-".concat(props.pull), props.pull !== null), _classes);
+  return Object.keys(classes).map(function (key) {
+    return classes[key] ? key : null;
+  }).filter(function (key) {
+    return key;
+  });
+}
+
 function normalizeIconArgs(icon$$1) {
-  // if the icon is null, there's nothing to do
   if (icon$$1 === null) {
     return null;
-  } // if the icon is an object and has a prefix and an icon name, return it
-
+  }
 
   if (_typeof(icon$$1) === 'object' && icon$$1.prefix && icon$$1.iconName) {
     return icon$$1;
-  } // if it's an array with length of two
-
+  }
 
   if (Array.isArray(icon$$1) && icon$$1.length === 2) {
-    // use the first item as prefix, second as icon name
     return {
       prefix: icon$$1[0],
       iconName: icon$$1[1]
     };
-  } // if it's a string, use it as the icon name
-
+  }
 
   if (typeof icon$$1 === 'string') {
     return {
@@ -5393,17 +5437,6 @@ function normalizeIconArgs(icon$$1) {
       iconName: icon$$1
     };
   }
-}
-
-// creates an object with a key of key
-// and a value of value
-// if certain conditions are met
-function objectWithKey(key, value) {
-  // if the value is a non-empty array
-  // or it's not an array but it is truthy
-  // then create the object with the key and the value
-  // if not, return an empty array
-  return Array.isArray(value) && value.length > 0 || !Array.isArray(value) && value ? _defineProperty({}, key, value) : {};
 }
 
 function FontAwesomeIcon(props) {
@@ -5452,8 +5485,7 @@ FontAwesomeIcon.propTypes = {
   spin: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
   symbol: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool, prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string]),
   title: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string,
-  transform: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string, prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.object]),
-  swapOpacity: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool
+  transform: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string, prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.object])
 };
 FontAwesomeIcon.defaultProps = {
   border: false,
@@ -5471,20 +5503,20 @@ FontAwesomeIcon.defaultProps = {
   spin: false,
   symbol: false,
   title: '',
-  transform: null,
-  swapOpacity: false
+  transform: null
 };
 var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement);
 
 
 
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../webpack/buildin/global.js */ "../../node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
-/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./components/diagram/diagram.scss":
-/*!**********************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/diagram/diagram.scss ***!
-  \**********************************************************************************************************************************************/
+/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/diagram/diagram.scss":
+/*!************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/diagram/diagram.scss ***!
+  \************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5500,10 +5532,10 @@ exports.push([module.i, ".srd-node {\n  width: 200px; }\n\n.srd-node--selected .
 
 /***/ }),
 
-/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./components/log/log.scss":
-/*!**************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/log/log.scss ***!
-  \**************************************************************************************************************************************/
+/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/log/log.scss":
+/*!****************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/log/log.scss ***!
+  \****************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5519,10 +5551,10 @@ exports.push([module.i, "#log-console {\n  background: #333333;\n  height: 120px
 
 /***/ }),
 
-/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./components/nodeList/nodeList.scss":
-/*!************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/nodeList/nodeList.scss ***!
-  \************************************************************************************************************************************************/
+/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/nodeList/nodeList.scss":
+/*!**************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/nodeList/nodeList.scss ***!
+  \**************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5538,10 +5570,10 @@ exports.push([module.i, "#nodeList {\n  background: #333333;\n  height: 100%;\n 
 
 /***/ }),
 
-/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss":
-/*!******************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss ***!
-  \******************************************************************************************************************************************************/
+/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/propertyTab/propertyTab.scss":
+/*!********************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/propertyTab/propertyTab.scss ***!
+  \********************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5557,10 +5589,10 @@ exports.push([module.i, "#propertyTab {\n  color: white;\n  background: #333333;
 
 /***/ }),
 
-/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./main.scss":
-/*!************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./main.scss ***!
-  \************************************************************************************************************************/
+/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./main.scss":
+/*!**************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./main.scss ***!
+  \**************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18482,7 +18514,7 @@ module.exports = last;
   var undefined;
 
   /** Used as the semantic version number. */
-  var VERSION = '4.17.15';
+  var VERSION = '4.17.14';
 
   /** Used as the size to enable large array optimizations. */
   var LARGE_ARRAY_SIZE = 200;
@@ -63228,7 +63260,7 @@ if (false) {} else {
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/** @license React v16.10.2
+/** @license React v16.8.6
  * react-is.development.js
  *
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -63250,29 +63282,25 @@ Object.defineProperty(exports, '__esModule', { value: true });
 // The Symbol used to tag the ReactElement-like types. If there is no native Symbol
 // nor polyfill, then a plain number is used for performance.
 var hasSymbol = typeof Symbol === 'function' && Symbol.for;
+
 var REACT_ELEMENT_TYPE = hasSymbol ? Symbol.for('react.element') : 0xeac7;
 var REACT_PORTAL_TYPE = hasSymbol ? Symbol.for('react.portal') : 0xeaca;
 var REACT_FRAGMENT_TYPE = hasSymbol ? Symbol.for('react.fragment') : 0xeacb;
 var REACT_STRICT_MODE_TYPE = hasSymbol ? Symbol.for('react.strict_mode') : 0xeacc;
 var REACT_PROFILER_TYPE = hasSymbol ? Symbol.for('react.profiler') : 0xead2;
 var REACT_PROVIDER_TYPE = hasSymbol ? Symbol.for('react.provider') : 0xeacd;
-var REACT_CONTEXT_TYPE = hasSymbol ? Symbol.for('react.context') : 0xeace; // TODO: We don't use AsyncMode or ConcurrentMode anymore. They were temporary
-// (unstable) APIs that have been removed. Can we remove the symbols?
-
+var REACT_CONTEXT_TYPE = hasSymbol ? Symbol.for('react.context') : 0xeace;
 var REACT_ASYNC_MODE_TYPE = hasSymbol ? Symbol.for('react.async_mode') : 0xeacf;
 var REACT_CONCURRENT_MODE_TYPE = hasSymbol ? Symbol.for('react.concurrent_mode') : 0xeacf;
 var REACT_FORWARD_REF_TYPE = hasSymbol ? Symbol.for('react.forward_ref') : 0xead0;
 var REACT_SUSPENSE_TYPE = hasSymbol ? Symbol.for('react.suspense') : 0xead1;
-var REACT_SUSPENSE_LIST_TYPE = hasSymbol ? Symbol.for('react.suspense_list') : 0xead8;
 var REACT_MEMO_TYPE = hasSymbol ? Symbol.for('react.memo') : 0xead3;
 var REACT_LAZY_TYPE = hasSymbol ? Symbol.for('react.lazy') : 0xead4;
-var REACT_FUNDAMENTAL_TYPE = hasSymbol ? Symbol.for('react.fundamental') : 0xead5;
-var REACT_RESPONDER_TYPE = hasSymbol ? Symbol.for('react.responder') : 0xead6;
-var REACT_SCOPE_TYPE = hasSymbol ? Symbol.for('react.scope') : 0xead7;
 
 function isValidElementType(type) {
-  return typeof type === 'string' || typeof type === 'function' || // Note: its typeof might be other than 'symbol' or 'number' if it's a polyfill.
-  type === REACT_FRAGMENT_TYPE || type === REACT_CONCURRENT_MODE_TYPE || type === REACT_PROFILER_TYPE || type === REACT_STRICT_MODE_TYPE || type === REACT_SUSPENSE_TYPE || type === REACT_SUSPENSE_LIST_TYPE || typeof type === 'object' && type !== null && (type.$$typeof === REACT_LAZY_TYPE || type.$$typeof === REACT_MEMO_TYPE || type.$$typeof === REACT_PROVIDER_TYPE || type.$$typeof === REACT_CONTEXT_TYPE || type.$$typeof === REACT_FORWARD_REF_TYPE || type.$$typeof === REACT_FUNDAMENTAL_TYPE || type.$$typeof === REACT_RESPONDER_TYPE || type.$$typeof === REACT_SCOPE_TYPE);
+  return typeof type === 'string' || typeof type === 'function' ||
+  // Note: its typeof might be other than 'symbol' or 'number' if it's a polyfill.
+  type === REACT_FRAGMENT_TYPE || type === REACT_CONCURRENT_MODE_TYPE || type === REACT_PROFILER_TYPE || type === REACT_STRICT_MODE_TYPE || type === REACT_SUSPENSE_TYPE || typeof type === 'object' && type !== null && (type.$$typeof === REACT_LAZY_TYPE || type.$$typeof === REACT_MEMO_TYPE || type.$$typeof === REACT_PROVIDER_TYPE || type.$$typeof === REACT_CONTEXT_TYPE || type.$$typeof === REACT_FORWARD_REF_TYPE);
 }
 
 /**
@@ -63288,11 +63316,12 @@ function isValidElementType(type) {
  * paths. Removing the logging code for production environments will keep the
  * same logic and follow the same code paths.
  */
-var lowPriorityWarningWithoutStack = function () {};
+
+var lowPriorityWarning = function () {};
 
 {
   var printWarning = function (format) {
-    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
       args[_key - 1] = arguments[_key];
     }
 
@@ -63300,11 +63329,9 @@ var lowPriorityWarningWithoutStack = function () {};
     var message = 'Warning: ' + format.replace(/%s/g, function () {
       return args[argIndex++];
     });
-
     if (typeof console !== 'undefined') {
       console.warn(message);
     }
-
     try {
       // --- Welcome to debugging React ---
       // This error was thrown as a convenience so that you can use this stack
@@ -63313,27 +63340,25 @@ var lowPriorityWarningWithoutStack = function () {};
     } catch (x) {}
   };
 
-  lowPriorityWarningWithoutStack = function (condition, format) {
+  lowPriorityWarning = function (condition, format) {
     if (format === undefined) {
-      throw new Error('`lowPriorityWarningWithoutStack(condition, format, ...args)` requires a warning ' + 'message argument');
+      throw new Error('`lowPriorityWarning(condition, format, ...args)` requires a warning ' + 'message argument');
     }
-
     if (!condition) {
-      for (var _len2 = arguments.length, args = new Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
+      for (var _len2 = arguments.length, args = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
         args[_key2 - 2] = arguments[_key2];
       }
 
-      printWarning.apply(void 0, [format].concat(args));
+      printWarning.apply(undefined, [format].concat(args));
     }
   };
 }
 
-var lowPriorityWarningWithoutStack$1 = lowPriorityWarningWithoutStack;
+var lowPriorityWarning$1 = lowPriorityWarning;
 
 function typeOf(object) {
   if (typeof object === 'object' && object !== null) {
     var $$typeof = object.$$typeof;
-
     switch ($$typeof) {
       case REACT_ELEMENT_TYPE:
         var type = object.type;
@@ -63346,7 +63371,6 @@ function typeOf(object) {
           case REACT_STRICT_MODE_TYPE:
           case REACT_SUSPENSE_TYPE:
             return type;
-
           default:
             var $$typeofType = type && type.$$typeof;
 
@@ -63355,13 +63379,10 @@ function typeOf(object) {
               case REACT_FORWARD_REF_TYPE:
               case REACT_PROVIDER_TYPE:
                 return $$typeofType;
-
               default:
                 return $$typeof;
             }
-
         }
-
       case REACT_LAZY_TYPE:
       case REACT_MEMO_TYPE:
       case REACT_PORTAL_TYPE:
@@ -63370,8 +63391,9 @@ function typeOf(object) {
   }
 
   return undefined;
-} // AsyncMode is deprecated along with isAsyncMode
+}
 
+// AsyncMode is deprecated along with isAsyncMode
 var AsyncMode = REACT_ASYNC_MODE_TYPE;
 var ConcurrentMode = REACT_CONCURRENT_MODE_TYPE;
 var ContextConsumer = REACT_CONTEXT_TYPE;
@@ -63385,16 +63407,17 @@ var Portal = REACT_PORTAL_TYPE;
 var Profiler = REACT_PROFILER_TYPE;
 var StrictMode = REACT_STRICT_MODE_TYPE;
 var Suspense = REACT_SUSPENSE_TYPE;
-var hasWarnedAboutDeprecatedIsAsyncMode = false; // AsyncMode should be deprecated
 
+var hasWarnedAboutDeprecatedIsAsyncMode = false;
+
+// AsyncMode should be deprecated
 function isAsyncMode(object) {
   {
     if (!hasWarnedAboutDeprecatedIsAsyncMode) {
       hasWarnedAboutDeprecatedIsAsyncMode = true;
-      lowPriorityWarningWithoutStack$1(false, 'The ReactIs.isAsyncMode() alias has been deprecated, ' + 'and will be removed in React 17+. Update your code to use ' + 'ReactIs.isConcurrentMode() instead. It has the exact same API.');
+      lowPriorityWarning$1(false, 'The ReactIs.isAsyncMode() alias has been deprecated, ' + 'and will be removed in React 17+. Update your code to use ' + 'ReactIs.isConcurrentMode() instead. It has the exact same API.');
     }
   }
-
   return isConcurrentMode(object) || typeOf(object) === REACT_ASYNC_MODE_TYPE;
 }
 function isConcurrentMode(object) {
@@ -68285,7 +68308,7 @@ module.exports = function(module) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BlockTools", function() { return BlockTools; });
-/* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/Fragment/discardBlock */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/Fragment/discardBlock */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__);
 
 
@@ -69018,7 +69041,7 @@ var DefaultNodeModel = /** @class */ (function (_super) {
 /***/ (function(module, exports, __webpack_require__) {
 
 
-var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/dist/cjs.js!./diagram.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./components/diagram/diagram.scss");
+var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/lib/loader.js!./diagram.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/diagram/diagram.scss");
 
 if(typeof content === 'string') content = [[module.i, content, '']];
 
@@ -69346,7 +69369,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
 /* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
 /* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
-/* harmony import */ var babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/gradientBlock */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/gradientBlock */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _gradientStepComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./gradientStepComponent */ "./components/diagram/gradient/gradientStepComponent.tsx");
 /* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
@@ -69478,7 +69501,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
 /* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__);
 
 
@@ -69641,7 +69664,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _propertyTab_properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../propertyTab/properties/vector2PropertyTabComponent */ "./components/propertyTab/properties/vector2PropertyTabComponent.tsx");
 /* harmony import */ var _propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../propertyTab/properties/vector3PropertyTabComponent */ "./components/propertyTab/properties/vector3PropertyTabComponent.tsx");
-/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
 /* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
@@ -69863,7 +69886,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialSystemValues */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialSystemValues */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _stringTools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../stringTools */ "./stringTools.ts");
 /* harmony import */ var _portHelper__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../portHelper */ "./components/diagram/portHelper.tsx");
@@ -70654,7 +70677,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PortHelper", function() { return PortHelper; });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _port_defaultPortWidget__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./port/defaultPortWidget */ "./components/diagram/port/defaultPortWidget.tsx");
 /* harmony import */ var _blockTools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../blockTools */ "./blockTools.ts");
@@ -71331,7 +71354,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../sharedComponents/fileButtonLineComponent */ "./sharedComponents/fileButtonLineComponent.tsx");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
@@ -71697,7 +71720,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
 /* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
 /* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
-/* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/trigonometryBlock */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/trigonometryBlock */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__);
 
 
@@ -71769,7 +71792,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _portHelper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../portHelper */ "./components/diagram/portHelper.tsx");
-/* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/trigonometryBlock */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/trigonometryBlock */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_3__);
 
 
@@ -71823,7 +71846,7 @@ var TrigonometryNodeWidget = /** @class */ (function (_super) {
 /***/ (function(module, exports, __webpack_require__) {
 
 
-var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/dist/cjs.js!./log.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./components/log/log.scss");
+var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/lib/loader.js!./log.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/log/log.scss");
 
 if(typeof content === 'string') content = [[module.i, content, '']];
 
@@ -71919,7 +71942,7 @@ var LogComponent = /** @class */ (function (_super) {
 /***/ (function(module, exports, __webpack_require__) {
 
 
-var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/dist/cjs.js!./nodeList.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./components/nodeList/nodeList.scss");
+var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/lib/loader.js!./nodeList.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/nodeList/nodeList.scss");
 
 if(typeof content === 'string') content = [[module.i, content, '']];
 
@@ -72031,7 +72054,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
 /* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../dataStorage */ "./dataStorage.ts");
 
@@ -72129,7 +72152,7 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PreviewManager", function() { return PreviewManager; });
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterial */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterial */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _previewMeshType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./previewMeshType */ "./components/preview/previewMeshType.ts");
 /* harmony import */ var _log_logComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../log/logComponent */ "./components/log/logComponent.tsx");
@@ -72733,7 +72756,7 @@ var Vector4PropertyTabComponent = /** @class */ (function (_super) {
 /***/ (function(module, exports, __webpack_require__) {
 
 
-var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/dist/cjs.js!./propertyTab.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss");
+var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/lib/loader.js!./propertyTab.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/propertyTab/propertyTab.scss");
 
 if(typeof content === 'string') content = [[module.i, content, '']];
 
@@ -72772,7 +72795,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
 /* harmony import */ var _stringTools__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../stringTools */ "./stringTools.ts");
 /* harmony import */ var _sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../sharedComponents/fileButtonLineComponent */ "./sharedComponents/fileButtonLineComponent.tsx");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__);
 /* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../serializationTools */ "./serializationTools.ts");
 /* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
@@ -72968,7 +72991,7 @@ var DataStorage = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GlobalState", function() { return GlobalState; });
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/preview/previewMeshType */ "./components/preview/previewMeshType.ts");
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./dataStorage */ "./dataStorage.ts");
@@ -73031,7 +73054,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _components_diagram_generic_genericNodeFactory__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/diagram/generic/genericNodeFactory */ "./components/diagram/generic/genericNodeFactory.tsx");
 /* harmony import */ var _components_diagram_generic_genericNodeModel__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/diagram/generic/genericNodeModel */ "./components/diagram/generic/genericNodeModel.tsx");
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _components_nodeList_nodeListComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/nodeList/nodeListComponent */ "./components/nodeList/nodeListComponent.tsx");
 /* harmony import */ var _components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./components/propertyTab/propertyTabComponent */ "./components/propertyTab/propertyTabComponent.tsx");
@@ -73812,7 +73835,7 @@ if (typeof globalObject !== "undefined") {
 /***/ (function(module, exports, __webpack_require__) {
 
 
-var content = __webpack_require__(/*! !../../node_modules/css-loader!../../node_modules/sass-loader/dist/cjs.js!./main.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./main.scss");
+var content = __webpack_require__(/*! !../../node_modules/css-loader!../../node_modules/sass-loader/lib/loader.js!./main.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./main.scss");
 
 if(typeof content === 'string') content = [[module.i, content, '']];
 
@@ -73960,7 +73983,7 @@ var Portal = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SerializationTools", function() { return SerializationTools; });
-/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Textures/texture */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Textures/texture */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./dataStorage */ "./dataStorage.ts");
 
@@ -74135,7 +74158,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _numericInputComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./numericInputComponent */ "./sharedComponents/numericInputComponent.tsx");
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
@@ -74497,7 +74520,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./vector4LineComponent */ "./sharedComponents/vector4LineComponent.tsx");
 /* harmony import */ var _optionsLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
@@ -74918,7 +74941,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__);
 
 
@@ -75150,7 +75173,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Engines/constants */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Engines/constants */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__);
 
 
@@ -75626,7 +75649,7 @@ var Vector4LineComponent = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "StringTools", function() { return StringTools; });
-/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__);
 
 var StringTools = /** @class */ (function () {
@@ -75725,14 +75748,14 @@ var StringTools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs/Materials/Textures/texture":
+/***/ "babylonjs/Misc/observable":
 /*!****************************************************************************************************!*\
   !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
   \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_Textures_texture__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__;
 
 /***/ })
 
