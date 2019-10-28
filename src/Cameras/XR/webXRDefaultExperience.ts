@@ -7,6 +7,7 @@ import { WebXRControllerTeleportation } from './webXRControllerTeleportation';
 import { WebXRRenderTarget } from './webXRTypes';
 import { WebXREnterExitUI } from './webXREnterExitUI';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
+import { WebXRManagedOutputCanvasOptions } from './webXRManagedOutputCanvas';
 
 /**
  * Options for the default xr helper
@@ -21,6 +22,8 @@ export class WebXRDefaultExperienceOptions {
      * Enable or disable default UI to enter XR
      */
     public disableDefaultUI: boolean;
+
+    public outputCanvasOptions? : WebXRManagedOutputCanvasOptions;
 }
 
 /**
@@ -79,7 +82,7 @@ export class WebXRDefaultExperience {
             }
 
             // Create the WebXR output target
-            result.renderTarget = result.baseExperience.sessionManager.getWebXRRenderTarget(xrHelper.onStateChangedObservable);
+            result.renderTarget = result.baseExperience.sessionManager.getWebXRRenderTarget(xrHelper.onStateChangedObservable, options.outputCanvasOptions);
 
             if (!options.disableDefaultUI) {
                 // Create ui for entering/exiting xr
