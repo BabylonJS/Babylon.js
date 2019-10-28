@@ -136,6 +136,7 @@
 - Gamepad object is now exposed in the WebXRController class ([RaananW](https://github.com/RaananW/))
 - If canvas does not have WebXR support the scene will still render (mainly Firefox) ([RaananW](https://github.com/RaananW/))
 - Added support for foveated rendering in Oculus Quest ([Deltakosh](https://github.com/deltakosh/))
+- Added option to configure the output canvas ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
