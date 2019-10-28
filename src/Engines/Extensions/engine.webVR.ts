@@ -269,6 +269,14 @@ Engine.prototype._connectVREvents = function(canvas?: HTMLCanvasElement, documen
     };
 
     this._onVRDisplayPointerUnrestricted = () => {
+        // Edge fix - for some reason document is not present and this is window
+        if (!document) {
+            let hostWindow = this.getHostWindow()!;
+            if (hostWindow.document && hostWindow.document.exitPointerLock) {
+                hostWindow.document.exitPointerLock();
+            }
+            return;
+        }
         if (!document.exitPointerLock) {
             return;
         }

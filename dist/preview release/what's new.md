@@ -212,6 +212,7 @@
 - Cloning of `ShaderMaterial` also clone `shaderPath` and `options` properties ([Popov72](https://github.com/Popov72))
 - Prevent an infinite loop when calling `engine.dispose()` in a scene with multiple `SoundTracks` defined ([kirbysayshi](https://github.com/kirbysayshi))
 - Fixed missing properties in serialization / parsing of `coneParticleEmitter` ([Popov72](https://github.com/Popov72))
+- Fix a bug with exit VR and Edge ([RaananW](https://github.com/RaananW/))
 
 ## Breaking changes
 
