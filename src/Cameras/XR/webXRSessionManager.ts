@@ -5,7 +5,7 @@ import { IDisposable, Scene } from "../../scene";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { WebXRRenderTarget, WebXRState } from './webXRTypes';
-import { WebXRManagedOutputCanvas } from './webXRManagedOutputCanvas';
+import { WebXRManagedOutputCanvas, WebXRManagedOutputCanvasOptions } from './webXRManagedOutputCanvas';
 
 interface IRenderTargetProvider {
     getRenderTargetForEye(eye: XREye): RenderTargetTexture;
@@ -218,14 +218,15 @@ export class WebXRSessionManager implements IDisposable {
     /**
      * Creates a WebXRRenderTarget object for the XR session
      * @param onStateChangedObservable optional, mechanism for enabling/disabling XR rendering canvas, used only on Web
+     * @param options optional options to provide when creating a new render target
      * @returns a WebXR render target to which the session can render
      */
-    public getWebXRRenderTarget(onStateChangedObservable?: Observable<WebXRState>) : WebXRRenderTarget {
+    public getWebXRRenderTarget(onStateChangedObservable?: Observable<WebXRState>, options?: WebXRManagedOutputCanvasOptions) : WebXRRenderTarget {
         if (this._xrNavigator.xr.native) {
             return this._xrNavigator.xr.getWebXRRenderTarget(this.scene.getEngine());
         }
         else {
-            return new WebXRManagedOutputCanvas(this.scene.getEngine(), this.scene.getEngine().getRenderingCanvas() as HTMLCanvasElement, onStateChangedObservable!);
+            return new WebXRManagedOutputCanvas(this.scene.getEngine(), this.scene.getEngine().getRenderingCanvas() as HTMLCanvasElement, onStateChangedObservable!, options);
         }
     }
 
