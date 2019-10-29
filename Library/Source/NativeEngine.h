@@ -418,6 +418,7 @@ namespace babylon
         FrameBufferManager m_frameBufferManager{ m_viewidSet };
 
         NativeWindow::OnResizeCallbackTicket m_resizeCallbackTicket;
+        template<int size> void SetFloatArrayN(const Napi::CallbackInfo& info);
 
         // Scratch vector used for data alignment.
         std::vector<float> m_scratch{};

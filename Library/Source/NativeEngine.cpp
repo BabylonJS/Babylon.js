@@ -792,7 +792,7 @@ namespace babylon
         assert(false);
     }
 
-    void NativeEngine::SetFloatArray(const Napi::CallbackInfo& info)
+    template<int size> void NativeEngine::SetFloatArrayN(const Napi::CallbackInfo& info)
     {
         const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
         const auto array = info[1].As<Napi::Float32Array>();
@@ -800,34 +800,33 @@ namespace babylon
         size_t elementLength = array.ElementLength();
 
         m_scratch.clear();
-        for (size_t index = 0; index < elementLength; ++index)
+        for (size_t index = 0; index < elementLength; index += size)
         {
-            const float values[] = { array[index], 0.0f, 0.0f, 0.0f };
+            const float values[] = { array[index], (size > 1) ? array[index + 1] : 0.f, (size > 2) ? array[index + 2] : 0.f, (size > 3) ? array[index + 3] : 0.f };
             m_scratch.insert(m_scratch.end(), values, values + 4);
         }
 
         m_currentProgram->SetUniform(uniformData->Handle, m_scratch, elementLength);
     }
 
+    void NativeEngine::SetFloatArray(const Napi::CallbackInfo& info)
+    {
+        SetFloatArrayN<1>(info);
+    }
+
     void NativeEngine::SetFloatArray2(const Napi::CallbackInfo& info)
     {
-        // args: ShaderProperty property, gsl::span<const float> array
-
-        assert(false);
+        SetFloatArrayN<2>(info);
     }
 
     void NativeEngine::SetFloatArray3(const Napi::CallbackInfo& info)
     {
-        // args: ShaderProperty property, gsl::span<const float> array
-
-        assert(false);
+        SetFloatArrayN<3>(info);
     }
 
     void NativeEngine::SetFloatArray4(const Napi::CallbackInfo& info)
     {
-        // args: ShaderProperty property, gsl::span<const float> array
-
-        assert(false);
+        SetFloatArrayN<4>(info);
     }
 
     void NativeEngine::SetMatrices(const Napi::CallbackInfo& info)
