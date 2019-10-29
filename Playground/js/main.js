@@ -131,10 +131,8 @@ compileAndRun = function(parent, fpsLabel) {
                     : defaultEngineZip;
 
                 parent.zipTool.zipCode =
-                    code + "\r\n\r\n" +
                     "var engine = " + createEngineZip + ";\r\n" +
-                    "var scene = " + createSceneFunction + "();";
-
+                    code + "\r\n\r\n";
             }
 
             engine = engine;
