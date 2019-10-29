@@ -36,7 +36,7 @@ namespace babylon
             }
             else
             {
-                T next = m_queue.back();
+                T next = m_queue.front();
                 m_queue.pop();
                 return next;
             }
@@ -188,6 +188,11 @@ namespace babylon
 
     struct FrameBufferManager final
     {
+        FrameBufferManager(RecycleSet<bgfx::ViewId>& viewIdSet) 
+            : m_idSet{ viewIdSet }
+        {
+        }
+
         FrameBufferData* CreateNew(bgfx::FrameBufferHandle frameBufferHandle, uint16_t width, uint16_t height)
         {
             return new FrameBufferData(frameBufferHandle, m_idSet, width, height);
@@ -223,7 +228,7 @@ namespace babylon
         }
 
     private:
-        RecycleSet<bgfx::ViewId> m_idSet{ 1 };
+        RecycleSet<bgfx::ViewId>& m_idSet;
         FrameBufferData* m_boundFrameBuffer{ nullptr };
     };
 
@@ -248,6 +253,8 @@ namespace babylon
 
         std::vector<bimg::ImageContainer*> Images{};
         bgfx::TextureHandle Texture{ bgfx::kInvalidHandle };
+        uint32_t Flags{ 0 };
+        uint8_t AnisotropicLevel{ 0 };
     };
 
     struct ImageData final
@@ -324,10 +331,6 @@ namespace babylon
         void Dispatch(std::function<void()>);
 
     private:
-        enum BlendMode {}; // TODO DEBUG
-        enum class Filter {}; // TODO DEBUG
-        enum class AddressMode {}; // TODO DEBUG
-
         Napi::Value GetEngine(const Napi::CallbackInfo& info); // TODO: Hack, temporary method. Remove as part of the change to get rid of NapiBridge.
         void RequestAnimationFrame(const Napi::CallbackInfo& info);
         Napi::Value CreateVertexArray(const Napi::CallbackInfo& info);
@@ -369,8 +372,8 @@ namespace babylon
         void SetFloat4(const Napi::CallbackInfo& info);
         void SetBool(const Napi::CallbackInfo& info);
         Napi::Value CreateTexture(const Napi::CallbackInfo& info);
-        void LoadTexture(const Napi::CallbackInfo& info);
-        void LoadCubeTexture(const Napi::CallbackInfo& info);
+        Napi::Value LoadTexture(const Napi::CallbackInfo& info);
+        Napi::Value LoadCubeTexture(const Napi::CallbackInfo& info);
         Napi::Value GetTextureWidth(const Napi::CallbackInfo& info);
         Napi::Value GetTextureHeight(const Napi::CallbackInfo& info);
         void SetTextureSampling(const Napi::CallbackInfo& info);
@@ -390,6 +393,7 @@ namespace babylon
         void ClearDepth(const Napi::CallbackInfo& info);
         Napi::Value GetRenderWidth(const Napi::CallbackInfo& info);
         Napi::Value GetRenderHeight(const Napi::CallbackInfo& info);
+        void SetViewPort(const Napi::CallbackInfo& info);
 
         void UpdateSize(size_t width, size_t height);
         void DispatchAnimationFrameAsync(Napi::FunctionReference callback);
@@ -407,14 +411,12 @@ namespace babylon
         bx::DefaultAllocator m_allocator;
         uint64_t m_engineState;
         ViewClearState m_viewClearState;
+        bgfx::ViewId m_currentBackbufferViewId{ 0 };
+        std::vector<bgfx::ViewId> m_viewportIds;
+        RecycleSet<bgfx::ViewId> m_viewidSet{ 1 };
 
-        FrameBufferManager m_frameBufferManager{};
+        FrameBufferManager m_frameBufferManager{ m_viewidSet };
 
-        struct
-        {
-            uint32_t Width{};
-            uint32_t Height{};
-        } m_renderTargetSize{};
         NativeWindow::OnResizeCallbackTicket m_resizeCallbackTicket;
 
         // Scratch vector used for data alignment.

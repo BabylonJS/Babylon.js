@@ -16,6 +16,7 @@ namespace bgfx
 
 #define BGFX_UNIFORM_FRAGMENTBIT UINT8_C(0x10) // Copy-pasta from bgfx_p.h
 #define BGFX_UNIFORM_SAMPLERBIT  UINT8_C(0x20) // Copy-pasta from bgfx_p.h
+#define BGFX_RESET_FLAGS (BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X4 | BGFX_RESET_MAXANISOTROPY)
 
 #include <bimg/bimg.h>
 #include <bimg/decode.h>
@@ -130,7 +131,7 @@ namespace babylon
                 AppendBytes(bytes, sampler.name);
                 AppendBytes(bytes, static_cast<uint8_t>(bgfx::UniformType::Sampler | BGFX_UNIFORM_SAMPLERBIT));
 
-                // These values (num, regIndex, regCount) are not used by D3D11 pipeline.
+                // TODO : These values (num, regIndex, regCount) are only used by Vulkan and should be set for that API
                 AppendBytes(bytes, static_cast<uint8_t>(0));
                 AppendBytes(bytes, static_cast<uint16_t>(0));
                 AppendBytes(bytes, static_cast<uint16_t>(0));
@@ -285,10 +286,11 @@ namespace babylon
         init.type = bgfx::RendererType::Direct3D11;
         init.resolution.width = static_cast<uint32_t>(window.GetWidth());
         init.resolution.height = static_cast<uint32_t>(window.GetHeight());
-        init.resolution.reset = BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X4;
+        init.resolution.reset = BGFX_RESET_FLAGS;
         bgfx::init(init);
         bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
         bgfx::setViewRect(0, 0, 0, init.resolution.width, init.resolution.height);
+        bgfx::touch(0);
 
         // Initialize the JavaScript side.
         Napi::HandleScope scope{ env };
@@ -359,6 +361,7 @@ namespace babylon
                 InstanceMethod("clearStencil", &NativeEngine::ClearStencil),
                 InstanceMethod("getRenderWidth", &NativeEngine::GetRenderWidth),
                 InstanceMethod("getRenderHeight", &NativeEngine::GetRenderHeight),
+                InstanceMethod("setViewPort", &NativeEngine::SetViewPort),
                 InstanceMethod("decodeImage", &NativeEngine::DecodeImage),
                 InstanceMethod("getImageData", &NativeEngine::GetImageData),
                 InstanceMethod("encodeImage", &NativeEngine::EncodeImage),
@@ -384,16 +387,15 @@ namespace babylon
 
     void NativeEngine::UpdateSize(size_t width, size_t height)
     {
-        auto w = static_cast<uint32_t>(width);
-        auto h = static_cast<uint32_t>(height);
+        const auto w = static_cast<uint16_t>(width);
+        const auto h = static_cast<uint16_t>(height);
 
-        auto& size = m_renderTargetSize;
-        if (w != size.Width || h != size.Height)
+        auto bgfxStats = bgfx::getStats();
+        if (w != bgfxStats->width || h != bgfxStats->height)
         {
-            size = { w, h };
-
-            bgfx::reset(size.Width, size.Height, BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X4);
-            bgfx::setViewRect(0, 0, 0, size.Width, size.Height);
+            bgfx::reset(w, h, BGFX_RESET_FLAGS);
+            bgfx::setViewRect(0, 0, 0, w, h);
+            bgfx::touch(0);
         }
     }
 
@@ -699,8 +701,6 @@ namespace babylon
 
         // TODO: zOffset
         const auto zOffset = info[1].As<Napi::Number>().FloatValue();
-
-        bgfx::setState(m_engineState);
     }
 
     void NativeEngine::SetZOffset(const Napi::CallbackInfo& info)
@@ -720,37 +720,37 @@ namespace babylon
     {
         const auto enable = info[0].As<Napi::Boolean>().Value();
 
-        // STUB: Stub.
+        m_engineState &= ~BGFX_STATE_DEPTH_TEST_MASK;
+        m_engineState |= enable ? BGFX_STATE_DEPTH_TEST_LESS : BGFX_STATE_DEPTH_TEST_ALWAYS;
     }
 
     Napi::Value NativeEngine::GetDepthWrite(const Napi::CallbackInfo& info)
     {
-        // STUB: Stub.
-        return{};
+        return Napi::Value::From(info.Env(), !!(m_engineState & BGFX_STATE_WRITE_Z));
     }
 
     void NativeEngine::SetDepthWrite(const Napi::CallbackInfo& info)
     {
         const auto enable = info[0].As<Napi::Boolean>().Value();
 
-        // STUB: Stub.
+        m_engineState &= ~BGFX_STATE_WRITE_Z;
+        m_engineState |= enable ? BGFX_STATE_WRITE_Z : 0;
     }
 
     void NativeEngine::SetColorWrite(const Napi::CallbackInfo& info)
     {
         const auto enable = info[0].As<Napi::Boolean>().Value();
 
-        // STUB: Stub.
+        m_engineState &= ~(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
+        m_engineState |= enable ? (BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A) : 0;
     }
 
     void NativeEngine::SetBlendMode(const Napi::CallbackInfo& info)
     {
-        const auto blendMode = static_cast<BlendMode>(info[0].As<Napi::Number>().Int32Value());
+        const auto blendMode = info[0].As<Napi::Number>().Int32Value();
 
         m_engineState &= ~BGFX_STATE_BLEND_MASK;
         m_engineState |= ALPHA_MODE[blendMode];
-
-        bgfx::setState(m_engineState);
     }
 
     void NativeEngine::SetMatrix(const Napi::CallbackInfo& info)
@@ -968,17 +968,25 @@ namespace babylon
         return data;
     }
 
-    void NativeEngine::LoadTexture(const Napi::CallbackInfo& info)
+	Napi::Value NativeEngine::LoadTexture(const Napi::CallbackInfo& info)
     {
         const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
         const auto buffer = info[1].As<Napi::ArrayBuffer>();
         const auto mipMap = info[2].As<Napi::Boolean>().Value();
+        const auto invertY = info[3].As<Napi::Boolean>().Value();
 
         textureData->Images.push_back(bimg::imageParse(&m_allocator, buffer.Data(), static_cast<uint32_t>(buffer.ByteLength())));
         auto& image = *textureData->Images.front();
 
         bool useMipMap = false;
+        
+        if (invertY)
+        {
+            FlipYInImageBytes(gsl::make_span(static_cast<uint8_t*>(image.m_data), image.m_size), image.m_height, image.m_size / image.m_height);
+        }
+
         auto imageDataRef{ bgfx::makeRef(image.m_data, image.m_size) };
+
         if (mipMap)
         {
             auto imageDataRefMipMap = GenerateMipMaps(image);
@@ -987,7 +995,7 @@ namespace babylon
                 imageDataRef = imageDataRefMipMap;
                 useMipMap = true;
             }
-            // TODO: log an warning message: "Could not generate mipmap for texture"
+            // TODO: log a warning message: "Could not generate mipmap for texture"
         }
 
         textureData->Texture = bgfx::createTexture2D(
@@ -998,9 +1006,10 @@ namespace babylon
             static_cast<bgfx::TextureFormat::Enum>(image.m_format),
             0,
             imageDataRef);
+        return Napi::Value::From(info.Env(), bgfx::isValid(textureData->Texture));
     }
 
-    void NativeEngine::LoadCubeTexture(const Napi::CallbackInfo& info)
+    Napi::Value NativeEngine::LoadCubeTexture(const Napi::CallbackInfo& info)
     {
         const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
         const auto mipLevelsArray = info[1].As<Napi::Array>();
@@ -1074,6 +1083,7 @@ namespace babylon
             format,                                         // Self-explanatory
             0x0,                                            // Flags
             allPixels);                                     // Memory
+        return Napi::Value::From(info.Env(), bgfx::isValid(textureData->Texture));
     }
 
     Napi::Value NativeEngine::GetTextureWidth(const Napi::CallbackInfo& info)
@@ -1093,19 +1103,49 @@ namespace babylon
     void NativeEngine::SetTextureSampling(const Napi::CallbackInfo& info)
     {
         const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
-        const auto filter = static_cast<Filter>(info[1].As<Napi::Number>().Uint32Value());
+        auto filter = static_cast<uint32_t>(info[1].As<Napi::Number>().Uint32Value());
 
-        // STUB: Stub.
+        constexpr std::array<uint32_t, 12> bgfxFiltering = {
+            BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIN_POINT,                            // nearest is mag = nearest and min = nearest and mip = linear
+            BGFX_SAMPLER_MIP_POINT,                                                     // Bilinear is mag = linear and min = linear and mip = nearest
+            0,                                                                          // Trilinear is mag = linear and min = linear and mip = linear
+            BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT,   // mag = nearest and min = nearest and mip = nearest
+            BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT,                            // mag = nearest and min = linear and mip = nearest
+            BGFX_SAMPLER_MAG_POINT,                                                     // mag = nearest and min = linear and mip = linear
+            BGFX_SAMPLER_MAG_POINT,                                                     // mag = nearest and min = linear and mip = none
+            BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIN_POINT,                            // mag = nearest and min = nearest and mip = none
+            BGFX_SAMPLER_MIP_POINT | BGFX_SAMPLER_MIP_POINT,                            // mag = linear and min = nearest and mip = nearest
+            BGFX_SAMPLER_MIN_POINT,                                                     // mag = linear and min = nearest and mip = linear
+            0,                                                                          // mag = linear and min = linear and mip = none
+            BGFX_SAMPLER_MIN_POINT };                                                   // mag = linear and min = nearest and mip = none
+
+        textureData->Flags &= ~(BGFX_SAMPLER_MIN_MASK | BGFX_SAMPLER_MAG_MASK | BGFX_SAMPLER_MIP_MASK);
+
+        if (textureData->AnisotropicLevel > 1)
+        {
+            textureData->Flags |= BGFX_SAMPLER_MIN_ANISOTROPIC | BGFX_SAMPLER_MAG_ANISOTROPIC;
+        }
+        else
+        {
+            textureData->Flags |= bgfxFiltering[filter];
+        }
     }
 
     void NativeEngine::SetTextureWrapMode(const Napi::CallbackInfo& info)
     {
         const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
-        const auto addressModeU = static_cast<AddressMode>(info[1].As<Napi::Number>().Uint32Value());
-        const auto addressModeV = static_cast<AddressMode>(info[2].As<Napi::Number>().Uint32Value());
-        const auto addressModeW = static_cast<AddressMode>(info[3].As<Napi::Number>().Uint32Value());
+        auto addressModeU = static_cast<uint32_t>(info[1].As<Napi::Number>().Uint32Value());
+        auto addressModeV = static_cast<uint32_t>(info[2].As<Napi::Number>().Uint32Value());
+        auto addressModeW = static_cast<uint32_t>(info[3].As<Napi::Number>().Uint32Value());
 
-        // STUB: Stub.
+        constexpr std::array<uint32_t, 3> bgfxSamplers = {0, BGFX_SAMPLER_U_CLAMP, BGFX_SAMPLER_U_MIRROR};
+
+        uint32_t addressMode = bgfxSamplers[addressModeU] + 
+            (bgfxSamplers[addressModeV] << BGFX_SAMPLER_V_SHIFT) +
+            (bgfxSamplers[addressModeW] << BGFX_SAMPLER_W_SHIFT);
+
+        textureData->Flags &= ~(BGFX_SAMPLER_U_MASK | BGFX_SAMPLER_V_MASK | BGFX_SAMPLER_W_MASK);
+        textureData->Flags |= addressMode;
     }
 
     void NativeEngine::SetTextureAnisotropicLevel(const Napi::CallbackInfo& info)
@@ -1113,7 +1153,14 @@ namespace babylon
         const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
         const auto value = info[1].As<Napi::Number>().Uint32Value();
 
-        // STUB: Stub.
+        textureData->AnisotropicLevel = value;
+
+        // if Anisotropic is set to 0 after being >1, then set texture flags back to linear
+        textureData->Flags &= ~(BGFX_SAMPLER_MIN_MASK | BGFX_SAMPLER_MAG_MASK | BGFX_SAMPLER_MIP_MASK);
+        if (value)
+        {
+            textureData->Flags |= BGFX_SAMPLER_MIN_ANISOTROPIC | BGFX_SAMPLER_MAG_ANISOTROPIC;
+        }
     }
 
     void NativeEngine::SetTexture(const Napi::CallbackInfo& info)
@@ -1121,7 +1168,7 @@ namespace babylon
         const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
         const auto textureData = info[1].As<Napi::External<TextureData>>().Data();
 
-        bgfx::setTexture(uniformData->Stage, uniformData->Handle, textureData->Texture);
+        bgfx::setTexture(uniformData->Stage, uniformData->Handle, textureData->Texture, textureData->Flags);
     }
 
     void NativeEngine::DeleteTexture(const Napi::CallbackInfo& info)
@@ -1211,7 +1258,8 @@ namespace babylon
             bgfx::setUniform({ it.first }, value.Data.data(), value.ElementLength);
         }
 
-        bgfx::submit(m_frameBufferManager.IsFrameBufferBound() ? m_frameBufferManager.GetBound().ViewId : 0, m_currentProgram->Program, 0, true);
+        bgfx::setState(m_engineState);
+        bgfx::submit(m_frameBufferManager.IsFrameBufferBound() ? m_frameBufferManager.GetBound().ViewId : m_currentBackbufferViewId, m_currentProgram->Program, 0, true);
     }
 
     void NativeEngine::Draw(const Napi::CallbackInfo& info)
@@ -1275,14 +1323,36 @@ namespace babylon
 
     Napi::Value NativeEngine::GetRenderWidth(const Napi::CallbackInfo& info)
     {
-        // TODO CHECK: Is this not just the size?  What is this?
-        return Napi::Value::From(info.Env(), m_renderTargetSize.Width);
+        return Napi::Value::From(info.Env(), bgfx::getStats()->width);
     }
 
     Napi::Value NativeEngine::GetRenderHeight(const Napi::CallbackInfo& info)
     {
-        // TODO CHECK: Is this not just the size?  What is this?
-        return Napi::Value::From(info.Env(), m_renderTargetSize.Height);
+        return Napi::Value::From(info.Env(), bgfx::getStats()->height);
+    }
+
+    void NativeEngine::SetViewPort(const Napi::CallbackInfo& info)
+    {
+        const auto x = info[0].As<Napi::Number>().FloatValue();
+        const auto y = info[1].As<Napi::Number>().FloatValue();
+        const auto width = info[2].As<Napi::Number>().FloatValue();
+        const auto height = info[3].As<Napi::Number>().FloatValue();
+
+        const auto backbufferWidth = bgfx::getStats()->width;
+        const auto backbufferHeight = bgfx::getStats()->height;
+        const float yOrigin = bgfx::getCaps()->originBottomLeft ? (1.f - y - height) : y;
+
+        auto newViewId = m_viewidSet.Get();
+        m_viewportIds.push_back(newViewId);
+        m_currentBackbufferViewId = newViewId;
+        bgfx::setViewFrameBuffer(m_currentBackbufferViewId, BGFX_INVALID_HANDLE);
+        bgfx::setViewClear(m_currentBackbufferViewId, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
+        
+        bgfx::setViewRect(m_currentBackbufferViewId, 
+            static_cast<uint16_t>(x * backbufferWidth), 
+            static_cast<uint16_t>(yOrigin * backbufferHeight),
+            static_cast<uint16_t>(width * backbufferWidth), 
+            static_cast<uint16_t>(height * backbufferHeight));
     }
 
     void NativeEngine::DispatchAnimationFrameAsync(Napi::FunctionReference callback)
@@ -1296,6 +1366,15 @@ namespace babylon
             //bgfx_test(static_cast<uint16_t>(m_size.Width), static_cast<uint16_t>(m_size.Height));
 
             callbackPtr->Call({});
+
+            // recycle viewIds used as viewports
+            for (auto id : m_viewportIds)
+            {
+                m_viewidSet.Recycle(id);
+            }
+            m_viewportIds.clear();
+            m_currentBackbufferViewId = 0;
+
             bgfx::frame();
         });
     }
