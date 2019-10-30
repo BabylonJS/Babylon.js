@@ -46,6 +46,7 @@ export class SimplexPerlin3D extends NodeMaterialBlock {
 
         this.registerInput("position", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Float);
+		
     }
 
     /**
