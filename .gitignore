@@ -179,6 +179,7 @@ localDev/src/*
 /localDev/src/index.js
 package-lock.json
 dist/preview release/package/
+**/dist
 
 # viewer dist files
 /Viewer/dist/viewer.js
