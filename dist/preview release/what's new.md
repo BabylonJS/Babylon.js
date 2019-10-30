@@ -17,7 +17,6 @@
 - Added support for multiple canvases with one engine [Doc](https://doc.babylonjs.com/how_to/multi_canvases) ([Deltakosh](https://github.com/deltakosh/)
 
 ## Updates
-
 ### General
 
 - Added support for dual shock gamepads ([Deltakosh](https://github.com/deltakosh/))
