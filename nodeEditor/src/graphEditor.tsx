@@ -36,6 +36,7 @@ import { AdvancedLinkFactory } from './components/diagram/link/advancedLinkFacto
 import { RemapNodeFactory } from './components/diagram/remap/remapNodeFactory';
 import { RemapNodeModel } from './components/diagram/remap/remapNodeModel';
 import { RemapBlock } from 'babylonjs/Materials/Node/Blocks/remapBlock';
+import { SimplexPerlin3D } from 'babylonjs/Materials/Node/Blocks/simplexPerlin3D';
 import { GraphHelper } from './graphHelper';
 import { PreviewManager } from './components/preview/previewManager';
 import { INodeLocationInfo } from './nodeLocationInfo';
@@ -134,6 +135,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             newNode = new LightInformationNodeModel();
         } else if (options.nodeMaterialBlock instanceof GradientBlock) {
             newNode = new GradientNodeModel();
+        } else if (options.nodeMaterialBlock instanceof SimplexPerlin3D) {
+            newNode = new GenericNodeModel();
         } else {
             newNode = new GenericNodeModel();
         }
