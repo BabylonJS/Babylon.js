@@ -67,6 +67,8 @@ export class TrigonometryBlock extends NodeMaterialBlock {
 
         this.registerInput("input", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
+		
+		this._outputs[0]._typeConnectionSource = this._inputs[0];
     }
 
     /**
