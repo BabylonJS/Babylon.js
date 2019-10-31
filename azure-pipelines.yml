@@ -4,7 +4,7 @@ trigger:
 jobs:
 - job: macOS
   pool:
-    vmImage: 'macOS-latest'
+    vmImage: 'macOS-10.14'
     
   steps:
   - script: |
@@ -18,7 +18,7 @@ jobs:
     displayName: 'Generate macOS solution'
   - task: CmdLine@2
     inputs:
-      script: 'sudo xcode-select --switch /Applications/Xcode_11.app/Contents/Developer'
+      script: 'sudo xcode-select --switch /Applications/Xcode_10.3.app/Contents/Developer'
       
   - task: Xcode@5
     inputs:
@@ -30,7 +30,7 @@ jobs:
     
 - job: iOS
   pool:
-    vmImage: 'macOS-latest'
+    vmImage: 'macOS-10.14'
     
   steps:
   - script: |
@@ -44,7 +44,7 @@ jobs:
     displayName: 'Generate iOS solution'
   - task: CmdLine@2
     inputs:
-      script: 'sudo xcode-select --switch /Applications/Xcode_11.app/Contents/Developer'
+      script: 'sudo xcode-select --switch /Applications/Xcode_10.3.app/Contents/Developer'
       
   - task: Xcode@5
     inputs:
