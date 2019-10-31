@@ -753,17 +753,6 @@ namespace babylon
         m_engineState |= ALPHA_MODE[blendMode];
     }
 
-    void NativeEngine::SetMatrix(const Napi::CallbackInfo& info)
-    {
-        const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
-        const auto matrix = info[1].As<Napi::Float32Array>();
-
-        const size_t elementLength = matrix.ElementLength();
-        assert(elementLength == 16);
-
-        m_currentProgram->SetUniform(uniformData->Handle, gsl::make_span(matrix.Data(), elementLength));
-    }
-
     void NativeEngine::SetInt(const Napi::CallbackInfo& info)
     {
         const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
@@ -789,6 +778,39 @@ namespace babylon
         }
 
         m_currentProgram->SetUniform(uniformData->Handle, m_scratch, elementLength / size);
+    }
+
+    template<int size> void NativeEngine::SetFloatN(const Napi::CallbackInfo& info)
+    {
+        const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
+        const float values[] = { info[1].As<Napi::Number>().FloatValue(),
+                                (size > 1) ? info[2].As<Napi::Number>().FloatValue() : 0.f,
+                                (size > 2) ? info[3].As<Napi::Number>().FloatValue() : 0.f,
+                                (size > 3) ? info[4].As<Napi::Number>().FloatValue() : 0.f };
+
+        m_currentProgram->SetUniform(uniformData->Handle, values);
+    }
+
+    template<int size> void NativeEngine::SetMatrixN(const Napi::CallbackInfo& info)
+    {
+        const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
+        const auto matrix = info[1].As<Napi::Float32Array>();
+
+        const size_t elementLength = matrix.ElementLength();
+        assert(elementLength == size * size);
+
+        std::array<float, 16> matrixValues{ };
+
+        int index = 0;
+        for (int line = 0; line < size; line++)
+        {
+            for (int col = 0; col < size; col++)
+            {
+                matrixValues[line * 4 + col] = matrix[index++];
+            }
+        }
+
+        m_currentProgram->SetUniform(uniformData->Handle, gsl::make_span(matrixValues.data(), 16));
     }
 
     void NativeEngine::SetIntArray(const Napi::CallbackInfo& info)
@@ -842,29 +864,19 @@ namespace babylon
         m_currentProgram->SetUniform(uniformData->Handle, gsl::span(matricesArray.Data(), elementLength), elementLength / 16);
     }
 
-    void NativeEngine::SetMatrix3x3(const Napi::CallbackInfo& info)
-    {
-        // args: ShaderProperty property, gsl::span<const float> matrix
-
-        assert(false);
-    }
-
     void NativeEngine::SetMatrix2x2(const Napi::CallbackInfo& info)
     {
-        // args: ShaderProperty property, gsl::span<const float> matrix
-
-        assert(false);
+        SetMatrixN<2>(info);
     }
 
-    template<int size> void NativeEngine::SetFloatN(const Napi::CallbackInfo& info)
+    void NativeEngine::SetMatrix3x3(const Napi::CallbackInfo& info)
     {
-        const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
-        const float values[] = { info[1].As<Napi::Number>().FloatValue(),
-                                (size > 1) ? info[2].As<Napi::Number>().FloatValue() : 0.f,
-                                (size > 2) ? info[3].As<Napi::Number>().FloatValue() : 0.f,
-                                (size > 3) ? info[4].As<Napi::Number>().FloatValue() : 0.f };
+        SetMatrixN<3>(info);
+    }
 
-        m_currentProgram->SetUniform(uniformData->Handle, values);
+    void NativeEngine::SetMatrix(const Napi::CallbackInfo& info)
+    {
+        SetMatrixN<4>(info);
     }
 
     void NativeEngine::SetFloat(const Napi::CallbackInfo& info)

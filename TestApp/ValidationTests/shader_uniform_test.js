@@ -1,6 +1,55 @@
 var engine = new BABYLON.NativeEngine();
 var scene = new BABYLON.Scene(engine);
 
+function CreateBoxAsyncMat3x3() {
+    var box = BABYLON.Mesh.CreateBox("box", 0.7);
+    
+    var mat = new BABYLON.CustomMaterial("boxMat",scene);
+    mat.AddUniform("ma", "mat4");
+
+    mat.Fragment_Custom_Diffuse(' \
+        \
+            diffuseColor = vec3(ma[0].x, ma[1].y, ma[2].z);'
+        );
+
+    var ma3 = [1,0,0
+             ,0,0.2,0
+             ,0,0,0.8];
+    var ma3a = new Float32Array(ma3);
+
+    setTimeout(function(){
+        mat.getEffect().setMatrix3x3("ma", ma3a); 
+    }, 1000);
+    
+    box.material = mat;
+    
+    return Promise.resolve();
+}
+
+function CreateBoxAsyncMat2x2() {
+    var box = BABYLON.Mesh.CreateBox("box", 0.7);
+    
+    var mat = new BABYLON.CustomMaterial("boxMat",scene);
+    mat.AddUniform("ma", "mat4");
+
+    mat.Fragment_Custom_Diffuse(' \
+        \
+            diffuseColor = vec3(ma[0].x, ma[0].y, ma[1].x);'
+        );
+
+    var ma2 = [1,0.2
+              ,0.8,1.];
+    var ma2a = new Float32Array(ma2);
+
+    setTimeout(function(){
+        mat.getEffect().setMatrix2x2("ma", ma2a); 
+    }, 1000);
+    
+    box.material = mat;
+    
+    return Promise.resolve();
+}
+
 function CreateBoxAsyncIntArray() {
     var box = BABYLON.Mesh.CreateBox("box", 0.7);
     
@@ -143,9 +192,11 @@ function CreateInputHandling(scene) {
 
 //CreateBoxAsyncBool().then(function () {
 //CreateBoxAsyncFloatArray().then(function () {
-CreateBoxAsyncVec4Array().then(function () {    
+//CreateBoxAsyncVec4Array().then(function () {    
 //CreateBoxAsyncInt4Array().then(function () {
 //CreateBoxAsyncIntArray().then(function () {
+//CreateBoxAsyncMat3x3().then(function () {
+CreateBoxAsyncMat2x2().then(function () {
     scene.createDefaultCamera(true);
     scene.activeCamera.alpha += Math.PI;
     CreateInputHandling(scene);

@@ -421,6 +421,7 @@ namespace babylon
 
         template<int size, typename arrayType> void SetTypeArrayN(const Napi::CallbackInfo& info);
         template<int size> void SetFloatN(const Napi::CallbackInfo& info);
+        template<int size> void SetMatrixN(const Napi::CallbackInfo& info);
 
         // Scratch vector used for data alignment.
         std::vector<float> m_scratch{};
