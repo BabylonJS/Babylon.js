@@ -69,7 +69,6 @@ interface INativeEngine {
     setFloat(uniform: WebGLUniformLocation, value: number): void;
     setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void;
     setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void;
-    setBool(uniform: WebGLUniformLocation, bool: number): void;
     setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
 
     createTexture(): WebGLTexture;
@@ -777,14 +776,6 @@ export class NativeEngine extends Engine {
         }
 
         this._native.setFloat3(uniform, x, y, z);
-    }
-
-    public setBool(uniform: WebGLUniformLocation, bool: number): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._native.setBool(uniform, bool);
     }
 
     public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void {
