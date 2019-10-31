@@ -530,6 +530,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                                 if (this.props.globalState.nodeMaterial) {
                                     this.buildMaterial();
                                 }
+                            } else {
+                                e.link.remove();
                             }
                         }
                     });
