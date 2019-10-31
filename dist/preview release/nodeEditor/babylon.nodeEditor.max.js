@@ -73530,6 +73530,9 @@ var GraphEditor = /** @class */ (function (_super) {
                                     _this.buildMaterial();
                                 }
                             }
+                            else {
+                                e.link.remove();
+                            }
                         }
                     });
                 }
