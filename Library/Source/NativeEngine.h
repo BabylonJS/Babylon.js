@@ -355,6 +355,7 @@ namespace babylon
         void SetColorWrite(const Napi::CallbackInfo& info);
         void SetBlendMode(const Napi::CallbackInfo& info);
         void SetMatrix(const Napi::CallbackInfo& info);
+        void SetInt(const Napi::CallbackInfo& info);
         void SetIntArray(const Napi::CallbackInfo& info);
         void SetIntArray2(const Napi::CallbackInfo& info);
         void SetIntArray3(const Napi::CallbackInfo& info);
@@ -418,7 +419,7 @@ namespace babylon
         FrameBufferManager m_frameBufferManager{ m_viewidSet };
 
         NativeWindow::OnResizeCallbackTicket m_resizeCallbackTicket;
-        template<int size> void SetFloatArrayN(const Napi::CallbackInfo& info);
+        template<int size, typename arrayType> void SetTypeArrayN(const Napi::CallbackInfo& info);
 
         // Scratch vector used for data alignment.
         std::vector<float> m_scratch{};

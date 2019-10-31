@@ -323,6 +323,7 @@ namespace babylon
                 InstanceMethod("setColorWrite", &NativeEngine::SetColorWrite),
                 InstanceMethod("setBlendMode", &NativeEngine::SetBlendMode),
                 InstanceMethod("setMatrix", &NativeEngine::SetMatrix),
+                InstanceMethod("setInt", &NativeEngine::SetInt),
                 InstanceMethod("setIntArray", &NativeEngine::SetIntArray),
                 InstanceMethod("setIntArray2", &NativeEngine::SetIntArray2),
                 InstanceMethod("setIntArray3", &NativeEngine::SetIntArray3),
@@ -764,69 +765,71 @@ namespace babylon
         m_currentProgram->SetUniform(uniformData->Handle, gsl::make_span(matrix.Data(), elementLength));
     }
 
-    void NativeEngine::SetIntArray(const Napi::CallbackInfo& info)
-    {
-        // args: ShaderProperty property, gsl::span<const int> array
-
-        assert(false);
-    }
-
-    void NativeEngine::SetIntArray2(const Napi::CallbackInfo& info)
-    {
-        // args: ShaderProperty property, gsl::span<const int> array
-
-        assert(false);
-    }
-
-    void NativeEngine::SetIntArray3(const Napi::CallbackInfo& info)
-    {
-        // args: ShaderProperty property, gsl::span<const int> array
-
-        assert(false);
-    }
-
-    void NativeEngine::SetIntArray4(const Napi::CallbackInfo& info)
-    {
-        // args: ShaderProperty property, gsl::span<const int> array
-
-        assert(false);
-    }
-
-    template<int size> void NativeEngine::SetFloatArrayN(const Napi::CallbackInfo& info)
+    void NativeEngine::SetInt(const Napi::CallbackInfo& info)
     {
         const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
-        const auto array = info[1].As<Napi::Float32Array>();
+        const auto value = info[1].As<Napi::Number>().FloatValue();
+        m_currentProgram->SetUniform(uniformData->Handle, gsl::make_span(&value, 1));
+    }
+
+    template<int size, typename arrayType> void NativeEngine::SetTypeArrayN(const Napi::CallbackInfo& info)
+    {
+        const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
+        const auto array = info[1].As<arrayType>();
 
         size_t elementLength = array.ElementLength();
 
         m_scratch.clear();
         for (size_t index = 0; index < elementLength; index += size)
         {
-            const float values[] = { array[index], (size > 1) ? array[index + 1] : 0.f, (size > 2) ? array[index + 2] : 0.f, (size > 3) ? array[index + 3] : 0.f };
+            const float values[] = { static_cast<float>(array[index])
+                , (size > 1) ? static_cast<float>(array[index + 1]) : 0.f
+                , (size > 2) ? static_cast<float>(array[index + 2]) : 0.f
+                , (size > 3) ? static_cast<float>(array[index + 3]) : 0.f };
             m_scratch.insert(m_scratch.end(), values, values + 4);
         }
 
-        m_currentProgram->SetUniform(uniformData->Handle, m_scratch, elementLength);
+        m_currentProgram->SetUniform(uniformData->Handle, m_scratch, elementLength / size);
+    }
+
+    void NativeEngine::SetIntArray(const Napi::CallbackInfo& info)
+    {
+        SetTypeArrayN<1, Napi::Int32Array>(info);
+    }
+
+    void NativeEngine::SetIntArray2(const Napi::CallbackInfo& info)
+    {
+        SetTypeArrayN<2, Napi::Int32Array>(info);
+    }
+
+    void NativeEngine::SetIntArray3(const Napi::CallbackInfo& info)
+    {
+        SetTypeArrayN<3, Napi::Int32Array>(info);
+    }
+
+    void NativeEngine::SetIntArray4(const Napi::CallbackInfo& info)
+    {
+        SetTypeArrayN<4, Napi::Int32Array>(info);
     }
 
     void NativeEngine::SetFloatArray(const Napi::CallbackInfo& info)
     {
-        SetFloatArrayN<1>(info);
+        SetTypeArrayN<1, Napi::Float32Array>(info);
     }
 
     void NativeEngine::SetFloatArray2(const Napi::CallbackInfo& info)
     {
-        SetFloatArrayN<2>(info);
+        SetTypeArrayN<2, Napi::Float32Array>(info);
     }
 
     void NativeEngine::SetFloatArray3(const Napi::CallbackInfo& info)
     {
-        SetFloatArrayN<3>(info);
+        SetTypeArrayN<3, Napi::Float32Array>(info);
     }
 
     void NativeEngine::SetFloatArray4(const Napi::CallbackInfo& info)
     {
-        SetFloatArrayN<4>(info);
+        SetTypeArrayN<4, Napi::Float32Array>(info);
     }
 
     void NativeEngine::SetMatrices(const Napi::CallbackInfo& info)

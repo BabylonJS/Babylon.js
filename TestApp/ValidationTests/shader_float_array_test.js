@@ -1,26 +1,123 @@
 var engine = new BABYLON.NativeEngine();
 var scene = new BABYLON.Scene(engine);
 
-function CreateBoxAsync() {
-    var box1 = BABYLON.Mesh.CreateBox("box1", 0.7);
-	
-	var mat1 = new BABYLON.CustomMaterial("boxMat1",scene);
-    mat1.AddUniform("fa", "float[3]");
+function CreateBoxAsyncIntArray() {
+    var box = BABYLON.Mesh.CreateBox("box", 0.7);
+    
+    var mat = new BABYLON.CustomMaterial("boxMat",scene);
+    mat.AddUniform("fa", "float[3]");
 
-    mat1.Fragment_Custom_Diffuse(' \
+    mat.Fragment_Custom_Diffuse(' \
+        \
+            diffuseColor = vec3(fa[0], fa[1], fa[2]) / 255.;'
+        );
+
+    var ia = [255, 128, 200];
+    var ia32 = new Int32Array(ia);
+
+    setTimeout(function(){
+        mat.getEffect().setIntArray("fa", ia32); 
+    }, 1000);
+    
+    box.material = mat;
+    
+    return Promise.resolve();
+}
+
+function CreateBoxAsyncInt4Array() {
+    var box = BABYLON.Mesh.CreateBox("box", 0.7);
+    
+    var mat = new BABYLON.CustomMaterial("boxMat",scene);
+    mat.AddUniform("fa", "vec4[3]");
+
+    mat.Fragment_Custom_Diffuse(' \
+        \
+            diffuseColor = vec3(fa[0].x, fa[1].y, fa[2].z) / 255.;'
+        );
+
+    var ia = [255, 0, 0, 0,
+			  0, 128, 0, 0,
+			  0, 0, 200, 0];
+    var ia32 = new Int32Array(ia);
+
+    setTimeout(function(){
+        mat.getEffect().setIntArray4("fa", ia32); 
+    }, 1000);
+    
+    box.material = mat;
+    
+    return Promise.resolve();
+}
+
+function CreateBoxAsyncFloatArray() {
+    var box = BABYLON.Mesh.CreateBox("box", 0.7);
+    
+    var mat = new BABYLON.CustomMaterial("boxMat",scene);
+    mat.AddUniform("fa", "float[3]");
+
+    mat.Fragment_Custom_Diffuse(' \
         \
             diffuseColor = vec3(fa[0], fa[1], fa[2]);'
         );
 
-    var fa = [1.0, 0.0, 1.0];
+    var fa = [1.0, 0.5, 0.8];
     var fa32 = new Float32Array(fa);
 
     setTimeout(function(){
-        mat1.getEffect().setFloatArray("fa", fa32); 
+        mat.getEffect().setFloatArray("fa", fa32); 
     }, 1000);
-	
-	box1.material = mat1;
-	
+    
+    box.material = mat;
+    
+    return Promise.resolve();
+}
+
+function CreateBoxAsyncVec4Array() {
+    var box = BABYLON.Mesh.CreateBox("box", 0.7);
+    
+    var mat = new BABYLON.CustomMaterial("boxMat",scene);
+    mat.AddUniform("fa", "vec4[3]");
+
+    mat.Fragment_Custom_Diffuse(' \
+        \
+            diffuseColor = vec3(fa[0].x, fa[1].y, fa[2].z);'
+        );
+
+    var fa = [1.0, 0.0, 0.0, 0.0,
+              0.0, 0.5, 0.0, 0.0,
+              0.0, 0.0, 0.8, 0.0];
+    var fa32 = new Float32Array(fa);
+
+    setTimeout(function(){
+        mat.getEffect().setFloatArray4("fa", fa32); 
+    }, 1000);
+    
+    box.material = mat;
+    
+    return Promise.resolve();
+}
+
+function CreateBoxAsyncBool() {
+    var box = BABYLON.Mesh.CreateBox("box", 0.7);
+    
+    var mat = new BABYLON.CustomMaterial("boxMat1",scene);
+    mat.AddUniform("hasRed", "float");
+	mat.AddUniform("hasGreen", "float");
+	mat.AddUniform("hasBlue", "float");
+
+    mat.Fragment_Custom_Diffuse(' \
+        \
+            diffuseColor = vec3(hasRed, hasGreen, hasBlue);'
+        );
+
+    setTimeout(function(){
+        mat.getEffect().setBool("hasRed", true); 
+		mat.getEffect().setBool("hasGreen", false); 
+		mat.getEffect().setBool("hasBlue", true); 
+    }, 1000);
+  
+    box.material = mat;
+    
     return Promise.resolve();
 }
 
@@ -44,14 +141,18 @@ function CreateInputHandling(scene) {
     });
 }
 
-CreateBoxAsync().then(function () {
-	scene.createDefaultCamera(true);
-	scene.activeCamera.alpha += Math.PI;
-	CreateInputHandling(scene);
-	
+//CreateBoxAsyncBool().then(function () {
+//CreateBoxAsyncFloatArray().then(function () {
+CreateBoxAsyncVec4Array().then(function () {	
+//CreateBoxAsyncInt4Array().then(function () {
+//CreateBoxAsyncIntArray().then(function () {
+    scene.createDefaultCamera(true);
+    scene.activeCamera.alpha += Math.PI;
+    CreateInputHandling(scene);
+    
     var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-	
-	engine.runRenderLoop(function () {
+    
+    engine.runRenderLoop(function () {
         scene.render();
     });
     

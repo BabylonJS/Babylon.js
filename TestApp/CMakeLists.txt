@@ -2,7 +2,8 @@ set(SCRIPTS
     "Scripts/babylon.glTF2FileLoader.js"
     "Scripts/babylon.max.js"
     "Scripts/experience.js"
-    "Scripts/playground_runner.js")
+    "Scripts/playground_runner.js"
+    "Scripts/babylonjs.materials.js")
 
 set(SOURCES
     ${SCRIPTS}
