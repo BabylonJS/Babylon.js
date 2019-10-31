@@ -4,6 +4,8 @@ import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../Misc/typeStore';
+import { Scene } from '../../../scene';
+
 /**
  * block used to Generate a Worley Noise 3D Noise Pattern
  */
@@ -15,6 +17,9 @@ import { _TypeStore } from '../../../Misc/typeStore';
 //  Return vec2 value range of -1.0->1.0, F1-F2 respectivly
 
 export class WorleyNoise3DBlock extends NodeMaterialBlock {
+    /** Gets or sets a boolean indicating that normal should be inverted on X axis */
+    public manhattanDistance = false;
+
     /**
      * Creates a new WorleyNoise3DBlock
      * @param name defines the block name
@@ -23,7 +28,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
         super(name, NodeMaterialBlockTargets.Neutral);
         this.registerInput("position", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerInput("jitter", NodeMaterialBlockConnectionPointTypes.Float);
-        this.registerInput("manhattan", NodeMaterialBlockConnectionPointTypes.Float);
+
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector2);
     }
 
@@ -47,16 +52,6 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
      */
     public get jitter(): NodeMaterialConnectionPoint {
         return this._inputs[1];
-    }
-
-    /**
-    * Gets true false value of if it is manhattan or not
-    */
-    public get manhattan(): Boolean {
-        if (!this._inputs[2].isConnected) {
-            return false;
-        }
-        return true;
     }
 
     /**
@@ -230,9 +225,35 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
         functionString += `}\r\n\r\n`;
 
         state._emitFunction('worley3D', functionString, 'worley3D');
-        state.compilationString += this._declareOutput(this._outputs[0], state) + ` = worley(${this.position.associatedVariableName}, ${this.jitter.associatedVariableName}, ${this.manhattan});\r\n`;
+        state.compilationString += this._declareOutput(this._outputs[0], state) + ` = worley(${this.position.associatedVariableName}, ${this.jitter.associatedVariableName}, ${this.manhattanDistance});\r\n`;
 
         return this;
+    }
+    /**
+     * Exposes the properties to the UI?
+     */
+    protected _dumpPropertiesCode() {
+        var codeString = `${this._codeVariableName}.manhattanDistance = ${this.manhattanDistance};\r\n`;
+
+        return codeString;
+    }
+    /**
+     * Exposes the properties to the Seralize?
+     */
+    public serialize(): any {
+        let serializationObject = super.serialize();
+
+        serializationObject.manhattanDistance = this.manhattanDistance;
+
+        return serializationObject;
+    }
+    /**
+     * Exposes the properties to the deseralize?
+     */
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        super._deserialize(serializationObject, scene, rootUrl);
+
+        this.manhattanDistance = serializationObject.manhattanDistance;
     }
 }
 

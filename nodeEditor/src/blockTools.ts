@@ -59,7 +59,7 @@ import { WorleyNoise3DBlock } from 'babylonjs/Materials/Node/Blocks/worleyNoise3
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
-            case "Worley3DBlock":
+            case "WorleyNoise3DBlock":
                 return new WorleyNoise3DBlock("WorleyNoise3DBlock");
             case "BonesBlock":
                 return new BonesBlock("Bones");
