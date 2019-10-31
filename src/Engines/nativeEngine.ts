@@ -54,6 +54,7 @@ interface INativeEngine {
     setBlendMode(blendMode: number): void;
 
     setMatrix(uniform: WebGLUniformLocation, matrix: Float32Array): void;
+    setInt(uniform: WebGLUniformLocation, int: number): void;
     setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void;
     setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void;
     setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void;
@@ -624,6 +625,14 @@ export class NativeEngine extends Engine {
      */
     public getAlphaMode(): number {
         return this._alphaMode;
+    }
+
+    public setInt(uniform: WebGLUniformLocation, int: number): void {
+        if (!uniform) {
+            return;
+        }
+
+        this._native.setInt(uniform, int);
     }
 
     public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void {
