@@ -99,9 +99,9 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (nodeMaterial.getScene()._mirroredCameraPosition) {
-            effect.setFloat2("vTangentSpaceParams", this.invertX ? 1.0 : -1.0, this.invertY ? 1.0 : -1.0);
+            effect.setFloat2(this._tangentSpaceParameterName, this.invertX ? 1.0 : -1.0, this.invertY ? 1.0 : -1.0);
         } else {
-            effect.setFloat2("vTangentSpaceParams", this.invertX ? -1.0 : 1.0, this.invertY ? -1.0 : 1.0);
+            effect.setFloat2(this._tangentSpaceParameterName, this.invertX ? -1.0 : 1.0, this.invertY ? -1.0 : 1.0);
         }
     }
 
