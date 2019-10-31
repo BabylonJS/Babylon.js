@@ -71,18 +71,18 @@ export class SimplexPerlin3DBlock extends NodeMaterialBlock {
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
-              
+
         if (!this.position.isConnected) {
             return;
         }
-        
+
         if (!this._outputs[0].hasEndpoints) {
             return;
         }
-        
+
         let functionString = `const float SKEWFACTOR = 1.0/3.0;\r\n`;
         functionString += `const float UNSKEWFACTOR = 1.0/6.0;\r\n`;
-        functionString += `const float SIMPLEX_CORNER_POS = 0.5;\r\n`;        
+        functionString += `const float SIMPLEX_CORNER_POS = 0.5;\r\n`;
         functionString += `const float SIMPLEX_TETRAHADRON_HEIGHT = 0.70710678118654752440084436210485;\r\n`;
         functionString += `float SimplexPerlin3D( vec3 P ){\r\n`;
         functionString += `    P *= SIMPLEX_TETRAHADRON_HEIGHT;\r\n`;
@@ -119,11 +119,11 @@ export class SimplexPerlin3DBlock extends NodeMaterialBlock {
         functionString += `    kernel_weights = max(0.5 - kernel_weights, 0.0);\r\n`;
         functionString += `    kernel_weights = kernel_weights*kernel_weights*kernel_weights;\r\n`;
         functionString += `    return dot( kernel_weights, grad_results ) * FINAL_NORMALIZATION;\r\n`;
-        functionString += `}\r\n`;      
-        
-        state._emitFunction('SimplexPerlin3D', functionString, 'SimplexPerlin3D')        
-        state.compilationString += this._declareOutput(this._outputs[0], state) + ` = SimplexPerlin3D(${this.position.associatedVariableName});\r\n`;     
-        
+        functionString += `}\r\n`;
+
+        state._emitFunction('SimplexPerlin3D', functionString, 'SimplexPerlin3D');
+        state.compilationString += this._declareOutput(this._outputs[0], state) + ` = SimplexPerlin3D(${this.position.associatedVariableName});\r\n`;
+
         return this;
     }
 }
