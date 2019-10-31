@@ -18,7 +18,7 @@ jobs:
     displayName: 'Generate macOS solution'
   - task: CmdLine@2
     inputs:
-      script: 'sudo xcode-select --switch /Applications/Xcode_10.3.app/Contents/Developer'
+      script: 'sudo xcode-select --switch /Applications/Xcode_11.0.app/Contents/Developer'
       
   - task: Xcode@5
     inputs:
@@ -44,7 +44,7 @@ jobs:
     displayName: 'Generate iOS solution'
   - task: CmdLine@2
     inputs:
-      script: 'sudo xcode-select --switch /Applications/Xcode_10.3.app/Contents/Developer'
+      script: 'sudo xcode-select --switch /Applications/Xcode_11.0.app/Contents/Developer'
       
   - task: Xcode@5
     inputs:
