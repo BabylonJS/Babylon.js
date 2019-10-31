@@ -23965,7 +23965,7 @@ declare module BABYLON {
          * @returns the current mesh
          */
         unregisterAfterRender(func: (mesh: AbstractMesh) => void): Mesh;
-        /** @hidden */private _getInstancesRenderList(subMeshId: number): _InstancesBatch;
+        /** @hidden */private _getInstancesRenderList(subMeshId: number, isReplacementMode?: boolean): _InstancesBatch;
         /** @hidden */private _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): Mesh;
         /** @hidden */private _processInstancedBuffers(visibleInstances: InstancedMesh[], renderSelf: boolean): void;
         /** @hidden */private _processRendering(subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean, onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh;
