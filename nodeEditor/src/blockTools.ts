@@ -54,13 +54,13 @@ import { ReciprocalBlock } from 'babylonjs/Materials/Node/Blocks/reciprocalBlock
 import { GradientBlock } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
 import { WaveBlock, WaveBlockKind } from 'babylonjs/Materials/Node/Blocks/waveBlock';
 import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
-import { Worley3DBlock } from 'babylonjs/Materials/Node/Blocks/worley3DBlock';
+import { WorleyNoise3DBlock } from 'babylonjs/Materials/Node/Blocks/worleyNoise3DBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
             case "Worley3DBlock":
-                return new Worley3DBlock("Worley3DBlock");
+                return new WorleyNoise3DBlock("WorleyNoise3DBlock");
             case "BonesBlock":
                 return new BonesBlock("Bones");
             case "InstancesBlock":

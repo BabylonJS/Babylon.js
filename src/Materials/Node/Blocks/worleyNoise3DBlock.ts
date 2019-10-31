@@ -14,9 +14,9 @@ import { _TypeStore } from '../../../Misc/typeStore';
 //  Worley Noise 3D
 //  Return vec2 value range of -1.0->1.0, F1-F2 respectivly
 
-export class Worley3DBlock extends NodeMaterialBlock {
+export class WorleyNoise3DBlock extends NodeMaterialBlock {
     /**
-     * Creates a new Worley3DBlock
+     * Creates a new WorleyNoise3DBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -32,7 +32,7 @@ export class Worley3DBlock extends NodeMaterialBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "Worley3DBlock";
+        return "WorleyNoise3DBlock";
     }
 
     /**
@@ -41,21 +41,21 @@ export class Worley3DBlock extends NodeMaterialBlock {
     public get position(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
-    
+
     /**
      * Gets the jitter input component
      */
     public get jitter(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
-    
+
     /**
     * Gets true false value of if it is manhattan or not
     */
     public get manhattan(): Boolean {
         if (!this._inputs[2].isConnected) {
             return false;
-        }        
+        }
         return true;
     }
 
@@ -68,23 +68,23 @@ export class Worley3DBlock extends NodeMaterialBlock {
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
-              
+
         if (!this.position.isConnected) {
             return;
         }
-        
+
         if (!this._outputs[0].hasEndpoints) {
             return;
         }
-        
+
         let functionString = `vec3 permute(vec3 x){\r\n`;
         functionString += `    return mod((34.0 * x + 1.0) * x, 289.0);\r\n`;
         functionString += `}\r\n\r\n`;
-        
+
         functionString += `vec3 dist(vec3 x, vec3 y, vec3 z,  bool manhattanDistance){\r\n`;
         functionString += `    return manhattanDistance ?  abs(x) + abs(y) + abs(z) :  (x * x + y * y + z * z);\r\n`;
         functionString += `}\r\n\r\n`;
-        
+
         functionString += `vec2 worley(vec3 P, float jitter, bool manhattanDistance){\r\n`;
         functionString += `    float K = 0.142857142857; // 1/7\r\n`;
         functionString += `    float Ko = 0.428571428571; // 1/2-K/2\r\n`;
@@ -228,12 +228,12 @@ export class Worley3DBlock extends NodeMaterialBlock {
         functionString += `    d11.y = min(d11.y,d11.z); // Done! (Phew!)\r\n`;
         functionString += `    return sqrt(d11.xy); // F1, F2\r\n`;
         functionString += `}\r\n\r\n`;
-        
-        state._emitFunction('worley3D', functionString, 'worley3D')        
-        state.compilationString += this._declareOutput(this._outputs[0], state) + ` = worley(${this.position.associatedVariableName}, ${this.jitter.associatedVariableName}, ${this.manhattan});\r\n`;     
-        
+
+        state._emitFunction('worley3D', functionString, 'worley3D');
+        state.compilationString += this._declareOutput(this._outputs[0], state) + ` = worley(${this.position.associatedVariableName}, ${this.jitter.associatedVariableName}, ${this.manhattan});\r\n`;
+
         return this;
     }
 }
 
-_TypeStore.RegisteredTypes["BABYLON.Worley3DBlock"] = Worley3DBlock;
+_TypeStore.RegisteredTypes["BABYLON.WorleyNoise3DBlock"] = WorleyNoise3DBlock;
