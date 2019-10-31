@@ -4,7 +4,7 @@ trigger:
 jobs:
 - job: macOS
   pool:
-    vmImage: 'macOS-10.14'
+    vmImage: 'macOS-latest'
     
   steps:
   - script: |
@@ -30,7 +30,7 @@ jobs:
     
 - job: iOS
   pool:
-    vmImage: 'macOS-10.14'
+    vmImage: 'macOS-latest'
     
   steps:
   - script: |
