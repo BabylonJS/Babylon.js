@@ -59,7 +59,7 @@ import { SimplexPerlin3DBlock } from 'babylonjs/Materials/Node/Blocks/simplexPer
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
-			case "SimplexPerlin3DBlock":
+            case "SimplexPerlin3DBlock":
                 return new SimplexPerlin3DBlock("SimplexPerlin3DBlock");
             case "BonesBlock":
                 return new BonesBlock("Bones");
