@@ -38,4 +38,4 @@ export * from "./posterizeBlock";
 export * from "./waveBlock";
 export * from "./gradientBlock";
 export * from "./nLerpBlock";
-export * from "./simplexPerlin3D";
+export * from "./simplexPerlin3DBlock";
