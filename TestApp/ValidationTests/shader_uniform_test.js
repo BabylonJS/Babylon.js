@@ -36,8 +36,8 @@ function CreateBoxAsyncInt4Array() {
         );
 
     var ia = [255, 0, 0, 0,
-			  0, 128, 0, 0,
-			  0, 0, 200, 0];
+              0, 128, 0, 0,
+              0, 0, 200, 0];
     var ia32 = new Int32Array(ia);
 
     setTimeout(function(){
@@ -102,8 +102,8 @@ function CreateBoxAsyncBool() {
     
     var mat = new BABYLON.CustomMaterial("boxMat1",scene);
     mat.AddUniform("hasRed", "float");
-	mat.AddUniform("hasGreen", "float");
-	mat.AddUniform("hasBlue", "float");
+    mat.AddUniform("hasGreen", "float");
+    mat.AddUniform("hasBlue", "float");
 
     mat.Fragment_Custom_Diffuse(' \
         \
@@ -112,8 +112,8 @@ function CreateBoxAsyncBool() {
 
     setTimeout(function(){
         mat.getEffect().setBool("hasRed", true); 
-		mat.getEffect().setBool("hasGreen", false); 
-		mat.getEffect().setBool("hasBlue", true); 
+        mat.getEffect().setBool("hasGreen", false); 
+        mat.getEffect().setBool("hasBlue", true); 
     }, 1000);
   
     box.material = mat;
@@ -143,7 +143,7 @@ function CreateInputHandling(scene) {
 
 //CreateBoxAsyncBool().then(function () {
 //CreateBoxAsyncFloatArray().then(function () {
-CreateBoxAsyncVec4Array().then(function () {	
+CreateBoxAsyncVec4Array().then(function () {    
 //CreateBoxAsyncInt4Array().then(function () {
 //CreateBoxAsyncIntArray().then(function () {
     scene.createDefaultCamera(true);

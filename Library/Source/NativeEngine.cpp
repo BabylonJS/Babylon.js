@@ -339,7 +339,6 @@ namespace babylon
                 InstanceMethod("setFloat2", &NativeEngine::SetFloat2),
                 InstanceMethod("setFloat3", &NativeEngine::SetFloat3),
                 InstanceMethod("setFloat4", &NativeEngine::SetFloat4),
-                InstanceMethod("setBool", &NativeEngine::SetBool),
                 InstanceMethod("createTexture", &NativeEngine::CreateTexture),
                 InstanceMethod("loadTexture", &NativeEngine::LoadTexture),
                 InstanceMethod("loadCubeTexture", &NativeEngine::LoadCubeTexture),
@@ -857,67 +856,35 @@ namespace babylon
         assert(false);
     }
 
-    void NativeEngine::SetFloat(const Napi::CallbackInfo& info)
+    template<int size> void NativeEngine::SetFloatN(const Napi::CallbackInfo& info)
     {
         const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
-        const float values[] =
-        {
-            info[1].As<Napi::Number>().FloatValue(),
-            0.0f,
-            0.0f,
-            0.0f
-        };
+        const float values[] = { info[1].As<Napi::Number>().FloatValue(),
+                                (size > 1) ? info[2].As<Napi::Number>().FloatValue() : 0.f,
+                                (size > 2) ? info[3].As<Napi::Number>().FloatValue() : 0.f,
+                                (size > 3) ? info[4].As<Napi::Number>().FloatValue() : 0.f };
 
         m_currentProgram->SetUniform(uniformData->Handle, values);
+    }
+
+    void NativeEngine::SetFloat(const Napi::CallbackInfo& info)
+    {
+        SetFloatN<1>(info);
     }
 
     void NativeEngine::SetFloat2(const Napi::CallbackInfo& info)
     {
-        const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
-        const float values[] =
-        {
-            info[1].As<Napi::Number>().FloatValue(),
-            info[2].As<Napi::Number>().FloatValue(),
-            0.0f,
-            0.0f
-        };
-
-        m_currentProgram->SetUniform(uniformData->Handle, values);
+        SetFloatN<2>(info);
     }
 
     void NativeEngine::SetFloat3(const Napi::CallbackInfo& info)
     {
-        const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
-        const float values[] =
-        {
-            info[1].As<Napi::Number>().FloatValue(),
-            info[2].As<Napi::Number>().FloatValue(),
-            info[3].As<Napi::Number>().FloatValue(),
-            0.0f
-        };
-
-        m_currentProgram->SetUniform(uniformData->Handle, values);
+        SetFloatN<3>(info);
     }
 
     void NativeEngine::SetFloat4(const Napi::CallbackInfo& info)
     {
-        const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
-        const float values[] =
-        {
-            info[1].As<Napi::Number>().FloatValue(),
-            info[2].As<Napi::Number>().FloatValue(),
-            info[3].As<Napi::Number>().FloatValue(),
-            info[4].As<Napi::Number>().FloatValue()
-        };
-
-        m_currentProgram->SetUniform(uniformData->Handle, values);
-    }
-
-    void NativeEngine::SetBool(const Napi::CallbackInfo& info)
-    {
-        // args: ShaderProperty property, bool value
-
-        assert(false);
+        SetFloatN<4>(info);
     }
 
     Napi::Value NativeEngine::CreateTexture(const Napi::CallbackInfo& info)
