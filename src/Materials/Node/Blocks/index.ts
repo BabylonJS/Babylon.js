@@ -38,3 +38,4 @@ export * from "./posterizeBlock";
 export * from "./waveBlock";
 export * from "./gradientBlock";
 export * from "./nLerpBlock";
+export * from "./worley3DBlock";
