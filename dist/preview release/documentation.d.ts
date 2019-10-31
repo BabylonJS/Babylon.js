@@ -24311,7 +24311,7 @@ declare module BABYLON {
          */
         unregisterAfterRender(func: (mesh: AbstractMesh) => void): Mesh;
         /** @hidden */
-        _getInstancesRenderList(subMeshId: number): _InstancesBatch;
+        _getInstancesRenderList(subMeshId: number, isReplacementMode?: boolean): _InstancesBatch;
         /** @hidden */
         _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): Mesh;
         /** @hidden */
