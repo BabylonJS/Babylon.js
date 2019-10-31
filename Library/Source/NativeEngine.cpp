@@ -801,7 +801,7 @@ namespace babylon
 
         std::array<float, 16> matrixValues{ };
 
-        int index = 0;
+        size_t index = 0;
         for (int line = 0; line < size; line++)
         {
             for (int col = 0; col < size; col++)
