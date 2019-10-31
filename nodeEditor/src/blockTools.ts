@@ -1,4 +1,3 @@
-import { SimplexPerlin3D } from 'babylonjs/Materials/Node/Blocks/simplexPerlin3D';
 import { DiscardBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/discardBlock';
 import { BonesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/bonesBlock';
 import { InstancesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/instancesBlock';
@@ -55,12 +54,13 @@ import { ReciprocalBlock } from 'babylonjs/Materials/Node/Blocks/reciprocalBlock
 import { GradientBlock } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
 import { WaveBlock, WaveBlockKind } from 'babylonjs/Materials/Node/Blocks/waveBlock';
 import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
+import { SimplexPerlin3DBlock } from 'babylonjs/Materials/Node/Blocks/simplexPerlin3DBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
-			case "SimplexPerlin3D":
-                return new SimplexPerlin3D("SimplexPerlin3D");
+			case "SimplexPerlin3DBlock":
+                return new SimplexPerlin3DBlock("SimplexPerlin3DBlock");
             case "BonesBlock":
                 return new BonesBlock("Bones");
             case "InstancesBlock":
