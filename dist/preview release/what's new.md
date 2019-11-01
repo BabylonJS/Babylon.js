@@ -17,6 +17,7 @@
 - Added support for multiple canvases with one engine [Doc](https://doc.babylonjs.com/how_to/multi_canvases) ([Deltakosh](https://github.com/deltakosh/)
 
 ## Updates
+
 ### General
 
 - Added support for dual shock gamepads ([Deltakosh](https://github.com/deltakosh/))
@@ -141,6 +142,7 @@
 - If canvas does not have WebXR support the scene will still render (mainly Firefox) ([RaananW](https://github.com/RaananW/))
 - Added support for foveated rendering in Oculus Quest ([Deltakosh](https://github.com/deltakosh/))
 - Added option to configure the output canvas ([RaananW](https://github.com/RaananW/))
+- Supporting multisampled multiview rendering using the oculus multiview extension ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
@@ -213,6 +215,7 @@
 - Prevent an infinite loop when calling `engine.dispose()` in a scene with multiple `SoundTracks` defined ([kirbysayshi](https://github.com/kirbysayshi))
 - Fixed missing properties in serialization / parsing of `coneParticleEmitter` ([Popov72](https://github.com/Popov72))
 - Fix a bug with exit VR and Edge ([RaananW](https://github.com/RaananW/))
+- Fixed an issue with size of texture in multiview ([RaananW](https://github.com/RaananW/))
 
 ## Breaking changes
 
