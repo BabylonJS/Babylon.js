@@ -88,7 +88,7 @@ jobs:
   - script: |
       mkdir buildUWP
       cd buildUWP
-      cmake .. -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -DBABYLON_NATIVE_PLATFORM="UWP"
+      cmake .. -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0
     displayName: 'Generate UWP solution'
   
   - task: VSBuild@1

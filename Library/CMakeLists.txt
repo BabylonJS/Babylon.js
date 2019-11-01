@@ -53,7 +53,7 @@ endif()
 
 if(APPLE)
     set(CMAKE_USE_SECTRANSP ON CACHE BOOL "enable Apple OS native SSL/TLS")
-elseif(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
+elseif(WIN32 OR WINDOWS_STORE)
     set(CMAKE_USE_WINSSL ON CACHE BOOL "Set cURL to use WinSSL by default.")
 else()
     set(CMAKE_USE_WINSSL OFF CACHE BOOL "Set cURL to use WinSSL by default.")
@@ -71,7 +71,7 @@ endif()
 
 # Currently OpenXR is only supported on Win32. More platforms will be added as 
 # they become viable/available.
-if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
+if(WIN32 OR WINDOWS_STORE)
     add_subdirectory(Dependencies/xr)
     set_property(TARGET xr PROPERTY FOLDER Dependencies/xr)
     set_property(TARGET openxr_loader PROPERTY FOLDER Dependencies/xr/OpenXR)
@@ -104,10 +104,10 @@ set(SOURCES
     "Source/XMLHttpRequest${BABYLON_NATIVE_PLATFORM}.cpp")
 
 # Platform-specific shader compiler
-if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
+if(WIN32 OR WINDOWS_STORE)
     set(SOURCES ${SOURCES}
         "Source/ShaderCompilerD3D.cpp")
-elseif(BABYLON_NATIVE_PLATFORM STREQUAL "Android")
+elseif(ANDROID)
     set(SOURCES ${SOURCES}
         "Source/ShaderCompilerOpenGL.cpp")
 elseif(APPLE)
@@ -116,7 +116,7 @@ elseif(APPLE)
 endif()
 
 # Platform-specific XR plugin (only included when used)
-if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
+if(WIN32 OR WINDOWS_STORE)
     set(SOURCES ${SOURCES}
         "Source/NativeXr.cpp"
         "Source/NativeXr.h")
@@ -167,7 +167,7 @@ target_link_libraries(Library
     PRIVATE SPIRV
     PRIVATE spirv-cross-hlsl)
 
-if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
+if(WIN32 OR WINDOWS_STORE)
     target_link_libraries(Library PRIVATE xr)
 endif()
 
@@ -180,7 +180,7 @@ if(APPLE)
         PRIVATE spirv-cross-msl)
 endif()
 
-if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
+if(WIN32 OR WINDOWS_STORE)
     target_link_libraries(Library
         PRIVATE "crypt32.lib"
         PRIVATE "d2d1.lib"

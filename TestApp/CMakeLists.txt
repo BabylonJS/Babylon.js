@@ -8,7 +8,7 @@ set(SOURCES
     ${SCRIPTS}
     "Source/Shared/InputManager.cpp"
     "Source/Shared/InputManager.h")
-if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32")
+if(WIN32 AND NOT WINDOWS_STORE)
     set(SOURCES
         ${SOURCES}
         "Source/Win32/App.cpp"
@@ -18,7 +18,7 @@ if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32")
         "Source/Win32/Resource.h"
         "Source/Win32/small.ico"
         "Source/Win32/targetver.h")
-elseif(BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
+elseif(WINDOWS_STORE)
     set(APPX_FILES "Source/UWP/Package.appxmanifest" "Source/UWP/TemporaryKey.pfx")
     set_property(SOURCE ${APPX_FILES} PROPERTY VS_DEPLOYMENT_CONTENT 1)
 
@@ -79,7 +79,7 @@ elseif(APPLE)
     set(RESOURCE_FILES ${STORYBOARD} ${JSSCRIPT})
 endif()
 
-if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
+if(WIN32 OR WINDOWS_STORE)
     set(WIN32_EXECUTABLE TRUE)
     add_executable(TestApp WIN32 ${SOURCES} ${RESOURCE_FILES})
 else()
