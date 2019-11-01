@@ -779,10 +779,10 @@ class Main {
 
     askForDiff() {
         const diffLayer = document.getElementById("diffLayer");
+        const right = document.getElementById("diffFormCompareTo");
 
-        if (this.previousHash) {
+        if (this.previousHash && right.value === "") {
             // Use the previous snippet hash for right comparison, if present
-            const right = document.getElementById("diffFormCompareTo");
             right.value = this.previousHash;
         } 
 
@@ -793,8 +793,7 @@ class Main {
         if (!snippetid || snippetid === "")
             return "";
 
-        snippetid = snippetid.replace("#", "/");
-        let response = await fetch(`${this.snippetV3Url}/${snippetid}`);
+        let response = await fetch(`${this.snippetV3Url}/${snippetid.replace(/#/g, "/")}`);
         if (!response.ok)
             throw new Error(`Unable to load snippet ${snippetid}`)
 
@@ -824,7 +823,8 @@ class Main {
             diffView.style.display = "block";
             this.parent.monacoCreator.createDiff(leftText, rightText, diffView);
         } catch(e) {
-            this.parent.utils.showError(e.message, e);
+            // only pass the message, we don't want to inspect the stacktrace in this case
+            this.parent.utils.showError(e.message, null);
         }
     }
 
