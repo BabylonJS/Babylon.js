@@ -10,7 +10,7 @@ export interface EngineCapabilities {
     maxCombinedTexturesImageUnits: number;
     /** Maximum texture size */
     maxTextureSize: number;
-    /** Maximum texture size */
+    /** Maximum texture samples */
     maxSamples?: number;
     /** Maximum cube texture size */
     maxCubemapTextureSize: number;
