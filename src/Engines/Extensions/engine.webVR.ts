@@ -5,6 +5,7 @@ import { Size } from '../../Maths/math.size';
 import { Observable } from '../../Misc/observable';
 import { Tools } from '../../Misc/tools';
 import { DomManagement } from '../../Misc/domManagement';
+import { WebVROptions } from '../../Cameras/VR/webVRCamera';
 
 /**
  * Interface used to define additional presentation attributes
@@ -98,7 +99,7 @@ declare module "../../Engines/engine" {
          * Will do nothing if webVR is not supported or if there is no webVR device
          * @see http://doc.babylonjs.com/how_to/webvr_camera
          */
-        enableVR(): void;
+        enableVR(options: WebVROptions): void;
 
         /** @hidden */
         _onVRFullScreenTriggered(): void;
@@ -194,7 +195,7 @@ Engine.prototype._getVRDisplaysAsync = function(): Promise<IDisplayChangedEventA
     });
 };
 
-Engine.prototype.enableVR = function() {
+Engine.prototype.enableVR = function(options: WebVROptions) {
     if (this._vrDisplay && !this._vrDisplay.isPresenting) {
         var onResolved = () => {
             this.onVRRequestPresentComplete.notifyObservers(true);
@@ -209,6 +210,7 @@ Engine.prototype.enableVR = function() {
         var presentationAttributes = {
             highRefreshRate: this.vrPresentationAttributes ? this.vrPresentationAttributes.highRefreshRate : false,
             foveationLevel: this.vrPresentationAttributes ? this.vrPresentationAttributes.foveationLevel : 1,
+            multiview: (this.getCaps().multiview || this.getCaps().oculusMultiview) && options.useMultiview
         };
 
         this._vrDisplay.requestPresent([{
