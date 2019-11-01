@@ -7,8 +7,8 @@ namespace babylon
     class RuntimeApple final : public Runtime
     {
     public:
-        explicit RuntimeApple(void* nativeWindowPtr);
-        explicit RuntimeApple(void* nativeWindowPtr, const std::string& rootUrl);
+        explicit RuntimeApple(void* nativeWindowPtr, LogCallback callback);
+        explicit RuntimeApple(void* nativeWindowPtr, const std::string& rootUrl, LogCallback callback);
         RuntimeApple(const RuntimeApple&) = delete;
     };
 }

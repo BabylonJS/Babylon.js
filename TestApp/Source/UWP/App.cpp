@@ -149,7 +149,10 @@ concurrency::task<void> App::RestartRuntimeAsync()
         rootUrl << "file:///" << parentPath.generic_string();
     }
 
-    m_runtime = std::make_unique<babylon::RuntimeUWP>(reinterpret_cast<ABI::Windows::UI::Core::ICoreWindow*>(CoreWindow::GetForCurrentThread()), rootUrl.str());
+    m_runtime = std::make_unique<babylon::RuntimeUWP>(
+        reinterpret_cast<ABI::Windows::UI::Core::ICoreWindow*>(CoreWindow::GetForCurrentThread()), 
+        rootUrl.str(),
+        [](const char* message, babylon::LogLevel) { OutputDebugStringA(message); });
     m_inputBuffer = std::make_unique<InputManager::InputBuffer>(*m_runtime);
     InputManager::Initialize(*m_runtime, *m_inputBuffer);
 

@@ -55,19 +55,4 @@ namespace babylon
     {
         return m_impl->RootUrl();
     }
-
-    void Runtime::RegisterLogOutput(MessageLogger output)
-    {
-        Console::RegisterLogOutput(output);
-    }
-
-    void Runtime::RegisterWarnOutput(MessageLogger output)
-    {
-        Console::RegisterWarnOutput(output);
-    }
-
-    void Runtime::RegisterErrorOutput(MessageLogger output)
-    {
-        Console::RegisterErrorOutput(output);
-    }
 }

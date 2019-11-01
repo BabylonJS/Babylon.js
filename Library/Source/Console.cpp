@@ -1,12 +1,10 @@
 #include "Console.h"
 
+#include <sstream>
+
 namespace babylon
 {
-    std::vector<MessageLogger> Console::m_logOutputs;
-    std::vector<MessageLogger> Console::m_warnOutputs;
-    std::vector<MessageLogger> Console::m_errorOutputs;
-
-    void Console::Initialize(Napi::Env env)
+    Napi::ObjectReference Console::Create(Napi::Env env, LogCallback& callback)
     {
         Napi::HandleScope scope{ env };
 
@@ -19,62 +17,43 @@ namespace babylon
                 InstanceMethod("error", &Console::Error),
             });
 
-        env.Global().Set("console", func.New({}));
+        return Napi::Persistent(func.New({ Napi::External<LogCallback>::New(env, &callback) }));
     }
 
     Console::Console(const Napi::CallbackInfo& info)
         : Napi::ObjectWrap<Console>{ info }
-    {
-    }
+        , m_callback{ *info[0].As<Napi::External<LogCallback>>().Data() }
+    {}
 
-
-    void Console::SendToOutputs(const Napi::CallbackInfo& info, std::vector<MessageLogger>& outputs)
+    void Console::SendToOutputs(const Napi::CallbackInfo& info, LogLevel logLevel) const
     {
-        for (size_t i = 0; i < outputs.size(); i++)
+        std::stringstream ss{};
+        for (unsigned int index = 0; index < info.Length(); index++)
         {
-            auto& output = outputs[i];
-            for (unsigned int index = 0; index < info.Length(); index++)
+            if (index > 0)
             {
-                if (index > 0)
-                {
-                    output(" ");
-                }
-                output(info[index].ToString().Utf8Value().c_str());
+                ss << " ";
             }
-            output("\r\n");
+            ss << info[index].ToString().Utf8Value().c_str();
         }
+        ss << std::endl;
+        m_callback(ss.str().c_str(), logLevel);
     }
 
     void Console::Log(const Napi::CallbackInfo& info)
     {
         // TODO: Log output to ETW/telemetry rather than debugger output.
         // TODO: Handle version of this method that takes a format string as the first parameter.
-        SendToOutputs(info, m_logOutputs);
+        SendToOutputs(info, LogLevel::Log);
     }
 
     void Console::Warn(const Napi::CallbackInfo& info)
     {
-        SendToOutputs(info, m_warnOutputs);
+        SendToOutputs(info, LogLevel::Warn);
     }
 
     void Console::Error(const Napi::CallbackInfo& info)
     {
-        SendToOutputs(info, m_errorOutputs);
+        SendToOutputs(info, LogLevel::Error);
     }
-
-    void Console::RegisterLogOutput(MessageLogger output)
-    {
-        m_logOutputs.push_back(output);
-    }
-
-    void Console::RegisterWarnOutput(MessageLogger output)
-    {
-        m_warnOutputs.push_back(output);
-    }
-
-    void Console::RegisterErrorOutput(MessageLogger output)
-    {
-        m_errorOutputs.push_back(output);
-    }
-
 }

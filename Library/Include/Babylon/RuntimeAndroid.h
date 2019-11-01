@@ -9,8 +9,8 @@ namespace babylon
     class RuntimeAndroid final : public Runtime
     {
     public:
-        explicit RuntimeAndroid(ANativeWindow* nativeWindowPtr);
-        explicit RuntimeAndroid(ANativeWindow* nativeWindowPtr, const std::string& rootUrl);
+        explicit RuntimeAndroid(ANativeWindow* nativeWindowPtr, LogCallback callback);
+        explicit RuntimeAndroid(ANativeWindow* nativeWindowPtr, const std::string& rootUrl, LogCallback callback);
         RuntimeAndroid(const RuntimeAndroid&) = delete;
     };
 }

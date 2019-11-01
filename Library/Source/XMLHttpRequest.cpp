@@ -4,9 +4,7 @@
 
 namespace babylon
 {
-    Napi::FunctionReference XMLHttpRequest::constructor;
-
-    void XMLHttpRequest::Initialize(Napi::Env& env, RuntimeImpl& runtimeImpl)
+    Napi::FunctionReference XMLHttpRequest::CreateConstructor(Napi::Env& env)
     {
         Napi::HandleScope scope{ env };
 
@@ -29,18 +27,14 @@ namespace babylon
                 InstanceMethod("removeEventListener", &XMLHttpRequest::RemoveEventListener),
                 InstanceMethod("open", &XMLHttpRequest::Open),
                 InstanceMethod("send", &XMLHttpRequest::Send),
-            },
-            &runtimeImpl);
+            });
 
-        constructor = Napi::Persistent(func);
-        constructor.SuppressDestruct();
-
-        env.Global().Set("XMLHttpRequest", func);
+        return Napi::Persistent(func);
     }
 
     XMLHttpRequest::XMLHttpRequest(const Napi::CallbackInfo& info)
         : Napi::ObjectWrap<XMLHttpRequest>{ info }
-        , m_runtimeImpl{ *static_cast<RuntimeImpl*>(info.Data()) }
+        , m_runtimeImpl{ RuntimeImpl::GetRuntimeImplFromJavaScript(info.Env()) }
     {
     }
 

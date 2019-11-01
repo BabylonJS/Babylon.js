@@ -68,10 +68,15 @@ namespace
         return arguments;
     }
 
+    static void DebugString(const char* message, babylon::LogLevel)
+    {
+        OutputDebugStringA(message);
+    }
+
     void RefreshBabylon(HWND hWnd)
     {
         std::string rootUrl{ GetUrlFromPath(GetModulePath().parent_path().parent_path()) };
-        runtime = std::make_unique<babylon::RuntimeWin32>(hWnd, rootUrl);
+        runtime = std::make_unique<babylon::RuntimeWin32>(hWnd, rootUrl, DebugString);
 
         inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);
         InputManager::Initialize(*runtime, *inputBuffer);
@@ -96,11 +101,6 @@ namespace
     }
 }
 
-static void DebugString(const char *message)
-{
-    OutputDebugStringA(message);
-}
-
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -110,11 +110,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     // TODO: Place code here.
-
-    // register console outputs
-    babylon::Runtime::RegisterLogOutput(DebugString);
-    babylon::Runtime::RegisterWarnOutput(DebugString);
-    babylon::Runtime::RegisterErrorOutput(DebugString);
 
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);

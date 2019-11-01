@@ -3,7 +3,6 @@
 #include "Console.h"
 #include "NativeEngine.h"
 #include "NativeWindow.h"
-#include "Window.h"
 #include "XMLHttpRequest.h"
 
 #include <curl/curl.h>
@@ -14,10 +13,14 @@ namespace babylon
 {
     namespace
     {
+        static constexpr auto JS_WINDOW_NAME = "window";
         static constexpr auto JS_NATIVE_NAME = "_native";
         static constexpr auto JS_RUNTIME_NAME = "runtime";
-        static constexpr auto JS_WINDOW_NAME = "window";
+        static constexpr auto JS_NATIVE_WINDOW_NAME = "window";
+        static constexpr auto JS_CONSOLE_NAME = "console";
+
         static constexpr auto JS_ENGINE_CONSTRUCTOR_NAME = "Engine";
+        static constexpr auto JS_XML_HTTP_REQUEST_CONSTRUCTOR_NAME = "XMLHttpRequest";
     }
 
     RuntimeImpl& RuntimeImpl::GetRuntimeImplFromJavaScript(Napi::Env env)
@@ -36,10 +39,11 @@ namespace babylon
             .Get(JS_WINDOW_NAME).ToObject());
     }
 
-    RuntimeImpl::RuntimeImpl(void* nativeWindowPtr, const std::string& rootUrl)
+    RuntimeImpl::RuntimeImpl(void* nativeWindowPtr, const std::string& rootUrl, LogCallback&& logCallback)
         : m_nativeWindowPtr{ nativeWindowPtr }
         , m_thread{ [this] { ThreadProcedure(); } }
         , m_rootUrl{ rootUrl }
+        , m_logCallback{ logCallback }
     {
     }
 
@@ -203,18 +207,30 @@ namespace babylon
     void RuntimeImpl::InitializeJavaScriptVariables()
     {
         auto& env = *m_env;
+        auto global = env.Global();
+
+        global.Set(JS_WINDOW_NAME, global);
 
         auto jsNative = Napi::Object::New(env);
-        env.Global().Set(JS_NATIVE_NAME, jsNative);
+        global.Set(JS_NATIVE_NAME, jsNative);
 
         auto jsRuntime = Napi::External<RuntimeImpl>::New(env, this);
         jsNative.Set(JS_RUNTIME_NAME, jsRuntime);
 
         auto jsWindow = NativeWindow::Create(env, m_nativeWindowPtr, 32, 32);
-        jsNative.Set(JS_WINDOW_NAME, jsWindow.Value());
+        jsNative.Set(JS_NATIVE_WINDOW_NAME, jsWindow.Value());
+        global.Set("setTimeout", NativeWindow::GetSetTimeoutFunction(jsWindow).Value());
+        global.Set("atob", NativeWindow::GetAToBFunction(jsWindow).Value());
+
+        auto jsConsole = Console::Create(env, m_logCallback);
+        jsNative.Set(JS_CONSOLE_NAME, jsConsole.Value());
+        global.Set(JS_CONSOLE_NAME, jsConsole.Value());
 
         auto jsNativeEngineConstructor = NativeEngine::InitializeAndCreateConstructor(env);
         jsNative.Set(JS_ENGINE_CONSTRUCTOR_NAME, jsNativeEngineConstructor.Value());
+
+        auto jsXmlHttpRequestConstructor = XMLHttpRequest::CreateConstructor(env);
+        global.Set(JS_XML_HTTP_REQUEST_CONSTRUCTOR_NAME, jsXmlHttpRequestConstructor.Value());
     }
 
     void RuntimeImpl::BaseThreadProcedure()
@@ -235,12 +251,6 @@ namespace babylon
         auto hostScopeGuard = gsl::finally([this] { m_env = nullptr; });
 
         InitializeJavaScriptVariables();
-
-        Console::Initialize(env);
-
-        XMLHttpRequest::Initialize(env, *this);
-
-        Window window{ *this };
 
         // TODO: Handle device lost/restored.
 
