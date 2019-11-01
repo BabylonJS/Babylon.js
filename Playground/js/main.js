@@ -232,6 +232,13 @@ class Main {
         document.getElementById("saveFormButtonCancel").addEventListener("click", function () {
             document.getElementById("saveLayer").style.display = "none";
         });
+        document.getElementById("diffFormButtonOk").addEventListener("click", function () {
+            document.getElementById("diffLayer").style.display = "none";
+            this.diff();
+        }.bind(this));
+        document.getElementById("diffFormButtonCancel").addEventListener("click", function () {
+            document.getElementById("diffLayer").style.display = "none";
+        });
 
         // Resize the render view when resizing the window
         window.addEventListener("resize",
@@ -271,6 +278,8 @@ class Main {
         }.bind(this));
         // Save
         this.parent.utils.setToMultipleID("saveButton", "click", this.askForSave.bind(this));
+        // Diff
+        this.parent.utils.setToMultipleID("diffButton", "click", this.askForDiff.bind(this));
         // Zip
         this.parent.utils.setToMultipleID("zipButton", "click", function () {
             this.parent.zipTool.getZip(engine);
@@ -768,7 +777,56 @@ class Main {
         }
     };
 
+    askForDiff() {
+        const diffLayer = document.getElementById("diffLayer");
 
+        if (this.previousHash) {
+            // Use the previous snippet hash for right comparison, if present
+            const right = document.getElementById("diffFormCompareTo");
+            right.value = this.previousHash;
+        } 
+
+        diffLayer.style.display = "block";
+    }
+
+    async loadSnippetCode(snippetid) {
+        if (!snippetid || snippetid === "")
+            return "";
+
+        snippetid = snippetid.replace("#", "/");
+        let response = await fetch(`${this.snippetV3Url}/${snippetid}`);
+        if (!response.ok)
+            throw new Error(`Unable to load snippet ${snippetid}`)
+
+        let result = await response.json();
+        return JSON.parse(result.jsonPayload).code.toString();
+    }
+
+    async diff() {
+        try {
+            let leftText = "";
+            let rightText = "";
+            let response = null;
+    
+            const left = document.getElementById("diffFormSource");
+            if (left.value === "") {
+                // use current snippet
+                leftText = this.parent.monacoCreator.JsEditor.getValue();
+            } else {
+                // load script
+                leftText = await this.loadSnippetCode(left.value);
+            }
+    
+            const right = document.getElementById("diffFormCompareTo");
+            rightText = await this.loadSnippetCode(right.value);
+    
+            const diffView = document.getElementById("diffView");
+            diffView.style.display = "block";
+            this.parent.monacoCreator.createDiff(leftText, rightText, diffView);
+        } catch(e) {
+            this.parent.utils.showError(e.message, e);
+        }
+    }
 
     /**
          * Toggle the code editor
