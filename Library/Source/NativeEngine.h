@@ -22,7 +22,8 @@ namespace babylon
     {
     public:
         RecycleSet(T firstId)
-            : m_nextId{ firstId }
+            : m_firstId{ firstId }
+            , m_nextId{ firstId }
         {}
 
         RecycleSet() : RecycleSet({ 0 })
@@ -30,27 +31,19 @@ namespace babylon
 
         T Get()
         {
-            if (m_queue.empty())
-            {
-                return m_nextId++;
-            }
-            else
-            {
-                T next = m_queue.front();
-                m_queue.pop();
-                return next;
-            }
+            m_nextId ++;
+            assert(m_nextId < bgfx::getCaps()->limits.maxViews);
+            return m_nextId;
         }
 
-        void Recycle(T id)
+        void Clear()
         {
-            assert(id < m_nextId);
-            m_queue.push(id);
+            m_nextId = m_firstId;
         }
 
     private:
+        T m_firstId{};
         T m_nextId{};
-        std::queue<bgfx::ViewId> m_queue{};
     };
 
     class ViewClearState final
@@ -63,12 +56,8 @@ namespace babylon
         void UpdateFlags(const Napi::CallbackInfo& info)
         {
             const auto flags = static_cast<uint16_t>(info[0].As<Napi::Number>().Uint32Value());
-            const bool needToUpdate = m_flags != flags;
-            if (needToUpdate)
-            {
-                m_flags = flags;
-                Update();
-            }
+            m_flags = flags;
+            Update();
         }
         
         void UpdateColor(const Napi::CallbackInfo& info)
@@ -124,8 +113,13 @@ namespace babylon
             bgfx::touch(m_viewId);
         }
 
+        void SetViewId(uint16_t viewId)
+        {
+            m_viewId = viewId;
+        }
+
     private:
-        const uint16_t m_viewId{};
+        uint16_t m_viewId{};
         float m_red{ 68.f / 255.f };
         float m_green{ 51.f / 255.f };
         float m_blue{ 85.f / 255.f };
@@ -166,11 +160,17 @@ namespace babylon
         ~FrameBufferData()
         {
             bgfx::destroy(FrameBuffer);
-            m_idSet.Recycle(ViewId);
+        }
+
+        void AcquireNewView()
+        {
+            ViewId = m_idSet.Get();
+            ViewClearState.SetViewId(ViewId);
         }
 
         void SetUpView()
         {
+            AcquireNewView();
             bgfx::setViewFrameBuffer(ViewId, FrameBuffer);
             ViewClearState.Update();
             bgfx::setViewRect(ViewId, 0, 0, Width, Height);
@@ -191,6 +191,7 @@ namespace babylon
         FrameBufferManager(RecycleSet<bgfx::ViewId>& viewIdSet) 
             : m_idSet{ viewIdSet }
         {
+            m_boundFrameBuffer = m_backBuffer = new FrameBufferData({ bgfx::kInvalidHandle }, m_idSet, bgfx::getStats()->width, bgfx::getStats()->height);
         }
 
         FrameBufferData* CreateNew(bgfx::FrameBufferHandle frameBufferHandle, uint16_t width, uint16_t height)
@@ -211,11 +212,6 @@ namespace babylon
             // TODO: View order?
         }
 
-        bool IsFrameBufferBound() const
-        {
-            return m_boundFrameBuffer != nullptr;
-        }
-
         FrameBufferData& GetBound() const
         {
             return *m_boundFrameBuffer;
@@ -224,12 +220,13 @@ namespace babylon
         void Unbind(FrameBufferData* data)
         {
             assert(m_boundFrameBuffer == data);
-            m_boundFrameBuffer = nullptr;
+            m_boundFrameBuffer = m_backBuffer;
         }
 
     private:
         RecycleSet<bgfx::ViewId>& m_idSet;
         FrameBufferData* m_boundFrameBuffer{ nullptr };
+        FrameBufferData* m_backBuffer{ nullptr };
     };
 
     struct UniformInfo final
@@ -410,9 +407,7 @@ namespace babylon
 
         bx::DefaultAllocator m_allocator;
         uint64_t m_engineState;
-        ViewClearState m_viewClearState;
-        bgfx::ViewId m_currentBackbufferViewId{ 0 };
-        std::vector<bgfx::ViewId> m_viewportIds;
+
         RecycleSet<bgfx::ViewId> m_viewidSet{ 1 };
 
         FrameBufferManager m_frameBufferManager{ m_viewidSet };

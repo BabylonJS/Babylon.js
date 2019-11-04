@@ -379,7 +379,6 @@ namespace babylon
         , m_runtimeImpl{ RuntimeImpl::GetRuntimeImplFromJavaScript(info.Env()) }
         , m_currentProgram{ nullptr }
         , m_engineState{ BGFX_STATE_DEFAULT }
-        , m_viewClearState{ 0 }
         , m_resizeCallbackTicket{ nativeWindow.AddOnResizeCallback([this](size_t width, size_t height) { this->UpdateSize(width, height); }) }
     {
         UpdateSize(static_cast<uint32_t>(nativeWindow.GetWidth()), static_cast<uint32_t>(nativeWindow.GetHeight()));
@@ -1259,7 +1258,7 @@ namespace babylon
         }
 
         bgfx::setState(m_engineState);
-        bgfx::submit(m_frameBufferManager.IsFrameBufferBound() ? m_frameBufferManager.GetBound().ViewId : m_currentBackbufferViewId, m_currentProgram->Program, 0, true);
+        bgfx::submit(m_frameBufferManager.GetBound().ViewId, m_currentProgram->Program, 0, true);
     }
 
     void NativeEngine::Draw(const Napi::CallbackInfo& info)
@@ -1275,50 +1274,22 @@ namespace babylon
 
     void NativeEngine::Clear(const Napi::CallbackInfo& info)
     {
-        if (m_frameBufferManager.IsFrameBufferBound())
-        {
-            m_frameBufferManager.GetBound().ViewClearState.UpdateFlags(info);
-        }
-        else
-        {
-            m_viewClearState.UpdateFlags(info);
-        }
+        m_frameBufferManager.GetBound().ViewClearState.UpdateFlags(info);
     }
 
     void NativeEngine::ClearColor(const Napi::CallbackInfo& info)
     {
-        if (m_frameBufferManager.IsFrameBufferBound())
-        {
-            m_frameBufferManager.GetBound().ViewClearState.UpdateColor(info);
-        }
-        else
-        {
-            m_viewClearState.UpdateColor(info);
-        }
+        m_frameBufferManager.GetBound().ViewClearState.UpdateColor(info);
     }
 
     void NativeEngine::ClearStencil(const Napi::CallbackInfo& info)
     {
-        if (m_frameBufferManager.IsFrameBufferBound())
-        {
-            m_frameBufferManager.GetBound().ViewClearState.UpdateStencil(info);
-        }
-        else
-        {
-            m_viewClearState.UpdateStencil(info);
-        }
+        m_frameBufferManager.GetBound().ViewClearState.UpdateStencil(info);
     }
 
     void NativeEngine::ClearDepth(const Napi::CallbackInfo& info)
     {
-        if (m_frameBufferManager.IsFrameBufferBound())
-        {
-            m_frameBufferManager.GetBound().ViewClearState.UpdateDepth(info);
-        }
-        else
-        {
-            m_viewClearState.UpdateDepth(info);
-        }
+        m_frameBufferManager.GetBound().ViewClearState.UpdateDepth(info);
     }
 
     Napi::Value NativeEngine::GetRenderWidth(const Napi::CallbackInfo& info)
@@ -1342,13 +1313,10 @@ namespace babylon
         const auto backbufferHeight = bgfx::getStats()->height;
         const float yOrigin = bgfx::getCaps()->originBottomLeft ? (1.f - y - height) : y;
 
-        auto newViewId = m_viewidSet.Get();
-        m_viewportIds.push_back(newViewId);
-        m_currentBackbufferViewId = newViewId;
-        bgfx::setViewFrameBuffer(m_currentBackbufferViewId, BGFX_INVALID_HANDLE);
-        bgfx::setViewClear(m_currentBackbufferViewId, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
-        
-        bgfx::setViewRect(m_currentBackbufferViewId, 
+        m_frameBufferManager.GetBound().AcquireNewView();
+        const bgfx::ViewId viewId = m_frameBufferManager.GetBound().ViewId;
+        bgfx::setViewFrameBuffer(viewId, m_frameBufferManager.GetBound().FrameBuffer);
+        bgfx::setViewRect(viewId,
             static_cast<uint16_t>(x * backbufferWidth), 
             static_cast<uint16_t>(yOrigin * backbufferHeight),
             static_cast<uint16_t>(width * backbufferWidth), 
@@ -1367,13 +1335,7 @@ namespace babylon
 
             callbackPtr->Call({});
 
-            // recycle viewIds used as viewports
-            for (auto id : m_viewportIds)
-            {
-                m_viewidSet.Recycle(id);
-            }
-            m_viewportIds.clear();
-            m_currentBackbufferViewId = 0;
+            m_viewidSet.Clear();
 
             bgfx::frame();
         });
