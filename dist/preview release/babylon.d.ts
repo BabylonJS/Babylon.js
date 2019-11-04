@@ -8427,7 +8427,7 @@ declare module BABYLON {
          */
         speed: number;
         /**
-         * Add cconstraint to the camera to prevent it to move freely in all directions and
+         * Add constraint to the camera to prevent it to move freely in all directions and
          * around all axis.
          */
         noRotationConstraint: boolean;
@@ -14974,9 +14974,10 @@ declare module BABYLON {
             /**
              * Call this function to switch to webVR mode
              * Will do nothing if webVR is not supported or if there is no webVR device
+             * @param options the webvr options provided to the camera. mainly used for multiview
              * @see http://doc.babylonjs.com/how_to/webvr_camera
              */
-            enableVR(): void;
+            enableVR(options: WebVROptions): void;
             /** @hidden */
             _onVRFullScreenTriggered(): void;
         }
@@ -24311,7 +24312,7 @@ declare module BABYLON {
          */
         unregisterAfterRender(func: (mesh: AbstractMesh) => void): Mesh;
         /** @hidden */
-        _getInstancesRenderList(subMeshId: number): _InstancesBatch;
+        _getInstancesRenderList(subMeshId: number, isReplacementMode?: boolean): _InstancesBatch;
         /** @hidden */
         _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): Mesh;
         /** @hidden */
@@ -28967,6 +28968,8 @@ declare module BABYLON {
         maxCombinedTexturesImageUnits: number;
         /** Maximum texture size */
         maxTextureSize: number;
+        /** Maximum texture samples */
+        maxSamples?: number;
         /** Maximum cube texture size */
         maxCubemapTextureSize: number;
         /** Maximum render texture size */
@@ -29031,6 +29034,8 @@ declare module BABYLON {
         canUseTimestampForTimerQuery: boolean;
         /** Defines if multiview is supported (https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/) */
         multiview?: any;
+        /** Defines if oculus multiview is supported (https://developer.oculus.com/documentation/oculus-browser/latest/concepts/browser-multiview/) */
+        oculusMultiview?: any;
         /** Function used to let the system compiles shaders in background */
         parallelShaderCompile?: {
             COMPLETION_STATUS_KHR: number;
@@ -56340,6 +56345,76 @@ declare module BABYLON {
          */
         readonly output: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * block used to Generate a Worley Noise 3D Noise Pattern
+     */
+    export class WorleyNoise3DBlock extends NodeMaterialBlock {
+        /** Gets or sets a boolean indicating that normal should be inverted on X axis */
+        manhattanDistance: boolean;
+        /**
+         * Creates a new WorleyNoise3DBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the position input component
+         */
+        readonly position: NodeMaterialConnectionPoint;
+        /**
+         * Gets the jitter input component
+         */
+        readonly jitter: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+        /**
+         * Exposes the properties to the UI?
+         */
+        protected _dumpPropertiesCode(): string;
+        /**
+         * Exposes the properties to the Seralize?
+         */
+        serialize(): any;
+        /**
+         * Exposes the properties to the deseralize?
+         */
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * block used to Generate a Simplex Perlin 3d Noise Pattern
+     */
+    export class SimplexPerlin3DBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new SimplexPerlin3DBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the position operand input component
+         */
+        readonly position: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
     }
 }
 declare module BABYLON {
