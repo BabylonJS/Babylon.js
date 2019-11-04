@@ -42051,7 +42051,10 @@ declare module BABYLON {
      * @see https://doc.babylonjs.com/how_to/webxr
      */
     export class WebXRCamera extends FreeCamera {
-        private static _TmpMatrix;
+        /**
+         * Is the camera in debug mode. Used when using an emulator
+         */
+        debugMode: boolean;
         /**
          * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
          * @param name the name of the camera
@@ -55438,6 +55441,7 @@ declare module BABYLON {
         protected _buildBlock(state: NodeMaterialBuildState): this;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        protected _dumpPropertiesCode(): string;
     }
 }
 declare module BABYLON {

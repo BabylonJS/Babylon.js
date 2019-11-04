@@ -193,11 +193,10 @@ export class TrigonometryBlock extends NodeMaterialBlock {
         this.operation = serializationObject.operation;
     }
 
-
     protected _dumpPropertiesCode() {
         var codeString = `${this._codeVariableName}.operation = BABYLON.TrigonometryBlockOperations.${TrigonometryBlockOperations[this.operation]};\r\n`;
         return codeString;
-    }    
+    }
 }
 
 _TypeStore.RegisteredTypes["BABYLON.TrigonometryBlock"] = TrigonometryBlock;
