@@ -808,8 +808,8 @@ class Main {
         } else {
             // load script
             return await this.loadSnippetCode(value);
-		}
-	}
+        }
+    }
 
     async diff() {
         try {
