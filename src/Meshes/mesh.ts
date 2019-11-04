@@ -2919,6 +2919,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         serializationObject.checkCollisions = this.checkCollisions;
         serializationObject.isBlocker = this.isBlocker;
+        serializationObject.overrideMaterialSideOrientation  = this.overrideMaterialSideOrientation;
 
         // Parent
         if (this.parent) {
@@ -3179,6 +3180,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         mesh.checkCollisions = parsedMesh.checkCollisions;
+        mesh.overrideMaterialSideOrientation = parsedMesh.overrideMaterialSideOrientation;
 
         if (parsedMesh.isBlocker !== undefined) {
             mesh.isBlocker = parsedMesh.isBlocker;
