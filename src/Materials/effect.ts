@@ -215,10 +215,12 @@ export class Effect implements IDisposable {
         var vertexSource: any;
         var fragmentSource: any;
 
+        let hostDocument = DomManagement.IsWindowObjectExist() ? this._engine.getHostDocument() : null;
+
         if (baseName.vertexSource) {
             vertexSource = "source:" + baseName.vertexSource;
         } else if (baseName.vertexElement) {
-            vertexSource = document.getElementById(baseName.vertexElement);
+            vertexSource = hostDocument ? hostDocument.getElementById(baseName.vertexElement) : null;
 
             if (!vertexSource) {
                 vertexSource = baseName.vertexElement;
@@ -230,7 +232,7 @@ export class Effect implements IDisposable {
         if (baseName.fragmentSource) {
             fragmentSource = "source:" + baseName.fragmentSource;
         } else if (baseName.fragmentElement) {
-            fragmentSource = document.getElementById(baseName.fragmentElement);
+            fragmentSource = hostDocument ? hostDocument.getElementById(baseName.fragmentElement) : null;
 
             if (!fragmentSource) {
                 fragmentSource = baseName.fragmentElement;

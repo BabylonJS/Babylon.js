@@ -137,11 +137,11 @@ class MonacoCreator {
                 return [ { label: label } ];
             },
 
-            provideDocumentColors: () => {
+            provideDocumentColors: (model) => {
                 const digitGroup = "\\s*(\\d*(?:\\.\\d+)?)\\s*";
                 // we add \n{0} to workaround a Monaco bug, when setting regex options on their side
                 const regex = `BABYLON\\.Color(?:3|4)\\s*\\(${digitGroup},${digitGroup},${digitGroup}(?:,${digitGroup})?\\)\\n{0}`;
-                const matches = this.jsEditor.getModel().findMatches(regex, null, true, true, null, true);
+                const matches = model.findMatches(regex, null, true, true, null, true);
 
                 const converter = (g) => g === undefined ? undefined : Number(g);
 
@@ -167,6 +167,41 @@ class MonacoCreator {
             this.parent.utils.markDirty();
         }.bind(this));
     };
+
+    detectLanguage(text) {
+        return text && text.indexOf("class Playground") >= 0 ? "typescript" : "javascript";
+    }
+
+    createDiff(left, right, diffView) {
+        const language = this.detectLanguage(left);
+        let leftModel = monaco.editor.createModel(left, language);
+        let rightModel = monaco.editor.createModel(right, language);
+        const diffOptions = {
+            contextmenu: false,
+            lineNumbers: true,
+            readOnly: true,
+            theme: this.parent.settingsPG.vsTheme,
+            contextmenu: false,
+            fontSize: this.parent.settingsPG.fontSize
+        }
+       
+        const diffEditor = monaco.editor.createDiffEditor(diffView, diffOptions);
+        diffEditor.setModel({
+            original: leftModel,
+            modified: rightModel
+        });
+
+        const cleanup = function() {
+            diffView.style.display = "none";
+            // We need to properly dispose, else the monaco script editor will use those models in the editor compilation pipeline!
+            leftModel.dispose();
+            rightModel.dispose();
+            diffEditor.dispose();
+        }
+
+        diffEditor.addCommand(monaco.KeyCode.Escape, cleanup);
+        diffEditor.focus();
+    }
 
     /**
      * Format the code in the editor

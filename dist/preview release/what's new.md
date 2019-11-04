@@ -81,6 +81,7 @@
 - Bumped Monaco Editor to 0.18.1 and improved TypeScript compilation pipeline in the playground ([sailro](http://www.github.com/sailro))
 - Added support for clickable errors in the playground ([sailro](http://www.github.com/sailro))
 - Added a color picker and previewer for BABYLON.ColorX invocations in the playground ([sailro](http://www.github.com/sailro))
+- Added support for diffing snippets in the playground ([sailro](http://www.github.com/sailro))
 
 ### Meshes
 
@@ -136,13 +137,14 @@
 
 ### WebXR / WebVR
 
-- Compliance with the mozilla WebXR emulator ([RaananW](https://github.com/RaananW/))
+- Compliance with the mozilla WebXR emulator for chrome and firefox ([RaananW](https://github.com/RaananW/))
 - Use the same icon as in VR ([RaananW](https://github.com/RaananW/))
 - Gamepad object is now exposed in the WebXRController class ([RaananW](https://github.com/RaananW/))
 - If canvas does not have WebXR support the scene will still render (mainly Firefox) ([RaananW](https://github.com/RaananW/))
 - Added support for foveated rendering in Oculus Quest ([Deltakosh](https://github.com/deltakosh/))
 - Added option to configure the output canvas ([RaananW](https://github.com/RaananW/))
 - Supporting multisampled multiview rendering using the oculus multiview extension ([RaananW](https://github.com/RaananW/))
+- Preparing to deprecate supportsSession in favor of isSupportedSession ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
