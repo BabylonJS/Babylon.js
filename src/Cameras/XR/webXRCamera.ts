@@ -110,7 +110,6 @@ export class WebXRCamera extends FreeCamera {
             Matrix.FromFloat32ArrayToRefScaled(view.projectionMatrix, 0, 1, currentRig._projectionMatrix);
 
             if (!this._scene.useRightHandedSystem) {
-                // currentRig._computedViewMatrix.toggleModelMatrixHandInPlace();
                 currentRig._projectionMatrix.toggleProjectionMatrixHandInPlace();
             }
 
