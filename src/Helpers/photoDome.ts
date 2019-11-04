@@ -6,9 +6,8 @@ import { Mesh } from "../Meshes/mesh";
 import { Texture } from "../Materials/Textures/texture";
 import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import "../Meshes/Builders/sphereBuilder";
-import { Vector3 } from '../Maths/math';
+import { Vector3 } from '../Maths/math.vector';
 import { Camera } from '../Cameras/camera';
 
 /**
@@ -75,6 +74,12 @@ export class PhotoDome extends TransformNode {
      * The surface used for the skybox
      */
     protected _mesh: Mesh;
+    /**
+     * Gets the mesh used for the skybox.
+     */
+    public get mesh(): Mesh {
+        return this._mesh;
+    }
 
     /**
      * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
@@ -153,6 +158,7 @@ export class PhotoDome extends TransformNode {
                 onError(message, exception);
             }
         });
+        this.photoTexture.anisotropicFilteringLevel = 1;
 
         this.photoTexture.onLoadObservable.addOnce(() => {
             this._setReady(true);

@@ -2,15 +2,15 @@ import { serialize, serializeAsMatrix, SerializationHelper } from "../../Misc/de
 import { Tools } from "../../Misc/tools";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Matrix, Vector3 } from "../../Maths/math";
+import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { _TimeToken } from "../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
 import { _TypeStore } from '../../Misc/typeStore';
 
 import "../../Engines/Extensions/engine.cubeTexture";
+import { StringTools } from '../../Misc/stringTools';
 
 /**
  * Class for creating a cube texture
@@ -81,8 +81,15 @@ export class CubeTexture extends BaseTexture {
     }
 
     private _noMipmap: boolean;
-    private _files: string[];
-    private _extensions: string[];
+
+    @serialize("files")
+    private _files: Nullable<string[]> = null;
+
+    @serialize("forcedExtension")
+    protected _forcedExtension: Nullable<string> = null;
+
+    @serialize("extensions")
+    private _extensions: Nullable<string[]> = null;
 
     @serializeAsMatrix("textureMatrix")
     private _textureMatrix: Matrix;
@@ -153,6 +160,9 @@ export class CubeTexture extends BaseTexture {
         this._textureMatrix = Matrix.Identity();
         this._createPolynomials = createPolynomials;
         this.coordinatesMode = Texture.CUBIC_MODE;
+        this._extensions = extensions;
+        this._files = files;
+        this._forcedExtension = forcedExtension;
 
         if (!rootUrl && !files) {
             return;
@@ -241,9 +251,13 @@ export class CubeTexture extends BaseTexture {
             this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
+        if (!this.name || StringTools.StartsWith(this.name, "data:")) {
+            this.name = url;
+        }
         this.url = url;
         this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
         this._prefiltered = false;
+        this._forcedExtension = forcedExtension || null;
 
         if (onLoad) {
             this._delayedOnLoad = onLoad;
@@ -316,7 +330,7 @@ export class CubeTexture extends BaseTexture {
             if (parsedTexture.prefiltered) {
                 prefiltered = parsedTexture.prefiltered;
             }
-            return new CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions, false, null, null, null, undefined, prefiltered);
+            return new CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions, false, parsedTexture.files || null, null, null, undefined, prefiltered, parsedTexture.forcedExtension);
         }, parsedTexture, scene);
 
         // Local Cubemaps

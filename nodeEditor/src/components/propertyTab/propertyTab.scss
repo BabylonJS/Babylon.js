@@ -11,7 +11,7 @@
         grid-row: 1;
         text-align: center;
         display: grid;
-        grid-template-columns: 30px 1fr 20px;        
+        grid-template-columns: 30px 1fr;        
         -webkit-user-select: none; 
         -moz-user-select: none;   
         -ms-user-select: none;    
@@ -35,6 +35,75 @@
             text-align: center;
         }
     }
+
+    .range {
+        -webkit-appearance: none;
+        width: 120px;
+        height: 6px;
+        background: #d3d3d3;
+        border-radius: 5px;
+        outline: none;
+        opacity: 0.7;
+        -webkit-transition: .2s;
+        transition: opacity .2s;
+    }
+    
+    .range:hover {
+        opacity: 1;
+    }
+    
+    .range::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: rgb(51, 122, 183);
+        cursor: pointer;
+    }
+    
+    .range::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: rgb(51, 122, 183);
+        cursor: pointer;
+    }
+
+    input[type="color"] {
+        -webkit-appearance: none;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        padding: 0;
+        width: 30px;
+        height: 20px;
+    }
+    input[type="color"]::-webkit-color-swatch-wrapper {
+        padding: 0;
+    }
+    input[type="color"]::-webkit-color-swatch {
+        border: none;
+    }
+
+    .sliderLine {
+        padding-left: $line-padding-left;
+        height: 30px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+
+        .label {
+            grid-column: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .slider {
+            grid-column: 2;
+            margin-right: 5px;
+            
+            display: flex;
+            align-items: center;
+        }                    
+    }     
 
     .textInputLine {
         padding-left: $line-padding-left;
@@ -139,6 +208,55 @@
         }
     }
 
+    .gradient-step {
+        display: grid;
+        grid-template-rows: 100%;
+        grid-template-columns: 30px 30px 40px auto 20px 5px;
+        padding-top: 5px;
+        padding-left: 5px;
+        padding-bottom: 5px;
+
+        .step {
+            grid-row: 1;
+            grid-column: 1;
+        }
+            
+        .color {
+            grid-row: 1;
+            grid-column: 2;
+            cursor: pointer;
+        }
+
+        .step-value {       
+            margin-left: 5px;     
+            grid-row: 1;
+            grid-column: 3;
+            text-align: right;
+            margin-right: 5px;
+        }
+
+        .step-slider {            
+            grid-row: 1;
+            grid-column: 4;
+            display: grid;
+            justify-content: stretch;
+            align-content: center;
+            margin-right: 5px;
+
+            input {
+                width: unset;
+            }
+        }
+
+        .gradient-delete {            
+            grid-row: 1;
+            grid-column: 5;
+            display: grid;
+            align-content: center;
+            justify-content: center;
+        }
+    }
+
     .floatLine {
         padding-left: $line-padding-left;
         height: 30px;
@@ -201,6 +319,10 @@
             padding-right: 5px;  
             border-left: 1px solid rgb(51, 122, 183);
 
+            .no-right-margin {
+                margin-right: 0;
+            }
+
             .numeric {
                 display: grid;
                 grid-template-columns: 1fr auto;
@@ -230,6 +352,7 @@
         display: grid;
         align-items: center;
         justify-items: stretch;
+        padding-bottom: 5px;
 
         input[type="file"] {
             display: none;
@@ -241,6 +364,7 @@
             margin: 5px 10px;
             color:white;
             padding: 4px 5px;
+            padding-top: 0px;
             opacity: 0.9;
             cursor: pointer;
             text-align: center;
@@ -387,21 +511,7 @@
                 grid-column: 2;
                 
                 display: flex;
-                align-items: center;   
-
-                input[type="color"] {
-                    -webkit-appearance: none;
-                    border: 1px solid rgba(255, 255, 255, 0.5);
-                    padding: 0;
-                    width: 30px;
-                    height: 20px;
-                }
-                input[type="color"]::-webkit-color-swatch-wrapper {
-                    padding: 0;
-                }
-                input[type="color"]::-webkit-color-swatch {
-                    border: none;
-                }
+                align-items: center;            
                 
                 input {
                     margin-right: 5px;

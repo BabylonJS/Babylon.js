@@ -1,12 +1,13 @@
 import { Nullable } from "babylonjs/types";
 import { serializeAsVector3, serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Vector3, Color3, Matrix } from "babylonjs/Maths/math";
-import { IAnimatable } from "babylonjs/Misc/tools";
+import { Matrix, Vector3 } from "babylonjs/Maths/math.vector";
+import { Color3 } from "babylonjs/Maths/math.color";
+import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { Tags } from "babylonjs/Misc/tags";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { DynamicTexture } from "babylonjs/Materials/Textures/dynamicTexture";
-import { EffectFallbacks, EffectCreationOptions } from "babylonjs/Materials/effect";
+import { IEffectCreationOptions } from "babylonjs/Materials/effect";
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -17,6 +18,7 @@ import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
 
 import "./fur.fragment";
 import "./fur.vertex";
@@ -273,7 +275,7 @@ export class FurMaterial extends PushMaterial {
 
             var uniformBuffers = new Array<string>();
 
-            MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
+            MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
@@ -282,7 +284,7 @@ export class FurMaterial extends PushMaterial {
             });
 
             subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                <EffectCreationOptions>{
+                <IEffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
@@ -532,7 +534,7 @@ export class FurMaterial extends PushMaterial {
             offsetFur.furTime = mat.furTime;
             offsetFur.furDensity = mat.furDensity;
 
-            var offsetMesh = sourceMesh.clone(sourceMesh.name + i);
+            var offsetMesh = sourceMesh.clone(sourceMesh.name + i) as Mesh;
 
             offsetMesh.material = offsetFur;
             offsetMesh.skeleton = sourceMesh.skeleton;

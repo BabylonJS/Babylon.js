@@ -1,7 +1,6 @@
 import { Observable } from "../Misc/observable";
 import { Gamepad } from "../Gamepads/gamepad";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 /**
  * Defines supported buttons for XBox360 compatible gamepads
  */
@@ -410,16 +409,16 @@ export class Xbox360Pad extends Gamepad {
             this.buttonY = this.browserGamepad.buttons[3].value;
             this.buttonLB = this.browserGamepad.buttons[4].value;
             this.buttonRB = this.browserGamepad.buttons[5].value;
-            this.leftTrigger = this.browserGamepad.axes[2];
-            this.rightTrigger = this.browserGamepad.axes[5];
-            this.buttonBack = this.browserGamepad.buttons[9].value;
-            this.buttonStart = this.browserGamepad.buttons[8].value;
-            this.buttonLeftStick = this.browserGamepad.buttons[6].value;
-            this.buttonRightStick = this.browserGamepad.buttons[7].value;
-            this.dPadUp = this.browserGamepad.buttons[11].value;
-            this.dPadDown = this.browserGamepad.buttons[12].value;
-            this.dPadLeft = this.browserGamepad.buttons[13].value;
-            this.dPadRight = this.browserGamepad.buttons[14].value;
+            this.leftTrigger = this.browserGamepad.buttons[6].value;
+            this.rightTrigger = this.browserGamepad.buttons[7].value;
+            this.buttonBack = this.browserGamepad.buttons[8].value;
+            this.buttonStart = this.browserGamepad.buttons[9].value;
+            this.buttonLeftStick = this.browserGamepad.buttons[10].value;
+            this.buttonRightStick = this.browserGamepad.buttons[11].value;
+            this.dPadUp = this.browserGamepad.buttons[12].value;
+            this.dPadDown = this.browserGamepad.buttons[13].value;
+            this.dPadLeft = this.browserGamepad.buttons[14].value;
+            this.dPadRight = this.browserGamepad.buttons[15].value;
         } else {
             this.buttonA = this.browserGamepad.buttons[0].value;
             this.buttonB = this.browserGamepad.buttons[1].value;

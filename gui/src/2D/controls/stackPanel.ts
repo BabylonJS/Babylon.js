@@ -3,6 +3,7 @@ import { Tools } from "babylonjs/Misc/tools";
 import { Container } from "./container";
 import { Measure } from "../measure";
 import { Control } from "./control";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Class used to create a 2D stack panel container
@@ -12,6 +13,11 @@ export class StackPanel extends Container {
     private _manualWidth = false;
     private _manualHeight = false;
     private _doNotTrackManualChanges = false;
+
+    /**
+     * Gets or sets a boolean indicating that layou warnings should be ignored
+     */
+    public ignoreLayoutWarnings = false;
 
     /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
     public get isVertical(): boolean {
@@ -129,7 +135,9 @@ export class StackPanel extends Container {
                 }
 
                 if (child._height.isPercentage) {
-                    Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using height in percentage mode inside a vertical StackPanel`);
+                    if (!this.ignoreLayoutWarnings) {
+                        Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using height in percentage mode inside a vertical StackPanel`);
+                    }
                 } else {
                     stackHeight += child._currentMeasure.height + child.paddingTopInPixels + child.paddingBottomInPixels;
                 }
@@ -141,7 +149,9 @@ export class StackPanel extends Container {
                 }
 
                 if (child._width.isPercentage) {
-                    Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using width in percentage mode inside a horizontal StackPanel`);
+                    if (!this.ignoreLayoutWarnings) {
+                        Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using width in percentage mode inside a horizontal StackPanel`);
+                    }
                 } else {
                     stackWidth += child._currentMeasure.width + child.paddingLeftInPixels + child.paddingRightInPixels;
                 }
@@ -184,3 +194,4 @@ export class StackPanel extends Container {
         super._postMeasure();
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.StackPanel"] = StackPanel;

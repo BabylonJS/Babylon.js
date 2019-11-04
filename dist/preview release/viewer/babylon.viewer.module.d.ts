@@ -21,6 +21,7 @@
 //   ../../../../../Tools/Gulp/babylonjs/Maths/math
 //   ../../../../../Tools/Gulp/babylonjs-loaders/glTF/glTFFileLoader
 //   ../../../../../Tools/Gulp/babylonjs/Materials/Textures/baseTexture
+//   ../../../../../Tools/Gulp/babylonjs/Engines/thinEngine
 //   ../../../../../Tools/Gulp/babylonjs/Misc/sceneOptimizer
 //   ../../../../../Tools/Gulp/babylonjs/Cameras/arcRotateCamera
 //   ../../../../../Tools/Gulp/babylonjs/Lights/light
@@ -778,14 +779,14 @@ declare module 'babylonjs-viewer/model/modelAnimation' {
     /**
         * Animation play mode enum - is the animation looping or playing once
         */
-    export const enum AnimationPlayMode {
+    export enum AnimationPlayMode {
             ONCE = 0,
             LOOP = 1
     }
     /**
         * An enum representing the current state of an animation object
         */
-    export const enum AnimationState {
+    export enum AnimationState {
             INIT = 0,
             PLAYING = 1,
             PAUSED = 2,
@@ -795,7 +796,7 @@ declare module 'babylonjs-viewer/model/modelAnimation' {
     /**
         * The different type of easing functions available
         */
-    export const enum EasingFunction {
+    export enum EasingFunction {
             Linear = 0,
             CircleEase = 1,
             BackEase = 2,
@@ -1061,9 +1062,9 @@ declare module 'babylonjs-viewer/configuration' {
 }
 
 declare module 'babylonjs-viewer/configuration/configuration' {
-    import { EngineOptions } from 'babylonjs/Engines/engine';
     import { ICameraConfiguration, IDefaultRenderingPipelineConfiguration, IGroundConfiguration, ILightConfiguration, IModelConfiguration, IObserversConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ISkyboxConfiguration, ITemplateConfiguration, IVRConfiguration } from 'babylonjs-viewer/configuration/interfaces';
     import { IEnvironmentMapConfiguration } from 'babylonjs-viewer/configuration/interfaces/environmentMapConfiguration';
+    import { EngineOptions } from 'babylonjs/Engines/thinEngine';
     export function getConfigurationKey(key: string, configObject: any): any;
     export interface ViewerConfiguration {
             version?: string;

@@ -1,7 +1,8 @@
 import { IndicesArray, Nullable } from "babylonjs/types";
 import { Deferred } from "babylonjs/Misc/deferred";
 import { Quaternion, Color3, Vector3, Matrix } from "babylonjs/Maths/math";
-import { LoadFileError, IFileRequest, IAnimatable, Tools } from "babylonjs/Misc/tools";
+import { Tools } from "babylonjs/Misc/tools";
+import { IFileRequest } from "babylonjs/Misc/fileRequest";
 import { Camera } from "babylonjs/Cameras/camera";
 import { FreeCamera } from "babylonjs/Cameras/freeCamera";
 import { AnimationGroup } from "babylonjs/Animations/animationGroup";
@@ -27,6 +28,20 @@ import { _IAnimationSamplerData, IGLTF, ISampler, INode, IScene, IMesh, IAccesso
 import { IGLTFLoaderExtension } from "./glTFLoaderExtension";
 import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
 import { IAnimationKey, AnimationKeyInterpolation } from 'babylonjs/Animations/animationKey';
+import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
+import { IDataBuffer } from 'babylonjs/Misc/dataReader';
+import { LoadFileError } from 'babylonjs/Misc/fileTools';
+import { Logger } from 'babylonjs/Misc/logger';
+
+interface TypedArrayLike extends ArrayBufferView {
+    readonly length: number;
+    [n: number]: number;
+}
+
+interface TypedArrayConstructor {
+    new(length: number): TypedArrayLike;
+    new(buffer: ArrayBufferLike, byteOffset: number, length?: number): TypedArrayLike;
+}
 
 interface IFileRequestInfo extends IFileRequest {
     _lengthComputable?: boolean;
@@ -38,6 +53,10 @@ interface ILoaderProperty extends IProperty {
     _activeLoaderExtensionFunctions: {
         [id: string]: boolean
     };
+}
+
+interface IRegisteredExtension {
+    factory: (loader: GLTFLoader) => IGLTFLoaderExtension;
 }
 
 /**
@@ -82,11 +101,12 @@ export class GLTFLoader implements IGLTFLoader {
     private _disposed = false;
     private _parent: GLTFFileLoader;
     private _state: Nullable<GLTFLoaderState> = null;
-    private _extensions: { [name: string]: IGLTFLoaderExtension } = {};
+    private _extensions = new Array<IGLTFLoaderExtension>();
     private _rootUrl: string;
     private _fileName: string;
     private _uniqueRootUrl: string;
     private _gltf: IGLTF;
+    private _bin: Nullable<IDataBuffer>;
     private _babylonScene: Scene;
     private _rootBabylonMesh: Mesh;
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
@@ -95,8 +115,7 @@ export class GLTFLoader implements IGLTFLoader {
 
     private static readonly _DefaultSampler: ISampler = { index: -1 };
 
-    private static _ExtensionNames = new Array<string>();
-    private static _ExtensionFactories: { [name: string]: (loader: GLTFLoader) => IGLTFLoaderExtension } = {};
+    private static _RegisteredExtensions: { [name: string]: IRegisteredExtension } = {};
 
     /**
      * Registers a loader extension.
@@ -105,32 +124,25 @@ export class GLTFLoader implements IGLTFLoader {
      */
     public static RegisterExtension(name: string, factory: (loader: GLTFLoader) => IGLTFLoaderExtension): void {
         if (GLTFLoader.UnregisterExtension(name)) {
-            Tools.Warn(`Extension with the name '${name}' already exists`);
+            Logger.Warn(`Extension with the name '${name}' already exists`);
         }
 
-        GLTFLoader._ExtensionFactories[name] = factory;
-
-        // Keep the order of registration so that extensions registered first are called first.
-        GLTFLoader._ExtensionNames.push(name);
+        GLTFLoader._RegisteredExtensions[name] = {
+            factory: factory
+        };
     }
 
     /**
      * Unregisters a loader extension.
-     * @param name The name of the loader extenion.
+     * @param name The name of the loader extension.
      * @returns A boolean indicating whether the extension has been unregistered
      */
     public static UnregisterExtension(name: string): boolean {
-        if (!GLTFLoader._ExtensionFactories[name]) {
+        if (!GLTFLoader._RegisteredExtensions[name]) {
             return false;
         }
 
-        delete GLTFLoader._ExtensionFactories[name];
-
-        const index = GLTFLoader._ExtensionNames.indexOf(name);
-        if (index !== -1) {
-            GLTFLoader._ExtensionNames.splice(index, 1);
-        }
-
+        delete GLTFLoader._RegisteredExtensions[name];
         return true;
     }
 
@@ -142,10 +154,24 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /**
-     * The glTF object parsed from the JSON.
+     * The object that represents the glTF JSON.
      */
     public get gltf(): IGLTF {
         return this._gltf;
+    }
+
+    /**
+     * The BIN chunk of a binary glTF.
+     */
+    public get bin(): Nullable<IDataBuffer> {
+        return this._bin;
+    }
+
+    /**
+     * The parent file loader.
+     */
+    public get parent(): GLTFFileLoader {
+        return this._parent;
     }
 
     /**
@@ -185,12 +211,9 @@ export class GLTFLoader implements IGLTFLoader {
 
         for (const name in this._extensions) {
             const extension = this._extensions[name];
-            if (extension.dispose) {
-                this._extensions[name].dispose();
-            }
+            extension.dispose && extension.dispose();
+            delete this._extensions[name];
         }
-
-        this._extensions = {};
 
         delete this._gltf;
         delete this._babylonScene;
@@ -355,13 +378,13 @@ export class GLTFLoader implements IGLTFLoader {
             if (buffers && buffers[0] && !buffers[0].uri) {
                 const binaryBuffer = buffers[0];
                 if (binaryBuffer.byteLength < data.bin.byteLength - 3 || binaryBuffer.byteLength > data.bin.byteLength) {
-                    Tools.Warn(`Binary buffer length (${binaryBuffer.byteLength}) from JSON does not match chunk length (${data.bin.byteLength})`);
+                    Logger.Warn(`Binary buffer length (${binaryBuffer.byteLength}) from JSON does not match chunk length (${data.bin.byteLength})`);
                 }
 
-                binaryBuffer._data = Promise.resolve(data.bin);
+                this._bin = data.bin;
             }
             else {
-                Tools.Warn("Unexpected BIN chunk");
+                Logger.Warn("Unexpected BIN chunk");
             }
         }
     }
@@ -400,20 +423,24 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _loadExtensions(): void {
-        for (const name of GLTFLoader._ExtensionNames) {
-            const extension = GLTFLoader._ExtensionFactories[name](this);
-            this._extensions[name] = extension;
+        for (const name in GLTFLoader._RegisteredExtensions) {
+            const extension = GLTFLoader._RegisteredExtensions[name].factory(this);
+            if (extension.name !== name) {
+                Logger.Warn(`The name of the glTF loader extension instance does not match the registered name: ${extension.name} !== ${name}`);
+            }
 
+            this._extensions.push(extension);
             this._parent.onExtensionLoadedObservable.notifyObservers(extension);
         }
 
+        this._extensions.sort((a, b) => (a.order || Number.MAX_VALUE) - (b.order || Number.MAX_VALUE));
         this._parent.onExtensionLoadedObservable.clear();
     }
 
     private _checkExtensions(): void {
         if (this._gltf.extensionsRequired) {
             for (const name of this._gltf.extensionsRequired) {
-                const extension = this._extensions[name];
+                const extension = this._extensions.find((extension) => extension.name === name);
                 if (!extension || !extension.enabled) {
                     throw new Error(`Require extension ${name} is not available`);
                 }
@@ -578,7 +605,7 @@ export class GLTFLoader implements IGLTFLoader {
                 break;
             }
             default: {
-                Tools.Error(`Invalid animation start mode (${this._parent.animationStartMode})`);
+                Logger.Error(`Invalid animation start mode (${this._parent.animationStartMode})`);
                 return;
             }
         }
@@ -715,20 +742,20 @@ export class GLTFLoader implements IGLTFLoader {
 
         this.logOpen(`${context}`);
 
-        const canInstance = (node.skin == undefined && !mesh.primitives[0].targets);
+        const shouldInstance = this._parent.createInstances && (node.skin == undefined && !mesh.primitives[0].targets);
 
         let babylonAbstractMesh: AbstractMesh;
         let promise: Promise<any>;
 
-        const instanceData = primitive._instanceData;
-        if (canInstance && instanceData) {
-            babylonAbstractMesh = instanceData.babylonSourceMesh.createInstance(name);
-            promise = instanceData.promise;
+        if (shouldInstance && primitive._instanceData) {
+            babylonAbstractMesh = primitive._instanceData.babylonSourceMesh.createInstance(name);
+            promise = primitive._instanceData.promise;
         }
         else {
             const promises = new Array<Promise<any>>();
 
             const babylonMesh = new Mesh(name, this._babylonScene);
+            babylonMesh.overrideMaterialSideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
 
             this._createMorphTargets(context, node, mesh, primitive, babylonMesh);
             promises.push(this._loadVertexDataAsync(context, primitive, babylonMesh).then((babylonGeometry) => {
@@ -756,7 +783,7 @@ export class GLTFLoader implements IGLTFLoader {
 
             promise = Promise.all(promises);
 
-            if (canInstance) {
+            if (shouldInstance) {
                 primitive._instanceData = {
                     babylonSourceMesh: babylonMesh,
                     promise: promise
@@ -852,10 +879,13 @@ export class GLTFLoader implements IGLTFLoader {
             throw new Error(`${context}: Primitives do not have the same number of targets`);
         }
 
+        const targetNames = mesh.extras ? mesh.extras.targetNames : null;
+
         babylonMesh.morphTargetManager = new MorphTargetManager(babylonMesh.getScene());
         for (let index = 0; index < primitive.targets.length; index++) {
             const weight = node.weights ? node.weights[index] : mesh.weights ? mesh.weights[index] : 0;
-            babylonMesh.morphTargetManager.addTarget(new MorphTarget(`morphTarget${index}`, weight, babylonMesh.getScene()));
+            const name = targetNames ? targetNames[index] : `morphTarget${index}`;
+            babylonMesh.morphTargetManager.addTarget(new MorphTarget(name, weight, babylonMesh.getScene()));
             // TODO: tell the target whether it has positions, normals, tangents
         }
     }
@@ -1362,18 +1392,33 @@ export class GLTFLoader implements IGLTFLoader {
         return sampler._data;
     }
 
-    private _loadBufferAsync(context: string, buffer: IBuffer): Promise<ArrayBufferView> {
-        if (buffer._data) {
-            return buffer._data;
+    private _loadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Promise<ArrayBufferView> {
+        const extensionPromise = this._extensionsLoadBufferAsync(context, buffer, byteOffset, byteLength);
+        if (extensionPromise) {
+            return extensionPromise;
         }
 
-        if (!buffer.uri) {
-            throw new Error(`${context}/uri: Value is missing`);
+        if (!buffer._data) {
+            if (buffer.uri) {
+                buffer._data = this.loadUriAsync(`${context}/uri`, buffer, buffer.uri);
+            }
+            else {
+                if (!this._bin) {
+                    throw new Error(`${context}: Uri is missing or the binary glTF is missing its binary chunk`);
+                }
+
+                buffer._data = this._bin.readAsync(0, buffer.byteLength);
+            }
         }
 
-        buffer._data = this.loadUriAsync(`${context}/uri`, buffer, buffer.uri);
-
-        return buffer._data;
+        return buffer._data.then((data) => {
+            try {
+                return new Uint8Array(data.buffer, data.byteOffset + byteOffset, byteLength);
+            }
+            catch (e) {
+                throw new Error(`${context}: ${e.message}`);
+            }
+        });
     }
 
     /**
@@ -1383,21 +1428,93 @@ export class GLTFLoader implements IGLTFLoader {
      * @returns A promise that resolves with the loaded data when the load is complete
      */
     public loadBufferViewAsync(context: string, bufferView: IBufferView): Promise<ArrayBufferView> {
+        const extensionPromise = this._extensionsLoadBufferViewAsync(context, bufferView);
+        if (extensionPromise) {
+            return extensionPromise;
+        }
+
         if (bufferView._data) {
             return bufferView._data;
         }
 
         const buffer = ArrayItem.Get(`${context}/buffer`, this._gltf.buffers, bufferView.buffer);
-        bufferView._data = this._loadBufferAsync(`/buffers/${buffer.index}`, buffer).then((data) => {
-            try {
-                return new Uint8Array(data.buffer, data.byteOffset + (bufferView.byteOffset || 0), bufferView.byteLength);
-            }
-            catch (e) {
-                throw new Error(`${context}: ${e.message}`);
-            }
-        });
+        bufferView._data = this._loadBufferAsync(`/buffers/${buffer.index}`, buffer, (bufferView.byteOffset || 0), bufferView.byteLength);
 
         return bufferView._data;
+    }
+
+    private _loadAccessorAsync(context: string, accessor: IAccessor, constructor: TypedArrayConstructor): Promise<ArrayBufferView> {
+        if (accessor._data) {
+            return accessor._data;
+        }
+
+        const numComponents = GLTFLoader._GetNumComponents(context, accessor.type);
+        const byteStride = numComponents * VertexBuffer.GetTypeByteLength(accessor.componentType);
+        const length = numComponents * accessor.count;
+
+        if (accessor.bufferView == undefined) {
+            accessor._data = Promise.resolve(new constructor(length));
+        }
+        else {
+            const bufferView = ArrayItem.Get(`${context}/bufferView`, this._gltf.bufferViews, accessor.bufferView);
+            accessor._data = this.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView).then((data) => {
+                if (accessor.componentType === AccessorComponentType.FLOAT && !accessor.normalized) {
+                    return GLTFLoader._GetTypedArray(context, accessor.componentType, data, accessor.byteOffset, length);
+                }
+                else {
+                    const typedArray = new constructor(length);
+                    VertexBuffer.ForEach(data, accessor.byteOffset || 0, bufferView.byteStride || byteStride, numComponents, accessor.componentType, typedArray.length, accessor.normalized || false, (value, index) => {
+                        typedArray[index] = value;
+                    });
+                    return typedArray;
+                }
+            });
+        }
+
+        if (accessor.sparse) {
+            const sparse = accessor.sparse;
+            accessor._data = accessor._data.then((data) => {
+                const typedArray = data as TypedArrayLike;
+                const indicesBufferView = ArrayItem.Get(`${context}/sparse/indices/bufferView`, this._gltf.bufferViews, sparse.indices.bufferView);
+                const valuesBufferView = ArrayItem.Get(`${context}/sparse/values/bufferView`, this._gltf.bufferViews, sparse.values.bufferView);
+                return Promise.all([
+                    this.loadBufferViewAsync(`/bufferViews/${indicesBufferView.index}`, indicesBufferView),
+                    this.loadBufferViewAsync(`/bufferViews/${valuesBufferView.index}`, valuesBufferView)
+                ]).then(([indicesData, valuesData]) => {
+                    const indices = GLTFLoader._GetTypedArray(`${context}/sparse/indices`, sparse.indices.componentType, indicesData, sparse.indices.byteOffset, sparse.count) as IndicesArray;
+
+                    const sparseLength = numComponents * sparse.count;
+                    let values: TypedArrayLike;
+
+                    if (accessor.componentType === AccessorComponentType.FLOAT && !accessor.normalized) {
+                        values = GLTFLoader._GetTypedArray(`${context}/sparse/values`, accessor.componentType, valuesData, sparse.values.byteOffset, sparseLength);
+                    }
+                    else {
+                        const sparseData = GLTFLoader._GetTypedArray(`${context}/sparse/values`, accessor.componentType, valuesData, sparse.values.byteOffset, sparseLength);
+                        values = new constructor(sparseLength);
+                        VertexBuffer.ForEach(sparseData, 0, byteStride, numComponents, accessor.componentType, values.length, accessor.normalized || false, (value, index) => {
+                            values[index] = value;
+                        });
+                    }
+
+                    let valuesIndex = 0;
+                    for (let indicesIndex = 0; indicesIndex < indices.length; indicesIndex++) {
+                        let dataIndex = indices[indicesIndex] * numComponents;
+                        for (let componentIndex = 0; componentIndex < numComponents; componentIndex++) {
+                            typedArray[dataIndex++] = values[valuesIndex++];
+                        }
+                    }
+
+                    return typedArray;
+                });
+            });
+        }
+
+        return accessor._data;
+    }
+
+    private _loadFloatAccessorAsync(context: string, accessor: IAccessor): Promise<Float32Array> {
+        return this._loadAccessorAsync(context, accessor, Float32Array) as Promise<Float32Array>;
     }
 
     private _loadIndicesAccessorAsync(context: string, accessor: IAccessor): Promise<IndicesArray> {
@@ -1415,82 +1532,18 @@ export class GLTFLoader implements IGLTFLoader {
             return accessor._data as Promise<IndicesArray>;
         }
 
-        const bufferView = ArrayItem.Get(`${context}/bufferView`, this._gltf.bufferViews, accessor.bufferView);
-        accessor._data = this.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView).then((data) => {
-            return GLTFLoader._GetTypedArray(context, accessor.componentType, data, accessor.byteOffset, accessor.count);
-        });
-
-        return accessor._data as Promise<IndicesArray>;
-    }
-
-    private _loadFloatAccessorAsync(context: string, accessor: IAccessor): Promise<Float32Array> {
-        if (accessor._data) {
-            return accessor._data as Promise<Float32Array>;
-        }
-
-        const numComponents = GLTFLoader._GetNumComponents(context, accessor.type);
-        const byteStride = numComponents * VertexBuffer.GetTypeByteLength(accessor.componentType);
-        const length = numComponents * accessor.count;
-
-        if (accessor.bufferView == undefined) {
-            accessor._data = Promise.resolve(new Float32Array(length));
+        if (accessor.sparse) {
+            const constructor = GLTFLoader._GetTypedArrayConstructor(`${context}/componentType`, accessor.componentType);
+            accessor._data = this._loadAccessorAsync(context, accessor, constructor);
         }
         else {
             const bufferView = ArrayItem.Get(`${context}/bufferView`, this._gltf.bufferViews, accessor.bufferView);
             accessor._data = this.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView).then((data) => {
-                if (accessor.componentType === AccessorComponentType.FLOAT && !accessor.normalized) {
-                    return GLTFLoader._GetTypedArray(context, accessor.componentType, data, accessor.byteOffset, length);
-                }
-                else {
-                    const floatData = new Float32Array(length);
-                    VertexBuffer.ForEach(data, accessor.byteOffset || 0, bufferView.byteStride || byteStride, numComponents, accessor.componentType, floatData.length, accessor.normalized || false, (value, index) => {
-                        floatData[index] = value;
-                    });
-                    return floatData;
-                }
+                return GLTFLoader._GetTypedArray(context, accessor.componentType, data, accessor.byteOffset, accessor.count);
             });
         }
 
-        if (accessor.sparse) {
-            const sparse = accessor.sparse;
-            accessor._data = accessor._data.then((view: ArrayBufferView) => {
-                const data = view as Float32Array;
-                const indicesBufferView = ArrayItem.Get(`${context}/sparse/indices/bufferView`, this._gltf.bufferViews, sparse.indices.bufferView);
-                const valuesBufferView = ArrayItem.Get(`${context}/sparse/values/bufferView`, this._gltf.bufferViews, sparse.values.bufferView);
-                return Promise.all([
-                    this.loadBufferViewAsync(`/bufferViews/${indicesBufferView.index}`, indicesBufferView),
-                    this.loadBufferViewAsync(`/bufferViews/${valuesBufferView.index}`, valuesBufferView)
-                ]).then(([indicesData, valuesData]) => {
-                    const indices = GLTFLoader._GetTypedArray(`${context}/sparse/indices`, sparse.indices.componentType, indicesData, sparse.indices.byteOffset, sparse.count) as IndicesArray;
-
-                    const sparseLength = numComponents * sparse.count;
-                    let values: Float32Array;
-
-                    if (accessor.componentType === AccessorComponentType.FLOAT && !accessor.normalized) {
-                        values = GLTFLoader._GetTypedArray(`${context}/sparse/values`, accessor.componentType, valuesData, sparse.values.byteOffset, sparseLength) as Float32Array;
-                    }
-                    else {
-                        const sparseData = GLTFLoader._GetTypedArray(`${context}/sparse/values`, accessor.componentType, valuesData, sparse.values.byteOffset, sparseLength);
-                        values = new Float32Array(sparseLength);
-                        VertexBuffer.ForEach(sparseData, 0, byteStride, numComponents, accessor.componentType, values.length, accessor.normalized || false, (value, index) => {
-                            values[index] = value;
-                        });
-                    }
-
-                    let valuesIndex = 0;
-                    for (let indicesIndex = 0; indicesIndex < indices.length; indicesIndex++) {
-                        let dataIndex = indices[indicesIndex] * numComponents;
-                        for (let componentIndex = 0; componentIndex < numComponents; componentIndex++) {
-                            data[dataIndex++] = values[valuesIndex++];
-                        }
-                    }
-
-                    return data;
-                });
-            });
-        }
-
-        return accessor._data as Promise<Float32Array>;
+        return accessor._data as Promise<IndicesArray>;
     }
 
     private _loadVertexBufferViewAsync(bufferView: IBufferView, kind: string): Promise<Buffer> {
@@ -1517,7 +1570,7 @@ export class GLTFLoader implements IGLTFLoader {
         }
         // HACK: If byte offset is not a multiple of component type byte length then load as a float array instead of using Babylon buffers.
         else if (accessor.byteOffset && accessor.byteOffset % VertexBuffer.GetTypeByteLength(accessor.componentType) !== 0) {
-            Tools.Warn("Accessor byte offset is not a multiple of component type byte length");
+            Logger.Warn("Accessor byte offset is not a multiple of component type byte length");
             accessor._babylonVertexBuffer = this._loadFloatAccessorAsync(`/accessors/${accessor.index}`, accessor).then((data) => {
                 return new VertexBuffer(this._babylonScene.getEngine(), data, kind, false);
             });
@@ -1628,7 +1681,7 @@ export class GLTFLoader implements IGLTFLoader {
 
     private _createDefaultMaterial(name: string, babylonDrawMode: number): Material {
         const babylonMaterial = new PBRMaterial(name, this._babylonScene);
-        babylonMaterial.sideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
+        // Moved to mesh so user can change materials on gltf meshes: babylonMaterial.sideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
         babylonMaterial.fillMode = babylonDrawMode;
         babylonMaterial.enableSpecularAntiAliasing = true;
         babylonMaterial.useRadianceOverAlpha = !this._parent.transparencyAsCoverage;
@@ -1796,10 +1849,13 @@ export class GLTFLoader implements IGLTFLoader {
 
         this.logOpen(`${context}`);
 
+        if (textureInfo.texCoord! >= 2) {
+            throw new Error(`${context}/texCoord: Invalid value (${textureInfo.texCoord})`);
+        }
+
         const texture = ArrayItem.Get(`${context}/index`, this._gltf.textures, textureInfo.index);
         const promise = this._loadTextureAsync(`/textures/${textureInfo.index}`, texture, (babylonTexture) => {
             babylonTexture.coordinatesIndex = textureInfo.texCoord || 0;
-
             GLTFLoader.AddPointerMetadata(babylonTexture, context);
             this._parent.onTextureLoadedObservable.notifyObservers(babylonTexture);
             assign(babylonTexture);
@@ -1839,17 +1895,14 @@ export class GLTFLoader implements IGLTFLoader {
             if (!this._disposed) {
                 deferred.reject(new Error(`${context}: ${(exception && exception.message) ? exception.message : message || "Failed to load texture"}`));
             }
-        });
+        }, undefined, undefined, undefined, image.mimeType);
         promises.push(deferred.promise);
 
         if (!url) {
             promises.push(this.loadImageAsync(`/images/${image.index}`, image).then((data) => {
                 const name = image.uri || `${this._fileName}#image${image.index}`;
                 const dataUrl = `data:${this._uniqueRootUrl}${name}`;
-                babylonTexture.updateURL(
-                    dataUrl,
-                    // TODO: Remove this hack once we can load from Blob objects.
-                    data.buffer);
+                babylonTexture.updateURL(dataUrl, data);
             }));
         }
 
@@ -2006,7 +2059,7 @@ export class GLTFLoader implements IGLTFLoader {
             case TextureWrapMode.MIRRORED_REPEAT: return Texture.MIRROR_ADDRESSMODE;
             case TextureWrapMode.REPEAT: return Texture.WRAP_ADDRESSMODE;
             default:
-                Tools.Warn(`${context}: Invalid value (${mode})`);
+                Logger.Warn(`${context}: Invalid value (${mode})`);
                 return Texture.WRAP_ADDRESSMODE;
         }
     }
@@ -2025,13 +2078,13 @@ export class GLTFLoader implements IGLTFLoader {
                 case TextureMinFilter.NEAREST_MIPMAP_LINEAR: return Texture.LINEAR_NEAREST_MIPLINEAR;
                 case TextureMinFilter.LINEAR_MIPMAP_LINEAR: return Texture.LINEAR_LINEAR_MIPLINEAR;
                 default:
-                    Tools.Warn(`${context}/minFilter: Invalid value (${minFilter})`);
+                    Logger.Warn(`${context}/minFilter: Invalid value (${minFilter})`);
                     return Texture.LINEAR_LINEAR_MIPLINEAR;
             }
         }
         else {
             if (magFilter !== TextureMagFilter.NEAREST) {
-                Tools.Warn(`${context}/magFilter: Invalid value (${magFilter})`);
+                Logger.Warn(`${context}/magFilter: Invalid value (${magFilter})`);
             }
 
             switch (minFilter) {
@@ -2042,26 +2095,32 @@ export class GLTFLoader implements IGLTFLoader {
                 case TextureMinFilter.NEAREST_MIPMAP_LINEAR: return Texture.NEAREST_NEAREST_MIPLINEAR;
                 case TextureMinFilter.LINEAR_MIPMAP_LINEAR: return Texture.NEAREST_LINEAR_MIPLINEAR;
                 default:
-                    Tools.Warn(`${context}/minFilter: Invalid value (${minFilter})`);
+                    Logger.Warn(`${context}/minFilter: Invalid value (${minFilter})`);
                     return Texture.NEAREST_NEAREST_MIPNEAREST;
             }
         }
     }
 
-    private static _GetTypedArray(context: string, componentType: AccessorComponentType, bufferView: ArrayBufferView, byteOffset: number | undefined, length: number): ArrayBufferView {
+    private static _GetTypedArrayConstructor(context: string, componentType: AccessorComponentType): TypedArrayConstructor {
+        switch (componentType) {
+            case AccessorComponentType.BYTE: return Int8Array;
+            case AccessorComponentType.UNSIGNED_BYTE: return Uint8Array;
+            case AccessorComponentType.SHORT: return Int16Array;
+            case AccessorComponentType.UNSIGNED_SHORT: return Uint16Array;
+            case AccessorComponentType.UNSIGNED_INT: return Uint32Array;
+            case AccessorComponentType.FLOAT: return Float32Array;
+            default: throw new Error(`${context}: Invalid component type ${componentType}`);
+        }
+}
+
+    private static _GetTypedArray(context: string, componentType: AccessorComponentType, bufferView: ArrayBufferView, byteOffset: number | undefined, length: number): TypedArrayLike {
         const buffer = bufferView.buffer;
         byteOffset = bufferView.byteOffset + (byteOffset || 0);
 
+        const constructor = GLTFLoader._GetTypedArrayConstructor(`${context}/componentType`, componentType);
+
         try {
-            switch (componentType) {
-                case AccessorComponentType.BYTE: return new Int8Array(buffer, byteOffset, length);
-                case AccessorComponentType.UNSIGNED_BYTE: return new Uint8Array(buffer, byteOffset, length);
-                case AccessorComponentType.SHORT: return new Int16Array(buffer, byteOffset, length);
-                case AccessorComponentType.UNSIGNED_SHORT: return new Uint16Array(buffer, byteOffset, length);
-                case AccessorComponentType.UNSIGNED_INT: return new Uint32Array(buffer, byteOffset, length);
-                case AccessorComponentType.FLOAT: return new Float32Array(buffer, byteOffset, length);
-                default: throw new Error(`Invalid component type ${componentType}`);
-            }
+            return new constructor(buffer, byteOffset, length);
         }
         catch (e) {
             throw new Error(`${context}: ${e}`);
@@ -2120,8 +2179,10 @@ export class GLTFLoader implements IGLTFLoader {
 
                             const babylonMaterial = babylonData.babylonMaterial;
                             promises.push(babylonMaterial.forceCompilationAsync(babylonMesh));
+                            promises.push(babylonMaterial.forceCompilationAsync(babylonMesh, { useInstances: true }));
                             if (this._parent.useClipPlane) {
                                 promises.push(babylonMaterial.forceCompilationAsync(babylonMesh, { clipPlane: true }));
+                                promises.push(babylonMaterial.forceCompilationAsync(babylonMesh, { clipPlane: true, useInstances: true }));
                             }
                         }
                     }
@@ -2153,8 +2214,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _forEachExtensions(action: (extension: IGLTFLoaderExtension) => void): void {
-        for (const name of GLTFLoader._ExtensionNames) {
-            const extension = this._extensions[name];
+        for (const extension of this._extensions) {
             if (extension.enabled) {
                 action(extension);
             }
@@ -2162,10 +2222,9 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _applyExtensions<T>(property: IProperty, functionName: string, actionAsync: (extension: IGLTFLoaderExtension) => Nullable<T> | undefined): Nullable<T> {
-        for (const name of GLTFLoader._ExtensionNames) {
-            const extension = this._extensions[name];
+        for (const extension of this._extensions) {
             if (extension.enabled) {
-                const id = `${name}.${functionName}`;
+                const id = `${extension.name}.${functionName}`;
                 const loaderProperty = property as ILoaderProperty;
                 loaderProperty._activeLoaderExtensionFunctions = loaderProperty._activeLoaderExtensionFunctions || {};
                 const activeLoaderExtensionFunctions = loaderProperty._activeLoaderExtensionFunctions;
@@ -2244,6 +2303,14 @@ export class GLTFLoader implements IGLTFLoader {
         return this._applyExtensions(property, "loadUri", (extension) => extension._loadUriAsync && extension._loadUriAsync(context, property, uri));
     }
 
+    private _extensionsLoadBufferViewAsync(context: string, bufferView: IBufferView): Nullable<Promise<ArrayBufferView>> {
+        return this._applyExtensions(bufferView, "loadBufferView", (extension) => extension.loadBufferViewAsync && extension.loadBufferViewAsync(context, bufferView));
+    }
+
+    private _extensionsLoadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Nullable<Promise<ArrayBufferView>> {
+        return this._applyExtensions(buffer, "loadBuffer", (extension) => extension.loadBufferAsync && extension.loadBufferAsync(context, buffer, byteOffset, byteLength));
+    }
+
     /**
      * Helper method called by a loader extension to load an glTF extension.
      * @param context The context when loading the asset
@@ -2288,6 +2355,15 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         return actionAsync(`${context}/extras/${extensionName}`, extra);
+    }
+
+    /**
+     * Checks for presence of an extension.
+     * @param name The name of the extension to check
+     * @returns A boolean indicating the presence of the given extension name in `extensionsUsed`
+     */
+    public isExtensionUsed(name: string): boolean {
+        return !!this._gltf.extensionsUsed && this._gltf.extensionsUsed.indexOf(name) !== -1;
     }
 
     /**

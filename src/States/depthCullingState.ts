@@ -3,7 +3,7 @@ import { Nullable } from "../types";
 /**
  * @hidden
  **/
-export class _DepthCullingState {
+export class DepthCullingState {
     private _isDepthTestDirty = false;
     private _isDepthMaskDirty = false;
     private _isDepthFuncDirty = false;

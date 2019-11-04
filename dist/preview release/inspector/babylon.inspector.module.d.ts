@@ -108,15 +108,16 @@ declare module "babylonjs-inspector/components/actionTabs/lines/textLineComponen
     import * as React from "react";
     interface ITextLineComponentProps {
         label: string;
-        value: string;
+        value?: string;
         color?: string;
         underline?: boolean;
         onLink?: () => void;
+        ignoreValue?: boolean;
     }
     export class TextLineComponent extends React.Component<ITextLineComponentProps> {
         constructor(props: ITextLineComponentProps);
         onLink(): void;
-        renderContent(): JSX.Element;
+        renderContent(): JSX.Element | null;
         render(): JSX.Element;
     }
 }
@@ -173,7 +174,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/statisticsTabComp
         private _engineInstrumentation;
         private _timerIntervalId;
         constructor(props: IPaneComponentProps);
-        componentWillMount(): void;
         componentWillUnmount(): void;
         render(): JSX.Element | null;
     }
@@ -218,7 +218,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ren
     }> {
         private _gridMesh;
         constructor(props: IRenderGridPropertyGridComponentProps);
-        componentWillMount(): void;
+        componentDidMount(): void;
         addOrRemoveGrid(): void;
         render(): JSX.Element;
     }
@@ -228,8 +228,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/debugTabComponent
     export class DebugTabComponent extends PaneComponent {
         private _physicsViewersEnabled;
         constructor(props: IPaneComponentProps);
-        componentWillMount(): void;
-        componentWillUnmount(): void;
         switchPhysicsViewers(): void;
         render(): JSX.Element | null;
     }
@@ -314,6 +312,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/numericInputComp
         value: number;
         step?: number;
         onChange: (value: number) => void;
+        precision?: number;
     }
     export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
         value: string;
@@ -434,15 +433,45 @@ declare module "babylonjs-inspector/components/actionTabs/lines/quaternionLineCo
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/lines/textInputLineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    interface ITextInputLineComponentProps {
+        label: string;
+        lockObject: LockObject;
+        target?: any;
+        propertyName?: string;
+        value?: string;
+        onChange?: (value: string) => void;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        constructor(props: ITextInputLineComponentProps);
+        componentWillUnmount(): void;
+        shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: string, previousValue: string): void;
+        updateValue(value: string): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/customPropertyGridComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import { IInspectable } from 'babylonjs/Misc/iInspectable';
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
     interface ICustomPropertyGridComponentProps {
         globalState: GlobalState;
         target: any;
+        lockObject: LockObject;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class CustomPropertyGridComponent extends React.Component<ICustomPropertyGridComponentProps, {
@@ -517,6 +546,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/textureLinkLineC
         onSelectionChangedObservable?: Observable<any>;
         onDebugSelectionChangeObservable?: Observable<BaseTexture>;
         propertyName?: string;
+        onTextureCreated?: (texture: BaseTexture) => void;
         customDebugAction?: (state: boolean) => void;
     }
     export class TextureLinkLineComponent extends React.Component<ITextureLinkLineComponentProps, {
@@ -524,7 +554,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/textureLinkLineC
     }> {
         private _onDebugSelectionChangeObserver;
         constructor(props: ITextureLinkLineComponentProps);
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentWillUnmount(): void;
         debugTexture(): void;
         onLink(): void;
@@ -550,6 +580,17 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         private _onDebugSelectionChangeObservable;
         constructor(props: IStandardMaterialPropertyGridComponentProps);
         renderTextures(): JSX.Element;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/lines/buttonLineComponent" {
+    import * as React from "react";
+    export interface IButtonLineComponentProps {
+        label: string;
+        onClick: () => void;
+    }
+    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
+        constructor(props: IButtonLineComponentProps);
         render(): JSX.Element;
     }
 }
@@ -637,9 +678,9 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
         private _adtInstrumentation;
         constructor(props: ITexturePropertyGridComponentProps);
-        componentWillMount(): void;
         componentWillUnmount(): void;
         updateTexture(file: File): void;
+        foreceRefresh(): void;
         render(): JSX.Element;
     }
 }
@@ -696,6 +737,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         constructor(props: IPBRMaterialPropertyGridComponentProps);
         switchAmbientMode(state: boolean): void;
         switchMetallicMode(state: boolean): void;
+        switchRoughnessMode(state: boolean): void;
         renderTextures(onDebugSelectionChangeObservable: Observable<BaseTexture>): JSX.Element;
         render(): JSX.Element;
     }
@@ -714,7 +756,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/radioLineCompone
     }> {
         private _onSelectionChangedObserver;
         constructor(props: IRadioButtonLineComponentProps);
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentWillUnmount(): void;
         onChange(): void;
         render(): JSX.Element;
@@ -737,17 +779,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/fog
         mode: number;
     }> {
         constructor(props: IFogPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-inspector/components/actionTabs/lines/buttonLineComponent" {
-    import * as React from "react";
-    export interface IButtonLineComponentProps {
-        label: string;
-        onClick: () => void;
-    }
-    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
-        constructor(props: IButtonLineComponentProps);
         render(): JSX.Element;
     }
 }
@@ -924,13 +955,16 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mes
     }
     export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGridComponentProps, {
         displayNormals: boolean;
+        displayVertexColors: boolean;
     }> {
         constructor(props: IMeshPropertyGridComponentProps);
         renderWireframeOver(): void;
         renderNormalVectors(): void;
         displayNormals(): void;
+        displayVertexColors(): void;
         onMaterialLink(): void;
         onSourceMeshLink(): void;
+        onSkeletonLink(): void;
         convertPhysicsTypeToString(): string;
         render(): JSX.Element;
     }
@@ -971,34 +1005,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         private _onDebugSelectionChangeObservable;
         constructor(props: IBackgroundMaterialPropertyGridComponentProps);
         renderTextures(): JSX.Element;
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-inspector/components/actionTabs/lines/textInputLineComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
-    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
-    interface ITextInputLineComponentProps {
-        label: string;
-        lockObject: LockObject;
-        target?: any;
-        propertyName?: string;
-        value?: string;
-        onChange?: (value: string) => void;
-        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    }
-    export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
-        value: string;
-    }> {
-        private _localChange;
-        constructor(props: ITextInputLineComponentProps);
-        componentWillUnmount(): void;
-        shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: string, previousValue: string): void;
-        updateValue(value: string): void;
         render(): JSX.Element;
     }
 }
@@ -1120,7 +1126,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         connect(animationGroup: AnimationGroup): void;
         updateCurrentFrame(animationGroup: AnimationGroup): void;
         shouldComponentUpdate(nextProps: IAnimationGroupGridComponentProps): boolean;
-        componentWillMount(): void;
         componentWillUnmount(): void;
         playOrPause(): void;
         onCurrentFrameChange(value: number): void;
@@ -1503,7 +1508,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { IAnimatable } from 'babylonjs/Misc/tools';
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     interface IAnimationGridComponentProps {
         globalState: GlobalState;
         animatable: IAnimatable;
@@ -1522,7 +1527,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _isPlaying;
         constructor(props: IAnimationGridComponentProps);
         playOrPause(): void;
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentWillUnmount(): void;
         onCurrentFrameChange(value: number): void;
         render(): JSX.Element;
@@ -1547,8 +1552,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mes
         constructor(props: ISkeletonPropertyGridComponentProps);
         switchSkeletonViewers(): void;
         checkSkeletonViewerState(props: ISkeletonPropertyGridComponentProps): void;
-        componentWillMount(): void;
         shouldComponentUpdate(nextProps: ISkeletonPropertyGridComponentProps): boolean;
+        onOverrideMeshLink(): void;
         render(): JSX.Element;
     }
 }
@@ -1567,6 +1572,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mes
     }
     export class BonePropertyGridComponent extends React.Component<IBonePropertyGridComponentProps> {
         constructor(props: IBonePropertyGridComponentProps);
+        onTransformNodeLink(): void;
         render(): JSX.Element;
     }
 }
@@ -1624,6 +1630,44 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/pos
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/lines/vector4LineComponent" {
+    import * as React from "react";
+    import { Vector4 } from "babylonjs/Maths/math";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    interface IVector4LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newvalue: Vector4) => void;
+        useEuler?: boolean;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, {
+        isExpanded: boolean;
+        value: Vector4;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector4LineComponentProps);
+        getCurrentValue(): any;
+        shouldComponentUpdate(nextProps: IVector4LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: Vector4;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: Vector4): void;
+        updateVector4(): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        updateStateZ(value: number): void;
+        updateStateW(value: number): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/nodeMaterialPropertyGridComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -1639,8 +1683,33 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class NodeMaterialPropertyGridComponent extends React.Component<INodeMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: INodeMaterialPropertyGridComponentProps);
         edit(): void;
+        renderTextures(): JSX.Element | null;
+        renderInputValues(): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/multiMaterialPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { Material } from 'babylonjs/Materials/material';
+    import { MultiMaterial } from 'babylonjs/Materials/multiMaterial';
+    interface IMultiMaterialPropertyGridComponentProps {
+        globalState: GlobalState;
+        material: MultiMaterial;
+        lockObject: LockObject;
+        onSelectionChangedObservable?: Observable<any>;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class MultiMaterialPropertyGridComponent extends React.Component<IMultiMaterialPropertyGridComponentProps> {
+        constructor(props: IMultiMaterialPropertyGridComponentProps);
+        onMaterialLink(mat: Material): void;
+        renderChildMaterial(): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -1651,7 +1720,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGridTabCo
         private _lockObject;
         constructor(props: IPaneComponentProps);
         timerRefresh(): void;
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentWillUnmount(): void;
         render(): JSX.Element | null;
     }
@@ -1675,7 +1744,7 @@ declare module "babylonjs-inspector/components/headerComponent" {
         private _backStack;
         private _onSelectionChangeObserver;
         constructor(props: IHeaderComponentProps);
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentWillUnmount(): void;
         goBack(): void;
         renderLogo(): JSX.Element | null;
@@ -1714,10 +1783,14 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/toolsTabComponent
     import { Node } from "babylonjs/node";
     export class ToolsTabComponent extends PaneComponent {
         private _videoRecorder;
+        private _screenShotSize;
+        private _useWidthHeight;
+        private _isExporting;
         constructor(props: IPaneComponentProps);
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentWillUnmount(): void;
         captureScreenshot(): void;
+        captureRender(): void;
         recordVideo(): void;
         shouldExport(node: Node): boolean;
         exportGLTF(): void;
@@ -1758,7 +1831,7 @@ declare module "babylonjs-inspector/components/actionTabs/actionTabsComponent" {
         private _onTabChangedObserver;
         private _once;
         constructor(props: IActionTabsComponentProps);
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentWillUnmount(): void;
         changeSelectedTab(index: number): void;
         renderContent(): JSX.Element | null;
@@ -1832,7 +1905,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/cameraTree
         private _onActiveCameraObserver;
         constructor(props: ICameraTreeItemComponentProps);
         setActive(): void;
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentWillUnmount(): void;
         render(): JSX.Element;
     }
@@ -2125,7 +2198,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/sceneTreeI
             isSelected: boolean;
             isInPickingMode: boolean;
         }): boolean;
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentWillUnmount(): void;
         onSelect(): void;
         onPickingMode(): void;
@@ -2170,7 +2243,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/sceneExplorerCompon
         private sceneMutationFunc;
         constructor(props: ISceneExplorerComponentProps);
         processMutation(): void;
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentWillUnmount(): void;
         filterContent(filter: string): void;
         findSiblings(parent: any, items: any[], target: any, goNext: boolean, data: {
@@ -2341,15 +2414,16 @@ declare module INSPECTOR {
 declare module INSPECTOR {
     interface ITextLineComponentProps {
         label: string;
-        value: string;
+        value?: string;
         color?: string;
         underline?: boolean;
         onLink?: () => void;
+        ignoreValue?: boolean;
     }
     export class TextLineComponent extends React.Component<ITextLineComponentProps> {
         constructor(props: ITextLineComponentProps);
         onLink(): void;
-        renderContent(): JSX.Element;
+        renderContent(): JSX.Element | null;
         render(): JSX.Element;
     }
 }
@@ -2401,7 +2475,6 @@ declare module INSPECTOR {
         private _engineInstrumentation;
         private _timerIntervalId;
         constructor(props: IPaneComponentProps);
-        componentWillMount(): void;
         componentWillUnmount(): void;
         render(): JSX.Element | null;
     }
@@ -2440,7 +2513,7 @@ declare module INSPECTOR {
     }> {
         private _gridMesh;
         constructor(props: IRenderGridPropertyGridComponentProps);
-        componentWillMount(): void;
+        componentDidMount(): void;
         addOrRemoveGrid(): void;
         render(): JSX.Element;
     }
@@ -2449,8 +2522,6 @@ declare module INSPECTOR {
     export class DebugTabComponent extends PaneComponent {
         private _physicsViewersEnabled;
         constructor(props: IPaneComponentProps);
-        componentWillMount(): void;
-        componentWillUnmount(): void;
         switchPhysicsViewers(): void;
         render(): JSX.Element | null;
     }
@@ -2528,6 +2599,7 @@ declare module INSPECTOR {
         value: number;
         step?: number;
         onChange: (value: number) => void;
+        precision?: number;
     }
     export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
         value: string;
@@ -2637,9 +2709,34 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface ITextInputLineComponentProps {
+        label: string;
+        lockObject: LockObject;
+        target?: any;
+        propertyName?: string;
+        value?: string;
+        onChange?: (value: string) => void;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
+        value: string;
+    }> {
+        private _localChange;
+        constructor(props: ITextInputLineComponentProps);
+        componentWillUnmount(): void;
+        shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: {
+            value: string;
+        }): boolean;
+        raiseOnPropertyChanged(newValue: string, previousValue: string): void;
+        updateValue(value: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface ICustomPropertyGridComponentProps {
         globalState: GlobalState;
         target: any;
+        lockObject: LockObject;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class CustomPropertyGridComponent extends React.Component<ICustomPropertyGridComponentProps, {
@@ -2696,6 +2793,7 @@ declare module INSPECTOR {
         onSelectionChangedObservable?: BABYLON.Observable<any>;
         onDebugSelectionChangeObservable?: BABYLON.Observable<BABYLON.BaseTexture>;
         propertyName?: string;
+        onTextureCreated?: (texture: BABYLON.BaseTexture) => void;
         customDebugAction?: (state: boolean) => void;
     }
     export class TextureLinkLineComponent extends React.Component<ITextureLinkLineComponentProps, {
@@ -2703,7 +2801,7 @@ declare module INSPECTOR {
     }> {
         private _onDebugSelectionChangeObserver;
         constructor(props: ITextureLinkLineComponentProps);
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentWillUnmount(): void;
         debugTexture(): void;
         onLink(): void;
@@ -2723,6 +2821,16 @@ declare module INSPECTOR {
         private _onDebugSelectionChangeObservable;
         constructor(props: IStandardMaterialPropertyGridComponentProps);
         renderTextures(): JSX.Element;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export interface IButtonLineComponentProps {
+        label: string;
+        onClick: () => void;
+    }
+    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
+        constructor(props: IButtonLineComponentProps);
         render(): JSX.Element;
     }
 }
@@ -2797,9 +2905,9 @@ declare module INSPECTOR {
     export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
         private _adtInstrumentation;
         constructor(props: ITexturePropertyGridComponentProps);
-        componentWillMount(): void;
         componentWillUnmount(): void;
         updateTexture(file: File): void;
+        foreceRefresh(): void;
         render(): JSX.Element;
     }
 }
@@ -2845,6 +2953,7 @@ declare module INSPECTOR {
         constructor(props: IPBRMaterialPropertyGridComponentProps);
         switchAmbientMode(state: boolean): void;
         switchMetallicMode(state: boolean): void;
+        switchRoughnessMode(state: boolean): void;
         renderTextures(onDebugSelectionChangeObservable: BABYLON.Observable<BABYLON.BaseTexture>): JSX.Element;
         render(): JSX.Element;
     }
@@ -2861,7 +2970,7 @@ declare module INSPECTOR {
     }> {
         private _onSelectionChangedObserver;
         constructor(props: IRadioButtonLineComponentProps);
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentWillUnmount(): void;
         onChange(): void;
         render(): JSX.Element;
@@ -2878,16 +2987,6 @@ declare module INSPECTOR {
         mode: number;
     }> {
         constructor(props: IFogPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    export interface IButtonLineComponentProps {
-        label: string;
-        onClick: () => void;
-    }
-    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
-        constructor(props: IButtonLineComponentProps);
         render(): JSX.Element;
     }
 }
@@ -3009,13 +3108,16 @@ declare module INSPECTOR {
     }
     export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGridComponentProps, {
         displayNormals: boolean;
+        displayVertexColors: boolean;
     }> {
         constructor(props: IMeshPropertyGridComponentProps);
         renderWireframeOver(): void;
         renderNormalVectors(): void;
         displayNormals(): void;
+        displayVertexColors(): void;
         onMaterialLink(): void;
         onSourceMeshLink(): void;
+        onSkeletonLink(): void;
         convertPhysicsTypeToString(): string;
         render(): JSX.Element;
     }
@@ -3044,30 +3146,6 @@ declare module INSPECTOR {
         private _onDebugSelectionChangeObservable;
         constructor(props: IBackgroundMaterialPropertyGridComponentProps);
         renderTextures(): JSX.Element;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface ITextInputLineComponentProps {
-        label: string;
-        lockObject: LockObject;
-        target?: any;
-        propertyName?: string;
-        value?: string;
-        onChange?: (value: string) => void;
-        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
-    }
-    export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {
-        value: string;
-    }> {
-        private _localChange;
-        constructor(props: ITextInputLineComponentProps);
-        componentWillUnmount(): void;
-        shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: {
-            value: string;
-        }): boolean;
-        raiseOnPropertyChanged(newValue: string, previousValue: string): void;
-        updateValue(value: string): void;
         render(): JSX.Element;
     }
 }
@@ -3152,7 +3230,6 @@ declare module INSPECTOR {
         connect(animationGroup: BABYLON.AnimationGroup): void;
         updateCurrentFrame(animationGroup: BABYLON.AnimationGroup): void;
         shouldComponentUpdate(nextProps: IAnimationGroupGridComponentProps): boolean;
-        componentWillMount(): void;
         componentWillUnmount(): void;
         playOrPause(): void;
         onCurrentFrameChange(value: number): void;
@@ -3427,7 +3504,7 @@ declare module INSPECTOR {
         private _isPlaying;
         constructor(props: IAnimationGridComponentProps);
         playOrPause(): void;
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentWillUnmount(): void;
         onCurrentFrameChange(value: number): void;
         render(): JSX.Element;
@@ -3446,8 +3523,8 @@ declare module INSPECTOR {
         constructor(props: ISkeletonPropertyGridComponentProps);
         switchSkeletonViewers(): void;
         checkSkeletonViewerState(props: ISkeletonPropertyGridComponentProps): void;
-        componentWillMount(): void;
         shouldComponentUpdate(nextProps: ISkeletonPropertyGridComponentProps): boolean;
+        onOverrideMeshLink(): void;
         render(): JSX.Element;
     }
 }
@@ -3460,6 +3537,7 @@ declare module INSPECTOR {
     }
     export class BonePropertyGridComponent extends React.Component<IBonePropertyGridComponentProps> {
         constructor(props: IBonePropertyGridComponentProps);
+        onTransformNodeLink(): void;
         render(): JSX.Element;
     }
 }
@@ -3500,6 +3578,40 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IVector4LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        step?: number;
+        onChange?: (newvalue: BABYLON.Vector4) => void;
+        useEuler?: boolean;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, {
+        isExpanded: boolean;
+        value: BABYLON.Vector4;
+    }> {
+        static defaultProps: {
+            step: number;
+        };
+        private _localChange;
+        constructor(props: IVector4LineComponentProps);
+        getCurrentValue(): any;
+        shouldComponentUpdate(nextProps: IVector4LineComponentProps, nextState: {
+            isExpanded: boolean;
+            value: BABYLON.Vector4;
+        }): boolean;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Vector4): void;
+        updateVector4(): void;
+        updateStateX(value: number): void;
+        updateStateY(value: number): void;
+        updateStateZ(value: number): void;
+        updateStateW(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface INodeMaterialPropertyGridComponentProps {
         globalState: GlobalState;
         material: BABYLON.NodeMaterial;
@@ -3508,8 +3620,26 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class NodeMaterialPropertyGridComponent extends React.Component<INodeMaterialPropertyGridComponentProps> {
+        private _onDebugSelectionChangeObservable;
         constructor(props: INodeMaterialPropertyGridComponentProps);
         edit(): void;
+        renderTextures(): JSX.Element | null;
+        renderInputValues(): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IMultiMaterialPropertyGridComponentProps {
+        globalState: GlobalState;
+        material: BABYLON.MultiMaterial;
+        lockObject: LockObject;
+        onSelectionChangedObservable?: BABYLON.Observable<any>;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class MultiMaterialPropertyGridComponent extends React.Component<IMultiMaterialPropertyGridComponentProps> {
+        constructor(props: IMultiMaterialPropertyGridComponentProps);
+        onMaterialLink(mat: BABYLON.Material): void;
+        renderChildMaterial(): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -3519,7 +3649,7 @@ declare module INSPECTOR {
         private _lockObject;
         constructor(props: IPaneComponentProps);
         timerRefresh(): void;
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentWillUnmount(): void;
         render(): JSX.Element | null;
     }
@@ -3541,7 +3671,7 @@ declare module INSPECTOR {
         private _backStack;
         private _onSelectionChangeObserver;
         constructor(props: IHeaderComponentProps);
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentWillUnmount(): void;
         goBack(): void;
         renderLogo(): JSX.Element | null;
@@ -3574,10 +3704,14 @@ declare module INSPECTOR {
 declare module INSPECTOR {
     export class ToolsTabComponent extends PaneComponent {
         private _videoRecorder;
+        private _screenShotSize;
+        private _useWidthHeight;
+        private _isExporting;
         constructor(props: IPaneComponentProps);
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentWillUnmount(): void;
         captureScreenshot(): void;
+        captureRender(): void;
         recordVideo(): void;
         shouldExport(node: BABYLON.Node): boolean;
         exportGLTF(): void;
@@ -3614,7 +3748,7 @@ declare module INSPECTOR {
         private _onTabChangedObserver;
         private _once;
         constructor(props: IActionTabsComponentProps);
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentWillUnmount(): void;
         changeSelectedTab(index: number): void;
         renderContent(): JSX.Element | null;
@@ -3679,7 +3813,7 @@ declare module INSPECTOR {
         private _onActiveCameraObserver;
         constructor(props: ICameraTreeItemComponentProps);
         setActive(): void;
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentWillUnmount(): void;
         render(): JSX.Element;
     }
@@ -3921,7 +4055,7 @@ declare module INSPECTOR {
             isSelected: boolean;
             isInPickingMode: boolean;
         }): boolean;
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentWillUnmount(): void;
         onSelect(): void;
         onPickingMode(): void;
@@ -3961,7 +4095,7 @@ declare module INSPECTOR {
         private sceneMutationFunc;
         constructor(props: ISceneExplorerComponentProps);
         processMutation(): void;
-        componentWillMount(): void;
+        componentDidMount(): void;
         componentWillUnmount(): void;
         filterContent(filter: string): void;
         findSiblings(parent: any, items: any[], target: any, goNext: boolean, data: {

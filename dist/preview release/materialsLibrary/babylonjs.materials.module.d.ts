@@ -36,14 +36,15 @@ declare module "babylonjs-materials/cell/cell.vertex" {
 }
 declare module "babylonjs-materials/cell/cellMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { SubMesh } from "babylonjs/Meshes/subMesh";
     import { Mesh } from "babylonjs/Meshes/mesh";
     import { Scene } from "babylonjs/scene";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import "babylonjs-materials/cell/cell.fragment";
     import "babylonjs-materials/cell/cell.vertex";
     export class CellMaterial extends PushMaterial {
@@ -230,14 +231,15 @@ declare module "babylonjs-materials/fire/fire.vertex" {
 }
 declare module "babylonjs-materials/fire/fireMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { SubMesh } from "babylonjs/Meshes/subMesh";
     import { Mesh } from "babylonjs/Meshes/mesh";
     import { Scene } from "babylonjs/scene";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import "babylonjs-materials/fire/fire.fragment";
     import "babylonjs-materials/fire/fire.vertex";
     export class FireMaterial extends PushMaterial {
@@ -309,8 +311,9 @@ declare module "babylonjs-materials/fur/fur.vertex" {
 }
 declare module "babylonjs-materials/fur/furMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Vector3, Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix, Vector3 } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { DynamicTexture } from "babylonjs/Materials/Textures/dynamicTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -405,8 +408,9 @@ declare module "babylonjs-materials/gradient/gradient.vertex" {
 }
 declare module "babylonjs-materials/gradient/gradientMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -455,7 +459,9 @@ declare module "babylonjs-materials/grid/grid.fragment" {
     };
 }
 declare module "babylonjs-materials/grid/grid.vertex" {
+    import "babylonjs/Shaders/ShadersInclude/instancesDeclaration";
     import "babylonjs/Shaders/ShadersInclude/fogVertexDeclaration";
+    import "babylonjs/Shaders/ShadersInclude/instancesVertex";
     import "babylonjs/Shaders/ShadersInclude/fogVertex";
     /** @hidden */
     export var gridVertexShader: {
@@ -464,7 +470,8 @@ declare module "babylonjs-materials/grid/grid.vertex" {
     };
 }
 declare module "babylonjs-materials/grid/gridMaterial" {
-    import { Color3, Vector3, Matrix } from "babylonjs/Maths/math";
+    import { Matrix, Vector3 } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -579,8 +586,9 @@ declare module "babylonjs-materials/lava/lava.vertex" {
 }
 declare module "babylonjs-materials/lava/lavaMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -665,8 +673,9 @@ declare module "babylonjs-materials/mix/mix.vertex" {
 }
 declare module "babylonjs-materials/mix/mixMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -771,8 +780,9 @@ declare module "babylonjs-materials/normal/normal.vertex" {
 }
 declare module "babylonjs-materials/normal/normalMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -847,7 +857,8 @@ declare module "babylonjs-materials/shadowOnly/shadowOnly.vertex" {
 }
 declare module "babylonjs-materials/shadowOnly/shadowOnlyMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Matrix } from "babylonjs/Maths/math";
+    import { Matrix } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { IShadowLight } from "babylonjs/Lights/shadowLight";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -915,8 +926,9 @@ declare module "babylonjs-materials/simple/simple.vertex" {
 }
 declare module "babylonjs-materials/simple/simpleMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -977,8 +989,8 @@ declare module "babylonjs-materials/sky/sky.vertex" {
 }
 declare module "babylonjs-materials/sky/skyMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Vector3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Vector3, Matrix } from "babylonjs/Maths/math.vector";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -1161,8 +1173,9 @@ declare module "babylonjs-materials/terrain/terrain.vertex" {
 }
 declare module "babylonjs-materials/terrain/terrainMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -1252,8 +1265,9 @@ declare module "babylonjs-materials/triPlanar/triplanar.vertex" {
 }
 declare module "babylonjs-materials/triPlanar/triPlanarMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -1306,6 +1320,8 @@ declare module "babylonjs-materials/triPlanar/index" {
 }
 declare module "babylonjs-materials/water/water.fragment" {
     import "babylonjs/Shaders/ShadersInclude/helperFunctions";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingDeclaration";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingFunctions";
     import "babylonjs/Shaders/ShadersInclude/lightFragmentDeclaration";
     import "babylonjs/Shaders/ShadersInclude/lightUboDeclaration";
     import "babylonjs/Shaders/ShadersInclude/lightsFragmentFunctions";
@@ -1345,8 +1361,9 @@ declare module "babylonjs-materials/water/water.vertex" {
 }
 declare module "babylonjs-materials/water/waterMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Vector2, Color3, Matrix } from "babylonjs/Maths/math";
-    import { IAnimatable } from "babylonjs/Misc/tools";
+    import { Matrix, Vector2 } from "babylonjs/Maths/math.vector";
+    import { Color3 } from "babylonjs/Maths/math.color";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { SmartArray } from "babylonjs/Misc/smartArray";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { RenderTargetTexture } from "babylonjs/Materials/Textures/renderTargetTexture";
@@ -1423,6 +1440,11 @@ declare module "babylonjs-materials/water/waterMaterial" {
         * @param {number}: Defines the waves speed
         */
         waveSpeed: number;
+        /**
+         * Sets or gets wether or not automatic clipping should be enabled or not. Setting to true will save performances and
+         * will avoid calculating useless pixels in the pixel shader of the water material.
+         */
+        disableClipPlane: boolean;
         protected _renderTargets: SmartArray<RenderTargetTexture>;
         private _mesh;
         private _refractionRTT;
@@ -1433,6 +1455,8 @@ declare module "babylonjs-materials/water/waterMaterial" {
         private _renderId;
         private _useLogarithmicDepth;
         private _waitingRenderList;
+        private _imageProcessingConfiguration;
+        private _imageProcessingObserver;
         /**
          * Gets a boolean indicating that current material needs to register RTT
          */
@@ -2480,6 +2504,11 @@ declare module BABYLON {
         * @param {number}: Defines the waves speed
         */
         waveSpeed: number;
+        /**
+         * Sets or gets wether or not automatic clipping should be enabled or not. Setting to true will save performances and
+         * will avoid calculating useless pixels in the pixel shader of the water material.
+         */
+        disableClipPlane: boolean;
         protected _renderTargets: BABYLON.SmartArray<BABYLON.RenderTargetTexture>;
         private _mesh;
         private _refractionRTT;
@@ -2490,6 +2519,8 @@ declare module BABYLON {
         private _renderId;
         private _useLogarithmicDepth;
         private _waitingRenderList;
+        private _imageProcessingConfiguration;
+        private _imageProcessingObserver;
         /**
          * Gets a boolean indicating that current material needs to register RTT
          */

@@ -1,5 +1,6 @@
 import { Nullable } from "../types";
-import { Color3, Vector3, Quaternion } from "../Maths/math";
+import { Vector3, Quaternion } from "../Maths/math.vector";
+import { Color3 } from '../Maths/math.color';
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Gizmo } from "./gizmo";
@@ -49,11 +50,11 @@ export class LightGizmo extends Gizmo {
 
             if (light instanceof HemisphericLight) {
                 this._lightMesh = LightGizmo._CreateHemisphericLightMesh(this.gizmoLayer.utilityLayerScene);
-            }else if (light instanceof DirectionalLight) {
+            } else if (light instanceof DirectionalLight) {
                 this._lightMesh = LightGizmo._CreateDirectionalLightMesh(this.gizmoLayer.utilityLayerScene);
-            }else if (light instanceof SpotLight) {
+            } else if (light instanceof SpotLight) {
                 this._lightMesh = LightGizmo._CreateSpotLightMesh(this.gizmoLayer.utilityLayerScene);
-            }else {
+            } else {
                 this._lightMesh = LightGizmo._CreatePointLightMesh(this.gizmoLayer.utilityLayerScene);
             }
             this._lightMesh.getChildMeshes(false).forEach((m) => {
@@ -88,6 +89,13 @@ export class LightGizmo extends Gizmo {
     }
 
     /**
+     * Gets the material used to render the light gizmo
+     */
+    public get material() {
+        return this._material;
+    }
+
+    /**
      * @hidden
      * Updates the gizmo to match the attached mesh's position/rotation
      */
@@ -102,7 +110,7 @@ export class LightGizmo extends Gizmo {
                 // update light to match gizmo
                 (this._light as any).position.copyFrom(this.attachedMesh!.position);
                 this.cachedPosition.copyFrom(this.attachedMesh!.position);
-            }else {
+            } else {
                 // update gizmo to match light
                 this.attachedMesh!.position.copyFrom((this._light as any).position);
             }
@@ -114,7 +122,7 @@ export class LightGizmo extends Gizmo {
                 // update light to match gizmo
                 (this._light as any).direction.copyFrom(this.attachedMesh!.forward);
                 this.cachedForward.copyFrom(this.attachedMesh!.forward);
-            }else if (Vector3.DistanceSquared(this.attachedMesh!.forward, (this._light as any).direction) > 0.0001) {
+            } else if (Vector3.DistanceSquared(this.attachedMesh!.forward, (this._light as any).direction) > 0.0001) {
                 // update gizmo to match light
                 this.attachedMesh!.setDirection((this._light as any).direction);
                 this.cachedForward.copyFrom(this._lightMesh.forward);
@@ -150,7 +158,7 @@ export class LightGizmo extends Gizmo {
             return linePivot;
         }
         for (var i = 0; i < 4; i++) {
-            var l = linePivot.clone("lineParentClone");
+            var l = linePivot.clone("lineParentClone")!;
             l.rotation.z = Math.PI / 4;
             l.rotation.y = (Math.PI / 2) + (Math.PI / 2 * i);
 
@@ -200,7 +208,7 @@ export class LightGizmo extends Gizmo {
 
     private static _CreateHemisphericLightMesh(scene: Scene) {
         var root = new Mesh("hemisphereLight", scene);
-        var hemisphere = HemisphereBuilder.CreateHemisphere(root.name, {segments: 10, diameter: 1}, scene);
+        var hemisphere = HemisphereBuilder.CreateHemisphere(root.name, { segments: 10, diameter: 1 }, scene);
         hemisphere.position.z = -0.15;
         hemisphere.rotation.x = Math.PI / 2;
         hemisphere.parent = root;
@@ -217,7 +225,7 @@ export class LightGizmo extends Gizmo {
 
     private static _CreatePointLightMesh(scene: Scene) {
         var root = new Mesh("pointLight", scene);
-        var sphere = SphereBuilder.CreateSphere(root.name, {segments: 10, diameter: 1}, scene);
+        var sphere = SphereBuilder.CreateSphere(root.name, { segments: 10, diameter: 1 }, scene);
         sphere.rotation.x = Math.PI / 2;
         sphere.parent = root;
 
@@ -231,10 +239,10 @@ export class LightGizmo extends Gizmo {
 
     private static _CreateSpotLightMesh(scene: Scene) {
         var root = new Mesh("spotLight", scene);
-        var sphere = SphereBuilder.CreateSphere(root.name, {segments: 10, diameter: 1}, scene);
+        var sphere = SphereBuilder.CreateSphere(root.name, { segments: 10, diameter: 1 }, scene);
         sphere.parent = root;
 
-        var hemisphere = HemisphereBuilder.CreateHemisphere(root.name, {segments: 10, diameter: 2}, scene);
+        var hemisphere = HemisphereBuilder.CreateHemisphere(root.name, { segments: 10, diameter: 2 }, scene);
         hemisphere.parent = root;
         hemisphere.rotation.x = -Math.PI / 2;
 
@@ -251,17 +259,17 @@ export class LightGizmo extends Gizmo {
 
         var mesh = new Mesh(root.name, scene);
         mesh.parent = root;
-        var sphere  = SphereBuilder.CreateSphere(root.name, {diameter: 1.2, segments: 10}, scene);
+        var sphere = SphereBuilder.CreateSphere(root.name, { diameter: 1.2, segments: 10 }, scene);
         sphere.parent = mesh;
 
         var line = Mesh.CreateCylinder(root.name, 6, 0.3, 0.3, 6, 1, scene);
         line.parent = mesh;
 
-        var left = line.clone(root.name);
+        var left = line.clone(root.name)!;
         left.scaling.y = 0.5;
         left.position.x += 1.25;
 
-        var right = line.clone(root.name);
+        var right = line.clone(root.name)!;
         right.scaling.y = 0.5;
         right.position.x += -1.25;
 

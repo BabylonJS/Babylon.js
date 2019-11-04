@@ -1,11 +1,12 @@
 import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsFresnelParameters, serializeAsTexture } from "../Misc/decorators";
 import { Observer } from "../Misc/observable";
 import { SmartArray } from "../Misc/smartArray";
-import { IAnimatable } from "../Misc/tools";
+import { IAnimatable } from '../Animations/animatable.interface';
 
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Matrix, Color3 } from "../Maths/math";
+import { Matrix } from "../Maths/math.vector";
+import { Color3 } from '../Maths/math.color';
 import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -14,7 +15,6 @@ import { Mesh } from "../Meshes/mesh";
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration";
 import { ColorCurves } from "./colorCurves";
 import { FresnelParameters } from "./fresnelParameters";
-import { EffectFallbacks, EffectCreationOptions } from "./effect";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { PushMaterial } from "./pushMaterial";
 import { MaterialHelper } from "./materialHelper";
@@ -29,6 +29,8 @@ import { MaterialFlags } from "./materialFlags";
 import "../Shaders/default.fragment";
 import "../Shaders/default.vertex";
 import { Constants } from "../Engines/constants";
+import { EffectFallbacks } from './effectFallbacks';
+import { IEffectCreationOptions } from './effect';
 
 /** @hidden */
 export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
@@ -665,6 +667,7 @@ export class StandardMaterial extends PushMaterial {
     protected _worldViewProjectionMatrix = Matrix.Zero();
     protected _globalAmbientColor = new Color3(0, 0, 0);
     protected _useLogarithmicDepth: boolean;
+    protected _rebuildInParallel = false;
 
     /**
      * Instantiates a new standard material.
@@ -1019,6 +1022,7 @@ export class StandardMaterial extends PushMaterial {
 
         // Get correct effect
         if (defines.isDirty) {
+            const lightDisposed = defines._areLightsDisposed;
             defines.markAsProcessed();
 
             // Fallbacks
@@ -1135,7 +1139,7 @@ export class StandardMaterial extends PushMaterial {
                 ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
             }
 
-            MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
+            MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
@@ -1150,7 +1154,7 @@ export class StandardMaterial extends PushMaterial {
             var join = defines.toString();
 
             let previousEffect = subMesh.effect;
-            let effect = scene.getEngine().createEffect(shaderName, <EffectCreationOptions>{
+            let effect = scene.getEngine().createEffect(shaderName, <IEffectCreationOptions>{
                 attributes: attribs,
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
@@ -1166,8 +1170,16 @@ export class StandardMaterial extends PushMaterial {
                 // Use previous effect while new one is compiling
                 if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
                     effect = previousEffect;
+                    this._rebuildInParallel = true;
                     defines.markAsUnprocessed();
+
+                    if (lightDisposed) {
+                        // re register in case it takes more than one frame.
+                        defines._areLightsDisposed = true;
+                        return false;
+                    }
                 } else {
+                    this._rebuildInParallel = false;
                     scene.resetCachedMaterial();
                     subMesh.setEffect(effect, defines);
                     this.buildUniformLayout();
@@ -1476,7 +1488,7 @@ export class StandardMaterial extends PushMaterial {
         if (mustRebind || !this.isFrozen) {
             // Lights
             if (scene.lightsEnabled && !this._disableLighting) {
-                MaterialHelper.BindLights(scene, mesh, effect, defines, this._maxSimultaneousLights);
+                MaterialHelper.BindLights(scene, mesh, effect, defines, this._maxSimultaneousLights, false, this._rebuildInParallel);
             }
 
             // View
@@ -1493,7 +1505,9 @@ export class StandardMaterial extends PushMaterial {
             }
 
             // Log. depth
-            MaterialHelper.BindLogDepth(defines, effect, scene);
+            if (this.useLogarithmicDepth) {
+                MaterialHelper.BindLogDepth(defines, effect, scene);
+            }
 
             // image processing
             if (this._imageProcessingConfiguration && !this._imageProcessingConfiguration.applyByPostProcess) {

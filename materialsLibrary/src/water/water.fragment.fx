@@ -26,6 +26,9 @@ varying vec4 vColor;
 // Helper functions
 #include<helperFunctions>
 
+#include<imageProcessingDeclaration>
+#include<imageProcessingFunctions>
+
 // Lights
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
 
@@ -125,6 +128,9 @@ void main(void) {
         // Water
         vec2 projectedRefractionTexCoords = clamp(vRefractionMapTexCoord.xy / vRefractionMapTexCoord.z + perturbation*0.5, 0.0, 1.0);
         vec4 refractiveColor = texture2D(refractionSampler, projectedRefractionTexCoords);
+        #ifdef IS_REFRACTION_LINEAR
+            refractiveColor.rgb = toGammaSpace(refractiveColor.rgb);
+        #endif
 
         vec2 projectedReflectionTexCoords = clamp(vec2(
             vReflectionMapTexCoord.x / vReflectionMapTexCoord.z + perturbation.x * 0.3,
@@ -132,6 +138,9 @@ void main(void) {
         ),0.0, 1.0);
 
         vec4 reflectiveColor = texture2D(reflectionSampler, projectedReflectionTexCoords);
+        #ifdef IS_REFLECTION_LINEAR
+            reflectiveColor.rgb = toGammaSpace(reflectiveColor.rgb);
+        #endif
 
         vec3 upVector = vec3(0.0, 1.0, 0.0);
 
@@ -178,9 +187,15 @@ void main(void) {
         // Water
         vec2 projectedRefractionTexCoords = clamp(vRefractionMapTexCoord.xy / vRefractionMapTexCoord.z + perturbation, 0.0, 1.0);
         vec4 refractiveColor = texture2D(refractionSampler, projectedRefractionTexCoords);
+        #ifdef IS_REFRACTION_LINEAR
+            refractiveColor.rgb = toGammaSpace(refractiveColor.rgb);
+        #endif
 
         vec2 projectedReflectionTexCoords = clamp(vReflectionMapTexCoord.xy / vReflectionMapTexCoord.z + perturbation, 0.0, 1.0);
         vec4 reflectiveColor = texture2D(reflectionSampler, projectedReflectionTexCoords);
+        #ifdef IS_REFLECTION_LINEAR
+            reflectiveColor.rgb = toGammaSpace(reflectiveColor.rgb);
+        #endif
 
         vec3 upVector = vec3(0.0, 1.0, 0.0);
 
@@ -226,6 +241,15 @@ vec4 color = vec4(finalDiffuse + finalSpecular, alpha);
 
 #include<logDepthFragment>
 #include<fogFragment>
+
+// Apply image processing if relevant. As this applies in linear space, 
+// We first move from gamma to linear.
+#ifdef IMAGEPROCESSINGPOSTPROCESS
+	color.rgb = toLinearSpace(color.rgb);
+#elif defined(IMAGEPROCESSING)
+    color.rgb = toLinearSpace(color.rgb);
+    color = applyImageProcessing(color);
+#endif
 	
 	gl_FragColor = color;
 }

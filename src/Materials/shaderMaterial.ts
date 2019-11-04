@@ -1,6 +1,6 @@
 import { SerializationHelper } from "../Misc/decorators";
 import { Scene } from "../scene";
-import { Matrix, Vector3, Vector2, Color3, Color4, Vector4 } from "../Maths/math";
+import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { BaseSubMesh } from "../Meshes/subMesh";
@@ -8,9 +8,11 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { MaterialHelper } from "./materialHelper";
-import { EffectFallbacks, EffectCreationOptions } from "./effect";
+import { IEffectCreationOptions } from "./effect";
 import { Material } from "./material";
 import { _TypeStore } from '../Misc/typeStore';
+import { Color3, Color4 } from '../Maths/math.color';
+import { EffectFallbacks } from './effectFallbacks';
 
 /**
  * Defines the options associated with the creation of a shader material.
@@ -75,6 +77,7 @@ export class ShaderMaterial extends Material {
     private _vectors3: { [name: string]: Vector3 } = {};
     private _vectors4: { [name: string]: Vector4 } = {};
     private _matrices: { [name: string]: Matrix } = {};
+    private _matrixArrays: { [name: string]: Float32Array } = {};
     private _matrices3x3: { [name: string]: Float32Array } = {};
     private _matrices2x2: { [name: string]: Float32Array } = {};
     private _vectors2Arrays: { [name: string]: number[] } = {};
@@ -83,6 +86,7 @@ export class ShaderMaterial extends Material {
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _renderId: number;
+    private _multiview: boolean = false;
 
     /**
      * Instantiate a new shader material.
@@ -92,9 +96,10 @@ export class ShaderMaterial extends Material {
      * @param name Define the name of the material in the scene
      * @param scene Define the scene the material belongs to
      * @param shaderPath Defines  the route to the shader code in one of three ways:
-     *     - object - { vertex: "custom", fragment: "custom" }, used with Effect.ShadersStore["customVertexShader"] and Effect.ShadersStore["customFragmentShader"]
-     *     - object - { vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" }, used with shader code in <script> tags
-     *     - string - "./COMMON_NAME", used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
+     *  * object: { vertex: "custom", fragment: "custom" }, used with Effect.ShadersStore["customVertexShader"] and Effect.ShadersStore["customFragmentShader"]
+     *  * object: { vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" }, used with shader code in script tags
+     *  * object: { vertexSource: "vertex shader code string", fragmentSource: "fragment shader code string" } using with strings containing the shaders code
+     *  * string: "./COMMON_NAME", used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
      * @param options Define the options used to create the shader
      */
     constructor(name: string, scene: Scene, shaderPath: any, options: Partial<IShaderMaterialOptions> = {}) {
@@ -111,6 +116,22 @@ export class ShaderMaterial extends Material {
             defines: [],
             ...options
         };
+    }
+
+    /**
+     * Gets the shader path used to define the shader code
+     * It can be modified to trigger a new compilation
+     */
+    public get shaderPath(): any {
+        return this._shaderPath;
+    }
+
+    /**
+     * Sets the shader path used to define the shader code
+     * It can be modified to trigger a new compilation
+     */
+    public set shaderPath(shaderPath: any) {
+        this._shaderPath = shaderPath;
     }
 
     /**
@@ -333,6 +354,28 @@ export class ShaderMaterial extends Material {
     }
 
     /**
+     * Set a float32Array in the shader from a matrix array.
+     * @param name Define the name of the uniform as defined in the shader
+     * @param value Define the value to give to the uniform
+     * @return the material itself allowing "fluent" like uniform updates
+     */
+    public setMatrices(name: string, value: Matrix[]): ShaderMaterial {
+        this._checkUniform(name);
+
+        let float32Array = new Float32Array(value.length * 16);
+
+        for (var index = 0; index < value.length; index++) {
+            let matrix = value[index];
+
+            matrix.copyToArray(float32Array, index * 16);
+        }
+
+        this._matrixArrays[name] = float32Array;
+
+        return this;
+    }
+
+    /**
      * Set a mat3 in the shader from a Float32Array.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
@@ -406,7 +449,7 @@ export class ShaderMaterial extends Material {
             return false;
         }
 
-        return false;
+        return true;
     }
 
     /**
@@ -442,6 +485,19 @@ export class ShaderMaterial extends Material {
         var defines = [];
         var attribs = [];
         var fallbacks = new EffectFallbacks();
+
+        // global multiview
+        if (engine.getCaps().multiview &&
+            scene.activeCamera &&
+            scene.activeCamera.outputRenderTarget &&
+            scene.activeCamera.outputRenderTarget.getViewCount() > 1) {
+            this._multiview = true;
+            defines.push("#define MULTIVIEW");
+            if (this._options.uniforms.indexOf("viewProjection") !== -1 &&
+                this._options.uniforms.push("viewProjectionR") === -1) {
+                this._options.uniforms.push("viewProjectionR");
+            }
+        }
 
         for (var index = 0; index < this._options.defines.length; index++) {
             defines.push(this._options.defines[index]);
@@ -512,7 +568,7 @@ export class ShaderMaterial extends Material {
         var previousEffect = this._effect;
         var join = defines.join("\n");
 
-        this._effect = engine.createEffect(this._shaderPath, <EffectCreationOptions>{
+        this._effect = engine.createEffect(this._shaderPath, <IEffectCreationOptions>{
             attributes: attribs,
             uniformsNames: this._options.uniforms,
             uniformBuffersNames: this._options.uniformBuffers,
@@ -583,6 +639,9 @@ export class ShaderMaterial extends Material {
 
             if (this._options.uniforms.indexOf("viewProjection") !== -1) {
                 this._effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+                if (this._multiview) {
+                    this._effect.setMatrix("viewProjectionR", this.getScene()._transformMatrixR);
+                }
             }
 
             // Bones
@@ -653,6 +712,11 @@ export class ShaderMaterial extends Material {
             // Matrix
             for (name in this._matrices) {
                 this._effect.setMatrix(name, this._matrices[name]);
+            }
+
+            // MatrixArray
+            for (name in this._matrixArrays) {
+                this._effect.setMatrices(name, this._matrixArrays[name]);
             }
 
             // Matrix 3x3
@@ -739,9 +803,82 @@ export class ShaderMaterial extends Material {
      * @returns the cloned material
      */
     public clone(name: string): ShaderMaterial {
-        var newShaderMaterial = new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options);
+        var result = SerializationHelper.Clone(() => new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options), this);
 
-        return newShaderMaterial;
+        result.name = name;
+        result.id = name;
+
+        // Shader code path
+        if (typeof result._shaderPath === 'object') {
+            result._shaderPath = { ...result._shaderPath };
+        }
+
+        // Options
+        this._options = { ...this._options };
+
+        (Object.keys(this._options) as Array<keyof IShaderMaterialOptions>).forEach((propName) => {
+            const propValue = this._options[propName];
+            if (Array.isArray(propValue)) {
+                (<string[]>this._options[propName]) = propValue.slice(0);
+            }
+        });
+
+        // Texture
+        for (var key in this._textures) {
+            result.setTexture(key, this._textures[key]);
+        }
+
+        // Float
+        for (var key in this._floats) {
+            result.setFloat(key, this._floats[key]);
+        }
+
+        // Floats
+        for (var key in this._floatsArrays) {
+            result.setFloats(key, this._floatsArrays[key]);
+        }
+
+        // Color3
+        for (var key in this._colors3) {
+            result.setColor3(key, this._colors3[key]);
+        }
+
+        // Color4
+        for (var key in this._colors4) {
+            result.setColor4(key, this._colors4[key]);
+        }
+
+        // Vector2
+        for (var key in this._vectors2) {
+            result.setVector2(key, this._vectors2[key]);
+        }
+
+        // Vector3
+        for (var key in this._vectors3) {
+            result.setVector3(key, this._vectors3[key]);
+        }
+
+        // Vector4
+        for (var key in this._vectors4) {
+            result.setVector4(key, this._vectors4[key]);
+        }
+
+        // Matrix
+        for (var key in this._matrices) {
+            result.setMatrix(key,  this._matrices[key]);
+        }
+
+        // Matrix 3x3
+        for (var key in this._matrices3x3) {
+            result.setMatrix3x3(key, this._matrices3x3[key]);
+        }
+
+        // Matrix 2x2
+        for (var key in this._matrices2x2) {
+            result.setMatrix2x2(key, this._matrices2x2[key]);
+        }
+
+        return result;
     }
 
     /**
@@ -806,7 +943,7 @@ export class ShaderMaterial extends Material {
             serializationObject.floats[name] = this._floats[name];
         }
 
-        // Float s
+        // Floats
         serializationObject.FloatArrays = {};
         for (name in this._floatsArrays) {
             serializationObject.FloatArrays[name] = this._floatsArrays[name];
@@ -858,6 +995,12 @@ export class ShaderMaterial extends Material {
         serializationObject.matrices = {};
         for (name in this._matrices) {
             serializationObject.matrices[name] = this._matrices[name].asArray();
+        }
+
+        // MatrixArray
+        serializationObject.matrixArray = {};
+        for (name in this._matrixArrays) {
+            serializationObject.matrixArray[name] = this._matrixArrays[name];
         }
 
         // Matrix 3x3
@@ -985,6 +1128,11 @@ export class ShaderMaterial extends Material {
         // Matrix
         for (name in source.matrices) {
             material.setMatrix(name, Matrix.FromArray(source.matrices[name]));
+        }
+
+        // MatrixArray
+        for (name in source.matrixArray) {
+            material._matrixArrays[name] = new Float32Array(source.matrixArray[name]);
         }
 
         // Matrix 3x3

@@ -1,17 +1,14 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
+import { _TypeStore } from '../../../../Misc/typeStore';
 
 /**
  * Block used to output the final color
  */
 export class FragmentOutputBlock extends NodeMaterialBlock {
-    /**
-     * Gets or sets a boolean indicating if this block will output an alpha value
-     */
-    public alphaBlendingEnabled = false;
     /**
      * Create a new FragmentOutputBlock
      * @param name defines the block name
@@ -19,7 +16,11 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment, true);
 
-        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color3OrColor4);
+        this.registerInput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, true);
+        this.registerInput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, true);
+        this.registerInput("a", NodeMaterialBlockConnectionPointTypes.Float, true);
+
+        this.rgb.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Float);
     }
 
     /**
@@ -31,24 +32,52 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the color input component
+     * Gets the rgba input component
      */
-    public get color(): NodeMaterialConnectionPoint {
+    public get rgba(): NodeMaterialConnectionPoint {
         return this._inputs[0];
+    }
+
+    /**
+     * Gets the rgb input component
+     */
+    public get rgb(): NodeMaterialConnectionPoint {
+        return this._inputs[1];
+    }
+
+    /**
+     * Gets the a input component
+     */
+    public get a(): NodeMaterialConnectionPoint {
+        return this._inputs[2];
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let input = this.color;
-        state.sharedData.hints.needAlphaBlending = this.alphaBlendingEnabled;
+        let rgba = this.rgba;
+        let rgb = this.rgb;
+        let a = this.a;
+        state.sharedData.hints.needAlphaBlending = rgba.isConnected || a.isConnected;
 
-        if (input.connectedPoint && input.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Color3) {
-            state.compilationString += `gl_FragColor = vec4(${input.associatedVariableName}, 1.0);\r\n`;
+        if (rgba.connectedPoint) {
+            state.compilationString += `gl_FragColor = ${rgba.associatedVariableName};\r\n`;
+        } else if (rgb.connectedPoint) {
+            if (a.connectedPoint) {
+                state.compilationString += `gl_FragColor = vec4(${rgb.associatedVariableName}, ${a.associatedVariableName});\r\n`;
+            } else {
+                if (rgb.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Float) {
+                    state.compilationString += `gl_FragColor = vec4(${rgb.associatedVariableName}, ${rgb.associatedVariableName}, ${rgb.associatedVariableName}, 1.0);\r\n`;
+                } else {
+                    state.compilationString += `gl_FragColor = vec4(${rgb.associatedVariableName}, 1.0);\r\n`;
+                }
+            }
         } else {
-            state.compilationString += `gl_FragColor = ${input.associatedVariableName};\r\n`;
+            state.sharedData.checks.notConnectedNonOptionalInputs.push(rgba);
         }
 
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.FragmentOutputBlock"] = FragmentOutputBlock;

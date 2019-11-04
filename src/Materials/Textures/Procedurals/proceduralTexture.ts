@@ -2,12 +2,12 @@ import { serialize } from "../../../Misc/decorators";
 import { Observable } from "../../../Misc/observable";
 import { Nullable } from "../../../types";
 import { Scene } from "../../../scene";
-import { Matrix, Vector3, Vector2, Color3, Color4 } from "../../../Maths/math";
+import { Matrix, Vector3, Vector2 } from "../../../Maths/math.vector";
+import { Color4, Color3 } from '../../../Maths/math.color';
 import { Engine } from "../../../Engines/engine";
 import { VertexBuffer } from "../../../Meshes/buffer";
 import { SceneComponentConstants } from "../../../sceneComponent";
 import { _TimeToken } from "../../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../../States/index";
 
 import { Material } from "../../../Materials/material";
 import { Effect } from "../../../Materials/effect";
@@ -16,6 +16,7 @@ import { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTex
 import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneComponent";
 
 import "../../../Engines/Extensions/engine.renderTarget";
+import "../../../Engines/Extensions/engine.renderTargetCube";
 import "../../../Shaders/procedural.vertex";
 import { DataBuffer } from '../../../Meshes/dataBuffer';
 

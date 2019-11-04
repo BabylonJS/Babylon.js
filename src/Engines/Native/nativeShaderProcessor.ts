@@ -35,7 +35,7 @@ export class NativeShaderProcessor extends WebGL2ShaderProcessor {
     private _textureCount: number;
     private _uniforms: Array<string>;
 
-    public linePreProcessor(line: string): string {
+    public lineProcessor(line: string): string {
         for (const replacement of this._replacements) {
             line = line.replace(replacement.searchValue, replacement.replaceValue);
         }

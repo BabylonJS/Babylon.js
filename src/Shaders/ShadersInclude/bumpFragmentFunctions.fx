@@ -7,7 +7,7 @@
 		uniform mat4 normalMatrix;
 	#endif
 
-	vec3 perturbNormal(mat3 cotangentFrame, vec2 uv, vec3 textureSample, float scale)
+	vec3 perturbNormal(mat3 cotangentFrame, vec3 textureSample, float scale)
 	{
 		textureSample = textureSample * 2.0 - 1.0;
 
@@ -58,7 +58,12 @@
 
 	vec3 perturbNormal(mat3 cotangentFrame, vec2 uv)
 	{
-		return perturbNormal(cotangentFrame, uv, texture2D(bumpSampler, uv).xyz, vBumpInfos.y);
+		return perturbNormal(cotangentFrame, texture2D(bumpSampler, uv).xyz, vBumpInfos.y);
+	}
+
+	vec3 perturbNormal(mat3 cotangentFrame, vec3 color)
+	{
+		return perturbNormal(cotangentFrame, color, vBumpInfos.y);
 	}
 
 	// Thanks to http://www.thetenthplanet.de/archives/1180

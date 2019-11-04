@@ -1,7 +1,10 @@
+import { IWebRequest } from './interfaces/iWebRequest';
+import { Nullable } from '../types';
+
 /**
  * Extended version of XMLHttpRequest with support for customizations (headers, ...)
  */
-export class WebRequest {
+export class WebRequest implements IWebRequest {
     private _xhr = new XMLHttpRequest();
 
     /**
@@ -13,7 +16,7 @@ export class WebRequest {
     /**
      * Add callback functions in this array to update all the requests before they get sent to the network
      */
-    public static CustomRequestModifiers = new Array<(request: XMLHttpRequest) => void>();
+    public static CustomRequestModifiers = new Array<(request: XMLHttpRequest, url: string) => void>();
 
     private _injectCustomRequestHeaders(): void {
         for (let key in WebRequest.CustomRequestHeaders) {
@@ -126,7 +129,7 @@ export class WebRequest {
      */
     public open(method: string, url: string): void {
         for (var update of WebRequest.CustomRequestModifiers) {
-            update(this._xhr);
+            update(this._xhr, url);
         }
 
         // Clean url
@@ -134,5 +137,23 @@ export class WebRequest {
         url = url.replace("file:https:", "https:");
 
         return this._xhr.open(method, url, true);
+    }
+
+    /**
+     * Sets the value of a request header.
+     * @param name The name of the header whose value is to be set
+     * @param value The value to set as the body of the header
+     */
+    setRequestHeader(name: string, value: string): void {
+        this._xhr.setRequestHeader(name, value);
+    }
+
+    /**
+     * Get the string containing the text of a particular header's value.
+     * @param name The name of the header
+     * @returns The string containing the text of the given header name
+     */
+    getResponseHeader(name: string): Nullable<string> {
+        return this._xhr.getResponseHeader(name);
     }
 }

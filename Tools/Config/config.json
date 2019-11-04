@@ -16,6 +16,7 @@
         "documentationFile": "documentation.d.ts",
         "intellisenseSources": [
             "../../dist/preview release/babylon.d.ts",
+            "../../dist/preview release/typedoc.d.ts",
             "../../dist/preview release/gui/babylon.gui.d.ts",
             "../../dist/preview release/loaders/babylonjs.loaders.d.ts",
             "../../dist/preview release/serializers/babylonjs.serializers.d.ts",
@@ -137,8 +138,8 @@
                 ],
                 "typings": "babylon.module.d.ts",
                 "index": "babylon.js",
-                "dependencies": [],
-                "devDependencies": []
+                "dependencies": {},
+                "devDependencies": {}
             },
             "es6": {
                 "packageName": "@babylonjs/core",
@@ -533,6 +534,7 @@
             }
         ],
         "build": {
+            "ignoreInWorkerMode": true,
             "ignoreInTestMode": true,
             "mainFolder": "./inspector/",
             "uncheckedLintImports": [
@@ -552,11 +554,13 @@
                         "babylonjs": "BABYLON",
                         "babylonjs-loaders": "BABYLON",
                         "babylonjs-serializers": "BABYLON",
+                        "babylonjs-materials": "BABYLON",
                         "babylonjs-gltf2interface": "BABYLON.GLTF2",
                         "react": "React",
                         "babylonjs-gui": "BABYLON.GUI",
                         "@babylonjs/core": "BABYLON",
                         "@babylonjs/loaders": "BABYLON",
+                        "@babylonjs/materials": "BABYLON",
                         "@babylonjs/serializers": "BABYLON",
                         "@babylonjs/gui": "BABYLON.GUI",
                         "@fortawesome": false,
@@ -590,14 +594,17 @@
                 "entry": "./legacy/legacy.ts"
             }
         ],
-        "build": {
+        "build": {            
+            "ignoreInWorkerMode": true,
             "ignoreInTestMode": true,
             "mainFolder": "./nodeEditor/",
             "uncheckedLintImports": [
                 "react",
                 "react-dom",
+                "dagre",
                 "re-resizable",
-                "glTF"
+                "glTF",
+                "file-saver"
             ],
             "umd": {
                 "packageName": "babylonjs-node-editor",

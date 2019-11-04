@@ -5,6 +5,9 @@ import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Engine } from "../../Engines/engine";
 import { Texture } from "../../Materials/Textures/texture";
+
+import "../../Engines/Extensions/engine.videoTexture";
+
 /**
  * Settings for finer control over video usage
  */
@@ -65,6 +68,7 @@ export class VideoTexture extends Texture {
     private _displayingPosterTexture = false;
     private _settings: VideoTextureSettings;
     private _createInternalTextureOnEvent: string;
+    private _frameId = -1;
 
     /**
      * Creates a video texture.
@@ -296,6 +300,13 @@ export class VideoTexture extends Texture {
         if (this._displayingPosterTexture) {
             return;
         }
+
+        let frameId = this.getScene()!.getFrameId();
+        if (this._frameId === frameId) {
+            return;
+        }
+
+        this._frameId = frameId;
 
         this._engine.updateVideoTexture(this._texture, this.video, this._invertY);
     }

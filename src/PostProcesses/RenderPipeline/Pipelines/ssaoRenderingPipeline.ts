@@ -1,4 +1,4 @@
-import { Vector2, Vector3, Tmp } from "../../../Maths/math";
+import { Vector2, Vector3, TmpVectors } from "../../../Maths/math.vector";
 import { Camera } from "../../../Cameras/camera";
 import { Effect } from "../../../Materials/effect";
 import { Texture } from "../../../Materials/Textures/texture";
@@ -12,6 +12,8 @@ import { BlurPostProcess } from "../../../PostProcesses/blurPostProcess";
 import { Constants } from "../../../Engines/constants";
 import { serialize } from "../../../Misc/decorators";
 import { Scene } from "../../../scene";
+
+import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
 import "../../../Shaders/ssao.fragment";
 import "../../../Shaders/ssaoCombine.fragment";
@@ -256,7 +258,7 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
             this._scene.getEngine(), false);
 
         this._ssaoCombinePostProcess.onApply = (effect: Effect) => {
-            effect.setVector4("viewport", Tmp.Vector4[0].copyFromFloats(0, 0, 1.0, 1.0));
+            effect.setVector4("viewport", TmpVectors.Vector4[0].copyFromFloats(0, 0, 1.0, 1.0));
             effect.setTextureFromPostProcess("originalColor", this._originalColorPostProcess);
         };
     }

@@ -2,7 +2,6 @@ import { Logger } from "../Misc/logger";
 import { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
-import { Tmp, Color3 } from "../Maths/math";
 import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -11,10 +10,12 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { Light } from "../Lights/light";
 
 import { UniformBuffer } from "./uniformBuffer";
-import { Effect, EffectFallbacks, EffectCreationOptions } from "./effect";
+import { Effect, IEffectCreationOptions } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { WebVRFreeCamera } from '../Cameras/VR/webVRCamera';
 import { MaterialDefines } from "./materialDefines";
+import { Color3, TmpColors } from '../Maths/math.color';
+import { EffectFallbacks } from './effectFallbacks';
 
 /**
  * "Static Class" containing the most commonly used helper while dealing with material for
@@ -75,9 +76,7 @@ export class MaterialHelper {
     public static BindTextureMatrix(texture: BaseTexture, uniformBuffer: UniformBuffer, key: string): void {
         var matrix = texture.getTextureMatrix();
 
-        if (!matrix.isIdentityAs3x2()) {
-            uniformBuffer.updateMatrix(key + "Matrix", matrix);
-        }
+        uniformBuffer.updateMatrix(key + "Matrix", matrix);
     }
 
     /**
@@ -479,17 +478,17 @@ export class MaterialHelper {
      * @param defines The defines helping in the list generation
      * @param maxSimultaneousLights The maximum number of simultanous light allowed in the effect
      */
-    public static PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | EffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights = 4): void {
+    public static PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | IEffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights = 4): void {
         let uniformsList: string[];
         let uniformBuffersList: Nullable<string[]> = null;
 
-        if ((<EffectCreationOptions>uniformsListOrOptions).uniformsNames) {
-            var options = <EffectCreationOptions>uniformsListOrOptions;
+        if ((<IEffectCreationOptions>uniformsListOrOptions).uniformsNames) {
+            var options = <IEffectCreationOptions>uniformsListOrOptions;
             uniformsList = options.uniformsNames;
             uniformBuffersList = options.uniformBuffersNames;
             samplersList = options.samplers;
             defines = options.defines;
-            maxSimultaneousLights = options.maxSimultaneousLights;
+            maxSimultaneousLights = options.maxSimultaneousLights || 0;
         } else {
             uniformsList = <string[]>uniformsListOrOptions;
             if (!samplersList) {
@@ -646,23 +645,6 @@ export class MaterialHelper {
     }
 
     /**
-     * Binds the light shadow information to the effect for the given mesh.
-     * @param light The light containing the generator
-     * @param scene The scene the lights belongs to
-     * @param mesh The mesh we are binding the information to render
-     * @param lightIndex The light index in the effect used to render the mesh
-     * @param effect The effect we are binding the data to
-     */
-    public static BindLightShadow(light: Light, mesh: AbstractMesh, lightIndex: string, effect: Effect): void {
-        if (light.shadowEnabled && mesh.receiveShadows) {
-            var shadowGenerator = light.getShadowGenerator();
-            if (shadowGenerator) {
-                shadowGenerator.bindShadowLight(lightIndex, effect);
-            }
-        }
-    }
-
-    /**
      * Binds the light information to the effect.
      * @param light The light containing the generator
      * @param effect The effect we are binding the data to
@@ -677,31 +659,49 @@ export class MaterialHelper {
      * @param light Light to bind
      * @param lightIndex Light index
      * @param scene The scene where the light belongs to
-     * @param mesh The mesh we are binding the information to render
      * @param effect The effect we are binding the data to
      * @param useSpecular Defines if specular is supported
      * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
+     * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      */
-    public static BindLight(light: Light, lightIndex: number, scene: Scene, mesh: AbstractMesh, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff = false): void {
+    public static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff = false, rebuildInParallel = false): void {
         let iAsString = lightIndex.toString();
+        let needUpdate = false;
 
-        let scaledIntensity = light.getScaledIntensity();
+        if (rebuildInParallel && light._uniformBuffer._alreadyBound) {
+            return;
+        }
+
         light._uniformBuffer.bindToEffect(effect, "Light" + iAsString);
 
-        MaterialHelper.BindLightProperties(light, effect, lightIndex);
+        if (light._renderId !== scene.getRenderId() || !light._uniformBuffer.useUbo) {
+            light._renderId = scene.getRenderId();
 
-        light.diffuse.scaleToRef(scaledIntensity, Tmp.Color3[0]);
-        light._uniformBuffer.updateColor4("vLightDiffuse", Tmp.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, iAsString);
-        if (useSpecular) {
-            light.specular.scaleToRef(scaledIntensity, Tmp.Color3[1]);
-            light._uniformBuffer.updateColor3("vLightSpecular", Tmp.Color3[1], iAsString);
+            let scaledIntensity = light.getScaledIntensity();
+
+            MaterialHelper.BindLightProperties(light, effect, lightIndex);
+
+            light.diffuse.scaleToRef(scaledIntensity, TmpColors.Color3[0]);
+            light._uniformBuffer.updateColor4("vLightDiffuse", TmpColors.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, iAsString);
+            if (useSpecular) {
+                light.specular.scaleToRef(scaledIntensity, TmpColors.Color3[1]);
+                light._uniformBuffer.updateColor3("vLightSpecular", TmpColors.Color3[1], iAsString);
+            }
+            needUpdate = true;
         }
 
         // Shadows
-        if (scene.shadowsEnabled) {
-            this.BindLightShadow(light, mesh, iAsString, effect);
+        if (scene.shadowsEnabled && light.shadowEnabled) {
+            var shadowGenerator = light.getShadowGenerator();
+            if (shadowGenerator) {
+                shadowGenerator.bindShadowLight(iAsString, effect);
+                needUpdate = true;
+            }
         }
-        light._uniformBuffer.update();
+
+        if (needUpdate) {
+            light._uniformBuffer.update();
+        }
     }
 
     /**
@@ -712,14 +712,15 @@ export class MaterialHelper {
      * @param defines The generated defines for the effect
      * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
      * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
+     * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      */
-    public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, usePhysicalLightFalloff = false): void {
+    public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, usePhysicalLightFalloff = false, rebuildInParallel = false): void {
         let len = Math.min(mesh.lightSources.length, maxSimultaneousLights);
 
         for (var i = 0; i < len; i++) {
 
             let light = mesh.lightSources[i];
-            this.BindLight(light, i, scene, mesh, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], usePhysicalLightFalloff);
+            this.BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], usePhysicalLightFalloff, rebuildInParallel);
         }
     }
 

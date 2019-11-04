@@ -1,13 +1,13 @@
 import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { PointerInfo } from "../Events/pointerEvents";
-import { Quaternion, Matrix, Vector3, Color3 } from "../Maths/math";
+import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
+import { Color3 } from '../Maths/math.color';
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { LinesMesh } from "../Meshes/linesMesh";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
@@ -44,8 +44,9 @@ export class PlaneRotationGizmo extends Gizmo {
      * @param planeNormal The normal of the plane which the gizmo will be able to rotate on
      * @param color The color of the gizmo
      * @param tessellation Amount of tessellation to be used when creating rotation circles
+     * @param useEulerRotation Use and update Euler angle instead of quaternion
      */
-    constructor(planeNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, parent: Nullable<RotationGizmo> = null) {
+    constructor(planeNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, parent: Nullable<RotationGizmo> = null, useEulerRotation = false) {
         super(gizmoLayer);
         this._parent = parent;
         // Create Material
@@ -99,7 +100,7 @@ export class PlaneRotationGizmo extends Gizmo {
         var amountToRotate = new Quaternion();
         this.dragBehavior.onDragObservable.add((event) => {
             if (this.attachedMesh) {
-                if (!this.attachedMesh.rotationQuaternion) {
+                if (!this.attachedMesh.rotationQuaternion || useEulerRotation) {
                     this.attachedMesh.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.attachedMesh.rotation.y, this.attachedMesh.rotation.x, this.attachedMesh.rotation.z);
                 }
 
@@ -173,6 +174,12 @@ export class PlaneRotationGizmo extends Gizmo {
                 } else {
                     // Rotate selected mesh quaternion over rotated axis
                     amountToRotate.multiplyToRef(this.attachedMesh.rotationQuaternion, this.attachedMesh.rotationQuaternion);
+                }
+
+                if (useEulerRotation) {
+                    this.attachedMesh.rotationQuaternion.toEulerAnglesToRef(tmpVector);
+                    this.attachedMesh.rotationQuaternion = null;
+                    this.attachedMesh.rotation.copyFrom(tmpVector);
                 }
 
                 lastDragPosition.copyFrom(event.dragPlanePoint);

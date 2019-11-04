@@ -1,8 +1,8 @@
 import { Nullable } from "../../../types";
 import { serialize, serializeAsTexture, SerializationHelper } from "../../../Misc/decorators";
-import { IAnimatable } from "../../../Misc/tools";
+import { IAnimatable } from '../../../Animations/animatable.interface';
 import { Logger } from "../../../Misc/logger";
-import { Vector2, Vector3, Matrix, Vector4 } from "../../../Maths/math";
+import { Vector2, Vector3, Matrix, Vector4 } from "../../../Maths/math.vector";
 import { Scalar } from "../../../Maths/math.scalar";
 import { Camera } from "../../../Cameras/camera";
 import { Effect } from "../../../Materials/effect";
@@ -22,6 +22,8 @@ import { _TypeStore } from '../../../Misc/typeStore';
 import { MotionBlurPostProcess } from "../../motionBlurPostProcess";
 
 declare type Animation = import("../../../Animations/animation").Animation;
+
+import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
 import "../../../Shaders/standard.fragment";
 /**
@@ -252,6 +254,11 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     @serialize()
     public lensFlareDistortionStrength: number = 16.0;
     /**
+     * Configures the blur intensity used for for lens flare (halo)
+     */
+    @serialize()
+    public lensFlareBlurWidth: number = 512.0;
+    /**
      * Lens star texture must be used to simulate rays on the flares and is available
      * in the documentation
      */
@@ -332,6 +339,8 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     private _isObjectBasedMotionBlur: boolean = false;
 
     private _floatTextureType: number;
+
+    private _camerasToBeAttached: Array<Camera> = [];
 
     @serialize()
     private _ratio: number;
@@ -548,7 +557,9 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
      */
     constructor(name: string, scene: Scene, ratio: number, originalPostProcess: Nullable<PostProcess> = null, cameras?: Camera[]) {
         super(scene.getEngine(), name);
-        this._cameras = cameras || [];
+        this._cameras = cameras || scene.cameras;
+        this._cameras = this._cameras.slice();
+        this._camerasToBeAttached = this._cameras.slice();
 
         // Initialize
         this._scene = scene;
@@ -568,6 +579,11 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         var scene = this._scene;
 
         this._disposePostProcesses();
+        if (this._cameras !== null) {
+            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
+            // get back cameras to be used to reattach pipeline
+            this._cameras = this._camerasToBeAttached.slice();
+        }
         this._reset();
 
         // Create pass post-process
@@ -945,7 +961,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         this.lensFlarePostProcess = new PostProcess("HDRLensFlare", "standard", ["strength", "ghostDispersal", "haloWidth", "resolution", "distortionStrength"], ["lensColorSampler"], ratio / 2, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define LENS_FLARE", Constants.TEXTURETYPE_UNSIGNED_INT);
         this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRLensFlare", () => { return this.lensFlarePostProcess; }, true));
 
-        this._createBlurPostProcesses(scene, ratio / 4, 2);
+        this._createBlurPostProcesses(scene, ratio / 4, 2, "lensFlareBlurWidth");
 
         this.lensFlareComposePostProcess = new PostProcess("HDRLensFlareCompose", "standard", ["lensStarMatrix"], ["otherSampler", "lensDirtSampler", "lensStarSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define LENS_FLARE_COMPOSE", Constants.TEXTURETYPE_UNSIGNED_INT);
         this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRLensFlareCompose", () => { return this.lensFlareComposePostProcess; }, true));

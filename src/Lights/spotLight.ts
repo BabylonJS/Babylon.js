@@ -1,7 +1,7 @@
 import { serialize, serializeAsTexture } from "../Misc/decorators";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Matrix, Vector3 } from "../Maths/math";
+import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Effect } from "../Materials/effect";
@@ -9,7 +9,6 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Texture } from '../Materials/Textures/texture';
 
 Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
@@ -352,12 +351,21 @@ export class SpotLight extends ShadowLight {
             normalizeDirection = Vector3.Normalize(this.direction);
         }
 
-        this._uniformBuffer.updateFloat4("vLightDirection",
-            normalizeDirection.x,
-            normalizeDirection.y,
-            normalizeDirection.z,
-            this._cosHalfAngle,
-            lightIndex);
+        if (this.getScene().useRightHandedSystem) {
+            this._uniformBuffer.updateFloat4("vLightDirection",
+                -normalizeDirection.x,
+                -normalizeDirection.y,
+                -normalizeDirection.z,
+                this._cosHalfAngle,
+                lightIndex);
+        } else {
+            this._uniformBuffer.updateFloat4("vLightDirection",
+                normalizeDirection.x,
+                normalizeDirection.y,
+                normalizeDirection.z,
+                this._cosHalfAngle,
+                lightIndex);
+        }
 
         this._uniformBuffer.updateFloat4("vLightFalloff",
             this.range,
@@ -380,6 +388,24 @@ export class SpotLight extends ShadowLight {
             effect.setMatrix("textureProjectionMatrix" + lightIndex, this._projectionTextureMatrix);
             effect.setTexture("projectionLightSampler" + lightIndex, this.projectionTexture);
         }
+        return this;
+    }
+
+    public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {
+        var normalizeDirection;
+
+        if (this.computeTransformedInformation()) {
+            normalizeDirection = Vector3.Normalize(this.transformedDirection);
+        } else {
+            normalizeDirection = Vector3.Normalize(this.direction);
+        }
+
+        if (this.getScene().useRightHandedSystem) {
+            effect.setFloat3(lightDataUniformName, -normalizeDirection.x, -normalizeDirection.y, -normalizeDirection.z);
+        } else {
+            effect.setFloat3(lightDataUniformName, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z);
+        }
+
         return this;
     }
 

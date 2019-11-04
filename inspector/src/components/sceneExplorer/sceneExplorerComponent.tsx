@@ -78,7 +78,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         this.forceUpdate();
     }
 
-    componentWillMount() {
+    componentDidMount() {
         this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add((entity) => {
             if (this.state.selectedEntity !== entity) {
                 this.setState({ selectedEntity: entity });
@@ -292,6 +292,14 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             }
         });
 
+        let materials = [];
+
+        materials.push(...scene.materials);
+
+        if (scene.multiMaterials && scene.multiMaterials.length) {
+            materials.push(...scene.multiMaterials);
+        }
+
         return (
             <div id="tree" onContextMenu={e => e.preventDefault()}>
                 <SceneExplorerFilterComponent onFilter={(filter) => this.filterContent(filter)} />
@@ -304,7 +312,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                     scene.skeletons.length > 0 &&
                     <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.skeletons} label="Skeletons" offset={1} filter={this.state.filter} />
                 }
-                <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.materials} label="Materials" offset={1} filter={this.state.filter} />
+                <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={materials} label="Materials" offset={1} filter={this.state.filter} />
                 <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={textures} label="Textures" offset={1} filter={this.state.filter} />
                 {
                     postProcessses.length > 0 &&

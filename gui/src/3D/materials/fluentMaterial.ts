@@ -1,9 +1,9 @@
 import { Nullable } from "babylonjs/types";
 import { serializeAsColor4, serializeAsVector3, serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Color3, Vector3, Color4, Matrix, Tmp } from "babylonjs/Maths/math";
+import { Color3, Vector3, Color4, Matrix, TmpVectors } from "babylonjs/Maths/math";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
-import { EffectCreationOptions } from "babylonjs/Materials/effect";
+import { IEffectCreationOptions } from "babylonjs/Materials/effect";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
 import { VertexBuffer } from "babylonjs/Meshes/buffer";
@@ -192,7 +192,7 @@ export class FluentMaterial extends PushMaterial {
             var samplers = ["albedoSampler"];
             var uniformBuffers = new Array<string>();
 
-            MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
+            MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
@@ -202,7 +202,7 @@ export class FluentMaterial extends PushMaterial {
 
             var join = defines.toString();
             subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                <EffectCreationOptions>{
+                <IEffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
@@ -256,8 +256,8 @@ export class FluentMaterial extends PushMaterial {
                 this._activeEffect.setFloat("edgeSmoothingValue", this.edgeSmoothingValue);
                 this._activeEffect.setFloat("borderMinValue", this.borderMinValue);
 
-                mesh.getBoundingInfo().boundingBox.extendSize.multiplyToRef(mesh.scaling, Tmp.Vector3[0]);
-                this._activeEffect.setVector3("scaleFactor", Tmp.Vector3[0]);
+                mesh.getBoundingInfo().boundingBox.extendSize.multiplyToRef(mesh.scaling, TmpVectors.Vector3[0]);
+                this._activeEffect.setVector3("scaleFactor", TmpVectors.Vector3[0]);
             }
 
             if (defines.HOVERLIGHT) {

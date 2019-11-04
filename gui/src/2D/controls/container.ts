@@ -4,6 +4,7 @@ import { Logger } from "babylonjs/Misc/logger";
 import { Control } from "./control";
 import { Measure } from "../measure";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Root class for 2D containers
@@ -20,6 +21,16 @@ export class Container extends Control {
     protected _adaptWidthToChildren = false;
     /** @hidden */
     protected _adaptHeightToChildren = false;
+
+    /**
+     * Gets or sets a boolean indicating that layout cycle errors should be displayed on the console
+     */
+    public logLayoutCycleErrors = false;
+
+    /**
+     * Gets or sets the number of layout cycles (a change involved by a control while evaluating the layout) allowed
+     */
+    public maxLayoutCycle = 3;
 
     /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
     public get adaptHeightToChildren(): boolean {
@@ -343,9 +354,9 @@ export class Container extends Control {
             }
             rebuildCount++;
         }
-        while (this._rebuildLayout && rebuildCount < 3);
+        while (this._rebuildLayout && rebuildCount < this.maxLayoutCycle);
 
-        if (rebuildCount >= 3) {
+        if (rebuildCount >= 3 && this.logLayoutCycleErrors) {
             Logger.Error(`Layout cycle detected in GUI (Container name=${this.name}, uniqueId=${this.uniqueId})`);
         }
 
@@ -447,3 +458,4 @@ export class Container extends Control {
         }
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.Container"] = Container;

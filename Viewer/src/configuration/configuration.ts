@@ -1,6 +1,6 @@
-import { EngineOptions } from 'babylonjs/Engines/engine';
 import { ICameraConfiguration, IDefaultRenderingPipelineConfiguration, IGroundConfiguration, ILightConfiguration, IModelConfiguration, IObserversConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, ISkyboxConfiguration, ITemplateConfiguration, IVRConfiguration } from './interfaces';
 import { IEnvironmentMapConfiguration } from './interfaces/environmentMapConfiguration';
+import { EngineOptions } from 'babylonjs/Engines/thinEngine';
 
 export function getConfigurationKey(key: string, configObject: any) {
     let splits = key.split('.');

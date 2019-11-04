@@ -380,7 +380,7 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         private _focusedControl;
         private _blockNextFocusCheck;
         private _renderScale;
-        private _rootCanvas;
+        private _rootElement;
         private _cursorChanged;
         /**
         * Define type to string to ensure compatibility across browsers
@@ -1198,6 +1198,14 @@ declare module "babylonjs-gui/2D/controls/container" {
         protected _adaptWidthToChildren: boolean;
         /** @hidden */
         protected _adaptHeightToChildren: boolean;
+        /**
+         * Gets or sets a boolean indicating that layout cycle errors should be displayed on the console
+         */
+        logLayoutCycleErrors: boolean;
+        /**
+         * Gets or sets the number of layout cycles (a change involved by a control while evaluating the layout) allowed
+         */
+        maxLayoutCycle: number;
         /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
         adaptHeightToChildren: boolean;
         /** Gets or sets a boolean indicating if the container should try to adapt to its children width */
@@ -1449,7 +1457,7 @@ declare module "babylonjs-gui/2D/controls/image" {
      */
     export class Image extends Control {
         name?: string | undefined;
-        private static _WorkingCanvas;
+        private _workingCanvas;
         private _domImage;
         private _imageWidth;
         private _imageHeight;
@@ -1474,6 +1482,10 @@ declare module "babylonjs-gui/2D/controls/image" {
          * Observable notified when the content is loaded
          */
         onImageLoadedObservable: Observable<Image>;
+        /**
+         * Observable notified when _sourceLeft, _sourceTop, _sourceWidth and _sourceHeight are computed
+         */
+        onSVGAttributesComputedObservable: Observable<Image>;
         /**
          * Gets a boolean indicating that the content is loaded
          */
@@ -1536,6 +1548,15 @@ declare module "babylonjs-gui/2D/controls/image" {
          * Gets or sets image source url
          */
         source: Nullable<string>;
+        /**
+         * Checks for svg document with icon id present
+         */
+        private _svgCheck;
+        /**
+         * Sets sourceLeft, sourceTop, sourceWidth, sourceHeight automatically
+         * given external svg file and icon id
+         */
+        private _getSVGAttribs;
         /**
          * Gets or sets the cell width to use when animation sheet is enabled
          * @see http://doc.babylonjs.com/how_to/gui#image
@@ -1614,6 +1635,10 @@ declare module "babylonjs-gui/2D/controls/button" {
          * Function called to generate a pointer up animation
          */
         pointerUpAnimation: () => void;
+        /**
+         * Gets or sets a boolean indicating that the button will let internal controls handle picking instead of doing it directly using its bounding info
+         */
+        delegatePickingToChildren: boolean;
         private _image;
         /**
          * Returns the image part of the button (if any)
@@ -1684,6 +1709,10 @@ declare module "babylonjs-gui/2D/controls/stackPanel" {
         private _manualWidth;
         private _manualHeight;
         private _doNotTrackManualChanges;
+        /**
+         * Gets or sets a boolean indicating that layou warnings should be ignored
+         */
+        ignoreLayoutWarnings: boolean;
         /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
         isVertical: boolean;
         /**
@@ -1898,6 +1927,8 @@ declare module "babylonjs-gui/2D/controls/inputText" {
         _connectedVirtualKeyboard: Nullable<VirtualKeyboard>;
         /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
         promptMessage: string;
+        /** Force disable prompt on mobile device */
+        disableMobilePrompt: boolean;
         /** Observable raised when the text changes */
         onTextChangedObservable: Observable<InputText>;
         /** Observable raised just before an entered character is to be added */
@@ -3012,7 +3043,7 @@ declare module "babylonjs-gui/2D/controls/index" {
     export * from "babylonjs-gui/2D/controls/statics";
 }
 declare module "babylonjs-gui/2D/adtInstrumentation" {
-    import { PerfCounter } from "babylonjs/Misc/tools";
+    import { PerfCounter } from "babylonjs/Misc/perfCounter";
     import { IDisposable } from "babylonjs/scene";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     /**
@@ -3063,6 +3094,54 @@ declare module "babylonjs-gui/2D/adtInstrumentation" {
         dispose(): void;
     }
 }
+declare module "babylonjs-gui/2D/xmlLoader" {
+    /**
+    * Class used to load GUI via XML.
+    */
+    export class XmlLoader {
+        private _nodes;
+        private _nodeTypes;
+        private _isLoaded;
+        private _objectAttributes;
+        private _parentClass;
+        /**
+        * Create a new xml loader
+        * @param parentClass Sets the class context. Used when the loader is instanced inside a class and not in a global context
+        */
+        constructor(parentClass?: null);
+        private _getChainElement;
+        private _getClassAttribute;
+        private _createGuiElement;
+        private _parseGrid;
+        private _parseElement;
+        private _prepareSourceElement;
+        private _parseElementsFromSource;
+        private _parseXml;
+        /**
+         * Gets if the loading has finished.
+         * @returns whether the loading has finished or not
+        */
+        isLoaded(): boolean;
+        /**
+         * Gets a loaded node / control by id.
+         * @param id the Controls id set in the xml
+         * @returns element of type Control
+        */
+        getNodeById(id: string): any;
+        /**
+         * Gets all loaded nodes / controls
+         * @returns Array of controls
+        */
+        getNodes(): any;
+        /**
+         * Initiates the xml layout loading
+         * @param xmlFile defines the xml layout to load
+         * @param rootNode defines the node / control to use as a parent for the loaded layout controls.
+         * @param callback defines the callback called on layout load.
+         */
+        loadLayout(xmlFile: any, rootNode: any, callback: any): void;
+    }
+}
 declare module "babylonjs-gui/2D/index" {
     export * from "babylonjs-gui/2D/controls/index";
     export * from "babylonjs-gui/2D/advancedDynamicTexture";
@@ -3072,6 +3151,7 @@ declare module "babylonjs-gui/2D/index" {
     export * from "babylonjs-gui/2D/multiLinePoint";
     export * from "babylonjs-gui/2D/style";
     export * from "babylonjs-gui/2D/valueAndUnit";
+    export * from "babylonjs-gui/2D/xmlLoader";
 }
 declare module "babylonjs-gui/3D/controls/container3D" {
     import { Nullable } from "babylonjs/types";
@@ -3472,7 +3552,7 @@ declare module "babylonjs-gui/3D/controls/button3D" {
     }
 }
 declare module "babylonjs-gui/3D/controls/volumeBasedPanel" {
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { int } from "babylonjs/types";
     import { Container3D } from "babylonjs-gui/3D/controls/container3D";
     import { Control3D } from "babylonjs-gui/3D/controls/control3D";
@@ -3523,7 +3603,7 @@ declare module "babylonjs-gui/3D/controls/volumeBasedPanel" {
     }
 }
 declare module "babylonjs-gui/3D/controls/cylinderPanel" {
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { float } from "babylonjs/types";
     import { VolumeBasedPanel } from "babylonjs-gui/3D/controls/volumeBasedPanel";
     import { Control3D } from "babylonjs-gui/3D/controls/control3D";
@@ -4216,7 +4296,7 @@ declare module BABYLON.GUI {
         private _focusedControl;
         private _blockNextFocusCheck;
         private _renderScale;
-        private _rootCanvas;
+        private _rootElement;
         private _cursorChanged;
         /**
         * Define type to string to ensure compatibility across browsers
@@ -5019,6 +5099,14 @@ declare module BABYLON.GUI {
         protected _adaptWidthToChildren: boolean;
         /** @hidden */
         protected _adaptHeightToChildren: boolean;
+        /**
+         * Gets or sets a boolean indicating that layout cycle errors should be displayed on the console
+         */
+        logLayoutCycleErrors: boolean;
+        /**
+         * Gets or sets the number of layout cycles (a change involved by a control while evaluating the layout) allowed
+         */
+        maxLayoutCycle: number;
         /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
         adaptHeightToChildren: boolean;
         /** Gets or sets a boolean indicating if the container should try to adapt to its children width */
@@ -5261,7 +5349,7 @@ declare module BABYLON.GUI {
      */
     export class Image extends Control {
         name?: string | undefined;
-        private static _WorkingCanvas;
+        private _workingCanvas;
         private _domImage;
         private _imageWidth;
         private _imageHeight;
@@ -5286,6 +5374,10 @@ declare module BABYLON.GUI {
          * BABYLON.Observable notified when the content is loaded
          */
         onImageLoadedObservable: BABYLON.Observable<Image>;
+        /**
+         * BABYLON.Observable notified when _sourceLeft, _sourceTop, _sourceWidth and _sourceHeight are computed
+         */
+        onSVGAttributesComputedObservable: BABYLON.Observable<Image>;
         /**
          * Gets a boolean indicating that the content is loaded
          */
@@ -5348,6 +5440,15 @@ declare module BABYLON.GUI {
          * Gets or sets image source url
          */
         source: BABYLON.Nullable<string>;
+        /**
+         * Checks for svg document with icon id present
+         */
+        private _svgCheck;
+        /**
+         * Sets sourceLeft, sourceTop, sourceWidth, sourceHeight automatically
+         * given external svg file and icon id
+         */
+        private _getSVGAttribs;
         /**
          * Gets or sets the cell width to use when animation sheet is enabled
          * @see http://doc.babylonjs.com/how_to/gui#image
@@ -5420,6 +5521,10 @@ declare module BABYLON.GUI {
          * Function called to generate a pointer up animation
          */
         pointerUpAnimation: () => void;
+        /**
+         * Gets or sets a boolean indicating that the button will let internal controls handle picking instead of doing it directly using its bounding info
+         */
+        delegatePickingToChildren: boolean;
         private _image;
         /**
          * Returns the image part of the button (if any)
@@ -5488,6 +5593,10 @@ declare module BABYLON.GUI {
         private _manualWidth;
         private _manualHeight;
         private _doNotTrackManualChanges;
+        /**
+         * Gets or sets a boolean indicating that layou warnings should be ignored
+         */
+        ignoreLayoutWarnings: boolean;
         /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
         isVertical: boolean;
         /**
@@ -5688,6 +5797,8 @@ declare module BABYLON.GUI {
         _connectedVirtualKeyboard: BABYLON.Nullable<VirtualKeyboard>;
         /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
         promptMessage: string;
+        /** Force disable prompt on mobile device */
+        disableMobilePrompt: boolean;
         /** BABYLON.Observable raised when the text changes */
         onTextChangedObservable: BABYLON.Observable<InputText>;
         /** BABYLON.Observable raised just before an entered character is to be added */
@@ -6768,6 +6879,54 @@ declare module BABYLON.GUI {
          * Dispose and release associated resources.
          */
         dispose(): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+    * Class used to load GUI via XML.
+    */
+    export class XmlLoader {
+        private _nodes;
+        private _nodeTypes;
+        private _isLoaded;
+        private _objectAttributes;
+        private _parentClass;
+        /**
+        * Create a new xml loader
+        * @param parentClass Sets the class context. Used when the loader is instanced inside a class and not in a global context
+        */
+        constructor(parentClass?: null);
+        private _getChainElement;
+        private _getClassAttribute;
+        private _createGuiElement;
+        private _parseGrid;
+        private _parseElement;
+        private _prepareSourceElement;
+        private _parseElementsFromSource;
+        private _parseXml;
+        /**
+         * Gets if the loading has finished.
+         * @returns whether the loading has finished or not
+        */
+        isLoaded(): boolean;
+        /**
+         * Gets a loaded node / control by id.
+         * @param id the Controls id set in the xml
+         * @returns element of type Control
+        */
+        getNodeById(id: string): any;
+        /**
+         * Gets all loaded nodes / controls
+         * @returns Array of controls
+        */
+        getNodes(): any;
+        /**
+         * Initiates the xml layout loading
+         * @param xmlFile defines the xml layout to load
+         * @param rootNode defines the node / control to use as a parent for the loaded layout controls.
+         * @param callback defines the callback called on layout load.
+         */
+        loadLayout(xmlFile: any, rootNode: any, callback: any): void;
     }
 }
 declare module BABYLON.GUI {

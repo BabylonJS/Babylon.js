@@ -4,7 +4,6 @@ import { Engine } from "../../../Engines/engine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
 import { _TimeToken } from "../../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../../States/index";
 /**
  * Implementation of the KTX Texture Loader.
  * @hidden
@@ -73,7 +72,7 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
 
         // Need to invert vScale as invertY via UNPACK_FLIP_Y_WEBGL is not supported by compressed texture
         texture._invertVScale = !texture.invertY;
-        var engine = texture.getEngine();
+        var engine = texture.getEngine() as Engine;
         var ktx = new KhronosTextureContainer(data, 6);
 
         var loadMipmap = ktx.numberOfMipmapLevels > 1 && texture.generateMipMaps;
@@ -87,6 +86,12 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
 
         engine._setCubeMapTextureParams(loadMipmap);
         texture.isReady = true;
+        texture.onLoadedObservable.notifyObservers(texture);
+        texture.onLoadedObservable.clear();
+
+        if (onLoad) {
+            onLoad();
+        }
     }
 
     /**

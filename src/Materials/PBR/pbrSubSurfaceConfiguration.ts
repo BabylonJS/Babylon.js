@@ -1,14 +1,15 @@
 import { Nullable } from "../../types";
-import { IAnimatable } from "../../Misc/tools";
+import { IAnimatable } from '../../Animations/animatable.interface';
 import { SerializationHelper, serialize, serializeAsTexture, expandToProperty, serializeAsColor3 } from "../../Misc/decorators";
-import { Color3 } from "../../Maths/math";
+import { Color3 } from '../../Maths/math.color';
 import { SmartArray } from "../../Misc/smartArray";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
-import { Effect, EffectFallbacks } from "../../Materials/effect";
+import { Effect } from "../../Materials/effect";
 import { MaterialFlags } from "../materialFlags";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { MaterialHelper } from "../../Materials/materialHelper";
+import { EffectFallbacks } from '../effectFallbacks';
 
 declare type Engine = import("../../Engines/engine").Engine;
 declare type Scene = import("../../scene").Scene;

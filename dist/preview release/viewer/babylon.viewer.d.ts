@@ -20,6 +20,7 @@
 //   ../../../../../Tools/Gulp/babylonjs/Maths/math
 //   ../../../../../Tools/Gulp/babylonjs-loaders/glTF/glTFFileLoader
 //   ../../../../../Tools/Gulp/babylonjs/Materials/Textures/baseTexture
+//   ../../../../../Tools/Gulp/babylonjs/Engines/thinEngine
 //   ../../../../../Tools/Gulp/babylonjs/Misc/sceneOptimizer
 //   ../../../../../Tools/Gulp/babylonjs/Cameras/arcRotateCamera
 //   ../../../../../Tools/Gulp/babylonjs/Lights/light
@@ -704,14 +705,14 @@ declare module BabylonViewer {
     /**
         * BABYLON.Animation play mode enum - is the animation looping or playing once
         */
-    export const enum AnimationPlayMode {
+    export enum AnimationPlayMode {
             ONCE = 0,
             LOOP = 1
     }
     /**
         * An enum representing the current state of an animation object
         */
-    export const enum AnimationState {
+    export enum AnimationState {
             INIT = 0,
             PLAYING = 1,
             PAUSED = 2,
@@ -721,7 +722,7 @@ declare module BabylonViewer {
     /**
         * The different type of easing functions available
         */
-    export const enum EasingFunction {
+    export enum EasingFunction {
             Linear = 0,
             CircleEase = 1,
             BackEase = 2,

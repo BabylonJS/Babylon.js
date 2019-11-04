@@ -1,7 +1,8 @@
 import { Nullable, float } from "../types";
-import { IAnimatable, Tools, IValueGradient, ColorGradient, FactorGradient, Color3Gradient } from "../Misc/tools";
+import { FactorGradient, ColorGradient, Color3Gradient, IValueGradient, GradientHelper } from "../Misc/gradients";
 import { Observable } from "../Misc/observable";
-import { Color4, Color3, Vector3, Matrix, Tmp } from "../Maths/math";
+import { Vector3, Matrix } from "../Maths/math.vector";
+import { Color4, Color3, TmpColors } from '../Maths/math.color';
 import { Scalar } from "../Maths/math.scalar";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Buffer } from "../Meshes/buffer";
@@ -12,7 +13,7 @@ import { ParticleSystem } from "./particleSystem";
 import { Engine } from "../Engines/engine";
 import { BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
 import { Scene, IDisposable } from "../scene";
-import { Effect, EffectCreationOptions } from "../Materials/effect";
+import { Effect, IEffectCreationOptions } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
@@ -21,6 +22,7 @@ import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Constants } from "../Engines/constants";
 import { EngineStore } from "../Engines/engineStore";
 import { DeepCopier } from "../Misc/deepCopier";
+import { IAnimatable } from '../Animations/animatable.interface';
 
 import "../Shaders/gpuUpdateParticles.fragment";
 import "../Shaders/gpuUpdateParticles.vertex";
@@ -67,7 +69,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _randomTexture2: RawTexture;
 
     private _attributesStrideSize: number;
-    private _updateEffectOptions: EffectCreationOptions;
+    private _updateEffectOptions: IEffectCreationOptions;
 
     private _randomTextureSize: number;
     private _actualFrame = 0;
@@ -1105,7 +1107,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         for (var x = 0; x < this._rawTextureWidth; x++) {
             var ratio = x / this._rawTextureWidth;
 
-            Tools.GetCurrentGradient(ratio, factorGradients, (currentGradient, nextGradient, scale) => {
+            GradientHelper.GetCurrentGradient(ratio, factorGradients, (currentGradient, nextGradient, scale) => {
                 data[x] = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
             });
         }
@@ -1139,12 +1141,12 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         let data = new Uint8Array(this._rawTextureWidth * 4);
-        let tmpColor = Tmp.Color4[0];
+        let tmpColor = TmpColors.Color4[0];
 
         for (var x = 0; x < this._rawTextureWidth; x++) {
             var ratio = x / this._rawTextureWidth;
 
-            Tools.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {
+            GradientHelper.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {
 
                 Color4.LerpToRef((<ColorGradient>currentGradient).color1, (<ColorGradient>nextGradient).color1, scale, tmpColor);
                 data[x * 4] = tmpColor.r * 255;
@@ -1492,10 +1494,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         result.noiseTexture = this.noiseTexture;
-        result.emitter = newEmitter;
-        if (this.particleTexture) {
-            result.particleTexture = new Texture(this.particleTexture.url, this._scene);
-        }
 
         // Clone gradients
         if (this._colorGradients) {

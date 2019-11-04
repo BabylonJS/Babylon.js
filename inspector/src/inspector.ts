@@ -48,27 +48,27 @@ export class Inspector {
     private static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument) {
         for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
             var styleSheet: any = sourceDoc.styleSheets[index];
-            try{
+            try {
                 if (styleSheet.cssRules) { // for <style> elements
                     const newStyleEl = sourceDoc.createElement('style');
-    
+
                     for (var cssRule of styleSheet.cssRules) {
                         // write the text of each rule into the body of the style element
                         newStyleEl.appendChild(sourceDoc.createTextNode(cssRule.cssText));
                     }
-    
+
                     targetDoc.head!.appendChild(newStyleEl);
                 } else if (styleSheet.href) { // for <link> elements loading CSS from a URL
                     const newLinkEl = sourceDoc.createElement('link');
-    
+
                     newLinkEl.rel = 'stylesheet';
                     newLinkEl.href = styleSheet.href;
                     targetDoc.head!.appendChild(newLinkEl);
                 }
-            }catch(e){
+            } catch (e) {
                 console.log(e)
             }
-            
+
         }
     }
 
@@ -345,14 +345,14 @@ export class Inspector {
 
         this._Scene = scene;
 
-        var canvas = scene ? scene.getEngine().getRenderingCanvas() : EngineStore.LastCreatedEngine!.getRenderingCanvas();
+        var rootElement = scene ? scene.getEngine().getInputElement() : EngineStore.LastCreatedEngine!.getInputElement();
 
         if (options.embedMode && options.showExplorer && options.showInspector) {
             if (options.popup) {
                 this._CreateEmbedHost(scene, options, this._CreatePopup("INSPECTOR", "_EmbedHostWindow"), Inspector.OnSelectionChangeObservable);
             }
             else {
-                let parentControl = (options.globalRoot ? options.globalRoot : canvas!.parentElement) as HTMLElement;
+                let parentControl = (options.globalRoot ? options.globalRoot : rootElement!.parentElement) as HTMLElement;
 
                 if (!options.overlay && !this._NewCanvasContainer) {
                     this._CreateCanvasContainer(parentControl);
@@ -387,7 +387,7 @@ export class Inspector {
                 this._CreateActionTabs(scene, options, this._CreatePopup("INSPECTOR", "_ActionTabsWindow"));
             }
         } else {
-            let parentControl = (options.globalRoot ? options.globalRoot : canvas!.parentElement) as HTMLElement;
+            let parentControl = (options.globalRoot ? options.globalRoot : rootElement!.parentElement) as HTMLElement;
 
             if (!options.overlay && !this._NewCanvasContainer) {
                 this._CreateCanvasContainer(parentControl);

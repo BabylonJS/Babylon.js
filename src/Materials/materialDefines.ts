@@ -11,6 +11,8 @@ export class MaterialDefines {
     /** @hidden */
     public _areLightsDirty = true;
     /** @hidden */
+    public _areLightsDisposed = false;
+    /** @hidden */
     public _areAttributesDirty = true;
     /** @hidden */
     public _areTexturesDirty = true;
@@ -49,6 +51,7 @@ export class MaterialDefines {
         this._areTexturesDirty = false;
         this._areFresnelDirty = false;
         this._areLightsDirty = false;
+        this._areLightsDisposed = false;
         this._areMiscDirty = false;
         this._areImageProcessingDirty = false;
     }
@@ -83,9 +86,11 @@ export class MaterialDefines {
 
     /**
      * Marks the material to indicate the lights need to be re-calculated
+     * @param disposed Defines whether the light is dirty due to dispose or not
      */
-    public markAsLightDirty() {
+    public markAsLightDirty(disposed = false) {
         this._areLightsDirty = true;
+        this._areLightsDisposed = this._areLightsDisposed || disposed;
         this._isDirty = true;
     }
 

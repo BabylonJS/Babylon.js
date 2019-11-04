@@ -2,7 +2,7 @@ import { serialize, serializeAsVector3 } from "../Misc/decorators";
 import { Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Matrix, Vector3, Vector2, Epsilon } from "../Maths/math";
+import { Matrix, Vector3, Vector2 } from "../Maths/math.vector";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -15,6 +15,7 @@ import { ArcRotateCameraPointersInput } from "../Cameras/Inputs/arcRotateCameraP
 import { ArcRotateCameraKeyboardMoveInput } from "../Cameras/Inputs/arcRotateCameraKeyboardMoveInput";
 import { ArcRotateCameraMouseWheelInput } from "../Cameras/Inputs/arcRotateCameraMouseWheelInput";
 import { ArcRotateCameraInputsManager } from "../Cameras/arcRotateCameraInputsManager";
+import { Epsilon } from '../Maths/math.constants';
 
 declare type Collider = import("../Collisions/collider").Collider;
 
@@ -688,6 +689,7 @@ export class ArcRotateCamera extends TargetCamera {
     private _storedBeta: number;
     private _storedRadius: number;
     private _storedTarget: Vector3;
+    private _storedTargetScreenOffset: Vector2;
 
     /**
      * Stores the current state of the camera (alpha, beta, radius and target)
@@ -698,6 +700,7 @@ export class ArcRotateCamera extends TargetCamera {
         this._storedBeta = this.beta;
         this._storedRadius = this.radius;
         this._storedTarget = this._getTargetPosition().clone();
+        this._storedTargetScreenOffset = this.targetScreenOffset.clone();
 
         return super.storeState();
     }
@@ -711,10 +714,11 @@ export class ArcRotateCamera extends TargetCamera {
             return false;
         }
 
+        this.setTarget(this._storedTarget.clone());
         this.alpha = this._storedAlpha;
         this.beta = this._storedBeta;
         this.radius = this._storedRadius;
-        this.setTarget(this._storedTarget.clone());
+        this.targetScreenOffset = this._storedTargetScreenOffset.clone();
 
         this.inertialAlphaOffset = 0;
         this.inertialBetaOffset = 0;
@@ -926,7 +930,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
-     * Use a position to define the current camera related information like aplha, beta and radius
+     * Use a position to define the current camera related information like alpha, beta and radius
      * @param position Defines the position to set the camera at
      */
     public setPosition(position: Vector3): void {
@@ -1008,7 +1012,6 @@ export class ArcRotateCamera extends TargetCamera {
 
             var up = this.upVector;
             if (this.allowUpsideDown && sinb < 0) {
-                up = up.clone();
                 up = up.negate();
             }
 

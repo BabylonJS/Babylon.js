@@ -1,13 +1,22 @@
-import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
+import { NodeMaterialBlockConnectionPointTypes } from './Enums/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
 import { Nullable } from '../../types';
-import { Effect } from '../effect';
-import { NodeMaterialWellKnownValues } from './nodeMaterialWellKnownValues';
-import { Scene } from '../../scene';
-import { Matrix } from '../../Maths/math';
-import { NodeMaterialBlockConnectionPointMode } from './NodeMaterialBlockConnectionPointMode';
+import { InputBlock } from './Blocks/Input/inputBlock';
+import { Observable } from '../../Misc/observable';
 
 declare type NodeMaterialBlock = import("./nodeMaterialBlock").NodeMaterialBlock;
+
+/**
+ * Enum used to define the compatibility state between two connection points
+ */
+export enum NodeMaterialConnectionPointCompatibilityStates {
+    /** Points are compatibles */
+    Compatible,
+    /** Points are incompatible because of their types */
+    TypeIncompatible,
+    /** Points are incompatible because of their targets (vertex vs fragment) */
+    TargetIncompatible
+}
 
 /**
  * Defines a connection point for a block
@@ -16,48 +25,71 @@ export class NodeMaterialConnectionPoint {
     /** @hidden */
     public _ownerBlock: NodeMaterialBlock;
     /** @hidden */
-    public _connectedPoint: Nullable<NodeMaterialConnectionPoint>;
-    private _associatedVariableName: string;
-    private _endpoints = new Array<NodeMaterialConnectionPoint>();
-    private _storedValue: any;
-    private _valueCallback: () => any;
-    private _mode = NodeMaterialBlockConnectionPointMode.Undefined;
+    public _connectedPoint: Nullable<NodeMaterialConnectionPoint> = null;
 
-    /** @hidden */
-    public _wellKnownValue: Nullable<NodeMaterialWellKnownValues> = null;
+    private _endpoints = new Array<NodeMaterialConnectionPoint>();
+    private _associatedVariableName: string;
 
     /** @hidden */
     public _typeConnectionSource: Nullable<NodeMaterialConnectionPoint> = null;
 
     /** @hidden */
-    public _needToEmitVarying = true;
-
-    /** @hidden */
-    public _forceUniformInVertexShaderOnly = false;
+    public _linkedConnectionSource: Nullable<NodeMaterialConnectionPoint> = null;
 
     private _type = NodeMaterialBlockConnectionPointTypes.Float;
+
+    /** @hidden */
+    public _enforceAssociatedVariableName = false;
+
+    /**
+     * Gets or sets the additional types supported by this connection point
+     */
+    public acceptedConnectionPointTypes = new Array<NodeMaterialBlockConnectionPointTypes>();
+
+    /**
+     * Gets or sets the additional types excluded by this connection point
+     */
+    public excludedConnectionPointTypes = new Array<NodeMaterialBlockConnectionPointTypes>();
+
+    /**
+     * Observable triggered when this point is connected
+     */
+    public onConnectionObservable = new Observable<NodeMaterialConnectionPoint>();
+
+    /**
+     * Gets or sets the associated variable name in the shader
+     */
+    public get associatedVariableName(): string {
+        if (this._ownerBlock.isInput) {
+            return (this._ownerBlock as InputBlock).associatedVariableName;
+        }
+
+        if ((!this._enforceAssociatedVariableName || !this._associatedVariableName) && this._connectedPoint) {
+            return this._connectedPoint.associatedVariableName;
+        }
+
+        return this._associatedVariableName;
+    }
+
+    public set associatedVariableName(value: string) {
+        this._associatedVariableName = value;
+    }
+
     /**
      * Gets or sets the connection point type (default is float)
      */
     public get type(): NodeMaterialBlockConnectionPointTypes {
         if (this._type === NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+            if (this._ownerBlock.isInput) {
+                return (this._ownerBlock as InputBlock).type;
+            }
+
             if (this._connectedPoint) {
                 return this._connectedPoint.type;
             }
 
-            if (this.isUniform && this.value != null) {
-                switch (this.value.getClassName()) {
-                    case "Vector2":
-                        return NodeMaterialBlockConnectionPointTypes.Vector2;
-                    case "Vector3":
-                        return NodeMaterialBlockConnectionPointTypes.Vector3;
-                    case "Vector4":
-                        return NodeMaterialBlockConnectionPointTypes.Vector4;
-                    case "Color3":
-                        return NodeMaterialBlockConnectionPointTypes.Color3;
-                    case "Color4":
-                        return NodeMaterialBlockConnectionPointTypes.Color4;
-                }
+            if (this._linkedConnectionSource && this._linkedConnectionSource.isConnected) {
+                return this._linkedConnectionSource.type;
             }
         }
 
@@ -78,11 +110,6 @@ export class NodeMaterialConnectionPoint {
     public name: string;
 
     /**
-     * Gets or sets the swizzle to apply to this connection point when reading or writing
-     */
-    public swizzle: string;
-
-    /**
      * Gets or sets a boolean indicating that this connection point can be omitted
      */
     public isOptional: boolean;
@@ -92,96 +119,55 @@ export class NodeMaterialConnectionPoint {
      */
     public define: string;
 
+    /** @hidden */
+    public _prioritizeVertex = false;
+
+    private _target: NodeMaterialBlockTargets = NodeMaterialBlockTargets.VertexAndFragment;
+
     /** Gets or sets the target of that connection point */
-    public target: NodeMaterialBlockTargets = NodeMaterialBlockTargets.VertexAndFragment;
-
-    /**
-     * Gets or sets the value of that point.
-     * Please note that this value will be ignored if valueCallback is defined
-     */
-    public get value(): any {
-        return this._storedValue;
-    }
-
-    public set value(value: any) {
-        this._storedValue = value;
-        this._mode = NodeMaterialBlockConnectionPointMode.Uniform;
-    }
-
-    /**
-     * Gets or sets a callback used to get the value of that point.
-     * Please note that setting this value will force the connection point to ignore the value property
-     */
-    public get valueCallback(): () => any {
-        return this._valueCallback;
-    }
-
-    public set valueCallback(value: () => any) {
-        this._valueCallback = value;
-        this._mode = NodeMaterialBlockConnectionPointMode.Uniform;
-    }
-
-    /**
-     * Gets or sets the associated variable name in the shader
-     */
-    public get associatedVariableName(): string {
-        if (!this._associatedVariableName && this._connectedPoint) {
-            return this._connectedPoint.associatedVariableName;
+    public get target(): NodeMaterialBlockTargets {
+        if (!this._prioritizeVertex || !this._ownerBlock) {
+            return this._target;
         }
 
-        return this._associatedVariableName;
+        if (this._target !== NodeMaterialBlockTargets.VertexAndFragment) {
+            return this._target;
+        }
+
+        if (this._ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
+            return NodeMaterialBlockTargets.Fragment;
+        }
+
+        return NodeMaterialBlockTargets.Vertex;
     }
 
-    public set associatedVariableName(value: string) {
-        this._associatedVariableName = value;
-    }
-
-    /**
-     * Gets a boolean indicating that this connection point not defined yet
-     */
-    public get isUndefined(): boolean {
-        return this._mode === NodeMaterialBlockConnectionPointMode.Undefined;
-    }
-
-    /**
-     * Gets or sets a boolean indicating that this connection point is coming from an uniform.
-     * In this case the connection point name must be the name of the uniform to use.
-     * Can only be set on inputs
-     */
-    public get isUniform(): boolean {
-        return this._mode === NodeMaterialBlockConnectionPointMode.Uniform;
-    }
-
-    public set isUniform(value: boolean) {
-        this._mode = value ? NodeMaterialBlockConnectionPointMode.Uniform : NodeMaterialBlockConnectionPointMode.Undefined;
-        this.associatedVariableName = "";
+    public set target(value: NodeMaterialBlockTargets) {
+        this._target = value;
     }
 
     /**
-     * Gets or sets a boolean indicating that this connection point is coming from an attribute.
-     * In this case the connection point name must be the name of the attribute to use
-     * Can only be set on inputs
+     * Gets a boolean indicating that the current point is connected
      */
-    public get isAttribute(): boolean {
-        return this._mode === NodeMaterialBlockConnectionPointMode.Attribute;
-    }
-
-    public set isAttribute(value: boolean) {
-        this._mode = value ? NodeMaterialBlockConnectionPointMode.Attribute : NodeMaterialBlockConnectionPointMode.Undefined;
-        this.associatedVariableName = "";
+    public get isConnected(): boolean {
+        return this.connectedPoint !== null;
     }
 
     /**
-     * Gets or sets a boolean indicating that this connection point is generating a varying variable.
-     * Can only be set on exit points
+     * Gets a boolean indicating that the current point is connected to an input block
      */
-    public get isVarying(): boolean {
-        return this._mode === NodeMaterialBlockConnectionPointMode.Varying;
+    public get isConnectedToInputBlock(): boolean {
+        return this.connectedPoint !== null && this.connectedPoint.ownerBlock.isInput;
     }
 
-    public set isVarying(value: boolean) {
-        this._mode = value ? NodeMaterialBlockConnectionPointMode.Varying : NodeMaterialBlockConnectionPointMode.Undefined;
-        this.associatedVariableName = "";
+    /**
+     * Gets a the connected input block (if any)
+     */
+    public get connectInputBlock(): Nullable<InputBlock> {
+        if (!this.isConnectedToInputBlock) {
+            return null;
+        }
+
+        return this.connectedPoint!.ownerBlock as InputBlock;
     }
 
     /** Get the other side of the connection (if any) */
@@ -212,6 +198,70 @@ export class NodeMaterialConnectionPoint {
         return this._endpoints.map((e) => e.ownerBlock);
     }
 
+    /** Gets the list of connected endpoints */
+    public get endpoints() {
+        return this._endpoints;
+    }
+
+    /** Gets a boolean indicating if that output point is connected to at least one input */
+    public get hasEndpoints(): boolean {
+        return this._endpoints && this._endpoints.length > 0;
+    }
+
+    /** Gets a boolean indicating that this connection will be used in the vertex shader */
+    public get isConnectedInVertexShader(): boolean {
+        if (this.target === NodeMaterialBlockTargets.Vertex) {
+            return true;
+        }
+
+        if (!this.hasEndpoints) {
+            return false;
+        }
+
+        for (var endpoint of this._endpoints) {
+            if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Vertex) {
+                return true;
+            }
+
+            if (endpoint.target === NodeMaterialBlockTargets.Vertex) {
+                return true;
+            }
+
+            if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Neutral || endpoint.ownerBlock.target === NodeMaterialBlockTargets.VertexAndFragment) {
+                if (endpoint.ownerBlock.outputs.some((o) => o.isConnectedInVertexShader)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /** Gets a boolean indicating that this connection will be used in the fragment shader */
+    public get isConnectedInFragmentShader(): boolean {
+        if (this.target === NodeMaterialBlockTargets.Fragment) {
+            return true;
+        }
+
+        if (!this.hasEndpoints) {
+            return false;
+        }
+
+        for (var endpoint of this._endpoints) {
+            if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
+                return true;
+            }
+
+            if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Neutral || endpoint.ownerBlock.target === NodeMaterialBlockTargets.VertexAndFragment) {
+                if (endpoint.ownerBlock.outputs.some((o) => o.isConnectedInFragmentShader)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Creates a new connection point
      * @param name defines the connection point name
@@ -231,101 +281,97 @@ export class NodeMaterialConnectionPoint {
     }
 
     /**
-     * Set the source of this connection point to a vertex attribute
-     * @param attributeName defines the attribute name (position, uv, normal, etc...). If not specified it will take the connection point name
-     * @returns the current connection point
-     */
-    public setAsAttribute(attributeName?: string): NodeMaterialConnectionPoint {
-        if (attributeName) {
-            this.name = attributeName;
-        }
-        this._mode = NodeMaterialBlockConnectionPointMode.Attribute;
-        return this;
-    }
-
-    /**
-     * Set the source of this connection point to a well known value
-     * @param value define the well known value to use (world, view, etc...) or null to switch to manual value
-     * @returns the current connection point
-     */
-    public setAsWellKnownValue(value: Nullable<NodeMaterialWellKnownValues>): NodeMaterialConnectionPoint {
-        this.wellKnownValue = value;
-        return this;
-    }
-
-    /**
-     * Gets a boolean indicating that the current connection point is a well known value
-     */
-    public get isWellKnownValue(): boolean {
-        return this._wellKnownValue != null;
-    }
-
-    /**
-     * Gets or sets the current well known value or null if not defined as well know value
-     */
-    public get wellKnownValue(): Nullable<NodeMaterialWellKnownValues> {
-        return this._wellKnownValue;
-    }
-
-    public set wellKnownValue(value: Nullable<NodeMaterialWellKnownValues>) {
-        this._mode = NodeMaterialBlockConnectionPointMode.Uniform;
-        this.associatedVariableName = "";
-        this._wellKnownValue = value;
-    }
-
-    private _getTypeLength(type: NodeMaterialBlockConnectionPointTypes) {
-        switch (type) {
-            case NodeMaterialBlockConnectionPointTypes.Float:
-                return 1;
-            case NodeMaterialBlockConnectionPointTypes.Vector2:
-                return 2;
-            case NodeMaterialBlockConnectionPointTypes.Vector3:
-            case NodeMaterialBlockConnectionPointTypes.Color3:
-                return 3;
-            case NodeMaterialBlockConnectionPointTypes.Vector4:
-            case NodeMaterialBlockConnectionPointTypes.Color4:
-                return 3;
-        }
-
-        return -1;
-    }
-
-    /**
-     * Gets an boolean indicating if the current point can be connected to another point
+     * Gets a boolean indicating if the current point can be connected to another point
      * @param connectionPoint defines the other connection point
-     * @returns true if the connection is possible
+     * @returns a boolean
      */
     public canConnectTo(connectionPoint: NodeMaterialConnectionPoint) {
-        if ((this.type & connectionPoint.type) === 0 && connectionPoint.type !== NodeMaterialBlockConnectionPointTypes.AutoDetect) {
-            let fail = true;
-            // Check swizzle
-            if (this.swizzle) {
-                let swizzleLength = this.swizzle.length;
-                let connectionLength = this._getTypeLength(connectionPoint.type);
+        return this.checkCompatibilityState(connectionPoint) === NodeMaterialConnectionPointCompatibilityStates.Compatible;
+    }
 
-                if (swizzleLength === connectionLength) {
-                    fail = false;
+    /**
+     * Gets a number indicating if the current point can be connected to another point
+     * @param connectionPoint defines the other connection point
+     * @returns a number defining the compatibility state
+     */
+    public checkCompatibilityState(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPointCompatibilityStates {
+        const ownerBlock = this._ownerBlock;
+
+        if (ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
+            // Let's check we are not going reverse
+            const otherBlock = connectionPoint.ownerBlock;
+
+            if (otherBlock.target === NodeMaterialBlockTargets.Vertex) {
+                return NodeMaterialConnectionPointCompatibilityStates.TargetIncompatible;
+            }
+
+            for (var output of otherBlock.outputs) {
+                if (output.isConnectedInVertexShader) {
+                    return NodeMaterialConnectionPointCompatibilityStates.TargetIncompatible;
+                }
+            }
+        }
+
+        if (this.type !== connectionPoint.type && connectionPoint.type !== NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+            // Equivalents
+            switch (this.type) {
+                case NodeMaterialBlockConnectionPointTypes.Vector3: {
+                    if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Color3) {
+                        return NodeMaterialConnectionPointCompatibilityStates.Compatible;
+                    }
+                }
+                case NodeMaterialBlockConnectionPointTypes.Vector4: {
+                    if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Color4) {
+                        return NodeMaterialConnectionPointCompatibilityStates.Compatible;
+                    }
+                }
+                case NodeMaterialBlockConnectionPointTypes.Color3: {
+                    if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Vector3) {
+                        return NodeMaterialConnectionPointCompatibilityStates.Compatible;
+                    }
+                }
+                case NodeMaterialBlockConnectionPointTypes.Color4: {
+                    if (connectionPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
+                        return NodeMaterialConnectionPointCompatibilityStates.Compatible;
+                    }
                 }
             }
 
-            return !fail;
+            // Accepted types
+            if (connectionPoint.acceptedConnectionPointTypes && connectionPoint.acceptedConnectionPointTypes.indexOf(this.type) !== -1) {
+                return NodeMaterialConnectionPointCompatibilityStates.Compatible;
+            } else {
+                return NodeMaterialConnectionPointCompatibilityStates.TypeIncompatible;
+            }
         }
 
-        return true;
+        // Excluded
+        if ((connectionPoint.excludedConnectionPointTypes && connectionPoint.excludedConnectionPointTypes.indexOf(this.type) !== -1)) {
+            return 1;
+        }
+
+        return NodeMaterialConnectionPointCompatibilityStates.Compatible;
     }
 
     /**
      * Connect this point to another connection point
      * @param connectionPoint defines the other connection point
+     * @param ignoreConstraints defines if the system will ignore connection type constraints (default is false)
      * @returns the current connection point
      */
-    public connectTo(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPoint {
-        if (!this.canConnectTo(connectionPoint)) {
-            throw "Cannot connect two different connection types.";
+    public connectTo(connectionPoint: NodeMaterialConnectionPoint, ignoreConstraints = false): NodeMaterialConnectionPoint {
+        if (!ignoreConstraints && !this.canConnectTo(connectionPoint)) {
+            throw "Cannot connect these two connectors.";
         }
 
         this._endpoints.push(connectionPoint);
         connectionPoint._connectedPoint = this;
+
+        this._enforceAssociatedVariableName = false;
+
+        this.onConnectionObservable.notifyObservers(connectionPoint);
+        connectionPoint.onConnectionObservable.notifyObservers(this);
+
         return this;
     }
 
@@ -343,103 +389,33 @@ export class NodeMaterialConnectionPoint {
 
         this._endpoints.splice(index, 1);
         endpoint._connectedPoint = null;
+        this._enforceAssociatedVariableName = false;
+        endpoint._enforceAssociatedVariableName = false;
         return this;
     }
 
     /**
-     * When connection point is an uniform, this function will send its value to the effect
-     * @param effect defines the effect to transmit value to
-     * @param world defines the world matrix
-     * @param worldView defines the worldxview matrix
-     * @param worldViewProjection defines the worldxviewxprojection matrix
+     * Serializes this point in a JSON representation
+     * @returns the serialized point object
      */
-    public transmitWorld(effect: Effect, world: Matrix, worldView: Matrix, worldViewProjection: Matrix) {
-        if (!this._wellKnownValue) {
-            return;
+    public serialize(): any {
+        let serializationObject: any = {};
+
+        serializationObject.name = this.name;
+
+        if (this.connectedPoint) {
+            serializationObject.inputName = this.name;
+            serializationObject.targetBlockId = this.connectedPoint.ownerBlock.uniqueId;
+            serializationObject.targetConnectionName = this.connectedPoint.name;
         }
 
-        let variableName = this.associatedVariableName;
-        switch (this._wellKnownValue) {
-            case NodeMaterialWellKnownValues.World:
-                effect.setMatrix(variableName, world);
-                break;
-            case NodeMaterialWellKnownValues.WorldView:
-                effect.setMatrix(variableName, worldView);
-                break;
-            case NodeMaterialWellKnownValues.WorldViewProjection:
-                effect.setMatrix(variableName, worldViewProjection);
-                break;
-        }
+        return serializationObject;
     }
 
     /**
-     * When connection point is an uniform, this function will send its value to the effect
-     * @param effect defines the effect to transmit value to
-     * @param scene defines the hosting scene
+     * Release resources
      */
-    public transmit(effect: Effect, scene: Scene) {
-        let variableName = this.associatedVariableName;
-        if (this._wellKnownValue) {
-            switch (this._wellKnownValue) {
-                case NodeMaterialWellKnownValues.World:
-                case NodeMaterialWellKnownValues.WorldView:
-                case NodeMaterialWellKnownValues.WorldViewProjection:
-                    return;
-                case NodeMaterialWellKnownValues.View:
-                    effect.setMatrix(variableName, scene.getViewMatrix());
-                    break;
-                case NodeMaterialWellKnownValues.Projection:
-                    effect.setMatrix(variableName, scene.getProjectionMatrix());
-                    break;
-                case NodeMaterialWellKnownValues.ViewProjection:
-                    effect.setMatrix(variableName, scene.getTransformMatrix());
-                    break;
-                case NodeMaterialWellKnownValues.CameraPosition:
-                    effect.setVector3(variableName, scene.activeCamera!.globalPosition);
-                    break;
-            }
-            return;
-        }
-
-        let value = this._valueCallback ? this._valueCallback() : this._storedValue;
-
-        if (value === null) {
-            return;
-        }
-
-        switch (this.type) {
-            case NodeMaterialBlockConnectionPointTypes.Float:
-                effect.setFloat(variableName, value);
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Int:
-                effect.setInt(variableName, value);
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Color3:
-                effect.setColor3(variableName, value);
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Color4:
-                effect.setDirectColor4(variableName, value);
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Vector2:
-                effect.setVector2(variableName, value);
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Vector3:
-                effect.setVector3(variableName, value);
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
-                effect.setFloat4(variableName, value.r, value.g, value.b, value.a || 1.0);
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Vector4OrColor4:
-            case NodeMaterialBlockConnectionPointTypes.Vector4:
-                effect.setVector4(variableName, value);
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Matrix:
-                effect.setMatrix(variableName, value);
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Texture:
-            case NodeMaterialBlockConnectionPointTypes.Texture3D:
-                effect.setTexture(variableName, value);
-                break;
-        }
+    public dispose() {
+        this.onConnectionObservable.clear();
     }
 }

@@ -1,13 +1,13 @@
 import { serializeAsColor3, serializeAsVector3 } from "../Misc/decorators";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Matrix, Vector3, Color3 } from "../Maths/math";
+import { Matrix, Vector3 } from "../Maths/math.vector";
+import { Color3 } from "../Maths/math.color";
 import { Node } from "../node";
 import { Effect } from "../Materials/effect";
 import { Light } from "./light";
 import { IShadowGenerator } from "./Shadows/shadowGenerator";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 
 Node.AddNodeConstructor("Light_Type_3", (name, scene) => {
     return () => new HemisphericLight(name, Vector3.Zero(), scene);
@@ -97,6 +97,12 @@ export class HemisphericLight extends Light {
             0.0,
             lightIndex);
         this._uniformBuffer.updateColor3("vLightGround", this.groundColor.scale(this.intensity), lightIndex);
+        return this;
+    }
+
+    public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {
+        var normalizeDirection = Vector3.Normalize(this.direction);
+        effect.setFloat3(lightDataUniformName, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z);
         return this;
     }
 

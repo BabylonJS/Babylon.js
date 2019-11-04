@@ -4,7 +4,6 @@ import { Engine } from "../../../Engines/engine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
 import { _TimeToken } from "../../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../../States/index";
 import { DDSTools, DDSInfo } from "../../../Misc/dds";
 /**
  * Implementation of the DDS Texture Loader.
@@ -58,7 +57,7 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
      * @param onError defines the callback to trigger in case of error
      */
     public loadCubeData(imgs: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void {
-        var engine = texture.getEngine();
+        var engine = texture.getEngine() as Engine;
         var info: DDSInfo | undefined;
         var loadMipmap: boolean = false;
         if (Array.isArray(imgs)) {
@@ -103,6 +102,8 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
 
         engine._setCubeMapTextureParams(loadMipmap);
         texture.isReady = true;
+        texture.onLoadedObservable.notifyObservers(texture);
+        texture.onLoadedObservable.clear();
 
         if (onLoad) {
             onLoad({ isDDS: true, width: texture.width, info, data: imgs, texture });

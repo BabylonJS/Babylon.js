@@ -1,7 +1,7 @@
 import { Nullable } from "../types";
 import { Logger } from "../Misc/logger";
 import { Observable, Observer } from "../Misc/observable";
-import { Vector3 } from "../Maths/math";
+import { Vector3 } from "../Maths/math.vector";
 import { Mesh } from "../Meshes/mesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";

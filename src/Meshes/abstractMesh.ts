@@ -3,7 +3,7 @@ import { Observable } from "../Misc/observable";
 import { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene, IDisposable } from "../scene";
-import { Quaternion, Matrix, Vector3, Color3, Color4, Plane, Tmp, Epsilon, Axis, Vector2 } from "../Maths/math";
+import { Quaternion, Matrix, Vector3, TmpVectors, Vector2 } from "../Maths/math.vector";
 import { Engine } from "../Engines/engine";
 import { Node } from "../node";
 import { VertexBuffer } from "../Meshes/buffer";
@@ -24,6 +24,11 @@ import { AbstractActionManager } from '../Actions/abstractActionManager';
 import { _MeshCollisionData } from '../Collisions/meshCollisionData';
 import { _DevTools } from '../Misc/devTools';
 import { RawTexture } from '../Materials/Textures/rawTexture';
+import { extractMinAndMax } from '../Maths/math.functions';
+import { Color3, Color4 } from '../Maths/math.color';
+import { Epsilon } from '../Maths/math.constants';
+import { Plane } from '../Maths/math.plane';
+import { Axis } from '../Maths/math.axis';
 
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
@@ -78,6 +83,7 @@ class _InternalAbstractMeshDataInfo {
     public _onlyForInstances = false;
     public _isActiveIntermediate = false;
     public _onlyForInstancesIntermediate = false;
+    public _actAsRegularMesh = false;
 }
 
 /**
@@ -155,6 +161,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /** Billboard on all axes */
     public static get BILLBOARDMODE_ALL(): number {
         return TransformNode.BILLBOARDMODE_ALL;
+    }
+
+    /** Billboard on using position instead of orientation */
+    public static get BILLBOARDMODE_USE_POSITION(): number {
+        return TransformNode.BILLBOARDMODE_USE_POSITION;
     }
 
     // Internal data
@@ -781,7 +792,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @hidden */
-    public _removeLightSource(light: Light): void {
+    public _removeLightSource(light: Light, dispose: boolean): void {
         var index = this._lightSources.indexOf(light);
 
         if (index === -1) {
@@ -789,7 +800,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
         this._lightSources.splice(index, 1);
 
-        this._markSubMeshesAsLightDirty();
+        this._markSubMeshesAsLightDirty(dispose);
     }
 
     private _markSubMeshesAsDirty(func: (defines: MaterialDefines) => void) {
@@ -805,8 +816,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @hidden */
-    public _markSubMeshesAsLightDirty() {
-        this._markSubMeshesAsDirty((defines) => defines.markAsLightDirty());
+    public _markSubMeshesAsLightDirty(dispose: boolean = false) {
+        this._markSubMeshesAsDirty((defines) => defines.markAsLightDirty(dispose));
     }
 
     /** @hidden */
@@ -1062,6 +1073,13 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         return false;
     }
 
+    /**
+     * Gets a boolean indicating if this mesh has instances
+     */
+    public get hasInstances(): boolean {
+        return false;
+    }
+
     // ================================== Point of View Movement =================================
 
     /**
@@ -1142,7 +1160,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /** @hidden */
     public _refreshBoundingInfo(data: Nullable<FloatArray>, bias: Nullable<Vector2>): void {
         if (data) {
-            var extend = Tools.ExtractMinAndMax(data, 0, this.getTotalVertices(), bias);
+            var extend = extractMinAndMax(data, 0, this.getTotalVertices(), bias);
             if (this._boundingInfo) {
                 this._boundingInfo.reConstruct(extend.minimum, extend.maximum);
             }
@@ -1178,9 +1196,9 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                 this.skeleton.prepare();
                 var skeletonMatrices = this.skeleton.getTransformMatrices(this);
 
-                var tempVector = Tmp.Vector3[0];
-                var finalMatrix = Tmp.Matrix[0];
-                var tempMatrix = Tmp.Matrix[1];
+                var tempVector = TmpVectors.Vector3[0];
+                var finalMatrix = TmpVectors.Matrix[0];
+                var tempMatrix = TmpVectors.Matrix[1];
 
                 var matWeightIdx = 0;
                 for (var index = 0; index < data.length; index += 3, matWeightIdx += 4) {
@@ -1398,11 +1416,9 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                 subMesh._lastColliderWorldVertices.push(Vector3.TransformCoordinates(this._positions[i], transformMatrix));
             }
         }
+
         // Collide
-        collider._collide(subMesh._trianglePlanes, subMesh._lastColliderWorldVertices, (<IndicesArray>this.getIndices()), subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart, !!subMesh.getMaterial());
-        if (collider.collisionFound) {
-            collider.collidedMesh = this;
-        }
+        collider._collide(subMesh._trianglePlanes, subMesh._lastColliderWorldVertices, (<IndicesArray>this.getIndices()), subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart, !!subMesh.getMaterial(), this);
         return this;
     }
 
@@ -1432,8 +1448,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         // Transformation matrix
-        const collisionsScalingMatrix = Tmp.Matrix[0];
-        const collisionsTransformMatrix = Tmp.Matrix[1];
+        const collisionsScalingMatrix = TmpVectors.Matrix[0];
+        const collisionsTransformMatrix = TmpVectors.Matrix[1];
         Matrix.ScalingToRef(1.0 / collider._radius.x, 1.0 / collider._radius.y, 1.0 / collider._radius.z, collisionsScalingMatrix);
         this.worldMatrixFromCache.multiplyToRef(collisionsScalingMatrix, collisionsTransformMatrix);
         this._processCollisionsForSubMeshes(collider, collisionsTransformMatrix);
@@ -1497,8 +1513,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         if (intersectInfo) {
             // Get picked point
             const world = this.getWorldMatrix();
-            const worldOrigin = Tmp.Vector3[0];
-            const direction = Tmp.Vector3[1];
+            const worldOrigin = TmpVectors.Vector3[0];
+            const direction = TmpVectors.Vector3[1];
             Vector3.TransformCoordinatesToRef(ray.origin, world, worldOrigin);
             ray.direction.scaleToRef(intersectInfo.distance, direction);
             const worldDirection = Vector3.TransformNormal(direction, world);
@@ -1526,7 +1542,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param doNotCloneChildren defines a boolean indicating that children must not be cloned (false by default)
      * @returns the new mesh
      */
-    public clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Nullable<AbstractMesh> {
+    public clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<AbstractMesh> {
         return null;
     }
 
@@ -1947,9 +1963,9 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      */
     public getClosestFacetAtCoordinates(x: number, y: number, z: number, projected?: Vector3, checkFace: boolean = false, facing: boolean = true): Nullable<number> {
         var world = this.getWorldMatrix();
-        var invMat = Tmp.Matrix[5];
+        var invMat = TmpVectors.Matrix[5];
         world.invertToRef(invMat);
-        var invVect = Tmp.Vector3[8];
+        var invVect = TmpVectors.Vector3[8];
         Vector3.TransformCoordinatesFromFloatsToRef(x, y, z, invMat, invVect);  // transform (x,y,z) to coordinates in the mesh local space
         var closest = this.getClosestFacetAtLocalCoordinates(invVect.x, invVect.y, invVect.z, projected, checkFace, facing);
         if (projected) {
@@ -2096,8 +2112,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             upDirection = Axis.Y;
         }
 
-        var axisX = Tmp.Vector3[0];
-        var axisZ = Tmp.Vector3[1];
+        var axisX = TmpVectors.Vector3[0];
+        var axisZ = TmpVectors.Vector3[1];
         Vector3.CrossToRef(upDirection, normal, axisZ);
         Vector3.CrossToRef(normal, axisZ, axisX);
 

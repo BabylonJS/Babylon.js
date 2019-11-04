@@ -1,11 +1,10 @@
 import { Nullable } from "babylonjs/types";
 import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Color3, Matrix } from "babylonjs/Maths/math";
-import { IAnimatable } from "babylonjs/Misc/tools";
+import { Matrix } from "babylonjs/Maths/math.vector";
+import { Color3 } from "babylonjs/Maths/math.color";
 import { Tags } from "babylonjs/Misc/tags";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
-import { EffectFallbacks } from "babylonjs/Materials/effect";
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -16,9 +15,11 @@ import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 
 import "./fire.fragment";
 import "./fire.vertex";
+import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
 
 class FireMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;

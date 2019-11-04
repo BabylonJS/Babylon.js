@@ -1,5 +1,5 @@
 import { Nullable } from "../types";
-import { Color3 } from "../Maths/math";
+import { Color3 } from '../Maths/math.color';
 import { TransformNode } from "../Meshes/transformNode";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";
@@ -9,7 +9,6 @@ import { EngineStore } from "../Engines/engineStore";
 import { ParticleSystem } from "../Particles/particleSystem";
 import { Scene, IDisposable } from "../scene";
 import { StandardMaterial } from "../Materials/standardMaterial";
-import { Constants } from "../Engines/constants";
 
 /** Internal class used to store shapes for emitters */
 class ParticleSystemSetEmitterCreationOptions {
@@ -22,6 +21,11 @@ class ParticleSystemSetEmitterCreationOptions {
  * Represents a set of particle systems working together to create a specific effect
  */
 export class ParticleSystemSet implements IDisposable {
+    /**
+     * Gets or sets base Assets URL
+     */
+    public static BaseAssetsUrl = "https://assets.babylonjs.com/particles";
+
     private _emitterCreationOptions: ParticleSystemSetEmitterCreationOptions;
     private _emitterNode: Nullable<TransformNode>;
 
@@ -125,7 +129,7 @@ export class ParticleSystemSet implements IDisposable {
      */
     public static Parse(data: any, scene: Scene, gpu = false): ParticleSystemSet {
         var result = new ParticleSystemSet();
-        var rootUrl = Constants.PARTICLES_BaseAssetsUrl + "/textures/";
+        var rootUrl = this.BaseAssetsUrl + "/textures/";
 
         scene = scene || EngineStore.LastCreatedScene;
 

@@ -23,7 +23,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         super(props);
 
         let currentValue = this.props.target[this.props.propertyName];
-        this.state = { value: currentValue ? (this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(this.props.digits || 3)) : "0" };
+        this.state = { value: currentValue ? (this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(this.props.digits || 2)) : "0" };
         this._store = currentValue;
     }
 
@@ -34,7 +34,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         }
 
         const newValue = nextProps.target[nextProps.propertyName];
-        const newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 3) : "0";
+        const newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 2) : "0";
 
         if (newValueString !== nextState.value) {
             nextState.value = newValueString;
@@ -65,6 +65,8 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             return;
         }
 
+        valueString = valueString.replace(/(.+\...).+/, "$1");
+
         let valueAsNumber: number;
 
         if (this.props.isInteger) {
@@ -73,15 +75,16 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             valueAsNumber = parseFloat(valueString);
         }
 
+
         this._localChange = true;
-        this.setState({ value: valueString });
+        this.setState({ value: valueString});
 
         if (isNaN(valueAsNumber)) {
             return;
         }
 
-        this.raiseOnPropertyChanged(valueAsNumber, this._store);
         this.props.target[this.props.propertyName] = valueAsNumber;
+        this.raiseOnPropertyChanged(valueAsNumber, this._store);
 
         this._store = valueAsNumber;
     }

@@ -61,6 +61,26 @@ declare module "../scene" {
          */
         pickSpriteWithRay(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo>;
 
+        /** @hidden */
+        _internalMultiPickSprites(ray: Ray, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]>;
+
+        /** Launch a ray to try to pick sprites in the scene
+         * @param x position on screen
+         * @param y position on screen
+         * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
+         * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
+         * @returns a PickingInfo array
+         */
+        multiPickSprite(x: number, y: number, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]>;
+
+        /** Use the given ray to pick sprites in the scene
+         * @param ray The ray (in world space) to use to pick meshes
+         * @param predicate Predicate function used to determine eligible sprites. Can be set to null. In this case, a sprite must have isPickable set to true
+         * @param camera camera to use. Can be set to null. In this case, the scene.activeCamera will be used
+         * @returns a PickingInfo array
+         */
+        multiPickSpriteWithRay(ray: Ray, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]>;
+
         /**
          * Force the sprite under the pointer
          * @param sprite defines the sprite to use
@@ -117,6 +137,39 @@ Scene.prototype._internalPickSprites = function(ray: Ray, predicate?: (sprite: S
     return pickingInfo || new PickingInfo();
 };
 
+Scene.prototype._internalMultiPickSprites = function(ray: Ray, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]> {
+    if (!PickingInfo) {
+        return null;
+    }
+
+    var pickingInfos = new Array<PickingInfo>();
+
+    if (!camera) {
+        if (!this.activeCamera) {
+            return null;
+        }
+        camera = this.activeCamera;
+    }
+
+    if (this.spriteManagers.length > 0) {
+        for (var spriteIndex = 0; spriteIndex < this.spriteManagers.length; spriteIndex++) {
+            var spriteManager = this.spriteManagers[spriteIndex];
+
+            if (!spriteManager.isPickable) {
+                continue;
+            }
+
+            var results = spriteManager.multiIntersects(ray, camera, predicate);
+
+             if (results !== null) {
+                 pickingInfos = pickingInfos.concat(results);
+             }
+        }
+    }
+
+    return pickingInfos;
+};
+
 Scene.prototype.pickSprite = function(x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
     this.createPickingRayInCameraSpaceToRef(x, y, this._tempSpritePickingRay!, camera);
 
@@ -138,6 +191,29 @@ Scene.prototype.pickSpriteWithRay = function(ray: Ray, predicate?: (sprite: Spri
     Ray.TransformToRef(ray, camera.getViewMatrix(), this._tempSpritePickingRay);
 
     return this._internalPickSprites(this._tempSpritePickingRay, predicate, fastCheck, camera);
+};
+
+Scene.prototype.multiPickSprite = function(x: number, y: number, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]> {
+    this.createPickingRayInCameraSpaceToRef(x, y, this._tempSpritePickingRay!, camera);
+
+    return this._internalMultiPickSprites(this._tempSpritePickingRay!, predicate, camera);
+};
+
+Scene.prototype.multiPickSpriteWithRay = function(ray: Ray, predicate?: (sprite: Sprite) => boolean, camera?: Camera): Nullable<PickingInfo[]> {
+    if (!this._tempSpritePickingRay) {
+        return null;
+    }
+
+    if (!camera) {
+        if (!this.activeCamera) {
+            return null;
+        }
+        camera = this.activeCamera;
+    }
+
+    Ray.TransformToRef(ray, camera.getViewMatrix(), this._tempSpritePickingRay);
+
+    return this._internalMultiPickSprites(this._tempSpritePickingRay, predicate, camera);
 };
 
 Scene.prototype.setPointerOverSprite = function(sprite: Nullable<Sprite>): void {
@@ -233,7 +309,7 @@ export class SpriteSceneComponent implements ISceneComponent {
         return result;
     }
 
-    private _pointerMove(unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, canvas: HTMLCanvasElement): Nullable<PickingInfo> {
+    private _pointerMove(unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, isMeshPicked: boolean, element: HTMLElement): Nullable<PickingInfo> {
         var scene = this.scene;
         if (isMeshPicked) {
             scene.setPointerOverSprite(null);
@@ -242,10 +318,12 @@ export class SpriteSceneComponent implements ISceneComponent {
 
             if (pickResult && pickResult.hit && pickResult.pickedSprite) {
                 scene.setPointerOverSprite(pickResult.pickedSprite);
-                if (scene._pointerOverSprite && scene._pointerOverSprite.actionManager && scene._pointerOverSprite.actionManager.hoverCursor) {
-                    canvas.style.cursor = scene._pointerOverSprite.actionManager.hoverCursor;
-                } else {
-                    canvas.style.cursor = scene.hoverCursor;
+                if (!scene.doNotHandleCursors) {
+                    if (scene._pointerOverSprite && scene._pointerOverSprite.actionManager && scene._pointerOverSprite.actionManager.hoverCursor) {
+                        element.style.cursor = scene._pointerOverSprite.actionManager.hoverCursor;
+                    } else {
+                        element.style.cursor = scene.hoverCursor;
+                    }
                 }
             } else {
                 scene.setPointerOverSprite(null);

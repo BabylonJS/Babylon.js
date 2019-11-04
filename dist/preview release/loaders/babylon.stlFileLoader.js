@@ -262,10 +262,6 @@ var STLFileLoader = /** @class */ (function () {
      */
     STLFileLoader.prototype.load = function (scene, data, rootUrl) {
         var result = this.importMesh(null, scene, data, rootUrl, null, null, null);
-        if (result) {
-            scene.createDefaultLight();
-            scene.createDefaultCameraOrLight();
-        }
         return result;
     };
     /**

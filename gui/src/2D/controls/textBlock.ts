@@ -2,6 +2,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { Measure } from "../measure";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Enum that determines the text-wrapping mode to use.
@@ -257,6 +258,17 @@ export class TextBlock extends Control {
             }
             let newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length;
 
+            if (this._lines.length > 0 && this._lineSpacing.internalValue !== 0) {
+                let lineSpacing = 0;
+                if (this._lineSpacing.isPixel) {
+                    lineSpacing = this._lineSpacing.getValue(this._host);
+                } else {
+                    lineSpacing = (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                }
+
+                newHeight += (this._lines.length - 1) * lineSpacing;
+            }
+
             if (newHeight !== this._height.internalValue) {
                 this._height.updateInPlace(newHeight, ValueAndUnit.UNITMODE_PIXEL);
                 this._rebuildLayout = true;
@@ -425,7 +437,21 @@ export class TextBlock extends Control {
                 }
                 const lines = this._lines ? this._lines : this._breakLines(
                     this.widthInPixels - this.paddingLeftInPixels - this.paddingRightInPixels, context);
-                return this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * lines.length;
+
+                let newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * lines.length;
+
+                if (lines.length > 0 && this._lineSpacing.internalValue !== 0) {
+                    let lineSpacing = 0;
+                    if (this._lineSpacing.isPixel) {
+                        lineSpacing = this._lineSpacing.getValue(this._host);
+                    } else {
+                        lineSpacing = (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                    }
+
+                    newHeight += (lines.length - 1) * lineSpacing;
+                }
+
+                return newHeight;
             }
         }
         return 0;
@@ -437,3 +463,4 @@ export class TextBlock extends Control {
         this.onTextChangedObservable.clear();
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.TextBlock"] = TextBlock;

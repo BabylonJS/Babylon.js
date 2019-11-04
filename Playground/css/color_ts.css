@@ -1,4 +1,7 @@
-﻿@import url("https://fonts.googleapis.com/css?family=Montserrat:300,400");
+﻿/* To change the colors of the SVG images, use this website :
+https://codepen.io/sosuke/pen/Pjoqqp */
+
+@import url("https://fonts.googleapis.com/css?family=Montserrat:300,400");
 @import url("https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css");
 #waitTitle {
     color: rgb(208, 23, 211);

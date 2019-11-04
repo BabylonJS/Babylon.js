@@ -1,9 +1,11 @@
 import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
+import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
+import { _TypeStore } from '../../../Misc/typeStore';
 /**
- * Block used to scale a value
+ * Block used to scale a vector by a float
  */
 export class ScaleBlock extends NodeMaterialBlock {
     /**
@@ -11,15 +13,13 @@ export class ScaleBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name);
+        super(name, NodeMaterialBlockTargets.Neutral);
 
-        this.registerInput("value", NodeMaterialBlockConnectionPointTypes.AutoDetect);
-        this.registerInput("scale", NodeMaterialBlockConnectionPointTypes.Float);
+        this.registerInput("input", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("factor", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
-
-        this.scale.value = 1;
     }
 
     /**
@@ -31,16 +31,16 @@ export class ScaleBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the value operand input component
+     * Gets the input component
      */
-    public get value(): NodeMaterialConnectionPoint {
+    public get input(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the scale operand input component
+     * Gets the factor input component
      */
-    public get scale(): NodeMaterialConnectionPoint {
+    public get factor(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 
@@ -56,8 +56,10 @@ export class ScaleBlock extends NodeMaterialBlock {
 
         let output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = ${this.value.associatedVariableName} * ${this.scale.associatedVariableName};\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = ${this.input.associatedVariableName} * ${this.factor.associatedVariableName};\r\n`;
 
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.ScaleBlock"] = ScaleBlock;

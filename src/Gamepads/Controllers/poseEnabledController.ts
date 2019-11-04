@@ -1,12 +1,11 @@
 import { Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
-import { Quaternion, Matrix, Vector3, Tmp } from "../../Maths/math";
+import { Quaternion, Matrix, Vector3, TmpVectors } from "../../Maths/math.vector";
 import { Node } from "../../node";
 import { TransformNode } from "../../Meshes/transformNode";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Ray } from "../../Culling/ray";
 import { _TimeToken } from "../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { EngineStore } from "../../Engines/engineStore";
 
 import { Gamepad } from "../../Gamepads/gamepad";
@@ -131,6 +130,10 @@ export class PoseEnabledControllerHelper {
  * Defines the PoseEnabledController object that contains state of a vr capable controller
  */
 export class PoseEnabledController extends Gamepad implements PoseControlled {
+    /**
+     * If the controller is used in a webXR session
+     */
+    public isXR = false;
     // Represents device position and rotation in room space. Should only be used to help calculate babylon space values
     private _deviceRoomPosition = Vector3.Zero();
     private _deviceRoomRotationQuaternion = new Quaternion();
@@ -236,6 +239,9 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
      * Updates only the pose device and mesh without doing any button event checking
      */
     protected _updatePoseAndMesh() {
+        if (this.isXR) {
+            return;
+        }
         var pose: GamepadPose = this.browserGamepad.pose;
         this.updateFromDevice(pose);
 
@@ -246,10 +252,10 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
             this._deviceToWorld.setTranslation(camera.devicePosition);
             if (camera.deviceRotationQuaternion) {
                 var camera = camera;
-                camera._deviceRoomRotationQuaternion.toEulerAnglesToRef(Tmp.Vector3[0]);
+                camera._deviceRoomRotationQuaternion.toEulerAnglesToRef(TmpVectors.Vector3[0]);
 
                 // Find the radian distance away that the headset is from the controllers rotation
-                var distanceAway = Math.atan2(Math.sin(Tmp.Vector3[0].y - this._draggedRoomRotation), Math.cos(Tmp.Vector3[0].y - this._draggedRoomRotation));
+                var distanceAway = Math.atan2(Math.sin(TmpVectors.Vector3[0].y - this._draggedRoomRotation), Math.cos(TmpVectors.Vector3[0].y - this._draggedRoomRotation));
                 if (Math.abs(distanceAway) > this._maxRotationDistFromHeadset) {
                     // Only rotate enouph to be within the _maxRotationDistFromHeadset
                     var rotationAmount = distanceAway - (distanceAway < 0 ? -this._maxRotationDistFromHeadset : this._maxRotationDistFromHeadset);
@@ -283,6 +289,9 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
      * @param poseData raw pose fromthe device
      */
     updateFromDevice(poseData: DevicePose) {
+        if (this.isXR) {
+            return;
+        }
         if (poseData) {
             this.rawPose = poseData;
             if (poseData.position) {
@@ -296,7 +305,7 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
                 this._calculatedPosition.addInPlace(this.position);
             }
             let pose = this.rawPose;
-            if (poseData.orientation && pose.orientation) {
+            if (poseData.orientation && pose.orientation && pose.orientation.length === 4) {
                 this._deviceRoomRotationQuaternion.copyFromFloats(pose.orientation[0], pose.orientation[1], -pose.orientation[2], -pose.orientation[3]);
                 if (this._mesh) {
                     if (this._mesh.getScene().useRightHandedSystem) {
@@ -335,15 +344,17 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
         }
 
         // Sync controller mesh and pointing pose node's state with controller, this is done to avoid a frame where position is 0,0,0 when attaching mesh
-        this._updatePoseAndMesh();
-        if (this._pointingPoseNode) {
-            var parents = [];
-            var obj: Node = this._pointingPoseNode;
-            while (obj.parent) {
-                parents.push(obj.parent);
-                obj = obj.parent;
+        if (!this.isXR) {
+            this._updatePoseAndMesh();
+            if (this._pointingPoseNode) {
+                var parents = [];
+                var obj: Node = this._pointingPoseNode;
+                while (obj.parent) {
+                    parents.push(obj.parent);
+                    obj = obj.parent;
+                }
+                parents.reverse().forEach((p) => { p.computeWorldMatrix(true); });
             }
-            parents.reverse().forEach((p) => { p.computeWorldMatrix(true); });
         }
 
         this._meshAttachedObservable.notifyObservers(mesh);

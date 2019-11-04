@@ -1,10 +1,11 @@
 import { serialize, SerializationHelper } from "../Misc/decorators";
-import { Tools, IAnimatable } from "../Misc/tools";
+import { Tools } from "../Misc/tools";
+import { IAnimatable } from '../Animations/animatable.interface';
 import { SmartArray } from "../Misc/smartArray";
 import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Plane, Matrix } from "../Maths/math";
+import { Matrix } from "../Maths/math.vector";
 import { EngineStore } from "../Engines/engineStore";
 import { BaseSubMesh, SubMesh } from "../Meshes/subMesh";
 import { Geometry } from "../Meshes/geometry";
@@ -17,12 +18,28 @@ import { MaterialDefines } from "./materialDefines";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { IInspectable } from '../Misc/iInspectable';
+import { Plane } from '../Maths/math.plane';
 
 declare type Mesh = import("../Meshes/mesh").Mesh;
 declare type Animation = import("../Animations/animation").Animation;
 declare type InstancedMesh = import('../Meshes/instancedMesh').InstancedMesh;
 
 declare var BABYLON: any;
+
+/**
+ * Options for compiling materials.
+ */
+export interface IMaterialCompilationOptions {
+    /**
+     * Defines whether clip planes are enabled.
+     */
+    clipPlane: boolean;
+
+    /**
+     * Defines whether instances are enabled.
+     */
+    useInstances: boolean;
+}
 
 /**
  * Base class for the main features of a material in Babylon.js
@@ -386,6 +403,12 @@ export class Material implements IAnimatable {
     public forceDepthWrite = false;
 
     /**
+     * Specifies the depth function that should be used. 0 means the default engine function
+     */
+    @serialize()
+    public depthFunction = 0;
+
+    /**
      * Specifies if there should be a separate pass for culling
      */
     @serialize()
@@ -522,6 +545,11 @@ export class Material implements IAnimatable {
      * Specifies if the depth write state should be cached
      */
     private _cachedDepthWriteState: boolean = false;
+
+    /**
+     * Specifies if the depth function state should be cached
+     */
+    private _cachedDepthFunctionState: number = 0;
 
     /**
      * Stores the uniform buffer
@@ -782,6 +810,12 @@ export class Material implements IAnimatable {
             this._cachedDepthWriteState = engine.getDepthWrite();
             engine.setDepthWrite(false);
         }
+
+        if (this.depthFunction !== 0) {
+            var engine = this._scene.getEngine();
+            this._cachedDepthFunctionState = engine.getDepthFunction() || 0;
+            engine.setDepthFunction(this.depthFunction);
+        }
     }
 
     /**
@@ -790,6 +824,11 @@ export class Material implements IAnimatable {
     public unbind(): void {
         if (this._onUnBindObservable) {
             this._onUnBindObservable.notifyObservers(this);
+        }
+
+        if (this.depthFunction !== 0) {
+            var engine = this._scene.getEngine();
+            engine.setDepthFunction(this._cachedDepthFunctionState);
         }
 
         if (this.disableDepthWrite) {
@@ -850,10 +889,12 @@ export class Material implements IAnimatable {
      * @param mesh defines the mesh associated with this material
      * @param onCompiled defines a function to execute once the material is compiled
      * @param options defines the options to configure the compilation
+     * @param onError defines a function to execute if the material fails compiling
      */
-    public forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<{ clipPlane: boolean }>): void {
+    public forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<IMaterialCompilationOptions>, onError?: (reason: string) => void): void {
         let localOptions = {
             clipPlane: false,
+            useInstances: false,
             ...options
         };
 
@@ -876,13 +917,19 @@ export class Material implements IAnimatable {
             }
 
             if (this._storeEffectOnSubMeshes) {
-                if (this.isReadyForSubMesh(mesh, subMesh)) {
+                if (this.isReadyForSubMesh(mesh, subMesh, localOptions.useInstances)) {
                     if (onCompiled) {
                         onCompiled(this);
                     }
                 }
                 else {
-                    setTimeout(checkReady, 16);
+                    if (subMesh.effect && subMesh.effect.getCompilationError() && subMesh.effect.allFallbacksProcessed()) {
+                        if (onError) {
+                            onError(subMesh.effect.getCompilationError());
+                        }
+                    } else {
+                        setTimeout(checkReady, 16);
+                    }
                 }
             } else {
                 if (this.isReady()) {
@@ -909,11 +956,13 @@ export class Material implements IAnimatable {
      * @param options defines additional options for compiling the shaders
      * @returns a promise that resolves when the compilation completes
      */
-    public forceCompilationAsync(mesh: AbstractMesh, options?: Partial<{ clipPlane: boolean }>): Promise<void> {
-        return new Promise((resolve) => {
+    public forceCompilationAsync(mesh: AbstractMesh, options?: Partial<IMaterialCompilationOptions>): Promise<void> {
+        return new Promise((resolve, reject) => {
             this.forceCompilation(mesh, () => {
                 resolve();
-            }, options);
+            }, options, (reason) => {
+                reject(reason);
+            });
         });
     }
 
@@ -1008,9 +1057,9 @@ export class Material implements IAnimatable {
         }
     }
 
-        /**
-     * Indicates that we need to re-calculated for all submeshes
-     */
+    /**
+ * Indicates that we need to re-calculated for all submeshes
+ */
     protected _markAllSubMeshesAsAllDirty() {
         this._markAllSubMeshesAsDirty(Material._AllDirtyCallBack);
     }

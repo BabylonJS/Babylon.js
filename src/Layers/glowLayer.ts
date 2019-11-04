@@ -1,9 +1,8 @@
 import { serialize, SerializationHelper } from "../Misc/decorators";
-import { Tools } from "../Misc/tools";
 import { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
-import { Vector2, Color4 } from "../Maths/math";
+import { Vector2 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -18,6 +17,8 @@ import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
 import { Constants } from "../Engines/constants";
 import { _TypeStore } from '../Misc/typeStore';
+import { Engine } from '../Engines/engine';
+import { Color4 } from '../Maths/math.color';
 
 import "../Shaders/glowMapMerge.fragment";
 import "../Shaders/glowMapMerge.vertex";
@@ -84,8 +85,7 @@ export interface IGlowLayerOptions {
 /**
  * The glow layer Helps adding a glow effect around the emissive parts of a mesh.
  *
- * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
- * glowy meshes to your scene.
+ * Once instantiated in a scene, by default, all the emissive meshes will glow.
  *
  * Documentation: https://doc.babylonjs.com/how_to/glow_layer
  */
@@ -153,6 +153,7 @@ export class GlowLayer extends EffectLayer {
 
     private _includedOnlyMeshes: number[] = [];
     private _excludedMeshes: number[] = [];
+    private _meshesUsingTheirOwnMaterials: number[] = [];
 
     /**
      * Callback used to let the user override the color selection on a per mesh basis
@@ -222,8 +223,8 @@ export class GlowLayer extends EffectLayer {
     protected _createTextureAndPostProcesses(): void {
         var blurTextureWidth = this._mainTextureDesiredSize.width;
         var blurTextureHeight = this._mainTextureDesiredSize.height;
-        blurTextureWidth = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(blurTextureWidth, this._maxSize) : blurTextureWidth;
-        blurTextureHeight = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(blurTextureHeight, this._maxSize) : blurTextureHeight;
+        blurTextureWidth = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(blurTextureWidth, this._maxSize) : blurTextureWidth;
+        blurTextureHeight = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(blurTextureHeight, this._maxSize) : blurTextureHeight;
 
         var textureType = 0;
         if (this._engine.getCaps().textureHalfFloatRender) {
@@ -508,6 +509,37 @@ export class GlowLayer extends EffectLayer {
         }
 
         return true;
+    }
+
+    /**
+     * Defines wether the current material of the mesh should be use to render the effect.
+     * @param mesh defines the current mesh to render
+     */
+    protected _useMeshMaterial(mesh: AbstractMesh): boolean {
+        if (this._meshesUsingTheirOwnMaterials.length == 0) {
+            return false;
+        }
+        return this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId) > -1;
+    }
+
+    /**
+     * Add a mesh to be rendered through its own material and not with emissive only.
+     * @param mesh The mesh for which we need to use its material
+     */
+    public referenceMeshToUseItsOwnMaterial(mesh: AbstractMesh): void {
+        this._meshesUsingTheirOwnMaterials.push(mesh.uniqueId);
+    }
+
+    /**
+     * Remove a mesh from being rendered through its own material and not with emissive only.
+     * @param mesh The mesh for which we need to not use its material
+     */
+    public unReferenceMeshFromUsingItsOwnMaterial(mesh: AbstractMesh): void {
+        let index = this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId);
+        while (index > 0) {
+            this._meshesUsingTheirOwnMaterials.slice(index, index + 1);
+            index = this._meshesUsingTheirOwnMaterials.indexOf(mesh.uniqueId);
+        }
     }
 
     /**

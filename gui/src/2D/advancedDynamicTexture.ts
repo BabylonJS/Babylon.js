@@ -18,6 +18,7 @@ import { Container } from "./controls/container";
 import { Control } from "./controls/control";
 import { Style } from "./style";
 import { Measure } from "./measure";
+import { Constants } from 'babylonjs/Engines/constants';
 /**
 * Interface used to define a control that can receive focus
 */
@@ -79,7 +80,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _focusedControl: Nullable<IFocusableControl>;
     private _blockNextFocusCheck = false;
     private _renderScale = 1;
-    private _rootCanvas: Nullable<HTMLCanvasElement>;
+    private _rootElement: Nullable<HTMLElement>;
     private _cursorChanged = false;
     /**
     * Define type to string to ensure compatibility across browsers
@@ -284,12 +285,12 @@ export class AdvancedDynamicTexture extends DynamicTexture {
    * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
    */
     constructor(name: string, width = 0, height = 0, scene: Nullable<Scene>, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE) {
-        super(name, { width: width, height: height }, scene, generateMipMaps, samplingMode, Engine.TEXTUREFORMAT_RGBA);
+        super(name, { width: width, height: height }, scene, generateMipMaps, samplingMode, Constants.TEXTUREFORMAT_RGBA);
         scene = this.getScene();
         if (!scene || !this._texture) {
             return;
         }
-        this._rootCanvas = scene.getEngine()!.getRenderingCanvas()!;
+        this._rootElement = scene.getEngine()!.getInputElement()!;
         this._renderObserver = scene.onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
         this._preKeyboardObserver = scene.onPreKeyboardObservable.add((info) => {
             if (!this._focusedControl) {
@@ -412,7 +413,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (!scene) {
             return;
         }
-        this._rootCanvas = null;
+        this._rootElement = null;
         scene.onBeforeCameraRenderObservable.remove(this._renderObserver);
         if (this._resizeObserver) {
             scene.getEngine().onResizeObservable.remove(this._resizeObserver);
@@ -534,7 +535,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._render();
         this.update(true, this.premulAlpha);
     }
+
     private _clearMeasure = new Measure(0, 0, 0, 0);
+
     private _render(): void {
         var textureSize = this.getSize();
         var renderWidth = textureSize.width;
@@ -573,8 +576,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
     /** @hidden */
     public _changeCursor(cursor: string) {
-        if (this._rootCanvas) {
-            this._rootCanvas.style.cursor = cursor;
+        if (this._rootElement) {
+            this._rootElement.style.cursor = cursor;
             this._cursorChanged = true;
         }
     }

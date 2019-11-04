@@ -1,6 +1,6 @@
 import { Nullable, FloatArray, IndicesArray } from "../types";
 import { Scene } from "../scene";
-import { Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math";
+import { Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Meshes/buffer";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { SubMesh } from "../Meshes/subMesh";
@@ -654,7 +654,7 @@ export class CSG {
      * @param keepSubMeshes Specifies if the submeshes should be kept
      * @returns A new Mesh
      */
-    public buildMeshGeometry(name: string, scene: Scene, keepSubMeshes: boolean): Mesh {
+    public buildMeshGeometry(name: string, scene?: Scene, keepSubMeshes?: boolean): Mesh {
         var matrix = this.matrix.clone();
         matrix.invert();
 
@@ -774,7 +774,7 @@ export class CSG {
      * @param keepSubMeshes Specifies if submeshes should be kept
      * @returns The new Mesh
      */
-    public toMesh(name: string, material: Nullable<Material>, scene: Scene, keepSubMeshes: boolean): Mesh {
+    public toMesh(name: string, material: Nullable<Material> = null, scene?: Scene, keepSubMeshes?: boolean): Mesh {
         var mesh = this.buildMeshGeometry(name, scene, keepSubMeshes);
 
         mesh.material = material;

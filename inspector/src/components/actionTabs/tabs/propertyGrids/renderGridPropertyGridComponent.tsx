@@ -1,13 +1,13 @@
 import * as React from "react";
 
 import { Nullable } from "babylonjs/types";
-import { Tools } from "babylonjs/Misc/tools";
 import { Color3 } from "babylonjs/Maths/math";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
 import { Scene } from "babylonjs/scene";
+import { GridMaterial } from "babylonjs-materials/grid/gridMaterial";
 
 import { CheckBoxLineComponent } from "../../lines/checkBoxLineComponent";
 import { GlobalState } from '../../../globalState';
@@ -25,7 +25,7 @@ export class RenderGridPropertyGridComponent extends React.Component<IRenderGrid
         this.state = { isEnabled: false };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         const scene = UtilityLayerRenderer.DefaultKeepDepthUtilityLayer.utilityLayerScene;
 
         for (var mesh of scene.meshes) {
@@ -39,14 +39,6 @@ export class RenderGridPropertyGridComponent extends React.Component<IRenderGrid
 
     addOrRemoveGrid() {
         const scene = UtilityLayerRenderer.DefaultKeepDepthUtilityLayer.utilityLayerScene;
-
-        if (!(BABYLON as any).GridMaterial) {
-            this.setState({ isEnabled: true });
-            Tools.LoadScript("https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js", () => {
-                this.addOrRemoveGrid();
-            });
-            return;
-        }
 
         if (!this._gridMesh) {
             var extend = this.props.scene.getWorldExtends();
@@ -62,7 +54,7 @@ export class RenderGridPropertyGridComponent extends React.Component<IRenderGrid
             this._gridMesh.reservedDataStore.isInspectorGrid = true;
             this._gridMesh.isPickable = false;
 
-            var groundMaterial = new (BABYLON as any).GridMaterial("GridMaterial", scene);
+            var groundMaterial = new GridMaterial("GridMaterial", scene);
             groundMaterial.majorUnitFrequency = 10;
             groundMaterial.minorUnitVisibility = 0.3;
             groundMaterial.gridRatio = 0.01;

@@ -1,7 +1,8 @@
 import { serialize, SerializationHelper, serializeAsColor3, expandToProperty } from "../Misc/decorators";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Vector3, Color3 } from "../Maths/math";
+import { Vector3 } from "../Maths/math.vector";
+import { Color3 } from "../Maths/math.color";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Effect } from "../Materials/effect";
@@ -333,6 +334,8 @@ export abstract class Light extends Node {
      */
     public _uniformBuffer: UniformBuffer;
 
+    /** @hidden */
+    public _renderId: number;
     /**
      * Creates a Light object in the scene.
      * Documentation : https://doc.babylonjs.com/babylon101/lights
@@ -360,6 +363,14 @@ export abstract class Light extends Node {
      * @returns The light
      */
     public abstract transferToEffect(effect: Effect, lightIndex: string): Light;
+
+    /**
+     * Sets the passed Effect "effect" with the Light information.
+     * @param effect The effect to update
+     * @param lightDataUniformName The uniform used to store light data (position or direction)
+     * @returns The light
+     */
+    public abstract transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): Light;
 
     /**
      * Returns the string "Light".
@@ -393,7 +404,9 @@ export abstract class Light extends Node {
     /** @hidden */
     protected _syncParentEnabledState() {
         super._syncParentEnabledState();
-        this._resyncMeshes();
+        if (!this.isDisposed()) {
+            this._resyncMeshes();
+        }
     }
 
     /**
@@ -482,7 +495,7 @@ export abstract class Light extends Node {
 
         // Remove from meshes
         for (var mesh of this.getScene().meshes) {
-            mesh._removeLightSource(this);
+            mesh._removeLightSource(this, true);
         }
 
         this._uniformBuffer.dispose();
