@@ -770,10 +770,12 @@ namespace babylon
         m_scratch.clear();
         for (size_t index = 0; index < elementLength; index += size)
         {
-            const float values[] = { static_cast<float>(array[index])
+            const float values[] = {
+                static_cast<float>(array[index])
                 , (size > 1) ? static_cast<float>(array[index + 1]) : 0.f
                 , (size > 2) ? static_cast<float>(array[index + 2]) : 0.f
-                , (size > 3) ? static_cast<float>(array[index + 3]) : 0.f };
+                , (size > 3) ? static_cast<float>(array[index + 3]) : 0.f
+            };
             m_scratch.insert(m_scratch.end(), values, values + 4);
         }
 
@@ -783,10 +785,12 @@ namespace babylon
     template<int size> void NativeEngine::SetFloatN(const Napi::CallbackInfo& info)
     {
         const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
-        const float values[] = { info[1].As<Napi::Number>().FloatValue(),
-                                (size > 1) ? info[2].As<Napi::Number>().FloatValue() : 0.f,
-                                (size > 2) ? info[3].As<Napi::Number>().FloatValue() : 0.f,
-                                (size > 3) ? info[4].As<Napi::Number>().FloatValue() : 0.f };
+        const float values[] = { 
+            info[1].As<Napi::Number>().FloatValue(),
+            (size > 1) ? info[2].As<Napi::Number>().FloatValue() : 0.f,
+            (size > 2) ? info[3].As<Napi::Number>().FloatValue() : 0.f,
+            (size > 3) ? info[4].As<Napi::Number>().FloatValue() : 0.f 
+        };
 
         m_currentProgram->SetUniform(uniformData->Handle, values);
     }
@@ -799,18 +803,25 @@ namespace babylon
         const size_t elementLength = matrix.ElementLength();
         assert(elementLength == size * size);
 
-        std::array<float, 16> matrixValues{ };
-
-        size_t index = 0;
-        for (int line = 0; line < size; line++)
+        if (size < 4)
         {
-            for (int col = 0; col < size; col++)
-            {
-                matrixValues[line * 4 + col] = matrix[index++];
-            }
-        }
+            std::array<float, 16> matrixValues{};
 
-        m_currentProgram->SetUniform(uniformData->Handle, gsl::make_span(matrixValues.data(), 16));
+            size_t index = 0;
+            for (int line = 0; line < size; line++)
+            {
+                for (int col = 0; col < size; col++)
+                {
+                    matrixValues[line * 4 + col] = matrix[index++];
+                }
+            }
+
+            m_currentProgram->SetUniform(uniformData->Handle, gsl::make_span(matrixValues.data(), 16));
+        }
+        else
+        {
+            m_currentProgram->SetUniform(uniformData->Handle, gsl::make_span(matrix.Data(), elementLength));
+        }
     }
 
     void NativeEngine::SetIntArray(const Napi::CallbackInfo& info)
