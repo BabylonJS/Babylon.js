@@ -484,7 +484,7 @@ export class PostProcess {
                 this.width = desiredWidth;
                 this.height = desiredHeight;
 
-                const needMipMaps = this.renderTargetSamplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE || 
+                const needMipMaps = this.renderTargetSamplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE ||
                                     this.renderTargetSamplingMode === Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR ||
                                     this.renderTargetSamplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR ||
                                     this.renderTargetSamplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR ||
