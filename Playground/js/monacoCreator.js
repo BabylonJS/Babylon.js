@@ -137,11 +137,11 @@ class MonacoCreator {
                 return [ { label: label } ];
             },
 
-            provideDocumentColors: () => {
+            provideDocumentColors: (model) => {
                 const digitGroup = "\\s*(\\d*(?:\\.\\d+)?)\\s*";
                 // we add \n{0} to workaround a Monaco bug, when setting regex options on their side
                 const regex = `BABYLON\\.Color(?:3|4)\\s*\\(${digitGroup},${digitGroup},${digitGroup}(?:,${digitGroup})?\\)\\n{0}`;
-                const matches = this.jsEditor.getModel().findMatches(regex, null, true, true, null, true);
+                const matches = model.findMatches(regex, null, true, true, null, true);
 
                 const converter = (g) => g === undefined ? undefined : Number(g);
 
