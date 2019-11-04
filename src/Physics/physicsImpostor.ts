@@ -1,7 +1,7 @@
 import { Nullable, IndicesArray } from "../types";
 import { Logger } from "../Misc/logger";
 import { ArrayTools } from "../Misc/arrayTools";
-import { Vector3, Matrix, Quaternion, Space } from "../Maths/math";
+import { Vector3, Matrix, Quaternion } from "../Maths/math.vector";
 import { TransformNode } from "../Meshes/transformNode";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -10,6 +10,7 @@ import { Bone } from "../Bones/bone";
 import { BoundingInfo } from "../Culling/boundingInfo";
 import { IPhysicsEngine } from "./IPhysicsEngine";
 import { PhysicsJoint, PhysicsJointData } from "./physicsJoint";
+import { Space } from '../Maths/math.axis';
 
 /**
  * The interface for the physics imposter parameters
@@ -440,6 +441,9 @@ export class PhysicsImpostor {
         if (!this.object) {
             Logger.Error("No object was provided. A physics object is obligatory");
             return;
+        }
+        if (this.object.parent && _options.mass !== 0) {
+            Logger.Warn("A physics impostor has been created for an object which has a parent. Babylon physics currently works in local space so unexpected issues may occur.");
         }
 
         // Legacy support for old syntax.

@@ -5,9 +5,8 @@ import { Scene, IDisposable } from "../scene";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { Color3 } from "../Maths/math";
+import { Color3 } from '../Maths/math.color';
 import { SixDofDragBehavior } from "../Behaviors/Meshes/sixDofDragBehavior";
 
 import { Gizmo } from "./gizmo";

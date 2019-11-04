@@ -18,9 +18,7 @@ export class StatisticsTabComponent extends PaneComponent {
 
     constructor(props: IPaneComponentProps) {
         super(props);
-    }
 
-    componentWillMount() {
         const scene = this.props.scene;
 
         if (!scene) {

@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { Observable } from "babylonjs/Misc/observable";
 import { Tools } from "babylonjs/Misc/tools";
-import { Color3, Vector3 } from "babylonjs/Maths/math";
+import { Color3, Vector3, TmpVectors } from "babylonjs/Maths/math";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { LinesBuilder } from "babylonjs/Meshes/Builders/linesBuilder";
@@ -35,13 +35,15 @@ interface IMeshPropertyGridComponentProps {
 }
 
 export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGridComponentProps, {
-    displayNormals: boolean
+    displayNormals: boolean,
+    displayVertexColors: boolean
 }> {
     constructor(props: IMeshPropertyGridComponentProps) {
         super(props);
 
         this.state = {
-            displayNormals: false
+            displayNormals: false,
+            displayVertexColors: false
         };
     }
 
@@ -57,7 +59,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
             return;
         }
 
-        var wireframeOver = mesh.clone();
+        var wireframeOver = mesh.clone()!;
         wireframeOver.reservedDataStore = { hidden: true };
 
         // Sets up the mesh to be attached to the parent.
@@ -103,7 +105,9 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         var positions = mesh.getVerticesData(VertexBuffer.PositionKind);
 
         const color = Color3.White();
-        const size = mesh.getBoundingInfo().diagonalLength * 0.05;
+        const bbox = mesh.getBoundingInfo();
+        const diag = bbox.maximum.subtractToRef(bbox.minimum, TmpVectors.Vector3[0]);
+        const size = diag.length() * 0.05;
 
         var lines = [];
         for (var i = 0; i < normals!.length; i += 3) {
@@ -129,11 +133,8 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
     displayNormals() {
         const mesh = this.props.mesh;
         const scene = mesh.getScene();
-        if (!mesh.material) {
-            return;
-        }
 
-        if (mesh.material.getClassName() === "NormalMaterial") {
+        if (mesh.material && mesh.material.getClassName() === "NormalMaterial") {
             mesh.material.dispose();
 
             mesh.material = mesh.reservedDataStore.originalMaterial;
@@ -153,13 +154,49 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                 mesh.reservedDataStore = {};
             }
 
-            mesh.reservedDataStore.originalMaterial = mesh.material;
+            if (!mesh.reservedDataStore.originalMaterial) {
+                mesh.reservedDataStore.originalMaterial = mesh.material;
+            }
             const normalMaterial = new (BABYLON as any).NormalMaterial("normalMaterial", scene);
             normalMaterial.disableLighting = true;
-            normalMaterial.sideOrientation = mesh.material.sideOrientation;
+            if (mesh.material) {
+                normalMaterial.sideOrientation = mesh.material.sideOrientation;
+            }
             normalMaterial.reservedDataStore = { hidden: true };
             mesh.material = normalMaterial;
             this.setState({ displayNormals: true });
+        }
+    }
+
+    displayVertexColors() {
+        const mesh = this.props.mesh;
+        const scene = mesh.getScene();
+
+        if (mesh.material && mesh.material.reservedDataStore && mesh.material.reservedDataStore.isVertexColorMaterial) {
+            mesh.material.dispose();
+
+            mesh.material = mesh.reservedDataStore.originalMaterial;
+            mesh.reservedDataStore.originalMaterial = null;
+            this.setState({ displayVertexColors: false });
+        } else {
+
+            if (!mesh.reservedDataStore) {
+                mesh.reservedDataStore = {};
+            }
+
+            if (!mesh.reservedDataStore.originalMaterial) {
+                mesh.reservedDataStore.originalMaterial = mesh.material;
+            }
+            const vertexColorMaterial = new StandardMaterial("vertex colors", scene);
+            vertexColorMaterial.disableLighting = true;
+            vertexColorMaterial.emissiveColor = Color3.White();
+            if (mesh.material) {
+                vertexColorMaterial.sideOrientation = mesh.material.sideOrientation;
+            }
+            vertexColorMaterial.reservedDataStore = { hidden: true, isVertexColorMaterial: true };
+            mesh.useVertexColors = true;
+            mesh.material = vertexColorMaterial;
+            this.setState({ displayVertexColors: true });
         }
     }
 
@@ -179,6 +216,15 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
 
         const instanceMesh = this.props.mesh as any;
         this.props.onSelectionChangedObservable.notifyObservers(instanceMesh.sourceMesh);
+    }
+
+    onSkeletonLink() {
+        if (!this.props.onSelectionChangedObservable) {
+            return;
+        }
+
+        const mesh = this.props.mesh;
+        this.props.onSelectionChangedObservable.notifyObservers(mesh.skeleton);
     }
 
     convertPhysicsTypeToString(): string {
@@ -216,6 +262,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         const scene = mesh.getScene();
 
         const displayNormals = mesh.material != null && mesh.material.getClassName() === "NormalMaterial";
+        const displayVertexColors = !!(mesh.material != null && mesh.material.reservedDataStore && mesh.material.reservedDataStore.isVertexColorMaterial);
         const renderNormalVectors = (mesh.reservedDataStore && mesh.reservedDataStore.normalLines) ? true : false;
         const renderWireframeOver = (mesh.reservedDataStore && mesh.reservedDataStore.wireframeOver) ? true : false;
 
@@ -241,6 +288,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         return (
             <div className="pane">
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={mesh}
+                    lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={mesh.id} />
@@ -249,11 +297,18 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     <TextLineComponent label="Vertices" value={mesh.getTotalVertices().toString()} />
                     <TextLineComponent label="Faces" value={(mesh.getTotalIndices() / 3).toFixed(0)} />
                     <TextLineComponent label="Sub-meshes" value={mesh.subMeshes ? mesh.subMeshes.length.toString() : "0"} />
-                    <TextLineComponent label="Has skeleton" value={mesh.skeleton ? "Yes" : "No"} />
+                    {
+                        mesh.parent &&
+                        <TextLineComponent label="Parent" value={mesh.parent.name} onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(mesh.parent)}/>
+                    }                      
+                    {
+                        mesh.skeleton &&
+                        <TextLineComponent label="Skeleton" value={mesh.skeleton.name} onLink={() => this.onSkeletonLink()}/>
+                    }
                     <CheckBoxLineComponent label="Is enabled" isSelected={() => mesh.isEnabled()} onSelect={(value) => mesh.setEnabled(value)} />
                     <CheckBoxLineComponent label="Is pickable" target={mesh} propertyName="isPickable" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
-                        mesh.material &&
+                        mesh.material && (!mesh.material.reservedDataStore || !mesh.material.reservedDataStore.hidden) &&
                         <TextLineComponent label="Material" value={mesh.material.name} onLink={() => this.onMaterialLink()} />
                     }
                     {
@@ -347,22 +402,32 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     <SliderLineComponent label="Edge width" minimum={0} maximum={10} step={0.1} target={mesh} propertyName="edgesWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Edge color" target={mesh} propertyName="edgesColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="OUTLINE & OVERLAY" closed={true}>
-                    <CheckBoxLineComponent label="Render overlay" target={mesh} propertyName="renderOverlay" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Color3LineComponent label="Overlay color" target={mesh} propertyName="overlayColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Render outline" target={mesh} propertyName="renderOutline" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Color3LineComponent label="Outline color" target={mesh} propertyName="outlineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                </LineContainerComponent>
+                {
+                        !mesh.isAnInstance &&
+                    <LineContainerComponent globalState={this.props.globalState} title="OUTLINE & OVERLAY" closed={true}>
+                        <CheckBoxLineComponent label="Render overlay" target={mesh} propertyName="renderOverlay" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <Color3LineComponent label="Overlay color" target={mesh} propertyName="overlayColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <CheckBoxLineComponent label="Render outline" target={mesh} propertyName="renderOutline" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <Color3LineComponent label="Outline color" target={mesh} propertyName="outlineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    </LineContainerComponent>
+                }
                 <LineContainerComponent globalState={this.props.globalState} title="DEBUG" closed={true}>
                     {
-                        mesh.material &&
+                        !mesh.isAnInstance &&
                         <CheckBoxLineComponent label="Display normals" isSelected={() => displayNormals} onSelect={() => this.displayNormals()} />
+                    }
+                    {
+                        !mesh.isAnInstance &&
+                        <CheckBoxLineComponent label="Display vertex colors" isSelected={() => displayVertexColors} onSelect={() => this.displayVertexColors()} />
                     }
                     {
                         mesh.isVerticesDataPresent(VertexBuffer.NormalKind) &&
                         <CheckBoxLineComponent label="Render vertex normals" isSelected={() => renderNormalVectors} onSelect={() => this.renderNormalVectors()} />
                     }
-                    <CheckBoxLineComponent label="Render wireframe over mesh" isSelected={() => renderWireframeOver} onSelect={() => this.renderWireframeOver()} />
+                    {
+                        !mesh.isAnInstance &&
+                        <CheckBoxLineComponent label="Render wireframe over mesh" isSelected={() => renderWireframeOver} onSelect={() => this.renderWireframeOver()} />
+                    }
                 </LineContainerComponent>
             </div>
         );

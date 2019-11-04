@@ -1,10 +1,8 @@
-import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialWellKnownValues } from './nodeMaterialWellKnownValues';
-import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
+import { NodeMaterialBlockConnectionPointTypes } from './Enums/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
 import { NodeMaterialBuildStateSharedData } from './nodeMaterialBuildStateSharedData';
 import { Effect } from '../effect';
-import { Nullable } from '../../types';
+import { StringTools } from '../../Misc/stringTools';
 
 /**
  * Class used to store node based material build state
@@ -21,9 +19,9 @@ export class NodeMaterialBuildState {
      */
     public uniforms = new Array<string>();
     /**
-     * Gets the list of emitted uniform buffers
-     */
-    public uniformBuffers = new Array<string>();
+    * Gets the list of emitted constants
+    */
+    public constants = new Array<string>();
     /**
      * Gets the list of emitted samplers
      */
@@ -32,6 +30,11 @@ export class NodeMaterialBuildState {
      * Gets the list of emitted functions
      */
     public functions: { [key: string]: string } = {};
+    /**
+     * Gets the list of emitted extensions
+     */
+    public extensions: { [key: string]: string } = {};
+
     /**
      * Gets the target of the compilation state
      */
@@ -49,10 +52,16 @@ export class NodeMaterialBuildState {
     /** @hidden */
     public _vertexState: NodeMaterialBuildState;
 
-    private _attributeDeclaration = "";
-    private _uniformDeclaration = "";
-    private _samplerDeclaration = "";
-    private _varyingTransfer = "";
+    /** @hidden */
+    public _attributeDeclaration = "";
+    /** @hidden */
+    public _uniformDeclaration = "";
+    /** @hidden */
+    public _constantDeclaration = "";
+    /** @hidden */
+    public _samplerDeclaration = "";
+    /** @hidden */
+    public _varyingTransfer = "";
 
     private _repeatableContentAnchorIndex = 0;
     /** @hidden */
@@ -72,6 +81,10 @@ export class NodeMaterialBuildState {
         let isFragmentMode = (this.target === NodeMaterialBlockTargets.Fragment);
 
         this.compilationString = `\r\n${emitComments ? "//Entry point\r\n" : ""}void main(void) {\r\n${this.compilationString}`;
+
+        if (this._constantDeclaration) {
+            this.compilationString = `\r\n${emitComments ? "//Constants\r\n" : ""}${this._constantDeclaration}\r\n${this.compilationString}`;
+        }
 
         let functionCode = "";
         for (var functionName in this.functions) {
@@ -101,6 +114,11 @@ export class NodeMaterialBuildState {
             this.compilationString = `\r\n${emitComments ? "//Attributes\r\n" : ""}${this._attributeDeclaration}\r\n${this.compilationString}`;
         }
 
+        for (var extensionName in this.extensions) {
+            let extension = this.extensions[extensionName];
+            this.compilationString = `\r\n${extension}\r\n${this.compilationString}`;
+        }
+
         this._builtCompilationString = this.compilationString;
     }
 
@@ -111,6 +129,8 @@ export class NodeMaterialBuildState {
 
     /** @hidden */
     public _getFreeVariableName(prefix: string): string {
+        prefix = prefix.replace(/[^a-zA-Z_]+/g, "");
+
         if (this.sharedData.variableNames[prefix] === undefined) {
             this.sharedData.variableNames[prefix] = 0;
 
@@ -144,6 +164,12 @@ export class NodeMaterialBuildState {
     }
 
     /** @hidden */
+    public _emit2DSampler(name: string) {
+        this._samplerDeclaration += `uniform sampler2D ${name};\r\n`;
+        this.samplers.push(name);
+    }
+
+    /** @hidden */
     public _getGLType(type: NodeMaterialBlockConnectionPointTypes): string {
         switch (type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
@@ -154,23 +180,24 @@ export class NodeMaterialBuildState {
                 return "vec2";
             case NodeMaterialBlockConnectionPointTypes.Color3:
             case NodeMaterialBlockConnectionPointTypes.Vector3:
-            case NodeMaterialBlockConnectionPointTypes.Vector3OrColor3:
                 return "vec3";
             case NodeMaterialBlockConnectionPointTypes.Color4:
             case NodeMaterialBlockConnectionPointTypes.Vector4:
-            case NodeMaterialBlockConnectionPointTypes.Vector4OrColor4:
-            case NodeMaterialBlockConnectionPointTypes.Vector3OrVector4:
-            case NodeMaterialBlockConnectionPointTypes.Color3OrColor4:
                 return "vec4";
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 return "mat4";
-            case NodeMaterialBlockConnectionPointTypes.Texture:
-                return "sampler2D";
-            case NodeMaterialBlockConnectionPointTypes.Texture3D:
-                return "sampler3D";
         }
 
         return "";
+    }
+
+    /** @hidden */
+    public _emitExtension(name: string, extension: string) {
+        if (this.extensions[name]) {
+            return;
+        }
+
+        this.extensions[name] = extension;
     }
 
     /** @hidden */
@@ -278,146 +305,61 @@ export class NodeMaterialBuildState {
     }
 
     /** @hidden */
-    public _emitVaryings(point: NodeMaterialConnectionPoint, define: string = "", force = false, fromFragment = false, replacementName: string = "", type: Nullable<NodeMaterialBlockConnectionPointTypes> = null) {
-        let name = replacementName || point.associatedVariableName;
-        if (point.isVarying || force) {
-            if (this.sharedData.varyings.indexOf(name) !== -1) {
-                return;
-            }
-
-            this.sharedData.varyings.push(name);
-
-            if (define) {
-                this.sharedData.varyingDeclaration += `#ifdef ${define}\r\n`;
-            }
-            this.sharedData.varyingDeclaration += `varying ${this._getGLType(type || point.type)} ${name};\r\n`;
-            if (define) {
-                this.sharedData.varyingDeclaration += `#endif\r\n`;
-            }
-
-            if (this.target === NodeMaterialBlockTargets.Vertex && fromFragment) {
-                if (define) {
-                    this.sharedData.varyingDeclaration += `#ifdef ${define}\r\n`;
-                }
-                this._varyingTransfer += `${name} = ${point.name};\r\n`;
-                if (define) {
-                    this.sharedData.varyingDeclaration += `#endif\r\n`;
-                }
-            }
-        }
-    }
-
-    private _emitDefine(define: string): string {
-        if (define[0] === "!") {
-            return `#ifndef ${define.substring(1)}\r\n`;
+    public _registerTempVariable(name: string) {
+        if (this.sharedData.temps.indexOf(name) !== -1) {
+            return false;
         }
 
-        return `#ifdef ${define}\r\n`;
+        this.sharedData.temps.push(name);
+        return true;
     }
 
     /** @hidden */
-    public _emitUniformOrAttributes(point: NodeMaterialConnectionPoint, define?: string) {
-        define = define || point.define;
+    public _emitVaryingFromString(name: string, type: string, define: string = "", notDefine = false) {
+        if (this.sharedData.varyings.indexOf(name) !== -1) {
+            return false;
+        }
 
-        // Lights
-        if (point.type === NodeMaterialBlockConnectionPointTypes.Light) {
-            // Do nothing
+        this.sharedData.varyings.push(name);
+
+        if (define) {
+            if (StringTools.StartsWith(define, "defined(")) {
+                this.sharedData.varyingDeclaration += `#if ${define}\r\n`;
+            } else {
+                this.sharedData.varyingDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\r\n`;
+            }
+        }
+        this.sharedData.varyingDeclaration += `varying ${type} ${name};\r\n`;
+        if (define) {
+            this.sharedData.varyingDeclaration += `#endif\r\n`;
+        }
+
+        return true;
+    }
+
+    /** @hidden */
+    public _emitUniformFromString(name: string, type: string, define: string = "", notDefine = false) {
+        if (this.uniforms.indexOf(name) !== -1) {
             return;
         }
 
-        // Samplers
-        if (point.type === NodeMaterialBlockConnectionPointTypes.Texture) {
-            point.name = this._getFreeVariableName(point.name);
-            point.associatedVariableName = point.name;
+        this.uniforms.push(name);
 
-            if (this.samplers.indexOf(point.name) !== -1) {
-                return;
-            }
+        if (define) {
+            this._uniformDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\r\n`;
+        }
+        this._uniformDeclaration += `uniform ${type} ${name};\r\n`;
+        if (define) {
+            this._uniformDeclaration += `#endif\r\n`;
+        }
+    }
 
-            this.samplers.push(point.name);
-            if (define) {
-                this._uniformDeclaration += this._emitDefine(define);
-            }
-            this._samplerDeclaration += `uniform ${this._getGLType(point.type)} ${point.name};\r\n`;
-            if (define) {
-                this._uniformDeclaration += `#endif\r\n`;
-            }
-            this.sharedData.uniformConnectionPoints.push(point);
-            return;
+    /** @hidden */
+    public _emitFloat(value: number) {
+        if (value.toString() === value.toFixed(0)) {
+            return `${value}.0`;
         }
 
-        if (!point.isUniform && !point.isAttribute) {
-            return;
-        }
-
-        // Uniforms
-        if (point.isUniform) {
-            if (!point.associatedVariableName) {
-                point.associatedVariableName = this._getFreeVariableName("u_" + point.name);
-            }
-
-            if (point._forceUniformInVertexShaderOnly && this._vertexState) { // Uniform for fragment need to be carried over by varyings
-                this._vertexState._emitUniformOrAttributes(point);
-                return;
-            }
-
-            if (this.uniforms.indexOf(point.associatedVariableName) !== -1) {
-                return;
-            }
-
-            this.uniforms.push(point.associatedVariableName);
-            if (define) {
-                this._uniformDeclaration += this._emitDefine(define);
-            }
-            this._uniformDeclaration += `uniform ${this._getGLType(point.type)} ${point.associatedVariableName};\r\n`;
-            if (define) {
-                this._uniformDeclaration += `#endif\r\n`;
-            }
-
-            // well known
-            let hints = this.sharedData.hints;
-            if (point._wellKnownValue !== null) {
-                switch (point._wellKnownValue) {
-                    case NodeMaterialWellKnownValues.WorldView:
-                        hints.needWorldViewMatrix = true;
-                        break;
-                    case NodeMaterialWellKnownValues.WorldViewProjection:
-                        hints.needWorldViewProjectionMatrix = true;
-                        break;
-                }
-            }
-
-            this.sharedData.uniformConnectionPoints.push(point);
-
-            return;
-        }
-
-        // Attribute
-        if (point.isAttribute) {
-            point.associatedVariableName = point.name;
-
-            if (this.target === NodeMaterialBlockTargets.Fragment) { // Attribute for fragment need to be carried over by varyings
-                this._vertexState._emitUniformOrAttributes(point);
-
-                if (point._needToEmitVarying) {
-                    this._vertexState._emitVaryings(point, undefined, true, true, "v_" + point.associatedVariableName);
-                    point.associatedVariableName = "v_" + point.associatedVariableName;
-                }
-                return;
-            }
-
-            if (this.attributes.indexOf(point.associatedVariableName) !== -1) {
-                return;
-            }
-
-            this.attributes.push(point.associatedVariableName);
-            if (define) {
-                this._attributeDeclaration += this._emitDefine(define);
-            }
-            this._attributeDeclaration += `attribute ${this._getGLType(point.type)} ${point.associatedVariableName};\r\n`;
-            if (define) {
-                this._attributeDeclaration += `#endif\r\n`;
-            }
-        }
+        return value.toString();
     }
 }

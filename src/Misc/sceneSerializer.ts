@@ -46,7 +46,7 @@ var finalizeSingleMesh = (mesh: Mesh, serializationObject: any) => {
     //only works if the mesh is already loaded
     if (mesh.delayLoadState === Constants.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Constants.DELAYLOADSTATE_NONE) {
         //serialize material
-        if (mesh.material) {
+        if (mesh.material && !mesh.material.doNotSerialize) {
             if (mesh.material instanceof MultiMaterial) {
                 serializationObject.multiMaterials = serializationObject.multiMaterials || [];
                 serializationObject.materials = serializationObject.materials || [];
@@ -86,7 +86,7 @@ var finalizeSingleMesh = (mesh: Mesh, serializationObject: any) => {
             serializeGeometry(geometry, serializationObject.geometries);
         }
         // Skeletons
-        if (mesh.skeleton) {
+        if (mesh.skeleton && !mesh.skeleton.doNotSerialize) {
             serializationObject.skeletons = serializationObject.skeletons || [];
             serializationObject.skeletons.push(mesh.skeleton.serialize());
         }
@@ -233,6 +233,9 @@ export class SceneSerializer {
             serializationObject.environmentTexture = scene.environmentTexture.name;
         }
 
+        // Environment Intensity
+        serializationObject.environmentIntensity = scene.environmentIntensity;
+
         // Skeletons
         serializationObject.skeletons = [];
         for (index = 0; index < scene.skeletons.length; index++) {
@@ -245,7 +248,9 @@ export class SceneSerializer {
         // Transform nodes
         serializationObject.transformNodes = [];
         for (index = 0; index < scene.transformNodes.length; index++) {
-            serializationObject.transformNodes.push(scene.transformNodes[index].serialize());
+            if (!scene.transformNodes[index].doNotSerialize) {
+                serializationObject.transformNodes.push(scene.transformNodes[index].serialize());
+            }
         }
 
         // Geometries
@@ -323,13 +328,13 @@ export class SceneSerializer {
             for (var i = 0; i < toSerialize.length; ++i) {
                 if (withChildren) {
                     toSerialize[i].getDescendants().forEach((node: Node) => {
-                        if (node instanceof Mesh && (toSerialize.indexOf(node) < 0)) {
+                        if (node instanceof Mesh && (toSerialize.indexOf(node) < 0) && !node.doNotSerialize) {
                             toSerialize.push(node);
                         }
                     });
                 }
                 //make sure the array doesn't contain the object already
-                if (withParents && toSerialize[i].parent && (toSerialize.indexOf(toSerialize[i].parent) < 0)) {
+                if (withParents && toSerialize[i].parent && (toSerialize.indexOf(toSerialize[i].parent) < 0) && !toSerialize[i].parent.doNotSerialize) {
                     toSerialize.push(toSerialize[i].parent);
                 }
             }

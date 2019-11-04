@@ -4,6 +4,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { Control } from "./control";
 import { MultiLinePoint } from "../multiLinePoint";
 import { Measure } from "../measure";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Class used to create multi line control
@@ -260,5 +261,5 @@ export class MultiLine extends Control {
 
         super.dispose();
     }
-
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.MultiLine"] = MultiLine;

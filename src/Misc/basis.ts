@@ -1,9 +1,10 @@
 import { Nullable } from '../types';
 import { Tools } from './tools';
 import { Texture } from '../Materials/Textures/texture';
-import { InternalTexture } from '../Materials/Textures/internalTexture';
-import { Engine } from '../Engines/engine';
+import { InternalTexture, InternalTextureSource } from '../Materials/Textures/internalTexture';
 import { Scalar } from '../Maths/math.scalar';
+import { Constants } from '../Engines/constants';
+import { Engine } from '../Engines/engine';
 
 /**
  * Info about the .basis files
@@ -180,37 +181,41 @@ export class BasisTools {
      * @param transcodeResult the result of transcoding the basis file to load from
      */
     public static LoadTextureFromTranscodeResult(texture: InternalTexture, transcodeResult: TranscodeResult) {
-        texture._invertVScale = texture.invertY;
+        let engine = texture.getEngine() as Engine;
         for (var i = 0; i < transcodeResult.fileInfo.images.length; i++) {
             var rootImage = transcodeResult.fileInfo.images[i].levels[0];
             texture._invertVScale = texture.invertY;
             if (transcodeResult.format === -1) {
                 // No compatable compressed format found, fallback to RGB
-                texture.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
-                texture.format = Engine.TEXTUREFORMAT_RGB;
+                texture.type = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
+                texture.format = Constants.TEXTUREFORMAT_RGB;
 
-                if (texture.getEngine().webGLVersion < 2 && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
+                if (engine.webGLVersion < 2 && (Scalar.Log2(rootImage.width) % 1 !== 0 || Scalar.Log2(rootImage.height) % 1 !== 0)) {
                     // Create non power of two texture
-                    let source = new InternalTexture(texture.getEngine(), InternalTexture.DATASOURCE_TEMP);
+                    let source = new InternalTexture(engine, InternalTextureSource.Temp);
 
-                    source.type = Engine.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
-                    source.format = Engine.TEXTUREFORMAT_RGB;
+                    texture._invertVScale = texture.invertY;
+                    source.type = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
+                    source.format = Constants.TEXTUREFORMAT_RGB;
                     // Fallback requires aligned width/height
                     source.width = (rootImage.width + 3) & ~3;
                     source.height = (rootImage.height + 3) & ~3;
-                    texture.getEngine()._bindTextureDirectly(source.getEngine()._gl.TEXTURE_2D, source, true);
-                    texture.getEngine()._uploadDataToTextureDirectly(source, rootImage.transcodedPixels, i, 0, Engine.TEXTUREFORMAT_RGB, true);
+                    engine._bindTextureDirectly(engine._gl.TEXTURE_2D, source, true);
+                    engine._uploadDataToTextureDirectly(source, rootImage.transcodedPixels, i, 0, Constants.TEXTUREFORMAT_RGB, true);
 
                     // Resize to power of two
-                    source.getEngine()._rescaleTexture(source, texture, texture.getEngine().scenes[0], source.getEngine()._getInternalFormat(Engine.TEXTUREFORMAT_RGB), () => {
-                        source.getEngine()._releaseTexture(source);
-                        source.getEngine()._bindTextureDirectly(source.getEngine()._gl.TEXTURE_2D, texture, true);
+                    engine._rescaleTexture(source, texture, engine.scenes[0], engine._getInternalFormat(Constants.TEXTUREFORMAT_RGB), () => {
+                        engine._releaseTexture(source);
+                        engine._bindTextureDirectly(engine._gl.TEXTURE_2D, texture, true);
                     });
-                }else {
+                } else {
+                    // Fallback is already inverted
+                    texture._invertVScale = !texture.invertY;
+
                     // Upload directly
                     texture.width = (rootImage.width + 3) & ~3;
                     texture.height = (rootImage.height + 3) & ~3;
-                    texture.getEngine()._uploadDataToTextureDirectly(texture, rootImage.transcodedPixels, i, 0, Engine.TEXTUREFORMAT_RGB, true);
+                    engine._uploadDataToTextureDirectly(texture, rootImage.transcodedPixels, i, 0, Constants.TEXTUREFORMAT_RGB, true);
                 }
 
             }else {
@@ -219,10 +224,10 @@ export class BasisTools {
 
                 // Upload all mip levels in the file
                 transcodeResult.fileInfo.images[i].levels.forEach((level: any, index: number) => {
-                    texture.getEngine()._uploadCompressedDataToTextureDirectly(texture, BasisTools.GetInternalFormatFromBasisFormat(transcodeResult.format!), level.width, level.height, level.transcodedPixels, i, index);
+                    engine._uploadCompressedDataToTextureDirectly(texture, BasisTools.GetInternalFormatFromBasisFormat(transcodeResult.format!), level.width, level.height, level.transcodedPixels, i, index);
                 });
 
-                if (texture.getEngine().webGLVersion < 2 && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
+                if (engine.webGLVersion < 2 && (Scalar.Log2(texture.width) % 1 !== 0 || Scalar.Log2(texture.height) % 1 !== 0)) {
                     Tools.Warn("Loaded .basis texture width and height are not a power of two. Texture wrapping will be set to Texture.CLAMP_ADDRESSMODE as other modes are not supported with non power of two dimensions in webGL 1.");
                     texture._cachedWrapU = Texture.CLAMP_ADDRESSMODE;
                     texture._cachedWrapV = Texture.CLAMP_ADDRESSMODE;
@@ -377,7 +382,7 @@ function workerFunc(): void {
         return info;
     }
 
-    function TranscodeLevel(loadedFile: any, imageIndex: number, levelIndex: number, format: number, convertToRgb565: boolean) {
+    function TranscodeLevel(loadedFile: any, imageIndex: number, levelIndex: number, format: number, convertToRgb565: boolean): Nullable<Uint16Array> {
         var dstSize = loadedFile.getImageTranscodedSizeInBytes(imageIndex, levelIndex, format);
         var dst = new Uint8Array(dstSize);
         if (!loadedFile.transcodeImage(dst, imageIndex, levelIndex, format, 1, 0)) {
@@ -403,7 +408,7 @@ function workerFunc(): void {
      * @param  height aligned height of the image
      * @return the converted pixels
      */
-    function ConvertDxtToRgb565(src: Uint16Array, srcByteOffset: number, width: number, height: number): Uint16Array {
+    function ConvertDxtToRgb565(src: Uint8Array, srcByteOffset: number, width: number, height: number): Uint16Array {
         var c = new Uint16Array(4);
         var dst = new Uint16Array(width * height);
 

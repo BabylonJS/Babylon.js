@@ -1,7 +1,8 @@
 import { SmartArray } from "../../Misc/smartArray";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Matrix, Vector3, Vector2, Color4 } from "../../Maths/math";
+import { Matrix, Vector3, Vector2 } from "../../Maths/math.vector";
+import { Color4 } from "../../Maths/math.color";
 import { VertexBuffer } from "../../Meshes/buffer";
 import { SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
@@ -13,14 +14,13 @@ import { Light } from "../../Lights/light";
 import { Material } from "../../Materials/material";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { MaterialHelper } from "../../Materials/materialHelper";
-import { Effect, EffectFallbacks } from "../../Materials/effect";
+import { Effect } from "../../Materials/effect";
 import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 
 import { PostProcess } from "../../PostProcesses/postProcess";
 import { BlurPostProcess } from "../../PostProcesses/blurPostProcess";
 import { _TimeToken } from "../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
 
 import "../../Shaders/shadowMap.fragment";
@@ -28,6 +28,7 @@ import "../../Shaders/shadowMap.vertex";
 import "../../Shaders/depthBoxBlur.fragment";
 import { Observable } from '../../Misc/observable';
 import { _DevTools } from '../../Misc/devTools';
+import { EffectFallbacks } from '../../Materials/effectFallbacks';
 
 /**
  * Defines the options associated with the creation of a custom shader for a shadow generator.
@@ -760,6 +761,7 @@ export class ShadowGenerator implements IShadowGenerator {
     private _currentFaceIndexCache = 0;
     private _textureType: number;
     private _defaultTextureMatrix = Matrix.Identity();
+    private _storedUniqueId: Nullable<number>;
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
@@ -833,6 +835,9 @@ export class ShadowGenerator implements IShadowGenerator {
         this._shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
         this._shadowMap.renderParticles = false;
         this._shadowMap.ignoreCameraViewport = true;
+        if (this._storedUniqueId) {
+            this._shadowMap.uniqueId = this._storedUniqueId;
+        }
 
         // Record Face Index before render.
         this._shadowMap.onBeforeRenderObservable.add((faceIndex: number) => {
@@ -873,6 +878,13 @@ export class ShadowGenerator implements IShadowGenerator {
             else {
                 engine.clear(clearOne, true, true, false);
             }
+        });
+
+        this._shadowMap.onResizeObservable.add((RTT) => {
+            this._storedUniqueId = this._shadowMap!.uniqueId;
+            this._mapSize = RTT.getRenderSize();
+            this._light._markMeshesAsLightDirty();
+            this.recreateShadowMap();
         });
     }
 

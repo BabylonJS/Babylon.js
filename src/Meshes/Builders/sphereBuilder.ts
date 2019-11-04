@@ -1,7 +1,8 @@
-import { Vector4, Vector3, Matrix } from "../../Maths/math";
+import { Vector4, Vector3, Matrix } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Scene } from "../../scene";
+import { Nullable } from '../../types';
 
 VertexData.CreateSphere = function(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
     var segments: number = options.segments || 32;
@@ -105,7 +106,7 @@ export class SphereBuilder {
      * @returns the sphere mesh
      * @see https://doc.babylonjs.com/how_to/set_shapes#sphere
      */
-    public static CreateSphere(name: string, options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: any): Mesh {
+    public static CreateSphere(name: string, options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
         var sphere = new Mesh(name, scene);
 
         options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);

@@ -38,13 +38,18 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
         this.props.material.debugMode = state ? 62 : 0;
     }
 
+    switchRoughnessMode(state: boolean) {
+        this.props.material.debugMode = state ? 63 : 0;
+    }
+
     renderTextures(onDebugSelectionChangeObservable: Observable<BaseTexture>) {
         const material = this.props.material;
 
         return (
-            <LineContainerComponent globalState={this.props.globalState} title="TEXTURES">
+            <LineContainerComponent globalState={this.props.globalState} title="CHANNELS">
                 <TextureLinkLineComponent label="Albedo" texture={material.albedoTexture} propertyName="albedoTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent customDebugAction={state => this.switchMetallicMode(state)} label="Metallic" texture={material.metallicTexture} propertyName="metallicTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
+                <TextureLinkLineComponent customDebugAction={state => this.switchRoughnessMode(state)} label="Roughness" texture={material.metallicTexture} propertyName="metallicTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Reflection" texture={material.reflectionTexture} propertyName="reflectionTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Refraction" texture={material.refractionTexture} propertyName="refractionTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Micro-surface" texture={material.microSurfaceTexture} propertyName="microSurfaceTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
@@ -104,6 +109,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             { label: "Surface Albedo", value: 60 },
             { label: "Reflectance 0", value: 61 },
             { label: "Metallic", value: 62 },
+            { label: "Metallic F0", value: 71 },
             { label: "Roughness", value: 63 },
             { label: "AlphaG", value: 64 },
             { label: "NdotV", value: 65 },
@@ -137,6 +143,10 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="METALLIC WORKFLOW">
                     <SliderLineComponent label="Metallic" target={material} propertyName="metallic" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent label="Metallic F0" target={material} propertyName="metallicF0Factor" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent label="Metallic F0 From Map" target={material} propertyName="useMetallicF0FactorFromMetallicTexture"
+                        onValueChanged={() => this.forceUpdate()}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Roughness" target={material} propertyName="roughness" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="CLEAR COAT">

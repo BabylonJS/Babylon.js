@@ -1,9 +1,11 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
+import { GlobalState } from '../globalState';
 
 interface ITextInputLineComponentProps {
     label: string;
+    globalState: GlobalState;
     target?: any;
     propertyName?: string;
     value?: string;
@@ -17,7 +19,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     constructor(props: ITextInputLineComponentProps) {
         super(props);
 
-        this.state = { value: this.props.value || this.props.target[this.props.propertyName!] || "" }
+        this.state = { value: this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!] || "" }
     }
 
     shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: { value: string }) {
@@ -26,7 +28,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
             return true;
         }
 
-        const newValue = nextProps.value || nextProps.target[nextProps.propertyName!];
+        const newValue = nextProps.value !== undefined ? nextProps.value : nextProps.target[nextProps.propertyName!];
         if (newValue !== nextState.value) {
             nextState.value = newValue || "";
             return true;
@@ -52,13 +54,15 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         });
     }
 
-    updateValue(value: string) {
+    updateValue(value: string, raisePropertyChanged: boolean) {
 
         this._localChange = true;
-        const store = this.props.value || this.props.target[this.props.propertyName!];
+        const store = this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!];
         this.setState({ value: value });
 
-        this.raiseOnPropertyChanged(value, store);
+        if (raisePropertyChanged) {
+            this.raiseOnPropertyChanged(value, store);
+        }
 
         if (this.props.propertyName) {
             this.props.target[this.props.propertyName] = value;
@@ -72,7 +76,18 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                     {this.props.label}
                 </div>
                 <div className="value">
-                    <input value={this.state.value} onChange={evt => this.updateValue(evt.target.value)} />
+                    <input value={this.state.value} 
+                        onFocus={() => this.props.globalState.blockKeyboardEvents = true}
+                        onChange={evt => this.updateValue(evt.target.value, false)}
+                        onKeyDown={evt => {
+                            if (evt.keyCode !== 13) {
+                                return;
+                            }
+                            this.updateValue(this.state.value, true);
+                        }} onBlur={evt => {
+                            this.updateValue(evt.target.value, true)
+                            this.props.globalState.blockKeyboardEvents = false;
+                        }}/>
                 </div>
             </div>
         );

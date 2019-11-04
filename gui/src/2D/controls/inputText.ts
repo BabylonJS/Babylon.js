@@ -8,6 +8,7 @@ import { Control } from "./control";
 import { IFocusableControl } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
 import { VirtualKeyboard } from "./virtualKeyboard";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Class used to create input text control
@@ -50,6 +51,8 @@ export class InputText extends Control implements IFocusableControl {
 
     /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
     public promptMessage = "Please enter text:";
+    /** Force disable prompt on mobile device */
+    public disableMobilePrompt = false;
 
     /** Observable raised when the text changes */
     public onTextChangedObservable = new Observable<InputText>();
@@ -364,7 +367,7 @@ export class InputText extends Control implements IFocusableControl {
 
         this.onFocusObservable.notifyObservers(this);
 
-        if (navigator.userAgent.indexOf("Mobile") !== -1) {
+        if (navigator.userAgent.indexOf("Mobile") !== -1 && !this.disableMobilePrompt) {
             let value = prompt(this.promptMessage);
 
             if (value !== null) {
@@ -1026,3 +1029,4 @@ export class InputText extends Control implements IFocusableControl {
         this.onKeyboardEventProcessedObservable.clear();
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.InputText"] = InputText;

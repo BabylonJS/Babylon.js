@@ -1,7 +1,10 @@
 import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
+import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
+import { _TypeStore } from '../../../Misc/typeStore';
+import { Scene } from '../../../scene';
 /**
  * Block used to clamp a float
  */
@@ -17,7 +20,7 @@ export class ClampBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name);
+        super(name, NodeMaterialBlockTargets.Neutral);
 
         this.registerInput("value", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Float);
@@ -54,4 +57,30 @@ export class ClampBlock extends NodeMaterialBlock {
 
         return this;
     }
+
+    protected _dumpPropertiesCode() {
+        var codeString = `${this._codeVariableName}.minimum = ${this.minimum};\r\n`;
+
+        codeString += `${this._codeVariableName}.maximum = ${this.maximum};\r\n`;
+
+        return codeString;
+    }
+
+    public serialize(): any {
+        let serializationObject = super.serialize();
+
+        serializationObject.minimum = this.minimum;
+        serializationObject.maximum = this.maximum;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        super._deserialize(serializationObject, scene, rootUrl);
+
+        this.minimum = serializationObject.minimum;
+        this.maximum = serializationObject.maximum;
+    }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.ClampBlock"] = ClampBlock;

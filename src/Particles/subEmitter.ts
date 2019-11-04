@@ -1,4 +1,4 @@
-import { Vector3 } from "../Maths/math";
+import { Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { _DevTools } from '../Misc/devTools';

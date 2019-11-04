@@ -1,7 +1,7 @@
 import { Nullable } from "../../types";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { FreeCamera } from "../../Cameras/freeCamera";
-import { Quaternion } from "../../Maths/math";
+import { Quaternion } from "../../Maths/math.vector";
 import { Tools } from "../../Misc/tools";
 import { FreeCameraInputsManager } from "../../Cameras/freeCameraInputsManager";
 import { Observable } from '../../Misc/observable';
@@ -117,8 +117,14 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
-        window.addEventListener("orientationchange", this._orientationChanged);
-        window.addEventListener("deviceorientation", this._deviceOrientation);
+
+        let hostWindow = this.camera.getScene().getEngine().getHostWindow();
+
+        if (hostWindow) {
+            hostWindow.addEventListener("orientationchange", this._orientationChanged);
+            hostWindow.addEventListener("deviceorientation", this._deviceOrientation);
+        }
+
         //In certain cases, the attach control is called AFTER orientation was changed,
         //So this is needed.
         this._orientationChanged();

@@ -1,12 +1,17 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
+import { _TypeStore } from '../../../../Misc/typeStore';
+
+import "../../../../Shaders/ShadersInclude/helperFunctions";
+import "../../../../Shaders/ShadersInclude/imageProcessingDeclaration";
+import "../../../../Shaders/ShadersInclude/imageProcessingFunctions";
 
 /**
  * Block used to add image processing support to fragment shader
@@ -19,8 +24,10 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment);
 
-        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color3OrColor4);
+        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color4);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Color4);
+
+        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Color3);
     }
 
     /**
@@ -139,3 +146,5 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.ImageProcessingBlock"] = ImageProcessingBlock;

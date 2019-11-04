@@ -14,7 +14,7 @@ import { GlobalState } from "../../globalState";
 import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
 import { PropertyChangedEvent } from '../../../components/propertyChangedEvent';
 import { LightGizmo } from 'babylonjs/Gizmos/lightGizmo';
-import { Tmp, Vector3 } from 'babylonjs/Maths/math';
+import { TmpVectors, Vector3 } from 'babylonjs/Maths/math';
 
 interface ISceneTreeItemComponentProps {
     scene: Scene;
@@ -69,7 +69,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
         return true;
     }
 
-    componentWillMount() {
+    componentDidMount() {
         if (!this.props.onSelectionChangedObservable) {
             return;
         }
@@ -140,9 +140,9 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                             return true;
                         }
 
-                        let p0p1 = Tmp.Vector3[0];
-                        let p1p2 = Tmp.Vector3[1];
-                        let normal = Tmp.Vector3[2];
+                        let p0p1 = TmpVectors.Vector3[0];
+                        let p1p2 = TmpVectors.Vector3[1];
+                        let normal = TmpVectors.Vector3[2];
 
                         p1.subtractToRef(p0, p0p1);
                         p2.subtractToRef(p1, p1p2);
@@ -231,7 +231,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         // Record movement for generating replay code
                         this._posDragEnd = manager.gizmos.positionGizmo!.onDragEndObservable.add(() => {
                             if (manager.gizmos.positionGizmo && manager.gizmos.positionGizmo.attachedMesh) {
-                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.positionGizmo.attachedMesh.reservedDataStore.lightGizmo;
+                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.positionGizmo.attachedMesh.reservedDataStore ? manager.gizmos.positionGizmo.attachedMesh.reservedDataStore.lightGizmo : null;
                                 var obj: any = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.positionGizmo.attachedMesh;
 
                                 if (obj.position) {
@@ -252,7 +252,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         // Record movement for generating replay code
                         this._rotateDragEnd = manager.gizmos.rotationGizmo!.onDragEndObservable.add(() => {
                             if (manager.gizmos.rotationGizmo && manager.gizmos.rotationGizmo.attachedMesh) {
-                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.rotationGizmo.attachedMesh.reservedDataStore.lightGizmo;
+                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.rotationGizmo.attachedMesh.reservedDataStore ? manager.gizmos.rotationGizmo.attachedMesh.reservedDataStore.lightGizmo : null;
                                 var obj: any = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.rotationGizmo.attachedMesh;
 
                                 if (obj.rotationQuaternion) {
@@ -285,7 +285,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         // Record movement for generating replay code
                         this._scaleDragEnd = manager.gizmos.scaleGizmo!.onDragEndObservable.add(() => {
                             if (manager.gizmos.scaleGizmo && manager.gizmos.scaleGizmo.attachedMesh) {
-                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.scaleGizmo.attachedMesh.reservedDataStore.lightGizmo;
+                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.scaleGizmo.attachedMesh.reservedDataStore ? manager.gizmos.scaleGizmo.attachedMesh.reservedDataStore.lightGizmo : null;
                                 var obj: any = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.scaleGizmo.attachedMesh;
 
                                 if (obj.scaling) {

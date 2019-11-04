@@ -1,8 +1,7 @@
 import { Scalar } from "../Maths/math.scalar";
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
 import { Constants } from "../Engines/constants";
-import { Engine } from "../Engines/engine";
-import { InternalTexture } from "../Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Nullable } from "../types";
 import { Logger } from "../Misc/logger";
 import { CubeMapToSphericalPolynomialTools } from "../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
@@ -10,6 +9,7 @@ import { Scene } from '../scene';
 import { BaseTexture } from '../Materials/Textures/baseTexture';
 
 import "../Engines/Extensions/engine.cubeTexture";
+import { ThinEngine } from '../Engines/thinEngine';
 
 // Based on demo done by Brandon Jones - http://media.tojicode.com/webgl-samples/dds.html
 // All values and structures referenced from:
@@ -445,7 +445,7 @@ export class DDSTools {
      * Uploads DDS Levels to a Babylon Texture
      * @hidden
      */
-    public static UploadDDSLevels(engine: Engine, texture: InternalTexture, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex = -1, currentFace?: number) {
+    public static UploadDDSLevels(engine: ThinEngine, texture: InternalTexture, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex = -1, currentFace?: number) {
         var sphericalPolynomialFaces: Nullable<Array<ArrayBufferView>> = null;
         if (info.sphericalPolynomial) {
             sphericalPolynomialFaces = new Array<ArrayBufferView>();
@@ -661,8 +661,8 @@ export class DDSTools {
     }
 }
 
-declare module "../Engines/engine" {
-    export interface Engine {
+declare module "../Engines/thinEngine" {
+    export interface ThinEngine {
         /**
          * Create a cube texture from prefiltered data (ie. the mipmaps contain ready to use data for PBR reflection)
          * @param rootUrl defines the url where the file to load is located
@@ -697,7 +697,7 @@ declare module "../Engines/engine" {
  * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
  * @returns the cube texture as an InternalTexture
  */
-Engine.prototype.createPrefilteredCubeTexture = function(rootUrl: string, scene: Nullable<Scene>, lodScale: number, lodOffset: number,
+ThinEngine.prototype.createPrefilteredCubeTexture = function(rootUrl: string, scene: Nullable<Scene>, lodScale: number, lodOffset: number,
     onLoad: Nullable<(internalTexture: Nullable<InternalTexture>) => void> = null,
     onError: Nullable<(message?: string, exception?: any) => void> = null,
     format?: number, forcedExtension: any = null,
@@ -717,7 +717,7 @@ Engine.prototype.createPrefilteredCubeTexture = function(rootUrl: string, scene:
         else if (loadData.info.sphericalPolynomial) {
             texture._sphericalPolynomial = loadData.info.sphericalPolynomial;
         }
-        texture._dataSource = InternalTexture.DATASOURCE_CUBEPREFILTERED;
+        texture._source = InternalTextureSource.CubePrefiltered;
 
         if (this.getCaps().textureLOD) {
             // Do not add extra process if texture lod is supported.
@@ -747,7 +747,7 @@ Engine.prototype.createPrefilteredCubeTexture = function(rootUrl: string, scene:
             let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
             let mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
 
-            var glTextureFromLod = new InternalTexture(this, InternalTexture.DATASOURCE_TEMP);
+            var glTextureFromLod = new InternalTexture(this, InternalTextureSource.Temp);
             glTextureFromLod.type = texture.type;
             glTextureFromLod.format = texture.format;
             glTextureFromLod.width = Math.pow(2, Math.max(Scalar.Log2(width) - mipmapIndex, 0));

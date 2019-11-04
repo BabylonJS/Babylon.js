@@ -4,7 +4,7 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Scene } from "../../scene";
 import { Nullable } from "../../types";
 import { Observer, Observable } from "../../Misc/observable";
-import { Vector3 } from "../../Maths/math";
+import { Vector3 } from "../../Maths/math.vector";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Ray } from "../../Culling/ray";
 import { PivotTools } from '../../Misc/pivotTools';
@@ -142,8 +142,9 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     /**
      * Attaches the drag behavior the passed in mesh
      * @param ownerNode The mesh that will be dragged around once attached
+     * @param predicate Predicate to use for pick filtering
      */
-    public attach(ownerNode: AbstractMesh): void {
+    public attach(ownerNode: AbstractMesh, predicate?: (m: AbstractMesh) => boolean): void {
         this._scene = ownerNode.getScene();
         this.attachedNode = ownerNode;
 
@@ -152,7 +153,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             if (this._debugMode) {
                 PointerDragBehavior._planeScene = this._scene;
             } else {
-                PointerDragBehavior._planeScene = new Scene(this._scene.getEngine(), {virtual: true});
+                PointerDragBehavior._planeScene = new Scene(this._scene.getEngine(), { virtual: true });
                 PointerDragBehavior._planeScene.detachControl();
                 this._scene.onDisposeObservable.addOnce(() => {
                     PointerDragBehavior._planeScene.dispose();
@@ -165,7 +166,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
         // State of the drag
         this.lastDragPosition = new Vector3(0, 0, 0);
 
-        var pickPredicate = (m: AbstractMesh) => {
+        var pickPredicate = !!predicate ? predicate : (m: AbstractMesh) => {
             return this.attachedNode == m || m.isDescendantOf(this.attachedNode);
         };
 
@@ -289,7 +290,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             this._targetPosition.copyFrom((this.attachedNode).absolutePosition);
 
             // Detatch camera controls
-            if (this.detachCameraControls && this._scene.activeCamera && !this._scene.activeCamera.leftCamera) {
+            if (this.detachCameraControls && this._scene.activeCamera && this._scene.activeCamera.inputs && !this._scene.activeCamera.leftCamera) {
                 if (this._scene.activeCamera.inputs.attachedElement) {
                     this._attachedElement = this._scene.activeCamera.inputs.attachedElement;
                     this._scene.activeCamera.detachControl(this._scene.activeCamera.inputs.attachedElement);
@@ -314,8 +315,8 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             var dragLength = 0;
             // depending on the drag mode option drag accordingly
             if (this._options.dragAxis) {
-                // Convert local drag axis to world
-                Vector3.TransformCoordinatesToRef(this._options.dragAxis, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._worldDragAxis);
+                // Convert local drag axis to world if useObjectOrienationForDragging
+                this.useObjectOrienationForDragging ? Vector3.TransformCoordinatesToRef(this._options.dragAxis, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._worldDragAxis) : this._worldDragAxis.copyFrom(this._options.dragAxis);
 
                 // Project delta drag from the drag plane onto the drag axis
                 pickedPoint.subtractToRef(this.lastDragPosition, this._tmpVector);

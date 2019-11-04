@@ -4,7 +4,7 @@ import { RuntimeAnimation } from "./runtimeAnimation";
 import { Nullable } from "../types";
 import { Observable } from "../Misc/observable";
 import { Scene } from "../scene";
-import { Matrix, Quaternion, Tmp, Vector3 } from '../Maths/math';
+import { Matrix, Quaternion, Vector3, TmpVectors } from '../Maths/math.vector';
 import { PrecisionDate } from '../Misc/precisionDate';
 import { Bone } from '../Bones/bone';
 import { Node } from "../node";
@@ -551,16 +551,16 @@ declare module "../scene" {
         * Stops and removes all animations that have been applied to the scene
         */
         stopAllAnimations(): void;
+
+        /**
+         * Gets the current delta time used by animation engine
+         */
+        deltaTime: number;
     }
 }
 
 Scene.prototype._animate = function(): void {
     if (!this.animationsEnabled) {
-        return;
-    }
-
-    const animatables = this._activeAnimatables;
-    if (animatables.length === 0) {
         return;
     }
 
@@ -573,10 +573,16 @@ Scene.prototype._animate = function(): void {
         this._animationTimeLast = now;
     }
 
-    var deltaTime = this.useConstantAnimationDeltaTime ? 16.0 : (now - this._animationTimeLast) * this.animationTimeScale;
-    this._animationTime += deltaTime;
-    const animationTime = this._animationTime;
+    this.deltaTime = this.useConstantAnimationDeltaTime ? 16.0 : (now - this._animationTimeLast) * this.animationTimeScale;
     this._animationTimeLast = now;
+
+    const animatables = this._activeAnimatables;
+    if (animatables.length === 0) {
+        return;
+    }
+
+    this._animationTime += this.deltaTime;
+    const animationTime = this._animationTime;
 
     for (let index = 0; index < animatables.length; index++) {
         let animatable = animatables[index];
@@ -652,6 +658,10 @@ Scene.prototype.beginHierarchyAnimation = function(target: any, directDescendant
 Scene.prototype.beginDirectAnimation = function(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable {
     if (speedRatio === undefined) {
         speedRatio = 1.0;
+    }
+
+    if (from > to && speedRatio > 0) {
+        speedRatio *= -1;
     }
 
     var animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animations, onAnimationLoop);
@@ -748,9 +758,9 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function(holder: {
     originalValue: Matrix
 }): any {
     let normalizer = 1.0;
-    let finalPosition = Tmp.Vector3[0];
-    let finalScaling = Tmp.Vector3[1];
-    let finalQuaternion = Tmp.Quaternion[0];
+    let finalPosition = TmpVectors.Vector3[0];
+    let finalScaling = TmpVectors.Vector3[1];
+    let finalQuaternion = TmpVectors.Quaternion[0];
     let startIndex = 0;
     let originalAnimation = holder.animations[0];
     let originalValue = holder.originalValue;
@@ -778,9 +788,9 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function(holder: {
     for (var animIndex = startIndex; animIndex < holder.animations.length; animIndex++) {
         var runtimeAnimation = holder.animations[animIndex];
         var scale = runtimeAnimation.weight / normalizer;
-        let currentPosition = Tmp.Vector3[2];
-        let currentScaling = Tmp.Vector3[3];
-        let currentQuaternion = Tmp.Quaternion[1];
+        let currentPosition = TmpVectors.Vector3[2];
+        let currentScaling = TmpVectors.Vector3[3];
+        let currentQuaternion = TmpVectors.Quaternion[1];
 
         runtimeAnimation.currentValue.decompose(currentScaling, currentQuaternion, currentPosition);
         currentScaling.scaleAndAddToRef(scale, finalScaling);

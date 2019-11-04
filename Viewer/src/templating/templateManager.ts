@@ -1,11 +1,12 @@
 import { Observable } from 'babylonjs/Misc/observable';
-import { IFileRequest, Tools } from 'babylonjs/Misc/tools';
+import { Tools } from 'babylonjs/Misc/tools';
 import { isUrl, camelToKebab, kebabToCamel } from '../helper';
 
 import * as Handlebars from 'handlebars/dist/handlebars';
 import { EventManager } from './eventManager';
 import { ITemplateConfiguration } from '../configuration/interfaces';
 import { deepmerge } from '../helper/';
+import { IFileRequest } from 'babylonjs/Misc/fileRequest';
 
 /**
  * The object sent when an event is triggered

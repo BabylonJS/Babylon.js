@@ -4,7 +4,8 @@ import { SmartArray } from "../../Misc/smartArray";
 import { Nullable } from "../../types";
 import { Camera } from "../../Cameras/camera";
 import { Scene } from "../../scene";
-import { Matrix, Vector3, Color4 } from "../../Maths/math";
+import { Matrix, Vector3 } from "../../Maths/math.vector";
+import { Color4 } from '../../Maths/math.color';
 import { RenderTargetCreationOptions } from "../../Materials/Textures/renderTargetCreationOptions";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { SubMesh } from "../../Meshes/subMesh";
@@ -16,9 +17,9 @@ import { RenderingManager } from "../../Rendering/renderingManager";
 import { Constants } from "../../Engines/constants";
 
 import "../../Engines/Extensions/engine.renderTarget";
+import "../../Engines/Extensions/engine.renderTargetCube";
 import { InstancedMesh } from '../../Meshes/instancedMesh';
-
-declare type Engine = import("../../Engines/engine").Engine;
+import { Engine } from '../../Engines/engine';
 
 /**
  * This Helps creating a texture that will be created from a camera in your scene.
@@ -197,6 +198,11 @@ export class RenderTargetTexture extends Texture {
         }
         this._onClearObserver = this.onClearObservable.add(callback);
     }
+
+    /**
+     * An event triggered when the texture is resized.
+     */
+    public onResizeObservable = new Observable<RenderTargetTexture>();
 
     /**
      * Define the clear color of the Render Target if it should be different from the scene.
@@ -533,7 +539,7 @@ export class RenderTargetTexture extends Texture {
      * @param ratio the ratio to apply to the texture size in order to compute the new target size
      */
     public scale(ratio: number): void {
-        var newSize = this.getRenderSize() * ratio;
+        var newSize = Math.max(1, this.getRenderSize() * ratio);
 
         this.resize(newSize);
     }
@@ -574,6 +580,10 @@ export class RenderTargetTexture extends Texture {
             this._texture = scene.getEngine().createRenderTargetCubeTexture(this.getRenderSize(), this._renderTargetOptions);
         } else {
             this._texture = scene.getEngine().createRenderTargetTexture(this._size, this._renderTargetOptions);
+        }
+
+        if (this.onResizeObservable.hasObservers()) {
+            this.onResizeObservable.notifyObservers(this);
         }
     }
 
@@ -687,7 +697,6 @@ export class RenderTargetTexture extends Texture {
 
                         for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                             var subMesh = mesh.subMeshes[subIndex];
-                            scene._activeIndices.addCount(subMesh.indexCount, false);
                             this._renderingManager.dispatch(subMesh, mesh);
                         }
                     }
@@ -734,10 +743,10 @@ export class RenderTargetTexture extends Texture {
     private _bestReflectionRenderTargetDimension(renderDimension: number, scale: number): number {
         let minimum = 128;
         let x = renderDimension * scale;
-        let curved = Tools.NearestPOT(x + (minimum * minimum / (minimum + x)));
+        let curved = Engine.NearestPOT(x + (minimum * minimum / (minimum + x)));
 
         // Ensure we don't exceed the render dimension (while staying POT)
-        return Math.min(Tools.FloorPOT(renderDimension), curved);
+        return Math.min(Engine.FloorPOT(renderDimension), curved);
     }
 
     /**
@@ -945,6 +954,13 @@ export class RenderTargetTexture extends Texture {
      * Dispose the texture and release its associated resources.
      */
     public dispose(): void {
+        this.onResizeObservable.clear();
+        this.onClearObservable.clear();
+        this.onAfterRenderObservable.clear();
+        this.onAfterUnbindObservable.clear();
+        this.onBeforeBindObservable.clear();
+        this.onBeforeRenderObservable.clear();
+
         if (this._postProcessManager) {
             this._postProcessManager.dispose();
             this._postProcessManager = null;

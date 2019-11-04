@@ -1,7 +1,7 @@
 import { Tools } from "../Misc/tools";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Matrix, Vector3, Color3, Viewport } from "../Maths/math";
+import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Scalar } from "../Maths/math.scalar";
 import { EngineStore } from "../Engines/engineStore";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -10,7 +10,6 @@ import { Ray } from "../Culling/ray";
 import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { LensFlare } from "./lensFlare";
 import { Constants } from "../Engines/constants";
 
@@ -18,6 +17,8 @@ import "../Shaders/lensFlare.fragment";
 import "../Shaders/lensFlare.vertex";
 import { _DevTools } from '../Misc/devTools';
 import { DataBuffer } from '../Meshes/dataBuffer';
+import { Color3 } from '../Maths/math.color';
+import { Viewport } from '../Maths/math.viewport';
 
 /**
  * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
@@ -310,6 +311,10 @@ export class LensFlareSystem {
         // Flares
         for (var index = 0; index < this.lensFlares.length; index++) {
             var flare = this.lensFlares[index];
+
+            if (flare.texture && !flare.texture.isReady()) {
+                continue;
+            }
 
             engine.setAlphaMode(flare.alphaMode);
 

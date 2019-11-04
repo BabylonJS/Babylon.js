@@ -1,7 +1,5 @@
 import { Observable } from "../Misc/observable";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
-
 /**
  * Represents a gamepad control stick position
  */
@@ -93,6 +91,10 @@ export class Gamepad {
      * Represents a pose-enabled controller
      */
     public static POSE_ENABLED = 3;
+    /**
+     * Represents an Dual Shock controller
+     */
+    public static DUALSHOCK = 4;
 
     /**
      * Specifies whether the left control stick should be Y-inverted

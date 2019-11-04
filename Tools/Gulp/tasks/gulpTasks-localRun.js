@@ -44,5 +44,9 @@ gulp.task("webserver", function() {
         options.host = "0.0.0.0";
     }
 
+    if (commandLineOptions.ssl) {
+        options.https = true;
+    }
+
     connect.server(options);
 });

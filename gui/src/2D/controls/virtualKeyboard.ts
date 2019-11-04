@@ -6,6 +6,7 @@ import { Button } from "./button";
 import { Container } from "./container";
 import { TextBlock } from "./textBlock";
 import { InputText } from "./inputText";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Class used to store key control properties
@@ -308,3 +309,5 @@ export class VirtualKeyboard extends StackPanel {
         return returnValue;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.GUI.VirtualKeyboard"] = VirtualKeyboard;

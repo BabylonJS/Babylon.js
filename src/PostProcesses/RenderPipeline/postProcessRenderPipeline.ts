@@ -36,6 +36,11 @@ export class PostProcessRenderPipeline {
         return this._name;
     }
 
+    /** Gets the list of attached cameras */
+    public get cameras() {
+        return this._cameras;
+    }
+
     /**
      * Initializes a PostProcessRenderPipeline
      * @param engine engine to add the pipeline to
@@ -201,12 +206,12 @@ export class PostProcessRenderPipeline {
     }
 
     protected _enableMSAAOnFirstPostProcess(sampleCount: number): boolean {
-        // Set samples of the very first post process to 4 to enable native anti-aliasing in browsers that support webGL 2.0 (See: https://github.com/BabylonJS/Babylon.js/issues/3754)
-        var effectKeys = Object.keys(this._renderEffects);
         if (this.engine.webGLVersion === 1) {
             return false;
         }
 
+        // Set samples of the very first post process to 4 to enable native anti-aliasing in browsers that support webGL 2.0 (See: https://github.com/BabylonJS/Babylon.js/issues/3754)
+        var effectKeys = Object.keys(this._renderEffects);
         if (effectKeys.length > 0) {
             var postProcesses = this._renderEffects[effectKeys[0]].getPostProcesses();
             if (postProcesses) {

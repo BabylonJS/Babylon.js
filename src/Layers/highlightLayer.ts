@@ -1,10 +1,9 @@
 import { serialize, SerializationHelper } from "../Misc/decorators";
 import { Observer, Observable } from "../Misc/observable";
-import { Tools } from "../Misc/tools";
 import { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
-import { Vector2, Color3, Color4 } from "../Maths/math";
+import { Vector2 } from "../Maths/math.vector";
 import { Engine } from "../Engines/engine";
 import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
@@ -18,12 +17,12 @@ import { PostProcess, PostProcessOptions } from "../PostProcesses/postProcess";
 import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { BlurPostProcess } from "../PostProcesses/blurPostProcess";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { _TypeStore } from '../Misc/typeStore';
+import { Color4, Color3 } from '../Maths/math.color';
 
 import "../Shaders/glowMapMerge.fragment";
 import "../Shaders/glowMapMerge.vertex";
@@ -167,7 +166,7 @@ interface IHighlightLayerExcludedMesh {
 /**
  * The highlight layer Helps adding a glow effect around a mesh.
  *
- * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
+ * Once instantiated in a scene, simply use the addMesh or removeMesh method to add or remove
  * glowy meshes to your scene.
  *
  * !!! THIS REQUIRES AN ACTIVE STENCIL BUFFER ON THE CANVAS !!!
@@ -326,8 +325,8 @@ export class HighlightLayer extends EffectLayer {
     protected _createTextureAndPostProcesses(): void {
         var blurTextureWidth = this._mainTextureDesiredSize.width * this._options.blurTextureSizeRatio;
         var blurTextureHeight = this._mainTextureDesiredSize.height * this._options.blurTextureSizeRatio;
-        blurTextureWidth = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(blurTextureWidth, this._maxSize) : blurTextureWidth;
-        blurTextureHeight = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(blurTextureHeight, this._maxSize) : blurTextureHeight;
+        blurTextureWidth = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(blurTextureWidth, this._maxSize) : blurTextureWidth;
+        blurTextureHeight = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(blurTextureHeight, this._maxSize) : blurTextureHeight;
 
         var textureType = 0;
         if (this._engine.getCaps().textureHalfFloatRender) {
@@ -631,14 +630,20 @@ export class HighlightLayer extends EffectLayer {
                 color: color,
                 // Lambda required for capture due to Observable this context
                 observerHighlight: mesh.onBeforeBindObservable.add((mesh: Mesh) => {
-                    if (this._excludedMeshes && this._excludedMeshes[mesh.uniqueId]) {
-                        this._defaultStencilReference(mesh);
-                    }
-                    else {
-                        mesh.getScene().getEngine().setStencilFunctionReference(this._instanceGlowingMeshStencilReference);
+                    if (this.isEnabled) {
+                        if (this._excludedMeshes && this._excludedMeshes[mesh.uniqueId]) {
+                            this._defaultStencilReference(mesh);
+                        }
+                        else {
+                            mesh.getScene().getEngine().setStencilFunctionReference(this._instanceGlowingMeshStencilReference);
+                        }
                     }
                 }),
-                observerDefault: mesh.onAfterRenderObservable.add(this._defaultStencilReference),
+                observerDefault: mesh.onAfterRenderObservable.add((mesh: Mesh) => {
+                    if (this.isEnabled) {
+                        this._defaultStencilReference(mesh);
+                    }
+                }),
                 glowEmissiveOnly: glowEmissiveOnly
             };
 

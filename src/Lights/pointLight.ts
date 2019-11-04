@@ -1,12 +1,11 @@
 import { serialize } from "../Misc/decorators";
 import { Scene } from "../scene";
-import { Matrix, Vector3 } from "../Maths/math";
+import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
 import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Effect } from "../Materials/effect";
 
 Node.AddNodeConstructor("Light_Type_0", (name, scene) => {
@@ -187,6 +186,17 @@ export class PointLight extends ShadowLight {
             0,
             lightIndex
         );
+        return this;
+    }
+
+    public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {
+        if (this.computeTransformedInformation()) {
+            effect.setFloat3(lightDataUniformName, this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z);
+        }
+        else {
+            effect.setFloat3(lightDataUniformName, this.position.x, this.position.y, this.position.z);
+        }
+
         return this;
     }
 

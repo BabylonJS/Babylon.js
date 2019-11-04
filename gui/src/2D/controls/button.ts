@@ -5,6 +5,7 @@ import { Rectangle } from "./rectangle";
 import { Control } from "./control";
 import { TextBlock } from "./textBlock";
 import { Image } from "./image";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Class used to create 2D buttons
@@ -26,6 +27,11 @@ export class Button extends Rectangle {
      * Function called to generate a pointer up animation
      */
     public pointerUpAnimation: () => void;
+
+    /**
+     * Gets or sets a boolean indicating that the button will let internal controls handle picking instead of doing it directly using its bounding info
+     */
+    public delegatePickingToChildren = false;
 
     private _image: Nullable<Image>;
     /**
@@ -90,6 +96,21 @@ export class Button extends Rectangle {
 
         if (!super.contains(x, y)) {
             return false;
+        }
+
+        if (this.delegatePickingToChildren) {
+            let contains = false;
+            for (var index = this._children.length - 1; index >= 0; index--) {
+                var child = this._children[index];
+                if (child.isEnabled && child.isHitTestVisible && child.isVisible && !child.notRenderable && child.contains(x, y)) {
+                    contains = true;
+                    break;
+                }
+            }
+
+            if (!contains) {
+                return false;
+            }
         }
 
         this._processObservables(type, x, y, pointerId, buttonIndex);
@@ -243,3 +264,4 @@ export class Button extends Rectangle {
         return result;
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.Button"] = Button;

@@ -1,11 +1,13 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
-import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
+import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
+import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
+import { InputBlock } from '../Input/inputBlock';
+import { _TypeStore } from '../../../../Misc/typeStore';
 
 /**
  * Block used to add support for instances
@@ -78,21 +80,51 @@ export class InstancesBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure() {
+    public autoConfigure(material: NodeMaterial) {
         if (!this.world0.connectedPoint) {
-            this.world0.setAsAttribute();
+            let world0Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world0");
+
+            if (!world0Input) {
+                world0Input = new InputBlock("world0");
+                world0Input.setAsAttribute("world0");
+            }
+            world0Input.output.connectTo(this.world0);
         }
         if (!this.world1.connectedPoint) {
-            this.world1.setAsAttribute();
+            let world1Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world1");
+
+            if (!world1Input) {
+                world1Input = new InputBlock("world1");
+                world1Input.setAsAttribute("world1");
+            }
+            world1Input.output.connectTo(this.world1);
         }
         if (!this.world2.connectedPoint) {
-            this.world2.setAsAttribute();
+            let world2Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world2");
+
+            if (!world2Input) {
+                world2Input = new InputBlock("world2");
+                world2Input.setAsAttribute("world2");
+            }
+            world2Input.output.connectTo(this.world2);
         }
         if (!this.world3.connectedPoint) {
-            this.world3.setAsAttribute();
+            let world3Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world3");
+
+            if (!world3Input) {
+                world3Input = new InputBlock("world3");
+                world3Input.setAsAttribute("world3");
+            }
+            world3Input.output.connectTo(this.world3);
         }
         if (!this.world.connectedPoint) {
-            this.world.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+            let worldInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world");
+
+            if (!worldInput) {
+                worldInput = new InputBlock("world");
+                worldInput.setAsSystemValue(NodeMaterialSystemValues.World);
+            }
+            worldInput.output.connectTo(this.world);
         }
 
         this.world.define = "!INSTANCES";
@@ -131,3 +163,5 @@ export class InstancesBlock extends NodeMaterialBlock {
         return this;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.InstancesBlock"] = InstancesBlock;

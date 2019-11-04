@@ -2,72 +2,74 @@
 import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
-import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent';
-import { AlphaTestBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/alphaTestBlock';
-import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
-import { ImageProcessingBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/imageProcessingBlock';
-import { RGBAMergerBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbaMergerBlock';
-import { RGBASplitterBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/rgbaSplitterBlock';
-import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/textureBlock';
-import { BonesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/bonesBlock';
-import { InstancesBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/instancesBlock';
-import { MorphTargetsBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/morphTargetsBlock';
-import { VertexOutputBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/vertexOutputBlock';
-import { FogBlock } from 'babylonjs/Materials/Node/Blocks/Dual/fogBlock';
-import { AddBlock } from 'babylonjs/Materials/Node/Blocks/addBlock';
-import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
-import { MatrixMultiplicationBlock } from 'babylonjs/Materials/Node/Blocks/matrixMultiplicationBlock';
-import { MultiplyBlock } from 'babylonjs/Materials/Node/Blocks/multiplyBlock';
-import { Vector2TransformBlock } from 'babylonjs/Materials/Node/Blocks/vector2TransformBlock';
-import { Vector3TransformBlock } from 'babylonjs/Materials/Node/Blocks/vector3TransformBlock';
-import { Vector4TransformBlock } from 'babylonjs/Materials/Node/Blocks/vector4TransformBlock';
-import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
-import { ScaleBlock } from 'babylonjs/Materials/Node/Blocks/scaleBlock';
-import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
+import { DraggableLineComponent } from '../../sharedComponents/draggableLineComponent';
 
 require("./nodeList.scss");
 
 interface INodeListComponentProps {
     globalState: GlobalState;
-    onAddValueNode: (b: string) => void;
-    onAddNodeFromClass: (ObjectClass: typeof NodeMaterialBlock) => void;
 }
 
-export class NodeListComponent extends React.Component<INodeListComponentProps> {
+export class NodeListComponent extends React.Component<INodeListComponentProps, {filter: string}> {
+
+    constructor(props: INodeListComponentProps) {
+        super(props);
+
+        this.state = { filter: "" };
+    }
+
+    filterContent(filter: string) {
+        this.setState({ filter: filter });
+    }
+
     render() {
         // Block types used to create the menu from
         const allBlocks = {
-            Vertex: [BonesBlock, InstancesBlock, MorphTargetsBlock],
-            Fragment: [AlphaTestBlock, , ImageProcessingBlock, RGBAMergerBlock, RGBASplitterBlock, TextureBlock, LightBlock],
-            Outputs: [VertexOutputBlock, FragmentOutputBlock],
-            Dual: [FogBlock],
-            Math: [AddBlock, ClampBlock, MatrixMultiplicationBlock, MultiplyBlock, ScaleBlock, Vector2TransformBlock, Vector3TransformBlock, Vector4TransformBlock],
-            Inputs: ["Vector2", "Vector3", "Vector4", "Color3", "Color4", "Matrix"],
+            Animation: ["BonesBlock", "MorphTargetsBlock"],
+            Basic_Math: ["AddBlock",  "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock", "OneMinusBlock", "MaxBlock", "MinBlock", "LengthBlock", "DistanceBlock", "NegateBlock", "RandomNumberBlock", "ReciprocalBlock"],
+            Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock"],
+            Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
+            Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock"],
+            Interpolation: ["LerpBlock", "SmoothStepBlock", "NLerpBlock"],
+            Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock"],
+            Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "FrontFacingBlock"], 
+            Noises: ["SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
+            Output_Blocks: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
+            Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
+            Round: ["StepBlock", "RoundBlock", "CeilingBlock", "FloorBlock"],
+            Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock", "PerturbNormalBlock"],
+            Trigonometry: ["CosBlock", "SinBlock", "AbsBlock", "ExpBlock", "Exp2Block", "SqrtBlock", "PowBlock", "LogBlock", "ArcCosBlock", "ArcSinBlock", "TanBlock", "ArcTanBlock", "FractBlock", "SignBlock", "ArcTan2Block", "DegreesToRadiansBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "TriangleWaveBlock", "SquareWaveBlock"],
+            Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock"],
         }
 
         // Create node menu
         var blockMenu = []
         for (var key in allBlocks) {
-            var blockList = (allBlocks as any)[key].map((b: any) => {
-                var label = typeof b === "string" ? b : b.prototype.getClassName().replace("Block", "")
-                var onClick = typeof b === "string" ? () => {
-                    this.props.onAddValueNode(b);
-                    this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-                } : () => { this.props.onAddNodeFromClass(b) };
-                return <ButtonLineComponent key={label} label={label} onClick={onClick} />
-            })
-            blockMenu.push(
-                <LineContainerComponent key={key + " blocks"} title={key + " blocks"} closed={false}>
-                    {blockList}
-                </LineContainerComponent>
-            )
+            var blockList = (allBlocks as any)[key].filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
+            .sort((a: string, b: string) => a.localeCompare(b))
+            .map((block: any, i: number) => {
+                return <DraggableLineComponent key={block} data={block} />
+            });
+
+            if (blockList.length) {
+                blockMenu.push(
+                    <LineContainerComponent key={key + " blocks"} title={key.replace("_", " ")} closed={false}>
+                        {blockList}
+                    </LineContainerComponent>
+                );
+            }
         }
 
         return (
-            <div id="nodeList" style={{ borderRightStyle: "solid", borderColor: "grey", borderWidth: "1px" }} >
+            <div id="nodeList">
                 <div className="panes">
                     <div className="pane">
-                        {blockMenu}
+                        <div className="filter">
+                            <input type="text" placeholder="Filter" onChange={(evt) => this.filterContent(evt.target.value)} />
+                        </div>
+                        <div className="list-container">
+                            {blockMenu}
+                        </div>
                     </div>
                 </div>
             </div>

@@ -4,12 +4,12 @@ import { Observer } from "../../Misc/observable";
 import { Logger } from "../../Misc/logger";
 import { Nullable, int, float } from "../../types";
 import { Scene } from "../../scene";
-import { Matrix, Vector3, Color3, Vector4 } from "../../Maths/math";
+import { Matrix, Vector3, Vector4 } from "../../Maths/math.vector";
 import { VertexBuffer } from "../../Meshes/buffer";
 import { SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
-import { Effect, EffectFallbacks, EffectCreationOptions } from "../../Materials/effect";
+import { Effect, IEffectCreationOptions } from "../../Materials/effect";
 import { MaterialHelper } from "../../Materials/materialHelper";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
@@ -20,13 +20,14 @@ import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { IShadowLight } from "../../Lights/shadowLight";
 import { _TimeToken } from "../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { Constants } from "../../Engines/constants";
 import { _TypeStore } from "../../Misc/typeStore";
 import { MaterialFlags } from "../materialFlags";
+import { Color3 } from '../../Maths/math.color';
 
 import "../../Shaders/background.fragment";
 import "../../Shaders/background.vertex";
+import { EffectFallbacks } from '../effectFallbacks';
 
 /**
  * Background material defines definition.
@@ -888,7 +889,7 @@ export class BackgroundMaterial extends PushMaterial {
                 ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
             }
 
-            MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
+            MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
@@ -905,7 +906,7 @@ export class BackgroundMaterial extends PushMaterial {
             };
 
             var join = defines.toString();
-            subMesh.setEffect(scene.getEngine().createEffect("background", <EffectCreationOptions>{
+            subMesh.setEffect(scene.getEngine().createEffect("background", <IEffectCreationOptions>{
                 attributes: attribs,
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
@@ -1140,6 +1141,27 @@ export class BackgroundMaterial extends PushMaterial {
         this._uniformBuffer.update();
 
         this._afterBind(mesh, this._activeEffect);
+    }
+
+    /**
+     * Checks to see if a texture is used in the material.
+     * @param texture - Base texture to use.
+     * @returns - Boolean specifying if a texture is used in the material.
+     */
+    public hasTexture(texture: BaseTexture): boolean {
+        if (super.hasTexture(texture)) {
+            return true;
+        }
+
+        if (this._reflectionTexture === texture) {
+            return true;
+        }
+
+        if (this._diffuseTexture === texture) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

@@ -123,12 +123,6 @@ export class STLFileLoader implements ISceneLoaderPlugin {
      */
     public load(scene: Scene, data: any, rootUrl: string): boolean {
         var result = this.importMesh(null, scene, data, rootUrl, null, null, null);
-
-        if (result) {
-            scene.createDefaultLight();
-            scene.createDefaultCameraOrLight();
-        }
-
         return result;
     }
 

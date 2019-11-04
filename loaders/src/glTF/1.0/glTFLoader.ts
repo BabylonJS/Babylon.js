@@ -28,11 +28,11 @@ import { DirectionalLight } from "babylonjs/Lights/directionalLight";
 import { PointLight } from "babylonjs/Lights/pointLight";
 import { SpotLight } from "babylonjs/Lights/spotLight";
 import { SceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
-import { Engine } from "babylonjs/Engines/engine";
 import { Scene } from "babylonjs/scene";
 
 import { GLTFUtils } from "./glTFLoaderUtils";
 import { GLTFFileLoader, IGLTFLoader, GLTFLoaderState, IGLTFLoaderData } from "../glTFFileLoader";
+import { Constants } from 'babylonjs/Engines/constants';
 
 /**
 * Tokenizer. Used for shaders compatibility
@@ -921,7 +921,7 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
 
                 orthoCamera.name = node.name || "";
                 orthoCamera.mode = Camera.ORTHOGRAPHIC_CAMERA;
-                orthoCamera.attachControl(<HTMLElement>gltfRuntime.scene.getEngine().getRenderingCanvas());
+                orthoCamera.attachControl(<HTMLElement>gltfRuntime.scene.getEngine().getInputElement());
 
                 lastNode = orthoCamera;
             }
@@ -930,7 +930,7 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
                 var persCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene, false);
 
                 persCamera.name = node.name || "";
-                persCamera.attachControl(<HTMLElement>gltfRuntime.scene.getEngine().getRenderingCanvas());
+                persCamera.attachControl(<HTMLElement>gltfRuntime.scene.getEngine().getInputElement());
 
                 if (!perspectiveCamera.aspectRatio) {
                     perspectiveCamera.aspectRatio = gltfRuntime.scene.getEngine().getRenderWidth() / gltfRuntime.scene.getEngine().getRenderHeight();
@@ -1561,22 +1561,22 @@ export class GLTFLoaderBase {
             var blendFunc = functions.blendFuncSeparate;
             if (blendFunc) {
                 if (blendFunc[0] === EBlendingFunction.SRC_ALPHA && blendFunc[1] === EBlendingFunction.ONE_MINUS_SRC_ALPHA && blendFunc[2] === EBlendingFunction.ONE && blendFunc[3] === EBlendingFunction.ONE) {
-                    shaderMaterial.alphaMode = Engine.ALPHA_COMBINE;
+                    shaderMaterial.alphaMode = Constants.ALPHA_COMBINE;
                 }
                 else if (blendFunc[0] === EBlendingFunction.ONE && blendFunc[1] === EBlendingFunction.ONE && blendFunc[2] === EBlendingFunction.ZERO && blendFunc[3] === EBlendingFunction.ONE) {
-                    shaderMaterial.alphaMode = Engine.ALPHA_ONEONE;
+                    shaderMaterial.alphaMode = Constants.ALPHA_ONEONE;
                 }
                 else if (blendFunc[0] === EBlendingFunction.SRC_ALPHA && blendFunc[1] === EBlendingFunction.ONE && blendFunc[2] === EBlendingFunction.ZERO && blendFunc[3] === EBlendingFunction.ONE) {
-                    shaderMaterial.alphaMode = Engine.ALPHA_ADD;
+                    shaderMaterial.alphaMode = Constants.ALPHA_ADD;
                 }
                 else if (blendFunc[0] === EBlendingFunction.ZERO && blendFunc[1] === EBlendingFunction.ONE_MINUS_SRC_COLOR && blendFunc[2] === EBlendingFunction.ONE && blendFunc[3] === EBlendingFunction.ONE) {
-                    shaderMaterial.alphaMode = Engine.ALPHA_SUBTRACT;
+                    shaderMaterial.alphaMode = Constants.ALPHA_SUBTRACT;
                 }
                 else if (blendFunc[0] === EBlendingFunction.DST_COLOR && blendFunc[1] === EBlendingFunction.ZERO && blendFunc[2] === EBlendingFunction.ONE && blendFunc[3] === EBlendingFunction.ONE) {
-                    shaderMaterial.alphaMode = Engine.ALPHA_MULTIPLY;
+                    shaderMaterial.alphaMode = Constants.ALPHA_MULTIPLY;
                 }
                 else if (blendFunc[0] === EBlendingFunction.SRC_ALPHA && blendFunc[1] === EBlendingFunction.ONE_MINUS_SRC_COLOR && blendFunc[2] === EBlendingFunction.ONE && blendFunc[3] === EBlendingFunction.ONE) {
-                    shaderMaterial.alphaMode = Engine.ALPHA_MAXIMIZED;
+                    shaderMaterial.alphaMode = Constants.ALPHA_MAXIMIZED;
                 }
             }
         }

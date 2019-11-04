@@ -1,11 +1,10 @@
 import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
 import { Scene } from "../../scene";
-import { Color3 } from "../../Maths/math";
+import { Color3 } from "../../Maths/math.color";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 
 import { _TimeToken } from "../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 /**
  * The Physically based simple base material of BJS.
  *

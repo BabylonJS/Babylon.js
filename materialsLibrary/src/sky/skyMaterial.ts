@@ -1,9 +1,8 @@
 import { Nullable } from "babylonjs/types";
 import { serializeAsVector3, serialize, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Vector3, Matrix } from "babylonjs/Maths/math";
-import { IAnimatable } from "babylonjs/Misc/tools";
+import { Vector3, Matrix } from "babylonjs/Maths/math.vector";
+import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { EffectFallbacks } from "babylonjs/Materials/effect";
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -16,6 +15,7 @@ import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 import "./sky.fragment";
 import "./sky.vertex";
+import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
 
 /** @hidden */
 class SkyMaterialDefines extends MaterialDefines {
