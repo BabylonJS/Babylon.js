@@ -1338,8 +1338,7 @@ namespace babylon
         m_viewportIds.push_back(newViewId);
         m_currentBackbufferViewId = newViewId;
         bgfx::setViewFrameBuffer(m_currentBackbufferViewId, BGFX_INVALID_HANDLE);
-        bgfx::setViewClear(m_currentBackbufferViewId, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
-        
+
         bgfx::setViewRect(m_currentBackbufferViewId, 
             static_cast<uint16_t>(x * backbufferWidth), 
             static_cast<uint16_t>(yOrigin * backbufferHeight),

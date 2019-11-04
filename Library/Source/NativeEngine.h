@@ -69,6 +69,7 @@ namespace babylon
                 m_flags = flags;
                 Update();
             }
+            bgfx::touch(m_viewId);
         }
         
         void UpdateColor(const Napi::CallbackInfo& info)
@@ -121,7 +122,6 @@ namespace babylon
         void Update() const
         {
             bgfx::setViewClear(m_viewId, m_flags, Color(), m_depth, m_stencil);
-            bgfx::touch(m_viewId);
         }
 
     private:
