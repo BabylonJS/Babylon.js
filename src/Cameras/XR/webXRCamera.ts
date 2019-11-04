@@ -77,7 +77,7 @@ export class WebXRCamera extends FreeCamera {
             return false;
         }
 
-        if (pose.transform) {
+        if (pose.transform && pose.emulatedPosition) {
             this.position.copyFrom(<any>(pose.transform.position));
             this.rotationQuaternion.copyFrom(<any>(pose.transform.orientation));
             if (!this._scene.useRightHandedSystem) {
@@ -96,14 +96,21 @@ export class WebXRCamera extends FreeCamera {
             if (view.transform.position && view.transform.orientation) {
                 currentRig.position.copyFrom(view.transform.position);
                 currentRig.rotationQuaternion.copyFrom(view.transform.orientation);
-                currentRig.getViewMatrix(true);
+                if (!this._scene.useRightHandedSystem) {
+                    currentRig.position.z *= -1;
+                    currentRig.rotationQuaternion.z *= -1;
+                    currentRig.rotationQuaternion.w *= -1;
+                }
             } else {
                 Matrix.FromFloat32ArrayToRefScaled(view.transform.matrix, 0, 1, currentRig._computedViewMatrix);
+                if (!this._scene.useRightHandedSystem) {
+                    currentRig._computedViewMatrix.toggleModelMatrixHandInPlace();
+                }
             }
             Matrix.FromFloat32ArrayToRefScaled(view.projectionMatrix, 0, 1, currentRig._projectionMatrix);
 
             if (!this._scene.useRightHandedSystem) {
-                currentRig._computedViewMatrix.toggleModelMatrixHandInPlace();
+                // currentRig._computedViewMatrix.toggleModelMatrixHandInPlace();
                 currentRig._projectionMatrix.toggleProjectionMatrixHandInPlace();
             }
 
