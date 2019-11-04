@@ -11,7 +11,11 @@ import { Viewport } from '../../Maths/math.viewport';
  * @see https://doc.babylonjs.com/how_to/webxr
  */
 export class WebXRCamera extends FreeCamera {
-    private static _TmpMatrix = new Matrix();
+
+    /**
+     * Is the camera in debug mode. Used when using an emulator
+     */
+    public debugMode = false;
 
     /**
      * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
@@ -72,38 +76,40 @@ export class WebXRCamera extends FreeCamera {
         if (!pose) {
             return false;
         }
-        let globalTransform = false;
-        if (pose && pose.transform && pose.transform.matrix) {
-            globalTransform = true;
-            // Update the parent cameras matrix
-            Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, WebXRCamera._TmpMatrix);
 
+        if (pose.transform && pose.emulatedPosition) {
+            this.position.copyFrom(<any>(pose.transform.position));
+            this.rotationQuaternion.copyFrom(<any>(pose.transform.orientation));
             if (!this._scene.useRightHandedSystem) {
-                WebXRCamera._TmpMatrix.toggleModelMatrixHandInPlace();
+                this.position.z *= -1;
+                this.rotationQuaternion.z *= -1;
+                this.rotationQuaternion.w *= -1;
             }
-            WebXRCamera._TmpMatrix.getTranslationToRef(this.position);
-            WebXRCamera._TmpMatrix.getRotationMatrixToRef(WebXRCamera._TmpMatrix);
-            Quaternion.FromRotationMatrixToRef(WebXRCamera._TmpMatrix, this.rotationQuaternion);
-
             this.computeWorldMatrix();
         }
 
         // Update camera rigs
         this._updateNumberOfRigCameras(pose.views.length);
         pose.views.forEach((view: any, i: number) => {
-            const currentRig = <TargetCamera> this.rigCameras[i];
+            const currentRig = <TargetCamera>this.rigCameras[i];
             // Update view/projection matrix
-            if (!globalTransform && view.transform.position && view.transform.orientation) {
+            if (view.transform.position && view.transform.orientation) {
                 currentRig.position.copyFrom(view.transform.position);
                 currentRig.rotationQuaternion.copyFrom(view.transform.orientation);
-                currentRig.getViewMatrix(true);
+                if (!this._scene.useRightHandedSystem) {
+                    currentRig.position.z *= -1;
+                    currentRig.rotationQuaternion.z *= -1;
+                    currentRig.rotationQuaternion.w *= -1;
+                }
             } else {
                 Matrix.FromFloat32ArrayToRefScaled(view.transform.matrix, 0, 1, currentRig._computedViewMatrix);
+                if (!this._scene.useRightHandedSystem) {
+                    currentRig._computedViewMatrix.toggleModelMatrixHandInPlace();
+                }
             }
             Matrix.FromFloat32ArrayToRefScaled(view.projectionMatrix, 0, 1, currentRig._projectionMatrix);
 
             if (!this._scene.useRightHandedSystem) {
-                currentRig._computedViewMatrix.toggleModelMatrixHandInPlace();
                 currentRig._projectionMatrix.toggleProjectionMatrixHandInPlace();
             }
 
@@ -116,6 +122,9 @@ export class WebXRCamera extends FreeCamera {
                 currentRig.viewport.height = viewport.height / height;
                 currentRig.viewport.x = viewport.x / width;
                 currentRig.viewport.y = viewport.y / height;
+            }
+            if (this.debugMode) {
+                this._updateForDualEyeDebugging();
             }
 
             // Set cameras to render to the session's render target
