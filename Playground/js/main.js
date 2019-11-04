@@ -800,26 +800,23 @@ class Main {
         let result = await response.json();
         return JSON.parse(result.jsonPayload).code.toString();
     }
+	
+	async getSnippetCode(value) {
+        if (!value || value === "") {
+            // use current snippet
+            return this.parent.monacoCreator.JsEditor.getValue();
+        } else {
+            // load script
+            return await this.loadSnippetCode(value);
+		}
+	}
 
     async diff() {
         try {
-            let leftText = "";
-            let rightText = "";
-            let response = null;
-    
-            const left = document.getElementById("diffFormSource");
-            if (left.value === "") {
-                // use current snippet
-                leftText = this.parent.monacoCreator.JsEditor.getValue();
-            } else {
-                // load script
-                leftText = await this.loadSnippetCode(left.value);
-            }
-    
-            const right = document.getElementById("diffFormCompareTo");
-            rightText = await this.loadSnippetCode(right.value);
-    
+            const leftText = await this.getSnippetCode(document.getElementById("diffFormSource").value);
+            const rightText = await this.getSnippetCode(document.getElementById("diffFormCompareTo").value);
             const diffView = document.getElementById("diffView");
+
             diffView.style.display = "block";
             this.parent.monacoCreator.createDiff(leftText, rightText, diffView);
         } catch(e) {
