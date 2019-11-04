@@ -1311,7 +1311,7 @@ namespace babylon
 
         const auto backbufferWidth = bgfx::getStats()->width;
         const auto backbufferHeight = bgfx::getStats()->height;
-        const float yOrigin = bgfx::getCaps()->originBottomLeft ? (1.f - y - height) : y;
+        const float yOrigin = bgfx::getCaps()->originBottomLeft ? y : (1.f - y - height);
 
         m_frameBufferManager.GetBound().AcquireNewView();
         const bgfx::ViewId viewId = m_frameBufferManager.GetBound().ViewId;
