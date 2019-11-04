@@ -182,6 +182,7 @@ class MonacoCreator {
             readOnly: true,
             theme: this.parent.settingsPG.vsTheme,
             contextmenu: false,
+            fontSize: this.parent.settingsPG.fontSize
         }
        
         const diffEditor = monaco.editor.createDiffEditor(diffView, diffOptions);
