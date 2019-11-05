@@ -3,7 +3,6 @@
 #include <pplawait.h>
 #include <winrt/Windows.ApplicationModel.h>
 
-#include <sstream>
 #include <filesystem>
 
 using namespace Windows::ApplicationModel;
@@ -135,29 +134,26 @@ concurrency::task<void> App::RestartRuntimeAsync()
     m_inputBuffer.reset();
     m_runtime.reset();
 
-    std::stringstream rootUrl{};
-    if (m_fileActivatedArgs == nullptr)
-    {
-        auto path = std::filesystem::current_path();
-        rootUrl << "file:///" << path.generic_string();
-    }
-    else
+    std::string appUrl{ "file:///" + std::filesystem::current_path().generic_string() };
+
+    std::string rootUrl{ appUrl };
+    if (m_fileActivatedArgs != nullptr)
     {
         auto file = static_cast<Windows::Storage::IStorageFile^>(m_fileActivatedArgs->Files->GetAt(0));
         const auto path = winrt::to_string(file->Path->Data());
         auto parentPath = std::filesystem::path{ path }.parent_path();
-        rootUrl << "file:///" << parentPath.generic_string();
+        rootUrl = "file:///" + parentPath.generic_string();
     }
 
     m_runtime = std::make_unique<babylon::RuntimeUWP>(
         reinterpret_cast<ABI::Windows::UI::Core::ICoreWindow*>(CoreWindow::GetForCurrentThread()), 
-        rootUrl.str(),
+        rootUrl,
         [](const char* message, babylon::LogLevel) { OutputDebugStringA(message); });
     m_inputBuffer = std::make_unique<InputManager::InputBuffer>(*m_runtime);
     InputManager::Initialize(*m_runtime, *m_inputBuffer);
 
-    m_runtime->LoadScript("Scripts/babylon.max.js");
-    m_runtime->LoadScript("Scripts/babylon.glTF2FileLoader.js");
+    m_runtime->LoadScript(appUrl + "/Scripts/babylon.max.js");
+    m_runtime->LoadScript(appUrl + "/Scripts/babylon.glTF2FileLoader.js");
 
     if (m_fileActivatedArgs == nullptr)
     {
@@ -173,7 +169,7 @@ concurrency::task<void> App::RestartRuntimeAsync()
             m_runtime->Eval(winrt::to_string(text->Data()), path);
         }
 
-        m_runtime->LoadScript("Scripts/playground_runner.js");
+        m_runtime->LoadScript(appUrl + "/Scripts/playground_runner.js");
     }
 }
 
