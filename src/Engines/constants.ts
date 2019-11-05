@@ -181,7 +181,7 @@ export class Constants {
     /** FLOAT_32_UNSIGNED_INT_24_8_REV */
     public static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = 15;
 
-    /** nearest is mag = nearest and min = nearest and mip = linear */
+    /** nearest is mag = nearest and min = nearest and mip = nearest */
     public static readonly TEXTURE_NEAREST_SAMPLINGMODE = 1;
     /** Bilinear is mag = linear and min = linear and mip = nearest */
     public static readonly TEXTURE_BILINEAR_SAMPLINGMODE = 2;
