@@ -2919,7 +2919,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         serializationObject.checkCollisions = this.checkCollisions;
         serializationObject.isBlocker = this.isBlocker;
-        serializationObject.overrideMaterialSideOrientation  = this.overrideMaterialSideOrientation;
+        serializationObject.overrideMaterialSideOrientation = this.overrideMaterialSideOrientation;
 
         // Parent
         if (this.parent) {
