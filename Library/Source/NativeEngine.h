@@ -351,6 +351,7 @@ namespace babylon
         void SetColorWrite(const Napi::CallbackInfo& info);
         void SetBlendMode(const Napi::CallbackInfo& info);
         void SetMatrix(const Napi::CallbackInfo& info);
+        void SetInt(const Napi::CallbackInfo& info);
         void SetIntArray(const Napi::CallbackInfo& info);
         void SetIntArray2(const Napi::CallbackInfo& info);
         void SetIntArray3(const Napi::CallbackInfo& info);
@@ -366,7 +367,6 @@ namespace babylon
         void SetFloat2(const Napi::CallbackInfo& info);
         void SetFloat3(const Napi::CallbackInfo& info);
         void SetFloat4(const Napi::CallbackInfo& info);
-        void SetBool(const Napi::CallbackInfo& info);
         Napi::Value CreateTexture(const Napi::CallbackInfo& info);
         Napi::Value LoadTexture(const Napi::CallbackInfo& info);
         Napi::Value LoadCubeTexture(const Napi::CallbackInfo& info);
@@ -412,6 +412,10 @@ namespace babylon
         FrameBufferManager m_frameBufferManager{ m_viewidSet };
 
         NativeWindow::OnResizeCallbackTicket m_resizeCallbackTicket;
+
+        template<int size, typename arrayType> void SetTypeArrayN(const Napi::CallbackInfo& info);
+        template<int size> void SetFloatN(const Napi::CallbackInfo& info);
+        template<int size> void SetMatrixN(const Napi::CallbackInfo& info);
 
         // Scratch vector used for data alignment.
         std::vector<float> m_scratch{};
