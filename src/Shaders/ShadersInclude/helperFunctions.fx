@@ -43,6 +43,20 @@ mat3 inverseMat3(mat3 inMatrix) {
               b21, (-a21 * a00 + a01 * a20), (a11 * a00 - a01 * a10)) / det;
 }
 
+/**
+    Given a transform matrix, the adjugate matrix gives us the equivalent transform matrix for transforming surface normals
+    The cofactor matrix is equivalent to transpose(adjugate(m))
+
+    See https://github.com/graphitemaster/normals_revisited
+**/
+mat3 adjugate(in mat3 m) {
+  return mat3(
+      cross(m[1], m[2]), 
+      cross(m[2], m[0]), 
+      cross(m[0], m[1])
+  );
+}
+
 vec3 toLinearSpace(vec3 color)
 {
     return pow(color, vec3(LinearEncodePowerApprox));
