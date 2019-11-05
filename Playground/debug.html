@@ -407,6 +407,26 @@
         </div>
     </div>
 
+    <div id="diffLayer" class="save-layer">
+        <div class="save-form diff-form">
+            <label for="diffFormSource">COMPARISON SOURCE</label>
+            <div class="separator"></div>
+            <input type="text" maxlength="120" id="diffFormSource" placeholder="leave blank to use current snippet, or use snippet ID" class="save-form-title">
+
+            <label for="diffFormCompareTo">COMPARE TO</label>
+            <div class="separator"></div>
+            <input type="text" maxlength="120" id="diffFormCompareTo" placeholder="snippet ID" class="save-form-title">
+
+            <div class="save-form-buttons" id="diffFormButtons">
+                <div id="diffFormButtonOk">OK</div>
+                <div id="diffFormButtonCancel">Cancel</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="diffView" class="diff-view">
+    </div>        
+
     <div id="waitDiv">
         <div id="logo-part">
             <img src="css/img/v4.svg" id="waitLogo" />
