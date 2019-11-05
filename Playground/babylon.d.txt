@@ -52827,6 +52827,11 @@ declare module BABYLON {
         /** Get the inspector from bundle or global */
         private _getGlobalNodeMaterialEditor;
         /**
+         * Gets or sets data used by visual editor
+         * @see https://nme.babylonjs.com
+         */
+        editorData: any;
+        /**
          * Gets or sets a boolean indicating that alpha value must be ignored (This will turn alpha blending off even if an alpha value is produced by the material)
          */
         ignoreAlpha: boolean;

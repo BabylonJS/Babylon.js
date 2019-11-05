@@ -293,13 +293,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export interface INodeLocationInfo {
-        blockId: number;
-        x: number;
-        y: number;
-    }
-}
-declare module NODEEDITOR {
     export class SerializationTools {
         static Serialize(material: BABYLON.NodeMaterial, globalState: GlobalState): string;
         static Deserialize(serializationObject: any, globalState: GlobalState): void;
@@ -1073,6 +1066,13 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface INodeLocationInfo {
+        blockId: number;
+        x: number;
+        y: number;
+    }
+}
+declare module NODEEDITOR {
     interface IPreviewMeshControlComponent {
         globalState: GlobalState;
     }
@@ -1417,7 +1417,7 @@ declare module NODEEDITOR {
         zoomToFit(retry?: number): void;
         buildMaterial(): void;
         applyFragmentOutputConstraints(rootInput: DefaultPortModel): void;
-        build(needToWait?: boolean, locations?: BABYLON.Nullable<INodeLocationInfo[]>): void;
+        build(needToWait?: boolean): void;
         reOrganize(locations?: BABYLON.Nullable<INodeLocationInfo[]>): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
@@ -1454,7 +1454,7 @@ declare module NODEEDITOR {
         hostDocument: HTMLDocument;
         onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<DefaultNodeModel>>;
         onRebuildRequiredObservable: BABYLON.Observable<void>;
-        onResetRequiredObservable: BABYLON.Observable<BABYLON.Nullable<INodeLocationInfo[]>>;
+        onResetRequiredObservable: BABYLON.Observable<void>;
         onUpdateRequiredObservable: BABYLON.Observable<void>;
         onZoomToFitRequiredObservable: BABYLON.Observable<void>;
         onReOrganizedRequiredObservable: BABYLON.Observable<void>;
