@@ -247,8 +247,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             }
         });
 
-        this.props.globalState.onResetRequiredObservable.add((locations) => {
-            this.build(false, locations);
+        this.props.globalState.onResetRequiredObservable.add(() => {
+            this.build(false);
             if (this.props.globalState.nodeMaterial) {
                 this.buildMaterial();
             }
@@ -387,7 +387,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
     }
 
-    build(needToWait = false, locations: Nullable<INodeLocationInfo[]> = null) {
+    build(needToWait = false) {        
+        let locations: Nullable<INodeLocationInfo[]> = this.props.globalState.nodeMaterial.editorData;
         // setup the diagram model
         this._model = new DiagramModel();
         this._nodes = [];
