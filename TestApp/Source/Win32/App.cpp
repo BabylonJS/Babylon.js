@@ -83,6 +83,7 @@ namespace
 
         runtime->LoadScript("Scripts/babylon.max.js");
         runtime->LoadScript("Scripts/babylon.glTF2FileLoader.js");
+        runtime->LoadScript("Scripts/babylonjs.materials.js");
 
         auto scripts = GetCommandLineArguments();
         if (scripts.size() == 0)
