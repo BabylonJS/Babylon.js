@@ -385,13 +385,6 @@ declare module "babylonjs-node-editor/sharedComponents/fileButtonLineComponent" 
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-node-editor/nodeLocationInfo" {
-    export interface INodeLocationInfo {
-        blockId: number;
-        x: number;
-        y: number;
-    }
-}
 declare module "babylonjs-node-editor/serializationTools" {
     import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -1298,6 +1291,13 @@ declare module "babylonjs-node-editor/components/preview/previewManager" {
         dispose(): void;
     }
 }
+declare module "babylonjs-node-editor/nodeLocationInfo" {
+    export interface INodeLocationInfo {
+        blockId: number;
+        x: number;
+        y: number;
+    }
+}
 declare module "babylonjs-node-editor/components/preview/previewMeshControlComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -1723,7 +1723,7 @@ declare module "babylonjs-node-editor/graphEditor" {
         zoomToFit(retry?: number): void;
         buildMaterial(): void;
         applyFragmentOutputConstraints(rootInput: DefaultPortModel): void;
-        build(needToWait?: boolean, locations?: Nullable<INodeLocationInfo[]>): void;
+        build(needToWait?: boolean): void;
         reOrganize(locations?: Nullable<INodeLocationInfo[]>): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
@@ -1766,7 +1766,6 @@ declare module "babylonjs-node-editor/globalState" {
     import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
     import { LogEntry } from "babylonjs-node-editor/components/log/logComponent";
     import { NodeModel } from 'storm-react-diagrams';
-    import { INodeLocationInfo } from "babylonjs-node-editor/nodeLocationInfo";
     import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
     import { PreviewMeshType } from "babylonjs-node-editor/components/preview/previewMeshType";
     import { Color4 } from 'babylonjs/Maths/math.color';
@@ -1776,7 +1775,7 @@ declare module "babylonjs-node-editor/globalState" {
         hostDocument: HTMLDocument;
         onSelectionChangedObservable: Observable<Nullable<DefaultNodeModel>>;
         onRebuildRequiredObservable: Observable<void>;
-        onResetRequiredObservable: Observable<Nullable<INodeLocationInfo[]>>;
+        onResetRequiredObservable: Observable<void>;
         onUpdateRequiredObservable: Observable<void>;
         onZoomToFitRequiredObservable: Observable<void>;
         onReOrganizedRequiredObservable: Observable<void>;
@@ -2142,13 +2141,6 @@ declare module NODEEDITOR {
         constructor(props: IFileButtonLineComponentProps);
         onChange(evt: any): void;
         render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    export interface INodeLocationInfo {
-        blockId: number;
-        x: number;
-        y: number;
     }
 }
 declare module NODEEDITOR {
@@ -2925,6 +2917,13 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface INodeLocationInfo {
+        blockId: number;
+        x: number;
+        y: number;
+    }
+}
+declare module NODEEDITOR {
     interface IPreviewMeshControlComponent {
         globalState: GlobalState;
     }
@@ -3269,7 +3268,7 @@ declare module NODEEDITOR {
         zoomToFit(retry?: number): void;
         buildMaterial(): void;
         applyFragmentOutputConstraints(rootInput: DefaultPortModel): void;
-        build(needToWait?: boolean, locations?: BABYLON.Nullable<INodeLocationInfo[]>): void;
+        build(needToWait?: boolean): void;
         reOrganize(locations?: BABYLON.Nullable<INodeLocationInfo[]>): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
@@ -3306,7 +3305,7 @@ declare module NODEEDITOR {
         hostDocument: HTMLDocument;
         onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<DefaultNodeModel>>;
         onRebuildRequiredObservable: BABYLON.Observable<void>;
-        onResetRequiredObservable: BABYLON.Observable<BABYLON.Nullable<INodeLocationInfo[]>>;
+        onResetRequiredObservable: BABYLON.Observable<void>;
         onUpdateRequiredObservable: BABYLON.Observable<void>;
         onZoomToFitRequiredObservable: BABYLON.Observable<void>;
         onReOrganizedRequiredObservable: BABYLON.Observable<void>;

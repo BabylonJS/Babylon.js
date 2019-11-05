@@ -72871,7 +72871,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Reset to default", onClick: function () {
                             _this.props.globalState.nodeMaterial.setToDefault();
-                            _this.props.globalState.onResetRequiredObservable.notifyObservers(null);
+                            _this.props.globalState.onResetRequiredObservable.notifyObservers();
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "UI" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Zoom to fit", onClick: function () {
@@ -73188,8 +73188,8 @@ var GraphEditor = /** @class */ (function (_super) {
                 _this.buildMaterial();
             }
         });
-        _this.props.globalState.onResetRequiredObservable.add(function (locations) {
-            _this.build(false, locations);
+        _this.props.globalState.onResetRequiredObservable.add(function () {
+            _this.build(false);
             if (_this.props.globalState.nodeMaterial) {
                 _this.buildMaterial();
             }
@@ -73416,10 +73416,10 @@ var GraphEditor = /** @class */ (function (_super) {
             }
         }
     };
-    GraphEditor.prototype.build = function (needToWait, locations) {
+    GraphEditor.prototype.build = function (needToWait) {
         var _this = this;
         if (needToWait === void 0) { needToWait = false; }
-        if (locations === void 0) { locations = null; }
+        var locations = this.props.globalState.nodeMaterial.editorData;
         // setup the diagram model
         this._model = new storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramModel"]();
         this._nodes = [];
@@ -74027,16 +74027,7 @@ var SerializationTools = /** @class */ (function () {
     SerializationTools.Deserialize = function (serializationObject, globalState) {
         globalState.onIsLoadingChanged.notifyObservers(true);
         globalState.nodeMaterial.loadFromSerialization(serializationObject, "");
-        // Check for id mapping
-        if (serializationObject.locations && serializationObject.map) {
-            var map = serializationObject.map;
-            var locations = serializationObject.locations;
-            for (var _i = 0, locations_1 = locations; _i < locations_1.length; _i++) {
-                var location = locations_1[_i];
-                location.blockId = map[location.blockId];
-            }
-        }
-        globalState.onResetRequiredObservable.notifyObservers(serializationObject.locations);
+        globalState.onResetRequiredObservable.notifyObservers();
     };
     return SerializationTools;
 }());
