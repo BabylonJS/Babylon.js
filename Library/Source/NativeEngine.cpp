@@ -774,8 +774,7 @@ namespace babylon
                 static_cast<float>(array[index])
                 , (size > 1) ? static_cast<float>(array[index + 1]) : 0.f
                 , (size > 2) ? static_cast<float>(array[index + 2]) : 0.f
-                , (size > 3) ? static_cast<float>(array[index + 3]) : 0.f
-            };
+                , (size > 3) ? static_cast<float>(array[index + 3]) : 0.f };
             m_scratch.insert(m_scratch.end(), values, values + 4);
         }
 
@@ -789,8 +788,7 @@ namespace babylon
             info[1].As<Napi::Number>().FloatValue(),
             (size > 1) ? info[2].As<Napi::Number>().FloatValue() : 0.f,
             (size > 2) ? info[3].As<Napi::Number>().FloatValue() : 0.f,
-            (size > 3) ? info[4].As<Napi::Number>().FloatValue() : 0.f 
-        };
+            (size > 3) ? info[4].As<Napi::Number>().FloatValue() : 0.f };
 
         m_currentProgram->SetUniform(uniformData->Handle, values);
     }
@@ -1338,6 +1336,7 @@ namespace babylon
         m_viewportIds.push_back(newViewId);
         m_currentBackbufferViewId = newViewId;
         bgfx::setViewFrameBuffer(m_currentBackbufferViewId, BGFX_INVALID_HANDLE);
+        bgfx::setViewClear(m_currentBackbufferViewId, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
 
         bgfx::setViewRect(m_currentBackbufferViewId, 
             static_cast<uint16_t>(x * backbufferWidth), 
