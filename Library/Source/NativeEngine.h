@@ -329,6 +329,7 @@ namespace babylon
 
         FrameBufferManager& GetFrameBufferManager();
         void Dispatch(std::function<void()>);
+        void EndFrame();
 
     private:
         Napi::Value GetEngine(const Napi::CallbackInfo& info); // TODO: Hack, temporary method. Remove as part of the change to get rid of NapiBridge.

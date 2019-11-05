@@ -1356,17 +1356,21 @@ namespace babylon
             //bgfx_test(static_cast<uint16_t>(m_size.Width), static_cast<uint16_t>(m_size.Height));
 
             callbackPtr->Call({});
-
-            // recycle viewIds used as viewports
-            for (auto id : m_viewportIds)
-            {
-                m_viewidSet.Recycle(id);
-            }
-            m_viewportIds.clear();
-            m_currentBackbufferViewId = 0;
-
-            bgfx::frame();
+            EndFrame();
         });
+    }
+
+    void NativeEngine::EndFrame()
+    {
+        // recycle viewIds used as viewports
+        for (auto id : m_viewportIds)
+        {
+            m_viewidSet.Recycle(id);
+        }
+        m_viewportIds.clear();
+        m_currentBackbufferViewId = 0;
+
+        bgfx::frame();
     }
 
     void NativeEngine::Dispatch(std::function<void()> function)
