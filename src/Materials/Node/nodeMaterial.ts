@@ -135,6 +135,12 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Gets or sets data used by visual editor
+     * @see https://nme.babylonjs.com
+     */
+    public editorData: any = null;
+
+    /**
      * Gets or sets a boolean indicating that alpha value must be ignored (This will turn alpha blending off even if an alpha value is produced by the material)
      */
     public ignoreAlpha = false;
@@ -1207,11 +1213,19 @@ export class NodeMaterial extends PushMaterial {
             this.addOutputNode(map[outputNodeId]);
         }
 
-        // Store map for external uses
-        source.map = {};
+        // UI related info
+        if (source.locations) {
+            let locations: {
+                blockId: number;
+                x: number;
+                y: number;
+            }[] = source.locations;
 
-        for (var key in map) {
-            source.map[key] = map[key].uniqueId;
+            for (var location of locations) {
+                location.blockId = map[location.blockId].uniqueId;
+            }
+
+            this.editorData = locations;
         }
     }
 
