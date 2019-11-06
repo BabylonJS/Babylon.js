@@ -300,8 +300,8 @@ interface GPUDepthStencilStateDescriptor {
   depthWriteEnabled?: boolean;
   depthCompare?: GPUCompareFunction;
 
-  stencilFront: GPUStencilStateFaceDescriptor;
-  stencilBack: GPUStencilStateFaceDescriptor;
+  stencilFront?: GPUStencilStateFaceDescriptor;
+  stencilBack?: GPUStencilStateFaceDescriptor;
 
   stencilReadMask?: number;
   stencilWriteMask?: number;
@@ -626,11 +626,8 @@ interface GPURenderEncoderBase extends GPUProgrammablePassEncoder {
   setPipeline(pipeline: GPURenderPipeline): void;
 
   setIndexBuffer(buffer: GPUBuffer, offset?: number): void;
-  setVertexBuffers(
-    startSlot: number,
-    buffers: GPUBuffer[],
-    offsets: number[]
-  ): void;
+
+  setVertexBuffer(slot: number, buffer: GPUBuffer, offset?: number): void;
 
   draw(
     vertexCount: number,
