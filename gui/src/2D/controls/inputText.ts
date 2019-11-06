@@ -9,6 +9,7 @@ import { IFocusableControl } from "../advancedDynamicTexture";
 import { ValueAndUnit } from "../valueAndUnit";
 import { VirtualKeyboard } from "./virtualKeyboard";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { Measure } from '../measure';
 
 /**
  * Class used to create input text control
@@ -797,7 +798,7 @@ export class InputText extends Control implements IFocusableControl {
         this.text = this._text.slice(0, insertPosition) + data + this._text.slice(insertPosition);
     }
 
-    public _draw(context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
         context.save();
 
         this._applyStates(context);
