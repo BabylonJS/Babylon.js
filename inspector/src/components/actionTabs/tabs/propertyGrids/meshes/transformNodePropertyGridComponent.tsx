@@ -12,6 +12,7 @@ import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent"
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
+import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 
 interface ITransformNodePropertyGridComponentProps {
     globalState: GlobalState;
@@ -41,7 +42,11 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
                     {
                         transformNode.parent &&
                         <TextLineComponent label="Parent" value={transformNode.parent.name} onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(transformNode.parent)}/>
-                    }                      
+                    }        
+                    <ButtonLineComponent label="Dispose" onClick={() => {
+                        transformNode.dispose();
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                    }} />              
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="TRANSFORMATIONS">
                     <Vector3LineComponent label="Position" target={transformNode} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
