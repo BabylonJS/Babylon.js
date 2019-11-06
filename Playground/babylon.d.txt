@@ -65649,7 +65649,7 @@ declare module BABYLON.GUI {
         protected _getTypeName(): string;
         protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         private _drawText;
-        /** @hidden */private _draw(context: CanvasRenderingContext2D): void;
+        /** @hidden */private _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         protected _applyStates(context: CanvasRenderingContext2D): void;
         protected _breakLines(refWidth: number, context: CanvasRenderingContext2D): object[];
         protected _parseLine(line: string | undefined, context: CanvasRenderingContext2D): object;
@@ -65964,7 +65964,7 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        /** @hidden */private _draw(context: CanvasRenderingContext2D): void;
+        /** @hidden */private _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         /** @hidden */private _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
         /**
          * Utility function to easily create a checkbox with a header
@@ -66203,7 +66203,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         private _onCutText;
         /** @hidden */
-        private _onPasteText;private _draw(context: CanvasRenderingContext2D): void;private _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;private _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;private _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        private _onPasteText;private _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;private _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;private _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;private _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
         protected _beforeRenderText(text: string): string;
         dispose(): void;
     }
@@ -66583,7 +66583,7 @@ declare module BABYLON.GUI {
         lineWidth: number;
         horizontalAlignment: number;
         verticalAlignment: number;
-        protected _getTypeName(): string;private _draw(context: CanvasRenderingContext2D): void;
+        protected _getTypeName(): string;private _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;private _measure(): void;
         protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         dispose(): void;
@@ -66713,7 +66713,7 @@ declare module BABYLON.GUI {
          * @param name defines the control name
          */
         constructor(name?: string | undefined);
-        protected _getTypeName(): string;private _draw(context: CanvasRenderingContext2D): void;
+        protected _getTypeName(): string;private _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
     }
 }
 declare module BABYLON.GUI {
@@ -67060,7 +67060,7 @@ declare module BABYLON.GUI {
          * Creates a new GridDisplayRectangle
          * @param name defines the control name
          */
-        constructor(name?: string | undefined);private _draw(context: CanvasRenderingContext2D): void;
+        constructor(name?: string | undefined);private _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         protected _getTypeName(): string;
     }
 }
@@ -67092,7 +67092,7 @@ declare module BABYLON.GUI {
          * @param name defines the control name
          */
         constructor(name?: string | undefined);
-        protected _getTypeName(): string;private _draw(context: CanvasRenderingContext2D): void;
+        protected _getTypeName(): string;private _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
     }
 }
 declare module BABYLON.GUI {

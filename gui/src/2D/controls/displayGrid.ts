@@ -1,5 +1,7 @@
 import { Control } from "./control";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { Nullable } from 'babylonjs/types';
+import { Measure } from '../measure';
 
 /** Class used to render a grid  */
 export class DisplayGrid extends Control {
@@ -146,7 +148,7 @@ export class DisplayGrid extends Control {
         super(name);
     }
 
-    public _draw(context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
         context.save();
 
         this._applyStates(context);
