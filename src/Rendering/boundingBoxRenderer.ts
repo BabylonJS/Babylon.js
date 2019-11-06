@@ -180,6 +180,9 @@ export class BoundingBoxRenderer implements ISceneComponent {
                 uniforms: ["world", "viewProjection", "color"]
             });
 
+        this._colorShader.reservedDataStore = {
+            hidden: true
+        };
         var engine = this.scene.getEngine();
         var boxdata = VertexData.CreateBox({ size: 1.0 });
         this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, <FloatArray>boxdata.positions, VertexBuffer.PositionKind, false);
