@@ -2195,9 +2195,11 @@ export class WebGPUEngine extends Engine {
 
         // TODO WEBGPU. Optimize buffer reusability and types as more are now allowed.
         for (let i = 0; i < vertexInputs.vertexBuffers.length; i++) {
-            renderPass.setVertexBuffer(vertexInputs.vertexStartSlot + i, vertexInputs.vertexBuffers[i], vertexInputs.vertexOffsets[i]);
+            const buf = vertexInputs.vertexBuffers[i];
+            if (buf) {
+                renderPass.setVertexBuffer(vertexInputs.vertexStartSlot + i, vertexInputs.vertexBuffers[i], vertexInputs.vertexOffsets[i]);
+            }
         }
-        // renderPass.setVertexBuffer(vertexInputs.vertexStartSlot, vertexInputs.vertexBuffers, vertexInputs.vertexOffsets);
     }
 
     private _setRenderBindGroups(bindGroups: GPUBindGroup[]): void {
