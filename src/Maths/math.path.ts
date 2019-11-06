@@ -632,14 +632,15 @@ export class Path3D {
             // normals and binormals
             // http://www.cs.cmu.edu/afs/andrew/scs/cs/15-462/web/old/asst2camera.html
             curTang = this._tangents[i];
-            prevNor = this._normals[i - 1];
             prevBinor = this._binormals[i - 1];
             this._normals[i] = Vector3.Cross(prevBinor, curTang);
-            if (this._normals[i].length() === 0) {
-                this._normals[i] = prevNor;
-            }
             if (!this._raw) {
-                this._normals[i].normalize();
+                if (this._normals[i].length() === 0) {
+                    prevNor = this._normals[i - 1];
+                    this._normals[i] = prevNor.clone();
+                } else {
+                    this._normals[i].normalize();
+                }
             }
             this._binormals[i] = Vector3.Cross(curTang, this._normals[i]);
             if (!this._raw) {
