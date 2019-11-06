@@ -995,12 +995,15 @@ export class AssetsManager {
 
         if (this._waitingTasksCount === 0) {
             try {
+
+                var currentTasks = this._tasks.slice();
+
                 if (this.onFinish) {
-                    this.onFinish(this._tasks);
+                    // Calling onFinish with immutable array of tasks
+                    this.onFinish(currentTasks);
                 }
 
                 // Let's remove successfull tasks
-                var currentTasks = this._tasks.slice();
                 for (var task of currentTasks) {
                     if (task.taskState === AssetTaskState.DONE) {
                         let index = this._tasks.indexOf(task);

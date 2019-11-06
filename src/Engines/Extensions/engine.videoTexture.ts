@@ -1,6 +1,7 @@
 import { ThinEngine } from "../../Engines/thinEngine";
 import { InternalTexture } from '../../Materials/Textures/internalTexture';
 import { Nullable } from '../../types';
+import { CanvasGenerator } from '../../Misc/canvasGenerator';
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -37,7 +38,7 @@ ThinEngine.prototype.updateVideoTexture = function(texture: Nullable<InternalTex
         // Copy video through the current working canvas if video texture is not supported
         if (!this._videoTextureSupported) {
             if (!texture._workingCanvas) {
-                texture._workingCanvas = document.createElement("canvas");
+                texture._workingCanvas = CanvasGenerator.CreateCanvas(texture.width, texture.height);
                 let context = texture._workingCanvas.getContext("2d");
 
                 if (!context) {

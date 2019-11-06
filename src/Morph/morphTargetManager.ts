@@ -162,6 +162,24 @@ export class MorphTargetManager {
     }
 
     /**
+     * Clone the current manager
+     * @returns a new MorphTargetManager
+     */
+    public clone(): MorphTargetManager {
+        let copy = new MorphTargetManager(this._scene);
+
+        for (var target of this._targets) {
+            copy.addTarget(target.clone());
+        }
+
+        copy.enableNormalMorphing = this.enableNormalMorphing;
+        copy.enableTangentMorphing = this.enableTangentMorphing;
+        copy.enableUVMorphing = this.enableUVMorphing;
+
+        return copy;
+    }
+
+    /**
      * Serializes the current manager into a Serialization object
      * @returns the serialized object
      */

@@ -5,6 +5,7 @@ import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { _TypeStore } from '../../../Misc/typeStore';
 import { Scene } from '../../../scene';
+import { InputBlock } from './Input/inputBlock';
 
 /**
  * Block used to transform a vector (2, 3 or 4) with a matrix. It will generate a Vector4
@@ -30,6 +31,16 @@ export class TransformBlock extends NodeMaterialBlock {
         this.registerInput("vector", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerInput("transform", NodeMaterialBlockConnectionPointTypes.Matrix);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector4);
+
+        this._inputs[0].onConnectionObservable.add((other) => {
+            if (other.ownerBlock.isInput) {
+                let otherAsInput = other.ownerBlock as InputBlock;
+
+                if (otherAsInput.name === "normal") {
+                    this.complementW = 0;
+                }
+            }
+        });
     }
 
     /**
@@ -74,6 +85,7 @@ export class TransformBlock extends NodeMaterialBlock {
                     state.compilationString += this._declareOutput(output, state) + ` = ${transform.associatedVariableName} * vec4(${vector.associatedVariableName}, ${this._writeFloat(this.complementZ)}, ${this._writeFloat(this.complementW)});\r\n`;
                     break;
                 case NodeMaterialBlockConnectionPointTypes.Vector3:
+                case NodeMaterialBlockConnectionPointTypes.Color3:
                     state.compilationString += this._declareOutput(output, state) + ` = ${transform.associatedVariableName} * vec4(${vector.associatedVariableName}, ${this._writeFloat(this.complementW)});\r\n`;
                     break;
                 default:

@@ -4,7 +4,6 @@ import { Observable } from 'babylonjs/Misc/observable';
 import { DefaultNodeModel } from './components/diagram/defaultNodeModel';
 import { LogEntry } from './components/log/logComponent';
 import { NodeModel } from 'storm-react-diagrams';
-import { INodeLocationInfo } from './nodeLocationInfo';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { PreviewMeshType } from './components/preview/previewMeshType';
 import { DataStorage } from './dataStorage';
@@ -16,12 +15,13 @@ export class GlobalState {
     hostDocument: HTMLDocument;
     onSelectionChangedObservable = new Observable<Nullable<DefaultNodeModel>>();
     onRebuildRequiredObservable = new Observable<void>();
-    onResetRequiredObservable = new Observable<Nullable<INodeLocationInfo[]>>();
+    onResetRequiredObservable = new Observable<void>();
     onUpdateRequiredObservable = new Observable<void>();
     onZoomToFitRequiredObservable = new Observable<void>();
     onReOrganizedRequiredObservable = new Observable<void>();
     onLogRequiredObservable = new Observable<LogEntry>();
     onErrorMessageDialogRequiredObservable = new Observable<string>();
+    onIsLoadingChanged = new Observable<boolean>();
     onPreviewCommandActivated = new Observable<void>();
     onLightUpdated = new Observable<void>();
     onPreviewBackgroundChanged = new Observable<void>();
@@ -38,6 +38,8 @@ export class GlobalState {
     blockKeyboardEvents = false;
     hemisphericLight: boolean;
     directionalLight0: boolean;
+    directionalLight1: boolean;
+    controlCamera: boolean;    
     
     customSave?: {label: string, action: (data: string) => Promise<void>};
 
@@ -46,7 +48,9 @@ export class GlobalState {
         this.backFaceCulling = DataStorage.ReadBoolean("BackFaceCulling", true);
         this.depthPrePass = DataStorage.ReadBoolean("DepthPrePass", false);
         this.hemisphericLight = DataStorage.ReadBoolean("HemisphericLight", true);
-        this.directionalLight0 = DataStorage.ReadBoolean("DirectionalLight0", true);
+        this.directionalLight0 = DataStorage.ReadBoolean("DirectionalLight0", false);
+        this.directionalLight1 = DataStorage.ReadBoolean("DirectionalLight1", false);
+        this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
 
         let r = DataStorage.ReadNumber("BackgroundColorR", 0.37);
         let g = DataStorage.ReadNumber("BackgroundColorG", 0.37);

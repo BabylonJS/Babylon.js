@@ -84,6 +84,7 @@ class _InternalAbstractMeshDataInfo {
     public _onlyForInstances = false;
     public _isActiveIntermediate = false;
     public _onlyForInstancesIntermediate = false;
+    public _actAsRegularMesh = false;
 }
 
 /**
