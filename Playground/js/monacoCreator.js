@@ -58,27 +58,8 @@ class MonacoCreator {
                 if (xhr.status === 200) {
                     require.config({ paths: { 'vs': 'node_modules/monaco-editor/min/vs' } });
                     require(['vs/editor/editor.main'], function () {
-                        const typescript = monaco.languages.typescript;
-
-                        if (this.monacoMode === "javascript") {
-                            typescript.javascriptDefaults.setCompilerOptions({
-                                noLib: false,
-                                allowNonTsExtensions: true // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
-                            });
-
-                            typescript.javascriptDefaults.addExtraLib(xhr.responseText, 'babylon.d.ts');
-                        } else {
-                            typescript.typescriptDefaults.setCompilerOptions({
-                                module: typescript.ModuleKind.AMD,
-                                target: typescript.ScriptTarget.ES6,
-                                noLib: false,
-                                noResolve: true,
-                                suppressOutputPathCheck: true,
-
-                                allowNonTsExtensions: true // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
-                            });
-                            typescript.typescriptDefaults.addExtraLib(xhr.responseText, 'babylon.d.ts');
-                        }
+                        this.setupMonacoCompilationPipeline(xhr.responseText);
+                        this.setupMonacoColorProvider();
 
                         this.parent.main.run();
                     }.bind(this));
@@ -88,38 +69,31 @@ class MonacoCreator {
         xhr.send(null);
     };
 
-    /**
-     * Function to (re)create the editor
-     */
-    createMonacoEditor() {
-        var oldCode = "";
-        if (this.jsEditor) {
-            oldCode = this.jsEditor.getValue();
-            this.jsEditor.dispose();
+    setupMonacoCompilationPipeline(libContent) {
+        const typescript = monaco.languages.typescript;
+
+        if (this.monacoMode === "javascript") {
+            typescript.javascriptDefaults.setCompilerOptions({
+                noLib: false,
+                allowNonTsExtensions: true // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
+            });
+
+            typescript.javascriptDefaults.addExtraLib(libContent, 'babylon.d.ts');
+        } else {
+            typescript.typescriptDefaults.setCompilerOptions({
+                module: typescript.ModuleKind.AMD,
+                target: typescript.ScriptTarget.ES6,
+                noLib: false,
+                noResolve: true,
+                suppressOutputPathCheck: true,
+
+                allowNonTsExtensions: true // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
+            });
+            typescript.typescriptDefaults.addExtraLib(libContent, 'babylon.d.ts');
         }
+    }
 
-        var editorOptions = {
-            value: "",
-            language: this.monacoMode,
-            lineNumbers: true,
-            tabSize: "auto",
-            insertSpaces: "auto",
-            roundedSelection: true,
-            automaticLayout: true,
-            scrollBeyondLastLine: false,
-            readOnly: false,
-            theme: this.parent.settingsPG.vsTheme,
-            contextmenu: false,
-            folding: true,
-            showFoldingControls: "always",
-            renderIndentGuides: true,
-            minimap: {
-                enabled: true
-            }
-        };
-        editorOptions.minimap.enabled = document.getElementById("minimapToggle1280").classList.contains('checked');
-        this.jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
-
+    setupMonacoColorProvider() {
         monaco.languages.registerColorProvider(this.monacoMode, {
             provideColorPresentations: (model, colorInfo) => {
                 const color = colorInfo.color;
@@ -161,6 +135,39 @@ class MonacoCreator {
                 }));
             }
         });
+    }
+
+    /**
+     * Function to (re)create the editor
+     */
+    createMonacoEditor() {
+        var oldCode = "";
+        if (this.jsEditor) {
+            oldCode = this.jsEditor.getValue();
+            this.jsEditor.dispose();
+        }
+
+        var editorOptions = {
+            value: "",
+            language: this.monacoMode,
+            lineNumbers: true,
+            tabSize: "auto",
+            insertSpaces: "auto",
+            roundedSelection: true,
+            automaticLayout: true,
+            scrollBeyondLastLine: false,
+            readOnly: false,
+            theme: this.parent.settingsPG.vsTheme,
+            contextmenu: false,
+            folding: true,
+            showFoldingControls: "always",
+            renderIndentGuides: true,
+            minimap: {
+                enabled: true
+            }
+        };
+        editorOptions.minimap.enabled = document.getElementById("minimapToggle1280").classList.contains('checked');
+        this.jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
 
         this.jsEditor.setValue(oldCode);
         this.jsEditor.onKeyUp(function () {
