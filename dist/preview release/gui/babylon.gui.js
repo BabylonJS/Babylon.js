@@ -1751,7 +1751,7 @@ var Checkbox = /** @class */ (function (_super) {
         return "Checkbox";
     };
     /** @hidden */
-    Checkbox.prototype._draw = function (context) {
+    Checkbox.prototype._draw = function (context, invalidatedRectangle) {
         context.save();
         this._applyStates(context);
         var actualWidth = this._currentMeasure.width - this._thickness;
@@ -5665,7 +5665,7 @@ var DisplayGrid = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
-    DisplayGrid.prototype._draw = function (context) {
+    DisplayGrid.prototype._draw = function (context, invalidatedRectangle) {
         context.save();
         this._applyStates(context);
         if (this._isEnabled) {
@@ -7955,7 +7955,7 @@ var InputText = /** @class */ (function (_super) {
         var insertPosition = this._text.length - this._cursorOffset;
         this.text = this._text.slice(0, insertPosition) + data + this._text.slice(insertPosition);
     };
-    InputText.prototype._draw = function (context) {
+    InputText.prototype._draw = function (context, invalidatedRectangle) {
         var _this = this;
         context.save();
         this._applyStates(context);
@@ -8609,7 +8609,7 @@ var MultiLine = /** @class */ (function (_super) {
     MultiLine.prototype._getTypeName = function () {
         return "MultiLine";
     };
-    MultiLine.prototype._draw = function (context) {
+    MultiLine.prototype._draw = function (context, invalidatedRectangle) {
         context.save();
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
             context.shadowColor = this.shadowColor;
@@ -10587,7 +10587,7 @@ var ImageBasedSlider = /** @class */ (function (_super) {
     ImageBasedSlider.prototype._getTypeName = function () {
         return "ImageBasedSlider";
     };
-    ImageBasedSlider.prototype._draw = function (context) {
+    ImageBasedSlider.prototype._draw = function (context, invalidatedRectangle) {
         context.save();
         this._applyStates(context);
         this._prepareRenderingData("rectangle");
@@ -10896,7 +10896,7 @@ var Slider = /** @class */ (function (_super) {
     Slider.prototype._getTypeName = function () {
         return "Slider";
     };
-    Slider.prototype._draw = function (context) {
+    Slider.prototype._draw = function (context, invalidatedRectangle) {
         context.save();
         this._applyStates(context);
         this._prepareRenderingData(this.isThumbCircle ? "circle" : "rectangle");
@@ -11639,7 +11639,7 @@ var TextBlock = /** @class */ (function (_super) {
         context.fillText(text, this._currentMeasure.left + x, y);
     };
     /** @hidden */
-    TextBlock.prototype._draw = function (context) {
+    TextBlock.prototype._draw = function (context, invalidatedRectangle) {
         context.save();
         this._applyStates(context);
         // Render lines
