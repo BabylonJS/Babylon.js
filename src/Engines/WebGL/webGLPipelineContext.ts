@@ -226,46 +226,6 @@ export class WebGLPipelineContext implements IPipelineContext {
     }
 
     /**
-     * Sets an float array on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    public setFloatArray(uniformName: string, array: Float32Array): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setFloatArray(this._uniforms[uniformName], array);
-    }
-
-    /**
-     * Sets an float array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    public setFloatArray2(uniformName: string, array: Float32Array): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setFloatArray2(this._uniforms[uniformName], array);
-    }
-
-    /**
-     * Sets an float array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    public setFloatArray3(uniformName: string, array: Float32Array): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setFloatArray3(this._uniforms[uniformName], array);
-    }
-
-    /**
-     * Sets an float array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    public setFloatArray4(uniformName: string, array: Float32Array): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setFloatArray4(this._uniforms[uniformName], array);
-    }
-
-    /**
      * Sets an array on a uniform variable.
      * @param uniformName Name of the variable.
      * @param array array to be set.
@@ -366,22 +326,6 @@ export class WebGLPipelineContext implements IPipelineContext {
         this._valueCache[uniformName] = value;
 
         this.engine.setFloat(this._uniforms[uniformName], value);
-    }
-
-    /**
-     * Sets a boolean on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param bool value to be set.
-     */
-    public setBool(uniformName: string, bool: boolean): void {
-        var cache = this._valueCache[uniformName];
-        if (cache !== undefined && cache === bool) {
-            return;
-        }
-
-        this._valueCache[uniformName] = bool;
-
-        this.engine.setBool(this._uniforms[uniformName], bool ? 1 : 0);
     }
 
     /**
@@ -487,7 +431,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      */
     public setDirectColor4(uniformName: string, color4: IColor4Like): void {
         if (this._cacheFloat4(uniformName, color4.r, color4.g, color4.b, color4.a)) {
-            this.engine.setDirectColor4(this._uniforms[uniformName], color4);
+            this.engine.setFloat4(this._uniforms[uniformName], color4.r, color4.g, color4.b, color4.a);
         }
     }
 }

@@ -4,7 +4,6 @@ import { Scene } from "../scene";
 import { Color4 } from "../Maths/math";
 import { Scalar } from "../Maths/math.scalar";
 import { Engine } from "../Engines/engine";
-import { EngineCapabilities } from "../Engines/engineCapabilities";
 import { InstancingAttributeInfo } from "../Engines/instancingAttributeInfo";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
@@ -2399,18 +2398,6 @@ export class WebGPUEngine extends Engine {
     public setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void {
     }
 
-    public setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): void {
-    }
-
-    public setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): void {
-    }
-
-    public setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): void {
-    }
-
-    public setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): void {
-    }
-
     public setArray(uniform: WebGLUniformLocation, array: number[]): void {
     }
 
@@ -2439,9 +2426,6 @@ export class WebGPUEngine extends Engine {
     }
 
     public setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void {
-    }
-
-    public setBool(uniform: WebGLUniformLocation, bool: number): void {
     }
 
     public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void {

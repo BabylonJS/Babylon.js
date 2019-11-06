@@ -60,60 +60,32 @@ export interface IPipelineContext {
     setIntArray4(uniformName: string, array: Int32Array): void;
 
     /**
-     * Sets an float array on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    setFloatArray(uniformName: string, array: Float32Array): void;
-
-    /**
-     * Sets an float array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    setFloatArray2(uniformName: string, array: Float32Array): void;
-
-    /**
-     * Sets an float array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    setFloatArray3(uniformName: string, array: Float32Array): void;
-
-    /**
-     * Sets an float array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    setFloatArray4(uniformName: string, array: Float32Array): void;
-
-    /**
      * Sets an array on a uniform variable.
      * @param uniformName Name of the variable.
      * @param array array to be set.
      */
-    setArray(uniformName: string, array: number[]): void;
+    setArray(uniformName: string, array: number[] | Float32Array): void;
 
     /**
      * Sets an array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
      * @param uniformName Name of the variable.
      * @param array array to be set.
      */
-    setArray2(uniformName: string, array: number[]): void;
+    setArray2(uniformName: string, array: number[] | Float32Array): void;
 
     /**
      * Sets an array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
      * @param uniformName Name of the variable.
      * @param array array to be set.
      */
-    setArray3(uniformName: string, array: number[]): void;
+    setArray3(uniformName: string, array: number[] | Float32Array): void;
 
     /**
      * Sets an array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
      * @param uniformName Name of the variable.
      * @param array array to be set.
      */
-    setArray4(uniformName: string, array: number[]): void;
+    setArray4(uniformName: string, array: number[] | Float32Array): void;
 
     /**
      * Sets matrices on a uniform variable.
@@ -149,13 +121,6 @@ export interface IPipelineContext {
      * @param value value to be set.
      */
     setFloat(uniformName: string, value: number): void;
-
-    /**
-     * Sets a boolean on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param bool value to be set.
-     */
-    setBool(uniformName: string, bool: boolean): void;
 
     /**
      * Sets a Vector2 on a uniform variable.
