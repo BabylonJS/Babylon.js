@@ -12,14 +12,13 @@ import { DataBuffer } from '../Meshes/dataBuffer';
 import { Tools } from "../Misc/tools";
 import { Observer } from "../Misc/observable";
 import { EnvironmentTextureTools, EnvironmentTextureSpecularInfoV1 } from "../Misc/environmentTextureTools";
-import { Matrix, Viewport, Color3 } from "../Maths/math";
-import { IColor4Like } from '../Maths/math.like';
+// import { Matrix, Viewport, Color3 } from "../Maths/math";
 import { Scene } from "../scene";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import { IPipelineContext } from './IPipelineContext';
 import { WebRequest } from '../Misc/webRequest';
 import { NativeShaderProcessor } from './Native/nativeShaderProcessor';
-import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from '../Maths/math.like';
+import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IViewportLike } from '../Maths/math.like';
 import { Logger } from "../Misc/logger";
 import { Constants } from './constants';
 import { ThinEngine } from './thinEngine';
@@ -266,7 +265,7 @@ class NativePipelineContext implements IPipelineContext {
 
         this._valueCache[uniformName] = value;
 
-        this.engine.setInt(this._uniforms[uniformName], value);
+        this.engine.setInt(this._uniforms[uniformName]!, value);
     }
 
     /**
@@ -465,7 +464,7 @@ class NativePipelineContext implements IPipelineContext {
 
         this._valueCache[uniformName] = bool;
 
-        this.engine.setBool(this._uniforms[uniformName]!, bool ? 1 : 0);
+        this.engine.setInt(this._uniforms[uniformName]!, bool ? 1 : 0);
     }
 
     /**
@@ -571,7 +570,7 @@ class NativePipelineContext implements IPipelineContext {
      */
     public setDirectColor4(uniformName: string, color4: IColor4Like): void {
         if (this._cacheFloat4(uniformName, color4.r, color4.g, color4.b, color4.a)) {
-            this.engine.setDirectColor4(this._uniforms[uniformName], color4);
+            this.engine.setColor4(this._uniforms[uniformName]!, color4, color4.a);
         }
     }
 }
@@ -958,7 +957,7 @@ export class NativeEngine extends Engine {
         this._currentEffect = null;
     }
 
-    public setMatrix(uniform: WebGLUniformLocation, matrix: Matrix): void {
+    public setMatrix(uniform: WebGLUniformLocation, matrix: IMatrixLike): void {
         if (!uniform) {
             return;
         }
@@ -982,7 +981,7 @@ export class NativeEngine extends Engine {
         return this._native.getRenderHeight();
     }
 
-    public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
+    public setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
         this._cachedViewport = viewport;
         this._native.setViewPort(viewport.x, viewport.y, viewport.width, viewport.height);
     }
@@ -1248,7 +1247,7 @@ export class NativeEngine extends Engine {
         this._native.setFloat4(uniform, x, y, z, w);
     }
 
-    public setColor3(uniform: WebGLUniformLocation, color3: Color3): void {
+    public setColor3(uniform: WebGLUniformLocation, color3: IColor3Like): void {
         if (!uniform) {
             return;
         }
@@ -1256,7 +1255,7 @@ export class NativeEngine extends Engine {
         this._native.setFloat3(uniform, color3.r, color3.g, color3.b);
     }
 
-    public setColor4(uniform: WebGLUniformLocation, color3: Color3, alpha: number): void {
+    public setColor4(uniform: WebGLUniformLocation, color3: IColor3Like, alpha: number): void {
         if (!uniform) {
             return;
         }

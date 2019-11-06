@@ -816,7 +816,7 @@ export class Effect implements IDisposable {
      * @returns this effect.
      */
     public setFloatArray(uniformName: string, array: Float32Array): Effect {
-        this._pipelineContext!.setFloatArray(uniformName, array);
+        this._pipelineContext!.setArray(uniformName, array);
         return this;
     }
 
@@ -827,7 +827,7 @@ export class Effect implements IDisposable {
      * @returns this effect.
      */
     public setFloatArray2(uniformName: string, array: Float32Array): Effect {
-        this._pipelineContext!.setFloatArray2(uniformName, array);
+        this._pipelineContext!.setArray2(uniformName, array);
         return this;
     }
 
@@ -838,7 +838,7 @@ export class Effect implements IDisposable {
      * @returns this effect.
      */
     public setFloatArray3(uniformName: string, array: Float32Array): Effect {
-        this._pipelineContext!.setFloatArray3(uniformName, array);
+        this._pipelineContext!.setArray3(uniformName, array);
         return this;
     }
 
@@ -849,7 +849,7 @@ export class Effect implements IDisposable {
      * @returns this effect.
      */
     public setFloatArray4(uniformName: string, array: Float32Array): Effect {
-        this._pipelineContext!.setFloatArray4(uniformName, array);
+        this._pipelineContext!.setArray4(uniformName, array);
         return this;
     }
 
@@ -959,7 +959,7 @@ export class Effect implements IDisposable {
      * @returns this effect.
      */
     public setBool(uniformName: string, bool: boolean): Effect {
-        this._pipelineContext!.setBool(uniformName, bool);
+        this._pipelineContext!.setInt(uniformName, bool ? 1 : 0);
         return this;
     }
 
