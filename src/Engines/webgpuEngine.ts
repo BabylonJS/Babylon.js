@@ -324,7 +324,7 @@ export class WebGPUEngine extends Engine {
             textureLOD: true,
             drawBuffersExtension: true,
             depthTextureExtension: true,
-            vertexArrayObject: true,
+            vertexArrayObject: false,
             instancedArrays: true,
             canUseTimestampForTimerQuery: false,
             blendMinMax: false,
