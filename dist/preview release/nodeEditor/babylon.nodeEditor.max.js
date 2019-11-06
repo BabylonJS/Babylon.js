@@ -5563,7 +5563,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "#nodeList {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  width: 100%;\n  overflow: hidden; }\n  #nodeList .panes {\n    overflow: hidden; }\n    #nodeList .panes .pane {\n      color: white;\n      overflow: hidden;\n      height: 100%;\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none; }\n      #nodeList .panes .pane .filter {\n        display: flex;\n        align-items: stretch; }\n        #nodeList .panes .pane .filter input {\n          width: 100%;\n          margin: 10px 10px 5px 10px;\n          display: block;\n          border: none;\n          padding: 0;\n          border-bottom: solid 1px #337ab7;\n          background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n          background-position: -1000px 0;\n          background-size: 1000px 100%;\n          background-repeat: no-repeat;\n          color: white; }\n        #nodeList .panes .pane .filter input:focus {\n          box-shadow: none;\n          outline: none;\n          background-position: 0 0; }\n      #nodeList .panes .pane .list-container {\n        overflow-x: hidden;\n        overflow-y: auto;\n        height: calc(100% - 32px); }\n        #nodeList .panes .pane .list-container .underline {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n        #nodeList .panes .pane .list-container .draggableLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch;\n          background: #222222;\n          cursor: grab;\n          text-align: center;\n          margin: 0;\n          box-sizing: border-box; }\n          #nodeList .panes .pane .list-container .draggableLine:hover {\n            background: #337ab7;\n            color: white; }\n        #nodeList .panes .pane .list-container .buttonLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch; }\n          #nodeList .panes .pane .list-container .buttonLine button {\n            background: #222222;\n            margin: 5px 10px 5px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9; }\n          #nodeList .panes .pane .list-container .buttonLine button:hover {\n            opacity: 1.0; }\n          #nodeList .panes .pane .list-container .buttonLine button:active {\n            background: #282828; }\n          #nodeList .panes .pane .list-container .buttonLine button:focus {\n            outline: 0px; }\n        #nodeList .panes .pane .list-container .paneContainer {\n          margin-top: 3px;\n          display: grid;\n          grid-template-rows: 100%;\n          grid-template-columns: 100%; }\n          #nodeList .panes .pane .list-container .paneContainer .paneContainer-content {\n            grid-row: 1;\n            grid-column: 1; }\n            #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header {\n              display: grid;\n              grid-template-columns: 1fr auto;\n              background: #555555;\n              height: 30px;\n              padding-right: 5px;\n              cursor: pointer; }\n              #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .title {\n                border-left: 3px solid transparent;\n                padding-left: 5px;\n                grid-column: 1;\n                display: flex;\n                align-items: center; }\n              #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .collapse {\n                grid-column: 2;\n                display: flex;\n                align-items: center;\n                justify-items: center;\n                transform-origin: center; }\n                #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .collapse.closed {\n                  transform: rotate(180deg); }\n            #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n              border-bottom: 1px solid rgba(255, 255, 255, 0.3); }\n", ""]);
+exports.push([module.i, "#nodeList {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  width: 100%;\n  overflow: hidden; }\n  #nodeList .panes {\n    overflow: hidden; }\n    #nodeList .panes .pane {\n      color: white;\n      overflow: hidden;\n      height: 100%;\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none; }\n      #nodeList .panes .pane .filter {\n        display: flex;\n        align-items: stretch; }\n        #nodeList .panes .pane .filter input {\n          width: 100%;\n          margin: 10px 10px 5px 10px;\n          display: block;\n          border: none;\n          padding: 0;\n          border-bottom: solid 1px #337ab7;\n          background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n          background-position: -1000px 0;\n          background-size: 1000px 100%;\n          background-repeat: no-repeat;\n          color: white; }\n        #nodeList .panes .pane .filter input:focus {\n          box-shadow: none;\n          outline: none;\n          background-position: 0 0; }\n        #nodeList .panes .pane .filter input::placeholder {\n          color: gray; }\n      #nodeList .panes .pane .list-container {\n        overflow-x: hidden;\n        overflow-y: auto;\n        height: calc(100% - 32px); }\n        #nodeList .panes .pane .list-container .underline {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n        #nodeList .panes .pane .list-container .draggableLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch;\n          background: #222222;\n          cursor: grab;\n          text-align: center;\n          margin: 0;\n          box-sizing: border-box; }\n          #nodeList .panes .pane .list-container .draggableLine:hover {\n            background: #337ab7;\n            color: white; }\n        #nodeList .panes .pane .list-container .buttonLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch; }\n          #nodeList .panes .pane .list-container .buttonLine button {\n            background: #222222;\n            margin: 5px 10px 5px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9; }\n          #nodeList .panes .pane .list-container .buttonLine button:hover {\n            opacity: 1.0; }\n          #nodeList .panes .pane .list-container .buttonLine button:active {\n            background: #282828; }\n          #nodeList .panes .pane .list-container .buttonLine button:focus {\n            outline: 0px; }\n        #nodeList .panes .pane .list-container .paneContainer {\n          margin-top: 3px;\n          display: grid;\n          grid-template-rows: 100%;\n          grid-template-columns: 100%; }\n          #nodeList .panes .pane .list-container .paneContainer .paneContainer-content {\n            grid-row: 1;\n            grid-column: 1; }\n            #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header {\n              display: grid;\n              grid-template-columns: 1fr auto;\n              background: #555555;\n              height: 30px;\n              padding-right: 5px;\n              cursor: pointer; }\n              #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .title {\n                border-left: 3px solid transparent;\n                padding-left: 5px;\n                grid-column: 1;\n                display: flex;\n                align-items: center; }\n              #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .collapse {\n                grid-column: 2;\n                display: flex;\n                align-items: center;\n                justify-items: center;\n                transform-origin: center; }\n                #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .collapse.closed {\n                  transform: rotate(180deg); }\n            #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n              border-bottom: 1px solid rgba(255, 255, 255, 0.3); }\n", ""]);
 
 // exports
 
@@ -5601,7 +5601,7 @@ exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader
 
 
 // module
-exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n\n#nodeList {\n  grid-row: 1 / span 2;\n  grid-column: 1; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 4;\n  cursor: ew-resize; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 3;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  display: grid;\n  grid-template-rows: 1fr 30px auto 30px;\n  grid-template-columns: 100%;\n  height: 100%;\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: 30px;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n  .right-panel #preview-mesh-bar {\n    grid-row: 2;\n    grid-column: 1;\n    display: flex;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-mesh-bar #file-picker {\n      display: none; }\n    .right-panel #preview-mesh-bar #file-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview-config-bar {\n    grid-row: 4;\n    grid-column: 1;\n    display: flex;\n    flex-direction: row-reverse;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-config-bar .button {\n      width: 60px; }\n    .right-panel #preview-config-bar #color-picker {\n      display: none; }\n    .right-panel #preview-config-bar #color-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview {\n    border-top: 1px solid #555555;\n    grid-row: 3;\n    grid-column: 1;\n    width: 100%;\n    display: grid;\n    outline: 0 !important; }\n    .right-panel #preview #preview-canvas {\n      width: 100%;\n      height: 100%;\n      outline: 0 !important; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 3; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
+exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n\n#nodeList {\n  grid-row: 1 / span 2;\n  grid-column: 1; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 4;\n  cursor: ew-resize; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 3;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  display: grid;\n  grid-template-rows: 1fr 30px auto 30px;\n  grid-template-columns: 100%;\n  height: 100%;\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: 30px;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n  .right-panel #preview-mesh-bar {\n    grid-row: 2;\n    grid-column: 1;\n    display: flex;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-mesh-bar #file-picker {\n      display: none; }\n    .right-panel #preview-mesh-bar #file-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview-config-bar {\n    grid-row: 4;\n    grid-column: 1;\n    display: flex;\n    flex-direction: row-reverse;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-config-bar .button {\n      width: 60px; }\n    .right-panel #preview-config-bar #color-picker {\n      display: none; }\n    .right-panel #preview-config-bar #color-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview {\n    border-top: 1px solid #555555;\n    grid-row: 3;\n    grid-column: 1;\n    width: 100%;\n    display: grid;\n    outline: 0 !important; }\n    .right-panel #preview #preview-canvas {\n      width: 100%;\n      height: 100%;\n      outline: 0 !important;\n      grid-row: 1;\n      grid-column: 1; }\n    .right-panel #preview .waitPanel {\n      width: 100%;\n      height: 100%;\n      grid-row: 1;\n      grid-column: 1;\n      color: white;\n      font-size: 18px;\n      align-content: center;\n      justify-content: center;\n      background: rgba(20, 20, 20, 0.95);\n      z-index: 10;\n      display: grid;\n      transition: opacity 250ms; }\n      .right-panel #preview .waitPanel.hidden {\n        opacity: 0;\n        pointer-events: none; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 3; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
 
 // exports
 
@@ -68363,11 +68363,18 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
     BlockTools.GetBlockFromString = function (data, scene, nodeMaterial) {
         switch (data) {
+            case "WorleyNoise3DBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["WorleyNoise3DBlock"]("WorleyNoise3D");
+            case "SimplexPerlin3DBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["SimplexPerlin3DBlock"]("SimplexPerlin3D");
             case "BonesBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["BonesBlock"]("Bones");
             case "InstancesBlock":
@@ -68466,6 +68473,8 @@ var BlockTools = /** @class */ (function () {
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ArcTan2Block"]("ArcTan2");
             case "GradientBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["GradientBlock"]("Gradient");
+            case "FrontFacingBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["FrontFacingBlock"]("Front facing");
             case "CosBlock": {
                 var cosBlock = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlock"]("Cos");
                 cosBlock.operation = babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["TrigonometryBlockOperations"].Cos;
@@ -68782,7 +68791,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ClampNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ClampNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ClampNodeFactory, _super);
     function ClampNodeFactory(globalState) {
         var _this = _super.call(this, "clamp") || this;
         _this._globalState = globalState;
@@ -68821,7 +68830,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ClampNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ClampNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ClampNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -68869,7 +68878,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ClampPropertyTabComponentProps = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ClampPropertyTabComponentProps, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ClampPropertyTabComponentProps, _super);
     function ClampPropertyTabComponentProps(props) {
         return _super.call(this, props) || this;
     }
@@ -68913,7 +68922,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ClampNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ClampNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ClampNodeWidget, _super);
     function ClampNodeWidget(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {};
@@ -68971,7 +68980,7 @@ __webpack_require__.r(__webpack_exports__);
  * Generic node model which stores information about a node editor block
  */
 var DefaultNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DefaultNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DefaultNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -69086,7 +69095,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var GenericNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GenericNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GenericNodeFactory, _super);
     /**
      * Constructs a GenericNodeFactory
      */
@@ -69147,7 +69156,7 @@ __webpack_require__.r(__webpack_exports__);
  * Generic node model which stores information about a node editor block
  */
 var GenericNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GenericNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GenericNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -69195,7 +69204,10 @@ var GenericNodeModel = /** @class */ (function (_super) {
             this.block.getClassName() === "PerturbNormalBlock" &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "PROPERTIES" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Invert X axis", target: this.block, propertyName: "invertX", onValueChanged: function () { return globalState.onRebuildRequiredObservable.notifyObservers(); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Invert Y axis", target: this.block, propertyName: "invertY", onValueChanged: function () { return globalState.onRebuildRequiredObservable.notifyObservers(); } }))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Invert Y axis", target: this.block, propertyName: "invertY", onValueChanged: function () { return globalState.onRebuildRequiredObservable.notifyObservers(); } })),
+            this.block.getClassName() === "WorleyNoise3DBlock" &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "PROPERTIES" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Use Manhattan Distance", target: this.block, propertyName: "manhattanDistance", onValueChanged: function () { return globalState.onRebuildRequiredObservable.notifyObservers(); } }))));
     };
     return GenericNodeModel;
 }(_defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__["DefaultNodeModel"]));
@@ -69225,7 +69237,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var GenericNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GenericNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GenericNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -69287,7 +69299,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var GradientNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GradientNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GradientNodeFactory, _super);
     function GradientNodeFactory(globalState) {
         var _this = _super.call(this, "gradient") || this;
         _this._globalState = globalState;
@@ -69326,7 +69338,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var GradientNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GradientNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GradientNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -69380,7 +69392,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var GradientPropertyTabComponentProps = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GradientPropertyTabComponentProps, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GradientPropertyTabComponentProps, _super);
     function GradientPropertyTabComponentProps(props) {
         return _super.call(this, props) || this;
     }
@@ -69442,7 +69454,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var GradientNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GradientNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GradientNodeWidget, _super);
     function GradientNodeWidget(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {};
@@ -69506,7 +69518,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var GradientStepComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GradientStepComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GradientStepComponent, _super);
     function GradientStepComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { gradient: props.step.step };
@@ -69567,7 +69579,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var InputNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputNodeFactory, _super);
     /**
      * Constructs a GenericNodeFactory
      */
@@ -69622,7 +69634,7 @@ __webpack_require__.r(__webpack_exports__);
  * Generic node model which stores information about a node editor block
  */
 var InputNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -69695,7 +69707,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var InputPropertyTabComponentProps = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputPropertyTabComponentProps, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputPropertyTabComponentProps, _super);
     function InputPropertyTabComponentProps(props) {
         return _super.call(this, props) || this;
     }
@@ -69898,7 +69910,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var InputNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -70040,7 +70052,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var LightNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightNodeFactory, _super);
     /**
      * Constructs a LightNodeFactory
      */
@@ -70095,7 +70107,7 @@ __webpack_require__.r(__webpack_exports__);
  * Light node model which stores information about a node editor block
  */
 var LightNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -70150,7 +70162,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var LightNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -70208,7 +70220,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var LightPropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightPropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightPropertyTabComponent, _super);
     function LightPropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -70268,7 +70280,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var LightInformationNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightInformationNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightInformationNodeFactory, _super);
     /**
      * Constructs a LightNodeFactory
      */
@@ -70320,7 +70332,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var LightInformationNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightInformationNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightInformationNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -70375,7 +70387,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var LightInformationNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightInformationNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightInformationNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -70433,7 +70445,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var LightInformationPropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LightInformationPropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LightInformationPropertyTabComponent, _super);
     function LightInformationPropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -70484,7 +70496,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var AdvancedLinkFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AdvancedLinkFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AdvancedLinkFactory, _super);
     function AdvancedLinkFactory() {
         var _this = _super.call(this) || this;
         _this.type = "advanced";
@@ -70523,7 +70535,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var AdvancedLinkModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AdvancedLinkModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AdvancedLinkModel, _super);
     function AdvancedLinkModel() {
         return _super.call(this, "advanced") || this;
     }
@@ -70555,7 +70567,7 @@ __webpack_require__.r(__webpack_exports__);
  * Port model
  */
 var DefaultPortModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DefaultPortModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DefaultPortModel, _super);
     function DefaultPortModel(name, type) {
         if (type === void 0) { type = "input"; }
         var _this = _super.call(this, name, "generic") || this;
@@ -70636,7 +70648,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var DefaultPortWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DefaultPortWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DefaultPortWidget, _super);
     function DefaultPortWidget(props) {
         var _this = _super.call(this, "srd-port", props) || this;
         _this.state = {
@@ -70649,7 +70661,7 @@ var DefaultPortWidget = /** @class */ (function (_super) {
     };
     DefaultPortWidget.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"]({ style: this.props.style }, this.getProps(), { onMouseEnter: function () {
+        return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({ style: this.props.style }, this.getProps(), { onMouseEnter: function () {
                 _this.setState({ selected: true });
             }, onMouseLeave: function () {
                 _this.setState({ selected: false });
@@ -70784,7 +70796,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var ReflectionTextureNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ReflectionTextureNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ReflectionTextureNodeFactory, _super);
     /**
      * Constructs a TextureNodeFactory
      */
@@ -70839,7 +70851,7 @@ __webpack_require__.r(__webpack_exports__);
  * Texture node model which stores information about a node editor block
  */
 var ReflectionTextureNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ReflectionTextureNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ReflectionTextureNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -70896,7 +70908,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var ReflectionTextureNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ReflectionTextureNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ReflectionTextureNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -70958,7 +70970,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var RemapNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RemapNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RemapNodeFactory, _super);
     /**
      * Constructs a GenericNodeFactory
      */
@@ -71013,7 +71025,7 @@ __webpack_require__.r(__webpack_exports__);
  * Generic node model which stores information about a node editor block
  */
 var RemapNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RemapNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RemapNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -71061,7 +71073,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var RemapPropertyTabComponentProps = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RemapPropertyTabComponentProps, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RemapPropertyTabComponentProps, _super);
     function RemapPropertyTabComponentProps(props) {
         return _super.call(this, props) || this;
     }
@@ -71108,7 +71120,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var RemapNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RemapNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RemapNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -71189,7 +71201,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var TextureNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextureNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextureNodeFactory, _super);
     /**
      * Constructs a TextureNodeFactory
      */
@@ -71244,7 +71256,7 @@ __webpack_require__.r(__webpack_exports__);
  * Texture node model which stores information about a node editor block
  */
 var TextureNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextureNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextureNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -71301,7 +71313,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var TextureNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextureNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextureNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -71378,7 +71390,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TexturePropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TexturePropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TexturePropertyTabComponent, _super);
     function TexturePropertyTabComponent(props) {
         var _this = _super.call(this, props) || this;
         var texture = _this.props.node.texture;
@@ -71412,15 +71424,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         }
         this.updateAfterTextureLoad();
     };
-    /**
-     * Replaces the texture of the node
-     * @param file the file of the texture to use
-     */
-    TexturePropertyTabComponent.prototype.replaceTexture = function (file) {
-        var _this = this;
-        if (!this.props.node) {
-            return;
-        }
+    TexturePropertyTabComponent.prototype._prepareTexture = function () {
         var texture = this.props.node.texture;
         if (texture && texture.isCube !== this.state.loadAsCubeTexture) {
             texture.dispose();
@@ -71438,6 +71442,18 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
                 texture.coordinatesMode = babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"].CUBIC_MODE;
             }
         }
+    };
+    /**
+     * Replaces the texture of the node
+     * @param file the file of the texture to use
+     */
+    TexturePropertyTabComponent.prototype.replaceTexture = function (file) {
+        var _this = this;
+        if (!this.props.node) {
+            return;
+        }
+        this._prepareTexture();
+        var texture = this.props.node.texture;
         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ReadFile(file, function (data) {
             var blob = new Blob([data], { type: "octet/stream" });
             var reader = new FileReader();
@@ -71457,13 +71473,8 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
     };
     TexturePropertyTabComponent.prototype.replaceTextureWithUrl = function (url) {
         var _this = this;
+        this._prepareTexture();
         var texture = this.props.node.texture;
-        if (!texture) {
-            this.props.node.texture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Texture"](url, this.props.globalState.nodeMaterial.getScene(), false, false, undefined, function () {
-                _this.updateAfterTextureLoad();
-            });
-            return;
-        }
         if (texture.isCube || this.props.node instanceof _reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_11__["ReflectionTextureNodeModel"]) {
             var extension = undefined;
             if (url.toLowerCase().indexOf(".dds") > 0) {
@@ -71482,7 +71493,7 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
         var _this = this;
         var url = "";
         var texture = this.props.node.texture;
-        if (texture && texture.name && texture.name.substring(0, 4) === "http") {
+        if (texture && texture.name && texture.name.substring(0, 4) !== "data") {
             url = texture.name;
         }
         url = url.replace(/\?nocache=\d+/, "");
@@ -71622,7 +71633,7 @@ __webpack_require__.r(__webpack_exports__);
  * Node factory which creates editor nodes
  */
 var TrigonometryNodeFactory = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TrigonometryNodeFactory, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TrigonometryNodeFactory, _super);
     /**
      * Constructs a GenericNodeFactory
      */
@@ -71677,7 +71688,7 @@ __webpack_require__.r(__webpack_exports__);
  * Generic node model which stores information about a node editor block
  */
 var TrigonometryNodeModel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TrigonometryNodeModel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TrigonometryNodeModel, _super);
     /**
      * Constructs the node model
      */
@@ -71728,7 +71739,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TrigonometryPropertyTabComponentProps = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TrigonometryPropertyTabComponentProps, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TrigonometryPropertyTabComponentProps, _super);
     function TrigonometryPropertyTabComponentProps(props) {
         return _super.call(this, props) || this;
     }
@@ -71800,7 +71811,7 @@ __webpack_require__.r(__webpack_exports__);
  * Used to display a node block for the node editor
  */
 var TrigonometryNodeWidget = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TrigonometryNodeWidget, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TrigonometryNodeWidget, _super);
     /**
      * Creates a GenericNodeWidget
      * @param props
@@ -71895,7 +71906,7 @@ var LogEntry = /** @class */ (function () {
 }());
 
 var LogComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LogComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LogComponent, _super);
     function LogComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { logs: [] };
@@ -71983,7 +71994,7 @@ __webpack_require__.r(__webpack_exports__);
 
 __webpack_require__(/*! ./nodeList.scss */ "./components/nodeList/nodeList.scss");
 var NodeListComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](NodeListComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(NodeListComponent, _super);
     function NodeListComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { filter: "" };
@@ -72003,11 +72014,12 @@ var NodeListComponent = /** @class */ (function (_super) {
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock"],
             Interpolation: ["LerpBlock", "SmoothStepBlock", "NLerpBlock"],
             Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock"],
-            Mesh_Attributes: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock"],
+            Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "FrontFacingBlock"],
+            Noises: ["SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Blocks: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["StepBlock", "RoundBlock", "CeilingBlock", "FloorBlock"],
-            Scene_Attributes: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock", "PerturbNormalBlock"],
+            Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock", "PerturbNormalBlock"],
             Trigonometry: ["CosBlock", "SinBlock", "AbsBlock", "ExpBlock", "Exp2Block", "SqrtBlock", "PowBlock", "LogBlock", "ArcCosBlock", "ArcSinBlock", "TanBlock", "ArcTanBlock", "FractBlock", "SignBlock", "ArcTan2Block", "DegreesToRadiansBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "TriangleWaveBlock", "SquareWaveBlock"],
             Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock"],
         };
@@ -72062,9 +72074,12 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var PreviewAreaComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PreviewAreaComponent, _super);
-    function PreviewAreaComponent() {
-        return _super !== null && _super.apply(this, arguments) || this;
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PreviewAreaComponent, _super);
+    function PreviewAreaComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = { isLoading: true };
+        _this.props.globalState.onIsLoadingChanged.add(function (state) { return _this.setState({ isLoading: state }); });
+        return _this;
     }
     PreviewAreaComponent.prototype.changeAnimation = function () {
         this.props.globalState.rotatePreview = !this.props.globalState.rotatePreview;
@@ -72095,7 +72110,8 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview", style: { height: this.props.width + "px" } },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "preview-canvas" })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { id: "preview-canvas" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "waitPanel" + (this.state.isLoading ? "" : " hidden") }, "Please wait, loading...")),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-config-bar" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn-table animation", onClick: function () { return _this.changeAnimation(); }, className: "button" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: this.props.globalState.rotatePreview ? _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faStop"] : _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faPlay"] })),
@@ -72120,6 +72136,13 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
                         _this.props.globalState.onLightUpdated.notifyObservers();
                         _this.forceUpdate();
                     }, className: "button" + (this.props.globalState.directionalLight0 ? " selected" : "") },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faLocationArrow"] })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Turn on/off direction light #1", onClick: function () {
+                        _this.props.globalState.directionalLight1 = !_this.props.globalState.directionalLight1;
+                        _dataStorage__WEBPACK_IMPORTED_MODULE_5__["DataStorage"].StoreBoolean("DirectionalLight1", _this.props.globalState.directionalLight1);
+                        _this.props.globalState.onLightUpdated.notifyObservers();
+                        _this.forceUpdate();
+                    }, className: "button" + (this.props.globalState.directionalLight1 ? " selected" : "") },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faLocationArrow"] })))));
     };
     return PreviewAreaComponent;
@@ -72143,6 +72166,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _previewMeshType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./previewMeshType */ "./components/preview/previewMeshType.ts");
 /* harmony import */ var _log_logComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../log/logComponent */ "./components/log/logComponent.tsx");
+
+
+
 
 
 
@@ -72194,11 +72220,45 @@ var PreviewManager = /** @class */ (function () {
         this._camera.wheelPrecision = 20;
         this._camera.minZ = 0.1;
         this._camera.attachControl(targetCanvas, false);
+        this._lightParent = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["TransformNode"]("LightParent", this._scene);
         this._refreshPreviewMesh();
         this._engine.runRenderLoop(function () {
             _this._engine.resize();
             _this._scene.render();
         });
+        //     let cameraLastRotation = 0;
+        var lastOffsetX = undefined;
+        //   const lightRotationParallaxSpeed = 0.5;        
+        var lightRotationSpeed = 0.01;
+        this._scene.onPointerObservable.add(function (evt) {
+            if (_this._globalState.controlCamera) {
+                return;
+            }
+            if (evt.type === babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERUP) {
+                lastOffsetX = undefined;
+                return;
+            }
+            if (evt.event.buttons !== 1) {
+                return;
+            }
+            if (lastOffsetX === undefined) {
+                lastOffsetX = evt.event.offsetX;
+            }
+            var rotateLighting = (lastOffsetX - evt.event.offsetX) * lightRotationSpeed;
+            _this._lightParent.rotation.y += rotateLighting;
+            lastOffsetX = evt.event.offsetX;
+        });
+        // this._scene.registerBeforeRender(() => {
+        //     if (this._camera.alpha === cameraLastRotation) {
+        //         return;
+        //     }
+        //     if (!this._globalState.controlCamera) {
+        //         return;
+        //     }
+        //     var rotateLighting = (this._camera.alpha - cameraLastRotation) * lightRotationParallaxSpeed; 
+        //     this._lightParent.rotate(Vector3.Up(), rotateLighting);
+        //     cameraLastRotation = this._camera.alpha;
+        // });
     }
     PreviewManager.prototype._handleAnimations = function () {
         this._scene.stopAllAnimations();
@@ -72228,11 +72288,21 @@ var PreviewManager = /** @class */ (function () {
             new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["HemisphericLight"]("Hemispheric light", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0, 1, 0), this._scene);
         }
         if (this._globalState.directionalLight0) {
-            new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["DirectionalLight"]("Directional light #0", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](-1, -1, 0), this._scene);
+            var dir0 = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["DirectionalLight"]("Directional light #0", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0.841626576496605, -0.2193391004130599, -0.49351298337996535), this._scene);
+            dir0.intensity = 0.9;
+            dir0.diffuse = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"](0.9294117647058824, 0.9725490196078431, 0.996078431372549);
+            dir0.specular = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"](0.9294117647058824, 0.9725490196078431, 0.996078431372549);
+            dir0.parent = this._lightParent;
+        }
+        if (this._globalState.directionalLight1) {
+            var dir1 = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["DirectionalLight"]("Directional light #1", new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Vector3"](-0.9519937437504213, -0.24389315636999764, -0.1849974057546125), this._scene);
+            dir1.intensity = 1.2;
+            dir1.specular = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"](0.9803921568627451, 0.9529411764705882, 0.7725490196078432);
+            dir1.diffuse = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"](0.9803921568627451, 0.9529411764705882, 0.7725490196078432);
+            dir1.parent = this._lightParent;
         }
     };
     PreviewManager.prototype._prepareMeshes = function () {
-        this._engine.hideLoadingUI();
         this._prepareLights();
         // Framing
         this._camera.useFramingBehavior = true;
@@ -72273,7 +72343,7 @@ var PreviewManager = /** @class */ (function () {
             }
             this._engine.releaseEffects();
             babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].ShowLoadingScreen = false;
-            this._engine.displayLoadingUI();
+            this._globalState.onIsLoadingChanged.notifyObservers(true);
             switch (this._globalState.previewMeshType) {
                 case _previewMeshType__WEBPACK_IMPORTED_MODULE_1__["PreviewMeshType"].Box:
                     babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].AppendAsync("https://models.babylonjs.com/", "roundedCube.glb", this._scene).then(function () {
@@ -72336,8 +72406,10 @@ var PreviewManager = /** @class */ (function () {
                         _this._material.dispose();
                     }
                     _this._material = tempMaterial_1;
+                    _this._globalState.onIsLoadingChanged.notifyObservers(false);
                 }).catch(function (reason) {
                     _this._globalState.onLogRequiredObservable.notifyObservers(new _log_logComponent__WEBPACK_IMPORTED_MODULE_2__["LogEntry"]("Shader compilation error:\r\n" + reason, true));
+                    _this._globalState.onIsLoadingChanged.notifyObservers(false);
                 });
             }
             else {
@@ -72399,7 +72471,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var PreviewMeshControlComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PreviewMeshControlComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PreviewMeshControlComponent, _super);
     function PreviewMeshControlComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -72492,7 +72564,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Color3PropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Color3PropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Color3PropertyTabComponent, _super);
     function Color3PropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -72527,7 +72599,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var FloatPropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FloatPropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FloatPropertyTabComponent, _super);
     function FloatPropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -72562,7 +72634,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var MatrixPropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MatrixPropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MatrixPropertyTabComponent, _super);
     function MatrixPropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -72599,7 +72671,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector2PropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector2PropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector2PropertyTabComponent, _super);
     function Vector2PropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -72634,7 +72706,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector3PropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector3PropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector3PropertyTabComponent, _super);
     function Vector3PropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -72669,7 +72741,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector4PropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector4PropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector4PropertyTabComponent, _super);
     function Vector4PropertyTabComponent() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -72750,7 +72822,7 @@ __webpack_require__.r(__webpack_exports__);
 
 __webpack_require__(/*! ./propertyTab.scss */ "./components/propertyTab/propertyTab.scss");
 var PropertyTabComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PropertyTabComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PropertyTabComponent, _super);
     function PropertyTabComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { currentNode: null };
@@ -72799,7 +72871,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Reset to default", onClick: function () {
                             _this.props.globalState.nodeMaterial.setToDefault();
-                            _this.props.globalState.onResetRequiredObservable.notifyObservers(null);
+                            _this.props.globalState.onResetRequiredObservable.notifyObservers();
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "UI" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Zoom to fit", onClick: function () {
@@ -72947,6 +73019,7 @@ var GlobalState = /** @class */ (function () {
         this.onReOrganizedRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onLogRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onErrorMessageDialogRequiredObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onIsLoadingChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onPreviewCommandActivated = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onLightUpdated = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onPreviewBackgroundChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -72958,7 +73031,9 @@ var GlobalState = /** @class */ (function () {
         this.backFaceCulling = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("BackFaceCulling", true);
         this.depthPrePass = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("DepthPrePass", false);
         this.hemisphericLight = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("HemisphericLight", true);
-        this.directionalLight0 = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("DirectionalLight0", true);
+        this.directionalLight0 = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("DirectionalLight0", false);
+        this.directionalLight1 = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("DirectionalLight1", false);
+        this.controlCamera = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean("ControlCamera", true);
         var r = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("BackgroundColorR", 0.37);
         var g = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("BackgroundColorG", 0.37);
         var b = _dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadNumber("BackgroundColorB", 0.37);
@@ -72989,16 +73064,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _components_diagram_generic_genericNodeFactory__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/diagram/generic/genericNodeFactory */ "./components/diagram/generic/genericNodeFactory.tsx");
 /* harmony import */ var _components_diagram_generic_genericNodeModel__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/diagram/generic/genericNodeModel */ "./components/diagram/generic/genericNodeModel.tsx");
-/* harmony import */ var _components_nodeList_nodeListComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/nodeList/nodeListComponent */ "./components/nodeList/nodeListComponent.tsx");
-/* harmony import */ var _components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/propertyTab/propertyTabComponent */ "./components/propertyTab/propertyTabComponent.tsx");
-/* harmony import */ var _portal__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./portal */ "./portal.tsx");
-/* harmony import */ var _components_diagram_texture_textureNodeFactory__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./components/diagram/texture/textureNodeFactory */ "./components/diagram/texture/textureNodeFactory.tsx");
-/* harmony import */ var _components_diagram_texture_textureNodeModel__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./components/diagram/texture/textureNodeModel */ "./components/diagram/texture/textureNodeModel.tsx");
-/* harmony import */ var _components_diagram_port_defaultPortModel__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./components/diagram/port/defaultPortModel */ "./components/diagram/port/defaultPortModel.ts");
-/* harmony import */ var _components_diagram_input_inputNodeFactory__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./components/diagram/input/inputNodeFactory */ "./components/diagram/input/inputNodeFactory.tsx");
-/* harmony import */ var _components_diagram_input_inputNodeModel__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./components/diagram/input/inputNodeModel */ "./components/diagram/input/inputNodeModel.tsx");
-/* harmony import */ var babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/Dual/textureBlock */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__);
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _components_nodeList_nodeListComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/nodeList/nodeListComponent */ "./components/nodeList/nodeListComponent.tsx");
+/* harmony import */ var _components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./components/propertyTab/propertyTabComponent */ "./components/propertyTab/propertyTabComponent.tsx");
+/* harmony import */ var _portal__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./portal */ "./portal.tsx");
+/* harmony import */ var _components_diagram_texture_textureNodeFactory__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./components/diagram/texture/textureNodeFactory */ "./components/diagram/texture/textureNodeFactory.tsx");
+/* harmony import */ var _components_diagram_texture_textureNodeModel__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./components/diagram/texture/textureNodeModel */ "./components/diagram/texture/textureNodeModel.tsx");
+/* harmony import */ var _components_diagram_port_defaultPortModel__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./components/diagram/port/defaultPortModel */ "./components/diagram/port/defaultPortModel.ts");
+/* harmony import */ var _components_diagram_input_inputNodeFactory__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./components/diagram/input/inputNodeFactory */ "./components/diagram/input/inputNodeFactory.tsx");
+/* harmony import */ var _components_diagram_input_inputNodeModel__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./components/diagram/input/inputNodeModel */ "./components/diagram/input/inputNodeModel.tsx");
 /* harmony import */ var _components_log_logComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./components/log/logComponent */ "./components/log/logComponent.tsx");
 /* harmony import */ var _components_diagram_light_lightNodeModel__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./components/diagram/light/lightNodeModel */ "./components/diagram/light/lightNodeModel.tsx");
 /* harmony import */ var _components_diagram_light_lightNodeFactory__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./components/diagram/light/lightNodeFactory */ "./components/diagram/light/lightNodeFactory.tsx");
@@ -73068,6 +73143,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 __webpack_require__(/*! storm-react-diagrams/dist/style.min.css */ "../../node_modules/storm-react-diagrams/dist/style.min.css");
 __webpack_require__(/*! ./main.scss */ "./main.scss");
 __webpack_require__(/*! ./components/diagram/diagram.scss */ "./components/diagram/diagram.scss");
@@ -73078,7 +73154,7 @@ var NodeCreationOptions = /** @class */ (function () {
 }());
 
 var GraphEditor = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](GraphEditor, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GraphEditor, _super);
     function GraphEditor(props) {
         var _this = _super.call(this, props) || this;
         _this.NodeWidth = 100;
@@ -73089,15 +73165,17 @@ var GraphEditor = /** @class */ (function (_super) {
         _this._copiedNodes = [];
         _this._mouseLocationX = 0;
         _this._mouseLocationY = 0;
+        _this._altKeyIsPressed = false;
+        _this._oldY = -1;
         /** @hidden */
         _this._toAdd = [];
         // setup the diagram engine
         _this._engine = new storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramEngine"]();
         _this._engine.installDefaultFactories();
         _this._engine.registerNodeFactory(new _components_diagram_generic_genericNodeFactory__WEBPACK_IMPORTED_MODULE_3__["GenericNodeFactory"](_this.props.globalState));
-        _this._engine.registerNodeFactory(new _components_diagram_texture_textureNodeFactory__WEBPACK_IMPORTED_MODULE_8__["TextureNodeFactory"](_this.props.globalState));
+        _this._engine.registerNodeFactory(new _components_diagram_texture_textureNodeFactory__WEBPACK_IMPORTED_MODULE_9__["TextureNodeFactory"](_this.props.globalState));
         _this._engine.registerNodeFactory(new _components_diagram_light_lightNodeFactory__WEBPACK_IMPORTED_MODULE_16__["LightNodeFactory"](_this.props.globalState));
-        _this._engine.registerNodeFactory(new _components_diagram_input_inputNodeFactory__WEBPACK_IMPORTED_MODULE_11__["InputNodeFactory"](_this.props.globalState));
+        _this._engine.registerNodeFactory(new _components_diagram_input_inputNodeFactory__WEBPACK_IMPORTED_MODULE_12__["InputNodeFactory"](_this.props.globalState));
         _this._engine.registerNodeFactory(new _components_diagram_remap_remapNodeFactory__WEBPACK_IMPORTED_MODULE_21__["RemapNodeFactory"](_this.props.globalState));
         _this._engine.registerNodeFactory(new _components_diagram_trigonometry_trigonometryNodeFactory__WEBPACK_IMPORTED_MODULE_26__["TrigonometryNodeFactory"](_this.props.globalState));
         _this._engine.registerNodeFactory(new _components_diagram_clamp_clampNodeFactory__WEBPACK_IMPORTED_MODULE_28__["ClampNodeFactory"](_this.props.globalState));
@@ -73110,8 +73188,8 @@ var GraphEditor = /** @class */ (function (_super) {
                 _this.buildMaterial();
             }
         });
-        _this.props.globalState.onResetRequiredObservable.add(function (locations) {
-            _this.build(false, locations);
+        _this.props.globalState.onResetRequiredObservable.add(function () {
+            _this.build(false);
             if (_this.props.globalState.nodeMaterial) {
                 _this.buildMaterial();
             }
@@ -73129,6 +73207,7 @@ var GraphEditor = /** @class */ (function (_super) {
             return _this._nodes.filter(function (n) { return n.block === block; })[0];
         };
         _this.props.globalState.hostDocument.addEventListener("keydown", function (evt) {
+            _this._altKeyIsPressed = evt.altKey;
             if (!evt.ctrlKey) {
                 return;
             }
@@ -73196,31 +73275,31 @@ var GraphEditor = /** @class */ (function (_super) {
         }
         // Create new node in the graph
         var newNode;
-        if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["TextureBlock"]) {
-            newNode = new _components_diagram_texture_textureNodeModel__WEBPACK_IMPORTED_MODULE_9__["TextureNodeModel"]();
+        if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__["TextureBlock"]) {
+            newNode = new _components_diagram_texture_textureNodeModel__WEBPACK_IMPORTED_MODULE_10__["TextureNodeModel"]();
         }
-        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["ReflectionTextureBlock"]) {
+        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__["ReflectionTextureBlock"]) {
             newNode = new _components_diagram_reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_36__["ReflectionTextureNodeModel"]();
         }
-        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["LightBlock"]) {
+        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__["LightBlock"]) {
             newNode = new _components_diagram_light_lightNodeModel__WEBPACK_IMPORTED_MODULE_15__["LightNodeModel"]();
         }
-        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["InputBlock"]) {
-            newNode = new _components_diagram_input_inputNodeModel__WEBPACK_IMPORTED_MODULE_12__["InputNodeModel"]();
+        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__["InputBlock"]) {
+            newNode = new _components_diagram_input_inputNodeModel__WEBPACK_IMPORTED_MODULE_13__["InputNodeModel"]();
         }
-        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["TrigonometryBlock"]) {
+        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__["TrigonometryBlock"]) {
             newNode = new _components_diagram_trigonometry_trigonometryNodeModel__WEBPACK_IMPORTED_MODULE_27__["TrigonometryNodeModel"]();
         }
-        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["RemapBlock"]) {
+        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__["RemapBlock"]) {
             newNode = new _components_diagram_remap_remapNodeModel__WEBPACK_IMPORTED_MODULE_22__["RemapNodeModel"]();
         }
-        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["ClampBlock"]) {
+        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__["ClampBlock"]) {
             newNode = new _components_diagram_clamp_clampNodeModel__WEBPACK_IMPORTED_MODULE_29__["ClampNodeModel"]();
         }
-        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["LightInformationBlock"]) {
+        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__["LightInformationBlock"]) {
             newNode = new _components_diagram_lightInformation_lightInformationNodeModel__WEBPACK_IMPORTED_MODULE_31__["LightInformationNodeModel"]();
         }
-        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["GradientBlock"]) {
+        else if (options.nodeMaterialBlock instanceof babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__["GradientBlock"]) {
             newNode = new _components_diagram_gradient_gradientNodeModel__WEBPACK_IMPORTED_MODULE_33__["GradientNodeModel"]();
         }
         else {
@@ -73238,11 +73317,13 @@ var GraphEditor = /** @class */ (function (_super) {
     };
     GraphEditor.prototype.addValueNode = function (type) {
         var nodeType = _blockTools__WEBPACK_IMPORTED_MODULE_19__["BlockTools"].GetConnectionNodeTypeFromString(type);
-        var newInputBlock = new babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["InputBlock"](type, undefined, nodeType);
+        var newInputBlock = new babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__["InputBlock"](type, undefined, nodeType);
         var localNode = this.createNodeFromObject({ type: type, nodeMaterialBlock: newInputBlock });
         return localNode;
     };
     GraphEditor.prototype.onWidgetKeyUp = function (evt) {
+        this._altKeyIsPressed = false;
+        this._oldY = -1;
         var widget = this.refs["test"];
         if (!widget || this.props.globalState.blockKeyboardEvents) {
             return;
@@ -73250,11 +73331,33 @@ var GraphEditor = /** @class */ (function (_super) {
         widget.onKeyUp(evt);
     };
     GraphEditor.prototype.componentDidMount = function () {
+        var _this = this;
         if (this.props.globalState.hostDocument) {
             var widget = this.refs["test"];
             widget.setState({ document: this.props.globalState.hostDocument });
             this._onWidgetKeyUpPointer = this.onWidgetKeyUp.bind(this);
             this.props.globalState.hostDocument.addEventListener("keyup", this._onWidgetKeyUpPointer, false);
+            var previousMouseMove_1 = widget.onMouseMove;
+            widget.onMouseMove = function (evt) {
+                if (_this._altKeyIsPressed && evt.buttons === 1) {
+                    if (_this._oldY < 0) {
+                        _this._oldY = evt.pageY;
+                    }
+                    var zoomDelta = (evt.pageY - _this._oldY) / 10;
+                    if (Math.abs(zoomDelta) > 5) {
+                        _this._engine.diagramModel.setZoomLevel(_this._engine.diagramModel.getZoomLevel() + zoomDelta);
+                        _this._engine.repaintCanvas();
+                        _this._oldY = evt.pageY;
+                    }
+                    return;
+                }
+                previousMouseMove_1(evt);
+            };
+            var previousMouseUp_1 = widget.onMouseUp;
+            widget.onMouseUp = function (evt) {
+                _this._oldY = -1;
+                previousMouseUp_1(evt);
+            };
             this._previewManager = new _components_preview_previewManager__WEBPACK_IMPORTED_MODULE_24__["PreviewManager"](this.props.globalState.hostDocument.getElementById("preview-canvas"), this.props.globalState);
         }
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
@@ -73313,10 +73416,10 @@ var GraphEditor = /** @class */ (function (_super) {
             }
         }
     };
-    GraphEditor.prototype.build = function (needToWait, locations) {
+    GraphEditor.prototype.build = function (needToWait) {
         var _this = this;
         if (needToWait === void 0) { needToWait = false; }
-        if (locations === void 0) { locations = null; }
+        var locations = this.props.globalState.nodeMaterial.editorData;
         // setup the diagram model
         this._model = new storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramModel"]();
         this._nodes = [];
@@ -73350,7 +73453,7 @@ var GraphEditor = /** @class */ (function (_super) {
                     // Link is deleted
                     _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     var sourcePort = e.link.sourcePort;
-                    var link = _components_diagram_port_defaultPortModel__WEBPACK_IMPORTED_MODULE_10__["DefaultPortModel"].SortInputOutput(sourcePort, e.link.targetPort);
+                    var link = _components_diagram_port_defaultPortModel__WEBPACK_IMPORTED_MODULE_11__["DefaultPortModel"].SortInputOutput(sourcePort, e.link.targetPort);
                     if (link) {
                         if (link.input.connection && link.output.connection) {
                             if (link.input.connection.connectedPoint) {
@@ -73366,7 +73469,7 @@ var GraphEditor = /** @class */ (function (_super) {
                         if (!e.link.targetPort && e.link.sourcePort && e.link.sourcePort.position === "input" && !e.link.sourcePort.connection.isConnected) {
                             // Drag from input port, we are going to build an input for it                            
                             var input_1 = e.link.sourcePort;
-                            if (input_1.connection.type == babylonjs_Materials_Node_Blocks_Dual_textureBlock__WEBPACK_IMPORTED_MODULE_13__["NodeMaterialBlockConnectionPointTypes"].AutoDetect) {
+                            if (input_1.connection.type == babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialBlockConnectionPointTypes"].AutoDetect) {
                                 return;
                             }
                             var nodeModel_1 = _this.addValueNode(_blockTools__WEBPACK_IMPORTED_MODULE_19__["BlockTools"].GetStringFromConnectionNodeType(input_1.connection.type));
@@ -73396,7 +73499,7 @@ var GraphEditor = /** @class */ (function (_super) {
                         },
                         targetPortChanged: function (evt) {
                             // Link is created with a target port
-                            var link = _components_diagram_port_defaultPortModel__WEBPACK_IMPORTED_MODULE_10__["DefaultPortModel"].SortInputOutput(e.link.sourcePort, e.link.targetPort);
+                            var link = _components_diagram_port_defaultPortModel__WEBPACK_IMPORTED_MODULE_11__["DefaultPortModel"].SortInputOutput(e.link.sourcePort, e.link.targetPort);
                             if (link) {
                                 if (link.output.connection && link.input.connection) {
                                     var currentBlock = link.input.connection.ownerBlock;
@@ -73411,7 +73514,8 @@ var GraphEditor = /** @class */ (function (_super) {
                                             other.remove();
                                         }
                                     }
-                                    if (link.output.connection.canConnectTo(link.input.connection)) {
+                                    var compatibilityState = link.output.connection.checkCompatibilityState(link.input.connection);
+                                    if (compatibilityState === babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialConnectionPointCompatibilityStates"].Compatible) {
                                         if (isFragmentOutput) {
                                             _this.applyFragmentOutputConstraints(link.input);
                                         }
@@ -73419,13 +73523,25 @@ var GraphEditor = /** @class */ (function (_super) {
                                     }
                                     else {
                                         evt.entity.remove();
-                                        _this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Cannot connect two different connection types");
+                                        var message = "";
+                                        switch (compatibilityState) {
+                                            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialConnectionPointCompatibilityStates"].TypeIncompatible:
+                                                message = "Cannot connect two different connection types";
+                                                break;
+                                            case babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__["NodeMaterialConnectionPointCompatibilityStates"].TargetIncompatible:
+                                                message = "Source block can only work in fragment shader whereas destination block is currently aimed for the vertex shader";
+                                                break;
+                                        }
+                                        _this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(message);
                                     }
                                     _this.forceUpdate();
                                 }
                                 if (_this.props.globalState.nodeMaterial) {
                                     _this.buildMaterial();
                                 }
+                            }
+                            else {
+                                e.link.remove();
                             }
                         }
                     });
@@ -73529,6 +73645,16 @@ var GraphEditor = /** @class */ (function (_super) {
         else {
             var block = _blockTools__WEBPACK_IMPORTED_MODULE_19__["BlockTools"].GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial);
             if (block) {
+                if (block.isUnique) {
+                    var className = block.getClassName();
+                    for (var _i = 0, _a = this._blocks; _i < _a.length; _i++) {
+                        var other = _a[_i];
+                        if (other !== block && other.getClassName() === className) {
+                            this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("You can only have one " + className + " per graph");
+                            return;
+                        }
+                    }
+                }
                 this._toAdd = [];
                 block.autoConfigure(this.props.globalState.nodeMaterial);
                 nodeModel = this.createNodeFromObject({ nodeMaterialBlock: block });
@@ -73566,7 +73692,7 @@ var GraphEditor = /** @class */ (function (_super) {
     };
     GraphEditor.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_portal__WEBPACK_IMPORTED_MODULE_7__["Portal"], { globalState: this.props.globalState },
+        return (react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_portal__WEBPACK_IMPORTED_MODULE_8__["Portal"], { globalState: this.props.globalState },
             react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "node-editor-graph-root", style: {
                     gridTemplateColumns: this.buildColumnLayout()
                 }, onMouseMove: function (evt) {
@@ -73578,7 +73704,7 @@ var GraphEditor = /** @class */ (function (_super) {
                     }
                     _this.props.globalState.blockKeyboardEvents = false;
                 } },
-                react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_nodeList_nodeListComponent__WEBPACK_IMPORTED_MODULE_5__["NodeListComponent"], { globalState: this.props.globalState }),
+                react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_nodeList_nodeListComponent__WEBPACK_IMPORTED_MODULE_6__["NodeListComponent"], { globalState: this.props.globalState }),
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "leftGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt); } }),
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { className: "diagram-container", onDrop: function (event) {
                         _this.emitNewBlock(event);
@@ -73588,7 +73714,7 @@ var GraphEditor = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_2__["createElement"](storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramWidget"], { className: "diagram", deleteKeys: [46], ref: "test", allowLooseLinks: false, inverseZoom: true, diagramEngine: this._engine, maxNumberPointsPerLink: 0 })),
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { id: "rightGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt, false); } }),
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"]("div", { className: "right-panel" },
-                    react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_6__["PropertyTabComponent"], { globalState: this.props.globalState }),
+                    react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_7__["PropertyTabComponent"], { globalState: this.props.globalState }),
                     react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_preview_previewMeshControlComponent__WEBPACK_IMPORTED_MODULE_25__["PreviewMeshControlComponent"], { globalState: this.props.globalState }),
                     react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_preview_previewAreaComponent__WEBPACK_IMPORTED_MODULE_32__["PreviewAreaComponent"], { globalState: this.props.globalState, width: this._rightWidth })),
                 react__WEBPACK_IMPORTED_MODULE_2__["createElement"](_components_log_logComponent__WEBPACK_IMPORTED_MODULE_14__["LogComponent"], { globalState: this.props.globalState })),
@@ -73649,7 +73775,7 @@ var GraphHelper = /** @class */ (function () {
                 width: node.width | 200,
                 height: node.height | 100
             };
-            output.push({ id: node.id, metadata: tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"]({}, size, { id: node.id }) });
+            output.push({ id: node.id, metadata: Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, size), { id: node.id }) });
         }
         return output;
     };
@@ -73846,7 +73972,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Portal = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Portal, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Portal, _super);
     function Portal() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -73899,17 +74025,9 @@ var SerializationTools = /** @class */ (function () {
         return JSON.stringify(serializationObject, undefined, 2);
     };
     SerializationTools.Deserialize = function (serializationObject, globalState) {
+        globalState.onIsLoadingChanged.notifyObservers(true);
         globalState.nodeMaterial.loadFromSerialization(serializationObject, "");
-        // Check for id mapping
-        if (serializationObject.locations && serializationObject.map) {
-            var map = serializationObject.map;
-            var locations = serializationObject.locations;
-            for (var _i = 0, locations_1 = locations; _i < locations_1.length; _i++) {
-                var location = locations_1[_i];
-                location.blockId = map[location.blockId];
-            }
-        }
-        globalState.onResetRequiredObservable.notifyObservers(serializationObject.locations);
+        globalState.onResetRequiredObservable.notifyObservers();
     };
     return SerializationTools;
 }());
@@ -73934,7 +74052,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var ButtonLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ButtonLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ButtonLineComponent, _super);
     function ButtonLineComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -73966,7 +74084,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var CheckBoxLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CheckBoxLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CheckBoxLineComponent, _super);
     function CheckBoxLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74056,7 +74174,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Color3LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Color3LineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Color3LineComponent, _super);
     function Color3LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74190,7 +74308,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var DraggableLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DraggableLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DraggableLineComponent, _super);
     function DraggableLineComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -74223,7 +74341,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var FileButtonLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FileButtonLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FileButtonLineComponent, _super);
     function FileButtonLineComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -74263,7 +74381,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var FloatLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FloatLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FloatLineComponent, _super);
     function FloatLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74356,7 +74474,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var LineContainerComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](LineContainerComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LineContainerComponent, _super);
     function LineContainerComponent(props) {
         var _this = _super.call(this, props) || this;
         var initialState = _dataStorage__WEBPACK_IMPORTED_MODULE_4__["DataStorage"].ReadBoolean(_this.props.title, !_this.props.closed);
@@ -74418,7 +74536,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var MatrixLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MatrixLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MatrixLineComponent, _super);
     function MatrixLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74551,7 +74669,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var MessageDialogComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MessageDialogComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MessageDialogComponent, _super);
     function MessageDialogComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { message: "", isError: false };
@@ -74594,7 +74712,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var NumericInputComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](NumericInputComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(NumericInputComponent, _super);
     function NumericInputComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74663,7 +74781,7 @@ var ListLineOption = /** @class */ (function () {
     return ListLineOption;
 }());
 var OptionsLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](OptionsLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(OptionsLineComponent, _super);
     function OptionsLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74833,7 +74951,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var SliderLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SliderLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SliderLineComponent, _super);
     function SliderLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -74934,7 +75052,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TextInputLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextInputLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextInputLineComponent, _super);
     function TextInputLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -75017,7 +75135,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TextLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextLineComponent, _super);
     function TextLineComponent(props) {
         return _super.call(this, props) || this;
     }
@@ -75068,7 +75186,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TextureLineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextureLineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextureLineComponent, _super);
     function TextureLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {
@@ -75239,7 +75357,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector2LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector2LineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector2LineComponent, _super);
     function Vector2LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -75334,7 +75452,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector3LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector3LineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector3LineComponent, _super);
     function Vector3LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
@@ -75435,7 +75553,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var Vector4LineComponent = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector4LineComponent, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector4LineComponent, _super);
     function Vector4LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;

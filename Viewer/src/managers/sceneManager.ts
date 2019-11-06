@@ -25,6 +25,7 @@ import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
 import { ShadowLight, IShadowLight } from 'babylonjs/Lights/shadowLight';
 import { CubeTexture } from 'babylonjs/Materials/Textures/cubeTexture';
 import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
+import { HemisphericLight } from 'babylonjs/Lights/hemisphericLight';
 import { Scalar } from 'babylonjs/Maths/math.scalar';
 import { SpotLight } from 'babylonjs/Lights/spotLight';
 import { PointLight } from 'babylonjs/Lights/pointLight';
@@ -665,7 +666,7 @@ export class SceneManager {
             this._engine.renderEvenInBackground = !!sceneConfig.renderInBackground;
         }
 
-        let canvas = this._engine.getRenderingCanvas();
+        let canvas = this._engine.getInputElement();
 
         if (canvas) {
             if (this.camera && sceneConfig.disableCameraControl) {
@@ -920,11 +921,9 @@ export class SceneManager {
                 camera.minZ = radius * 0.01;
                 camera.maxZ = radius * 1000;
                 camera.speed = radius * 0.2;
-                this.scene.activeCamera = camera;
-
-                let canvas = this.scene.getEngine().getRenderingCanvas();
+               this.scene.activeCamera = camera;
             }
-            let canvas = this.scene.getEngine().getRenderingCanvas();
+            let canvas = this.scene.getEngine().getInputElement();
             if (canvas) {
                 this.scene.activeCamera.attachControl(canvas);
             }
@@ -1209,7 +1208,7 @@ export class SceneManager {
 
         if (!lightKeys.length) {
             if (!this.scene.lights.length) {
-                this.scene.createDefaultLight(true);
+                new HemisphericLight("default light", Vector3.Up(), this.scene);
             }
         } else {
 

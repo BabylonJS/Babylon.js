@@ -142,7 +142,7 @@ Scene.prototype.createDefaultCamera = function(createArcRotateCamera = false, re
         camera.speed = radius * 0.2;
         this.activeCamera = camera;
 
-        let canvas = this.getEngine().getRenderingCanvas();
+        let canvas = this.getEngine().getInputElement();
         if (attachCameraControls && canvas) {
             camera.attachControl(canvas);
         }

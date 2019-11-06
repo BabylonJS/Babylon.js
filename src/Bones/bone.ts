@@ -91,7 +91,7 @@ export class Bone extends Node {
          */
         public name: string, skeleton: Skeleton, parentBone: Nullable<Bone> = null, localMatrix: Nullable<Matrix> = null,
         restPose: Nullable<Matrix> = null, baseMatrix: Nullable<Matrix> = null, index: Nullable<number> = null) {
-        super(name, skeleton.getScene(), false);
+        super(name, skeleton.getScene());
         this._skeleton = skeleton;
         this._localMatrix = localMatrix ? localMatrix.clone() : Matrix.Identity();
         this._restPose = restPose ? restPose : this._localMatrix.clone();
@@ -139,6 +139,14 @@ export class Bone extends Node {
      */
     public getChildren(): Array<Bone> {
         return this.children;
+    }
+
+    /**
+     * Gets the node index in matrix array generated for rendering
+     * @returns the node index
+     */
+    public getIndex(): number {
+        return this._index === null ? this.getSkeleton().bones.indexOf(this) : this._index;
     }
 
     /**

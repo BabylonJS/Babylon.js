@@ -455,7 +455,7 @@ __webpack_require__.r(__webpack_exports__);
  *  pp.refractionEnabled = true;
  */
 var OceanPostProcess = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](OceanPostProcess, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(OceanPostProcess, _super);
     /**
      * Instantiates a new Ocean Post Process.
      * @param name the name to give to the postprocess.

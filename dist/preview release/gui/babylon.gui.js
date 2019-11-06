@@ -534,7 +534,7 @@ __webpack_require__.r(__webpack_exports__);
 * @see http://doc.babylonjs.com/how_to/gui
 */
 var AdvancedDynamicTexture = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AdvancedDynamicTexture, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AdvancedDynamicTexture, _super);
     /**
    * Creates a new AdvancedDynamicTexture
    * @param name defines the name of the texture
@@ -632,7 +632,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         if (!scene || !_this._texture) {
             return _this;
         }
-        _this._rootCanvas = scene.getEngine().getRenderingCanvas();
+        _this._rootElement = scene.getEngine().getInputElement();
         _this._renderObserver = scene.onBeforeCameraRenderObservable.add(function (camera) { return _this._checkUpdate(camera); });
         _this._preKeyboardObserver = scene.onPreKeyboardObservable.add(function (info) {
             if (!_this._focusedControl) {
@@ -959,7 +959,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         if (!scene) {
             return;
         }
-        this._rootCanvas = null;
+        this._rootElement = null;
         scene.onBeforeCameraRenderObservable.remove(this._renderObserver);
         if (this._resizeObserver) {
             scene.getEngine().onResizeObservable.remove(this._resizeObserver);
@@ -1118,8 +1118,8 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
     };
     /** @hidden */
     AdvancedDynamicTexture.prototype._changeCursor = function (cursor) {
-        if (this._rootCanvas) {
-            this._rootCanvas.style.cursor = cursor;
+        if (this._rootElement) {
+            this._rootElement.style.cursor = cursor;
             this._cursorChanged = true;
         }
     };
@@ -1431,7 +1431,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to create 2D buttons
  */
 var Button = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Button, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Button, _super);
     /**
      * Creates a new Button
      * @param name defines the name of the button
@@ -1666,7 +1666,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to represent a 2D checkbox
  */
 var Checkbox = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Checkbox, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Checkbox, _super);
     /**
      * Creates a new CheckBox
      * @param name defines the control name
@@ -1854,7 +1854,7 @@ __webpack_require__.r(__webpack_exports__);
 
 /** Class used to create color pickers */
 var ColorPicker = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ColorPicker, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ColorPicker, _super);
     /**
      * Creates a new ColorPicker
      * @param name defines the control name
@@ -3237,7 +3237,7 @@ __webpack_require__.r(__webpack_exports__);
  * @see http://doc.babylonjs.com/how_to/gui#containers
  */
 var Container = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Container, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Container, _super);
     /**
      * Creates a new Container
      * @param name defines the name of the container
@@ -5516,7 +5516,7 @@ __webpack_require__.r(__webpack_exports__);
 
 /** Class used to render a grid  */
 var DisplayGrid = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](DisplayGrid, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DisplayGrid, _super);
     /**
      * Creates a new GridDisplayRectangle
      * @param name defines the control name
@@ -5750,7 +5750,7 @@ __webpack_require__.r(__webpack_exports__);
 
 /** Class used to create 2D ellipse containers */
 var Ellipse = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Ellipse, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Ellipse, _super);
     /**
      * Creates a new Ellipse
      * @param name defines the control name
@@ -5851,7 +5851,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to create a 2D grid container
  */
 var Grid = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Grid, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Grid, _super);
     /**
      * Creates a new Grid
      * @param name defines control name
@@ -6309,7 +6309,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to create 2D images
  */
 var Image = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Image, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Image, _super);
     /**
      * Creates a new Image
      * @param name defines the control name
@@ -6319,6 +6319,7 @@ var Image = /** @class */ (function (_super) {
         if (url === void 0) { url = null; }
         var _this = _super.call(this, name) || this;
         _this.name = name;
+        _this._workingCanvas = null;
         _this._loaded = false;
         _this._stretch = Image.STRETCH_FILL;
         _this._autoScale = false;
@@ -6595,10 +6596,10 @@ var Image = /** @class */ (function (_super) {
         this._markAsDirty();
     };
     Image.prototype._extractNinePatchSliceDataFromImage = function () {
-        if (!Image._WorkingCanvas) {
-            Image._WorkingCanvas = document.createElement('canvas');
+        if (!this._workingCanvas) {
+            this._workingCanvas = document.createElement('canvas');
         }
-        var canvas = Image._WorkingCanvas;
+        var canvas = this._workingCanvas;
         var context = canvas.getContext('2d');
         var width = this._domImage.width;
         var height = this._domImage.height;
@@ -6647,7 +6648,7 @@ var Image = /** @class */ (function (_super) {
             this._loaded = false;
             this._source = value;
             if (value) {
-                this._svgCheck(value);
+                value = this._svgCheck(value);
             }
             this._domImage = document.createElement("img");
             this._domImage.onload = function () {
@@ -6672,16 +6673,10 @@ var Image = /** @class */ (function (_super) {
             // check if object alr exist in document
             var svgExist = document.body.querySelector('object[data="' + svgsrc + '"]');
             if (svgExist) {
-                if (svgExist.contentDocument) {
-                    // svg object alr exists
-                    this._getSVGAttribs(svgExist, elemid);
-                }
-                else {
-                    // wait for object to load
-                    svgExist.addEventListener("load", function () {
-                        _this._getSVGAttribs(svgExist, elemid);
-                    });
-                }
+                // wait for object to load
+                svgExist.addEventListener("load", function () {
+                    _this._getSVGAttribs(svgExist, elemid);
+                });
             }
             else {
                 // create document object
@@ -6699,6 +6694,10 @@ var Image = /** @class */ (function (_super) {
                     }
                 };
             }
+            return svgsrc;
+        }
+        else {
+            return value;
         }
     };
     /**
@@ -6714,7 +6713,7 @@ var Image = /** @class */ (function (_super) {
             var docheight = Number(svgDoc.documentElement.getAttribute("height"));
             // get element bbox and matrix transform
             var elem = svgDoc.getElementById(elemid);
-            if (elem instanceof SVGElement && vb && docwidth && docheight) {
+            if (vb && docwidth && docheight) {
                 var vb_width = Number(vb.split(" ")[2]);
                 var vb_height = Number(vb.split(" ")[3]);
                 var elem_bbox = elem.getBBox();
@@ -6801,10 +6800,10 @@ var Image = /** @class */ (function (_super) {
         if (!_super.prototype.contains.call(this, x, y)) {
             return false;
         }
-        if (!this._detectPointerOnOpaqueOnly || !Image._WorkingCanvas) {
+        if (!this._detectPointerOnOpaqueOnly || !this._workingCanvas) {
             return true;
         }
-        var canvas = Image._WorkingCanvas;
+        var canvas = this._workingCanvas;
         var context = canvas.getContext("2d");
         var width = this._currentMeasure.width | 0;
         var height = this._currentMeasure.height | 0;
@@ -6853,10 +6852,10 @@ var Image = /** @class */ (function (_super) {
         if (!this._detectPointerOnOpaqueOnly) {
             return;
         }
-        if (!Image._WorkingCanvas) {
-            Image._WorkingCanvas = document.createElement('canvas');
+        if (!this._workingCanvas) {
+            this._workingCanvas = document.createElement('canvas');
         }
-        var canvas = Image._WorkingCanvas;
+        var canvas = this._workingCanvas;
         var width = this._currentMeasure.width;
         var height = this._currentMeasure.height;
         var context = canvas.getContext("2d");
@@ -6869,7 +6868,7 @@ var Image = /** @class */ (function (_super) {
         if (!this._detectPointerOnOpaqueOnly) {
             return;
         }
-        var canvas = Image._WorkingCanvas;
+        var canvas = this._workingCanvas;
         context = canvas.getContext("2d");
         context.drawImage(this._domImage, sx, sy, sw, sh, tx - this._currentMeasure.left, ty - this._currentMeasure.top, tw, th);
     };
@@ -6966,7 +6965,6 @@ var Image = /** @class */ (function (_super) {
         this.onImageLoadedObservable.clear();
         this.onSVGAttributesComputedObservable.clear();
     };
-    Image._WorkingCanvas = null;
     // Static
     /** STRETCH_NONE */
     Image.STRETCH_NONE = 0;
@@ -7132,7 +7130,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to create a password control
  */
 var InputPassword = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputPassword, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputPassword, _super);
     function InputPassword() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -7177,7 +7175,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to create input text control
  */
 var InputText = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](InputText, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(InputText, _super);
     /**
      * Creates a new InputText
      * @param name defines the control name
@@ -8187,7 +8185,7 @@ __webpack_require__.r(__webpack_exports__);
 
 /** Class used to render 2D lines */
 var Line = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Line, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Line, _super);
     /**
      * Creates a new Line
      * @param name defines the control name
@@ -8458,7 +8456,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to create multi line control
  */
 var MultiLine = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MultiLine, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MultiLine, _super);
     /**
      * Creates a new MultiLine
      * @param name defines the control name
@@ -8729,7 +8727,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to create radio button controls
  */
 var RadioButton = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RadioButton, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RadioButton, _super);
     /**
      * Creates a new RadioButton
      * @param name defines the control name
@@ -8928,7 +8926,7 @@ __webpack_require__.r(__webpack_exports__);
 
 /** Class used to create rectangle container */
 var Rectangle = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Rectangle, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Rectangle, _super);
     /**
      * Creates a new Rectangle
      * @param name defines the control name
@@ -9084,7 +9082,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to hold a viewer window and sliders in a grid
 */
 var ScrollViewer = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ScrollViewer, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ScrollViewer, _super);
     /**
     * Creates a new ScrollViewer
     * @param name of ScrollViewer
@@ -9442,7 +9440,7 @@ __webpack_require__.r(__webpack_exports__);
  * @hidden
 */
 var _ScrollViewerWindow = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](_ScrollViewerWindow, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(_ScrollViewerWindow, _super);
     /**
     * Creates a new ScrollViewerWindow
     * @param name of ScrollViewerWindow
@@ -9616,7 +9614,7 @@ var SelectorGroup = /** @class */ (function () {
  * which contains groups of checkbox buttons
 */
 var CheckboxGroup = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CheckboxGroup, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CheckboxGroup, _super);
     function CheckboxGroup() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -9673,7 +9671,7 @@ var CheckboxGroup = /** @class */ (function (_super) {
  * which contains groups of radio buttons
 */
 var RadioGroup = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](RadioGroup, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RadioGroup, _super);
     function RadioGroup() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this._selectNb = 0;
@@ -9736,7 +9734,7 @@ var RadioGroup = /** @class */ (function (_super) {
  * which contains groups of slider buttons
 */
 var SliderGroup = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SliderGroup, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SliderGroup, _super);
     function SliderGroup() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -9810,7 +9808,7 @@ var SliderGroup = /** @class */ (function (_super) {
  * @see http://doc.babylonjs.com/how_to/selector
 */
 var SelectionPanel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SelectionPanel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SelectionPanel, _super);
     /**
     * Creates a new SelectionPanel
     * @param name of SelectionPanel
@@ -10170,7 +10168,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to create slider controls
  */
 var BaseSlider = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](BaseSlider, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(BaseSlider, _super);
     /**
      * Creates a new BaseSlider
      * @param name defines the control name
@@ -10498,7 +10496,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to create slider controls based on images
  */
 var ImageBasedSlider = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ImageBasedSlider, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ImageBasedSlider, _super);
     /**
      * Creates a new ImageBasedSlider
      * @param name defines the control name
@@ -10674,7 +10672,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to create slider controls
  */
 var ScrollBar = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ScrollBar, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ScrollBar, _super);
     /**
      * Creates a new Slider
      * @param name defines the control name
@@ -10821,7 +10819,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to create slider controls
  */
 var Slider = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Slider, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Slider, _super);
     /**
      * Creates a new Slider
      * @param name defines the control name
@@ -11080,7 +11078,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to create a 2D stack panel container
  */
 var StackPanel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](StackPanel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(StackPanel, _super);
     /**
      * Creates a new StackPanel
      * @param name defines control name
@@ -11366,7 +11364,7 @@ var TextWrapping;
  * Class used to create text block control
  */
 var TextBlock = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](TextBlock, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextBlock, _super);
     /**
      * Creates a new TextBlock object
      * @param name defines the name of the control
@@ -11820,7 +11818,7 @@ var KeyPropertySet = /** @class */ (function () {
  * Class used to create virtual keyboard
  */
 var VirtualKeyboard = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](VirtualKeyboard, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(VirtualKeyboard, _super);
     function VirtualKeyboard() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         /** Observable raised when a key is pressed */
@@ -12193,7 +12191,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to transport Vector2 information for pointer events
  */
 var Vector2WithInfo = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector2WithInfo, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector2WithInfo, _super);
     /**
      * Creates a new Vector2WithInfo
      * @param source defines the vector2 data to transport
@@ -13316,7 +13314,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used as a root to all buttons
  */
 var AbstractButton3D = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](AbstractButton3D, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AbstractButton3D, _super);
     /**
      * Creates a new button
      * @param name defines the control name
@@ -13364,7 +13362,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to create a button in 3D
  */
 var Button3D = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Button3D, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Button3D, _super);
     /**
      * Creates a new button
      * @param name defines the control name
@@ -13539,7 +13537,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to create containers for controls
  */
 var Container3D = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Container3D, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Container3D, _super);
     /**
      * Creates a new container
      * @param name defines the container name
@@ -14106,7 +14104,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to create a container panel deployed on the surface of a cylinder
  */
 var CylinderPanel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](CylinderPanel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CylinderPanel, _super);
     function CylinderPanel() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this._radius = 5.0;
@@ -14202,7 +14200,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to create a holographic button in 3D
  */
 var HolographicButton = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](HolographicButton, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(HolographicButton, _super);
     /**
      * Creates a new button
      * @param name defines the control name
@@ -14584,7 +14582,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to create an interactable object. It's a 3D button using a mesh coming from the current scene
  */
 var MeshButton3D = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](MeshButton3D, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(MeshButton3D, _super);
     /**
      * Creates a new 3D button based on a mesh
      * @param mesh mesh to become a 3D button
@@ -14666,7 +14664,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to create a container panel deployed on the surface of a plane
  */
 var PlanePanel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](PlanePanel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PlanePanel, _super);
     function PlanePanel() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -14722,7 +14720,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to create a container panel where items get randomized planar mapping
  */
 var ScatterPanel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](ScatterPanel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ScatterPanel, _super);
     function ScatterPanel() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this._iteration = 100.0;
@@ -14849,7 +14847,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to create a container panel deployed on the surface of a sphere
  */
 var SpherePanel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](SpherePanel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SpherePanel, _super);
     function SpherePanel() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this._radius = 5.0;
@@ -14932,7 +14930,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to create a stack panel in 3D on XY plane
  */
 var StackPanel3D = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](StackPanel3D, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(StackPanel3D, _super);
     /**
      * Creates new StackPanel
      * @param isVertical
@@ -15057,7 +15055,7 @@ __webpack_require__.r(__webpack_exports__);
  * Abstract class used to create a container panel deployed on the surface of a volume
  */
 var VolumeBasedPanel = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](VolumeBasedPanel, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(VolumeBasedPanel, _super);
     /**
      * Creates new VolumeBasedPanel
      */
@@ -15520,7 +15518,7 @@ __webpack_require__.r(__webpack_exports__);
 
 /** @hidden */
 var FluentMaterialDefines = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FluentMaterialDefines, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FluentMaterialDefines, _super);
     function FluentMaterialDefines() {
         var _this = _super.call(this) || this;
         _this.INNERGLOW = false;
@@ -15537,7 +15535,7 @@ var FluentMaterialDefines = /** @class */ (function (_super) {
  * Class used to render controls with fluent desgin
  */
 var FluentMaterial = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](FluentMaterial, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(FluentMaterial, _super);
     /**
      * Creates a new Fluent material
      * @param name defines the name of the material
@@ -15744,49 +15742,49 @@ var FluentMaterial = /** @class */ (function (_super) {
     FluentMaterial.Parse = function (source, scene, rootUrl) {
         return babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["SerializationHelper"].Parse(function () { return new FluentMaterial(source.name, scene); }, source, scene, rootUrl);
     };
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])(),
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["expandToProperty"])("_markAllSubMeshesAsTexturesDirty")
     ], FluentMaterial.prototype, "innerGlowColorIntensity", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor3"])()
     ], FluentMaterial.prototype, "innerGlowColor", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], FluentMaterial.prototype, "alpha", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor3"])()
     ], FluentMaterial.prototype, "albedoColor", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])(),
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["expandToProperty"])("_markAllSubMeshesAsTexturesDirty")
     ], FluentMaterial.prototype, "renderBorders", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], FluentMaterial.prototype, "borderWidth", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], FluentMaterial.prototype, "edgeSmoothingValue", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], FluentMaterial.prototype, "borderMinValue", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])(),
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["expandToProperty"])("_markAllSubMeshesAsTexturesDirty")
     ], FluentMaterial.prototype, "renderHoverLight", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
     ], FluentMaterial.prototype, "hoverRadius", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor4"])()
     ], FluentMaterial.prototype, "hoverColor", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsVector3"])()
     ], FluentMaterial.prototype, "hoverPosition", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsTexture"])("albedoTexture")
     ], FluentMaterial.prototype, "_albedoTexture", void 0);
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["expandToProperty"])("_markAllSubMeshesAsTexturesAndMiscDirty")
     ], FluentMaterial.prototype, "albedoTexture", void 0);
     return FluentMaterial;
@@ -15879,7 +15877,7 @@ __webpack_require__.r(__webpack_exports__);
  * Class used to transport Vector3 information for pointer events
  */
 var Vector3WithInfo = /** @class */ (function (_super) {
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"](Vector3WithInfo, _super);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Vector3WithInfo, _super);
     /**
      * Creates a new Vector3WithInfo
      * @param source defines the vector3 data to transport

@@ -5,7 +5,7 @@ import { Material } from "babylonjs/Materials/material";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Mesh } from "babylonjs/Meshes/mesh";
 
-import { INode, IMaterial } from "../glTFLoaderInterfaces";
+import { INode, IMaterial, IBuffer } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import { IProperty } from 'babylonjs-gltf2interface';
@@ -20,16 +20,25 @@ interface IMSFTLOD {
  * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/MSFT_lod)
  */
 export class MSFT_lod implements IGLTFLoaderExtension {
-    /** The name of this extension. */
+    /**
+     * The name of this extension.
+     */
     public readonly name = NAME;
 
-    /** Defines whether this extension is enabled. */
-    public enabled = true;
+    /**
+     * Defines whether this extension is enabled.
+     */
+    public enabled: boolean;
+
+    /**
+     * Defines a number that determines the order the extensions are applied.
+     */
+    public order = 100;
 
     /**
      * Maximum number of LODs to load, starting from the lowest LOD.
      */
-    public maxLODsToLoad = Number.MAX_VALUE;
+    public maxLODsToLoad = 10;
 
     /**
      * Observable raised when all node LODs of one level are loaded.
@@ -55,13 +64,19 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     private _materialSignalLODs = new Array<Deferred<void>>();
     private _materialPromiseLODs = new Array<Array<Promise<any>>>();
 
+    private _indexLOD: Nullable<number> = null;
+    private _bufferLODs = new Array<{ start: number, end: number, loaded: Deferred<ArrayBufferView> }>();
+
     /** @hidden */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
+        this.enabled = this._loader.isExtensionUsed(NAME);
     }
 
     /** @hidden */
     public dispose() {
+        this._disposeUnusedMaterials();
+
         delete this._loader;
 
         this._nodeIndexLOD = null;
@@ -71,6 +86,9 @@ export class MSFT_lod implements IGLTFLoaderExtension {
         this._materialIndexLOD = null;
         this._materialSignalLODs.length = 0;
         this._materialPromiseLODs.length = 0;
+
+        this._indexLOD = null;
+        this._bufferLODs.length = 0;
 
         this.onMaterialLODsLoadedObservable.clear();
         this.onNodeLODsLoadedObservable.clear();
@@ -117,6 +135,10 @@ export class MSFT_lod implements IGLTFLoaderExtension {
 
             this._loader._completePromises.push(promise);
         }
+
+        for (let indexLOD = 1; indexLOD < this._bufferLODs.length; indexLOD++) {
+            this._loadBufferLOD(indexLOD);
+        }
     }
 
     /** @hidden */
@@ -130,6 +152,8 @@ export class MSFT_lod implements IGLTFLoaderExtension {
             for (let indexLOD = 0; indexLOD < nodeLODs.length; indexLOD++) {
                 const nodeLOD = nodeLODs[indexLOD];
 
+                this._indexLOD = indexLOD;
+
                 if (indexLOD !== 0) {
                     this._nodeIndexLOD = indexLOD;
                     this._nodeSignalLODs[indexLOD] = this._nodeSignalLODs[indexLOD] || new Deferred();
@@ -138,7 +162,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                 const assign = (babylonTransformNode: TransformNode) => { babylonTransformNode.setEnabled(false); };
                 const promise = this._loader.loadNodeAsync(`#/nodes/${nodeLOD.index}`, nodeLOD, assign).then((babylonMesh) => {
                     if (indexLOD !== 0) {
-                        // TODO: should not rely on _babylonMesh
+                        // TODO: should not rely on _babylonTransformNode
                         const previousNodeLOD = nodeLODs[indexLOD - 1];
                         if (previousNodeLOD._babylonTransformNode) {
                             previousNodeLOD._babylonTransformNode.dispose();
@@ -153,10 +177,16 @@ export class MSFT_lod implements IGLTFLoaderExtension {
 
                 if (indexLOD === 0) {
                     firstPromise = promise;
+
+                    if (this._bufferLODs.length !== 0) {
+                        this._loadBufferLOD(0);
+                    }
                 }
                 else {
                     this._nodeIndexLOD = null;
                 }
+
+                this._indexLOD = null;
 
                 this._nodePromiseLODs[indexLOD] = this._nodePromiseLODs[indexLOD] || [];
                 this._nodePromiseLODs[indexLOD].push(promise);
@@ -170,7 +200,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     /** @hidden */
     public _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>> {
         // Don't load material LODs if already loading a node LOD.
-        if (this._nodeIndexLOD) {
+        if (this._indexLOD) {
             return null;
         }
 
@@ -182,6 +212,8 @@ export class MSFT_lod implements IGLTFLoaderExtension {
 
             for (let indexLOD = 0; indexLOD < materialLODs.length; indexLOD++) {
                 const materialLOD = materialLODs[indexLOD];
+
+                this._indexLOD = indexLOD;
 
                 if (indexLOD !== 0) {
                     this._materialIndexLOD = indexLOD;
@@ -208,10 +240,16 @@ export class MSFT_lod implements IGLTFLoaderExtension {
 
                 if (indexLOD === 0) {
                     firstPromise = promise;
+
+                    if (this._bufferLODs.length !== 0) {
+                        this._loadBufferLOD(0);
+                    }
                 }
                 else {
                     this._materialIndexLOD = null;
                 }
+
+                this._indexLOD = null;
 
                 this._materialPromiseLODs[indexLOD] = this._materialPromiseLODs[indexLOD] || [];
                 this._materialPromiseLODs[indexLOD].push(promise);
@@ -245,6 +283,45 @@ export class MSFT_lod implements IGLTFLoaderExtension {
         return null;
     }
 
+    /** @hidden */
+    public loadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Nullable<Promise<ArrayBufferView>> {
+        if (this._loader.parent.useRangeRequests && !buffer.uri) {
+            if (!this._loader.bin) {
+                throw new Error(`${context}: Uri is missing or the binary glTF is missing its binary chunk`);
+            }
+
+            // Non-LOD buffers will be bucketed into the first LOD.
+            const indexLOD = this._indexLOD || 0;
+
+            const start = byteOffset;
+            const end = start + byteLength - 1;
+            let bufferLOD = this._bufferLODs[indexLOD];
+            if (bufferLOD) {
+                bufferLOD.start = Math.min(bufferLOD.start, start);
+                bufferLOD.end = Math.max(bufferLOD.end, end);
+            }
+            else {
+                bufferLOD = { start: start, end: end, loaded: new Deferred() };
+                this._bufferLODs[indexLOD] = bufferLOD;
+            }
+
+            return bufferLOD.loaded.promise.then((data) => {
+                return new Uint8Array(data.buffer, data.byteOffset + byteOffset - bufferLOD.start, byteLength);
+            });
+        }
+
+        return null;
+    }
+
+    private _loadBufferLOD(indexLOD: number): void {
+        const bufferLOD = this._bufferLODs[indexLOD];
+        this._loader.bin!.readAsync(bufferLOD.start, bufferLOD.end - bufferLOD.start + 1).then((data) => {
+            bufferLOD.loaded.resolve(data);
+        }, (error) => {
+            bufferLOD.loaded.reject(error);
+        });
+    }
+
     /**
      * Gets an array of LOD properties from lowest to highest.
      */
@@ -274,7 +351,8 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                 if (material._data) {
                     for (const drawMode in material._data) {
                         const data = material._data[drawMode];
-                        if (data.babylonMeshes.length === 0) {
+                        if (data.babylonMeshes.every((babylonMesh) => babylonMesh.material !== data.babylonMaterial)) {
+                            // TODO: check if texture is in use instead of force disposing textures
                             data.babylonMaterial.dispose(false, true);
                             delete material._data[drawMode];
                         }

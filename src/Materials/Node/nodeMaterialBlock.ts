@@ -22,6 +22,7 @@ export class NodeMaterialBlock {
     private _target: NodeMaterialBlockTargets;
     private _isFinalMerger = false;
     private _isInput = false;
+    protected _isUnique = false;
 
     /** @hidden */
     public _codeVariableName = "";
@@ -43,6 +44,13 @@ export class NodeMaterialBlock {
      * Gets or sets the unique id of the node
      */
     public uniqueId: number;
+
+    /**
+     * Gets a boolean indicating that this block can only be used once per NodeMaterial
+     */
+    public get isUnique() {
+        return this._isUnique;
+    }
 
     /**
      * Gets a boolean indicating that this block is an end block (e.g. it is generating a system value)
@@ -321,8 +329,9 @@ export class NodeMaterialBlock {
      * @param state defines the state to update
      * @param nodeMaterial defines the node material requesting the update
      * @param defines defines the material defines to update
+     * @param uniformBuffers defines the list of uniform buffer names
      */
-    public updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]) {
         // Do nothing
     }
 
@@ -426,6 +435,15 @@ export class NodeMaterialBlock {
             return true;
         }
 
+        if (!this.isInput) {
+            /** Prepare outputs */
+            for (var output of this._outputs) {
+                if (!output.associatedVariableName) {
+                    output.associatedVariableName = state._getFreeVariableName(output.name);
+                }
+            }
+        }
+
         // Check if "parent" blocks are compiled
         for (var input of this._inputs) {
             if (!input.connectedPoint) {
@@ -458,24 +476,6 @@ export class NodeMaterialBlock {
         // Logs
         if (state.sharedData.verbose) {
             console.log(`${state.target === NodeMaterialBlockTargets.Vertex ? "Vertex shader" : "Fragment shader"}: Building ${this.name} [${this.getClassName()}]`);
-        }
-
-        if (!this.isInput) {
-            /** Prepare outputs */
-            for (var output of this._outputs) {
-                if (this.target !== NodeMaterialBlockTargets.Neutral) {
-                    if ((output.target & this.target!) === 0) {
-                        continue;
-                    }
-                    if ((output.target & state.target!) === 0) {
-                        continue;
-                    }
-                }
-
-                if (!output.associatedVariableName) {
-                    output.associatedVariableName = state._getFreeVariableName(output.name);
-                }
-            }
         }
 
         // Checks final outputs
@@ -550,7 +550,8 @@ export class NodeMaterialBlock {
         uniqueNames.push(this._codeVariableName);
 
         // Declaration
-        codeString = `\r\nvar ${this._codeVariableName} = new BABYLON.${this.getClassName()}("${this.name}");\r\n`;
+        codeString = `\r\n// ${this.getClassName()}\r\n`;
+        codeString += `var ${this._codeVariableName} = new BABYLON.${this.getClassName()}("${this.name}");\r\n`;
 
         // Properties
         codeString += this._dumpPropertiesCode();
@@ -567,8 +568,6 @@ export class NodeMaterialBlock {
             if (alreadyDumped.indexOf(connectedBlock) === -1) {
                 codeString += connectedBlock._dumpCode(uniqueNames, alreadyDumped);
             }
-
-            codeString += `${connectedBlock._codeVariableName}.${connectedBlock._outputRename(connectedOutput.name)}.connectTo(${this._codeVariableName}.${this._inputRename(input.name)});\r\n`;
         }
 
         // Outputs
@@ -583,6 +582,31 @@ export class NodeMaterialBlock {
                     codeString += connectedBlock._dumpCode(uniqueNames, alreadyDumped);
                 }
             }
+        }
+
+        return codeString;
+    }
+
+    /** @hidden */
+    public _dumpCodeForOutputConnections(alreadyDumped: NodeMaterialBlock[]) {
+        let codeString = "";
+
+        if (alreadyDumped.indexOf(this) !== -1) {
+            return codeString;
+        }
+
+        alreadyDumped.push(this);
+
+        for (var input of this.inputs) {
+            if (!input.isConnected) {
+                continue;
+            }
+
+            var connectedOutput = input.connectedPoint!;
+            var connectedBlock = connectedOutput.ownerBlock;
+
+            codeString += connectedBlock._dumpCodeForOutputConnections(alreadyDumped);
+            codeString += `${connectedBlock._codeVariableName}.${connectedBlock._outputRename(connectedOutput.name)}.connectTo(${this._codeVariableName}.${this._inputRename(input.name)});\r\n`;
         }
 
         return codeString;
@@ -630,5 +654,18 @@ export class NodeMaterialBlock {
     /** @hidden */
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         this.name = serializationObject.name;
+    }
+
+    /**
+     * Release resources
+     */
+    public dispose() {
+        for (var input of this.inputs) {
+            input.dispose();
+        }
+
+        for (var output of this.outputs) {
+            output.dispose();
+        }
     }
 }

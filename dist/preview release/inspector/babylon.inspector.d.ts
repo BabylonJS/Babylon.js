@@ -89,15 +89,16 @@ declare module INSPECTOR {
 declare module INSPECTOR {
     interface ITextLineComponentProps {
         label: string;
-        value: string;
+        value?: string;
         color?: string;
         underline?: boolean;
         onLink?: () => void;
+        ignoreValue?: boolean;
     }
     export class TextLineComponent extends React.Component<ITextLineComponentProps> {
         constructor(props: ITextLineComponentProps);
         onLink(): void;
-        renderContent(): JSX.Element;
+        renderContent(): JSX.Element | null;
         render(): JSX.Element;
     }
 }
@@ -581,6 +582,7 @@ declare module INSPECTOR {
         constructor(props: ITexturePropertyGridComponentProps);
         componentWillUnmount(): void;
         updateTexture(file: File): void;
+        foreceRefresh(): void;
         render(): JSX.Element;
     }
 }
@@ -790,6 +792,7 @@ declare module INSPECTOR {
         displayVertexColors(): void;
         onMaterialLink(): void;
         onSourceMeshLink(): void;
+        onSkeletonLink(): void;
         convertPhysicsTypeToString(): string;
         render(): JSX.Element;
     }
@@ -1196,6 +1199,7 @@ declare module INSPECTOR {
         switchSkeletonViewers(): void;
         checkSkeletonViewerState(props: ISkeletonPropertyGridComponentProps): void;
         shouldComponentUpdate(nextProps: ISkeletonPropertyGridComponentProps): boolean;
+        onOverrideMeshLink(): void;
         render(): JSX.Element;
     }
 }
@@ -1208,6 +1212,7 @@ declare module INSPECTOR {
     }
     export class BonePropertyGridComponent extends React.Component<IBonePropertyGridComponentProps> {
         constructor(props: IBonePropertyGridComponentProps);
+        onTransformNodeLink(): void;
         render(): JSX.Element;
     }
 }
@@ -1376,6 +1381,7 @@ declare module INSPECTOR {
         private _videoRecorder;
         private _screenShotSize;
         private _useWidthHeight;
+        private _isExporting;
         constructor(props: IPaneComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;

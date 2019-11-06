@@ -26,7 +26,7 @@ function main(replacements) {
                 return;
             }
             if (file.isStream()) {
-                cb(new PluginError("Process Shader", "Streaming not supported."));
+                cb(new PluginError("Process Imports", "Streaming not supported."));
             }
 
             let data = file.contents.toString();

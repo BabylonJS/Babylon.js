@@ -86,9 +86,18 @@ interface XRPose {
     emulatedPosition: boolean;
 }
 
+interface XRWebGLLayerOptions {
+    antialias ?: boolean;
+    depth ?: boolean;
+    stencil ?: boolean;
+    alpha ?: boolean;
+    multiview ?: boolean;
+    framebufferScaleFactor ?: number;
+}
+
 declare var XRWebGLLayer: {
     prototype: XRWebGLLayer;
-    new(session: XRSession, context: WebGLRenderingContext | undefined): XRWebGLLayer;
+    new(session: XRSession, context: WebGLRenderingContext | undefined, options?: XRWebGLLayerOptions): XRWebGLLayer;
 };
 interface XRWebGLLayer {
     framebuffer: WebGLFramebuffer;
