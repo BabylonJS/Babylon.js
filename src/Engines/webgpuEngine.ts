@@ -295,47 +295,42 @@ export class WebGPUEngine extends Engine {
         // Init caps
         // TODO WEBGPU Real Capability check once limits will be working.
 
-        this._caps = new EngineCapabilities();
-        this._caps.maxTexturesImageUnits = 16;
-        this._caps.maxVertexTextureImageUnits = 16;
-        this._caps.maxTextureSize = 2048;
-        this._caps.maxCubemapTextureSize = 2048;
-        this._caps.maxRenderTextureSize = 2048;
-        this._caps.maxVertexAttribs = 16;
-        this._caps.maxVaryingVectors = 16;
-        this._caps.maxFragmentUniformVectors = 1024;
-        this._caps.maxVertexUniformVectors = 1024;
-
-        // Extensions
-        this._caps.standardDerivatives = true;
-
-        this._caps.astc = null;
-        this._caps.s3tc = null;
-        this._caps.pvrtc = null;
-        this._caps.etc1 = null;
-        this._caps.etc2 = null;
-
-        this._caps.textureAnisotropicFilterExtension = null;
-        this._caps.maxAnisotropy = 0;
-        this._caps.uintIndices = true;
-        this._caps.fragmentDepthSupported = false;
-        this._caps.highPrecisionShaderSupported = true;
-
-        this._caps.colorBufferFloat = true;
-        this._caps.textureFloat = false;
-        this._caps.textureFloatLinearFiltering = false;
-        this._caps.textureFloatRender = false;
-
-        this._caps.textureHalfFloat = false;
-        this._caps.textureHalfFloatLinearFiltering = false;
-        this._caps.textureHalfFloatRender = false;
-
-        this._caps.textureLOD = true;
-        this._caps.drawBuffersExtension = true;
-
-        this._caps.depthTextureExtension = true;
-        this._caps.vertexArrayObject = false;
-        this._caps.instancedArrays = true;
+        this._caps = this._caps = {
+            maxTexturesImageUnits: 16,
+            maxVertexTextureImageUnits: 16,
+            maxCombinedTexturesImageUnits: 32,
+            maxTextureSize: 2048,
+            maxCubemapTextureSize: 2048,
+            maxRenderTextureSize: 2048,
+            maxVertexAttribs: 16,
+            maxVaryingVectors: 16,
+            maxFragmentUniformVectors: 1024,
+            maxVertexUniformVectors: 1024,
+            standardDerivatives: true,
+            astc: null,
+            pvrtc: null,
+            etc1: null,
+            etc2: null,
+            maxAnisotropy: 0,  // TODO: Retrieve this smartly. Currently set to D3D11 maximum allowable value.
+            uintIndices: false,
+            fragmentDepthSupported: false,
+            highPrecisionShaderSupported: true,
+            colorBufferFloat: false,
+            textureFloat: false,
+            textureFloatLinearFiltering: false,
+            textureFloatRender: false,
+            textureHalfFloat: false,
+            textureHalfFloatLinearFiltering: false,
+            textureHalfFloatRender: false,
+            textureLOD: true,
+            drawBuffersExtension: true,
+            depthTextureExtension: true,
+            vertexArrayObject: true,
+            instancedArrays: true,
+            canUseTimestampForTimerQuery: false,
+            blendMinMax: false,
+            maxMSAASamples: 1
+        };
 
         this._caps.parallelShaderCompile = null as any;
     }
