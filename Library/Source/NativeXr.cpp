@@ -14,6 +14,8 @@ namespace
         {
         case xr::TextureFormat::RGBA8:
             return bgfx::TextureFormat::RGBA8;
+        case xr::TextureFormat::RGBA8S:
+            return bgfx::TextureFormat::RGBA8S;
         case xr::TextureFormat::D24S8:
             return bgfx::TextureFormat::D24S8;
         default:

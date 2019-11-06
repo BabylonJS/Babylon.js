@@ -28,9 +28,10 @@ namespace xr
     using SwapchainFormat = DXGI_FORMAT;
     using SwapchainImage = XrSwapchainImageD3D11KHR;
 
-    constexpr std::array<SwapchainFormat, 1> SUPPORTED_COLOR_FORMATS
+    constexpr std::array<SwapchainFormat, 2> SUPPORTED_COLOR_FORMATS
     {
-        DXGI_FORMAT_R8G8B8A8_UNORM
+        DXGI_FORMAT_R8G8B8A8_UNORM,
+        DXGI_FORMAT_R8G8B8A8_UNORM_SRGB
     };
 
     constexpr std::array<SwapchainFormat, 1> SUPPORTED_DEPTH_FORMATS
@@ -44,6 +45,8 @@ namespace xr
         {
         case DXGI_FORMAT_R8G8B8A8_UNORM:
             return xr::TextureFormat::RGBA8;
+        case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+            return xr::TextureFormat::RGBA8S;
         case DXGI_FORMAT_D24_UNORM_S8_UINT:
             return xr::TextureFormat::D24S8;
         default:
