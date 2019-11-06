@@ -57,7 +57,7 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
      * @param onError defines the callback to trigger in case of error
      */
     public loadCubeData(imgs: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void {
-        var engine = texture.getEngine();
+        var engine = texture.getEngine() as Engine;
         var info: DDSInfo | undefined;
         var loadMipmap: boolean = false;
         if (Array.isArray(imgs)) {
@@ -75,7 +75,7 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
                 DDSTools.UploadDDSLevels(engine, texture, data, info, loadMipmap, 6, -1, index);
 
                 if (!info.isFourCC && info.mipmapCount === 1) {
-                    (engine as Engine).generateMipMapsForCubemap(texture);
+                    engine.generateMipMapsForCubemap(texture);
                 }
             }
         }
@@ -96,7 +96,7 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
             DDSTools.UploadDDSLevels(engine, texture, data, info, loadMipmap, 6);
 
             if (!info.isFourCC && info.mipmapCount === 1) {
-                (engine as Engine).generateMipMapsForCubemap(texture);
+                engine.generateMipMapsForCubemap(texture);
             }
         }
 

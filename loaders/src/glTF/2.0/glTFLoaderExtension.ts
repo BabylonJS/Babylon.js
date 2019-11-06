@@ -9,7 +9,7 @@ import { Mesh } from "babylonjs/Meshes/mesh";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { IDisposable } from "babylonjs/scene";
 
-import { IScene, INode, IMesh, ISkin, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation } from "./glTFLoaderInterfaces";
+import { IScene, INode, IMesh, ISkin, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation, IBufferView, IBuffer } from "./glTFLoaderInterfaces";
 import { IGLTFLoaderExtension as IGLTFBaseLoaderExtension } from "../glTFFileLoader";
 import { IProperty } from 'babylonjs-gltf2interface';
 
@@ -134,4 +134,22 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
      * @returns A promise that resolves with the loaded data when the load is complete or null if not handled
      */
     _loadUriAsync?(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>>;
+
+    /**
+     * Define this method to modify the default behavior when loading buffer views.
+     * @param context The context when loading the asset
+     * @param bufferView The glTF buffer view property
+     * @returns A promise that resolves with the loaded data when the load is complete or null if not handled
+     */
+    loadBufferViewAsync?(context: string, bufferView: IBufferView): Nullable<Promise<ArrayBufferView>>;
+
+    /**
+     * Define this method to modify the default behavior when loading buffers.
+     * @param context The context when loading the asset
+     * @param buffer The glTF buffer property
+     * @param byteOffset The byte offset to load
+     * @param byteLength The byte length to load
+     * @returns A promise that resolves with the loaded data when the load is complete or null if not handled
+     */
+    loadBufferAsync?(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Nullable<Promise<ArrayBufferView>>;
 }

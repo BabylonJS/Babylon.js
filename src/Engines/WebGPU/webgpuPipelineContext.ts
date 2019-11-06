@@ -218,45 +218,6 @@ export class WebGPUPipelineContext implements IPipelineContext {
     }
 
     /**
-     * Sets an float array on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    public setFloatArray(uniformName: string, array: Float32Array): void {
-        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
-            return;
-        }
-        this.uniformBuffer.updateFloatArray(uniformName, array);
-    }
-
-    /**
-     * Sets an float array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    public setFloatArray2(uniformName: string, array: Float32Array): void {
-        throw "setFloatArray2 not Supported in LeftOver UBO.";
-    }
-
-    /**
-     * Sets an float array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    public setFloatArray3(uniformName: string, array: Float32Array): void {
-        throw "setFloatArray3 not Supported in LeftOver UBO.";
-    }
-
-    /**
-     * Sets an float array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    public setFloatArray4(uniformName: string, array: Float32Array): void {
-        throw "setFloatArray4 not Supported in LeftOver UBO.";
-    }
-
-    /**
      * Sets an array on a uniform variable.
      * @param uniformName Name of the variable.
      * @param array array to be set.
@@ -352,15 +313,6 @@ export class WebGPUPipelineContext implements IPipelineContext {
             return;
         }
         this.uniformBuffer.updateFloat(uniformName, value);
-    }
-
-    /**
-     * Sets a boolean on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param bool value to be set.
-     */
-    public setBool(uniformName: string, bool: boolean): void {
-        throw "setBool not Supported in LeftOver UBO.";
     }
 
     /**

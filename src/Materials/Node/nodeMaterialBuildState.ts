@@ -23,10 +23,6 @@ export class NodeMaterialBuildState {
     */
     public constants = new Array<string>();
     /**
-     * Gets the list of emitted uniform buffers
-     */
-    public uniformBuffers = new Array<string>();
-    /**
      * Gets the list of emitted samplers
      */
     public samplers = new Array<string>();
@@ -165,6 +161,12 @@ export class NodeMaterialBuildState {
     /** @hidden */
     public _excludeVariableName(name: string) {
         this.sharedData.variableNames[name] = 0;
+    }
+
+    /** @hidden */
+    public _emit2DSampler(name: string) {
+        this._samplerDeclaration += `uniform sampler2D ${name};\r\n`;
+        this.samplers.push(name);
     }
 
     /** @hidden */

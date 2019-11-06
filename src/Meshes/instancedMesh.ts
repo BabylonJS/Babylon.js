@@ -4,15 +4,26 @@ import { Logger } from "../Misc/logger";
 import { Camera } from "../Cameras/camera";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
+import { Mesh, _InstancesBatch } from "../Meshes/mesh";
 import { Material } from "../Materials/material";
 import { Skeleton } from "../Bones/skeleton";
 import { DeepCopier } from "../Misc/deepCopier";
 import { TransformNode } from './transformNode';
 import { Light } from '../Lights/light';
+import { VertexBuffer } from './buffer';
 
 Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
-    return new InstancedMesh(name, mesh);
+    let instance = new InstancedMesh(name, mesh);
+
+    if (mesh.instancedBuffers) {
+        instance.instancedBuffers = {};
+
+        for (var key in mesh.instancedBuffers) {
+            instance.instancedBuffers[key] = mesh.instancedBuffers[key];
+        }
+    }
+
+    return instance;
 };
 
 /**
@@ -21,9 +32,6 @@ Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
 export class InstancedMesh extends AbstractMesh {
     private _sourceMesh: Mesh;
     private _currentLOD: Mesh;
-
-    /** @hidden */
-    public _actAsRegularMesh = false;
 
     /** @hidden */
     public _indexInSourceMeshInstanceArray = -1;
@@ -289,12 +297,12 @@ export class InstancedMesh extends AbstractMesh {
         }
 
         if (this._currentLOD) {
-
-            if (this._currentLOD._getWorldMatrixDeterminant() !== this._getWorldMatrixDeterminant()) {
-                this._actAsRegularMesh = true;
+            let differentSign = (this._currentLOD._getWorldMatrixDeterminant() > 0) !== (this._getWorldMatrixDeterminant() > 0);
+            if (differentSign) {
+                this._internalAbstractMeshDataInfo._actAsRegularMesh = true;
                 return true;
             }
-            this._actAsRegularMesh = false;
+            this._internalAbstractMeshDataInfo._actAsRegularMesh = false;
 
             this._currentLOD._registerInstanceForRenderId(this, renderId);
 
@@ -419,3 +427,148 @@ export class InstancedMesh extends AbstractMesh {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
 }
+
+declare module "./mesh" {
+    export interface Mesh {
+        /**
+         * Register a custom buffer that will be instanced
+         * @see https://doc.babylonjs.com/how_to/how_to_use_instances#custom-buffers
+         * @param kind defines the buffer kind
+         * @param stride defines the stride in floats
+         */
+        registerInstancedBuffer(kind: string, stride: number): void;
+
+        /** @hidden */
+        _userInstancedBuffersStorage: {
+            data: {[key: string]: Float32Array},
+            sizes: {[key: string]: number},
+            vertexBuffers: {[key: string]: Nullable<VertexBuffer>},
+            strides: {[key: string]: number}
+        };
+    }
+}
+
+declare module "./abstractMesh" {
+    export interface AbstractMesh {
+        /**
+         * Object used to store instanced buffers defined by user
+         * @see https://doc.babylonjs.com/how_to/how_to_use_instances#custom-buffers
+         */
+        instancedBuffers: {[key: string]: any};
+    }
+}
+
+Mesh.prototype.registerInstancedBuffer = function(kind: string, stride: number): void {
+    // Remove existing one
+    this.removeVerticesData(kind);
+
+    // Creates the instancedBuffer field if not present
+    if (!this.instancedBuffers) {
+        this.instancedBuffers = {};
+
+        for (var instance of this.instances) {
+            instance.instancedBuffers = {};
+        }
+
+        this._userInstancedBuffersStorage = {
+            data: {},
+            vertexBuffers: {},
+            strides: {},
+            sizes: {}
+        };
+    }
+
+    // Creates an empty property for this kind
+    this.instancedBuffers[kind] = null;
+
+    this._userInstancedBuffersStorage.strides[kind] = stride;
+    this._userInstancedBuffersStorage.sizes[kind] = stride * 32; // Initial size
+    this._userInstancedBuffersStorage.data[kind] = new Float32Array(this._userInstancedBuffersStorage.sizes[kind]);
+    this._userInstancedBuffersStorage.vertexBuffers[kind] = new VertexBuffer(this.getEngine(), this._userInstancedBuffersStorage.data[kind], kind, true, false, stride, true);
+    this.setVerticesBuffer(this._userInstancedBuffersStorage.vertexBuffers[kind]!);
+
+    for (var instance of this.instances) {
+        instance.instancedBuffers[kind] = null;
+    }
+};
+
+Mesh.prototype._processInstancedBuffers = function(visibleInstances: InstancedMesh[], renderSelf: boolean) {
+    let instanceCount = visibleInstances.length;
+
+    for (var kind in this.instancedBuffers) {
+        let size = this._userInstancedBuffersStorage.sizes[kind];
+        let stride = this._userInstancedBuffersStorage.strides[kind];
+
+        // Resize if required
+        let expectedSize = (instanceCount + 1) * stride;
+
+        while (size < expectedSize) {
+            size *= 2;
+        }
+
+        if (this._userInstancedBuffersStorage.data[kind].length != size) {
+            this._userInstancedBuffersStorage.data[kind] = new Float32Array(size);
+            this._userInstancedBuffersStorage.sizes[kind] = size;
+            if (this._userInstancedBuffersStorage.vertexBuffers[kind]) {
+                this._userInstancedBuffersStorage.vertexBuffers[kind]!.dispose();
+                this._userInstancedBuffersStorage.vertexBuffers[kind] = null;
+            }
+        }
+
+        let data = this._userInstancedBuffersStorage.data[kind];
+
+        // Update data buffer
+        let offset = 0;
+        if (renderSelf) {
+            offset += stride;
+            let value = this.instancedBuffers[kind];
+
+            if (value.toArray) {
+                value.toArray(data, offset);
+            } else {
+                value.copyToArray(data, offset);
+            }
+        }
+
+        for (var instanceIndex = 0; instanceIndex < instanceCount; instanceIndex++) {
+            let instance = visibleInstances[instanceIndex]!;
+
+            let value = instance.instancedBuffers[kind];
+
+            if (value.toArray) {
+                value.toArray(data, offset);
+            } else {
+                value.copyToArray(data, offset);
+            }
+
+            offset += stride;
+        }
+
+        // Update vertex buffer
+        if (!this._userInstancedBuffersStorage.vertexBuffers[kind]) {
+            this._userInstancedBuffersStorage.vertexBuffers[kind] = new VertexBuffer(this.getEngine(), this._userInstancedBuffersStorage.data[kind], kind, true, false, stride, true);
+            this.setVerticesBuffer(this._userInstancedBuffersStorage.vertexBuffers[kind]!);
+        } else {
+            this._userInstancedBuffersStorage.vertexBuffers[kind]!.updateDirectly(data, 0);
+        }
+    }
+};
+
+Mesh.prototype._disposeInstanceSpecificData = function() {
+    if (this._instanceDataStorage.instancesBuffer) {
+        this._instanceDataStorage.instancesBuffer.dispose();
+        this._instanceDataStorage.instancesBuffer = null;
+    }
+
+    while (this.instances.length) {
+        this.instances[0].dispose();
+    }
+
+    for (var kind in this.instancedBuffers) {
+        if (this._userInstancedBuffersStorage.vertexBuffers[kind]) {
+            this._userInstancedBuffersStorage.vertexBuffers[kind]!.dispose();
+        }
+    }
+
+    this.instancedBuffers = {};
+};

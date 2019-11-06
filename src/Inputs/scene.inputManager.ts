@@ -147,7 +147,7 @@ export class InputManager {
     }
 
     private _updatePointerPosition(evt: PointerEvent): void {
-        var canvasRect = this._scene.getEngine().getRenderingCanvasClientRect();
+        var canvasRect = this._scene.getEngine().getInputElementClientRect();
 
         if (!canvasRect) {
             return;
@@ -162,7 +162,7 @@ export class InputManager {
 
     private _processPointerMove(pickResult: Nullable<PickingInfo>, evt: PointerEvent) {
         let scene = this._scene;
-        var canvas = scene.getEngine().getRenderingCanvas();
+        var canvas = scene.getEngine().getInputElement();
 
         if (!canvas) {
             return;
@@ -171,17 +171,21 @@ export class InputManager {
         canvas.tabIndex = 1;
 
         // Restore pointer
-        canvas.style.cursor = scene.defaultCursor;
+        if (!scene.doNotHandleCursors) {
+            canvas.style.cursor = scene.defaultCursor;
+        }
 
         var isMeshPicked = (pickResult && pickResult.hit && pickResult.pickedMesh) ? true : false;
         if (isMeshPicked) {
             scene.setPointerOverMesh(pickResult!.pickedMesh);
 
             if (this._pointerOverMesh && this._pointerOverMesh.actionManager && this._pointerOverMesh.actionManager.hasPointerTriggers) {
-                if (this._pointerOverMesh.actionManager.hoverCursor) {
-                    canvas.style.cursor = this._pointerOverMesh.actionManager.hoverCursor;
-                } else {
-                    canvas.style.cursor = scene.hoverCursor;
+                if (!scene.doNotHandleCursors) {
+                    if (this._pointerOverMesh.actionManager.hoverCursor) {
+                        canvas.style.cursor = this._pointerOverMesh.actionManager.hoverCursor;
+                    } else {
+                        canvas.style.cursor = scene.hoverCursor;
+                    }
                 }
             }
         } else {
@@ -443,7 +447,7 @@ export class InputManager {
     */
     public attachControl(attachUp = true, attachDown = true, attachMove = true): void {
         let scene = this._scene;
-        var canvas = scene.getEngine().getRenderingCanvas();
+        var canvas = scene.getEngine().getInputElement();
 
         if (!canvas) {
             return;
@@ -804,7 +808,9 @@ export class InputManager {
 
         if (attachUp) {
             let hostWindow = scene.getEngine().getHostWindow();
-            hostWindow.addEventListener(eventPrefix + "up", <any>this._onPointerUp, false);
+            if (hostWindow) {
+                hostWindow.addEventListener(eventPrefix + "up", <any>this._onPointerUp, false);
+            }
         }
     }
 
@@ -813,7 +819,7 @@ export class InputManager {
      */
     public detachControl() {
         const eventPrefix = Tools.GetPointerPrefix();
-        const canvas = this._scene.getEngine().getRenderingCanvas();
+        const canvas = this._scene.getEngine().getInputElement();
         const engine = this._scene.getEngine();
 
         if (!canvas) {
@@ -840,7 +846,9 @@ export class InputManager {
         canvas.removeEventListener("keyup", this._onKeyUp);
 
         // Cursor
-        canvas.style.cursor = this._scene.defaultCursor;
+        if (!this._scene.doNotHandleCursors) {
+            canvas.style.cursor = this._scene.defaultCursor;
+        }
     }
 
     /**

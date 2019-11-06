@@ -6,28 +6,8 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Camera } from "../../Cameras/camera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { WebXRCamera } from "./webXRCamera";
-import { WebXRManagedOutputCanvas } from './webXRManagedOutputCanvas';
-/**
- * States of the webXR experience
- */
-export enum WebXRState {
-    /**
-     * Transitioning to being in XR mode
-     */
-    ENTERING_XR,
-    /**
-     * Transitioning to non XR mode
-     */
-    EXITING_XR,
-    /**
-     * In XR mode and presenting
-     */
-    IN_XR,
-    /**
-     * Not entered XR mode
-     */
-    NOT_IN_XR
-}
+import { WebXRState, WebXRRenderTarget } from './webXRTypes';
+
 /**
  * Base set of functionality needed to create an XR experince (WebXRSessionManager, Camera, StateManagement, etc.)
  * @see https://doc.babylonjs.com/how_to/webxr
@@ -108,22 +88,25 @@ export class WebXRExperienceHelper implements IDisposable {
 
     /**
      * Enters XR mode (This must be done within a user interaction in most browsers eg. button click)
-     * @param sessionCreationOptions options for the XR session
+     * @param sessionMode options for the XR session
      * @param referenceSpaceType frame of reference of the XR session
-     * @param outputCanvas the output canvas that will be used to enter XR mode
+     * @param renderTarget the output canvas that will be used to enter XR mode
      * @returns promise that resolves after xr mode has entered
      */
-    public enterXRAsync(sessionCreationOptions: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, outputCanvas: WebXRManagedOutputCanvas) {
+    public enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget) {
         if (!this._supported) {
             throw "XR session not supported by this browser";
         }
         this._setState(WebXRState.ENTERING_XR);
-        return this.sessionManager.initializeSessionAsync(sessionCreationOptions).then(() => {
+        let sessionCreationOptions = {
+            optionalFeatures: (referenceSpaceType !== "viewer" && referenceSpaceType !== "local") ? [referenceSpaceType] : []
+        };
+        return this.sessionManager.initializeSessionAsync(sessionMode, sessionCreationOptions).then(() => {
             return this.sessionManager.setReferenceSpaceAsync(referenceSpaceType);
         }).then(() => {
-            return outputCanvas.initializeXRLayerAsync(this.sessionManager.session);
+            return renderTarget.initializeXRLayerAsync(this.sessionManager.session);
         }).then(() => {
-            return this.sessionManager.updateRenderStateAsync({ depthFar: this.camera.maxZ, depthNear: this.camera.minZ, baseLayer: outputCanvas.xrLayer! });
+            return this.sessionManager.updateRenderStateAsync({ depthFar: this.camera.maxZ, depthNear: this.camera.minZ, baseLayer: renderTarget.xrLayer! });
         }).then(() => {
             return this.sessionManager.startRenderingToXRAsync();
         }).then(() => {

@@ -31,7 +31,7 @@ export interface IEffectCreationOptions {
      */
     uniformsNames: string[];
     /**
-     * Uniform buffer varible names that will be set in the shader.
+     * Uniform buffer variable names that will be set in the shader.
      */
     uniformBuffersNames: string[];
     /**
@@ -235,10 +235,12 @@ export class Effect implements IDisposable {
         var vertexSource: any;
         var fragmentSource: any;
 
+        let hostDocument = DomManagement.IsWindowObjectExist() ? this._engine.getHostDocument() : null;
+
         if (baseName.vertexSource) {
             vertexSource = "source:" + baseName.vertexSource;
         } else if (baseName.vertexElement) {
-            vertexSource = document.getElementById(baseName.vertexElement);
+            vertexSource = hostDocument ? hostDocument.getElementById(baseName.vertexElement) : null;
 
             if (!vertexSource) {
                 vertexSource = baseName.vertexElement;
@@ -250,7 +252,7 @@ export class Effect implements IDisposable {
         if (baseName.fragmentSource) {
             fragmentSource = "source:" + baseName.fragmentSource;
         } else if (baseName.fragmentElement) {
-            fragmentSource = document.getElementById(baseName.fragmentElement);
+            fragmentSource = hostDocument ? hostDocument.getElementById(baseName.fragmentElement) : null;
 
             if (!fragmentSource) {
                 fragmentSource = baseName.fragmentElement;
@@ -442,23 +444,23 @@ export class Effect implements IDisposable {
 
         if (!this._pipelineContext || this._pipelineContext.isAsync) {
             setTimeout(() => {
-                this._checkIsReady();
+                this._checkIsReady(null);
             }, 16);
         }
     }
 
-    private _checkIsReady() {
+    private _checkIsReady(previousPipelineContext: Nullable<IPipelineContext>) {
         try {
             if (this._isReadyInternal()) {
                 return;
             }
         } catch (e) {
-            this._processCompilationErrors(e);
+            this._processCompilationErrors(e, previousPipelineContext);
             return;
         }
 
         setTimeout(() => {
-            this._checkIsReady();
+            this._checkIsReady(previousPipelineContext);
         }, 16);
     }
 
@@ -528,8 +530,10 @@ export class Effect implements IDisposable {
         };
         this.onCompiled = () => {
             var scenes = this.getEngine().scenes;
-            for (var i = 0; i < scenes.length; i++) {
-                scenes[i].markAllMaterialsAsDirty(Constants.MATERIAL_AllDirtyFlag);
+            if (scenes) {
+                for (var i = 0; i < scenes.length; i++) {
+                    scenes[i].markAllMaterialsAsDirty(Constants.MATERIAL_AllDirtyFlag);
+                }
             }
 
             this._pipelineContext!._handlesSpectorRebuildCallback(onCompiled);
@@ -591,7 +595,7 @@ export class Effect implements IDisposable {
             });
 
             if (this._pipelineContext.isAsync) {
-                this._checkIsReady();
+                this._checkIsReady(previousPipelineContext);
             }
 
         } catch (e) {
@@ -812,7 +816,7 @@ export class Effect implements IDisposable {
      * @returns this effect.
      */
     public setFloatArray(uniformName: string, array: Float32Array): Effect {
-        this._pipelineContext!.setFloatArray(uniformName, array);
+        this._pipelineContext!.setArray(uniformName, array);
         return this;
     }
 
@@ -823,7 +827,7 @@ export class Effect implements IDisposable {
      * @returns this effect.
      */
     public setFloatArray2(uniformName: string, array: Float32Array): Effect {
-        this._pipelineContext!.setFloatArray2(uniformName, array);
+        this._pipelineContext!.setArray2(uniformName, array);
         return this;
     }
 
@@ -834,7 +838,7 @@ export class Effect implements IDisposable {
      * @returns this effect.
      */
     public setFloatArray3(uniformName: string, array: Float32Array): Effect {
-        this._pipelineContext!.setFloatArray3(uniformName, array);
+        this._pipelineContext!.setArray3(uniformName, array);
         return this;
     }
 
@@ -845,7 +849,7 @@ export class Effect implements IDisposable {
      * @returns this effect.
      */
     public setFloatArray4(uniformName: string, array: Float32Array): Effect {
-        this._pipelineContext!.setFloatArray4(uniformName, array);
+        this._pipelineContext!.setArray4(uniformName, array);
         return this;
     }
 
@@ -955,7 +959,7 @@ export class Effect implements IDisposable {
      * @returns this effect.
      */
     public setBool(uniformName: string, bool: boolean): Effect {
-        this._pipelineContext!.setBool(uniformName, bool);
+        this._pipelineContext!.setInt(uniformName, bool ? 1 : 0);
         return this;
     }
 

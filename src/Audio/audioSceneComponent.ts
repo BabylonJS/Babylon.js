@@ -10,6 +10,7 @@ import { AbstractScene } from "../abstractScene";
 import { AssetContainer } from "../assetContainer";
 
 import "./audioEngine";
+import { PrecisionDate } from '../Misc/precisionDate';
 
 // Adds the parser to the scene parsers.
 AbstractScene.AddParser(SceneComponentConstants.NAME_AUDIO, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
@@ -90,6 +91,11 @@ declare module "../scene" {
          * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
          */
         audioListenerPositionProvider: Nullable<() => Vector3>;
+
+        /**
+         * Gets or sets a refresh rate when using 3D audio positioning
+         */
+        audioPositioningRefreshRate: number;
     }
 }
 
@@ -215,6 +221,29 @@ Object.defineProperty(Scene.prototype, "audioListenerPositionProvider", {
     configurable: true
 });
 
+Object.defineProperty(Scene.prototype, "audioPositioningRefreshRate", {
+    get: function(this: Scene) {
+        let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
+        if (!compo) {
+            compo = new AudioSceneComponent(this);
+            this._addComponent(compo);
+        }
+
+        return compo.audioPositioningRefreshRate;
+    },
+    set: function(this: Scene, value: number) {
+        let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
+        if (!compo) {
+            compo = new AudioSceneComponent(this);
+            this._addComponent(compo);
+        }
+
+        compo.audioPositioningRefreshRate = value;
+    },
+    enumerable: true,
+    configurable: true
+});
+
 /**
  * Defines the sound scene component responsible to manage any sounds
  * in a given scene.
@@ -247,6 +276,11 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
     public get headphone(): boolean {
         return this._headphone;
     }
+
+    /**
+     * Gets or sets a refresh rate when using 3D audio positioning
+     */
+    public audioPositioningRefreshRate = 500;
 
     private _audioListenerPositionProvider: Nullable<() => Vector3> = null;
     /**
@@ -440,7 +474,18 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         }
     }
 
+    private _cachedCameraDirection = new Vector3();
+    private _cachedCameraPosition = new Vector3();
+    private _lastCheck = 0;
+
     private _afterRender() {
+        var now = PrecisionDate.Now;
+        if (this._lastCheck && now - this._lastCheck < this.audioPositioningRefreshRate) {
+            return;
+        }
+
+        this._lastCheck = now;
+
         const scene = this.scene;
         if (!this._audioEnabled || !scene._mainSoundTrack || !scene.soundTracks || (scene._mainSoundTrack.soundCollection.length === 0 && scene.soundTracks.length === 1)) {
             return;
@@ -471,7 +516,11 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
                 // Check if there is a listening camera
                 if (listeningCamera) {
                     // Set the listener position to the listening camera global position
-                    audioEngine.audioContext.listener.setPosition(listeningCamera.globalPosition.x, listeningCamera.globalPosition.y, listeningCamera.globalPosition.z);
+                    if (!this._cachedCameraPosition.equals(listeningCamera.globalPosition)) {
+                        this._cachedCameraPosition.copyFrom(listeningCamera.globalPosition);
+                        audioEngine.audioContext.listener.setPosition(listeningCamera.globalPosition.x, listeningCamera.globalPosition.y, listeningCamera.globalPosition.z);
+                    }
+
                     // for VR cameras
                     if (listeningCamera.rigCameras && listeningCamera.rigCameras.length > 0) {
                         listeningCamera = listeningCamera.rigCameras[0];
@@ -481,7 +530,10 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
                     cameraDirection.normalize();
                     // To avoid some errors on GearVR
                     if (!isNaN(cameraDirection.x) && !isNaN(cameraDirection.y) && !isNaN(cameraDirection.z)) {
-                        audioEngine.audioContext.listener.setOrientation(cameraDirection.x, cameraDirection.y, cameraDirection.z, 0, 1, 0);
+                        if (!this._cachedCameraDirection.equals(cameraDirection)) {
+                            this._cachedCameraDirection.copyFrom(cameraDirection);
+                            audioEngine.audioContext.listener.setOrientation(cameraDirection.x, cameraDirection.y, cameraDirection.z, 0, 1, 0);
+                        }
                     }
                 }
                 // Otherwise set the listener position to 0, 0 ,0

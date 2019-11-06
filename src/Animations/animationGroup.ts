@@ -66,6 +66,11 @@ export class AnimationGroup implements IDisposable {
     public onAnimationLoopObservable = new Observable<TargetedAnimation>();
 
     /**
+     * Observer raised when all animations have looped
+     */
+    public onAnimationGroupLoopObservable = new Observable<AnimationGroup>();
+
+    /**
      * This observable will notify when all animations have ended.
      */
     public onAnimationGroupEndObservable = new Observable<AnimationGroup>();
@@ -253,6 +258,28 @@ export class AnimationGroup implements IDisposable {
         return this;
     }
 
+    private _animationLoopCount: number;
+    private _animationLoopFlags: boolean[];
+
+    private _processLoop(animatable: Animatable, targetedAnimation: TargetedAnimation, index: number) {
+        animatable.onAnimationLoop = () => {
+            this.onAnimationLoopObservable.notifyObservers(targetedAnimation);
+
+            if (this._animationLoopFlags[index]) {
+                return;
+            }
+
+            this._animationLoopFlags[index] = true;
+
+            this._animationLoopCount++;
+            if (this._animationLoopCount === this._targetedAnimations.length) {
+                this.onAnimationGroupLoopObservable.notifyObservers(this);
+                this._animationLoopCount = 0;
+                this._animationLoopFlags = [];
+            }
+        };
+    }
+
     /**
      * Start all animations on given targets
      * @param loop defines if animations must loop
@@ -268,15 +295,18 @@ export class AnimationGroup implements IDisposable {
 
         this._loopAnimation = loop;
 
-        for (const targetedAnimation of this._targetedAnimations) {
+        this._animationLoopCount = 0;
+        this._animationLoopFlags = [];
+
+        for (var index = 0; index < this._targetedAnimations.length; index++) {
+            const targetedAnimation = this._targetedAnimations[index];
             let animatable = this._scene.beginDirectAnimation(targetedAnimation.target, [targetedAnimation.animation], from !== undefined ? from : this._from, to !== undefined ? to : this._to, loop, speedRatio);
             animatable.onAnimationEnd = () => {
                 this.onAnimationEndObservable.notifyObservers(targetedAnimation);
                 this._checkAnimationGroupEnded(animatable);
             };
-            animatable.onAnimationLoop = () => {
-                this.onAnimationLoopObservable.notifyObservers(targetedAnimation);
-            };
+
+            this._processLoop(animatable, targetedAnimation, index);
             this._animatables.push(animatable);
         }
 
@@ -465,6 +495,7 @@ export class AnimationGroup implements IDisposable {
         this.onAnimationGroupPauseObservable.clear();
         this.onAnimationGroupPlayObservable.clear();
         this.onAnimationLoopObservable.clear();
+        this.onAnimationGroupLoopObservable.clear();
     }
 
     private _checkAnimationGroupEnded(animatable: Animatable) {
