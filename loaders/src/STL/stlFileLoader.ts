@@ -9,8 +9,6 @@ import { SceneLoader, ISceneLoaderPlugin, ISceneLoaderPluginExtensions } from "b
 import { AssetContainer } from "babylonjs/assetContainer";
 import { Scene } from "babylonjs/scene";
 
-import "babylonjs/Helpers/sceneHelpers";
-
 /**
  * STL file type loader.
  * This is a babylon scene loader plugin.
@@ -125,12 +123,6 @@ export class STLFileLoader implements ISceneLoaderPlugin {
      */
     public load(scene: Scene, data: any, rootUrl: string): boolean {
         var result = this.importMesh(null, scene, data, rootUrl, null, null, null);
-
-        if (result) {
-            scene.createDefaultLight();
-            scene.createDefaultCameraOrLight();
-        }
-
         return result;
     }
 

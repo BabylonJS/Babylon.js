@@ -9,7 +9,6 @@ import { Constants } from "../Engines/constants";
 import { DataBuffer } from './dataBuffer';
 import { extractMinAndMaxIndexed } from '../Maths/math.functions';
 import { Plane } from '../Maths/math.plane';
-import { InstancedMesh } from './instancedMesh';
 
 declare type Collider = import("../Collisions/collider").Collider;
 declare type Material = import("../Materials/material").Material;
@@ -308,7 +307,7 @@ export class SubMesh extends BaseSubMesh implements ICullable {
      * @returns the submesh
      */
     public render(enableAlphaMode: boolean): SubMesh {
-        this._renderingMesh.render(this, enableAlphaMode, (this._mesh as InstancedMesh)._actAsRegularMesh ? this._mesh : undefined);
+        this._renderingMesh.render(this, enableAlphaMode, this._mesh._internalAbstractMeshDataInfo._actAsRegularMesh ? this._mesh : undefined);
         return this;
     }
 

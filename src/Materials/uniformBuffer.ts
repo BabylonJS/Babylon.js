@@ -34,6 +34,9 @@ export class UniformBuffer {
     private _noUBO: boolean;
     private _currentEffect: Effect;
 
+    /** @hidden */
+    public _alreadyBound = false;
+
     // Pool for avoiding memory leaks
     private static _MAX_UNIFORM_SIZE = 256;
     private static _tempBuffer = new Float32Array(UniformBuffer._MAX_UNIFORM_SIZE);
@@ -743,6 +746,7 @@ export class UniformBuffer {
             return;
         }
 
+        this._alreadyBound = true;
         effect.bindUniformBuffer(this._buffer, name);
     }
 

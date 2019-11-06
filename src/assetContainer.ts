@@ -1,11 +1,37 @@
 import { AbstractScene } from "./abstractScene";
 import { Scene } from "./scene";
 import { Mesh } from "./Meshes/mesh";
+import { TransformNode } from './Meshes/transformNode';
+import { Skeleton } from './Bones/skeleton';
+import { AnimationGroup } from './Animations/animationGroup';
+import { AbstractMesh } from './Meshes/abstractMesh';
+import { MultiMaterial } from './Materials/multiMaterial';
+import { Material } from './Materials/material';
 
 /**
  * Set of assets to keep when moving a scene into an asset container.
  */
 export class KeepAssets extends AbstractScene { }
+
+/**
+ * Class used to store the output of the AssetContainer.instantiateAllMeshesToScene function
+ */
+export class InstantiatedEntries {
+    /**
+     * List of new root nodes (eg. nodes with no parent)
+     */
+    public rootNodes: TransformNode[] = [];
+
+    /**
+     * List of new skeletons
+     */
+    public skeletons: Skeleton[] = [];
+
+    /**
+     * List of new animation groups
+     */
+    public animationGroups: AnimationGroup[] = [];
+}
 
 /**
  * Container with a set of assets that can be added or removed from a scene.
@@ -29,6 +55,161 @@ export class AssetContainer extends AbstractScene {
         this["lensFlareSystems"] = [];
         this["proceduralTextures"] = [];
         this["reflectionProbes"] = [];
+    }
+
+    /**
+     * Instantiate or clone all meshes and add the new ones to the scene.
+     * Skeletons and animation groups will all be cloned
+     * @param nameFunction defines an optional function used to get new names for clones
+     * @param cloneMaterials defines an optional boolean that defines if materials must be cloned as well (false by default)
+     * @returns a list of rootNodes, skeletons and aniamtion groups that were duplicated
+     */
+    public instantiateModelsToScene(nameFunction?: (sourceName: string) => string, cloneMaterials = false): InstantiatedEntries {
+        let convertionMap: {[key: number]: number} = {};
+        let storeMap: {[key: number]: any} = {};
+        let result = new InstantiatedEntries();
+        let alreadySwappedSkeletons: Skeleton[] = [];
+        let alreadySwappedMaterials: Material[] = [];
+
+        let options = {
+            doNotInstantiate: true
+        };
+
+        let onClone = (source: TransformNode, clone: TransformNode) => {
+            convertionMap[source.uniqueId] = clone.uniqueId;
+            storeMap[clone.uniqueId] = clone;
+
+            if (nameFunction) {
+                clone.name = nameFunction(source.name);
+            }
+
+            if (clone instanceof Mesh) {
+                let clonedMesh = clone as Mesh;
+
+                if (clonedMesh.morphTargetManager) {
+                    let oldMorphTargetManager = (source as Mesh).morphTargetManager!;
+                    clonedMesh.morphTargetManager = oldMorphTargetManager.clone();
+
+                    for (var index = 0; index < oldMorphTargetManager.numTargets; index++) {
+                        let oldTarget = oldMorphTargetManager.getTarget(index);
+                        let newTarget = clonedMesh.morphTargetManager.getTarget(index);
+
+                        convertionMap[oldTarget.uniqueId] = newTarget.uniqueId;
+                        storeMap[newTarget.uniqueId] = newTarget;
+                    }
+                }
+            }
+        };
+
+        this.transformNodes.forEach((o) => {
+            if (!o.parent) {
+                let newOne = o.instantiateHierarchy(null, options, (source, clone) => {
+                    onClone(source, clone);
+                });
+
+                if (newOne) {
+                    result.rootNodes.push(newOne);
+                }
+            }
+        });
+
+        this.meshes.forEach((o) => {
+            if (!o.parent) {
+                let newOne = o.instantiateHierarchy(null, options, (source, clone) => {
+                    onClone(source, clone);
+
+                    if ((clone as any).material) {
+                        let mesh = clone as AbstractMesh;
+
+                        if (mesh.material) {
+                            if (cloneMaterials) {
+                                let sourceMaterial = (source as AbstractMesh).material!;
+
+                                if (alreadySwappedMaterials.indexOf(sourceMaterial) === -1) {
+                                    let swap = sourceMaterial.clone(nameFunction ? nameFunction(sourceMaterial.name) : "Clone of " + sourceMaterial.name)!;
+                                    alreadySwappedMaterials.push(sourceMaterial);
+                                    convertionMap[sourceMaterial.uniqueId] = swap.uniqueId;
+                                    storeMap[swap.uniqueId] = swap;
+
+                                    if (sourceMaterial.getClassName() === "MultiMaterial") {
+                                        let multi = sourceMaterial as MultiMaterial;
+
+                                        for (var material of multi.subMaterials) {
+                                            if (!material) {
+                                                continue;
+                                            }
+                                            swap = material.clone(nameFunction ? nameFunction(material.name) : "Clone of " + material.name)!;
+                                            alreadySwappedMaterials.push(material);
+                                            convertionMap[material.uniqueId] = swap.uniqueId;
+                                            storeMap[swap.uniqueId] = swap;
+                                        }
+                                    }
+                                }
+
+                                mesh.material = storeMap[convertionMap[sourceMaterial.uniqueId]];
+                            } else {
+                                if (mesh.material.getClassName() === "MultiMaterial") {
+                                    if (this.scene.multiMaterials.indexOf(mesh.material as MultiMaterial) === -1) {
+                                        this.scene.addMultiMaterial(mesh.material as MultiMaterial);
+                                    }
+                                } else {
+                                    if (this.scene.materials.indexOf(mesh.material) === -1) {
+                                        this.scene.addMaterial(mesh.material);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                });
+
+                if (newOne) {
+                    result.rootNodes.push(newOne);
+                }
+            }
+        });
+
+        this.skeletons.forEach((s) => {
+            let clone =  s.clone(nameFunction ? nameFunction(s.name) : "Clone of " + s.name);
+
+            if (s.overrideMesh) {
+                clone.overrideMesh = storeMap[convertionMap[s.overrideMesh.uniqueId]];
+            }
+
+            for (var m of this.meshes) {
+                if (m.skeleton === s && !m.isAnInstance) {
+                    let copy = storeMap[convertionMap[m.uniqueId]];
+                    (copy as Mesh).skeleton = clone;
+
+                    if (alreadySwappedSkeletons.indexOf(clone) !== -1) {
+                        continue;
+                    }
+
+                    alreadySwappedSkeletons.push(clone);
+
+                    // Check if bones are mesh linked
+                    for (var bone of clone.bones) {
+                        if (bone._linkedTransformNode) {
+                            bone._linkedTransformNode = storeMap[convertionMap[bone._linkedTransformNode.uniqueId]];
+                        }
+                    }
+                }
+            }
+
+            result.skeletons.push(clone);
+        });
+
+        this.animationGroups.forEach((o) => {
+            let clone = o.clone(o.name, (oldTarget) => {
+                let newTarget = storeMap[convertionMap[oldTarget.uniqueId]];
+
+                return newTarget || oldTarget;
+            });
+
+            result.animationGroups.push(clone);
+        });
+
+        return result;
     }
 
     /**

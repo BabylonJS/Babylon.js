@@ -278,7 +278,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
             this.setCameraRigMode(Camera.RIG_MODE_WEBVR, { parentCamera: this, vrDisplay: this._vrDevice, frameData: this._frameData, specs: this._specsVersion });
 
             if (this._attached) {
-                this.getEngine().enableVR();
+                this.getEngine().enableVR(this.webVROptions);
             }
         });
 
@@ -506,11 +506,14 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
         noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
 
         if (this._vrDevice) {
-            this.getEngine().enableVR();
+            this.getEngine().enableVR(this.webVROptions);
         }
 
         let hostWindow = this._scene.getEngine().getHostWindow();
-        hostWindow.addEventListener('vrdisplaypresentchange', this._detachIfAttached);
+
+        if (hostWindow) {
+            hostWindow.addEventListener('vrdisplaypresentchange', this._detachIfAttached);
+        }
     }
 
     /**

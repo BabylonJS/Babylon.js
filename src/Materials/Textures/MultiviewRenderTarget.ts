@@ -17,6 +17,7 @@ export class MultiviewRenderTarget extends RenderTargetTexture {
         var internalTexture = scene.getEngine().createMultiviewRenderTargetTexture(this.getRenderWidth(), this.getRenderHeight());
         internalTexture.isMultiview = true;
         this._texture = internalTexture;
+        this.samples = this._engine.getCaps().maxSamples || this.samples;
     }
 
     /**

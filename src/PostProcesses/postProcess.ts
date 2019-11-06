@@ -484,9 +484,15 @@ export class PostProcess {
                 this.width = desiredWidth;
                 this.height = desiredHeight;
 
+                const needMipMaps = this.renderTargetSamplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE ||
+                                    this.renderTargetSamplingMode === Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR ||
+                                    this.renderTargetSamplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR ||
+                                    this.renderTargetSamplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR ||
+                                    this.renderTargetSamplingMode === Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR;
+
                 let textureSize = { width: this.width, height: this.height };
                 let textureOptions = {
-                    generateMipMaps: false,
+                    generateMipMaps: needMipMaps,
                     generateDepthBuffer: forceDepthStencil || camera._postProcesses.indexOf(this) === 0,
                     generateStencilBuffer: (forceDepthStencil || camera._postProcesses.indexOf(this) === 0) && this._engine.isStencilEnable,
                     samplingMode: this.renderTargetSamplingMode,

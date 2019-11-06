@@ -3,6 +3,7 @@ import { Logger } from '../../Misc/logger';
 import { RenderTargetCreationOptions } from '../../Materials/Textures/renderTargetCreationOptions';
 import { Constants } from '../constants';
 import { ThinEngine } from '../thinEngine';
+import { DepthTextureCreationOptions } from '../depthTextureCreationOptions';
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -13,6 +14,18 @@ declare module "../../Engines/thinEngine" {
          * @returns a new render target texture stored in an InternalTexture
          */
         createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): InternalTexture;
+
+        /**
+         * Creates a depth stencil texture.
+         * This is only available in WebGL 2 or with the depth texture extension available.
+         * @param size The size of face edge in the texture.
+         * @param options The options defining the texture.
+         * @returns The texture
+         */
+        createDepthStencilTexture(size: number | { width: number, height: number }, options: DepthTextureCreationOptions): InternalTexture;
+
+        /** @hidden */
+        _createDepthStencilTexture(size: number | { width: number, height: number }, options: DepthTextureCreationOptions): InternalTexture;
     }
 }
 
@@ -101,4 +114,56 @@ ThinEngine.prototype.createRenderTargetTexture = function(this: ThinEngine, size
     this._internalTexturesCache.push(texture);
 
     return texture;
+};
+
+ThinEngine.prototype.createDepthStencilTexture = function(size: number | { width: number, height: number }, options: DepthTextureCreationOptions): InternalTexture {
+    if (options.isCube) {
+        let width = (<{ width: number, height: number }>size).width || <number>size;
+        return this._createDepthStencilCubeTexture(width, options);
+    }
+    else {
+        return this._createDepthStencilTexture(size, options);
+    }
+};
+
+ThinEngine.prototype._createDepthStencilTexture = function(size: number | { width: number, height: number }, options: DepthTextureCreationOptions): InternalTexture {
+    var internalTexture = new InternalTexture(this, InternalTextureSource.Depth);
+
+    if (!this._caps.depthTextureExtension) {
+        Logger.Error("Depth texture is not supported by your browser or hardware.");
+        return internalTexture;
+    }
+
+    var internalOptions = {
+        bilinearFiltering: false,
+        comparisonFunction: 0,
+        generateStencil: false,
+        ...options
+    };
+
+    var gl = this._gl;
+    this._bindTextureDirectly(gl.TEXTURE_2D, internalTexture, true);
+
+    this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.bilinearFiltering, internalOptions.comparisonFunction);
+
+    if (this.webGLVersion > 1) {
+        if (internalOptions.generateStencil) {
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH24_STENCIL8, internalTexture.width, internalTexture.height, 0, gl.DEPTH_STENCIL, gl.UNSIGNED_INT_24_8, null);
+        }
+        else {
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT24, internalTexture.width, internalTexture.height, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
+        }
+    }
+    else {
+        if (internalOptions.generateStencil) {
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_STENCIL, internalTexture.width, internalTexture.height, 0, gl.DEPTH_STENCIL, gl.UNSIGNED_INT_24_8, null);
+        }
+        else {
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, internalTexture.width, internalTexture.height, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
+        }
+    }
+
+    this._bindTextureDirectly(gl.TEXTURE_2D, null);
+
+    return internalTexture;
 };
