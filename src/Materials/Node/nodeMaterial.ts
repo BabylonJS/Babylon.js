@@ -525,7 +525,7 @@ export class NodeMaterial extends PushMaterial {
      * Build the material and generates the inner effect
      * @param verbose defines if the build should log activity
      */
-    public build(verbose: boolean = false) {
+    public build(verbose: boolean = true) {
         this._buildWasSuccessful = false;
         var engine = this.getScene().getEngine();
 
