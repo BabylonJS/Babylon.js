@@ -136,6 +136,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
                     <TextLineComponent label="Animation count" value={animationGroup.targetedAnimations.length.toString()} />
                     <TextLineComponent label="From" value={animationGroup.from.toFixed(2)} />
                     <TextLineComponent label="To" value={animationGroup.to.toFixed(2)} />
+                    <TextLineComponent label="Unique ID" value={animationGroup.uniqueId.toString()} />
                 </LineContainerComponent>
             </div>
         );

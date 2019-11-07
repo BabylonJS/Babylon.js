@@ -69,6 +69,7 @@
             <div class="buttonPG removeOnPhone" id="zipButton1280"><img src="css/img/downloadButton.svg"></div>
             <div class="buttonPG" id="newButton1280"><img src="css/img/newButton.svg"></div>
             <div class="buttonPG removeOnPhone" id="clearButton1280"><img src="css/img/clearButton.svg"></div>
+            <div class="buttonPG removeOnPhone" id="diffButton1280"><img src="css/img/diffButton.svg"></div>
             <div class="buttonPG select" id="menuButton1280"><img src="css/img/optionsButton.svg">
                 <div class="toDisplay languageJS">
                     <div class="option subSelect">Theme <i class="fa fa-chevron-right" aria-hidden="true"></i>
@@ -136,6 +137,7 @@
             <div class="buttonPG removeOnPhone" id="zipButton1024"><img src="css/img/downloadButton.svg"></div>
             <div class="buttonPG" id="newButton1024"><img src="css/img/newButton.svg"></div>
             <div class="buttonPG removeOnPhone" id="clearButton1024"><img src="css/img/clearButton.svg"></div>
+            <div class="buttonPG removeOnPhone" id="diffButton1024"><img src="css/img/diffButton.svg"></div>
 
             <div class="buttonPG select" id="menuButton1024"><img src="css/img/optionsButton.svg">
                 <div class="toDisplay">
@@ -203,6 +205,8 @@
                     </div>
                     <div class="option noSubSelect" id="newButtonMobile"><img src="css/img/newButton.svg">New</div>
                     <div class="option noSubSelect" id="clearButtonMobile"><img src="css/img/clearButton.svg">Clear
+                    </div>
+                    <div class="option noSubSelect" id="diffButtonMobile"><img src="css/img/DiffButton.svg">Diff
                     </div>
                     <div class="option noSubSelect" id="debugButtonMobile"><img
                             src="css/img/inspectorButton.svg">Inspector</div>
@@ -354,6 +358,26 @@
         </div>
     </div>
 
+    <div id="diffLayer" class="save-layer">
+        <div class="save-form diff-form">
+            <label for="diffFormSource">COMPARISON SOURCE</label>
+            <div class="separator"></div>
+            <input type="text" maxlength="120" id="diffFormSource" placeholder="leave blank to use current snippet, or use snippet ID" class="save-form-title">
+
+            <label for="diffFormCompareTo">COMPARE TO</label>
+            <div class="separator"></div>
+            <input type="text" maxlength="120" id="diffFormCompareTo" placeholder="snippet ID" class="save-form-title">
+
+            <div class="save-form-buttons" id="diffFormButtons">
+                <div id="diffFormButtonOk">OK</div>
+                <div id="diffFormButtonCancel">Cancel</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="diffView" class="diff-view">
+    </div>    
+
     <div id="waitDiv">
         <div id="logo-part">
             <img src="css/img/v4.svg" id="waitLogo" />
@@ -378,16 +402,6 @@
     <script src="js/utils.js"></script>
     <script src="js/zipTool.js"></script>
     <script src="js/index.js"></script>
-
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-41767310-2"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-
-        gtag('config', 'UA-41767310-2');
-    </script>
 </body>
 
 </html>

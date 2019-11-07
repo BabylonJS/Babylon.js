@@ -38,3 +38,6 @@ export * from "./posterizeBlock";
 export * from "./waveBlock";
 export * from "./gradientBlock";
 export * from "./nLerpBlock";
+export * from "./worleyNoise3DBlock";
+export * from "./simplexPerlin3DBlock";
+export * from "./normalBlendBlock";

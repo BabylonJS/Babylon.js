@@ -181,7 +181,7 @@ export class Constants {
     /** FLOAT_32_UNSIGNED_INT_24_8_REV */
     public static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = 15;
 
-    /** nearest is mag = nearest and min = nearest and mip = linear */
+    /** nearest is mag = nearest and min = nearest and mip = nearest */
     public static readonly TEXTURE_NEAREST_SAMPLINGMODE = 1;
     /** Bilinear is mag = linear and min = linear and mip = nearest */
     public static readonly TEXTURE_BILINEAR_SAMPLINGMODE = 2;
@@ -412,10 +412,6 @@ export class Constants {
      * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
      */
     public static readonly PARTICLES_BILLBOARDMODE_STRETCHED = 8;
-    /**
-     * Gets or sets base Assets URL
-     */
-    public static PARTICLES_BaseAssetsUrl = "https://assets.babylonjs.com/particles";
 
     /** Default culling strategy : this is an exclusion test and it's the more accurate.
      *  Test order :

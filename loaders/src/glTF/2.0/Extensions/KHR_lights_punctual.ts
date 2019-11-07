@@ -44,14 +44,18 @@ interface ObjectWithMetadata {
 }
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/1048d162a44dbcb05aefc1874bfd423cf60135a6/extensions/2.0/Khronos/KHR_lights_punctual/README.md) (Experimental)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md)
  */
 export class KHR_lights implements IGLTFLoaderExtension {
-    /** The name of this extension. */
+    /**
+     * The name of this extension.
+     */
     public readonly name = NAME;
 
-    /** Defines whether this extension is enabled. */
-    public enabled = true;
+    /**
+     * Defines whether this extension is enabled.
+     */
+    public enabled: boolean;
 
     private _loader: GLTFLoader;
     private _lights?: ILight[];
@@ -59,6 +63,7 @@ export class KHR_lights implements IGLTFLoaderExtension {
     /** @hidden */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
+        this.enabled = this._loader.isExtensionUsed(NAME);
     }
 
     /** @hidden */

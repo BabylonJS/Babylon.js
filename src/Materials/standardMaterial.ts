@@ -1505,7 +1505,9 @@ export class StandardMaterial extends PushMaterial {
             }
 
             // Log. depth
-            MaterialHelper.BindLogDepth(defines, effect, scene);
+            if (this.useLogarithmicDepth) {
+                MaterialHelper.BindLogDepth(defines, effect, scene);
+            }
 
             // image processing
             if (this._imageProcessingConfiguration && !this._imageProcessingConfiguration.applyByPostProcess) {

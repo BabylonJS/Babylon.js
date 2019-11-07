@@ -27,7 +27,6 @@ import { _TypeStore } from '../../Misc/typeStore';
 import { SerializationHelper } from '../../Misc/decorators';
 import { TextureBlock } from './Blocks/Dual/textureBlock';
 import { ReflectionTextureBlock } from './Blocks/Dual/reflectionTextureBlock';
-import { FileTools } from '../../Misc/fileTools';
 import { EffectFallbacks } from '../effectFallbacks';
 
 // declare NODEEDITOR namespace for compilation issue
@@ -134,6 +133,12 @@ export class NodeMaterial extends PushMaterial {
 
         return undefined;
     }
+
+    /**
+     * Gets or sets data used by visual editor
+     * @see https://nme.babylonjs.com
+     */
+    public editorData: any = null;
 
     /**
      * Gets or sets a boolean indicating that alpha value must be ignored (This will turn alpha blending off even if an alpha value is produced by the material)
@@ -464,6 +469,15 @@ export class NodeMaterial extends PushMaterial {
         node._preparationId = this._buildId;
 
         if (this.attachedBlocks.indexOf(node) === -1) {
+            if (node.isUnique) {
+                const className = node.getClassName();
+
+                for (var other of this.attachedBlocks) {
+                    if (other.getClassName() === className) {
+                        throw `Cannot have multiple blocks of type ${className} in the same NodeMaterial`;
+                    }
+                }
+            }
             this.attachedBlocks.push(node);
         }
 
@@ -511,7 +525,7 @@ export class NodeMaterial extends PushMaterial {
      * Build the material and generates the inner effect
      * @param verbose defines if the build should log activity
      */
-    public build(verbose: boolean = false) {
+    public build(verbose: boolean = true) {
         this._buildWasSuccessful = false;
         var engine = this.getScene().getEngine();
 
@@ -712,8 +726,9 @@ export class NodeMaterial extends PushMaterial {
             });
 
             // Uniforms
+            let uniformBuffers: string[] = [];
             this._sharedData.dynamicUniformBlocks.forEach((b) => {
-                b.updateUniformsAndSamples(this._vertexCompilationState, this, defines);
+                b.updateUniformsAndSamples(this._vertexCompilationState, this, defines, uniformBuffers);
             });
 
             let mergedUniforms = this._vertexCompilationState.uniforms;
@@ -723,17 +738,6 @@ export class NodeMaterial extends PushMaterial {
 
                 if (index === -1) {
                     mergedUniforms.push(u);
-                }
-            });
-
-            // Uniform buffers
-            let mergedUniformBuffers = this._vertexCompilationState.uniformBuffers;
-
-            this._fragmentCompilationState.uniformBuffers.forEach((u) => {
-                let index = mergedUniformBuffers.indexOf(u);
-
-                if (index === -1) {
-                    mergedUniformBuffers.push(u);
                 }
             });
 
@@ -765,7 +769,7 @@ export class NodeMaterial extends PushMaterial {
             }, <IEffectCreationOptions>{
                 attributes: this._vertexCompilationState.attributes,
                 uniformsNames: mergedUniforms,
-                uniformBuffersNames: mergedUniformBuffers,
+                uniformBuffersNames: uniformBuffers,
                 samplers: mergedSamplers,
                 defines: join,
                 fallbacks: fallbacks,
@@ -928,6 +932,10 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
+        for (var block of this.attachedBlocks) {
+            block.dispose();
+        }
+
         this.onBuildObservable.clear();
 
         super.dispose(forceDisposeEffect, forceDisposeTextures, notBoundToMesh);
@@ -1018,16 +1026,9 @@ export class NodeMaterial extends PushMaterial {
      * @returns a promise that will fullfil when the material is fully loaded
      */
     public loadAsync(url: string) {
-        return new Promise((resolve, reject) => {
-            FileTools.LoadFile(url, (data) => {
-                let serializationObject = JSON.parse(data as string);
-
-                this.loadFromSerialization(serializationObject, "");
-
-                resolve();
-            }, undefined, undefined, false, (request, exception) => {
-                reject(exception.message);
-            });
+        return this.getScene()._loadFileAsync(url).then((data) => {
+            const serializationObject = JSON.parse(data as string);
+            this.loadFromSerialization(serializationObject, "");
         });
     }
 
@@ -1069,7 +1070,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // Generate vertex shader
-        let codeString = "var nodeMaterial = new BABYLON.NodeMaterial(`node material`);\r\n";
+        let codeString = `var nodeMaterial = new BABYLON.NodeMaterial("${this.name || "node material"}");\r\n`;
         for (var node of vertexBlocks) {
             if (node.isInput && alreadyDumped.indexOf(node) === -1) {
                 codeString += node._dumpCode(uniqueNames, alreadyDumped);
@@ -1083,6 +1084,18 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
+        // Connections
+        alreadyDumped = [];
+        codeString += "\r\n// Connections\r\n";
+        for (var node of this._vertexOutputNodes) {
+            codeString += node._dumpCodeForOutputConnections(alreadyDumped);
+        }
+        for (var node of this._fragmentOutputNodes) {
+            codeString += node._dumpCodeForOutputConnections(alreadyDumped);
+        }
+
+        // Output nodes
+        codeString += "\r\n// Output nodes\r\n";
         for (var node of this._vertexOutputNodes) {
             codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\r\n`;
         }
@@ -1189,7 +1202,7 @@ export class NodeMaterial extends PushMaterial {
             let parsedBlock = source.blocks[blockIndex];
             let block = map[parsedBlock.id];
 
-            if (!block.isInput) {
+            if (block.inputs.length) {
                 continue;
             }
             this._restoreConnections(block, source, map);
@@ -1200,11 +1213,19 @@ export class NodeMaterial extends PushMaterial {
             this.addOutputNode(map[outputNodeId]);
         }
 
-        // Store map for external uses
-        source.map = {};
+        // UI related info
+        if (source.locations) {
+            let locations: {
+                blockId: number;
+                x: number;
+                y: number;
+            }[] = source.locations;
 
-        for (var key in map) {
-            source.map[key] = map[key].uniqueId;
+            for (var location of locations) {
+                location.blockId = map[location.blockId].uniqueId;
+            }
+
+            this.editorData = locations;
         }
     }
 

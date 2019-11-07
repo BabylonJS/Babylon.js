@@ -365,7 +365,7 @@ export class _GLTFAnimation {
 
             if (i + 1 < length) {
                 nextKeyFrame = keyFrames[i + 1];
-                if (currKeyFrame.value.equals(nextKeyFrame.value)) {
+                if (currKeyFrame.value.equals && currKeyFrame.value.equals(nextKeyFrame.value) || currKeyFrame.value === nextKeyFrame.value) {
                     if (i === 0) { // set the first frame to itself
                         endFrame = currKeyFrame.frame;
                     }
@@ -380,7 +380,7 @@ export class _GLTFAnimation {
             else {
                 // at the last key frame
                 prevKeyFrame = keyFrames[i - 1];
-                if (currKeyFrame.value.equals(prevKeyFrame.value)) {
+                if (currKeyFrame.value.equals && currKeyFrame.value.equals(prevKeyFrame.value) || currKeyFrame.value === prevKeyFrame.value) {
                     continue;
                 }
                 else {

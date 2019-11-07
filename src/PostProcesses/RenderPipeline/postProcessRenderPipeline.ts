@@ -36,6 +36,11 @@ export class PostProcessRenderPipeline {
         return this._name;
     }
 
+    /** Gets the list of attached cameras */
+    public get cameras() {
+        return this._cameras;
+    }
+
     /**
      * Initializes a PostProcessRenderPipeline
      * @param engine engine to add the pipeline to

@@ -1,4 +1,26 @@
 var engine = null;
+var canas = null;
+var scene = null;
+var globalParent = null;
+
+handleException = function(parent, e) {
+    parent.utils.showError(e.message, e);
+    // Also log error in console to help debug playgrounds
+    console.error(e);
+}
+
+fastEval = function(code) {
+    var head = document.getElementsByTagName('head')[0];
+    var script = document.createElement('script');
+    script.setAttribute('type', 'text/javascript');
+
+    script.innerHTML = `try {${code};}
+    catch(e) {
+        handleException(globalParent, e);
+    }`;
+
+    head.appendChild(script);
+}
 
 /**
  * Compile the script in the editor, and run the preview in the canvas
@@ -9,6 +31,7 @@ compileAndRun = function(parent, fpsLabel) {
 
     try {
         parent.menuPG.hideWaitDiv();
+        globalParent = parent;
 
         if (!BABYLON.Engine.isSupported()) {
             parent.utils.showError("Your browser does not support WebGL. Please, try to update it, or install a compatible one.", null);
@@ -31,7 +54,7 @@ compileAndRun = function(parent, fpsLabel) {
             engine = null;
         }
 
-        var canvas = document.getElementById("renderCanvas");
+        canvas = document.getElementById("renderCanvas");
         document.getElementById("errorZone").style.display = 'none';
         document.getElementById("errorZone").innerHTML = "";
         document.getElementById("statusBar").innerHTML = "Loading assets... Please wait.";
@@ -40,12 +63,11 @@ compileAndRun = function(parent, fpsLabel) {
         var createEngineFunction = "createDefaultEngine";
         var createSceneFunction;
 
-        parent.monacoCreator.getRunCode(function (code) {
-            var createDefaultEngine = function () {
+        parent.monacoCreator.getRunCode().then(code => {
+            createDefaultEngine = function () {
                 return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
             }
 
-            var scene;
             var defaultEngineZip = "new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true })";
 
             if (code.indexOf("createEngine") !== -1) {
@@ -69,33 +91,29 @@ compileAndRun = function(parent, fpsLabel) {
                 engine = createDefaultEngine();
                 scene = new BABYLON.Scene(engine);
                 var runScript = null;
-                eval("runScript = function(scene, canvas) {" + code + "}");
+                fastEval("runScript = function(scene, canvas) {" + code + "}");
                 runScript(scene, canvas);
 
                 parent.zipTool.ZipCode = "var engine = " + defaultEngineZip + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
             } else {
-                var __createScene = null;
                 if (parent.settingsPG.ScriptLanguage == "JS") {
-                    code += "\n" + "__createScene = " + createSceneFunction + ";";
+                    code += "\n" + "scene = " + createSceneFunction + "();";
                 }
                 else {
-                    __createScene = createSceneFunction;
                     var startCar = code.search('var ' + createSceneFunction);
                     code = code.substr(0, startCar) + code.substr(startCar + 4);
+                    code += "\n" + "scene = " + createSceneFunction + "();";
                 }
 
-                // Execute the code
-                eval(code);
-
                 // Create engine
-                eval("engine = " + createEngineFunction + "()");
+                fastEval("engine = " + createEngineFunction + "()");
                 if (!engine) {
                     parent.utils.showError("createEngine function must return an engine.", null);
                     return;
-                }
+                }                
 
-                // Create scene
-                eval("scene = " + __createScene + "()");
+                // Execute the code
+                fastEval(code);
 
                 if (!scene) {
                     parent.utils.showError(createSceneFunction + " function must return a scene.", null);
@@ -113,10 +131,8 @@ compileAndRun = function(parent, fpsLabel) {
                     : defaultEngineZip;
 
                 parent.zipTool.zipCode =
-                    code + "\r\n\r\n" +
                     "var engine = " + createEngineZip + ";\r\n" +
-                    "var scene = " + createSceneFunction + "();";
-
+                    code + "\r\n\r\n";
             }
 
             engine = engine;
@@ -172,12 +188,11 @@ compileAndRun = function(parent, fpsLabel) {
                     }
                 }
             }
-        }.bind(this));
-
+        }).catch(e => {
+            handleException(parent, e);
+        });
     } catch (e) {
-        parent.utils.showError(e.message, e);
-        // Also log error in console to help debug playgrounds
-        console.error(e);
+        handleException(parent, e);
     }
 };
 
@@ -216,6 +231,13 @@ class Main {
         }.bind(this));
         document.getElementById("saveFormButtonCancel").addEventListener("click", function () {
             document.getElementById("saveLayer").style.display = "none";
+        });
+        document.getElementById("diffFormButtonOk").addEventListener("click", function () {
+            document.getElementById("diffLayer").style.display = "none";
+            this.diff();
+        }.bind(this));
+        document.getElementById("diffFormButtonCancel").addEventListener("click", function () {
+            document.getElementById("diffLayer").style.display = "none";
         });
 
         // Resize the render view when resizing the window
@@ -256,6 +278,8 @@ class Main {
         }.bind(this));
         // Save
         this.parent.utils.setToMultipleID("saveButton", "click", this.askForSave.bind(this));
+        // Diff
+        this.parent.utils.setToMultipleID("diffButton", "click", this.askForDiff.bind(this));
         // Zip
         this.parent.utils.setToMultipleID("zipButton", "click", function () {
             this.parent.zipTool.getZip(engine);
@@ -753,7 +777,53 @@ class Main {
         }
     };
 
+    askForDiff() {
+        const diffLayer = document.getElementById("diffLayer");
+        const right = document.getElementById("diffFormCompareTo");
 
+        if (this.previousHash && right.value === "") {
+            // Use the previous snippet hash for right comparison, if present
+            right.value = this.previousHash;
+        } 
+
+        diffLayer.style.display = "block";
+    }
+
+    async loadSnippetCode(snippetid) {
+        if (!snippetid || snippetid === "")
+            return "";
+
+        let response = await fetch(`${this.snippetV3Url}/${snippetid.replace(/#/g, "/")}`);
+        if (!response.ok)
+            throw new Error(`Unable to load snippet ${snippetid}`)
+
+        let result = await response.json();
+        return JSON.parse(result.jsonPayload).code.toString();
+    }
+	
+	async getSnippetCode(value) {
+        if (!value || value === "") {
+            // use current snippet
+            return this.parent.monacoCreator.JsEditor.getValue();
+        } else {
+            // load script
+            return await this.loadSnippetCode(value);
+        }
+    }
+
+    async diff() {
+        try {
+            const leftText = await this.getSnippetCode(document.getElementById("diffFormSource").value);
+            const rightText = await this.getSnippetCode(document.getElementById("diffFormCompareTo").value);
+            const diffView = document.getElementById("diffView");
+
+            diffView.style.display = "block";
+            this.parent.monacoCreator.createDiff(leftText, rightText, diffView);
+        } catch(e) {
+            // only pass the message, we don't want to inspect the stacktrace in this case
+            this.parent.utils.showError(e.message, null);
+        }
+    }
 
     /**
          * Toggle the code editor

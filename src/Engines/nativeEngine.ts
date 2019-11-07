@@ -12,7 +12,8 @@ import { DataBuffer } from '../Meshes/dataBuffer';
 import { Tools } from "../Misc/tools";
 import { Observer } from "../Misc/observable";
 import { EnvironmentTextureTools, EnvironmentTextureSpecularInfoV1 } from "../Misc/environmentTextureTools";
-import { Color4, Matrix, Viewport, Color3 } from "../Maths/math";
+import { Matrix, Viewport, Color3 } from "../Maths/math";
+import { IColor4Like } from '../Maths/math.like';
 import { Scene } from "../scene";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import { IPipelineContext } from './IPipelineContext';
@@ -21,7 +22,6 @@ import { NativeShaderProcessor } from './Native/nativeShaderProcessor';
 import { Logger } from "../Misc/logger";
 import { Constants } from './constants';
 import { ThinEngine } from './thinEngine';
-import { EngineCapabilities } from './engineCapabilities';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 
 interface INativeEngine {
@@ -54,6 +54,7 @@ interface INativeEngine {
     setBlendMode(blendMode: number): void;
 
     setMatrix(uniform: WebGLUniformLocation, matrix: Float32Array): void;
+    setInt(uniform: WebGLUniformLocation, int: number): void;
     setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void;
     setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void;
     setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void;
@@ -68,12 +69,11 @@ interface INativeEngine {
     setFloat(uniform: WebGLUniformLocation, value: number): void;
     setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void;
     setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void;
-    setBool(uniform: WebGLUniformLocation, bool: number): void;
     setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
 
     createTexture(): WebGLTexture;
-    loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | ArrayBufferView | Blob, mipMap: boolean): void;
-    loadCubeTexture(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, flipY : boolean): void;
+    loadTexture(texture: WebGLTexture, buffer: ArrayBuffer | ArrayBufferView | Blob, mipMap: boolean, invertY: boolean): boolean;
+    loadCubeTexture(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, flipY : boolean): boolean;
     getTextureWidth(texture: WebGLTexture): number;
     getTextureHeight(texture: WebGLTexture): number;
     setTextureSampling(texture: WebGLTexture, filter: number): void; // filter is a NativeFilter.XXXX value.
@@ -82,17 +82,23 @@ interface INativeEngine {
     setTexture(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>): void;
     deleteTexture(texture: Nullable<WebGLTexture>): void;
 
-    createFrameBuffer(texture: WebGLTexture, width: number, height: number, format: number, samplingMode: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMipMaps: boolean): WebGLFramebuffer;
-    bindFrameBuffer(frameBuffer: WebGLFramebuffer): void;
-    unbindFrameBuffer(frameBuffer: WebGLFramebuffer): void;
+    createFramebuffer(texture: WebGLTexture, width: number, height: number, format: number, samplingMode: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, generateMipMaps: boolean): WebGLFramebuffer;
+    deleteFramebuffer(framebuffer: WebGLFramebuffer): void;
+    bindFramebuffer(framebuffer: WebGLFramebuffer): void;
+    unbindFramebuffer(framebuffer: WebGLFramebuffer): void;
 
     drawIndexed(fillMode: number, indexStart: number, indexCount: number): void;
     draw(fillMode: number, vertexStart: number, vertexCount: number): void;
 
-    clear(r: number, g: number, b: number, a: number, backBuffer: boolean, depth: boolean, stencil: boolean): void;
+    clear(flags: number): void;
+    clearColor(r: number, g: number, b: number, a: number): void;
+    clearDepth(depth: number): void;
+    clearStencil(stencil: number): void;
 
     getRenderWidth(): number;
     getRenderHeight(): number;
+
+    setViewPort(x: number, y: number, width: number, height: number): void;
 }
 
 class NativePipelineContext implements IPipelineContext {
@@ -143,6 +149,13 @@ class NativeFilter {
     public static readonly MINLINEAR_MAGPOINT_MIPPOINT = 10;
 }
 
+// these flags match bgfx.
+class NativeClearFlags
+{
+    public static readonly CLEAR_COLOR = 1;
+    public static readonly CLEAR_DEPTH = 2;
+    public static readonly CLEAR_STENCIL = 4;
+}
 // TODO: change this to match bgfx.
 // Must match AddressMode enum in SpectreEngine.h.
 class NativeAddressMode {
@@ -159,11 +172,24 @@ class NativeTextureFormat {
 }
 
 /** @hidden */
-declare var nativeEngine: INativeEngine;
+class NativeTexture extends InternalTexture {
+    public getInternalTexture(): InternalTexture {
+        return this;
+    }
+
+    public getViewCount(): number {
+        return 1;
+    }
+}
+
+/** @hidden */
+declare var _native: any;
 
 /** @hidden */
 export class NativeEngine extends Engine {
-    private readonly _native: INativeEngine = nativeEngine;
+    private readonly _native: INativeEngine = new _native.Engine();
+    /** Defines the invalid handle returned by bgfx when resource creation goes wrong */
+    private readonly INVALID_HANDLE = 65535;
 
     public getHardwareScalingLevel(): number {
         return 1.0;
@@ -178,46 +204,42 @@ export class NativeEngine extends Engine {
         // TODO: Initialize this more correctly based on the hardware capabilities.
         // Init caps
 
-        this._caps = new EngineCapabilities();
-        this._caps.maxTexturesImageUnits = 16;
-        this._caps.maxVertexTextureImageUnits = 16;
-        this._caps.maxTextureSize = 512;
-        this._caps.maxCubemapTextureSize = 512;
-        this._caps.maxRenderTextureSize = 512;
-        this._caps.maxVertexAttribs = 16;
-        this._caps.maxVaryingVectors = 16;
-        this._caps.maxFragmentUniformVectors = 16;
-        this._caps.maxVertexUniformVectors = 16;
-
-        // Extensions
-        this._caps.standardDerivatives = true;
-
-        this._caps.astc = null;
-        this._caps.s3tc = null;
-        this._caps.pvrtc = null;
-        this._caps.etc1 = null;
-        this._caps.etc2 = null;
-
-        this._caps.maxAnisotropy = 16;  // TODO: Retrieve this smartly. Currently set to D3D11 maximum allowable value.
-        this._caps.uintIndices = false;
-        this._caps.fragmentDepthSupported = false;
-        this._caps.highPrecisionShaderSupported = true;
-
-        this._caps.colorBufferFloat = false;
-        this._caps.textureFloat = false;
-        this._caps.textureFloatLinearFiltering = false;
-        this._caps.textureFloatRender = false;
-
-        this._caps.textureHalfFloat = false;
-        this._caps.textureHalfFloatLinearFiltering = false;
-        this._caps.textureHalfFloatRender = false;
-
-        this._caps.textureLOD = true;
-        this._caps.drawBuffersExtension = false;
-
-        this._caps.depthTextureExtension = false;
-        this._caps.vertexArrayObject = true;
-        this._caps.instancedArrays = false;
+        this._caps = {
+            maxTexturesImageUnits: 16,
+            maxVertexTextureImageUnits: 16,
+            maxCombinedTexturesImageUnits: 32,
+            maxTextureSize: 512,
+            maxCubemapTextureSize: 512,
+            maxRenderTextureSize: 512,
+            maxVertexAttribs: 16,
+            maxVaryingVectors: 16,
+            maxFragmentUniformVectors: 16,
+            maxVertexUniformVectors: 16,
+            standardDerivatives: true,
+            astc: null,
+            pvrtc: null,
+            etc1: null,
+            etc2: null,
+            maxAnisotropy: 16,  // TODO: Retrieve this smartly. Currently set to D3D11 maximum allowable value.
+            uintIndices: false,
+            fragmentDepthSupported: false,
+            highPrecisionShaderSupported: true,
+            colorBufferFloat: false,
+            textureFloat: false,
+            textureFloatLinearFiltering: false,
+            textureFloatRender: false,
+            textureHalfFloat: false,
+            textureHalfFloatLinearFiltering: false,
+            textureHalfFloatRender: false,
+            textureLOD: true,
+            drawBuffersExtension: false,
+            depthTextureExtension: false,
+            vertexArrayObject: true,
+            instancedArrays: false,
+            canUseTimestampForTimerQuery: false,
+            blendMinMax: false,
+            maxMSAASamples: 1
+        };
 
         Tools.Log("Babylon Native (v" + Engine.Version + ") launched");
 
@@ -241,13 +263,51 @@ export class NativeEngine extends Engine {
      * Can be used to override the current requestAnimationFrame requester.
      * @hidden
      */
-    protected _queueNewFrame(bindedRenderFunction: any, requester: any): number {
-        this._native.requestAnimationFrame(bindedRenderFunction);
+    protected _queueNewFrame(bindedRenderFunction: any, requester?: any): number {
+        if (requester.requestAnimationFrame) {
+            requester.requestAnimationFrame(bindedRenderFunction);
+        } else {
+            this._native.requestAnimationFrame(bindedRenderFunction);
+        }
         return 0;
     }
 
-    public clear(color: Color4, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
-        this._native.clear(color.r, color.g, color.b, color.a, backBuffer, depth, stencil);
+    /**
+     * Override default engine behavior.
+     * @param color
+     * @param backBuffer
+     * @param depth
+     * @param stencil
+     */
+    public _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>) {
+        if (this._currentFramebuffer !== framebuffer) {
+            if (this._currentFramebuffer) {
+                this._native.unbindFramebuffer(this._currentFramebuffer!);
+            }
+
+            if (framebuffer) {
+                this._native.bindFramebuffer(framebuffer);
+            }
+
+            this._currentFramebuffer = framebuffer;
+        }
+    }
+
+    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+        var mode = 0;
+        if (backBuffer && color) {
+            this._native.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
+            mode |= NativeClearFlags.CLEAR_COLOR;
+        }
+        if (depth) {
+            this._native.clearDepth(1.0);
+            mode |= NativeClearFlags.CLEAR_DEPTH;
+        }
+        if (stencil) {
+            this._native.clearStencil(0);
+            mode |= NativeClearFlags.CLEAR_STENCIL;
+        }
+        this._native.clear(mode);
     }
 
     public createIndexBuffer(indices: IndicesArray): NativeDataBuffer {
@@ -256,6 +316,9 @@ export class NativeEngine extends Engine {
         buffer.references = 1;
         buffer.is32Bits = (data.BYTES_PER_ELEMENT === 4);
         buffer.nativeIndexBuffer = this._native.createIndexBuffer(data);
+        if (buffer.nativeVertexBuffer === this.INVALID_HANDLE) {
+            throw new Error("Could not create a native index buffer.");
+        }
         return buffer;
     }
 
@@ -263,6 +326,9 @@ export class NativeEngine extends Engine {
         const buffer = new NativeDataBuffer();
         buffer.references = 1;
         buffer.nativeVertexBuffer = this._native.createVertexBuffer(ArrayBuffer.isView(data) ? data : new Float32Array(data));
+        if (buffer.nativeVertexBuffer === this.INVALID_HANDLE) {
+            throw new Error("Could not create a native vertex buffer.");
+        }
         return buffer;
     }
 
@@ -455,8 +521,8 @@ export class NativeEngine extends Engine {
     }
 
     public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
-        // TODO: Implement.
         this._cachedViewport = viewport;
+        this._native.setViewPort(viewport.x, viewport.y, viewport.width, viewport.height);
     }
 
     public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
@@ -558,6 +624,14 @@ export class NativeEngine extends Engine {
      */
     public getAlphaMode(): number {
         return this._alphaMode;
+    }
+
+    public setInt(uniform: WebGLUniformLocation, int: number): void {
+        if (!uniform) {
+            return;
+        }
+
+        this._native.setInt(uniform, int);
     }
 
     public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void {
@@ -702,14 +776,6 @@ export class NativeEngine extends Engine {
         }
 
         this._native.setFloat3(uniform, x, y, z);
-    }
-
-    public setBool(uniform: WebGLUniformLocation, bool: number): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._native.setBool(uniform, bool);
     }
 
     public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void {
@@ -914,12 +980,9 @@ export class NativeEngine extends Engine {
                     return;
                 }
 
-                this._native.loadTexture(webGLTexture, data, !noMipmap);
-
-                if (invertY) {
-                    throw new Error("Support for textures with inverted Y coordinates not yet implemented.");
+                if (!this._native.loadTexture(webGLTexture, data, !noMipmap, invertY)) {
+                    throw new Error("Could not load a native texture.");
                 }
-                //this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
 
                 texture.baseWidth = this._native.getTextureWidth(webGLTexture);
                 texture.baseHeight = this._native.getTextureHeight(webGLTexture);
@@ -1032,7 +1095,9 @@ export class NativeEngine extends Engine {
                 texture.getEngine().updateTextureSamplingMode(Texture.TRILINEAR_SAMPLINGMODE, texture);
                 texture._isRGBD = true;
                 texture.invertY = true;
-                this._native.loadCubeTexture(texture._webGLTexture!, imageData, true);
+                if (!this._native.loadCubeTexture(texture._webGLTexture!, imageData, true)) {
+                    throw new Error("Could not load a native cube texture.");
+                }
 
                 texture.isReady = true;
                 if (onLoad) {
@@ -1105,7 +1170,7 @@ export class NativeEngine extends Engine {
         }
     }
 
-    public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): InternalTexture {
+    public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): NativeTexture {
         let fullOptions = new RenderTargetCreationOptions();
 
         if (options !== undefined && typeof options === "object") {
@@ -1132,7 +1197,7 @@ export class NativeEngine extends Engine {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
             fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
-        var texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
+        var texture = new NativeTexture(this, InternalTextureSource.RenderTarget);
 
         var width = (<{ width: number, height: number }>size).width || <number>size;
         var height = (<{ width: number, height: number }>size).height || <number>size;
@@ -1142,7 +1207,7 @@ export class NativeEngine extends Engine {
             Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
         }
 
-        var framebuffer = this._native.createFrameBuffer(
+        var framebuffer = this._native.createFramebuffer(
             texture._webGLTexture!,
             width,
             height,
@@ -1192,7 +1257,7 @@ export class NativeEngine extends Engine {
             throw new Error("forceFullscreenViewport for frame buffers not yet supported in NativeEngine.");
         }
 
-        this._native.bindFrameBuffer(texture._framebuffer!);
+        this._bindUnboundFramebuffer(texture._framebuffer);
     }
 
     public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
@@ -1203,7 +1268,8 @@ export class NativeEngine extends Engine {
         if (onBeforeUnbind) {
             onBeforeUnbind();
         }
-        this._native.unbindFrameBuffer(texture._framebuffer!);
+
+        this._bindUnboundFramebuffer(null);
     }
 
     public createDynamicVertexBuffer(data: DataArray): DataBuffer {
@@ -1259,6 +1325,8 @@ export class NativeEngine extends Engine {
             internalTexture = this.emptyCubeTexture;
         } else if (texture.is3D) {
             internalTexture = this.emptyTexture3D;
+        } else if (texture.is2DArray) {
+            internalTexture = this.emptyTexture2DArray;
         } else {
             internalTexture = this.emptyTexture;
         }

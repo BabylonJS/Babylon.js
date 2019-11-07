@@ -25,6 +25,7 @@ import { Color3LineComponent } from '../../../lines/color3LineComponent';
 import { MorphTarget } from 'babylonjs/Morph/morphTarget';
 import { OptionsLineComponent } from '../../../lines/optionsLineComponent';
 import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
+import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -218,6 +219,15 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         this.props.onSelectionChangedObservable.notifyObservers(instanceMesh.sourceMesh);
     }
 
+    onSkeletonLink() {
+        if (!this.props.onSelectionChangedObservable) {
+            return;
+        }
+
+        const mesh = this.props.mesh;
+        this.props.onSelectionChangedObservable.notifyObservers(mesh.skeleton);
+    }
+
     convertPhysicsTypeToString(): string {
         const mesh = this.props.mesh;
         switch (mesh.physicsImpostor!.type) {
@@ -288,7 +298,14 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     <TextLineComponent label="Vertices" value={mesh.getTotalVertices().toString()} />
                     <TextLineComponent label="Faces" value={(mesh.getTotalIndices() / 3).toFixed(0)} />
                     <TextLineComponent label="Sub-meshes" value={mesh.subMeshes ? mesh.subMeshes.length.toString() : "0"} />
-                    <TextLineComponent label="Has skeleton" value={mesh.skeleton ? "Yes" : "No"} />
+                    {
+                        mesh.parent &&
+                        <TextLineComponent label="Parent" value={mesh.parent.name} onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(mesh.parent)}/>
+                    }                      
+                    {
+                        mesh.skeleton &&
+                        <TextLineComponent label="Skeleton" value={mesh.skeleton.name} onLink={() => this.onSkeletonLink()}/>
+                    }
                     <CheckBoxLineComponent label="Is enabled" isSelected={() => mesh.isEnabled()} onSelect={(value) => mesh.setEnabled(value)} />
                     <CheckBoxLineComponent label="Is pickable" target={mesh} propertyName="isPickable" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
@@ -299,6 +316,10 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         mesh.isAnInstance &&
                         <TextLineComponent label="Source" value={(mesh as any).sourceMesh.name} onLink={() => this.onSourceMeshLink()} />
                     }
+                    <ButtonLineComponent label="Dispose" onClick={() => {
+                        mesh.dispose();
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                    }} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="TRANSFORMS">
                     <Vector3LineComponent label="Position" target={mesh} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -386,20 +407,32 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     <SliderLineComponent label="Edge width" minimum={0} maximum={10} step={0.1} target={mesh} propertyName="edgesWidth" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Edge color" target={mesh} propertyName="edgesColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="OUTLINE & OVERLAY" closed={true}>
-                    <CheckBoxLineComponent label="Render overlay" target={mesh} propertyName="renderOverlay" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Color3LineComponent label="Overlay color" target={mesh} propertyName="overlayColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Render outline" target={mesh} propertyName="renderOutline" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Color3LineComponent label="Outline color" target={mesh} propertyName="outlineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                </LineContainerComponent>
+                {
+                        !mesh.isAnInstance &&
+                    <LineContainerComponent globalState={this.props.globalState} title="OUTLINE & OVERLAY" closed={true}>
+                        <CheckBoxLineComponent label="Render overlay" target={mesh} propertyName="renderOverlay" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <Color3LineComponent label="Overlay color" target={mesh} propertyName="overlayColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <CheckBoxLineComponent label="Render outline" target={mesh} propertyName="renderOutline" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <Color3LineComponent label="Outline color" target={mesh} propertyName="outlineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    </LineContainerComponent>
+                }
                 <LineContainerComponent globalState={this.props.globalState} title="DEBUG" closed={true}>
-                    <CheckBoxLineComponent label="Display normals" isSelected={() => displayNormals} onSelect={() => this.displayNormals()} />
-                    <CheckBoxLineComponent label="Display vertex colors" isSelected={() => displayVertexColors} onSelect={() => this.displayVertexColors()} />
+                    {
+                        !mesh.isAnInstance &&
+                        <CheckBoxLineComponent label="Display normals" isSelected={() => displayNormals} onSelect={() => this.displayNormals()} />
+                    }
+                    {
+                        !mesh.isAnInstance &&
+                        <CheckBoxLineComponent label="Display vertex colors" isSelected={() => displayVertexColors} onSelect={() => this.displayVertexColors()} />
+                    }
                     {
                         mesh.isVerticesDataPresent(VertexBuffer.NormalKind) &&
                         <CheckBoxLineComponent label="Render vertex normals" isSelected={() => renderNormalVectors} onSelect={() => this.renderNormalVectors()} />
                     }
-                    <CheckBoxLineComponent label="Render wireframe over mesh" isSelected={() => renderWireframeOver} onSelect={() => this.renderWireframeOver()} />
+                    {
+                        !mesh.isAnInstance &&
+                        <CheckBoxLineComponent label="Render wireframe over mesh" isSelected={() => renderWireframeOver} onSelect={() => this.renderWireframeOver()} />
+                    }
                 </LineContainerComponent>
             </div>
         );
