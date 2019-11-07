@@ -6,6 +6,7 @@ import { SpotLight } from "babylonjs/Lights/spotLight";
 import { Light } from "babylonjs/Lights/light";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 
+import { IProperty } from "babylonjs-gltf2interface";
 import { IChildRootProperty } from "babylonjs-gltf2interface";
 import { INode } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
@@ -38,6 +39,10 @@ interface ILights {
     lights: ILight[];
 }
 
+interface ObjectWithMetadata {
+    metadata: any;
+}
+
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/1048d162a44dbcb05aefc1874bfd423cf60135a6/extensions/2.0/Khronos/KHR_lights_punctual/README.md) (Experimental)
  */
@@ -68,6 +73,17 @@ export class KHR_lights implements IGLTFLoaderExtension {
         if (extensions && extensions[this.name]) {
             const extension = extensions[this.name] as ILights;
             this._lights = extension.lights;
+        }
+    }
+
+    private _assignExtras(
+        babylonObject: ObjectWithMetadata,
+        gltfProp: IProperty
+    ): void {
+        if (gltfProp.extras && Object.keys(gltfProp.extras).length > 0) {
+            const metadata = (babylonObject.metadata = babylonObject.metadata || {});
+            const gltf = (metadata.gltf = metadata.gltf || {});
+            gltf.extras = gltfProp.extras;
         }
     }
 
@@ -108,6 +124,8 @@ export class KHR_lights implements IGLTFLoaderExtension {
                 babylonLight.parent = babylonMesh;
 
                 GLTFLoader.AddPointerMetadata(babylonLight, extensionContext);
+
+                this._assignExtras(babylonLight, node);
 
                 assign(babylonMesh);
             });
