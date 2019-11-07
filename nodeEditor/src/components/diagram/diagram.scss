@@ -128,10 +128,6 @@
         background: #40866E;
     }
 
-    &.constant {
-        background: #646464 !important;
-    }
-
     &.output {
         background: rgb(106, 44, 131);
         color:white;
@@ -157,6 +153,16 @@
         overflow: hidden;
         background: black;
         color: white;
+
+        &.constant {
+            border-color: #4E5C74;
+            background: #4E5C74 !important;
+        }
+
+        &.inspector {
+            border-color: #396437;
+            background: #396437 !important;
+        }
     }
 
     .value {
