@@ -41,3 +41,4 @@ export * from "./nLerpBlock";
 export * from "./worleyNoise3DBlock";
 export * from "./simplexPerlin3DBlock";
 export * from "./normalBlendBlock";
+export * from "./rotate2dBlock";
