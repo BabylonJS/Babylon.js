@@ -325,6 +325,7 @@ declare module "babylonjs-node-editor/sharedComponents/draggableLineComponent" {
     import * as React from "react";
     export interface IButtonLineComponentProps {
         data: string;
+        tooltip: string;
     }
     export class DraggableLineComponent extends React.Component<IButtonLineComponentProps> {
         constructor(props: IButtonLineComponentProps);
@@ -340,6 +341,7 @@ declare module "babylonjs-node-editor/components/nodeList/nodeListComponent" {
     export class NodeListComponent extends React.Component<INodeListComponentProps, {
         filter: string;
     }> {
+        private static _Tooltips;
         constructor(props: INodeListComponentProps);
         filterContent(filter: string): void;
         render(): JSX.Element;
@@ -2088,6 +2090,7 @@ declare module NODEEDITOR {
 declare module NODEEDITOR {
     export interface IButtonLineComponentProps {
         data: string;
+        tooltip: string;
     }
     export class DraggableLineComponent extends React.Component<IButtonLineComponentProps> {
         constructor(props: IButtonLineComponentProps);
@@ -2101,6 +2104,7 @@ declare module NODEEDITOR {
     export class NodeListComponent extends React.Component<INodeListComponentProps, {
         filter: string;
     }> {
+        private static _Tooltips;
         constructor(props: INodeListComponentProps);
         filterContent(filter: string): void;
         render(): JSX.Element;
