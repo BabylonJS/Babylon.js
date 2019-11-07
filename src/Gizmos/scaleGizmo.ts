@@ -145,7 +145,7 @@ export class ScaleGizmo extends Gizmo {
     /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
-    public set sensibility(value: number) {
+    public set sensitivity(value: number) {
         this._sensitivity = value;
         [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
             if (gizmo) {
@@ -153,7 +153,7 @@ export class ScaleGizmo extends Gizmo {
             }
         });
     }
-    public get sensibility() {
+    public get sensitivity() {
         return this._sensitivity;
     }
 
