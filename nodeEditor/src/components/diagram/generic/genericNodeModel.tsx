@@ -71,7 +71,13 @@ export class GenericNodeModel extends DefaultNodeModel {
                     <CheckBoxLineComponent label="Invert X axis" target={this.block} propertyName="invertX" onValueChanged={() => globalState.onRebuildRequiredObservable.notifyObservers()} />
                     <CheckBoxLineComponent label="Invert Y axis" target={this.block} propertyName="invertY" onValueChanged={() => globalState.onRebuildRequiredObservable.notifyObservers()}/>                    
                 </LineContainerComponent>
-            }               
+            }
+            {
+                this.block!.getClassName() === "WorleyNoise3DBlock" &&
+                <LineContainerComponent title="PROPERTIES">
+                    <CheckBoxLineComponent label="Use Manhattan Distance" target={this.block} propertyName="manhattanDistance" onValueChanged={() => globalState.onRebuildRequiredObservable.notifyObservers()} />              
+                </LineContainerComponent>
+            }
             </div>
         );
     }

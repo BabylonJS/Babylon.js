@@ -1,8 +1,9 @@
 import { Nullable } from "../../types";
 import { Observer, Observable } from "../../Misc/observable";
 import { IDisposable } from "../../scene";
-import { WebXRExperienceHelper, WebXRState } from "./webXRExperienceHelper";
+import { WebXRExperienceHelper } from "./webXRExperienceHelper";
 import { WebXRController } from './webXRController';
+import { WebXRState } from './webXRTypes';
 
 /**
  * XR input used to track XR inputs such as controllers/rays

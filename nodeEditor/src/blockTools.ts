@@ -42,6 +42,7 @@ import { MinBlock } from 'babylonjs/Materials/Node/Blocks/minBlock';
 import { PerturbNormalBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/perturbNormalBlock';
 import { LengthBlock } from 'babylonjs/Materials/Node/Blocks/lengthBlock';
 import { DistanceBlock } from 'babylonjs/Materials/Node/Blocks/distanceBlock';
+import { FrontFacingBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/frontFacingBlock';
 import { NegateBlock } from 'babylonjs/Materials/Node/Blocks/negateBlock';
 import { PowBlock } from 'babylonjs/Materials/Node/Blocks/powBlock';
 import { Scene } from 'babylonjs/scene';
@@ -53,10 +54,19 @@ import { ReciprocalBlock } from 'babylonjs/Materials/Node/Blocks/reciprocalBlock
 import { GradientBlock } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
 import { WaveBlock, WaveBlockKind } from 'babylonjs/Materials/Node/Blocks/waveBlock';
 import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
+import { WorleyNoise3DBlock } from 'babylonjs/Materials/Node/Blocks/worleyNoise3DBlock';
+import { SimplexPerlin3DBlock } from 'babylonjs/Materials/Node/Blocks/simplexPerlin3DBlock';
+import { NormalBlendBlock } from 'babylonjs/Materials/Node/Blocks/normalBlendBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
+            case "NormalBlendBlock":
+                return new NormalBlendBlock("NormalBlend");
+            case "WorleyNoise3DBlock":
+                return new WorleyNoise3DBlock("WorleyNoise3D");
+            case "SimplexPerlin3DBlock":
+                return new SimplexPerlin3DBlock("SimplexPerlin3D");
             case "BonesBlock":
                 return new BonesBlock("Bones");
             case "InstancesBlock":
@@ -154,7 +164,9 @@ export class BlockTools {
             case "ArcTan2Block":                                          
                 return new ArcTan2Block("ArcTan2");                            
             case "GradientBlock":                                          
-                return new GradientBlock("Gradient");            
+                return new GradientBlock("Gradient");                             
+            case "FrontFacingBlock":                                          
+                return new FrontFacingBlock("Front facing");            
             case "CosBlock": {
                 let cosBlock = new TrigonometryBlock("Cos");
                 cosBlock.operation = TrigonometryBlockOperations.Cos;

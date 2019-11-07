@@ -42,6 +42,7 @@ declare module "babylonjs-node-editor/blockTools" {
     import { PerturbNormalBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/perturbNormalBlock';
     import { LengthBlock } from 'babylonjs/Materials/Node/Blocks/lengthBlock';
     import { DistanceBlock } from 'babylonjs/Materials/Node/Blocks/distanceBlock';
+    import { FrontFacingBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/frontFacingBlock';
     import { NegateBlock } from 'babylonjs/Materials/Node/Blocks/negateBlock';
     import { PowBlock } from 'babylonjs/Materials/Node/Blocks/powBlock';
     import { Scene } from 'babylonjs/scene';
@@ -53,8 +54,11 @@ declare module "babylonjs-node-editor/blockTools" {
     import { GradientBlock } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
     import { WaveBlock } from 'babylonjs/Materials/Node/Blocks/waveBlock';
     import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
+    import { WorleyNoise3DBlock } from 'babylonjs/Materials/Node/Blocks/worleyNoise3DBlock';
+    import { SimplexPerlin3DBlock } from 'babylonjs/Materials/Node/Blocks/simplexPerlin3DBlock';
+    import { NormalBlendBlock } from 'babylonjs/Materials/Node/Blocks/normalBlendBlock';
     export class BlockTools {
-        static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial): BonesBlock | InstancesBlock | MorphTargetsBlock | DiscardBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | PowBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | NLerpBlock | DivideBlock | SubtractBlock | StepBlock | SmoothStepBlock | OneMinusBlock | ReciprocalBlock | ViewDirectionBlock | LightInformationBlock | MaxBlock | MinBlock | LengthBlock | DistanceBlock | NegateBlock | PerturbNormalBlock | RandomNumberBlock | ReplaceColorBlock | PosterizeBlock | ArcTan2Block | GradientBlock | WaveBlock | InputBlock | null;
+        static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial): NormalBlendBlock | WorleyNoise3DBlock | SimplexPerlin3DBlock | BonesBlock | InstancesBlock | MorphTargetsBlock | DiscardBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | PowBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | NLerpBlock | DivideBlock | SubtractBlock | StepBlock | SmoothStepBlock | OneMinusBlock | ReciprocalBlock | ViewDirectionBlock | LightInformationBlock | MaxBlock | MinBlock | LengthBlock | DistanceBlock | NegateBlock | PerturbNormalBlock | RandomNumberBlock | ReplaceColorBlock | PosterizeBlock | ArcTan2Block | GradientBlock | FrontFacingBlock | WaveBlock | InputBlock | null;
         static GetColorFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): NodeMaterialBlockConnectionPointTypes.Float | NodeMaterialBlockConnectionPointTypes.Vector2 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Matrix | NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -382,13 +386,6 @@ declare module "babylonjs-node-editor/sharedComponents/fileButtonLineComponent" 
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-node-editor/nodeLocationInfo" {
-    export interface INodeLocationInfo {
-        blockId: number;
-        x: number;
-        y: number;
-    }
-}
 declare module "babylonjs-node-editor/serializationTools" {
     import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -567,6 +564,7 @@ declare module "babylonjs-node-editor/components/diagram/texture/textureProperty
         private _generateRandomForCache;
         updateAfterTextureLoad(): void;
         removeTexture(): void;
+        _prepareTexture(): void;
         /**
          * Replaces the texture of the node
          * @param file the file of the texture to use
@@ -1283,6 +1281,7 @@ declare module "babylonjs-node-editor/components/preview/previewManager" {
         private _material;
         private _globalState;
         private _currentType;
+        private _lightParent;
         constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
         private _handleAnimations;
         private _prepareLights;
@@ -1291,6 +1290,13 @@ declare module "babylonjs-node-editor/components/preview/previewManager" {
         private _forceCompilationAsync;
         private _updatePreview;
         dispose(): void;
+    }
+}
+declare module "babylonjs-node-editor/nodeLocationInfo" {
+    export interface INodeLocationInfo {
+        blockId: number;
+        x: number;
+        y: number;
     }
 }
 declare module "babylonjs-node-editor/components/preview/previewMeshControlComponent" {
@@ -1526,11 +1532,14 @@ declare module "babylonjs-node-editor/components/diagram/lightInformation/lightI
 declare module "babylonjs-node-editor/components/preview/previewAreaComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
-    interface IPreviewAreaComponent {
+    interface IPreviewAreaComponentProps {
         globalState: GlobalState;
         width: number;
     }
-    export class PreviewAreaComponent extends React.Component<IPreviewAreaComponent> {
+    export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, {
+        isLoading: boolean;
+    }> {
+        constructor(props: IPreviewAreaComponentProps);
         changeAnimation(): void;
         changeBackground(value: string): void;
         changeBackFaceCulling(value: boolean): void;
@@ -1698,6 +1707,8 @@ declare module "babylonjs-node-editor/graphEditor" {
         private _mouseLocationX;
         private _mouseLocationY;
         private _onWidgetKeyUpPointer;
+        private _altKeyIsPressed;
+        private _oldY;
         /** @hidden */
         _toAdd: LinkModel[] | null;
         /**
@@ -1713,7 +1724,7 @@ declare module "babylonjs-node-editor/graphEditor" {
         zoomToFit(retry?: number): void;
         buildMaterial(): void;
         applyFragmentOutputConstraints(rootInput: DefaultPortModel): void;
-        build(needToWait?: boolean, locations?: Nullable<INodeLocationInfo[]>): void;
+        build(needToWait?: boolean): void;
         reOrganize(locations?: Nullable<INodeLocationInfo[]>): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
@@ -1756,7 +1767,6 @@ declare module "babylonjs-node-editor/globalState" {
     import { DefaultNodeModel } from "babylonjs-node-editor/components/diagram/defaultNodeModel";
     import { LogEntry } from "babylonjs-node-editor/components/log/logComponent";
     import { NodeModel } from 'storm-react-diagrams';
-    import { INodeLocationInfo } from "babylonjs-node-editor/nodeLocationInfo";
     import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
     import { PreviewMeshType } from "babylonjs-node-editor/components/preview/previewMeshType";
     import { Color4 } from 'babylonjs/Maths/math.color';
@@ -1766,12 +1776,13 @@ declare module "babylonjs-node-editor/globalState" {
         hostDocument: HTMLDocument;
         onSelectionChangedObservable: Observable<Nullable<DefaultNodeModel>>;
         onRebuildRequiredObservable: Observable<void>;
-        onResetRequiredObservable: Observable<Nullable<INodeLocationInfo[]>>;
+        onResetRequiredObservable: Observable<void>;
         onUpdateRequiredObservable: Observable<void>;
         onZoomToFitRequiredObservable: Observable<void>;
         onReOrganizedRequiredObservable: Observable<void>;
         onLogRequiredObservable: Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: Observable<string>;
+        onIsLoadingChanged: Observable<boolean>;
         onPreviewCommandActivated: Observable<void>;
         onLightUpdated: Observable<void>;
         onPreviewBackgroundChanged: Observable<void>;
@@ -1788,6 +1799,8 @@ declare module "babylonjs-node-editor/globalState" {
         blockKeyboardEvents: boolean;
         hemisphericLight: boolean;
         directionalLight0: boolean;
+        directionalLight1: boolean;
+        controlCamera: boolean;
         customSave?: {
             label: string;
             action: (data: string) => Promise<void>;
@@ -1840,7 +1853,7 @@ declare module "babylonjs-node-editor" {
 /// <reference types="react" />
 declare module NODEEDITOR {
     export class BlockTools {
-        static GetBlockFromString(data: string, scene: BABYLON.Scene, nodeMaterial: BABYLON.NodeMaterial): BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.DiscardBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.PowBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.NLerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | BABYLON.SmoothStepBlock | BABYLON.OneMinusBlock | BABYLON.ReciprocalBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.LengthBlock | BABYLON.DistanceBlock | BABYLON.NegateBlock | BABYLON.PerturbNormalBlock | BABYLON.RandomNumberBlock | BABYLON.ReplaceColorBlock | BABYLON.PosterizeBlock | BABYLON.ArcTan2Block | BABYLON.GradientBlock | BABYLON.WaveBlock | BABYLON.InputBlock | null;
+        static GetBlockFromString(data: string, scene: BABYLON.Scene, nodeMaterial: BABYLON.NodeMaterial): BABYLON.NormalBlendBlock | BABYLON.WorleyNoise3DBlock | BABYLON.SimplexPerlin3DBlock | BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.DiscardBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.PowBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.NLerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | BABYLON.SmoothStepBlock | BABYLON.OneMinusBlock | BABYLON.ReciprocalBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.LengthBlock | BABYLON.DistanceBlock | BABYLON.NegateBlock | BABYLON.PerturbNormalBlock | BABYLON.RandomNumberBlock | BABYLON.ReplaceColorBlock | BABYLON.PosterizeBlock | BABYLON.ArcTan2Block | BABYLON.GradientBlock | BABYLON.FrontFacingBlock | BABYLON.WaveBlock | BABYLON.InputBlock | null;
         static GetColorFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
@@ -2132,13 +2145,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export interface INodeLocationInfo {
-        blockId: number;
-        x: number;
-        y: number;
-    }
-}
-declare module NODEEDITOR {
     export class SerializationTools {
         static Serialize(material: BABYLON.NodeMaterial, globalState: GlobalState): string;
         static Deserialize(serializationObject: any, globalState: GlobalState): void;
@@ -2289,6 +2295,7 @@ declare module NODEEDITOR {
         private _generateRandomForCache;
         updateAfterTextureLoad(): void;
         removeTexture(): void;
+        _prepareTexture(): void;
         /**
          * Replaces the texture of the node
          * @param file the file of the texture to use
@@ -2899,6 +2906,7 @@ declare module NODEEDITOR {
         private _material;
         private _globalState;
         private _currentType;
+        private _lightParent;
         constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
         private _handleAnimations;
         private _prepareLights;
@@ -2907,6 +2915,13 @@ declare module NODEEDITOR {
         private _forceCompilationAsync;
         private _updatePreview;
         dispose(): void;
+    }
+}
+declare module NODEEDITOR {
+    export interface INodeLocationInfo {
+        blockId: number;
+        x: number;
+        y: number;
     }
 }
 declare module NODEEDITOR {
@@ -3095,11 +3110,14 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    interface IPreviewAreaComponent {
+    interface IPreviewAreaComponentProps {
         globalState: GlobalState;
         width: number;
     }
-    export class PreviewAreaComponent extends React.Component<IPreviewAreaComponent> {
+    export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, {
+        isLoading: boolean;
+    }> {
+        constructor(props: IPreviewAreaComponentProps);
         changeAnimation(): void;
         changeBackground(value: string): void;
         changeBackFaceCulling(value: boolean): void;
@@ -3234,6 +3252,8 @@ declare module NODEEDITOR {
         private _mouseLocationX;
         private _mouseLocationY;
         private _onWidgetKeyUpPointer;
+        private _altKeyIsPressed;
+        private _oldY;
         /** @hidden */
         _toAdd: LinkModel[] | null;
         /**
@@ -3249,7 +3269,7 @@ declare module NODEEDITOR {
         zoomToFit(retry?: number): void;
         buildMaterial(): void;
         applyFragmentOutputConstraints(rootInput: DefaultPortModel): void;
-        build(needToWait?: boolean, locations?: BABYLON.Nullable<INodeLocationInfo[]>): void;
+        build(needToWait?: boolean): void;
         reOrganize(locations?: BABYLON.Nullable<INodeLocationInfo[]>): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
@@ -3286,12 +3306,13 @@ declare module NODEEDITOR {
         hostDocument: HTMLDocument;
         onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<DefaultNodeModel>>;
         onRebuildRequiredObservable: BABYLON.Observable<void>;
-        onResetRequiredObservable: BABYLON.Observable<BABYLON.Nullable<INodeLocationInfo[]>>;
+        onResetRequiredObservable: BABYLON.Observable<void>;
         onUpdateRequiredObservable: BABYLON.Observable<void>;
         onZoomToFitRequiredObservable: BABYLON.Observable<void>;
         onReOrganizedRequiredObservable: BABYLON.Observable<void>;
         onLogRequiredObservable: BABYLON.Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: BABYLON.Observable<string>;
+        onIsLoadingChanged: BABYLON.Observable<boolean>;
         onPreviewCommandActivated: BABYLON.Observable<void>;
         onLightUpdated: BABYLON.Observable<void>;
         onPreviewBackgroundChanged: BABYLON.Observable<void>;
@@ -3308,6 +3329,8 @@ declare module NODEEDITOR {
         blockKeyboardEvents: boolean;
         hemisphericLight: boolean;
         directionalLight0: boolean;
+        directionalLight1: boolean;
+        controlCamera: boolean;
         customSave?: {
             label: string;
             action: (data: string) => Promise<void>;

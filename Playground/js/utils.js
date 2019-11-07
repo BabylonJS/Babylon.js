@@ -18,28 +18,45 @@ class Utils {
         this.setToMultipleID('safemodeToggle', 'innerHTML', 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
     };
 
+    toLocationError(errorMessage, errorEvent) {
+        if (!errorEvent) {
+            return null;
+        }
+
+        // Do we have any location info?
+        if (errorEvent.hasOwnProperty('lineNumber') && errorEvent.hasOwnProperty('columnNumber'))
+            return errorEvent;
+
+        // Else try to parse the stack to retrieve location...
+        var regEx = /\(.+:(\d+):(\d+)\)\n/g;
+        var match = regEx.exec(errorEvent.stack);
+        if (match) {
+            var error = new EvalError(errorMessage);
+            error.lineNumber = match[1];
+            error.columnNumber = match[2];
+            return error;
+        }
+
+        // Not an error with proper location
+        return null;        
+    }
+
     /**
      * Used to show error messages
      * @param {String} errorMessage 
      * @param {String} errorEvent 
      */
     showError(errorMessage, errorEvent) {
-        var errorContent =
-            '<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>';
-        if (errorEvent) {
-            var regEx = /\(.+:(\d+):(\d+)\)\n/g;
+        let errorContent = '<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>';
 
-            var match = regEx.exec(errorEvent.stack);
-            if (match) {
-                errorContent += "Line ";
-                var lineNumber = match[1];
-                var columnNumber = match[2];
-
-                errorContent += lineNumber + ':' + columnNumber + ' - ';
-            }
+        const locationError = this.toLocationError(errorMessage, errorEvent);
+        if (locationError == null) {
+            // use a regular message
+            errorContent += `${errorMessage}</div>`;
+        } else {
+            // we have location information
+            errorContent += `<span id="gotoLocation">Line ${locationError.lineNumber} : ${locationError.columnNumber} - ${errorMessage}</span></div>`;
         }
-
-        errorContent += errorMessage + '</div>';
 
         document.getElementById("errorZone").style.display = 'block';
         document.getElementById("errorZone").innerHTML = errorContent;
@@ -48,6 +65,21 @@ class Utils {
         document.getElementById("errorZone").querySelector('.close').addEventListener('click', function () {
             document.getElementById("errorZone").style.display = 'none';
         });
+
+        // Go To Location
+        const gotoLocation = document.getElementById("gotoLocation");
+        const jsEditor = this.parent.monacoCreator.jsEditor;
+        if (gotoLocation) {
+            gotoLocation.addEventListener('click', function () {
+                const position = { 
+                    lineNumber: Number(locationError.lineNumber), 
+                    column: Number(locationError.columnNumber)
+                };
+
+                jsEditor.revealPositionInCenter(position, monaco.editor.ScrollType.Smooth);
+                jsEditor.setPosition(position);
+            });
+        }
     };
 
     /**

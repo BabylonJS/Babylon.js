@@ -58,11 +58,8 @@ class MonacoCreator {
                 if (xhr.status === 200) {
                     require.config({ paths: { 'vs': 'node_modules/monaco-editor/min/vs' } });
                     require(['vs/editor/editor.main'], function () {
-                        if (this.monacoMode === "javascript") {
-                            monaco.languages.typescript.javascriptDefaults.addExtraLib(xhr.responseText, 'babylon.d.ts');
-                        } else {
-                            monaco.languages.typescript.typescriptDefaults.addExtraLib(xhr.responseText, 'babylon.d.ts');
-                        }
+                        this.setupMonacoCompilationPipeline(xhr.responseText);
+                        this.setupMonacoColorProvider();
 
                         this.parent.main.run();
                     }.bind(this));
@@ -71,6 +68,74 @@ class MonacoCreator {
         }.bind(this);
         xhr.send(null);
     };
+
+    setupMonacoCompilationPipeline(libContent) {
+        const typescript = monaco.languages.typescript;
+
+        if (this.monacoMode === "javascript") {
+            typescript.javascriptDefaults.setCompilerOptions({
+                noLib: false,
+                allowNonTsExtensions: true // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
+            });
+
+            typescript.javascriptDefaults.addExtraLib(libContent, 'babylon.d.ts');
+        } else {
+            typescript.typescriptDefaults.setCompilerOptions({
+                module: typescript.ModuleKind.AMD,
+                target: typescript.ScriptTarget.ES6,
+                noLib: false,
+                noResolve: true,
+                suppressOutputPathCheck: true,
+
+                allowNonTsExtensions: true // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
+            });
+            typescript.typescriptDefaults.addExtraLib(libContent, 'babylon.d.ts');
+        }
+    }
+
+    setupMonacoColorProvider() {
+        monaco.languages.registerColorProvider(this.monacoMode, {
+            provideColorPresentations: (model, colorInfo) => {
+                const color = colorInfo.color;
+                
+                const precision = 100.0;
+                const converter = (n) => Math.round(n * precision) / precision;
+                
+                let label;
+                if (color.alpha === undefined || color.alpha === 1.0) {
+                    label = `(${converter(color.red)}, ${converter(color.green)}, ${converter(color.blue)})`;
+                } else {
+                    label = `(${converter(color.red)}, ${converter(color.green)}, ${converter(color.blue)}, ${converter(color.alpha)})`;
+                }
+        
+                return [ { label: label } ];
+            },
+
+            provideDocumentColors: (model) => {
+                const digitGroup = "\\s*(\\d*(?:\\.\\d+)?)\\s*";
+                // we add \n{0} to workaround a Monaco bug, when setting regex options on their side
+                const regex = `BABYLON\\.Color(?:3|4)\\s*\\(${digitGroup},${digitGroup},${digitGroup}(?:,${digitGroup})?\\)\\n{0}`;
+                const matches = model.findMatches(regex, null, true, true, null, true);
+
+                const converter = (g) => g === undefined ? undefined : Number(g);
+
+                return matches.map(match => ({
+                    color: { 
+                        red: converter(match.matches[1]), 
+                        green: converter(match.matches[2]), 
+                        blue: converter(match.matches[3]),
+                        alpha: converter(match.matches[4])
+                    },
+                    range:{
+                        startLineNumber: match.range.startLineNumber,
+                        startColumn: match.range.startColumn + match.matches[0].indexOf("("),
+                        endLineNumber: match.range.startLineNumber,
+                        endColumn: match.range.endColumn
+                    }
+                }));
+            }
+        });
+    }
 
     /**
      * Function to (re)create the editor
@@ -103,11 +168,47 @@ class MonacoCreator {
         };
         editorOptions.minimap.enabled = document.getElementById("minimapToggle1280").classList.contains('checked');
         this.jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
+
         this.jsEditor.setValue(oldCode);
         this.jsEditor.onKeyUp(function () {
             this.parent.utils.markDirty();
         }.bind(this));
     };
+
+    detectLanguage(text) {
+        return text && text.indexOf("class Playground") >= 0 ? "typescript" : "javascript";
+    }
+
+    createDiff(left, right, diffView) {
+        const language = this.detectLanguage(left);
+        let leftModel = monaco.editor.createModel(left, language);
+        let rightModel = monaco.editor.createModel(right, language);
+        const diffOptions = {
+            contextmenu: false,
+            lineNumbers: true,
+            readOnly: true,
+            theme: this.parent.settingsPG.vsTheme,
+            contextmenu: false,
+            fontSize: this.parent.settingsPG.fontSize
+        }
+       
+        const diffEditor = monaco.editor.createDiffEditor(diffView, diffOptions);
+        diffEditor.setModel({
+            original: leftModel,
+            modified: rightModel
+        });
+
+        const cleanup = function() {
+            diffView.style.display = "none";
+            // We need to properly dispose, else the monaco script editor will use those models in the editor compilation pipeline!
+            leftModel.dispose();
+            rightModel.dispose();
+            diffEditor.dispose();
+        }
+
+        diffEditor.addCommand(monaco.KeyCode.Escape, cleanup);
+        diffEditor.focus();
+    }
 
     /**
      * Format the code in the editor
@@ -133,75 +234,40 @@ class MonacoCreator {
 
     /**
      * Get the code in the editor
-     * @param {Function} callBack : Function that will be called after retrieving the code.
      */
-    getRunCode(callBack) {
-        if (this.parent.settingsPG.ScriptLanguage == "JS")
-            callBack(this.jsEditor.getValue());
-        else if (this.parent.settingsPG.ScriptLanguage == "TS") {
-            this.triggerCompile(this.JsEditor.getValue(), function (result) {
-                callBack(result + "var createScene = function() { return Playground.CreateScene(engine, engine.getRenderingCanvas()); }")
-            });
-        }
-    };
+    async getRunCode() {
+        var parent = this.parent;
 
-    /**
-     * Usefull function for TypeScript code
-     * @param {*} codeValue 
-     * @param {*} callback 
-     */
-    triggerCompile(codeValue, callback) {
-        if (this.compilerTriggerTimeoutID !== null) {
-            window.clearTimeout(this.compilerTriggerTimeoutID);
-        }
-        this.compilerTriggerTimeoutID = window.setTimeout(function () {
-            try {
+        if (parent.settingsPG.ScriptLanguage == "JS")
+            return this.jsEditor.getValue();
 
-                var output = this.transpileModule(codeValue, {
-                    module: ts.ModuleKind.AMD,
-                    target: ts.ScriptTarget.ES5,
-                    noLib: true,
-                    noResolve: true,
-                    suppressOutputPathCheck: true
-                });
-                if (typeof output === "string") {
-                    callback(output);
+        else if (parent.settingsPG.ScriptLanguage == "TS") {
+            const model = this.jsEditor.getModel();
+            const uri = model.uri;
+
+            const worker = await monaco.languages.typescript.getTypeScriptWorker();
+            const languageService = await worker(uri);
+
+            const uriStr = uri.toString();
+            const result = await languageService.getEmitOutput(uriStr);
+            const diagnostics = await Promise.all([languageService.getSyntacticDiagnostics(uriStr), languageService.getSemanticDiagnostics(uriStr)]);
+
+            diagnostics.forEach(function(diagset) {
+                if (diagset.length) {
+                    const diagnostic = diagset[0];
+                    const position = model.getPositionAt(diagnostic.start);
+                    
+                    const error = new EvalError(diagnostic.messageText);
+                    error.lineNumber = position.lineNumber;
+                    error.columnNumber = position.column;
+                    throw error;
                 }
-            }
-            catch (e) {
-                this.parent.utils.showError(e.message, e);
-            }
-        }.bind(this), 100);
-    };
-    
-    /**
-     * Usefull function for TypeScript code
-     * @param {*} input 
-     * @param {*} options 
-     */
-    transpileModule(input, options) {
-        var inputFileName = options.jsx ? "module.tsx" : "module.ts";
-        var sourceFile = ts.createSourceFile(inputFileName, input, options.target || ts.ScriptTarget.ES5);
-        // Output
-        var outputText;
-        var program = ts.createProgram([inputFileName], options, {
-            getSourceFile: function (fileName) { return fileName.indexOf("module") === 0 ? sourceFile : undefined; },
-            writeFile: function (_name, text) { outputText = text; },
-            getDefaultLibFileName: function () { return "lib.d.ts"; },
-            useCaseSensitiveFileNames: function () { return false; },
-            getCanonicalFileName: function (fileName) { return fileName; },
-            getCurrentDirectory: function () { return ""; },
-            getNewLine: function () { return "\r\n"; },
-            fileExists: function (fileName) { return fileName === inputFileName; },
-            readFile: function () { return ""; },
-            directoryExists: function () { return true; },
-            getDirectories: function () { return []; }
-        });
-        // Emit
-        program.emit();
-        if (outputText === undefined) {
-            throw new Error("Output generation failed");
+            });
+
+            const output = result.outputFiles[0].text;
+            const stub = "var createScene = function() { return Playground.CreateScene(engine, engine.getRenderingCanvas()); }";
+
+            return output + stub;
         }
-        return outputText;
-    }
+    };
 };

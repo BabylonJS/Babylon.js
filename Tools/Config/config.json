@@ -138,8 +138,8 @@
                 ],
                 "typings": "babylon.module.d.ts",
                 "index": "babylon.js",
-                "dependencies": [],
-                "devDependencies": []
+                "dependencies": {},
+                "devDependencies": {}
             },
             "es6": {
                 "packageName": "@babylonjs/core",
@@ -534,6 +534,7 @@
             }
         ],
         "build": {
+            "ignoreInWorkerMode": true,
             "ignoreInTestMode": true,
             "mainFolder": "./inspector/",
             "uncheckedLintImports": [
@@ -593,7 +594,8 @@
                 "entry": "./legacy/legacy.ts"
             }
         ],
-        "build": {
+        "build": {            
+            "ignoreInWorkerMode": true,
             "ignoreInTestMode": true,
             "mainFolder": "./nodeEditor/",
             "uncheckedLintImports": [

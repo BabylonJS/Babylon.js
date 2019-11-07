@@ -104,6 +104,19 @@
         }        
     }
 
+    &.clamp {
+        color:white;
+        background: #4086BB;
+
+        .value {
+            grid-row: 2;
+        }
+
+        .outputs, .inputs {
+            transform: translateY(5px);
+        }        
+    }    
+
     &.gradient {
         .outputs, .inputs {
             transform: translateY(5px);

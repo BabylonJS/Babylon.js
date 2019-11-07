@@ -4,6 +4,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { Material } from "babylonjs/Materials/material";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Constants } from "babylonjs/Engines/constants";
+import { Engine } from "babylonjs/Engines/engine";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
@@ -14,6 +15,7 @@ import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
+import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 
 interface ICommonMaterialPropertyGridComponentProps {
     globalState: GlobalState;
@@ -52,6 +54,17 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
             { label: "Pre-multiplied", value: Constants.ALPHA_PREMULTIPLIED },
         ];
 
+        var depthfunctionOptions = [
+            { label: "Never", value: Engine.NEVER },
+            { label: "Always", value: Engine.ALWAYS },
+            { label: "Equal", value: Engine.EQUAL },
+            { label: "Less", value: Engine.LESS },
+            { label: "Less or equal", value: Engine.LEQUAL },
+            { label: "Greater", value: Engine.GREATER },
+            { label: "Greater or equal", value: Engine.GEQUAL },
+            { label: "Not equal", value: Engine.NOTEQUAL },
+        ];
+
         return (
             <div>
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={material}
@@ -65,11 +78,16 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                     <OptionsLineComponent label="Orientation" options={orientationOptions} target={material} propertyName="sideOrientation" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => this.setState({ mode: value })} />
                     <CheckBoxLineComponent label="Disable lighting" target={material} propertyName="disableLighting" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Disable depth write" target={material} propertyName="disableDepthWrite" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <OptionsLineComponent label="Depth function" options={depthfunctionOptions} target={material} propertyName="depthFunction" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => this.setState({ depthFunction: value })} />
                     <CheckBoxLineComponent label="Need depth pre-pass" target={material} propertyName="needDepthPrePass" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Wireframe" target={material} propertyName="wireframe" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Point cloud" target={material} propertyName="pointsCloud" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Point size" target={material} propertyName="pointSize" minimum={0} maximum={100} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Z-offset" target={material} propertyName="zOffset" minimum={-10} maximum={10} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <ButtonLineComponent label="Dispose" onClick={() => {
+                        material.dispose();
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                    }} />                       
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="TRANSPARENCY">
                     <SliderLineComponent label="Alpha" target={material} propertyName="alpha" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

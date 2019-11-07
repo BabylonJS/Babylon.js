@@ -12,6 +12,7 @@ import { QuaternionLineComponent } from "../../../lines/quaternionLineComponent"
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
+import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 
 interface ITransformNodePropertyGridComponentProps {
     globalState: GlobalState;
@@ -36,8 +37,16 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={transformNode.id} />
                     <TextLineComponent label="Unique ID" value={transformNode.uniqueId.toString()} />
-                    <TextLineComponent label="Class" value={transformNode.getClassName()} />
+                    <TextLineComponent label="Class" value={transformNode.getClassName()} />                    
                     <CheckBoxLineComponent label="IsEnabled" isSelected={() => transformNode.isEnabled()} onSelect={(value) => transformNode.setEnabled(value)} />
+                    {
+                        transformNode.parent &&
+                        <TextLineComponent label="Parent" value={transformNode.parent.name} onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(transformNode.parent)}/>
+                    }        
+                    <ButtonLineComponent label="Dispose" onClick={() => {
+                        transformNode.dispose();
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                    }} />              
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="TRANSFORMATIONS">
                     <Vector3LineComponent label="Position" target={transformNode} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

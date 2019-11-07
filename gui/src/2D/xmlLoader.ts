@@ -35,7 +35,7 @@ export class XmlLoader {
     }
 
     private _getChainElement(attributeValue: any): any {
-        let element = window;
+        let element: any = window;
 
         if (this._parentClass) {
             element = this._parentClass;

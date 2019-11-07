@@ -80,7 +80,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <LineContainerComponent title="GENERAL">
                         <ButtonLineComponent label="Reset to default" onClick={() => {
                             this.props.globalState.nodeMaterial!.setToDefault();
-                            this.props.globalState.onResetRequiredObservable.notifyObservers(null);
+                            this.props.globalState.onResetRequiredObservable.notifyObservers();
                         }} />
                     </LineContainerComponent>
                     <LineContainerComponent title="UI">

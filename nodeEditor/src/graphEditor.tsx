@@ -11,7 +11,7 @@ import { GlobalState } from './globalState';
 import { GenericNodeFactory } from './components/diagram/generic/genericNodeFactory';
 import { GenericNodeModel } from './components/diagram/generic/genericNodeModel';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
-import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
+import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointCompatibilityStates } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
 import { NodeListComponent } from './components/nodeList/nodeListComponent';
 import { PropertyTabComponent } from './components/propertyTab/propertyTabComponent';
 import { Portal } from './portal';
@@ -92,6 +92,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     private _mouseLocationY = 0;
     private _onWidgetKeyUpPointer: any;
 
+    private _altKeyIsPressed = false;
+    private _oldY = -1;
+
     /** @hidden */
     public _toAdd: LinkModel[] | null = [];
 
@@ -159,6 +162,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     }
 
     onWidgetKeyUp(evt: any) {        
+        this._altKeyIsPressed = false;
+        this._oldY = -1;
+
         var widget = (this.refs["test"] as DiagramWidget);
 
         if (!widget || this.props.globalState.blockKeyboardEvents) {
@@ -174,6 +180,30 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             widget.setState({ document: this.props.globalState.hostDocument })
             this._onWidgetKeyUpPointer = this.onWidgetKeyUp.bind(this)
             this.props.globalState.hostDocument!.addEventListener("keyup", this._onWidgetKeyUpPointer, false);
+
+            let previousMouseMove = widget.onMouseMove;
+            widget.onMouseMove = (evt: any) => {
+                if (this._altKeyIsPressed && evt.buttons === 1) {
+                    if (this._oldY < 0) {
+                        this._oldY = evt.pageY;
+                    }
+
+                    let zoomDelta = (evt.pageY - this._oldY) / 10;
+                    if (Math.abs(zoomDelta) > 5) {
+                        this._engine.diagramModel.setZoomLevel(this._engine.diagramModel.getZoomLevel() + zoomDelta);
+                        this._engine.repaintCanvas();
+                        this._oldY = evt.pageY;      
+                    }
+                    return;
+                }
+                previousMouseMove(evt);
+            }
+
+            let previousMouseUp = widget.onMouseUp;
+            widget.onMouseUp = (evt: any) => {
+                this._oldY = -1;
+                previousMouseUp(evt);
+            }
 
             this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
         }
@@ -217,8 +247,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             }
         });
 
-        this.props.globalState.onResetRequiredObservable.add((locations) => {
-            this.build(false, locations);
+        this.props.globalState.onResetRequiredObservable.add(() => {
+            this.build(false);
             if (this.props.globalState.nodeMaterial) {
                 this.buildMaterial();
             }
@@ -241,6 +271,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
 
         this.props.globalState.hostDocument!.addEventListener("keydown", evt => {
+            this._altKeyIsPressed = evt.altKey;
+
             if (!evt.ctrlKey) {
                 return;
             }
@@ -355,7 +387,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
     }
 
-    build(needToWait = false, locations: Nullable<INodeLocationInfo[]> = null) {
+    build(needToWait = false) {        
+        let locations: Nullable<INodeLocationInfo[]> = this.props.globalState.nodeMaterial.editorData;
         // setup the diagram model
         this._model = new DiagramModel();
         this._nodes = [];
@@ -469,7 +502,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                                         }
                                     }
     
-                                    if (link.output.connection.canConnectTo(link.input.connection)) {
+                                    let compatibilityState = link.output.connection.checkCompatibilityState(link.input.connection);
+                                    if (compatibilityState === NodeMaterialConnectionPointCompatibilityStates.Compatible) {
                                         if (isFragmentOutput) {
                                             this.applyFragmentOutputConstraints(link.input);
                                         }
@@ -477,7 +511,19 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                                         link.output.connection.connectTo(link.input.connection);
                                     } else {
                                         (evt.entity as AdvancedLinkModel).remove();
-                                        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Cannot connect two different connection types");    
+
+                                        let message = "";
+
+                                        switch (compatibilityState) {
+                                            case NodeMaterialConnectionPointCompatibilityStates.TypeIncompatible:
+                                                message = "Cannot connect two different connection types";
+                                                break;
+                                            case NodeMaterialConnectionPointCompatibilityStates.TargetIncompatible:
+                                                message = "Source block can only work in fragment shader whereas destination block is currently aimed for the vertex shader";
+                                                break;
+                                        }
+
+                                        this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(message);    
                                     }
     
                                     this.forceUpdate();
@@ -485,6 +531,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                                 if (this.props.globalState.nodeMaterial) {
                                     this.buildMaterial();
                                 }
+                            } else {
+                                e.link.remove();
                             }
                         }
                     });
@@ -596,7 +644,17 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         } else {
             let block = BlockTools.GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial);   
             
-            if (block) {                
+            if (block) {       
+                if (block.isUnique) {
+                    const className = block.getClassName();
+                    for (var other of this._blocks) {
+                        if (other !== block && other.getClassName() === className) {
+                            this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`You can only have one ${className} per graph`);                                
+                            return;
+                        }
+                    }
+                } 
+
                 this._toAdd = [];
                 block.autoConfigure(this.props.globalState.nodeMaterial);       
                 nodeModel = this.createNodeFromObject({ nodeMaterialBlock: block });
