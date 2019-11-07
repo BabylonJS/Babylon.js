@@ -45733,6 +45733,7 @@ declare module BABYLON {
         private _scaleRatio;
         private _uniformScalingMesh;
         private _octahedron;
+        private _sensitivity;
         /** Fires an event when any of it's sub gizmos are dragged */
         onDragStartObservable: Observable<unknown>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
@@ -45752,6 +45753,10 @@ declare module BABYLON {
          * Ratio for the scale of the gizmo (Default: 1)
          */
         scaleRatio: number;
+        /**
+         * Sensitivity factor for dragging (Default: 1)
+         */
+        sensitivity: number;
         /**
          * Disposes of the gizmo
          */
@@ -45783,6 +45788,10 @@ declare module BABYLON {
          * If the scaling operation should be done on all axis (default: false)
          */
         uniformScaling: boolean;
+        /**
+         * Custom sensitivity value for the drag strength
+         */
+        sensitivity: number;
         private _isEnabled;
         private _parent;
         private _arrow;

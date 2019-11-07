@@ -3569,8 +3569,7 @@ var Container = /** @class */ (function (_super) {
             child._render(context, invalidatedRectangle);
         }
     };
-    /** @hidden */
-    Container.prototype._getDescendants = function (results, directDescendantsOnly, predicate) {
+    Container.prototype.getDescendantsToRef = function (results, directDescendantsOnly, predicate) {
         if (directDescendantsOnly === void 0) { directDescendantsOnly = false; }
         if (!this.children) {
             return;
@@ -3581,7 +3580,7 @@ var Container = /** @class */ (function (_super) {
                 results.push(item);
             }
             if (!directDescendantsOnly) {
-                item._getDescendants(results, false, predicate);
+                item.getDescendantsToRef(results, false, predicate);
             }
         }
     };
@@ -4727,8 +4726,13 @@ var Control = /** @class */ (function () {
         }
         this.notRenderable = false;
     };
-    /** @hidden */
-    Control.prototype._getDescendants = function (results, directDescendantsOnly, predicate) {
+    /**
+     * Will store all controls that have this control as ascendant in a given array
+     * @param results defines the array where to store the descendants
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     */
+    Control.prototype.getDescendantsToRef = function (results, directDescendantsOnly, predicate) {
         if (directDescendantsOnly === void 0) { directDescendantsOnly = false; }
         // Do nothing by default
     };
@@ -4740,7 +4744,7 @@ var Control = /** @class */ (function () {
      */
     Control.prototype.getDescendants = function (directDescendantsOnly, predicate) {
         var results = new Array();
-        this._getDescendants(results, directDescendantsOnly, predicate);
+        this.getDescendantsToRef(results, directDescendantsOnly, predicate);
         return results;
     };
     /**
