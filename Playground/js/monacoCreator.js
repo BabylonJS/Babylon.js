@@ -82,7 +82,7 @@ class MonacoCreator {
         } else {
             typescript.typescriptDefaults.setCompilerOptions({
                 module: typescript.ModuleKind.AMD,
-                target: typescript.ScriptTarget.ES6,
+                target: typescript.ScriptTarget.ES5,
                 noLib: false,
                 noResolve: true,
                 suppressOutputPathCheck: true,
