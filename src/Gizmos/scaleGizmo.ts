@@ -37,6 +37,7 @@ export class ScaleGizmo extends Gizmo {
     private _scaleRatio: number;
     private _uniformScalingMesh: Mesh;
     private _octahedron: Mesh;
+    private _sensitivity: number = 1;
 
     /** Fires an event when any of it's sub gizmos are dragged */
     public onDragStartObservable = new Observable();
@@ -139,6 +140,21 @@ export class ScaleGizmo extends Gizmo {
     }
     public get scaleRatio() {
         return this._scaleRatio;
+    }
+
+    /**
+     * Sensitivity factor for dragging (Default: 1)
+     */
+    public set sensitivity(value: number) {
+        this._sensitivity = value;
+        [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
+            if (gizmo) {
+                gizmo.sensitivity = value;
+            }
+        });
+    }
+    public get sensitivity() {
+        return this._sensitivity;
     }
 
     /**
