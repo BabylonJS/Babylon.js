@@ -143,7 +143,7 @@ export class ScaleGizmo extends Gizmo {
     }
 
     /**
-     * Ratio for the scale of the gizmo (Default: 1)
+     * Sensitivity factor for dragging (Default: 1)
      */
     public set sensitivity(value: number) {
         this._sensitivity = value;
