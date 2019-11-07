@@ -7,7 +7,7 @@
 		exports["babylonjs-node-editor"] = factory(require("babylonjs"));
 	else
 		root["NODEEDITOR"] = factory(root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_Textures_texture__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -5525,7 +5525,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, ".srd-node {\n  width: 200px; }\n\n.srd-node--selected .diagramBlock {\n  border-color: white !important; }\n\n.srd-default-link--path-selected {\n  animation: 0s !important;\n  stroke: #ffffff !important; }\n\n.srd-port {\n  grid-column: 1;\n  grid-row: 1;\n  background: #2796B2;\n  border-radius: 20px;\n  transform: scale(1);\n  width: 20px;\n  height: 20px; }\n  .srd-port.connected {\n    background: #CAB422; }\n  .srd-port:hover {\n    background: #DDDDDD !important; }\n\n.diagramBlock {\n  background: gray;\n  width: 100%;\n  border: 4px solid black;\n  border-radius: 12px;\n  display: grid;\n  grid-template-rows: 30px auto;\n  grid-template-columns: 50% 50%;\n  color: white; }\n  .diagramBlock.input {\n    background: #40866E;\n    color: white; }\n    .diagramBlock.input .value {\n      grid-row: 2; }\n    .diagramBlock.input .outputs {\n      transform: translateY(5px); }\n    .diagramBlock.input.Float {\n      background: #cb9e27; }\n    .diagramBlock.input.Vector2 {\n      background: #16bcb1; }\n    .diagramBlock.input.Vector3 {\n      background: #b786cb; }\n    .diagramBlock.input.Color3 {\n      background: #b786cb; }\n    .diagramBlock.input.Vector4 {\n      background: #be5126; }\n    .diagramBlock.input.Color4 {\n      background: #be5126; }\n    .diagramBlock.input.Matrix {\n      background: #591990; }\n  .diagramBlock.trigonometry {\n    background: #405c86;\n    color: white; }\n    .diagramBlock.trigonometry .value {\n      grid-row: 2; }\n  .diagramBlock.remap {\n    color: white;\n    background: #4086BB; }\n    .diagramBlock.remap .value {\n      grid-row: 3; }\n    .diagramBlock.remap .outputs, .diagramBlock.remap .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.clamp {\n    color: white;\n    background: #4086BB; }\n    .diagramBlock.clamp .value {\n      grid-row: 2; }\n    .diagramBlock.clamp .outputs, .diagramBlock.clamp .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.gradient {\n    height: 70px; }\n    .diagramBlock.gradient .outputs, .diagramBlock.gradient .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.attribute {\n    background: #40866E; }\n  .diagramBlock.constant {\n    background: #646464 !important; }\n  .diagramBlock.output {\n    background: #6a2c83;\n    color: white; }\n    .diagramBlock.output .inputs {\n      color: white; }\n  .diagramBlock .header {\n    grid-row: 1;\n    grid-column: 1 / span 2;\n    border: 4px solid black;\n    border-top-right-radius: 7px;\n    border-top-left-radius: 7px;\n    font-size: 16px;\n    text-align: center;\n    margin-top: -1px;\n    transform: scaleX(1.001);\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    background: black;\n    color: white; }\n  .diagramBlock .value {\n    grid-row: 3;\n    grid-column: 1 / span 2;\n    height: 34px;\n    text-align: center;\n    font-size: 18px;\n    font-weight: bold;\n    margin: 0 10px; }\n    .diagramBlock .value .value-text {\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden; }\n  .diagramBlock .inputs {\n    grid-row: 2;\n    grid-column: 1;\n    padding-bottom: 8px; }\n    .diagramBlock .inputs .input-port {\n      display: grid;\n      grid-template-columns: 12px calc(100% - 12px);\n      grid-template-rows: 100%; }\n      .diagramBlock .inputs .input-port .input-port-plug {\n        grid-column: 1;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        margin-left: -11px;\n        position: relative; }\n        .diagramBlock .inputs .input-port .input-port-plug:hover .input-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .inputs .input-port .input-port-plug .input-port-type {\n          width: 15px;\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .inputs .input-port .input-port-plug .input-port-type img {\n            width: 20px; }\n      .diagramBlock .inputs .input-port .input-port-label {\n        grid-column: 2;\n        grid-row: 1;\n        margin-bottom: 4px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock .outputs {\n    grid-row: 2;\n    grid-column: 2;\n    padding-bottom: 8px; }\n    .diagramBlock .outputs .output-port {\n      display: grid;\n      grid-template-columns: calc(100% - 12px) 12px;\n      grid-template-rows: 100%; }\n      .diagramBlock .outputs .output-port .output-port-plug {\n        grid-column: 2;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        position: relative;\n        margin-left: 4px; }\n        .diagramBlock .outputs .output-port .output-port-plug:hover .output-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .outputs .output-port .output-port-plug .output-port-type {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .outputs .output-port .output-port-plug .output-port-type img {\n            width: 20px; }\n      .diagramBlock .outputs .output-port .output-port-label {\n        text-align: right;\n        grid-column: 1;\n        grid-row: 1;\n        margin-bottom: 4px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock.texture-block {\n    display: grid;\n    grid-template-rows: 30px auto 1fr;\n    grid-template-columns: calc(100% - 60px) 60px;\n    background: #323232;\n    color: white; }\n    .diagramBlock.texture-block .inputs {\n      grid-column: 1;\n      grid-row: 2; }\n    .diagramBlock.texture-block .outputs {\n      grid-column: 2;\n      grid-row: 2 / span 2; }\n    .diagramBlock.texture-block .textureLine {\n      height: 140px;\n      grid-column: 1;\n      grid-row: 3;\n      overflow: hidden;\n      border-bottom-left-radius: 7px;\n      border: black 4px solid;\n      border-left: 0px;\n      border-bottom: 0px; }\n      .diagramBlock.texture-block .textureLine canvas {\n        width: 100%;\n        height: 100%; }\n", ""]);
+exports.push([module.i, ".srd-node {\n  width: 200px; }\n\n.srd-node--selected .diagramBlock {\n  border-color: white !important; }\n\n.srd-default-link--path-selected {\n  animation: 0s !important;\n  stroke: #ffffff !important; }\n\n.srd-port {\n  grid-column: 1;\n  grid-row: 1;\n  background: #2796B2;\n  border-radius: 20px;\n  transform: scale(1);\n  width: 20px;\n  height: 20px; }\n  .srd-port.connected {\n    background: #CAB422; }\n  .srd-port:hover {\n    background: #DDDDDD !important; }\n\n.diagramBlock {\n  background: gray;\n  width: 100%;\n  border: 4px solid black;\n  border-radius: 12px;\n  display: grid;\n  grid-template-rows: 30px auto;\n  grid-template-columns: 50% 50%;\n  color: white; }\n  .diagramBlock.input {\n    background: #40866E;\n    color: white; }\n    .diagramBlock.input .value {\n      grid-row: 2; }\n    .diagramBlock.input .outputs {\n      transform: translateY(5px); }\n    .diagramBlock.input.Float {\n      background: #cb9e27; }\n    .diagramBlock.input.Vector2 {\n      background: #16bcb1; }\n    .diagramBlock.input.Vector3 {\n      background: #b786cb; }\n    .diagramBlock.input.Color3 {\n      background: #b786cb; }\n    .diagramBlock.input.Vector4 {\n      background: #be5126; }\n    .diagramBlock.input.Color4 {\n      background: #be5126; }\n    .diagramBlock.input.Matrix {\n      background: #591990; }\n  .diagramBlock.trigonometry {\n    background: #405c86;\n    color: white; }\n    .diagramBlock.trigonometry .value {\n      grid-row: 2; }\n  .diagramBlock.remap {\n    color: white;\n    background: #4086BB; }\n    .diagramBlock.remap .value {\n      grid-row: 3; }\n    .diagramBlock.remap .outputs, .diagramBlock.remap .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.clamp {\n    color: white;\n    background: #4086BB; }\n    .diagramBlock.clamp .value {\n      grid-row: 2; }\n    .diagramBlock.clamp .outputs, .diagramBlock.clamp .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.gradient {\n    height: 70px; }\n    .diagramBlock.gradient .outputs, .diagramBlock.gradient .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.attribute {\n    background: #40866E; }\n  .diagramBlock.output {\n    background: #6a2c83;\n    color: white; }\n    .diagramBlock.output .inputs {\n      color: white; }\n  .diagramBlock .header {\n    grid-row: 1;\n    grid-column: 1 / span 2;\n    border: 4px solid black;\n    border-top-right-radius: 7px;\n    border-top-left-radius: 7px;\n    font-size: 16px;\n    text-align: center;\n    margin-top: -1px;\n    transform: scaleX(1.001);\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    background: black;\n    color: white; }\n    .diagramBlock .header.constant {\n      border-color: #4E5C74;\n      background: #4E5C74 !important; }\n    .diagramBlock .header.inspector {\n      border-color: #396437;\n      background: #396437 !important; }\n  .diagramBlock .value {\n    grid-row: 3;\n    grid-column: 1 / span 2;\n    height: 34px;\n    text-align: center;\n    font-size: 18px;\n    font-weight: bold;\n    margin: 0 10px; }\n    .diagramBlock .value .value-text {\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden; }\n  .diagramBlock .inputs {\n    grid-row: 2;\n    grid-column: 1;\n    padding-bottom: 8px; }\n    .diagramBlock .inputs .input-port {\n      display: grid;\n      grid-template-columns: 12px calc(100% - 12px);\n      grid-template-rows: 100%; }\n      .diagramBlock .inputs .input-port .input-port-plug {\n        grid-column: 1;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        margin-left: -11px;\n        position: relative; }\n        .diagramBlock .inputs .input-port .input-port-plug:hover .input-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .inputs .input-port .input-port-plug .input-port-type {\n          width: 15px;\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .inputs .input-port .input-port-plug .input-port-type img {\n            width: 20px; }\n      .diagramBlock .inputs .input-port .input-port-label {\n        grid-column: 2;\n        grid-row: 1;\n        margin-bottom: 4px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock .outputs {\n    grid-row: 2;\n    grid-column: 2;\n    padding-bottom: 8px; }\n    .diagramBlock .outputs .output-port {\n      display: grid;\n      grid-template-columns: calc(100% - 12px) 12px;\n      grid-template-rows: 100%; }\n      .diagramBlock .outputs .output-port .output-port-plug {\n        grid-column: 2;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        position: relative;\n        margin-left: 4px; }\n        .diagramBlock .outputs .output-port .output-port-plug:hover .output-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .outputs .output-port .output-port-plug .output-port-type {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .outputs .output-port .output-port-plug .output-port-type img {\n            width: 20px; }\n      .diagramBlock .outputs .output-port .output-port-label {\n        text-align: right;\n        grid-column: 1;\n        grid-row: 1;\n        margin-bottom: 4px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock.texture-block {\n    display: grid;\n    grid-template-rows: 30px auto 1fr;\n    grid-template-columns: calc(100% - 60px) 60px;\n    background: #323232;\n    color: white; }\n    .diagramBlock.texture-block .inputs {\n      grid-column: 1;\n      grid-row: 2; }\n    .diagramBlock.texture-block .outputs {\n      grid-column: 2;\n      grid-row: 2 / span 2; }\n    .diagramBlock.texture-block .textureLine {\n      height: 140px;\n      grid-column: 1;\n      grid-row: 3;\n      overflow: hidden;\n      border-bottom-left-radius: 7px;\n      border: black 4px solid;\n      border-left: 0px;\n      border-bottom: 0px; }\n      .diagramBlock.texture-block .textureLine canvas {\n        width: 100%;\n        height: 100%; }\n", ""]);
 
 // exports
 
@@ -68308,7 +68308,7 @@ module.exports = function(module) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BlockTools", function() { return BlockTools; });
-/* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/Fragment/discardBlock */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/Fragment/discardBlock */ "babylonjs/Materials/Textures/texture");
 /* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__);
 
 
@@ -69381,7 +69381,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
 /* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
 /* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
-/* harmony import */ var babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/gradientBlock */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/gradientBlock */ "babylonjs/Materials/Textures/texture");
 /* harmony import */ var babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _gradientStepComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./gradientStepComponent */ "./components/diagram/gradient/gradientStepComponent.tsx");
 /* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
@@ -69513,7 +69513,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
 /* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Materials/Textures/texture");
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__);
 
 
@@ -69676,7 +69676,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _propertyTab_properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../propertyTab/properties/vector2PropertyTabComponent */ "./components/propertyTab/properties/vector2PropertyTabComponent.tsx");
 /* harmony import */ var _propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../propertyTab/properties/vector3PropertyTabComponent */ "./components/propertyTab/properties/vector3PropertyTabComponent.tsx");
-/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Materials/Textures/texture");
 /* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
 /* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
@@ -69685,12 +69685,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
 /* harmony import */ var _stringTools__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../stringTools */ "./stringTools.ts");
 /* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
-/* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
-/* harmony import */ var _propertyTab_properties_vector4PropertyTabComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../propertyTab/properties/vector4PropertyTabComponent */ "./components/propertyTab/properties/vector4PropertyTabComponent.tsx");
-/* harmony import */ var _propertyTab_properties_matrixPropertyTabComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../propertyTab/properties/matrixPropertyTabComponent */ "./components/propertyTab/properties/matrixPropertyTabComponent.tsx");
-/* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
-/* harmony import */ var _sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../../../sharedComponents/sliderLineComponent */ "./sharedComponents/sliderLineComponent.tsx");
-
+/* harmony import */ var _propertyTab_properties_vector4PropertyTabComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../propertyTab/properties/vector4PropertyTabComponent */ "./components/propertyTab/properties/vector4PropertyTabComponent.tsx");
+/* harmony import */ var _propertyTab_properties_matrixPropertyTabComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../propertyTab/properties/matrixPropertyTabComponent */ "./components/propertyTab/properties/matrixPropertyTabComponent.tsx");
+/* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
+/* harmony import */ var _sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../../sharedComponents/sliderLineComponent */ "./sharedComponents/sliderLineComponent.tsx");
 
 
 
@@ -69721,16 +69719,16 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Float: {
                 var cantDisplaySlider = (isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max);
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_15__["FloatLineComponent"], { label: "Min", target: inputBlock, propertyName: "min", onChange: function () {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_14__["FloatLineComponent"], { label: "Min", target: inputBlock, propertyName: "min", onChange: function () {
                             _this.forceUpdate();
                         } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_15__["FloatLineComponent"], { label: "Max", target: inputBlock, propertyName: "max", onChange: function () {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_14__["FloatLineComponent"], { label: "Max", target: inputBlock, propertyName: "max", onChange: function () {
                             _this.forceUpdate();
                         } }),
                     cantDisplaySlider &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_floatPropertyTabComponent__WEBPACK_IMPORTED_MODULE_8__["FloatPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }),
                     !cantDisplaySlider &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_16__["SliderLineComponent"], { label: "Value", target: inputBlock, propertyName: "value", step: (inputBlock.max - inputBlock.min) / 100.0, minimum: inputBlock.min, maximum: inputBlock.max, onChange: function () {
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_15__["SliderLineComponent"], { label: "Value", target: inputBlock, propertyName: "value", step: (inputBlock.max - inputBlock.min) / 100.0, minimum: inputBlock.min, maximum: inputBlock.max, onChange: function () {
                                 _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             } })));
             }
@@ -69742,9 +69740,9 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Vector3:
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["Vector3PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Vector4:
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_vector4PropertyTabComponent__WEBPACK_IMPORTED_MODULE_13__["Vector4PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_vector4PropertyTabComponent__WEBPACK_IMPORTED_MODULE_12__["Vector4PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Matrix:
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_matrixPropertyTabComponent__WEBPACK_IMPORTED_MODULE_14__["MatrixPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_matrixPropertyTabComponent__WEBPACK_IMPORTED_MODULE_13__["MatrixPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
         }
         return null;
     };
@@ -69820,6 +69818,11 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
         if (systemValuesOptions.length > 0) {
             modeOptions.push({ label: "System value", value: 2 });
         }
+        var typeOptions = [
+            { label: "None", value: 0 },
+            { label: "Visible in the inspector", value: 1 },
+            { label: "Constant", value: 2 }
+        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_9__["LineContainerComponent"], { title: "GENERAL" },
                 !inputBlock.isAttribute &&
@@ -69827,11 +69830,32 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { label: "Type", value: _stringTools__WEBPACK_IMPORTED_MODULE_10__["StringTools"].GetBaseType(inputBlock.type) })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_9__["LineContainerComponent"], { title: "PROPERTIES" },
                 inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AnimatedInputBlockTypes"].None &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_12__["CheckBoxLineComponent"], { label: "Visible in the Inspector", target: inputBlock, propertyName: "visibleInInspector" }),
-                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AnimatedInputBlockTypes"].None &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_12__["CheckBoxLineComponent"], { label: "IsConstant", target: inputBlock, propertyName: "isConstant", onValueChanged: function () {
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Type", options: typeOptions, target: inputBlock, noDirectUpdate: true, getSelection: function (block) {
+                            if (block.visibleInInspector) {
+                                return 1;
+                            }
+                            if (block.isConstant) {
+                                return 2;
+                            }
+                            return 0;
+                        }, onSelect: function (value) {
+                            switch (value) {
+                                case 0:
+                                    inputBlock.visibleInInspector = false;
+                                    inputBlock.isConstant = false;
+                                    break;
+                                case 1:
+                                    inputBlock.visibleInInspector = true;
+                                    inputBlock.isConstant = false;
+                                    break;
+                                case 2:
+                                    inputBlock.visibleInInspector = false;
+                                    inputBlock.isConstant = true;
+                                    break;
+                            }
+                            _this.forceUpdate();
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Mode", options: modeOptions, target: inputBlock, noDirectUpdate: true, getSelection: function (block) {
                         if (block.isAttribute) {
@@ -69898,7 +69922,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialSystemValues */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialSystemValues */ "babylonjs/Materials/Textures/texture");
 /* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _stringTools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../stringTools */ "./stringTools.ts");
 /* harmony import */ var _portHelper__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../portHelper */ "./components/diagram/portHelper.tsx");
@@ -70015,10 +70039,10 @@ var InputNodeWidget = /** @class */ (function (_super) {
         else {
             name = "Not connected input";
         }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock input" + (inputBlock ? " " + babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"][inputBlock.type] : "") + (inputBlock && inputBlock.isConstant ? " constant" : ""), style: {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock input" + (inputBlock ? " " + babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"][inputBlock.type] : ""), style: {
                 background: color
             } },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, name),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" + (inputBlock && inputBlock.isConstant ? " constant" : "") + (inputBlock && inputBlock.visibleInInspector ? " inspector" : "") }, name),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" }, this.renderValue(value))));
     };
@@ -70689,7 +70713,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PortHelper", function() { return PortHelper; });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Materials/Textures/texture");
 /* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _port_defaultPortWidget__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./port/defaultPortWidget */ "./components/diagram/port/defaultPortWidget.tsx");
 /* harmony import */ var _blockTools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../blockTools */ "./blockTools.ts");
@@ -71366,7 +71390,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../sharedComponents/fileButtonLineComponent */ "./sharedComponents/fileButtonLineComponent.tsx");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Materials/Textures/texture");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
@@ -71732,7 +71756,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
 /* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
 /* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
-/* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/trigonometryBlock */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/trigonometryBlock */ "babylonjs/Materials/Textures/texture");
 /* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__);
 
 
@@ -71804,7 +71828,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _portHelper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../portHelper */ "./components/diagram/portHelper.tsx");
-/* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/trigonometryBlock */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/trigonometryBlock */ "babylonjs/Materials/Textures/texture");
 /* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_3__);
 
 
@@ -72159,7 +72183,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
 /* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Materials/Textures/texture");
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../dataStorage */ "./dataStorage.ts");
 
@@ -72257,7 +72281,7 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PreviewManager", function() { return PreviewManager; });
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterial */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterial */ "babylonjs/Materials/Textures/texture");
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _previewMeshType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./previewMeshType */ "./components/preview/previewMeshType.ts");
 /* harmony import */ var _log_logComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../log/logComponent */ "./components/log/logComponent.tsx");
@@ -72900,7 +72924,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
 /* harmony import */ var _stringTools__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../stringTools */ "./stringTools.ts");
 /* harmony import */ var _sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../sharedComponents/fileButtonLineComponent */ "./sharedComponents/fileButtonLineComponent.tsx");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Materials/Textures/texture");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__);
 /* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../serializationTools */ "./serializationTools.ts");
 /* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
@@ -73096,7 +73120,7 @@ var DataStorage = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GlobalState", function() { return GlobalState; });
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Materials/Textures/texture");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/preview/previewMeshType */ "./components/preview/previewMeshType.ts");
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./dataStorage */ "./dataStorage.ts");
@@ -73159,7 +73183,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _components_diagram_generic_genericNodeFactory__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/diagram/generic/genericNodeFactory */ "./components/diagram/generic/genericNodeFactory.tsx");
 /* harmony import */ var _components_diagram_generic_genericNodeModel__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/diagram/generic/genericNodeModel */ "./components/diagram/generic/genericNodeModel.tsx");
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint */ "babylonjs/Materials/Textures/texture");
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _components_nodeList_nodeListComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/nodeList/nodeListComponent */ "./components/nodeList/nodeListComponent.tsx");
 /* harmony import */ var _components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./components/propertyTab/propertyTabComponent */ "./components/propertyTab/propertyTabComponent.tsx");
@@ -74091,7 +74115,7 @@ var Portal = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SerializationTools", function() { return SerializationTools; });
-/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Textures/texture */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Textures/texture */ "babylonjs/Materials/Textures/texture");
 /* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./dataStorage */ "./dataStorage.ts");
 
@@ -74257,7 +74281,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Materials/Textures/texture");
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _numericInputComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./numericInputComponent */ "./sharedComponents/numericInputComponent.tsx");
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
@@ -74619,7 +74643,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Materials/Textures/texture");
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./vector4LineComponent */ "./sharedComponents/vector4LineComponent.tsx");
 /* harmony import */ var _optionsLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
@@ -75040,7 +75064,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Materials/Textures/texture");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__);
 
 
@@ -75272,7 +75296,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Engines/constants */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Engines/constants */ "babylonjs/Materials/Textures/texture");
 /* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__);
 
 
@@ -75748,7 +75772,7 @@ var Vector4LineComponent = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "StringTools", function() { return StringTools; });
-/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Materials/Textures/texture");
 /* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__);
 
 var StringTools = /** @class */ (function () {
@@ -75847,14 +75871,14 @@ var StringTools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs/Misc/observable":
+/***/ "babylonjs/Materials/Textures/texture":
 /*!****************************************************************************************************!*\
   !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
   \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_Textures_texture__;
 
 /***/ })
 
