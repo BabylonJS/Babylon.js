@@ -1324,11 +1324,15 @@ namespace babylon
             //bgfx_test(static_cast<uint16_t>(m_size.Width), static_cast<uint16_t>(m_size.Height));
 
             callbackPtr->Call({});
-
-            m_viewidSet.Clear();
-
-            bgfx::frame();
+            EndFrame();
         });
+    }
+
+    void NativeEngine::EndFrame()
+    {
+        m_viewidSet.ResetViewIds();
+
+        bgfx::frame();
     }
 
     void NativeEngine::Dispatch(std::function<void()> function)

@@ -14,6 +14,8 @@ namespace
         {
         case xr::TextureFormat::RGBA8:
             return bgfx::TextureFormat::RGBA8;
+        case xr::TextureFormat::RGBA8S:
+            return bgfx::TextureFormat::RGBA8S;
         case xr::TextureFormat::D24S8:
             return bgfx::TextureFormat::D24S8;
         default:
@@ -131,6 +133,7 @@ namespace babylon
 
                 BeginFrame();
                 callback(*m_frame);
+                m_engineImpl->EndFrame();
                 EndFrame();
             });
         }
@@ -832,7 +835,6 @@ namespace babylon
                 {
                     m_xrFrame.Update(frame);
                     func->Call({ Napi::Value::From(env, -1), m_jsXRFrame.Value() });
-                    bgfx::frame();
                 });
 
                 // TODO: Timestamp, I think? Or frame handle? Look up what this return value is and return the right thing.

@@ -36,7 +36,7 @@ namespace babylon
             return m_nextId;
         }
 
-        void Clear()
+        void ResetViewIds()
         {
             m_nextId = m_firstId;
         }
@@ -325,6 +325,7 @@ namespace babylon
 
         FrameBufferManager& GetFrameBufferManager();
         void Dispatch(std::function<void()>);
+        void EndFrame();
 
     private:
         Napi::Value GetEngine(const Napi::CallbackInfo& info); // TODO: Hack, temporary method. Remove as part of the change to get rid of NapiBridge.

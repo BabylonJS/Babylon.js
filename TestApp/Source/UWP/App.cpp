@@ -123,13 +123,10 @@ void App::OnActivated(CoreApplicationView^ applicationView, IActivatedEventArgs^
         m_fileActivatedArgs = nullptr;
     }
 
-    RestartRuntimeAsync();
-
-    const auto& bounds = applicationView->CoreWindow->Bounds;
-    m_runtime->UpdateSize(bounds.Width, bounds.Height);
+    RestartRuntimeAsync(applicationView->CoreWindow->Bounds);
 }
 
-concurrency::task<void> App::RestartRuntimeAsync()
+concurrency::task<void> App::RestartRuntimeAsync(Windows::Foundation::Rect bounds)
 {
     m_inputBuffer.reset();
     m_runtime.reset();
@@ -171,6 +168,8 @@ concurrency::task<void> App::RestartRuntimeAsync()
 
         m_runtime->LoadScript(appUrl + "/Scripts/playground_runner.js");
     }
+
+    m_runtime->UpdateSize(bounds.Width, bounds.Height);
 }
 
 void App::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ args)
@@ -226,11 +225,11 @@ void App::OnPointerReleased(CoreWindow^, PointerEventArgs^)
     m_inputBuffer->SetPointerDown(false);
 }
 
-void App::OnKeyPressed(CoreWindow^, KeyEventArgs^ args)
+void App::OnKeyPressed(CoreWindow^ window, KeyEventArgs^ args)
 {
     if (args->VirtualKey == VirtualKey::R)
     {
-        RestartRuntimeAsync();
+        RestartRuntimeAsync(window->Bounds);
     }
 }
 
