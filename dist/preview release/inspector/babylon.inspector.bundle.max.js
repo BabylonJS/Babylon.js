@@ -49868,7 +49868,6 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
                 }
                 if (entity.getDescendants) {
                     if (entity.getDescendants(false, function (n) {
-                        console.log(n.name);
                         return n.name && n.name.toLowerCase().indexOf(lowerCaseFilter_1) !== -1;
                     }).length === 0) {
                         return null;
