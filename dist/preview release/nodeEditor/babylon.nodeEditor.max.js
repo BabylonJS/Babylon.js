@@ -73459,6 +73459,7 @@ var GraphEditor = /** @class */ (function (_super) {
             widget.setState({ document: this.props.globalState.hostDocument });
             this._onWidgetKeyUpPointer = this.onWidgetKeyUp.bind(this);
             this.props.globalState.hostDocument.addEventListener("keyup", this._onWidgetKeyUpPointer, false);
+            this.props.globalState.hostDocument.defaultView.addEventListener("blur", function () { return _this._altKeyIsPressed = false; }, false);
             var previousMouseMove_1 = widget.onMouseMove;
             widget.onMouseMove = function (evt) {
                 if (_this._altKeyIsPressed && evt.buttons === 1) {
