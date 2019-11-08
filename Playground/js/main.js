@@ -838,7 +838,7 @@ class Main {
         } else {
             monacoCreator.disposeDiff();
             diffView.style.display = "none";
-            if (menuPG.navBarMobile.offsetHeight > 0) {
+            if (menuPG.isMobileVersion) {
                 menuPG.resizeBigJsEditor();
             } else {
                 menuPG.resizeSplitted();
