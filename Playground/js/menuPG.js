@@ -104,10 +104,12 @@ class MenuPG {
                 return;
             }
 
-            if (document.getElementById("saveLayer").style.display === "block") {
-                return;
+            // we do not want to proceed if a menu is displayed or if we are in diff mode
+            const candidates = ["saveLayer", "diffLayer", "diffView"];
+            if (candidates.every(c => !(document.getElementById(c).style.display === "block"))) {
+                this.removeAllOptions();
             }
-            this.removeAllOptions();
+
         }.bind(this));
 
         // Version selection
