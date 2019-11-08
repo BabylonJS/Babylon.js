@@ -210,6 +210,10 @@ class MonacoCreator {
         const monacoCreator = this;
 
         this.diffEditor.addCommand(monaco.KeyCode.Escape, function() { main.toggleDiffEditor(monacoCreator, menuPG); });
+        // Adding default VSCode bindinds for previous/next difference
+        this.diffEditor.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.F5, function() { main.navigateToNext(); });
+        this.diffEditor.addCommand(monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.F5, function() { main.navigateToPrevious(); });
+
         this.diffEditor.focus();
     }
 
