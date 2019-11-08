@@ -17,35 +17,6 @@
 
 namespace babylon
 {
-    template<typename T>
-    class RecycleSet
-    {
-    public:
-        RecycleSet(T firstId)
-            : m_firstId{ firstId }
-            , m_nextId{ firstId }
-        {}
-
-        RecycleSet() : RecycleSet({ 0 })
-        {}
-
-        T Get()
-        {
-            m_nextId ++;
-            assert(m_nextId < bgfx::getCaps()->limits.maxViews);
-            return m_nextId;
-        }
-
-        void ResetViewIds()
-        {
-            m_nextId = m_firstId;
-        }
-
-    private:
-        T m_firstId{};
-        T m_nextId{};
-    };
-
     class ViewClearState final
     {
     public:
@@ -144,13 +115,12 @@ namespace babylon
 
     struct FrameBufferData final
     {
-        FrameBufferData(bgfx::FrameBufferHandle frameBuffer, RecycleSet<bgfx::ViewId>& viewIdSet, uint16_t width, uint16_t height)
+        FrameBufferData(bgfx::FrameBufferHandle frameBuffer, uint16_t viewId, uint16_t width, uint16_t height)
             : FrameBuffer{ frameBuffer }
-            , ViewId{ viewIdSet.Get() }
+            , ViewId{ viewId }
             , ViewClearState{ ViewId }
             , Width{ width }
             , Height{ height }
-            , m_idSet{ viewIdSet }
         {
             assert(ViewId < bgfx::getCaps()->limits.maxViews);
         }
@@ -162,15 +132,15 @@ namespace babylon
             bgfx::destroy(FrameBuffer);
         }
 
-        void AcquireNewView()
+        void UseViewId(uint16_t viewId)
         {
-            ViewId = m_idSet.Get();
+            ViewId = viewId;
             ViewClearState.SetViewId(ViewId);
         }
 
-        void SetUpView()
+        void SetUpView(uint16_t viewId)
         {
-            AcquireNewView();
+            UseViewId(viewId);
             bgfx::setViewFrameBuffer(ViewId, FrameBuffer);
             ViewClearState.Update();
             bgfx::setViewRect(ViewId, 0, 0, Width, Height);
@@ -181,22 +151,18 @@ namespace babylon
         ViewClearState ViewClearState;
         uint16_t Width{};
         uint16_t Height{};
-
-    private:
-        RecycleSet<bgfx::ViewId>& m_idSet;
     };
 
     struct FrameBufferManager final
     {
-        FrameBufferManager(RecycleSet<bgfx::ViewId>& viewIdSet) 
-            : m_idSet{ viewIdSet }
+        FrameBufferManager() 
         {
-            m_boundFrameBuffer = m_backBuffer = new FrameBufferData({ bgfx::kInvalidHandle }, m_idSet, bgfx::getStats()->width, bgfx::getStats()->height);
+            m_boundFrameBuffer = m_backBuffer = new FrameBufferData({ bgfx::kInvalidHandle }, GetNewViewId(), bgfx::getStats()->width, bgfx::getStats()->height);
         }
 
         FrameBufferData* CreateNew(bgfx::FrameBufferHandle frameBufferHandle, uint16_t width, uint16_t height)
         {
-            return new FrameBufferData(frameBufferHandle, m_idSet, width, height);
+            return new FrameBufferData(frameBufferHandle, GetNewViewId(), width, height);
         }
 
         void Bind(FrameBufferData* data)
@@ -205,7 +171,7 @@ namespace babylon
 
             // TODO: Consider doing this only on bgfx::reset(); the effects of this call don't survive reset, but as
             // long as there's no reset this doesn't technically need to be called every time the frame buffer is bound.
-            m_boundFrameBuffer->SetUpView();
+            m_boundFrameBuffer->SetUpView(GetNewViewId());
 
             // bgfx::setTexture()? Why?
             // TODO: View order?
@@ -222,10 +188,22 @@ namespace babylon
             m_boundFrameBuffer = m_backBuffer;
         }
 
+        uint16_t GetNewViewId()
+        {
+            m_nextId++;
+            assert(m_nextId < bgfx::getCaps()->limits.maxViews);
+            return m_nextId;
+        }
+
+        void ResetViewIds()
+        {
+            m_nextId = 0;
+        }
+
     private:
-        RecycleSet<bgfx::ViewId>& m_idSet;
         FrameBufferData* m_boundFrameBuffer{ nullptr };
         FrameBufferData* m_backBuffer{ nullptr };
+        uint16_t m_nextId{ 0 };
     };
 
     struct UniformInfo final
@@ -408,9 +386,7 @@ namespace babylon
         bx::DefaultAllocator m_allocator;
         uint64_t m_engineState;
 
-        RecycleSet<bgfx::ViewId> m_viewidSet{ 1 };
-
-        FrameBufferManager m_frameBufferManager{ m_viewidSet };
+        FrameBufferManager m_frameBufferManager{};
 
         NativeWindow::OnResizeCallbackTicket m_resizeCallbackTicket;
 

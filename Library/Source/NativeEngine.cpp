@@ -1303,7 +1303,7 @@ namespace babylon
         const auto backbufferHeight = bgfx::getStats()->height;
         const float yOrigin = bgfx::getCaps()->originBottomLeft ? y : (1.f - y - height);
 
-        m_frameBufferManager.GetBound().AcquireNewView();
+        m_frameBufferManager.GetBound().UseViewId(m_frameBufferManager.GetNewViewId());
         const bgfx::ViewId viewId = m_frameBufferManager.GetBound().ViewId;
         bgfx::setViewFrameBuffer(viewId, m_frameBufferManager.GetBound().FrameBuffer);
         bgfx::setViewRect(viewId,
@@ -1330,7 +1330,7 @@ namespace babylon
 
     void NativeEngine::EndFrame()
     {
-        m_viewidSet.ResetViewIds();
+        GetFrameBufferManager().ResetViewIds();
 
         bgfx::frame();
     }
