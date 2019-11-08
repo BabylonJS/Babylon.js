@@ -39,7 +39,6 @@ export class Rotate2dBlock extends NodeMaterialBlock {
         return this._inputs[0];
     }
 
-    
     /**
      * Gets the input angle
      */
@@ -60,7 +59,7 @@ export class Rotate2dBlock extends NodeMaterialBlock {
             angleInput.value = 0;
             angleInput.output.connectTo(this.angle);
         }
-    }    
+    }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
