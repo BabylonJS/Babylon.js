@@ -280,6 +280,11 @@ class Main {
         this.parent.utils.setToMultipleID("saveButton", "click", this.askForSave.bind(this));
         // Diff
         this.parent.utils.setToMultipleID("diffButton", "click", this.askForDiff.bind(this));
+        this.parent.utils.setToMultipleID("previousButton", "click", this.navigateToPrevious.bind(this));
+        this.parent.utils.setToMultipleID("nextButton", "click", this.navigateToNext.bind(this));
+        this.parent.utils.setToMultipleID("exitButton", "click", function() {
+            this.toggleDiffEditor(this.parent.monacoCreator, this.parent.menuPG)
+        }.bind(this));
         // Zip
         this.parent.utils.setToMultipleID("zipButton", "click", function () {
             this.parent.zipTool.getZip(engine);
@@ -815,14 +820,48 @@ class Main {
         try {
             const leftText = await this.getSnippetCode(document.getElementById("diffFormSource").value);
             const rightText = await this.getSnippetCode(document.getElementById("diffFormCompareTo").value);
-            const diffView = document.getElementById("diffView");
 
-            diffView.style.display = "block";
-            this.parent.monacoCreator.createDiff(leftText, rightText, diffView);
+            this.toggleDiffEditor(this.parent.monacoCreator, this.parent.menuPG, leftText, rightText);
         } catch(e) {
             // only pass the message, we don't want to inspect the stacktrace in this case
             this.parent.utils.showError(e.message, null);
         }
+    }
+
+    toggleDiffEditor(monacoCreator, menuPG, leftText, rightText) {
+        const diffView = document.getElementById("diffView");
+
+        if (leftText && rightText) {
+            menuPG.resizeForDiff();
+            diffView.style.display = "block";
+            monacoCreator.createDiff(leftText, rightText, diffView);
+        } else {
+            monacoCreator.disposeDiff();
+            diffView.style.display = "none";
+            if (menuPG.navBarMobile.offsetHeight > 0) {
+                menuPG.resizeBigJsEditor();
+            } else {
+                menuPG.resizeSplitted();
+            }
+        }
+    }
+
+    navigateToPrevious() {
+        var dn = this.parent.monacoCreator.diffNavigator;
+        if (!dn)
+            return;
+
+        if (dn.canNavigate())
+            dn.previous();
+    }
+
+    navigateToNext() {
+        var dn = this.parent.monacoCreator.diffNavigator;
+        if (!dn)
+            return;
+
+        if (dn.canNavigate())
+            dn.next();
     }
 
     /**
