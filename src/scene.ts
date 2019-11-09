@@ -3739,8 +3739,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * User updatable function that will return a deterministic frame time when engine is in deterministic lock step mode
      */
     public getDeterministicFrameTime: () => number = () => {
-        // return this._engine.getTimeStep();
-        return 1000.0 / 60.0; // frame time in ms
+        return this._engine.getTimeStep();
     }
 
     /** @hidden */
@@ -3783,27 +3782,6 @@ export class Scene extends AbstractScene implements IAnimatable {
             }
 
             this._timeAccumulator = deltaTime < 0 ? 0 : deltaTime;
-
-            // var internalSteps = Math.floor(deltaTime / (1000 * defaultFPS));
-            // internalSteps = Math.min(internalSteps, maxSubSteps);
-            // do {
-            //     this.onBeforeStepObservable.notifyObservers(this);
-
-            //     // Animations
-            //     this._animationRatio = defaultFrameTime * defaultFPS;
-            //     this._animate();
-            //     this.onAfterAnimationsObservable.notifyObservers(this);
-
-            //     // Physics
-            //     this._advancePhysicsEngineStep(defaultFrameTime);
-
-            //     this.onAfterStepObservable.notifyObservers(this);
-            //     this._currentStepId++;
-
-            //     stepsTaken++;
-            //     deltaTime -= defaultFrameTime;
-
-            // } while (deltaTime > 0 && stepsTaken < internalSteps);
 
         }
         else {
