@@ -3739,6 +3739,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      * User updatable function that will return a deterministic frame time when engine is in deterministic lock step mode
      */
     public getDeterministicFrameTime: () => number = () => {
+        // return this._engine.getTimeStep();
         return 1000.0 / 60.0; // frame time in ms
     }
 
@@ -3752,18 +3753,17 @@ export class Scene extends AbstractScene implements IAnimatable {
         if (this._engine.isDeterministicLockStep()) {
             var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime)) + this._timeAccumulator;
 
-            var defaultFPS = (60.0 / 1000.0);
-
-            let defaultFrameTime = this.getDeterministicFrameTime();
+            let defaultFrameTime = this._engine.getTimeStep();
+            var defaultFPS = (1000.0 / defaultFrameTime) / 1000.0;
 
             let stepsTaken = 0;
 
             var maxSubSteps = this._engine.getLockstepMaxSteps();
 
-            var internalSteps = Math.floor(deltaTime / (1000 * defaultFPS));
+            var internalSteps = Math.floor(deltaTime / defaultFrameTime);
             internalSteps = Math.min(internalSteps, maxSubSteps);
 
-            do {
+            while (deltaTime > 0 && stepsTaken < internalSteps) {
                 this.onBeforeStepObservable.notifyObservers(this);
 
                 // Animations
@@ -3780,9 +3780,30 @@ export class Scene extends AbstractScene implements IAnimatable {
                 stepsTaken++;
                 deltaTime -= defaultFrameTime;
 
-            } while (deltaTime > 0 && stepsTaken < internalSteps);
+            }
 
             this._timeAccumulator = deltaTime < 0 ? 0 : deltaTime;
+
+            // var internalSteps = Math.floor(deltaTime / (1000 * defaultFPS));
+            // internalSteps = Math.min(internalSteps, maxSubSteps);
+            // do {
+            //     this.onBeforeStepObservable.notifyObservers(this);
+
+            //     // Animations
+            //     this._animationRatio = defaultFrameTime * defaultFPS;
+            //     this._animate();
+            //     this.onAfterAnimationsObservable.notifyObservers(this);
+
+            //     // Physics
+            //     this._advancePhysicsEngineStep(defaultFrameTime);
+
+            //     this.onAfterStepObservable.notifyObservers(this);
+            //     this._currentStepId++;
+
+            //     stepsTaken++;
+            //     deltaTime -= defaultFrameTime;
+
+            // } while (deltaTime > 0 && stepsTaken < internalSteps);
 
         }
         else {

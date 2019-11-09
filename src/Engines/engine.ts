@@ -366,7 +366,7 @@ export class Engine extends ThinEngine {
     public onCanvasFocusObservable = new Observable<Engine>();
 
     /**
-     * Observable event triggered each time the canvas receives pointerout event
+     * Observable event triggered each time the canvas receives pointerout evet
      */
     public onCanvasPointerOutObservable = new Observable<PointerEvent>();
 
@@ -427,6 +427,7 @@ export class Engine extends ThinEngine {
     // Deterministic lockstepMaxSteps
     private _deterministicLockstep: boolean = false;
     private _lockstepMaxSteps: number = 4;
+    private _timeStep: number = 1 / 60;
 
     protected get _supportsHardwareTextureRescaling() {
         return !!Engine._RescalePostProcessFactory;
@@ -586,6 +587,8 @@ export class Engine extends ThinEngine {
 
             this._deterministicLockstep = !!options.deterministicLockstep;
             this._lockstepMaxSteps = options.lockstepMaxSteps || 0;
+            this._timeStep = options.timeStep || 1 / 60;
+
         }
 
         // Load WebVR Devices
@@ -664,6 +667,14 @@ export class Engine extends ThinEngine {
      */
     public getLockstepMaxSteps(): number {
         return this._lockstepMaxSteps;
+    }
+
+    /**
+     * Returns the time in ms between steps when using deterministic lock step.
+     * @returns time step in (ms)
+     */
+    public getTimeStep(): number {
+        return this._timeStep * 1000;
     }
 
     /**
