@@ -97,6 +97,7 @@ set(SOURCES
     "Source/RuntimeImpl.h"
     "Source/Runtime${BABYLON_NATIVE_PLATFORM}.cpp"
     "Source/ShaderCompiler.h"
+    "Source/ShaderCompiler.cpp"
     "Source/XMLHttpRequest.cpp"
     "Source/XMLHttpRequest.h"
     "Source/XMLHttpRequest${BABYLON_NATIVE_PLATFORM}.cpp")

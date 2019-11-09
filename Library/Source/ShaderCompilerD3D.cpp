@@ -26,9 +26,6 @@ namespace babylon
             shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_0);
             shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_0);
 
-            // TODO: Do this to avoid the work around for dFdy?
-            //shader->setInvertY(true);
-
             if (!shader.parse(&DefaultTBuiltInResource, 450, false, EShMsgDefault))
             {
                 throw std::exception(shader.getInfoDebugLog());
@@ -92,6 +89,7 @@ namespace babylon
 
         glslang::TShader fragmentShader{ EShLangFragment };
         AddShader(program, fragmentShader, fragmentSource);
+        InvertYDerivativeOperands(fragmentShader);
 
         if (!program.link(EShMsgDefault))
         {
