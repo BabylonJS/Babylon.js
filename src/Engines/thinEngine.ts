@@ -88,10 +88,13 @@ export interface EngineOptions extends WebGLContextAttributes {
     deterministicLockstep?: boolean;
     /** Defines the maximum steps to use with deterministic lock step mode */
     lockstepMaxSteps?: number;
+    /** Defines the seconds between each deterministic lock step */
+    timeStep?: number;
     /**
      * Defines that engine should ignore context lost events
      * If this event happens when this parameter is true, you will have to reload the page to restore rendering
      */
+
     doNotHandleContextLost?: boolean;
     /**
      * Defines that engine should ignore modifying touch action attribute and style
@@ -481,6 +484,10 @@ export class ThinEngine {
 
             if (options.lockstepMaxSteps === undefined) {
                 options.lockstepMaxSteps = 4;
+            }
+
+            if (options.timeStep === undefined) {
+                options.timeStep = 1 / 60;
             }
 
             if (options.preserveDrawingBuffer === undefined) {
