@@ -29,7 +29,7 @@ namespace babylon
             }
 
         private:
-            glslang::TIntermediate* intermediate;
+            glslang::TIntermediate* m_intermediate;
         };
     }
 
