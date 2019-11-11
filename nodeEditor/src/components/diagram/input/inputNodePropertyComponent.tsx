@@ -14,7 +14,6 @@ import { LineContainerComponent } from '../../../sharedComponents/lineContainerC
 import { StringTools } from '../../../stringTools';
 import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
 import { TextInputLineComponent } from '../../../sharedComponents/textInputLineComponent';
-import { CheckBoxLineComponent } from '../../../sharedComponents/checkBoxLineComponent';
 import { Vector4PropertyTabComponent } from '../../propertyTab/properties/vector4PropertyTabComponent';
 import { MatrixPropertyTabComponent } from '../../propertyTab/properties/matrixPropertyTabComponent';
 import { FloatLineComponent } from '../../../sharedComponents/floatLineComponent';
@@ -162,6 +161,12 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
             modeOptions.push({ label: "System value", value: 2 });
         }
 
+        var typeOptions = [
+            { label: "None", value: 0 },
+            { label: "Visible in the inspector", value: 1 },
+            { label: "Constant", value: 2 }
+        ];
+
         return (
             <div>
                 <LineContainerComponent title="GENERAL">
@@ -174,17 +179,39 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
                 <LineContainerComponent title="PROPERTIES">
                     {
                         inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&
-                        <CheckBoxLineComponent label="Visible in the Inspector" target={inputBlock} propertyName="visibleInInspector"/>
-                    }           
-                    {
-                        inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&
-                        <CheckBoxLineComponent label="IsConstant" target={inputBlock} propertyName="isConstant"
-                            onValueChanged={() => {
-                                this.props.globalState.onRebuildRequiredObservable.notifyObservers();
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        <OptionsLineComponent label="Type" options={typeOptions} target={inputBlock} 
+                            noDirectUpdate={true}
+                            getSelection={(block) => {
+                                if (block.visibleInInspector) {
+                                    return 1;
+                                }
+
+                                if (block.isConstant) {
+                                    return 2;
+                                }
+
+                                return 0;
                             }}
-                        />
-                    }                             
+                            onSelect={(value: any) => {
+                                switch (value) {
+                                    case 0:
+                                        inputBlock.visibleInInspector = false;
+                                        inputBlock.isConstant = false;
+                                        break;
+                                    case 1:
+                                        inputBlock.visibleInInspector = true;
+                                        inputBlock.isConstant = false;
+                                        break;
+                                    case 2:
+                                        inputBlock.visibleInInspector = false;
+                                        inputBlock.isConstant = true;
+                                        break;
+                                }
+                                this.forceUpdate();
+                                this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                                this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                            }} />                        
+                    }           
                     <OptionsLineComponent label="Mode" options={modeOptions} target={inputBlock} 
                         noDirectUpdate={true}
                         getSelection={(block) => {

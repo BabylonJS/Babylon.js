@@ -21,6 +21,7 @@ import "../../../../Shaders/ShadersInclude/helperFunctions";
 export class TextureBlock extends NodeMaterialBlock {
     private _defineName: string;
     private _linearDefineName: string;
+    private _tempTextureRead: string;
     private _samplerName: string;
     private _transformedUVName: string;
     private _textureTransformName: string;
@@ -253,6 +254,8 @@ export class TextureBlock extends NodeMaterialBlock {
             return;
         }
 
+        this._writeTextureRead(state, true);
+
         for (var output of this._outputs) {
             if (output.hasEndpoints) {
                 this._writeOutput(state, output, output.name, true);
@@ -260,7 +263,7 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
-    private _writeOutput(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string, vertexMode = false) {
+    private _writeTextureRead(state: NodeMaterialBuildState, vertexMode = false) {
         let uvInput = this.uv;
 
         if (vertexMode) {
@@ -268,24 +271,42 @@ export class TextureBlock extends NodeMaterialBlock {
                 return;
             }
 
-            state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${uvInput.associatedVariableName}).${swizzle};\r\n`;
+            state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${uvInput.associatedVariableName});\r\n`;
+            return;
+        }
+
+        if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
+            state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${uvInput.associatedVariableName});\r\n`;
+            return;
+        }
+
+        state.compilationString += `#ifdef ${this._defineName}\r\n`;
+        state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${this._transformedUVName});\r\n`;
+        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef ${this._mainUVDefineName}\r\n`;
+        state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${this._mainUVName});\r\n`;
+        state.compilationString += `#endif\r\n`;
+    }
+
+    private _writeOutput(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string, vertexMode = false) {
+        if (vertexMode) {
+            if (state.target === NodeMaterialBlockTargets.Fragment) {
+                return;
+            }
+
+            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\r\n`;
 
             return;
         }
 
         if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
-            state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${uvInput.associatedVariableName}).${swizzle};\r\n`;
+            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\r\n`;
             return;
         }
 
         const complement = ` * ${this._textureInfoName}`;
 
-        state.compilationString += `#ifdef ${this._defineName}\r\n`;
-        state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${this._transformedUVName}).${swizzle}${complement};\r\n`;
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#ifdef ${this._mainUVDefineName}\r\n`;
-        state.compilationString += `${this._declareOutput(output, state)} = texture2D(${this._samplerName}, ${this._mainUVName}).${swizzle}${complement};\r\n`;
-        state.compilationString += `#endif\r\n`;
+        state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle}${complement};\r\n`;
 
         state.compilationString += `#ifdef ${this._linearDefineName}\r\n`;
         state.compilationString += `${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});\r\n`;
@@ -294,6 +315,10 @@ export class TextureBlock extends NodeMaterialBlock {
 
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
+
+        if (!this._tempTextureRead) {
+            this._tempTextureRead = state._getFreeVariableName("tempTextureRead");
+        }
 
         if (!this._isMixed && state.target === NodeMaterialBlockTargets.Fragment || this._isMixed && state.target === NodeMaterialBlockTargets.Vertex) {
             this._samplerName = state._getFreeVariableName(this.name + "Sampler");
@@ -331,6 +356,8 @@ export class TextureBlock extends NodeMaterialBlock {
         if (this._isMixed) {
             state._emitUniformFromString(this._textureInfoName, "float");
         }
+
+        this._writeTextureRead(state);
 
         for (var output of this._outputs) {
             if (output.hasEndpoints) {
