@@ -12,6 +12,10 @@ import { WebXRController } from './webXRController';
  */
 export class WebXRControllerModelLoader {
 
+    /**
+     * an observable that triggers when a new model (the mesh itself) was initialized.
+     * To know when the mesh was loaded use the controller's own modelLoaded() method
+     */
     public onControllerModelLoaded = new Observable<WebXRController>();
     /**
      * Creates the WebXRControllerModelLoader
@@ -64,11 +68,10 @@ export class WebXRControllerModelLoader {
                 m.getChildMeshes(false).forEach((m) => {
                     m.isPickable = false;
                 });
+                this.onControllerModelLoaded.notifyObservers(c);
             });
 
             c.gamepadController = controllerModel;
-
-            this.onControllerModelLoaded.notifyObservers(c);
         });
     }
 }
