@@ -15,6 +15,7 @@
   - WebXR webVR parity helpers (Vive, WMR, Oculus Rift) ([TrevorDev](https://github.com/TrevorDev))
 - Added support for Offscreen canvas [Doc](https://doc.babylonjs.com/how_to/using_offscreen_canvas) ([Deltakosh](https://github.com/deltakosh/)
 - Added support for multiple canvases with one engine [Doc](https://doc.babylonjs.com/how_to/multi_canvases) ([Deltakosh](https://github.com/deltakosh/)
+- Added useReverseDepthBuffer to Engine which can provide greater z depth for distant objects without the cost of a logarithmic depth buffer ([BenAdams](https://github.com/benaadams/))
 
 ## Updates
 
@@ -83,6 +84,7 @@
 - Added support for clickable errors in the playground ([sailro](http://www.github.com/sailro))
 - Added a color picker and previewer for BABYLON.ColorX invocations in the playground ([sailro](http://www.github.com/sailro))
 - Added support for diffing snippets in the playground ([sailro](http://www.github.com/sailro))
+- Added diff navigator in the playground ([sailro](http://www.github.com/sailro))
 
 ### Meshes
 
@@ -146,6 +148,8 @@
 - Added option to configure the output canvas ([RaananW](https://github.com/RaananW/))
 - Supporting multisampled multiview rendering using the oculus multiview extension ([RaananW](https://github.com/RaananW/))
 - Preparing to deprecate supportsSession in favor of isSupportedSession ([RaananW](https://github.com/RaananW/))
+- Added onControllerModelLoaded observable for WebXR ([RaananW](https://github.com/RaananW/))
+- UI Button has options to set different session mode and reference type ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
@@ -220,6 +224,7 @@
 - Fix a bug with exit VR and Edge ([RaananW](https://github.com/RaananW/))
 - Fixed an issue with size of texture in multiview ([RaananW](https://github.com/RaananW/))
 - Fixed Path3D (bi)normals computation for specific edge cases ([Poolminer](https://github.com/Poolminer/))
+- WebXR UI BUtton will only change to "In XR" after XR Session started ([RaananW](https://github.com/RaananW/))
 
 ## Breaking changes
 
