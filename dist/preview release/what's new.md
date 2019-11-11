@@ -147,6 +147,7 @@
 - Added option to configure the output canvas ([RaananW](https://github.com/RaananW/))
 - Supporting multisampled multiview rendering using the oculus multiview extension ([RaananW](https://github.com/RaananW/))
 - Preparing to deprecate supportsSession in favor of isSupportedSession ([RaananW](https://github.com/RaananW/))
+- UI Button has options to set different session mode and reference type ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
@@ -221,6 +222,7 @@
 - Fix a bug with exit VR and Edge ([RaananW](https://github.com/RaananW/))
 - Fixed an issue with size of texture in multiview ([RaananW](https://github.com/RaananW/))
 - Fixed Path3D (bi)normals computation for specific edge cases ([Poolminer](https://github.com/Poolminer/))
+- WebXR UI BUtton will only change to "In XR" after XR Session started ([RaananW](https://github.com/RaananW/))
 
 ## Breaking changes
 
