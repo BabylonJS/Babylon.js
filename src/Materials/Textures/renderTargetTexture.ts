@@ -687,7 +687,7 @@ export class RenderTargetTexture extends Texture {
                 }
 
                 if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && !isMasked) {
-                    if (mesh._activate(sceneRenderId, true)) {
+                    if (mesh._activate(sceneRenderId, true) && mesh.subMeshes.length) {
                         if (!mesh.isAnInstance) {
                             mesh._internalAbstractMeshDataInfo._onlyForInstancesIntermediate = false;
                         } else {
