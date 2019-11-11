@@ -40784,6 +40784,18 @@ declare module BABYLON {
          * A list of meshes to be used as the teleportation floor. (default: empty)
          */
         floorMeshes?: Mesh[];
+        /**
+         * The teleportation mode. (default: TELEPORTATIONMODE_CONSTANTTIME)
+         */
+        teleportationMode?: number;
+        /**
+         * The duration of the animation in ms, apply when animationMode is TELEPORTATIONMODE_CONSTANTTIME. (default 122ms)
+         */
+        teleportationTime?: number;
+        /**
+         * The speed of the animation in distance/sec, apply when animationMode is TELEPORTATIONMODE_CONSTANTSPEED. (default 20 units / sec)
+         */
+        teleportationSpeed?: number;
     }
     /**
      * Options to modify the vr experience helper's behavior.
@@ -40888,6 +40900,9 @@ declare module BABYLON {
         private _teleportActive;
         private _floorMeshName;
         private _floorMeshesCollection;
+        private _teleportationMode;
+        private _teleportationTime;
+        private _teleportationSpeed;
         private _rotationAllowed;
         private _teleportBackwardsVector;
         private _teleportationTarget;
@@ -41099,6 +41114,14 @@ declare module BABYLON {
         private _workingVector;
         private _workingQuaternion;
         private _workingMatrix;
+        /**
+         * Time Constant Teleportation Mode
+         */
+        static readonly TELEPORTATIONMODE_CONSTANTTIME: number;
+        /**
+         * Speed Constant Teleportation Mode
+         */
+        static readonly TELEPORTATIONMODE_CONSTANTSPEED: number;
         /**
          * Teleports the users feet to the desired location
          * @param location The location where the user's feet should be placed
