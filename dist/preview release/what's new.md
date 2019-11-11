@@ -147,6 +147,7 @@
 - Added option to configure the output canvas ([RaananW](https://github.com/RaananW/))
 - Supporting multisampled multiview rendering using the oculus multiview extension ([RaananW](https://github.com/RaananW/))
 - Preparing to deprecate supportsSession in favor of isSupportedSession ([RaananW](https://github.com/RaananW/))
+- Added onControllerModelLoaded observable for WebXR ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
