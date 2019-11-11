@@ -4448,6 +4448,16 @@ declare module BABYLON {
          */
         static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
         /**
+         * Stores a left-handed perspective projection into a given matrix with depth reversed
+         * @param fov defines the horizontal field of view
+         * @param aspect defines the aspect ratio
+         * @param znear defines the near clip plane
+         * @param zfar not used as infinity is used as far clip
+         * @param result defines the target matrix
+         * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+         */
+        static PerspectiveFovReverseLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
+        /**
          * Creates a right-handed perspective projection matrix
          * @param fov defines the horizontal field of view
          * @param aspect defines the aspect ratio
@@ -4466,6 +4476,16 @@ declare module BABYLON {
          * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
          */
         static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
+        /**
+         * Stores a right-handed perspective projection into a given matrix
+         * @param fov defines the horizontal field of view
+         * @param aspect defines the aspect ratio
+         * @param znear defines the near clip plane
+         * @param zfar not used as infinity is used as far clip
+         * @param result defines the target matrix
+         * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+         */
+        static PerspectiveFovReverseRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
         /**
          * Stores a perspective projection for WebVR info a given matrix
          * @param fov defines the field of view
@@ -28911,6 +28931,11 @@ declare module BABYLON {
         /** Gets or sets a boolean indicating if the engine should validate programs after compilation */
         validateShaderPrograms: boolean;
         /**
+         * Gets or sets a boolean indicating if depth buffer should be reverse, going from far to near.
+         * This can provide greater z depth for distant objects.
+         */
+        useReverseDepthBuffer: boolean;
+        /**
          * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
          */
         disableUniformBuffers: boolean;
@@ -41250,7 +41275,7 @@ declare module BABYLON {
          * @param optionalFeatures defines optional values to pass to the session builder
          * @returns a promise which will resolve once the session has been initialized
          */
-        initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures?: any): any;
+        initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures?: any): Promise<XRSession>;
         /**
          * Sets the reference space on the xr session
          * @param referenceSpace space to set
@@ -41383,7 +41408,7 @@ declare module BABYLON {
          * @param renderTarget the output canvas that will be used to enter XR mode
          * @returns promise that resolves after xr mode has entered
          */
-        enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget): any;
+        enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget): Promise<WebXRSessionManager>;
         /**
          * Updates the global position of the camera by moving the camera's container
          * This should be used instead of modifying the camera's position as it will be overwritten by an xrSessions's update frame
@@ -41444,6 +41469,16 @@ declare module BABYLON {
          * User provided buttons to enable/disable WebXR. The system will provide default if not set
          */
         customButtons?: Array<WebXREnterExitUIButton>;
+        /**
+         * A session mode to use when creating the default button.
+         * Default is immersive-vr
+         */
+        sessionMode?: XRSessionMode;
+        /**
+         * A reference space type to use when creating the default button.
+         * Default is local-floor
+         */
+        referenceSpaceType?: XRReferenceSpaceType;
     }
     /**
      * UI to allow the user to enter/exit XR mode
