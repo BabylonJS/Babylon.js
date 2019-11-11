@@ -43034,6 +43034,11 @@ declare module BABYLON {
      */
     export class WebXRControllerModelLoader {
         /**
+         * an observable that triggers when a new model (the mesh itself) was initialized.
+         * To know when the mesh was loaded use the controller's own modelLoaded() method
+         */
+        onControllerModelLoaded: Observable<WebXRController>;
+        /**
          * Creates the WebXRControllerModelLoader
          * @param input xr input that creates the controllers
          */
@@ -56421,9 +56426,9 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the position input component
+         * Gets the seed input component
          */
-        readonly position: NodeMaterialConnectionPoint;
+        readonly seed: NodeMaterialConnectionPoint;
         /**
          * Gets the jitter input component
          */
@@ -56463,9 +56468,9 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the position operand input component
+         * Gets the seed operand input component
          */
-        readonly position: NodeMaterialConnectionPoint;
+        readonly seed: NodeMaterialConnectionPoint;
         /**
          * Gets the output component
          */
