@@ -4,11 +4,15 @@ import { OculusTouchController } from '../../Gamepads/Controllers/oculusTouchCon
 import { WebXRInput } from './webXRInput';
 import { ViveController } from '../../Gamepads/Controllers/viveController';
 import { WebVRController } from '../../Gamepads/Controllers/webVRController';
+import { Observable } from '../../Misc/observable';
+import { WebXRController } from './webXRController';
 
 /**
  * Loads a controller model and adds it as a child of the WebXRControllers grip when the controller is created
  */
 export class WebXRControllerModelLoader {
+
+    public onControllerModelLoaded = new Observable<WebXRController>();
     /**
      * Creates the WebXRControllerModelLoader
      * @param input xr input that creates the controllers
@@ -63,6 +67,8 @@ export class WebXRControllerModelLoader {
             });
 
             c.gamepadController = controllerModel;
+
+            this.onControllerModelLoaded.notifyObservers(c);
         });
     }
 }
