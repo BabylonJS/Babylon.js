@@ -296,6 +296,7 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class SerializationTools {
+        static UpdateLocations(material: BABYLON.NodeMaterial, globalState: GlobalState): void;
         static Serialize(material: BABYLON.NodeMaterial, globalState: GlobalState): string;
         static Deserialize(serializationObject: any, globalState: GlobalState): void;
     }

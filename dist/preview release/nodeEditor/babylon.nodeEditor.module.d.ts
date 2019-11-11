@@ -393,6 +393,7 @@ declare module "babylonjs-node-editor/serializationTools" {
     import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
     import { GlobalState } from "babylonjs-node-editor/globalState";
     export class SerializationTools {
+        static UpdateLocations(material: NodeMaterial, globalState: GlobalState): void;
         static Serialize(material: NodeMaterial, globalState: GlobalState): string;
         static Deserialize(serializationObject: any, globalState: GlobalState): void;
     }
@@ -2151,6 +2152,7 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class SerializationTools {
+        static UpdateLocations(material: BABYLON.NodeMaterial, globalState: GlobalState): void;
         static Serialize(material: BABYLON.NodeMaterial, globalState: GlobalState): string;
         static Deserialize(serializationObject: any, globalState: GlobalState): void;
     }

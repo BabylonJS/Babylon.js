@@ -73219,6 +73219,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_diagram_gradient_gradientNodeFactory__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! ./components/diagram/gradient/gradientNodeFactory */ "./components/diagram/gradient/gradientNodeFactory.tsx");
 /* harmony import */ var _components_diagram_reflectionTexture_reflectionTextureNodeFactory__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! ./components/diagram/reflectionTexture/reflectionTextureNodeFactory */ "./components/diagram/reflectionTexture/reflectionTextureNodeFactory.tsx");
 /* harmony import */ var _components_diagram_reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! ./components/diagram/reflectionTexture/reflectionTextureNodeModel */ "./components/diagram/reflectionTexture/reflectionTextureNodeModel.tsx");
+/* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_37__ = __webpack_require__(/*! ./serializationTools */ "./serializationTools.ts");
+
 
 
 
@@ -73523,6 +73525,7 @@ var GraphEditor = /** @class */ (function (_super) {
         catch (err) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new _components_log_logComponent__WEBPACK_IMPORTED_MODULE_14__["LogEntry"](err, true));
         }
+        _serializationTools__WEBPACK_IMPORTED_MODULE_37__["SerializationTools"].UpdateLocations(this.props.globalState.nodeMaterial, this.props.globalState);
     };
     GraphEditor.prototype.applyFragmentOutputConstraints = function (rootInput) {
         var model = rootInput.parent;
@@ -74127,6 +74130,19 @@ __webpack_require__.r(__webpack_exports__);
 var SerializationTools = /** @class */ (function () {
     function SerializationTools() {
     }
+    SerializationTools.UpdateLocations = function (material, globalState) {
+        material.editorData = [];
+        // Store node locations
+        for (var _i = 0, _a = material.attachedBlocks; _i < _a.length; _i++) {
+            var block = _a[_i];
+            var node = globalState.onGetNodeFromBlock(block);
+            material.editorData.push({
+                blockId: block.uniqueId,
+                x: node ? node.x : 0,
+                y: node ? node.y : 0
+            });
+        }
+    };
     SerializationTools.Serialize = function (material, globalState) {
         var bufferSerializationState = babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers;
         babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers = _dataStorage__WEBPACK_IMPORTED_MODULE_1__["DataStorage"].ReadBoolean("EmbedTextures", true);
@@ -74233,7 +74249,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
             this._localChange = false;
             return true;
         }
-        return false;
+        return nextProps.label !== this.props.label;
     };
     CheckBoxLineComponent.prototype.onChange = function () {
         this._localChange = true;
