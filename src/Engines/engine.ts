@@ -366,7 +366,7 @@ export class Engine extends ThinEngine {
     public onCanvasFocusObservable = new Observable<Engine>();
 
     /**
-     * Observable event triggered each time the canvas receives pointerout evet
+     * Observable event triggered each time the canvas receives pointerout event
      */
     public onCanvasPointerOutObservable = new Observable<PointerEvent>();
 
