@@ -180,6 +180,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             widget.setState({ document: this.props.globalState.hostDocument })
             this._onWidgetKeyUpPointer = this.onWidgetKeyUp.bind(this)
             this.props.globalState.hostDocument!.addEventListener("keyup", this._onWidgetKeyUpPointer, false);
+            this.props.globalState.hostDocument!.defaultView!.addEventListener("blur", () => this._altKeyIsPressed = false, false);
 
             let previousMouseMove = widget.onMouseMove;
             widget.onMouseMove = (evt: any) => {

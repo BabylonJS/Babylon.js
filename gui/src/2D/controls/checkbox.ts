@@ -5,6 +5,8 @@ import { Control } from "./control";
 import { StackPanel } from "./stackPanel";
 import { TextBlock } from "./textBlock";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { Nullable } from 'babylonjs/types';
+import { Measure } from '../measure';
 
 /**
  * Class used to represent a 2D checkbox
@@ -94,7 +96,7 @@ export class Checkbox extends Control {
     }
 
     /** @hidden */
-    public _draw(context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
         context.save();
 
         this._applyStates(context);

@@ -23,6 +23,7 @@
 - Added support for dual shock gamepads ([Deltakosh](https://github.com/deltakosh/))
 - Support Vive Focus 3Dof controller ([TrevorDev](https://github.com/TrevorDev))
 - Planar positioning support for GizmoManager ([Balupg](https://github.com/balupg))
+- ScaleGizmo and AxisScaleGizmo sensitivity factor ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Individual gizmos can now be enabled/disabled ([Balupg](https://github.com/balupg))
 - Unify preparation of instance attributes. Added `MaterialHelper.PushAttributesForInstances` ([MarkusBillharz](https://github.com/MarkusBillharz))
 - Added support for PBR [irradiance map](https://doc.babylonjs.com/how_to/physically_based_rendering_master#irradiance-map)
@@ -82,6 +83,7 @@
 - Added support for clickable errors in the playground ([sailro](http://www.github.com/sailro))
 - Added a color picker and previewer for BABYLON.ColorX invocations in the playground ([sailro](http://www.github.com/sailro))
 - Added support for diffing snippets in the playground ([sailro](http://www.github.com/sailro))
+- Added diff navigator in the playground ([sailro](http://www.github.com/sailro))
 
 ### Meshes
 
@@ -218,6 +220,7 @@
 - Fixed missing properties in serialization / parsing of `coneParticleEmitter` ([Popov72](https://github.com/Popov72))
 - Fix a bug with exit VR and Edge ([RaananW](https://github.com/RaananW/))
 - Fixed an issue with size of texture in multiview ([RaananW](https://github.com/RaananW/))
+- Fixed Path3D (bi)normals computation for specific edge cases ([Poolminer](https://github.com/Poolminer/))
 
 ## Breaking changes
 
