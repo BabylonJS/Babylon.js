@@ -9,7 +9,7 @@ namespace babylon
         class InvertYDerivativeOperandsTraverser : public glslang::TIntermTraverser
         {
         public:
-            InvertYDerivativeOperandsTraverser(glslang::TIntermediate* intermediate) : intermediate(intermediate)
+            InvertYDerivativeOperandsTraverser(glslang::TIntermediate* intermediate) : m_intermediate(intermediate)
             {
             }
 
