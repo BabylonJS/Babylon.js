@@ -193,7 +193,11 @@ export class WebXRSessionManager implements IDisposable {
      */
     public exitXRAsync() {
         if (this.session) {
-            return this.session.end();
+            try {
+                return this.session.end();
+            } catch (e) {
+                Logger.Warn("could not end XR session. It has ended already.");
+            }
         }
         return Promise.resolve();
     }
