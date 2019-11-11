@@ -988,6 +988,8 @@ export class NodeMaterial extends PushMaterial {
     public setToDefault() {
         this.clear();
 
+        this.editorData = null;
+
         var positionInput = new InputBlock("position");
         positionInput.setAsAttribute("position");
 
