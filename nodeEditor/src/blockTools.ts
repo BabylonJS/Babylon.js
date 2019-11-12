@@ -58,10 +58,13 @@ import { WorleyNoise3DBlock } from 'babylonjs/Materials/Node/Blocks/worleyNoise3
 import { SimplexPerlin3DBlock } from 'babylonjs/Materials/Node/Blocks/simplexPerlin3DBlock';
 import { NormalBlendBlock } from 'babylonjs/Materials/Node/Blocks/normalBlendBlock';
 import { Rotate2dBlock } from 'babylonjs/Materials/Node/Blocks/rotate2dBlock';
+import { DerivativeBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/derivativeBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
+            case "DerivativeBlock":
+                return new DerivativeBlock("Derivative");               
             case "Rotate2dBlock":
                 return new Rotate2dBlock("Rotate2d");            
             case "NormalBlendBlock":
