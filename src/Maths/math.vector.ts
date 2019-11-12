@@ -4997,6 +4997,29 @@ export class Matrix {
     }
 
     /**
+     * Stores a left-handed perspective projection into a given matrix with depth reversed
+     * @param fov defines the horizontal field of view
+     * @param aspect defines the aspect ratio
+     * @param znear defines the near clip plane
+     * @param zfar not used as infinity is used as far clip
+     * @param result defines the target matrix
+     * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+     */
+    public static PerspectiveFovReverseLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
+        let t = 1.0 / (Math.tan(fov * 0.5));
+        let a = isVerticalFovFixed ? (t / aspect) : t;
+        let b = isVerticalFovFixed ? t : (t * aspect);
+        Matrix.FromValuesToRef(
+            a, 0.0, 0.0, 0.0,
+            0.0, b, 0.0, 0.0,
+            0.0, 0.0, -znear, 1.0,
+            0.0, 0.0, 1.0, 0.0,
+            result
+        );
+        result._updateIdentityStatus(false);
+    }
+
+    /**
      * Creates a right-handed perspective projection matrix
      * @param fov defines the horizontal field of view
      * @param aspect defines the aspect ratio
@@ -5039,6 +5062,36 @@ export class Matrix {
             0.0, b, 0.0, 0.0,
             0.0, 0.0, c, -1.0,
             0.0, 0.0, d, 0.0,
+            result
+        );
+
+        result._updateIdentityStatus(false);
+    }
+
+    /**
+     * Stores a right-handed perspective projection into a given matrix
+     * @param fov defines the horizontal field of view
+     * @param aspect defines the aspect ratio
+     * @param znear defines the near clip plane
+     * @param zfar not used as infinity is used as far clip
+     * @param result defines the target matrix
+     * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+     */
+    public static PerspectiveFovReverseRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
+        //alternatively this could be expressed as:
+        //    m = PerspectiveFovLHToRef
+        //    m[10] *= -1.0;
+        //    m[11] *= -1.0;
+
+        let t = 1.0 / (Math.tan(fov * 0.5));
+        let a = isVerticalFovFixed ? (t / aspect) : t;
+        let b = isVerticalFovFixed ? t : (t * aspect);
+
+        Matrix.FromValuesToRef(
+            a, 0.0, 0.0, 0.0,
+            0.0, b, 0.0, 0.0,
+            0.0, 0.0, -znear, -1.0,
+            0.0, 0.0, -1.0, 0.0,
             result
         );
 

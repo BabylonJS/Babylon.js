@@ -26,7 +26,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
      */
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Neutral);
-        this.registerInput("position", NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.registerInput("seed", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerInput("jitter", NodeMaterialBlockConnectionPointTypes.Float);
 
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector2);
@@ -41,9 +41,9 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the position input component
+     * Gets the seed input component
      */
-    public get position(): NodeMaterialConnectionPoint {
+    public get seed(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
@@ -64,7 +64,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        if (!this.position.isConnected) {
+        if (!this.seed.isConnected) {
             return;
         }
 
@@ -225,7 +225,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
         functionString += `}\r\n\r\n`;
 
         state._emitFunction('worley3D', functionString, 'worley3D');
-        state.compilationString += this._declareOutput(this._outputs[0], state) + ` = worley(${this.position.associatedVariableName}, ${this.jitter.associatedVariableName}, ${this.manhattanDistance});\r\n`;
+        state.compilationString += this._declareOutput(this._outputs[0], state) + ` = worley(${this.seed.associatedVariableName}, ${this.jitter.associatedVariableName}, ${this.manhattanDistance});\r\n`;
 
         return this;
     }

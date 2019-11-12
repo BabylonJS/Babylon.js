@@ -4,11 +4,19 @@ import { OculusTouchController } from '../../Gamepads/Controllers/oculusTouchCon
 import { WebXRInput } from './webXRInput';
 import { ViveController } from '../../Gamepads/Controllers/viveController';
 import { WebVRController } from '../../Gamepads/Controllers/webVRController';
+import { Observable } from '../../Misc/observable';
+import { WebXRController } from './webXRController';
 
 /**
  * Loads a controller model and adds it as a child of the WebXRControllers grip when the controller is created
  */
 export class WebXRControllerModelLoader {
+
+    /**
+     * an observable that triggers when a new model (the mesh itself) was initialized.
+     * To know when the mesh was loaded use the controller's own modelLoaded() method
+     */
+    public onControllerModelLoaded = new Observable<WebXRController>();
     /**
      * Creates the WebXRControllerModelLoader
      * @param input xr input that creates the controllers
@@ -60,6 +68,7 @@ export class WebXRControllerModelLoader {
                 m.getChildMeshes(false).forEach((m) => {
                     m.isPickable = false;
                 });
+                this.onControllerModelLoaded.notifyObservers(c);
             });
 
             c.gamepadController = controllerModel;
