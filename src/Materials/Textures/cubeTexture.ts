@@ -128,7 +128,7 @@ export class CubeTexture extends BaseTexture {
         scene.useDelayedTextureLoading = false;
 
         const result = new CubeTexture(url, scene, null, false, null, null, null, undefined, true, forcedExtension, createPolynomials);
-        
+
         scene.useDelayedTextureLoading = oldValue;
 
         return result;
