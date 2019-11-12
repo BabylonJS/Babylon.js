@@ -506,9 +506,7 @@ namespace babylon
     Napi::Value NativeEngine::CreateProgram(const Napi::CallbackInfo& info)
     {
         const auto vertexSource = info[0].As<Napi::String>().Utf8Value();
-        // TODO: This is a HACK to account for the fact that DirectX and OpenGL disagree about the vertical orientation of screen space.
-        // Remove this ASAP when we have a more long-term plan to account for this behavior.
-        const auto fragmentSource = std::regex_replace(info[1].As<Napi::String>().Utf8Value(), std::regex("dFdy\\("), "-dFdy(");
+        const auto fragmentSource = info[1].As<Napi::String>().Utf8Value();
 
         auto programData = new ProgramData();
 

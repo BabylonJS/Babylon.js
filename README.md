@@ -14,9 +14,9 @@ See [this blog entry](https://medium.com/@babylonjs/babylon-native-821f1694fffc)
 
 #### Prerequisites
 
-- CMake 3.12 or higher
-- Python 3.x
-- Visual Studio 2017 or 2019
+- [CMake](https://cmake.org/download/) 3.12 or higher
+- [Python](https://www.python.org/downloads/) 3.x
+- [Visual Studio](https://visualstudio.microsoft.com/downloads/) 2019 (16.3 or higher)
 
 #### Build
 
@@ -34,6 +34,8 @@ See [this blog entry](https://medium.com/@babylonjs/babylon-native-821f1694fffc)
   C:\BabylonNative>cd Build
   ```
 - Run CMake from the new directory and point to the root of the repo.
+
+    NOTE: If you get the CMake error *No preprocessor test for "Intel"*, update your Visual Studio to 16.3 or higher.
   ```
   C:\BabylonNative\Build>cmake ..
   ```
