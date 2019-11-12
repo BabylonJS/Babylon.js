@@ -131,7 +131,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock", "PerturbNormalBlock", "NormalBlendBlock"],
             Trigonometry: ["CosBlock", "SinBlock", "AbsBlock", "ExpBlock", "Exp2Block", "SqrtBlock", "PowBlock", "LogBlock", "ArcCosBlock", "ArcSinBlock", "TanBlock", "ArcTanBlock", "FractBlock", "SignBlock", "ArcTan2Block", "DegreesToRadiansBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "TriangleWaveBlock", "SquareWaveBlock"],
-            Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock", "Rotate2dBlock"],
+            Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock", "Rotate2dBlock", "DerivativeBlock"],
         }
 
         // Create node menu
