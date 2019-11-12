@@ -6,6 +6,8 @@ class MonacoCreator {
         this.parent = parent;
         
         this.jsEditor = null;
+        this.diffEditor = null;
+        this.diffNavigator = null;
         this.monacoMode = "javascript";
         this.blockEditorChange = false;
 
@@ -82,7 +84,7 @@ class MonacoCreator {
         } else {
             typescript.typescriptDefaults.setCompilerOptions({
                 module: typescript.ModuleKind.AMD,
-                target: typescript.ScriptTarget.ES6,
+                target: typescript.ScriptTarget.ES5,
                 noLib: false,
                 noResolve: true,
                 suppressOutputPathCheck: true,
@@ -191,23 +193,47 @@ class MonacoCreator {
             contextmenu: false,
             fontSize: this.parent.settingsPG.fontSize
         }
-       
-        const diffEditor = monaco.editor.createDiffEditor(diffView, diffOptions);
-        diffEditor.setModel({
+
+        this.diffEditor = monaco.editor.createDiffEditor(diffView, diffOptions);
+        this.diffEditor.setModel({
             original: leftModel,
             modified: rightModel
         });
 
-        const cleanup = function() {
-            diffView.style.display = "none";
-            // We need to properly dispose, else the monaco script editor will use those models in the editor compilation pipeline!
-            leftModel.dispose();
-            rightModel.dispose();
-            diffEditor.dispose();
-        }
+        this.diffNavigator = monaco.editor.createDiffNavigator(this.diffEditor, {
+            followsCaret: true,
+            ignoreCharChanges: true
+        });
+        
+        const menuPG = this.parent.menuPG;
+        const main = this.parent.main;
+        const monacoCreator = this;
 
-        diffEditor.addCommand(monaco.KeyCode.Escape, cleanup);
-        diffEditor.focus();
+        this.diffEditor.addCommand(monaco.KeyCode.Escape, function() { main.toggleDiffEditor(monacoCreator, menuPG); });
+        // Adding default VSCode bindinds for previous/next difference
+        this.diffEditor.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.F5, function() { main.navigateToNext(); });
+        this.diffEditor.addCommand(monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.F5, function() { main.navigateToPrevious(); });
+
+        this.diffEditor.focus();
+    }
+
+    disposeDiff() {
+        if (!this.diffEditor)
+            return;
+
+        // We need to properly dispose, else the monaco script editor will use those models in the editor compilation pipeline!
+        let model = this.diffEditor.getModel();
+        let leftModel = model.original;
+        let rightModel = model.modified;
+        
+        leftModel.dispose();
+        rightModel.dispose();
+
+        this.diffNavigator.dispose();
+        this.diffEditor.dispose();
+
+        this.diffNavigator = null;
+        this.diffEditor = null;
     }
 
     /**

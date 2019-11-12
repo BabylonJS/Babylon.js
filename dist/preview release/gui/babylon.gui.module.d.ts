@@ -1043,8 +1043,13 @@ declare module "babylonjs-gui/2D/controls/control" {
          * @param scene defines the hosting scene
          */
         moveToVector3(position: Vector3, scene: Scene): void;
-        /** @hidden */
-        _getDescendants(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
+        /**
+         * Will store all controls that have this control as ascendant in a given array
+         * @param results defines the array where to store the descendants
+         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+         * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+         */
+        getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /**
          * Will return all controls that have this control as ascendant
          * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
@@ -1278,8 +1283,7 @@ declare module "babylonjs-gui/2D/controls/container" {
         protected _postMeasure(): void;
         /** @hidden */
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
-        /** @hidden */
-        _getDescendants(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
+        getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /** @hidden */
         _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
         /** @hidden */
@@ -1316,6 +1320,7 @@ declare module "babylonjs-gui/2D/controls/textBlock" {
     import { Observable } from "babylonjs/Misc/observable";
     import { Measure } from "babylonjs-gui/2D/measure";
     import { Control } from "babylonjs-gui/2D/controls/control";
+    import { Nullable } from 'babylonjs/types';
     /**
      * Enum that determines the text-wrapping mode to use.
      */
@@ -1432,7 +1437,7 @@ declare module "babylonjs-gui/2D/controls/textBlock" {
         protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         private _drawText;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
         protected _applyStates(context: CanvasRenderingContext2D): void;
         protected _breakLines(refWidth: number, context: CanvasRenderingContext2D): object[];
         protected _parseLine(line: string | undefined, context: CanvasRenderingContext2D): object;
@@ -1742,6 +1747,8 @@ declare module "babylonjs-gui/2D/controls/checkbox" {
     import { Vector2 } from "babylonjs/Maths/math";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
+    import { Nullable } from 'babylonjs/types';
+    import { Measure } from "babylonjs-gui/2D/measure";
     /**
      * Class used to represent a 2D checkbox
      */
@@ -1770,7 +1777,7 @@ declare module "babylonjs-gui/2D/controls/checkbox" {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
         /** @hidden */
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
         /**
@@ -1887,6 +1894,7 @@ declare module "babylonjs-gui/2D/controls/inputText" {
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { IFocusableControl } from "babylonjs-gui/2D/advancedDynamicTexture";
     import { VirtualKeyboard } from "babylonjs-gui/2D/controls/virtualKeyboard";
+    import { Measure } from "babylonjs-gui/2D/measure";
     /**
      * Class used to create input text control
      */
@@ -2022,7 +2030,7 @@ declare module "babylonjs-gui/2D/controls/inputText" {
         private _onCutText;
         /** @hidden */
         private _onPasteText;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
         _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void;
         _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
@@ -2375,6 +2383,7 @@ declare module "babylonjs-gui/2D/multiLinePoint" {
     }
 }
 declare module "babylonjs-gui/2D/controls/multiLine" {
+    import { Nullable } from "babylonjs/types";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { MultiLinePoint } from "babylonjs-gui/2D/multiLinePoint";
@@ -2442,7 +2451,7 @@ declare module "babylonjs-gui/2D/controls/multiLine" {
         horizontalAlignment: number;
         verticalAlignment: number;
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         _measure(): void;
         protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -2565,6 +2574,8 @@ declare module "babylonjs-gui/2D/controls/sliders/baseSlider" {
 }
 declare module "babylonjs-gui/2D/controls/sliders/slider" {
     import { BaseSlider } from "babylonjs-gui/2D/controls/sliders/baseSlider";
+    import { Nullable } from 'babylonjs/types';
+    import { Measure } from "babylonjs-gui/2D/measure";
     /**
      * Class used to create slider controls
      */
@@ -2588,7 +2599,7 @@ declare module "babylonjs-gui/2D/controls/sliders/slider" {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
     }
 }
 declare module "babylonjs-gui/2D/controls/selector" {
@@ -2931,6 +2942,8 @@ declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewer" {
 }
 declare module "babylonjs-gui/2D/controls/displayGrid" {
     import { Control } from "babylonjs-gui/2D/controls/control";
+    import { Nullable } from 'babylonjs/types';
+    import { Measure } from "babylonjs-gui/2D/measure";
     /** Class used to render a grid  */
     export class DisplayGrid extends Control {
         name?: string | undefined;
@@ -2969,13 +2982,15 @@ declare module "babylonjs-gui/2D/controls/displayGrid" {
          * @param name defines the control name
          */
         constructor(name?: string | undefined);
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
         protected _getTypeName(): string;
     }
 }
 declare module "babylonjs-gui/2D/controls/sliders/imageBasedSlider" {
     import { BaseSlider } from "babylonjs-gui/2D/controls/sliders/baseSlider";
+    import { Measure } from "babylonjs-gui/2D/measure";
     import { Image } from "babylonjs-gui/2D/controls/image";
+    import { Nullable } from 'babylonjs/types';
     /**
      * Class used to create slider controls based on images
      */
@@ -3004,7 +3019,7 @@ declare module "babylonjs-gui/2D/controls/sliders/imageBasedSlider" {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
     }
 }
 declare module "babylonjs-gui/2D/controls/statics" {
@@ -4948,8 +4963,13 @@ declare module BABYLON.GUI {
          * @param scene defines the hosting scene
          */
         moveToVector3(position: BABYLON.Vector3, scene: BABYLON.Scene): void;
-        /** @hidden */
-        _getDescendants(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
+        /**
+         * Will store all controls that have this control as ascendant in a given array
+         * @param results defines the array where to store the descendants
+         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+         * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+         */
+        getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /**
          * Will return all controls that have this control as ascendant
          * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
@@ -5179,8 +5199,7 @@ declare module BABYLON.GUI {
         protected _postMeasure(): void;
         /** @hidden */
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
-        /** @hidden */
-        _getDescendants(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
+        getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /** @hidden */
         _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
         /** @hidden */
@@ -5328,7 +5347,7 @@ declare module BABYLON.GUI {
         protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         private _drawText;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         protected _applyStates(context: CanvasRenderingContext2D): void;
         protected _breakLines(refWidth: number, context: CanvasRenderingContext2D): object[];
         protected _parseLine(line: string | undefined, context: CanvasRenderingContext2D): object;
@@ -5650,7 +5669,7 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         /** @hidden */
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
         /**
@@ -5892,7 +5911,7 @@ declare module BABYLON.GUI {
         private _onCutText;
         /** @hidden */
         private _onPasteText;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
         _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
@@ -6286,7 +6305,7 @@ declare module BABYLON.GUI {
         horizontalAlignment: number;
         verticalAlignment: number;
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         _measure(): void;
         protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -6423,7 +6442,7 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
     }
 }
 declare module BABYLON.GUI {
@@ -6789,7 +6808,7 @@ declare module BABYLON.GUI {
          * @param name defines the control name
          */
         constructor(name?: string | undefined);
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         protected _getTypeName(): string;
     }
 }
@@ -6822,7 +6841,7 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
     }
 }
 declare module BABYLON.GUI {

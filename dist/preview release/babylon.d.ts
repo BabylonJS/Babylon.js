@@ -4458,6 +4458,16 @@ declare module BABYLON {
          */
         static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
         /**
+         * Stores a left-handed perspective projection into a given matrix with depth reversed
+         * @param fov defines the horizontal field of view
+         * @param aspect defines the aspect ratio
+         * @param znear defines the near clip plane
+         * @param zfar not used as infinity is used as far clip
+         * @param result defines the target matrix
+         * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+         */
+        static PerspectiveFovReverseLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
+        /**
          * Creates a right-handed perspective projection matrix
          * @param fov defines the horizontal field of view
          * @param aspect defines the aspect ratio
@@ -4476,6 +4486,16 @@ declare module BABYLON {
          * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
          */
         static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
+        /**
+         * Stores a right-handed perspective projection into a given matrix
+         * @param fov defines the horizontal field of view
+         * @param aspect defines the aspect ratio
+         * @param znear defines the near clip plane
+         * @param zfar not used as infinity is used as far clip
+         * @param result defines the target matrix
+         * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+         */
+        static PerspectiveFovReverseRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
         /**
          * Stores a perspective projection for WebVR info a given matrix
          * @param fov defines the field of view
@@ -29439,6 +29459,11 @@ declare module BABYLON {
         /** Gets or sets a boolean indicating if the engine should validate programs after compilation */
         validateShaderPrograms: boolean;
         /**
+         * Gets or sets a boolean indicating if depth buffer should be reverse, going from far to near.
+         * This can provide greater z depth for distant objects.
+         */
+        useReverseDepthBuffer: boolean;
+        /**
          * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
          */
         disableUniformBuffers: boolean;
@@ -41499,6 +41524,18 @@ declare module BABYLON {
          * A list of meshes to be used as the teleportation floor. (default: empty)
          */
         floorMeshes?: Mesh[];
+        /**
+         * The teleportation mode. (default: TELEPORTATIONMODE_CONSTANTTIME)
+         */
+        teleportationMode?: number;
+        /**
+         * The duration of the animation in ms, apply when animationMode is TELEPORTATIONMODE_CONSTANTTIME. (default 122ms)
+         */
+        teleportationTime?: number;
+        /**
+         * The speed of the animation in distance/sec, apply when animationMode is TELEPORTATIONMODE_CONSTANTSPEED. (default 20 units / sec)
+         */
+        teleportationSpeed?: number;
     }
     /**
      * Options to modify the vr experience helper's behavior.
@@ -41603,6 +41640,9 @@ declare module BABYLON {
         private _teleportActive;
         private _floorMeshName;
         private _floorMeshesCollection;
+        private _teleportationMode;
+        private _teleportationTime;
+        private _teleportationSpeed;
         private _rotationAllowed;
         private _teleportBackwardsVector;
         private _teleportationTarget;
@@ -41815,6 +41855,14 @@ declare module BABYLON {
         private _workingQuaternion;
         private _workingMatrix;
         /**
+         * Time Constant Teleportation Mode
+         */
+        static readonly TELEPORTATIONMODE_CONSTANTTIME: number;
+        /**
+         * Speed Constant Teleportation Mode
+         */
+        static readonly TELEPORTATIONMODE_CONSTANTSPEED: number;
+        /**
          * Teleports the users feet to the desired location
          * @param location The location where the user's feet should be placed
          */
@@ -41990,7 +42038,7 @@ declare module BABYLON {
          * @param optionalFeatures defines optional values to pass to the session builder
          * @returns a promise which will resolve once the session has been initialized
          */
-        initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures?: any): any;
+        initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures?: any): Promise<XRSession>;
         /**
          * Sets the reference space on the xr session
          * @param referenceSpace space to set
@@ -42125,7 +42173,7 @@ declare module BABYLON {
          * @param renderTarget the output canvas that will be used to enter XR mode
          * @returns promise that resolves after xr mode has entered
          */
-        enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget): any;
+        enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget): Promise<WebXRSessionManager>;
         /**
          * Updates the global position of the camera by moving the camera's container
          * This should be used instead of modifying the camera's position as it will be overwritten by an xrSessions's update frame
@@ -42186,6 +42234,16 @@ declare module BABYLON {
          * User provided buttons to enable/disable WebXR. The system will provide default if not set
          */
         customButtons?: Array<WebXREnterExitUIButton>;
+        /**
+         * A session mode to use when creating the default button.
+         * Default is immersive-vr
+         */
+        sessionMode?: XRSessionMode;
+        /**
+         * A reference space type to use when creating the default button.
+         * Default is local-floor
+         */
+        referenceSpaceType?: XRReferenceSpaceType;
     }
     /**
      * UI to allow the user to enter/exit XR mode
@@ -42998,6 +43056,11 @@ declare module BABYLON {
      * Loads a controller model and adds it as a child of the WebXRControllers grip when the controller is created
      */
     export class WebXRControllerModelLoader {
+        /**
+         * an observable that triggers when a new model (the mesh itself) was initialized.
+         * To know when the mesh was loaded use the controller's own modelLoaded() method
+         */
+        onControllerModelLoaded: Observable<WebXRController>;
         /**
          * Creates the WebXRControllerModelLoader
          * @param input xr input that creates the controllers
@@ -45733,6 +45796,7 @@ declare module BABYLON {
         private _scaleRatio;
         private _uniformScalingMesh;
         private _octahedron;
+        private _sensitivity;
         /** Fires an event when any of it's sub gizmos are dragged */
         onDragStartObservable: Observable<unknown>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
@@ -45752,6 +45816,10 @@ declare module BABYLON {
          * Ratio for the scale of the gizmo (Default: 1)
          */
         scaleRatio: number;
+        /**
+         * Sensitivity factor for dragging (Default: 1)
+         */
+        sensitivity: number;
         /**
          * Disposes of the gizmo
          */
@@ -45783,6 +45851,10 @@ declare module BABYLON {
          * If the scaling operation should be done on all axis (default: false)
          */
         uniformScaling: boolean;
+        /**
+         * Custom sensitivity value for the drag strength
+         */
+        sensitivity: number;
         private _isEnabled;
         private _parent;
         private _arrow;
@@ -46389,8 +46461,9 @@ declare module BABYLON {
     export class LightGizmo extends Gizmo {
         private _lightMesh;
         private _material;
-        private cachedPosition;
-        private cachedForward;
+        private _cachedPosition;
+        private _cachedForward;
+        private _attachedMeshParent;
         /**
          * Creates a LightGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -46414,7 +46487,7 @@ declare module BABYLON {
         /**
          * Creates the lines for a light mesh
          */
-        private static _createLightLines;
+        private static _CreateLightLines;
         /**
          * Disposes of the light gizmo
          */
@@ -53890,6 +53963,7 @@ declare module BABYLON {
     export class TextureBlock extends NodeMaterialBlock {
         private _defineName;
         private _linearDefineName;
+        private _tempTextureRead;
         private _samplerName;
         private _transformedUVName;
         private _textureTransformName;
@@ -53946,6 +54020,7 @@ declare module BABYLON {
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         private readonly _isMixed;
         private _injectVertexCode;
+        private _writeTextureRead;
         private _writeOutput;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
         protected _dumpPropertiesCode(): string;
@@ -56374,9 +56449,9 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the position input component
+         * Gets the seed input component
          */
-        readonly position: NodeMaterialConnectionPoint;
+        readonly seed: NodeMaterialConnectionPoint;
         /**
          * Gets the jitter input component
          */
@@ -56416,14 +56491,75 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the position operand input component
+         * Gets the seed operand input component
          */
-        readonly position: NodeMaterialConnectionPoint;
+        readonly seed: NodeMaterialConnectionPoint;
         /**
          * Gets the output component
          */
         readonly output: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to blend normals
+     */
+    export class NormalBlendBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new NormalBlendBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the first input component
+         */
+        readonly input0: NodeMaterialConnectionPoint;
+        /**
+         * Gets the second input component
+         */
+        readonly input1: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to rotate a 2d vector by a given angle
+     */
+    export class Rotate2dBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new Rotate2dBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input vector
+         */
+        readonly input: NodeMaterialConnectionPoint;
+        /**
+         * Gets the input angle
+         */
+        readonly angle: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        autoConfigure(material: NodeMaterial): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
 declare module BABYLON {

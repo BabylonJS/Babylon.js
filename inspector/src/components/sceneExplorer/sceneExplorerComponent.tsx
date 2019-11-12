@@ -74,8 +74,8 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         if (this.props.globalState.blockMutationUpdates) {
             return;
         }
-
-        this.forceUpdate();
+        
+        setTimeout(() => this.forceUpdate());
     }
 
     componentDidMount() {

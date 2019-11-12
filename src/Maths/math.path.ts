@@ -616,6 +616,7 @@ export class Path3D {
         var cur: Vector3;         // current vector (segment)
         var curTang: Vector3;     // current tangent
         // previous normal
+        var prevNor: Vector3;    // previous normal
         var prevBinor: Vector3;   // previous binormal
 
         for (var i = 1; i < l; i++) {
@@ -634,7 +635,12 @@ export class Path3D {
             prevBinor = this._binormals[i - 1];
             this._normals[i] = Vector3.Cross(prevBinor, curTang);
             if (!this._raw) {
-                this._normals[i].normalize();
+                if (this._normals[i].length() === 0) {
+                    prevNor = this._normals[i - 1];
+                    this._normals[i] = prevNor.clone();
+                } else {
+                    this._normals[i].normalize();
+                }
             }
             this._binormals[i] = Vector3.Cross(curTang, this._normals[i]);
             if (!this._raw) {

@@ -43,7 +43,7 @@ export class SimplexPerlin3DBlock extends NodeMaterialBlock {
      */
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Neutral);
-        this.registerInput("position", NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.registerInput("seed", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Float);
     }
 
@@ -56,9 +56,9 @@ export class SimplexPerlin3DBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the position operand input component
+     * Gets the seed operand input component
      */
-    public get position(): NodeMaterialConnectionPoint {
+    public get seed(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
@@ -72,7 +72,7 @@ export class SimplexPerlin3DBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        if (!this.position.isConnected) {
+        if (!this.seed.isConnected) {
             return;
         }
 
@@ -122,7 +122,7 @@ export class SimplexPerlin3DBlock extends NodeMaterialBlock {
         functionString += `}\r\n`;
 
         state._emitFunction('SimplexPerlin3D', functionString, 'SimplexPerlin3D');
-        state.compilationString += this._declareOutput(this._outputs[0], state) + ` = SimplexPerlin3D(${this.position.associatedVariableName});\r\n`;
+        state.compilationString += this._declareOutput(this._outputs[0], state) + ` = SimplexPerlin3D(${this.seed.associatedVariableName});\r\n`;
 
         return this;
     }
