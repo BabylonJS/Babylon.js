@@ -1071,8 +1071,13 @@ export class Control {
         this.notRenderable = false;
     }
 
-    /** @hidden */
-    public _getDescendants(results: Control[], directDescendantsOnly: boolean = false, predicate?: (control: Control) => boolean): void {
+    /**
+     * Will store all controls that have this control as ascendant in a given array
+     * @param results defines the array where to store the descendants
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     */
+    public getDescendantsToRef(results: Control[], directDescendantsOnly: boolean = false, predicate?: (control: Control) => boolean): void {
         // Do nothing by default
     }
 
@@ -1085,7 +1090,7 @@ export class Control {
     public getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[] {
         var results = new Array<Control>();
 
-        this._getDescendants(results, directDescendantsOnly, predicate);
+        this.getDescendantsToRef(results, directDescendantsOnly, predicate);
 
         return results;
     }

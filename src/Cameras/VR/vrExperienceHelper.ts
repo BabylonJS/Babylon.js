@@ -49,6 +49,18 @@ export interface VRTeleportationOptions {
      * A list of meshes to be used as the teleportation floor. (default: empty)
      */
     floorMeshes?: Mesh[];
+    /**
+     * The teleportation mode. (default: TELEPORTATIONMODE_CONSTANTTIME)
+     */
+    teleportationMode?: number;
+    /**
+     * The duration of the animation in ms, apply when animationMode is TELEPORTATIONMODE_CONSTANTTIME. (default 122ms)
+     */
+    teleportationTime?: number;
+    /**
+     * The speed of the animation in distance/sec, apply when animationMode is TELEPORTATIONMODE_CONSTANTSPEED. (default 20 units / sec)
+     */
+    teleportationSpeed?: number;
 }
 
 /**
@@ -385,6 +397,9 @@ export class VRExperienceHelper {
     private _teleportActive = false;
     private _floorMeshName: string;
     private _floorMeshesCollection: Mesh[] = [];
+    private _teleportationMode: number = VRExperienceHelper.TELEPORTATIONMODE_CONSTANTTIME;
+    private _teleportationTime: number = 122;
+    private _teleportationSpeed: number = 20;
     private _rotationAllowed: boolean = true;
     private _teleportBackwardsVector = new Vector3(0, -1, -1);
     private _teleportationTarget: Mesh;
@@ -1310,6 +1325,16 @@ export class VRExperienceHelper {
                 this._floorMeshesCollection = vrTeleportationOptions.floorMeshes;
             }
 
+            if (vrTeleportationOptions.teleportationMode) {
+                this._teleportationMode = vrTeleportationOptions.teleportationMode;
+            }
+            if (vrTeleportationOptions.teleportationTime && vrTeleportationOptions.teleportationTime > 0) {
+                this._teleportationTime = vrTeleportationOptions.teleportationTime;
+            }
+            if (vrTeleportationOptions.teleportationSpeed && vrTeleportationOptions.teleportationSpeed > 0) {
+                this._teleportationSpeed = vrTeleportationOptions.teleportationSpeed;
+            }
+
             if (this._leftController != null) {
                 this._enableTeleportationOnController(this._leftController);
             }
@@ -1771,6 +1796,16 @@ export class VRExperienceHelper {
     private _workingVector = Vector3.Zero();
     private _workingQuaternion = Quaternion.Identity();
     private _workingMatrix = Matrix.Identity();
+
+    /**
+     * Time Constant Teleportation Mode
+     */
+    public static readonly TELEPORTATIONMODE_CONSTANTTIME = 0;
+    /**
+     * Speed Constant Teleportation Mode
+     */
+    public static readonly TELEPORTATIONMODE_CONSTANTSPEED = 1;
+
     /**
      * Teleports the users feet to the desired location
      * @param location The location where the user's feet should be placed
@@ -1797,15 +1832,28 @@ export class VRExperienceHelper {
 
         this.onBeforeCameraTeleport.notifyObservers(this._workingVector);
 
+        // Animations FPS
+        const FPS = 90;
+        var speedRatio, lastFrame;
+        if (this._teleportationMode == VRExperienceHelper.TELEPORTATIONMODE_CONSTANTSPEED) {
+            lastFrame = FPS;
+            var dist = Vector3.Distance(this.currentVRCamera.position, this._workingVector);
+            speedRatio = this._teleportationSpeed / dist;
+        } else {
+            // teleportationMode is TELEPORTATIONMODE_CONSTANTTIME
+            lastFrame = Math.round(this._teleportationTime * FPS / 1000);
+            speedRatio = 1;
+        }
+
         // Create animation from the camera's position to the new location
         this.currentVRCamera.animations = [];
-        var animationCameraTeleportation = new Animation("animationCameraTeleportation", "position", 90, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
+        var animationCameraTeleportation = new Animation("animationCameraTeleportation", "position", FPS, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
         var animationCameraTeleportationKeys = [{
             frame: 0,
             value: this.currentVRCamera.position
         },
         {
-            frame: 11,
+            frame: lastFrame,
             value: this._workingVector
         }
         ];
@@ -1816,7 +1864,10 @@ export class VRExperienceHelper {
 
         this._postProcessMove.animations = [];
 
-        var animationPP = new Animation("animationPP", "vignetteWeight", 90, Animation.ANIMATIONTYPE_FLOAT,
+        // Calculate the mid frame for vignette animations
+        var midFrame = Math.round(lastFrame / 2);
+
+        var animationPP = new Animation("animationPP", "vignetteWeight", FPS, Animation.ANIMATIONTYPE_FLOAT,
             Animation.ANIMATIONLOOPMODE_CONSTANT);
 
         var vignetteWeightKeys = [];
@@ -1825,18 +1876,18 @@ export class VRExperienceHelper {
             value: 0
         });
         vignetteWeightKeys.push({
-            frame: 5,
+            frame: midFrame,
             value: 8
         });
         vignetteWeightKeys.push({
-            frame: 11,
+            frame: lastFrame,
             value: 0
         });
 
         animationPP.setKeys(vignetteWeightKeys);
         this._postProcessMove.animations.push(animationPP);
 
-        var animationPP2 = new Animation("animationPP2", "vignetteStretch", 90, Animation.ANIMATIONTYPE_FLOAT,
+        var animationPP2 = new Animation("animationPP2", "vignetteStretch", FPS, Animation.ANIMATIONTYPE_FLOAT,
             Animation.ANIMATIONLOOPMODE_CONSTANT);
 
         var vignetteStretchKeys = [];
@@ -1845,11 +1896,11 @@ export class VRExperienceHelper {
             value: 0
         });
         vignetteStretchKeys.push({
-            frame: 5,
+            frame: midFrame,
             value: 10
         });
         vignetteStretchKeys.push({
-            frame: 11,
+            frame: lastFrame,
             value: 0
         });
 
@@ -1860,10 +1911,10 @@ export class VRExperienceHelper {
         this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 0;
 
         this._webVRCamera.attachPostProcess(this._postProcessMove);
-        this._scene.beginAnimation(this._postProcessMove, 0, 11, false, 1, () => {
+        this._scene.beginAnimation(this._postProcessMove, 0, lastFrame, false, speedRatio, () => {
             this._webVRCamera.detachPostProcess(this._postProcessMove);
         });
-        this._scene.beginAnimation(this.currentVRCamera, 0, 11, false, 1, () => {
+        this._scene.beginAnimation(this.currentVRCamera, 0, lastFrame, false, speedRatio, () => {
             this.onAfterCameraTeleport.notifyObservers(this._workingVector);
         });
 

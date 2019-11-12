@@ -87,7 +87,7 @@ export class WebXRSessionManager implements IDisposable {
      * @param optionalFeatures defines optional values to pass to the session builder
      * @returns a promise which will resolve once the session has been initialized
      */
-    public initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures: any = {}) {
+    public initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures: any = {}): Promise<XRSession> {
         return this._xrNavigator.xr.requestSession(xrSessionMode, optionalFeatures).then((session: XRSession) => {
             this.session = session;
             this._sessionEnded = false;
@@ -106,6 +106,7 @@ export class WebXRSessionManager implements IDisposable {
                 this.onXRSessionEnded.notifyObservers(null);
                 this.scene.getEngine()._renderLoop();
             }, { once: true });
+            return this.session;
         });
     }
 
@@ -192,7 +193,11 @@ export class WebXRSessionManager implements IDisposable {
      */
     public exitXRAsync() {
         if (this.session) {
-            return this.session.end();
+            try {
+                return this.session.end();
+            } catch (e) {
+                Logger.Warn("could not end XR session. It has ended already.");
+            }
         }
         return Promise.resolve();
     }
