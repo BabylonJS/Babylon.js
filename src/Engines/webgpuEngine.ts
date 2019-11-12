@@ -1903,8 +1903,8 @@ export class WebGPUEngine extends Engine {
         throw new Error("Invalid Format '" + kind + "'");
     }
 
-    private _getVertexInputDescriptor(): GPUVertexInputDescriptor {
-        const descriptors: GPUVertexBufferDescriptor[] = [];
+    private _getVertexInputDescriptor(): GPUVertexStateDescriptor {
+        const descriptors: GPUVertexBufferLayoutDescriptor[] = [];
         const effect = this._currentEffect!;
         const attributes = effect.getAttributesNames();
         for (var index = 0; index < attributes.length; index++) {
@@ -1923,10 +1923,10 @@ export class WebGPUEngine extends Engine {
                 };
 
                 // TODO WEBGPU. Factorize the one with the same underlying buffer.
-                const vertexBufferDescriptor: GPUVertexBufferDescriptor = {
-                    stride: vertexBuffer.byteStride,
+                const vertexBufferDescriptor: GPUVertexBufferLayoutDescriptor = {
+                    arrayStride: vertexBuffer.byteStride,
                     stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.GPUInputStepMode_instance : WebGPUConstants.GPUInputStepMode_vertex,
-                    attributeSet: [positionAttributeDescriptor]
+                    attributes: [positionAttributeDescriptor]
                 };
 
                descriptors.push(vertexBufferDescriptor);
@@ -1940,7 +1940,7 @@ export class WebGPUEngine extends Engine {
             };
         }
 
-        const inputStateDescriptor: GPUVertexInputDescriptor = {
+        const inputStateDescriptor: GPUVertexStateDescriptor = {
             indexFormat: this._currentIndexBuffer!.is32Bits ? WebGPUConstants.GPUIndexFormat_uint32 : WebGPUConstants.GPUIndexFormat_uint16,
             vertexBuffers: descriptors
         };
@@ -2030,7 +2030,7 @@ export class WebGPUEngine extends Engine {
             colorStates: colorStateDescriptors,
 
             ...stages,
-            vertexInput: inputStateDescriptor,
+            vertexState: inputStateDescriptor,
             layout: pipelineLayout,
         });
         return gpuPipeline.renderPipeline;

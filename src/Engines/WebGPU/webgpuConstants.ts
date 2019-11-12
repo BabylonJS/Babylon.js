@@ -149,10 +149,10 @@ export class WebGPUConstants {
     public static readonly GPUCompareFunction_never: GPUCompareFunction = "never";
     public static readonly GPUCompareFunction_less: GPUCompareFunction = "less";
     public static readonly GPUCompareFunction_equal: GPUCompareFunction = "equal";
-    public static readonly GPUCompareFunction_lessEqual: GPUCompareFunction = "lessEqual";
+    public static readonly GPUCompareFunction_lessEqual: GPUCompareFunction = "less-equal";
     public static readonly GPUCompareFunction_greater: GPUCompareFunction = "greater";
-    public static readonly GPUCompareFunction_notEqual: GPUCompareFunction = "notEqual";
-    public static readonly GPUCompareFunction_greaterEqual: GPUCompareFunction = "greaterEqual";
+    public static readonly GPUCompareFunction_notEqual: GPUCompareFunction = "not-equal";
+    public static readonly GPUCompareFunction_greaterEqual: GPUCompareFunction = "greater-equal";
     public static readonly GPUCompareFunction_always: GPUCompareFunction = "always";
 
     public static readonly GPUBindingType_uniformBuffer: GPUBindingType = "uniform-buffer";
