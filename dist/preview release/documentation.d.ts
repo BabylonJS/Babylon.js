@@ -29381,6 +29381,8 @@ declare module BABYLON {
         deterministicLockstep?: boolean;
         /** Defines the maximum steps to use with deterministic lock step mode */
         lockstepMaxSteps?: number;
+        /** Defines the seconds between each deterministic lock step */
+        timeStep?: number;
         /**
          * Defines that engine should ignore context lost events
          * If this event happens when this parameter is true, you will have to reload the page to restore rendering
@@ -31682,6 +31684,7 @@ declare module BABYLON {
         protected _alphaEquation: number;
         private _deterministicLockstep;
         private _lockstepMaxSteps;
+        private _timeStep;
         protected readonly _supportsHardwareTextureRescaling: boolean;
         private _fps;
         private _deltaTime;
@@ -31756,6 +31759,11 @@ declare module BABYLON {
          * @returns the max steps
          */
         getLockstepMaxSteps(): number;
+        /**
+         * Returns the time in ms between steps when using deterministic lock step.
+         * @returns time step in (ms)
+         */
+        getTimeStep(): number;
         /**
          * Force the mipmap generation for the given render target texture
          * @param texture defines the render target texture to use
@@ -66080,6 +66088,8 @@ declare module BABYLON.GUI {
         protected _rebuildLayout: boolean;
         /** @hidden */
         _isClipped: boolean;
+        /** @hidden */
+        _automaticSize: boolean;
         /** @hidden */
         _tag: any;
         /**
