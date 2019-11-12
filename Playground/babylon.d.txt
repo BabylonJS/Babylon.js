@@ -54232,6 +54232,36 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to get the derivative value on x and y of a given input
+     */
+    export class DerivativeBlock extends NodeMaterialBlock {
+        /**
+         * Create a new DerivativeBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        readonly input: NodeMaterialConnectionPoint;
+        /**
+         * Gets the derivative output on x
+         */
+        readonly dx: NodeMaterialConnectionPoint;
+        /**
+         * Gets the derivative output on y
+         */
+        readonly dy: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Block used to add support for scene fog
      */
     export class FogBlock extends NodeMaterialBlock {
