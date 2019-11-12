@@ -41387,7 +41387,7 @@ var OptionsLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "listLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "options" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: this.state.value }, this.props.options.map(function (option) {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: this.state.value || "" }, this.props.options.map(function (option) {
                     return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: option.label, value: option.value }, option.label));
                 })))));
     };
@@ -42052,8 +42052,8 @@ var TextureLinkLineComponent = /** @class */ (function (_super) {
         if (!this.props.onDebugSelectionChangeObservable) {
             return;
         }
-        this._onDebugSelectionChangeObserver = this.props.onDebugSelectionChangeObservable.add(function (texture) {
-            if (_this.props.texture !== texture) {
+        this._onDebugSelectionChangeObserver = this.props.onDebugSelectionChangeObservable.add(function (line) {
+            if (line !== _this) {
                 _this.setState({ isDebugSelected: false });
             }
         });
@@ -42068,6 +42068,9 @@ var TextureLinkLineComponent = /** @class */ (function (_super) {
             var newState = !this.state.isDebugSelected;
             this.props.customDebugAction(newState);
             this.setState({ isDebugSelected: newState });
+            if (this.props.onDebugSelectionChangeObservable) {
+                this.props.onDebugSelectionChangeObservable.notifyObservers(this);
+            }
             return;
         }
         var texture = this.props.texture;
@@ -42117,7 +42120,7 @@ var TextureLinkLineComponent = /** @class */ (function (_super) {
         material.reservedDataStore.level = texture.level;
         texture.level = 1.0;
         if (this.props.onDebugSelectionChangeObservable) {
-            this.props.onDebugSelectionChangeObservable.notifyObservers(texture);
+            this.props.onDebugSelectionChangeObservable.notifyObservers(this);
         }
         if (needToDisposeCheckMaterial) {
             checkMaterial.dispose();

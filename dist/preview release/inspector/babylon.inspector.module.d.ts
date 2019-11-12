@@ -555,7 +555,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/textureLinkLineC
         texture: Nullable<BaseTexture>;
         material?: Material;
         onSelectionChangedObservable?: Observable<any>;
-        onDebugSelectionChangeObservable?: Observable<BaseTexture>;
+        onDebugSelectionChangeObservable?: Observable<TextureLinkLineComponent>;
         propertyName?: string;
         onTextureCreated?: (texture: BaseTexture) => void;
         customDebugAction?: (state: boolean) => void;
@@ -720,9 +720,9 @@ declare module "babylonjs-inspector/components/actionTabs/lines/vector2LineCompo
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
-    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { TextureLinkLineComponent } from "babylonjs-inspector/components/actionTabs/lines/textureLinkLineComponent";
     import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     interface IPBRMaterialPropertyGridComponentProps {
@@ -738,7 +738,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         switchAmbientMode(state: boolean): void;
         switchMetallicMode(state: boolean): void;
         switchRoughnessMode(state: boolean): void;
-        renderTextures(onDebugSelectionChangeObservable: Observable<BaseTexture>): JSX.Element;
+        renderTextures(onDebugSelectionChangeObservable: Observable<TextureLinkLineComponent>): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -2803,7 +2803,7 @@ declare module INSPECTOR {
         texture: BABYLON.Nullable<BABYLON.BaseTexture>;
         material?: BABYLON.Material;
         onSelectionChangedObservable?: BABYLON.Observable<any>;
-        onDebugSelectionChangeObservable?: BABYLON.Observable<BABYLON.BaseTexture>;
+        onDebugSelectionChangeObservable?: BABYLON.Observable<TextureLinkLineComponent>;
         propertyName?: string;
         onTextureCreated?: (texture: BABYLON.BaseTexture) => void;
         customDebugAction?: (state: boolean) => void;
@@ -2956,7 +2956,7 @@ declare module INSPECTOR {
         switchAmbientMode(state: boolean): void;
         switchMetallicMode(state: boolean): void;
         switchRoughnessMode(state: boolean): void;
-        renderTextures(onDebugSelectionChangeObservable: BABYLON.Observable<BABYLON.BaseTexture>): JSX.Element;
+        renderTextures(onDebugSelectionChangeObservable: BABYLON.Observable<TextureLinkLineComponent>): JSX.Element;
         render(): JSX.Element;
     }
 }

@@ -476,7 +476,7 @@ declare module INSPECTOR {
         texture: BABYLON.Nullable<BABYLON.BaseTexture>;
         material?: BABYLON.Material;
         onSelectionChangedObservable?: BABYLON.Observable<any>;
-        onDebugSelectionChangeObservable?: BABYLON.Observable<BABYLON.BaseTexture>;
+        onDebugSelectionChangeObservable?: BABYLON.Observable<TextureLinkLineComponent>;
         propertyName?: string;
         onTextureCreated?: (texture: BABYLON.BaseTexture) => void;
         customDebugAction?: (state: boolean) => void;
@@ -629,7 +629,7 @@ declare module INSPECTOR {
         switchAmbientMode(state: boolean): void;
         switchMetallicMode(state: boolean): void;
         switchRoughnessMode(state: boolean): void;
-        renderTextures(onDebugSelectionChangeObservable: BABYLON.Observable<BABYLON.BaseTexture>): JSX.Element;
+        renderTextures(onDebugSelectionChangeObservable: BABYLON.Observable<TextureLinkLineComponent>): JSX.Element;
         render(): JSX.Element;
     }
 }
