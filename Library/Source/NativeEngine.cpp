@@ -1328,7 +1328,7 @@ namespace babylon
 
     void NativeEngine::EndFrame()
     {
-        GetFrameBufferManager().ResetViewIds();
+        GetFrameBufferManager().Reset();
 
         bgfx::frame();
     }

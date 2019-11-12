@@ -84,7 +84,7 @@ namespace babylon
             bgfx::touch(m_viewId);
         }
 
-        void SetViewId(uint16_t viewId)
+        void UpdateViewId(uint16_t viewId)
         {
             m_viewId = viewId;
         }
@@ -135,7 +135,7 @@ namespace babylon
         void UseViewId(uint16_t viewId)
         {
             ViewId = viewId;
-            ViewClearState.SetViewId(ViewId);
+            ViewClearState.UpdateViewId(ViewId);
         }
 
         void SetUpView(uint16_t viewId)
@@ -195,7 +195,7 @@ namespace babylon
             return m_nextId;
         }
 
-        void ResetViewIds()
+        void Reset()
         {
             m_nextId = 0;
         }
