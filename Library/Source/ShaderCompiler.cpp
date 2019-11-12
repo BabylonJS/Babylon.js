@@ -20,7 +20,7 @@ namespace babylon
                     auto op = unary->getOp();
                     if (op == glslang::EOpDPdy || op == glslang::EOpDPdyFine || op == glslang::EOpDPdyCoarse)
                     {
-                        unary->setOperand(intermediate->addUnaryNode(glslang::EOpNegative, unary->getOperand(), {}));
+                        unary->setOperand(m_intermediate->addUnaryNode(glslang::EOpNegative, unary->getOperand(), {}));
                         return false;
                     }
                 }
