@@ -18,14 +18,14 @@ export interface ITextureLinkLineComponentProps {
     texture: Nullable<BaseTexture>;
     material?: Material;
     onSelectionChangedObservable?: Observable<any>;
-    onDebugSelectionChangeObservable?: Observable<BaseTexture>;
+    onDebugSelectionChangeObservable?: Observable<TextureLinkLineComponent>;
     propertyName?: string;
     onTextureCreated?: (texture: BaseTexture) => void;
     customDebugAction?: (state: boolean) => void
 }
 
 export class TextureLinkLineComponent extends React.Component<ITextureLinkLineComponentProps, { isDebugSelected: boolean }> {
-    private _onDebugSelectionChangeObserver: Nullable<Observer<BaseTexture>>;
+    private _onDebugSelectionChangeObserver: Nullable<Observer<TextureLinkLineComponent>>;
 
     constructor(props: ITextureLinkLineComponentProps) {
         super(props);
@@ -40,8 +40,8 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         if (!this.props.onDebugSelectionChangeObservable) {
             return;
         }
-        this._onDebugSelectionChangeObserver = this.props.onDebugSelectionChangeObservable.add((texture) => {
-            if (this.props.texture !== texture) {
+        this._onDebugSelectionChangeObserver = this.props.onDebugSelectionChangeObservable.add((line) => {
+            if (line !== this) {
                 this.setState({ isDebugSelected: false });
             }
         });
@@ -58,10 +58,16 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
             let newState = !this.state.isDebugSelected;
             this.props.customDebugAction(newState);
             this.setState({ isDebugSelected: newState });
+            
+            if (this.props.onDebugSelectionChangeObservable) {
+                this.props.onDebugSelectionChangeObservable.notifyObservers(this);
+            }
+
             return;
         }
 
         const texture = this.props.texture;
+
         const material = this.props.material;
 
         if (!material || !texture) {
@@ -115,7 +121,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         texture.level = 1.0;
 
         if (this.props.onDebugSelectionChangeObservable) {
-            this.props.onDebugSelectionChangeObservable.notifyObservers(texture!);
+            this.props.onDebugSelectionChangeObservable.notifyObservers(this);
         }
 
         if (needToDisposeCheckMaterial) {
