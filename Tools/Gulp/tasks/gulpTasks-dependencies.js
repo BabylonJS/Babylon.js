@@ -37,12 +37,12 @@ const dependencies = function(settings, moduleName, cb) {
             }
         });
 
-    if (cruiseResult.summary.error > 0) {
-        var errorCount = cruiseResult.summary.error;
+    if (cruiseResult.output.summary.error > 0) {
+        var errorCount = cruiseResult.output.summary.error;
 
         if (errorCount > 0) {
             colorConsole.error(`New circular dependencies in ${moduleName.cyan}: ${("" + errorCount).red}`);
-            for (let error of cruiseResult.summary.violations) {
+            for (let error of cruiseResult.output.summary.violations) {
                 colorConsole.error(`    From: '${error.from.replace(/\.\.\//g, "").yellow}' To: '${error.to.replace(/\.\.\//g, "").yellow}'`);
             }
             process.exit(1);
