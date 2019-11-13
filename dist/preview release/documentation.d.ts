@@ -30383,6 +30383,11 @@ declare module BABYLON {
          * @returns frame number
          */
         static QueueNewFrame(func: () => void, requester?: any): number;
+        /**
+         * Gets host document
+         * @returns the host document object
+         */
+        getHostDocument(): Document;
     }
 }
 declare module BABYLON {
@@ -31732,11 +31737,6 @@ declare module BABYLON {
          * @returns a number defining the aspect ratio
          */
         getScreenAspectRatio(): number;
-        /**
-         * Gets host document
-         * @returns the host document object
-         */
-        getHostDocument(): Document;
         /**
          * Gets the client rect of the HTML canvas attached with the current webGL context
          * @returns a client rectanglee
