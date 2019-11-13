@@ -16025,7 +16025,7 @@ declare module BABYLON {
          * Get the current texture matrix which includes the requested offsetting, tiling and rotation components.
          * @returns the transform matrix of the texture.
          */
-        getTextureMatrix(): Matrix;
+        getTextureMatrix(uBase?: number): Matrix;
         /**
          * Get the current matrix used to apply reflection. This is useful to rotate an environment texture for instance.
          * @returns The reflection texture transform
@@ -54024,6 +54024,7 @@ declare module BABYLON {
         autoConfigure(material: NodeMaterial): void;
         initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        private _getTextureBase;
         isReady(): boolean;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         private readonly _isMixed;
