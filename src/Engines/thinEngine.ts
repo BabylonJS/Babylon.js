@@ -717,7 +717,7 @@ export class ThinEngine {
             maxCombinedTexturesImageUnits: this._gl.getParameter(this._gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS),
             maxVertexTextureImageUnits: this._gl.getParameter(this._gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS),
             maxTextureSize: this._gl.getParameter(this._gl.MAX_TEXTURE_SIZE),
-            maxSamples: this._gl.getParameter(this._gl.MAX_SAMPLES),
+            maxSamples: this._webGLVersion > 1 ? this._gl.getParameter(this._gl.MAX_SAMPLES) : 1,
             maxCubemapTextureSize: this._gl.getParameter(this._gl.MAX_CUBE_MAP_TEXTURE_SIZE),
             maxRenderTextureSize: this._gl.getParameter(this._gl.MAX_RENDERBUFFER_SIZE),
             maxVertexAttribs: this._gl.getParameter(this._gl.MAX_VERTEX_ATTRIBS),
@@ -4118,5 +4118,17 @@ export class ThinEngine {
         else {
             return window.setTimeout(func, 16);
         }
+    }
+
+    /**
+     * Gets host document
+     * @returns the host document object
+     */
+    public getHostDocument(): Document {
+        if (this._renderingCanvas && this._renderingCanvas.ownerDocument) {
+            return this._renderingCanvas.ownerDocument;
+        }
+
+        return document;
     }
 }

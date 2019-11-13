@@ -618,18 +618,6 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Gets host document
-     * @returns the host document object
-     */
-    public getHostDocument(): Document {
-        if (this._renderingCanvas && this._renderingCanvas.ownerDocument) {
-            return this._renderingCanvas.ownerDocument;
-        }
-
-        return document;
-    }
-
-    /**
      * Gets the client rect of the HTML canvas attached with the current webGL context
      * @returns a client rectanglee
      */
