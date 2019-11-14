@@ -55780,6 +55780,70 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to get the reflected vector from a direction and a normal
+     */
+    export class ReflectBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new ReflectBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the incident component
+         */
+        readonly incident: NodeMaterialConnectionPoint;
+        /**
+         * Gets the normal component
+         */
+        readonly normal: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get the refracted vector from a direction and a normal
+     */
+    export class RefractBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new RefractBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the incident component
+         */
+        readonly incident: NodeMaterialConnectionPoint;
+        /**
+         * Gets the normal component
+         */
+        readonly normal: NodeMaterialConnectionPoint;
+        /**
+         * Gets the index of refraction component
+         */
+        readonly ior: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Effect Render Options
      */
     export interface IEffectRendererOptions {
