@@ -25595,6 +25595,11 @@ declare module BABYLON {
         private _isNotBuilt;
         private _lastParticleId;
         private _idxOfId;
+        private _multimaterialEnabled;
+        private _indicesByMaterial;
+        private _materialIndexes;
+        private _depthSortFunction;
+        private _materialSortFunction;
         /**
          * Creates a SPS (Solid Particle System) object.
          * @param name (String) is the SPS name, this will be the underlying mesh name.
@@ -25603,6 +25608,7 @@ declare module BABYLON {
          * * updatable (optional boolean, default true) : if the SPS must be updatable or immutable.
          * * isPickable (optional boolean, default false) : if the solid particles must be pickable.
          * * enableDepthSort (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.
+         * * enableMultiMaterial (optional boolean, default false) : if the solid particles can be given different materials.
          * * expandable (optional boolean, default false) : if particles can still be added after the initial SPS mesh creation.
          * * particleIntersection (optional boolean, default false) : if the solid particle intersections must be computed.
          * * boundingSphereOnly (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
@@ -25617,6 +25623,7 @@ declare module BABYLON {
             boundingSphereOnly?: boolean;
             bSphereRadiusFactor?: number;
             expandable?: boolean;
+            enableMultiMaterial?: boolean;
         });
         /**
          * Builds the SPS underlying mesh. Returns a standard Mesh.
@@ -25794,6 +25801,21 @@ declare module BABYLON {
          */
         getParticlesByShapeIdToRef(shapeId: number, ref: SolidParticle[]): SolidParticleSystem;
         /**
+         * Computes the required SubMeshes according the materials assigned to the particles.
+         * @returns the solid particle system.
+         * Does nothing if called before the SPS mesh is built.
+         */
+        computeSubMeshes(): SolidParticleSystem;
+        /**
+         * Sorts the solid particles by material when MultiMaterial is enabled.
+         * Updates the indices32 array.
+         * Updates the indicesByMaterial array.
+         * Updates the mesh indices array.
+         * @returns the SPS
+         * @hidden
+         */
+        private _sortParticlesByMaterial;
+        /**
          * Visibilty helper : Recomputes the visible size according to the mesh bounding box
          * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
          * @returns the SPS.
@@ -25886,6 +25908,10 @@ declare module BABYLON {
          * Default : `false`
          */
         readonly expandable: boolean;
+        /**
+         * Gets if the SPS supports the Multi Materials
+         */
+        readonly multimaterialEnabled: boolean;
         /**
          * This function does nothing. It may be overwritten to set all the particle first values.
          * The SPS doesn't call this function, you may have to call it by your own.
@@ -26045,6 +26071,10 @@ declare module BABYLON {
          */
         parentId: Nullable<number>;
         /**
+         * The particle material identifier (integer) when MultiMaterials are enabled in the SPS.
+         */
+        materialIndex: Nullable<number>;
+        /**
          * The culling strategy to use to check whether the solid particle must be culled or not when using isInFrustum().
          * The possible values are :
          * - AbstractMesh.CULLINGSTRATEGY_STANDARD
@@ -26071,8 +26101,9 @@ declare module BABYLON {
          * @param idxInShape (integer) is the index of the particle in the current model (ex: the 10th box of addShape(box, 30))
          * @param sps defines the sps it is associated to
          * @param modelBoundingInfo is the reference to the model BoundingInfo used for intersection computations.
+         * @param materialIndex is the particle material identifier (integer) when the MultiMaterials are enabled in the SPS.
          */
-        constructor(particleIndex: number, particleId: number, positionIndex: number, indiceIndex: number, model: Nullable<ModelShape>, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo?: Nullable<BoundingInfo>);
+        constructor(particleIndex: number, particleId: number, positionIndex: number, indiceIndex: number, model: Nullable<ModelShape>, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo?: Nullable<BoundingInfo>, materialIndex?: Nullable<number>);
         /**
          * Copies the particle property values into the existing target : position, rotation, scaling, uvs, colors, pivot, parent, visibility, alive
          * @param target the particle target
@@ -26172,6 +26203,7 @@ declare module BABYLON {
     }
     /**
      * Represents a Depth Sorted Particle in the solid particle system.
+     * @hidden
      */
     export class DepthSortedParticle {
         /**
@@ -26186,6 +26218,15 @@ declare module BABYLON {
          * Squared distance from the particle to the camera
          */
         sqDistance: number;
+        /**
+         * Material index when used with MultiMaterials
+         */
+        materialIndex: number;
+        /**
+         * Creates a new sorted particle
+         * @param materialIndex
+         */
+        constructor(materialIndex: number);
     }
 }
 declare module BABYLON {
@@ -70898,6 +70939,25 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
         private _loadSpecularPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_mesh_quantization)
+     */
+    export class KHR_mesh_quantization implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
