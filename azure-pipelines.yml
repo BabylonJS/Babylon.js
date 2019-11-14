@@ -14,15 +14,16 @@ jobs:
   - script: |
       cmake --version
     displayName: 'CMake version'
-    
+
+  - task: CmdLine@2
+    inputs:
+      script: 'sudo xcode-select --switch /Applications/Xcode_10.3.app/Contents/Developer'
+      
   - script: |
       mkdir buildmacOS
       cd buildmacOS
       cmake .. -GXcode
     displayName: 'Generate macOS solution'
-  - task: CmdLine@2
-    inputs:
-      script: 'sudo xcode-select --switch /Applications/Xcode_10.3.app/Contents/Developer'
       
   - task: Xcode@5
     inputs:
