@@ -10,7 +10,11 @@ jobs:
   - script: |
       git submodule update --init --recursive
     displayName: 'Checkout dependencies'
-      
+    
+  - script: |
+      cmake --version
+    displayName: 'CMake version'
+    
   - script: |
       mkdir buildmacOS
       cd buildmacOS
@@ -37,6 +41,10 @@ jobs:
       git submodule update --init --recursive
     displayName: 'Checkout dependencies'
       
+  - script: |
+      cmake --version
+    displayName: 'CMake version'
+
   - script: |
       mkdir buildiOS
       cd buildiOS
