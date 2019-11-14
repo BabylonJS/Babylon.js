@@ -113,6 +113,7 @@
 - Added support for GLTF specular extension [Sebavan](https://github.com/sebavan/)
 - Added support for GLTF sheen extension [Sebavan](https://github.com/sebavan/)
 - Added support for GLTF mesh quantization extension ([zeux](https://github.com/zeux))
+- Added support for 8 bone influences to glTF loader ([zeux](https://github.com/zeux))
 
 ### Materials
 
