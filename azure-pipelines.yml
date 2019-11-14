@@ -15,10 +15,10 @@ jobs:
       cmake --version
     displayName: 'CMake version'
 
-  - task: CmdLine@2
-    inputs:
-      script: 'sudo xcode-select --switch /Applications/Xcode_10.3.app/Contents/Developer'
-      
+  - script: |
+      sudo xcode-select --switch /Applications/Xcode_10.3.app/Contents/Developer
+    displayName: 'Select XCode 10.3'
+    
   - script: |
       mkdir buildmacOS
       cd buildmacOS
@@ -47,14 +47,15 @@ jobs:
     displayName: 'CMake version'
 
   - script: |
+      sudo xcode-select --switch /Applications/Xcode_10.3.app/Contents/Developer
+    displayName: 'Select XCode 10.3'
+
+  - script: |
       mkdir buildiOS
       cd buildiOS
       cmake .. -G Xcode -DCMAKE_TOOLCHAIN_FILE=../Library/Dependencies/ios-cmake/ios.toolchain.cmake -DPLATFORM=OS64COMBINED -DENABLE_ARC=0 -DDEPLOYMENT_TARGET=12 -DHTTP_ONLY=OFF -DCMAKE_USE_OPENSSL=OFF -DBUILD_CURL_EXE=OFF -DBUILD_CURL_TESTS=OFF -DCURL_STATICLIB=ON -DUSE_UNIX_SOCKETS=0 -DHAVE_FSETXATTR=0 -DHAVE_LIBSOCKET=0 -DCURL_DISABLE_FTP=OFF -DCURL_DISABLE_LDAP=ON -DCURL_DISABLE_TELNET=ON -DCURL_DISABLE_DICT=ON -DCURL_DISABLE_TFTP=ON -DCURL_DISABLE_IMAP=ON -DCURL_DISABLE_POP3=ON -DCURL_DISABLE_SMTP=ON -DENABLE_GLSLANG_BINARIES=OFF -DSPIRV_CROSS_CLI=OFF -DHAVE_LIBIDN2=OFF
     displayName: 'Generate iOS solution'
-  - task: CmdLine@2
-    inputs:
-      script: 'sudo xcode-select --switch /Applications/Xcode_10.3.app/Contents/Developer'
-      
+
   - task: Xcode@5
     inputs:
       xcWorkspacePath: 'buildiOS/BabylonNative.xcodeproj'
@@ -107,28 +108,6 @@ jobs:
       configuration: 'Release'
     displayName: 'Build WIN32_x86'
     
-- job: win32_arm64    
-  pool:
-    vmImage: 'windows-latest'
-
-  steps:
-  - script: |
-      git submodule update --init --recursive
-    displayName: 'Checkout dependencies'
-
-  - script: |
-      mkdir buildWin32_arm64
-      cd buildWin32_arm64
-      cmake -G "Visual Studio 16 2019" -A arm64 ..
-    displayName: 'Generate Win32_arm64 solution'
-    
-  - task: MSBuild@1
-    inputs:
-      solution: 'buildWin32_arm64/BabylonNative.sln'
-      maximumCpuCount: true
-      configuration: 'Release'
-    displayName: 'Build WIN32_arm64'
-    
 - job: uwp_x64    
   pool:
     vmImage: 'windows-latest'  
@@ -151,30 +130,7 @@ jobs:
       configuration: 'Release'
       msbuildArgs: '/p:AppxPackageSigningEnabled=false'
     displayName: 'Build UWP_x64'
-    
-- job: uwp_x86    
-  pool:
-    vmImage: 'vs2017-win2016'  
-    
-  steps:
-  - script: |
-      git submodule update --init --recursive
-    displayName: 'Checkout dependencies'
-    
-  - script: |
-      mkdir buildUWP_x86
-      cd buildUWP_x86
-      cmake .. -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -G "Visual Studio 15 2017"
-    displayName: 'Generate UWP_x86 solution'
-  
-  - task: VSBuild@1
-    inputs:
-      solution: 'buildUWP_x86/BabylonNative.sln'
-      maximumCpuCount: true
-      configuration: 'Release'
-      msbuildArgs: '/p:AppxPackageSigningEnabled=false'
-    displayName: 'Build UWP_x86'
-    
+
 - job: uwp_arm64    
   pool:
     vmImage: 'windows-latest'  
