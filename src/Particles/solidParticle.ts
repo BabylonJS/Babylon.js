@@ -112,6 +112,10 @@ export class SolidParticle {
      */
     public parentId: Nullable<number> = null;
     /**
+     * The particle material identifier (integer) when MultiMaterials are enabled in the SPS.
+     */
+    public materialIndex: Nullable<number> = null;
+    /**
      * The culling strategy to use to check whether the solid particle must be culled or not when using isInFrustum().
      * The possible values are :
      * - AbstractMesh.CULLINGSTRATEGY_STANDARD
@@ -140,8 +144,9 @@ export class SolidParticle {
      * @param idxInShape (integer) is the index of the particle in the current model (ex: the 10th box of addShape(box, 30))
      * @param sps defines the sps it is associated to
      * @param modelBoundingInfo is the reference to the model BoundingInfo used for intersection computations.
+     * @param materialIndex is the particle material identifier (integer) when the MultiMaterials are enabled in the SPS.
      */
-    constructor(particleIndex: number, particleId: number, positionIndex: number, indiceIndex: number, model: Nullable<ModelShape>, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo: Nullable<BoundingInfo> = null) {
+    constructor(particleIndex: number, particleId: number, positionIndex: number, indiceIndex: number, model: Nullable<ModelShape>, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo: Nullable<BoundingInfo> = null, materialIndex: Nullable<number> = null) {
         this.idx = particleIndex;
         this.id = particleId;
         this._pos = positionIndex;
@@ -153,6 +158,9 @@ export class SolidParticle {
         if (modelBoundingInfo) {
             this._modelBoundingInfo = modelBoundingInfo;
             this._boundingInfo = new BoundingInfo(modelBoundingInfo.minimum, modelBoundingInfo.maximum);
+        }
+        if (materialIndex !== null) {
+            this.materialIndex = materialIndex;
         }
     }
     /**
@@ -188,6 +196,9 @@ export class SolidParticle {
         target.isVisible = this.isVisible;
         target.parentId = this.parentId;
         target.cullingStrategy = this.cullingStrategy;
+        if (this.materialIndex !== null) {
+            target.materialIndex = this.materialIndex;
+        }
         return this;
     }
     /**
@@ -335,6 +346,7 @@ export class ModelShape {
 
 /**
  * Represents a Depth Sorted Particle in the solid particle system.
+ * @hidden
  */
 export class DepthSortedParticle {
     /**
@@ -349,4 +361,16 @@ export class DepthSortedParticle {
      * Squared distance from the particle to the camera
      */
     public sqDistance: number = 0.0;
+    /**
+     * Material index when used with MultiMaterials
+     */
+    public materialIndex: number = 0;
+
+    /**
+     * Creates a new sorted particle
+     * @param materialIndex
+     */
+    constructor(materialIndex: number) {
+        this.materialIndex = materialIndex;
+    }
 }

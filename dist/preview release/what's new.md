@@ -112,6 +112,8 @@
 - Added support for GLTF clearcoat extension [Sebavan](https://github.com/sebavan/)
 - Added support for GLTF specular extension [Sebavan](https://github.com/sebavan/)
 - Added support for GLTF sheen extension [Sebavan](https://github.com/sebavan/)
+- Added support for GLTF mesh quantization extension ([zeux](https://github.com/zeux))
+- Added support for 8 bone influences to glTF loader ([zeux](https://github.com/zeux))
 
 ### Materials
 
@@ -171,6 +173,7 @@
 - Added the feature `expandable` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 - Added the feature `removeParticles()` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 - Added the feature "storable particles" and `insertParticlesFromArray()` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
+- Added the support for MultiMaterials to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 
 ### Navigation Mesh
 

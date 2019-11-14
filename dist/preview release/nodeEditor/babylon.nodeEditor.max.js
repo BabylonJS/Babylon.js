@@ -68369,11 +68369,17 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
     BlockTools.GetBlockFromString = function (data, scene, nodeMaterial) {
         switch (data) {
+            case "RefractBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["RefractBlock"]("Refract");
+            case "ReflectBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ReflectBlock"]("Reflect");
             case "DerivativeBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["DerivativeBlock"]("Derivative");
             case "Rotate2dBlock":
@@ -72054,7 +72060,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock", "PerturbNormalBlock", "NormalBlendBlock"],
             Trigonometry: ["CosBlock", "SinBlock", "AbsBlock", "ExpBlock", "Exp2Block", "SqrtBlock", "PowBlock", "LogBlock", "ArcCosBlock", "ArcSinBlock", "TanBlock", "ArcTanBlock", "FractBlock", "SignBlock", "ArcTan2Block", "DegreesToRadiansBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "TriangleWaveBlock", "SquareWaveBlock"],
-            Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock", "Rotate2dBlock", "DerivativeBlock"],
+            Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock", "Rotate2dBlock", "DerivativeBlock", "RefractBlock", "ReflectBlock"],
         };
         // Create node menu
         var blockMenu = [];
