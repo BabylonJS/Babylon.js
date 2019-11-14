@@ -574,6 +574,7 @@ export class InputBlock extends NodeMaterialBlock {
             let finalOutput = `${this._codeVariableName}.value = ${valueString};\r\n`;
             finalOutput += `${this._codeVariableName}.isConstant = ${this.isConstant ? "true" : "false"};\r\n`;
             finalOutput += `${this._codeVariableName}.visibleInInspector = ${this.visibleInInspector ? "true" : "false"};\r\n`;
+            finalOutput += `${this._codeVariableName}.animationType  = BABYLON.AnimatedInputBlockTypes.${AnimatedInputBlockTypes[this.animationType]};\r\n`;
 
             return finalOutput;
         }
