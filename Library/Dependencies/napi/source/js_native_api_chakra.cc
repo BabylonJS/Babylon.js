@@ -75,7 +75,7 @@ JsErrorCode JsCreatePromise(JsValueRef* promise, JsValueRef* resolve, JsValueRef
   CHECK_JSRT_ERROR_CODE(JsGetProperty(global, promiseConstructorId, &promiseConstructor));
 
   struct CallbackStruct {
-    static JsValueRef Callback(JsValueRef callee, bool isConstructCall, JsValueRef* arguments, unsigned short argumentCount, void* callbackState) {
+    static JsValueRef CALLBACK Callback(JsValueRef callee, bool isConstructCall, JsValueRef* arguments, unsigned short argumentCount, void* callbackState) {
       return (reinterpret_cast<CallbackStruct*>(callbackState))->Callback(callee, isConstructCall, arguments, argumentCount);
     }
 
