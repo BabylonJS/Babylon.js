@@ -51,7 +51,7 @@ class MonacoCreator {
      * Load the Monaco Node module.
      */
     async loadMonaco(typings) {
-        let response = await fetch(typings || "babylon.d.txt");
+        let response = await fetch(typings || "https://preview.babylonjs.com/babylon.d.ts");
         if (!response.ok)
             return;
 
