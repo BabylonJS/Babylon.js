@@ -139,7 +139,8 @@ export class SolidParticleSystem implements IDisposable {
      * * bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance.
      * @example bSphereRadiusFactor = 1.0 / Math.sqrt(3.0) => the bounding sphere exactly matches a spherical mesh.
      */
-    constructor(name: string, scene: Scene, options?: { updatable?: boolean; isPickable?: boolean; enableDepthSort?: boolean; particleIntersection?: boolean; boundingSphereOnly?: boolean; bSphereRadiusFactor?: number; expandable?: boolean; enableMultiMaterial?: boolean }) {
+    constructor(name: string, scene: Scene, options?: { updatable?: boolean; isPickable?: boolean; enableDepthSort?: boolean; particleIntersection?: boolean; boundingSphereOnly?: boolean; bSphereRadiusFactor?: number; expandable?: boolean; enableMultiMaterial?: boolean; }) {
+
         this.name = name;
         this._scene = scene || EngineStore.LastCreatedScene;
         this._camera = <TargetCamera>scene.activeCamera;
@@ -181,15 +182,23 @@ export class SolidParticleSystem implements IDisposable {
         this._positions32 = new Float32Array(this._positions);
         this._uvs32 = new Float32Array(this._uvs);
         this._colors32 = new Float32Array(this._colors);
+
+        if (!this.mesh) {       // in case it's already expanded
+            var mesh = new Mesh(this.name, this._scene);
+            this.mesh = mesh;
+        }
+        if (!this._updatable && this._multimaterialEnabled) {
+            this._sortParticlesByMaterial();    // this may reorder the indices32
+        }
         if (this.recomputeNormals) {
             VertexData.ComputeNormals(this._positions32, this._indices32, this._normals);
         }
+
         this._normals32 = new Float32Array(this._normals);
         this._fixedNormal32 = new Float32Array(this._normals);
         if (this._mustUnrotateFixedNormals) {  // the particles could be created already rotated in the mesh with a positionFunction
             this._unrotateFixedNormals();
         }
-
         var vertexData = new VertexData();
         vertexData.indices = (this._depthSort) ? this._indices : this._indices32;
         vertexData.set(this._positions32, VertexBuffer.PositionKind);
@@ -201,12 +210,13 @@ export class SolidParticleSystem implements IDisposable {
         if (this._colors32.length > 0) {
             vertexData.set(this._colors32, VertexBuffer.ColorKind);
         }
-        if (!this.mesh) {       // in case it's already expanded
-            var mesh = new Mesh(this.name, this._scene);
-            this.mesh = mesh;
-        }
+
         vertexData.applyToMesh(this.mesh, this._updatable);
         this.mesh.isPickable = this._pickable;
+
+        if (this._multimaterialEnabled) {
+            this.computeSubMeshes();
+        }
 
         if (!this._expandable) {
             // free memory
@@ -333,7 +343,7 @@ export class SolidParticleSystem implements IDisposable {
             // add the particle in the SPS
             var currentPos = this._positions.length;
             var currentInd = this._indices.length;
-            this._meshBuilder(this._index, shape, this._positions, shapeInd, this._indices, facetUV, this._uvs, shapeCol, this._colors, shapeNor, this._normals, idx, 0, null);
+            this._meshBuilder(this._index, currentInd, shape, this._positions, shapeInd, this._indices, facetUV, this._uvs, shapeCol, this._colors, shapeNor, this._normals, idx, 0, null);
             this._addParticle(idx, this._lastParticleId, currentPos, currentInd, modelShape, this._shapeCounter, 0, bInfo, storage);
             // initialize the particle position
             this.particles[this.nbParticles].position.addInPlace(barycenter);
@@ -405,6 +415,7 @@ export class SolidParticleSystem implements IDisposable {
     /**
      * Inserts the shape model geometry in the global SPS mesh by updating the positions, indices, normals, colors, uvs arrays
      * @param p the current index in the positions array to be updated
+     * @param ind the current index in the indices array
      * @param shape a Vector3 array, the shape geometry
      * @param positions the positions array to be updated
      * @param meshInd the shape indices array
@@ -420,7 +431,7 @@ export class SolidParticleSystem implements IDisposable {
      * @param options the addShape() method  passed options
      * @hidden
      */
-    private _meshBuilder(p: number, shape: Vector3[], positions: number[], meshInd: IndicesArray, indices: number[], meshUV: number[] | Float32Array, uvs: number[], meshCol: number[] | Float32Array, colors: number[], meshNor: number[] | Float32Array, normals: number[], idx: number, idxInShape: number, options: any): SolidParticle {
+    private _meshBuilder(p: number, ind: number, shape: Vector3[], positions: number[], meshInd: IndicesArray, indices: number[], meshUV: number[] | Float32Array, uvs: number[], meshCol: number[] | Float32Array, colors: number[], meshNor: number[] | Float32Array, normals: number[], idx: number, idxInShape: number, options: any): SolidParticle {
         var i;
         var u = 0;
         var c = 0;
@@ -520,7 +531,7 @@ export class SolidParticleSystem implements IDisposable {
 
         if (this._depthSort || this._multimaterialEnabled) {
             var matIndex = (copy.materialIndex !== null) ? copy.materialIndex : 0;
-            this.depthSortedParticles.push(new DepthSortedParticle(matIndex));
+            this.depthSortedParticles.push(new DepthSortedParticle(ind, meshInd.length, matIndex));
         }
 
         return copy;
@@ -696,7 +707,7 @@ export class SolidParticleSystem implements IDisposable {
      */
     public removeParticles(start: number, end: number): SolidParticle[] {
         var nb = end - start + 1;
-        if (!this._expandable || nb <= 0 || nb >= this.nbParticles) {
+        if (!this._expandable || nb <= 0 || nb >= this.nbParticles || !this._updatable) {
             return [];
         }
         const particles = this.particles;
@@ -722,6 +733,7 @@ export class SolidParticleSystem implements IDisposable {
         if (this._depthSort || this._multimaterialEnabled) {
             this.depthSortedParticles = [];
         }
+        var ind = 0;
         const particlesLength = particles.length;
         for (var p = 0; p < particlesLength; p++) {
             var particle = particles[p];
@@ -733,8 +745,9 @@ export class SolidParticleSystem implements IDisposable {
             var modelUVs = model._shapeUV;
             particle.idx = p;
             this._idxOfId[particle.id] = p;
-            this._meshBuilder(this._index, shape, this._positions, modelIndices, this._indices, modelUVs, this._uvs, modelColors, this._colors, modelNormals, this._normals, particle.idx, particle.idxInShape, null);
+            this._meshBuilder(this._index, ind, shape, this._positions, modelIndices, this._indices, modelUVs, this._uvs, modelColors, this._colors, modelNormals, this._normals, particle.idx, particle.idxInShape, null);
             this._index += shape.length;
+            ind += modelIndices.length;
         }
         this.nbParticles -= nb;
         this._isNotBuilt = true;        // buildMesh() call is now expected for setParticles() to work
@@ -797,7 +810,7 @@ export class SolidParticleSystem implements IDisposable {
     private _insertNewParticle(idx: number, i: number, modelShape: ModelShape, shape: Vector3[], meshInd: IndicesArray, meshUV: number[] | Float32Array, meshCol: number[] | Float32Array, meshNor: number[] | Float32Array, bbInfo: Nullable<BoundingInfo>, storage: Nullable<[]> , options: any): Nullable<SolidParticle> {
         var currentPos = this._positions.length;
         var currentInd = this._indices.length;
-        var currentCopy = this._meshBuilder(this._index, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, meshNor, this._normals, idx, i, options);
+        var currentCopy = this._meshBuilder(this._index, currentInd, shape, this._positions, meshInd, this._indices, meshUV, this._uvs, meshCol, this._colors, meshNor, this._normals, idx, i, options);
         var sp: Nullable<SolidParticle> = null;
         if (this._updatable) {
             sp = this._addParticle(this.nbParticles, this._lastParticleId, currentPos, currentInd, modelShape, this._shapeCounter, i, bbInfo, storage);
@@ -1369,7 +1382,9 @@ export class SolidParticleSystem implements IDisposable {
             }
         }
         indicesByMaterial.push(indices32.length);   // add the last number to ease the indices start/count values for subMeshes creation
-        this.mesh.updateIndices(indices32);
+        if (this._updatable) {
+            this.mesh.updateIndices(indices32);
+        }
         return this;
     }
     /**
