@@ -82,10 +82,16 @@ class MonacoCreator {
             return hooked
                 .apply(this, [model, position, context, token])
                 .then(result => {
-                    if (!result.suggestions)
+                    if (!result || !result.suggestions)
                         return result;
 
-                    return { suggestions: result.suggestions.filter(suggestionFilter)};
+                    const suggestions = result.suggestions.filter(suggestionFilter);
+                    const incomplete = result.incomplete && result.incomplete == true;
+
+                    return { 
+                        suggestions: suggestions,
+                        incomplete: incomplete
+                    };
                 });
         }
     }
