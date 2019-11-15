@@ -370,7 +370,9 @@ export class DepthSortedParticle {
      * Creates a new sorted particle
      * @param materialIndex
      */
-    constructor(materialIndex: number) {
+    constructor(ind: number, indLength: number, materialIndex: number) {
+        this.ind = ind;
+        this.indicesLength = indLength;
         this.materialIndex = materialIndex;
     }
 }
