@@ -82,6 +82,9 @@ class MonacoCreator {
             return hooked
                 .apply(this, [model, position, context, token])
                 .then(result => {
+                    if (!result.suggestions)
+                        return result;
+
                     return { suggestions: result.suggestions.filter(suggestionFilter)};
                 });
         }
