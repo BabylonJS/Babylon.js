@@ -57,6 +57,7 @@ import { GradientNodeFactory } from './components/diagram/gradient/gradientNodeF
 import { ReflectionTextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/reflectionTextureBlock';
 import { ReflectionTextureNodeFactory } from './components/diagram/reflectionTexture/reflectionTextureNodeFactory';
 import { ReflectionTextureNodeModel } from './components/diagram/reflectionTexture/reflectionTextureNodeModel';
+import { SerializationTools } from './serializationTools';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -180,6 +181,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             widget.setState({ document: this.props.globalState.hostDocument })
             this._onWidgetKeyUpPointer = this.onWidgetKeyUp.bind(this)
             this.props.globalState.hostDocument!.addEventListener("keyup", this._onWidgetKeyUpPointer, false);
+            this.props.globalState.hostDocument!.defaultView!.addEventListener("blur", () => this._altKeyIsPressed = false, false);
 
             let previousMouseMove = widget.onMouseMove;
             widget.onMouseMove = (evt: any) => {
@@ -247,8 +249,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             }
         });
 
-        this.props.globalState.onResetRequiredObservable.add((locations) => {
-            this.build(false, locations);
+        this.props.globalState.onResetRequiredObservable.add(() => {
+            this.build(false);
             if (this.props.globalState.nodeMaterial) {
                 this.buildMaterial();
             }
@@ -368,6 +370,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         catch (err) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
         }
+
+        SerializationTools.UpdateLocations(this.props.globalState.nodeMaterial, this.props.globalState);
     }
 
     applyFragmentOutputConstraints(rootInput: DefaultPortModel) {
@@ -387,7 +391,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
     }
 
-    build(needToWait = false, locations: Nullable<INodeLocationInfo[]> = null) {
+    build(needToWait = false) {        
+        let locations: Nullable<INodeLocationInfo[]> = this.props.globalState.nodeMaterial.editorData;
         // setup the diagram model
         this._model = new DiagramModel();
         this._nodes = [];

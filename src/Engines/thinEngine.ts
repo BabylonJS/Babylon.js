@@ -88,10 +88,13 @@ export interface EngineOptions extends WebGLContextAttributes {
     deterministicLockstep?: boolean;
     /** Defines the maximum steps to use with deterministic lock step mode */
     lockstepMaxSteps?: number;
+    /** Defines the seconds between each deterministic lock step */
+    timeStep?: number;
     /**
      * Defines that engine should ignore context lost events
      * If this event happens when this parameter is true, you will have to reload the page to restore rendering
      */
+
     doNotHandleContextLost?: boolean;
     /**
      * Defines that engine should ignore modifying touch action attribute and style
@@ -128,14 +131,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-beta.1";
+        return "babylonjs@4.1.0-beta.3";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-beta.1";
+        return "4.1.0-beta.3";
     }
 
     /**
@@ -201,6 +204,11 @@ export class ThinEngine {
     /** Gets or sets a boolean indicating if the engine should validate programs after compilation */
     public validateShaderPrograms = false;
 
+    /**
+     * Gets or sets a boolean indicating if depth buffer should be reverse, going from far to near.
+     * This can provide greater z depth for distant objects.
+     */
+    public useReverseDepthBuffer = false;
     // Uniform buffers list
 
     /**
@@ -483,6 +491,10 @@ export class ThinEngine {
                 options.lockstepMaxSteps = 4;
             }
 
+            if (options.timeStep === undefined) {
+                options.timeStep = 1 / 60;
+            }
+
             if (options.preserveDrawingBuffer === undefined) {
                 options.preserveDrawingBuffer = false;
             }
@@ -705,7 +717,7 @@ export class ThinEngine {
             maxCombinedTexturesImageUnits: this._gl.getParameter(this._gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS),
             maxVertexTextureImageUnits: this._gl.getParameter(this._gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS),
             maxTextureSize: this._gl.getParameter(this._gl.MAX_TEXTURE_SIZE),
-            maxSamples: this._gl.getParameter(this._gl.MAX_SAMPLES),
+            maxSamples: this._webGLVersion > 1 ? this._gl.getParameter(this._gl.MAX_SAMPLES) : 1,
             maxCubemapTextureSize: this._gl.getParameter(this._gl.MAX_CUBE_MAP_TEXTURE_SIZE),
             maxRenderTextureSize: this._gl.getParameter(this._gl.MAX_RENDERBUFFER_SIZE),
             maxVertexAttribs: this._gl.getParameter(this._gl.MAX_VERTEX_ATTRIBS),
@@ -1136,7 +1148,12 @@ export class ThinEngine {
             mode |= this._gl.COLOR_BUFFER_BIT;
         }
         if (depth) {
-            this._gl.clearDepth(1.0);
+            if (this.useReverseDepthBuffer) {
+                this._depthCullingState.depthFunc = this._gl.GREATER;
+                this._gl.clearDepth(0.0);
+            } else {
+                this._gl.clearDepth(1.0);
+            }
             mode |= this._gl.DEPTH_BUFFER_BIT;
         }
         if (stencil) {
@@ -4101,5 +4118,17 @@ export class ThinEngine {
         else {
             return window.setTimeout(func, 16);
         }
+    }
+
+    /**
+     * Gets host document
+     * @returns the host document object
+     */
+    public getHostDocument(): Document {
+        if (this._renderingCanvas && this._renderingCanvas.ownerDocument) {
+            return this._renderingCanvas.ownerDocument;
+        }
+
+        return document;
     }
 }

@@ -90,7 +90,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
 
                 </div>
                 <div className={"options" + (this.props.className ? " " + this.props.className : "")}>
-                    <select onChange={evt => this.updateValue(evt.target.value)} value={this.state.value}>
+                    <select onChange={evt => this.updateValue(evt.target.value)} value={this.state.value || ""}>
                         {
                             this.props.options.map(option => {
                                 return (

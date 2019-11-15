@@ -93,7 +93,7 @@ export class WebXRExperienceHelper implements IDisposable {
      * @param renderTarget the output canvas that will be used to enter XR mode
      * @returns promise that resolves after xr mode has entered
      */
-    public enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget) {
+    public enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget): Promise<WebXRSessionManager> {
         if (!this._supported) {
             throw "XR session not supported by this browser";
         }
@@ -138,10 +138,15 @@ export class WebXRExperienceHelper implements IDisposable {
             // Wait until the first frame arrives before setting state to in xr
             this.sessionManager.onXRFrameObservable.addOnce(() => {
                 this._setState(WebXRState.IN_XR);
+
+                this.setPositionOfCameraUsingContainer(new Vector3(this._nonVRCamera!.position.x, this.camera.position.y, this._nonVRCamera!.position.z));
             });
+
+            return this.sessionManager;
         }).catch((e: any) => {
             console.log(e);
             console.log(e.message);
+            throw (e);
         });
     }
 

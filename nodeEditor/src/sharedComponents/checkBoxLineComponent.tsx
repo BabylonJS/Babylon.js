@@ -42,7 +42,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
             this._localChange = false;
             return true;
         }
-        return false;
+        return nextProps.label !== this.props.label;
     }
 
     onChange() {
