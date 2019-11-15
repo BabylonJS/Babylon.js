@@ -139,8 +139,7 @@ export class SolidParticleSystem implements IDisposable {
      * * bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance.
      * @example bSphereRadiusFactor = 1.0 / Math.sqrt(3.0) => the bounding sphere exactly matches a spherical mesh.
      */
-    constructor(name: string, scene: Scene, options?: { 
-        updatable?: boolean; isPickable?: boolean; enableDepthSort?: boolean; particleIntersection?: boolean; boundingSphereOnly?: boolean; bSphereRadiusFactor?: number; expandable?: boolean; enableMultiMaterial?: boolean; }) {
+    constructor(name: string, scene: Scene, options?: { updatable?: boolean; isPickable?: boolean; enableDepthSort?: boolean; particleIntersection?: boolean; boundingSphereOnly?: boolean; bSphereRadiusFactor?: number; expandable?: boolean; enableMultiMaterial?: boolean; }) {
 
         this.name = name;
         this._scene = scene || EngineStore.LastCreatedScene;
@@ -214,7 +213,7 @@ export class SolidParticleSystem implements IDisposable {
 
         vertexData.applyToMesh(this.mesh, this._updatable);
         this.mesh.isPickable = this._pickable;
-        
+
         if (this._multimaterialEnabled) {
             this.computeSubMeshes();
         }
