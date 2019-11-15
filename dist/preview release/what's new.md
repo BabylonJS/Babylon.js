@@ -85,6 +85,7 @@
 - Added a color picker and previewer for BABYLON.ColorX invocations in the playground ([sailro](http://www.github.com/sailro))
 - Added support for diffing snippets in the playground ([sailro](http://www.github.com/sailro))
 - Added diff navigator in the playground ([sailro](http://www.github.com/sailro))
+- Added custom filter to remove internals from the completion in the playground ([sailro](http://www.github.com/sailro))
 
 ### Meshes
 
@@ -173,7 +174,7 @@
 - Added the feature `expandable` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 - Added the feature `removeParticles()` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 - Added the feature "storable particles" and `insertParticlesFromArray()` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
-- Added the support for MultiMaterials to the Solid Particle System ([jerome](https://github.com/jbousquie/))
+- Added the support for MultiMaterials to the Solid Particle System ([jerome](https://github.com/jbousquie/))  
 
 ### Navigation Mesh
 
