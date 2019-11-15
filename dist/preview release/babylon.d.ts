@@ -25661,6 +25661,7 @@ declare module BABYLON {
         /**
          * Inserts the shape model geometry in the global SPS mesh by updating the positions, indices, normals, colors, uvs arrays
          * @param p the current index in the positions array to be updated
+         * @param ind the current index in the indices array
          * @param shape a Vector3 array, the shape geometry
          * @param positions the positions array to be updated
          * @param meshInd the shape indices array
@@ -26226,7 +26227,7 @@ declare module BABYLON {
          * Creates a new sorted particle
          * @param materialIndex
          */
-        constructor(materialIndex: number);
+        constructor(ind: number, indLength: number, materialIndex: number);
     }
 }
 declare module BABYLON {
