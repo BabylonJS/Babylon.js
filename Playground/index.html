@@ -41,7 +41,7 @@
     <script src="https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
 
     <!-- Monaco -->
-    <script src="node_modules/monaco-editor/min/vs/loader.js"></script>
+    <script src="node_modules/monaco-editor/dev/vs/loader.js"></script>
 
     <!-- Extensions -->
     <script src="https://rawgit.com/BabylonJS/Extensions/master/ClonerSystem/src/babylonx.cloner.js" async></script>
@@ -64,12 +64,16 @@
         <div class="category languageJS" id="JStoTSbar">
             <div class="buttonJStoTS languageTS" id="toTSbutton1280">Typescript</div>
             <div class="buttonJStoTS languageJS" id="toJSbutton1280">Javascript</div>
-            <div class="buttonPG run" id="runButton1280"><img src="css/img/playButton.svg"></div>
-            <div class="buttonPG" id="saveButton1280"><img src="css/img/saveButton.svg"></div>
-            <div class="buttonPG removeOnPhone" id="zipButton1280"><img src="css/img/downloadButton.svg"></div>
-            <div class="buttonPG" id="newButton1280"><img src="css/img/newButton.svg"></div>
-            <div class="buttonPG removeOnPhone" id="clearButton1280"><img src="css/img/clearButton.svg"></div>
-            <div class="buttonPG select" id="menuButton1280"><img src="css/img/optionsButton.svg">
+            <div class="buttonPG run removeOnDiff" id="runButton1280"><img src="css/img/playButton.svg"></div>
+            <div class="buttonPG removeOnDiff" id="saveButton1280"><img src="css/img/saveButton.svg"></div>
+            <div class="buttonPG removeOnPhone removeOnDiff" id="zipButton1280"><img src="css/img/downloadButton.svg"></div>
+            <div class="buttonPG removeOnDiff" id="newButton1280"><img src="css/img/newButton.svg"></div>
+            <div class="buttonPG removeOnPhone removeOnDiff" id="clearButton1280"><img src="css/img/clearButton.svg"></div>
+            <div class="buttonPG removeOnPhone removeOnDiff" id="diffButton1280"><img src="css/img/diffButton.svg"></div>
+            <div class="buttonPG removeOnPhone displayOnDiff" id="previousButton1280"><img src="css/img/previousButton.svg"></div>
+            <div class="buttonPG removeOnPhone displayOnDiff" id="nextButton1280"><img src="css/img/nextButton.svg"></div>
+            <div class="buttonPG removeOnPhone displayOnDiff" id="exitButton1280"><img src="css/img/exitButton.svg"></div>
+            <div class="buttonPG select removeOnDiff" id="menuButton1280"><img src="css/img/optionsButton.svg">
                 <div class="toDisplay languageJS">
                     <div class="option subSelect">Theme <i class="fa fa-chevron-right" aria-hidden="true"></i>
                         <div class="toDisplaySub languageJS">
@@ -112,11 +116,11 @@
         </div>
 
         <div class="category right">
-            <div class="buttonPG select">
+            <div class="buttonPG select removeOnDiff">
                 <span id="currentVersion1280"></span>
                 <div class="toDisplay currentVersionDisplay" style="display: none"></div>
             </div>
-            <div class="buttonPG select"><img class="examplesButton" src="css/img/examplesButton.svg"></div>
+            <div class="buttonPG select removeOnDiff"><img class="examplesButton" src="css/img/examplesButton.svg"></div>
         </div>
     </div>
 
@@ -131,13 +135,17 @@
             <div class="buttonJStoTS languageTS" id="toTSbutton1024">TS</div>
             <div class="buttonJStoTS languageJS" id="toJSbutton1024">JS</div>
             <div class="buttonSpaceKiller"></div>
-            <div class="buttonPG run" id="runButton1024"><img src="css/img/playButton.svg"></div>
-            <div class="buttonPG" id="saveButton1024"><img src="css/img/saveButton.svg"></div>
-            <div class="buttonPG removeOnPhone" id="zipButton1024"><img src="css/img/downloadButton.svg"></div>
-            <div class="buttonPG" id="newButton1024"><img src="css/img/newButton.svg"></div>
-            <div class="buttonPG removeOnPhone" id="clearButton1024"><img src="css/img/clearButton.svg"></div>
+            <div class="buttonPG run removeOnDiff" id="runButton1024"><img src="css/img/playButton.svg"></div>
+            <div class="buttonPG removeOnDiff" id="saveButton1024"><img src="css/img/saveButton.svg"></div>
+            <div class="buttonPG removeOnPhone removeOnDiff" id="zipButton1024"><img src="css/img/downloadButton.svg"></div>
+            <div class="buttonPG removeOnDiff" id="newButton1024"><img src="css/img/newButton.svg"></div>
+            <div class="buttonPG removeOnPhone removeOnDiff" id="clearButton1024"><img src="css/img/clearButton.svg"></div>
+            <div class="buttonPG removeOnPhone removeOnDiff" id="diffButton1024"><img src="css/img/diffButton.svg"></div>
+            <div class="buttonPG removeOnPhone displayOnDiff" id="previousButton1024"><img src="css/img/previousButton.svg"></div>
+            <div class="buttonPG removeOnPhone displayOnDiff" id="nextButton1024"><img src="css/img/nextButton.svg"></div>
+            <div class="buttonPG removeOnPhone displayOnDiff" id="exitButton1024"><img src="css/img/exitButton.svg"></div>
 
-            <div class="buttonPG select" id="menuButton1024"><img src="css/img/optionsButton.svg">
+            <div class="buttonPG select removeOnDiff" id="menuButton1024"><img src="css/img/optionsButton.svg">
                 <div class="toDisplay">
                     <div class="option subSelect">Theme <i class="fa fa-chevron-right" aria-hidden="true"></i>
 
@@ -181,12 +189,12 @@
         </div>
 
         <div class="category right">
-            <div class="buttonPG select">
+            <div class="buttonPG select removeOnDiff">
                 <span id="currentVersion1024"></span>
                 <div class="toDisplay currentVersionDisplay" style="display: none">
                 </div>
             </div>
-            <div class="buttonPG select"><img class="examplesButton" src="css/img/examplesButton.svg"></div>
+            <div class="buttonPG select removeOnDiff"><img class="examplesButton" src="css/img/examplesButton.svg"></div>
         </div>
     </div>
 
@@ -197,28 +205,31 @@
                 <div class="toDisplay">
                     <div class="option noSubSelect languageTS" id="toTSbuttonMobile">TypeScript</div>
                     <div class="option noSubSelect languageJS" id="toJSbuttonMobile">JavaScript</div>
-                    <div class="option noSubSelect run" id="runButtonMobile"><img src="css/img/playButton.svg">Run</div>
-                    <div class="option noSubSelect" id="saveButtonMobile"><img src="css/img/saveButton.svg">Save</div>
-                    <div class="option noSubSelect" id="zipButtonMobile"><img src="css/img/downloadButton.svg">Download
-                    </div>
-                    <div class="option noSubSelect" id="newButtonMobile"><img src="css/img/newButton.svg">New</div>
-                    <div class="option noSubSelect" id="clearButtonMobile"><img src="css/img/clearButton.svg">Clear
-                    </div>
-                    <div class="option noSubSelect" id="debugButtonMobile"><img
+                    <div class="option noSubSelect run removeOnDiff" id="runButtonMobile"><img src="css/img/playButton.svg">Run</div>
+                    <div class="option noSubSelect removeOnDiff" id="saveButtonMobile"><img src="css/img/saveButton.svg">Save</div>
+                    <div class="option noSubSelect removeOnDiff" id="zipButtonMobile"><img src="css/img/downloadButton.svg">Download</div>
+                    <div class="option noSubSelect removeOnDiff" id="newButtonMobile"><img src="css/img/newButton.svg">New</div>
+                    <div class="option noSubSelect removeOnDiff" id="clearButtonMobile"><img src="css/img/clearButton.svg">Clear</div>
+                    <div class="option noSubSelect removeOnDiff" id="diffButtonMobile"><img src="css/img/DiffButton.svg">Diff</div>
+                    <div class="option noSubSelect displayOnDiff" id="previousButtonMobile"><img src="css/img/previousButton.svg">Previous</div>
+                    <div class="option noSubSelect displayOnDiff" id="nextButtonMobile"><img src="css/img/nextButton.svg">Next</div>
+                    <div class="option noSubSelect displayOnDiff" id="exitButtonMobile"><img src="css/img/exitButton.svg">Exit</div>
+
+                    <div class="option noSubSelect removeOnDiff" id="debugButtonMobile"><img
                             src="css/img/inspectorButton.svg">Inspector</div>
-                    <div class="option subSelect">
+                    <div class="option subSelect removeOnDiff">
                         <img src="css/img/optionsButton.svg">
                         <div id="currentVersionMobile"></div>
                         <div class="toDisplaySub currentVersionDisplay">
                         </div>
                     </div>
-                    <div class="option subSelect"><img src="css/img/optionsButton.svg">Theme
+                    <div class="option subSelect removeOnDiff"><img src="css/img/optionsButton.svg">Theme
                         <div class="toDisplaySub">
                             <div class="option selected" id="darkThemeMobile">Dark</div>
                             <div class="option" id="lightThemeMobile">Light</div>
                         </div>
                     </div>
-                    <div class="option subSelect"><img src="css/img/optionsButton.svg">Font size
+                    <div class="option subSelect removeOnDiff"><img src="css/img/optionsButton.svg">Font size
                         <div class="toDisplaySub displayFontSize">
                             <div class="option">8</div>
                             <div class="option">10</div>
@@ -241,7 +252,7 @@
                     <div style="display: none;" class="option nosubselect" id="editorFullscreenButtonMobile"
                         style="display: none">Editor
                         Fullscreen</div>
-                    <div class="option nosubselect" id="formatButtonMobile"><img src="css/img/optionsButton.svg">Format
+                    <div class="option nosubselect removeOnDiff" id="formatButtonMobile"><img src="css/img/optionsButton.svg">Format
                         code</div>
                     <div style="display: none;" class="option nosubselect" id="minimapToggleMobile">Minimap
                         <i class="fa fa-square" aria-hidden="true"></i>
@@ -251,11 +262,11 @@
                             <div class="option" id="qrCodeImageMobile">[QR Code Image]</div>
                         </div>
                     </div> -->
-                    <div class="option nosubselect" id="metadataButtonMobile"><img
+                    <div class="option nosubselect removeOnDiff" id="metadataButtonMobile"><img
                             src="css/img/metadataButton.svg">Metadata</div>
-                    <div class="option nosubselect"><img class="examplesButton"
+                    <div class="option nosubselect removeOnDiff"><img class="examplesButton"
                             src="css/img/examplesButton.svg">Examples</div>
-                    <div class="option subSelect"><img src="css/img/examplesButton.svg">Links / Tools
+                    <div class="option subSelect removeOnDiff"><img src="css/img/examplesButton.svg">Links / Tools
                         <div class="toDisplaySub displayFooterLinks">
                             <div class="option link">
                                 <a target='_new' href="https://www.netlify.com/">Deployed by Netlify</a>
@@ -282,7 +293,7 @@
             </div>
         </div>
 
-        <div id="switchWrapper" class="languageJS">
+        <div id="switchWrapper" class="languageJS removeOnDiff">
             <img id="switchWrapperCode" src="css/img/codeButton.svg">
             <img id="switchWrapperCanvas" src="css/img/canvas3Dbutton.svg">
         </div>
@@ -292,6 +303,7 @@
 
     <div class="wrapper">
         <div id="jsEditor"></div>
+        <div id="diffView" class="diff-view"></div>
         <div id="canvasZone">
             <canvas touch-action="none" id="renderCanvas"></canvas>
         </div>
@@ -354,6 +366,23 @@
         </div>
     </div>
 
+    <div id="diffLayer" class="save-layer">
+        <div class="save-form diff-form">
+            <label for="diffFormSource">COMPARISON SOURCE</label>
+            <div class="separator"></div>
+            <input type="text" maxlength="120" id="diffFormSource" placeholder="leave blank to use current snippet, or use snippet ID" class="save-form-title">
+
+            <label for="diffFormCompareTo">COMPARE TO</label>
+            <div class="separator"></div>
+            <input type="text" maxlength="120" id="diffFormCompareTo" placeholder="snippet ID" class="save-form-title">
+
+            <div class="save-form-buttons" id="diffFormButtons">
+                <div id="diffFormButtonOk">OK</div>
+                <div id="diffFormButtonCancel">Cancel</div>
+            </div>
+        </div>
+    </div>
+
     <div id="waitDiv">
         <div id="logo-part">
             <img src="css/img/v4.svg" id="waitLogo" />
@@ -369,7 +398,6 @@
     <!-- Main scripts -->
     <script src="js/config_versions.js"></script>
     <script src="js/pbt.js"></script>
-    <script src="js/libs/typescript.js"></script>
     <script src="js/examples.js"></script>
     <script src="js/main.js"></script>
     <script src="js/menuPG.js"></script>
@@ -378,16 +406,6 @@
     <script src="js/utils.js"></script>
     <script src="js/zipTool.js"></script>
     <script src="js/index.js"></script>
-
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-41767310-2"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-
-        gtag('config', 'UA-41767310-2');
-    </script>
 </body>
 
 </html>

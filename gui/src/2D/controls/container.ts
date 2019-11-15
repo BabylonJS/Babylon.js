@@ -395,8 +395,7 @@ export class Container extends Control {
         }
     }
 
-    /** @hidden */
-    public _getDescendants(results: Control[], directDescendantsOnly: boolean = false, predicate?: (control: Control) => boolean): void {
+    public getDescendantsToRef(results: Control[], directDescendantsOnly: boolean = false, predicate?: (control: Control) => boolean): void {
         if (!this.children) {
             return;
         }
@@ -409,7 +408,7 @@ export class Container extends Control {
             }
 
             if (!directDescendantsOnly) {
-                item._getDescendants(results, false, predicate);
+                item.getDescendantsToRef(results, false, predicate);
             }
         }
     }

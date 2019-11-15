@@ -106,7 +106,7 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
         texture._invertVScale = !texture.invertY;
         var ktx = new KhronosTextureContainer(data, 1);
 
-        callback(ktx.pixelWidth, ktx.pixelHeight, false, true, () => {
+        callback(ktx.pixelWidth, ktx.pixelHeight, texture.generateMipMaps, true, () => {
             ktx.uploadLevels(texture, texture.generateMipMaps);
         }, ktx.isInvalid);
     }

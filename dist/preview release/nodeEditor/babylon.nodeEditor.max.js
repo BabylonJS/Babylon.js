@@ -5525,7 +5525,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, ".srd-node {\n  width: 200px; }\n\n.srd-node--selected .diagramBlock {\n  border-color: white !important; }\n\n.srd-default-link--path-selected {\n  animation: 0s !important;\n  stroke: #ffffff !important; }\n\n.srd-port {\n  grid-column: 1;\n  grid-row: 1;\n  background: #2796B2;\n  border-radius: 20px;\n  transform: scale(1);\n  width: 20px;\n  height: 20px; }\n  .srd-port.connected {\n    background: #CAB422; }\n  .srd-port:hover {\n    background: #DDDDDD !important; }\n\n.diagramBlock {\n  background: gray;\n  width: 100%;\n  border: 4px solid black;\n  border-radius: 12px;\n  display: grid;\n  grid-template-rows: 30px auto;\n  grid-template-columns: 50% 50%;\n  color: white; }\n  .diagramBlock.input {\n    background: #40866E;\n    color: white; }\n    .diagramBlock.input .value {\n      grid-row: 2; }\n    .diagramBlock.input .outputs {\n      transform: translateY(5px); }\n    .diagramBlock.input.Float {\n      background: #cb9e27; }\n    .diagramBlock.input.Vector2 {\n      background: #16bcb1; }\n    .diagramBlock.input.Vector3 {\n      background: #b786cb; }\n    .diagramBlock.input.Color3 {\n      background: #b786cb; }\n    .diagramBlock.input.Vector4 {\n      background: #be5126; }\n    .diagramBlock.input.Color4 {\n      background: #be5126; }\n    .diagramBlock.input.Matrix {\n      background: #591990; }\n  .diagramBlock.trigonometry {\n    background: #405c86;\n    color: white; }\n    .diagramBlock.trigonometry .value {\n      grid-row: 2; }\n  .diagramBlock.remap {\n    color: white;\n    background: #4086BB; }\n    .diagramBlock.remap .value {\n      grid-row: 3; }\n    .diagramBlock.remap .outputs, .diagramBlock.remap .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.gradient {\n    height: 70px; }\n    .diagramBlock.gradient .outputs, .diagramBlock.gradient .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.attribute {\n    background: #40866E; }\n  .diagramBlock.constant {\n    background: #646464 !important; }\n  .diagramBlock.output {\n    background: #6a2c83;\n    color: white; }\n    .diagramBlock.output .inputs {\n      color: white; }\n  .diagramBlock .header {\n    grid-row: 1;\n    grid-column: 1 / span 2;\n    border: 4px solid black;\n    border-top-right-radius: 7px;\n    border-top-left-radius: 7px;\n    font-size: 16px;\n    text-align: center;\n    margin-top: -1px;\n    transform: scaleX(1.001);\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    background: black;\n    color: white; }\n  .diagramBlock .value {\n    grid-row: 3;\n    grid-column: 1 / span 2;\n    height: 34px;\n    text-align: center;\n    font-size: 18px;\n    font-weight: bold;\n    margin: 0 10px; }\n    .diagramBlock .value .value-text {\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden; }\n  .diagramBlock .inputs {\n    grid-row: 2;\n    grid-column: 1;\n    padding-bottom: 8px; }\n    .diagramBlock .inputs .input-port {\n      display: grid;\n      grid-template-columns: 12px calc(100% - 12px);\n      grid-template-rows: 100%; }\n      .diagramBlock .inputs .input-port .input-port-plug {\n        grid-column: 1;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        margin-left: -11px;\n        position: relative; }\n        .diagramBlock .inputs .input-port .input-port-plug:hover .input-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .inputs .input-port .input-port-plug .input-port-type {\n          width: 15px;\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .inputs .input-port .input-port-plug .input-port-type img {\n            width: 20px; }\n      .diagramBlock .inputs .input-port .input-port-label {\n        grid-column: 2;\n        grid-row: 1;\n        margin-bottom: 4px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock .outputs {\n    grid-row: 2;\n    grid-column: 2;\n    padding-bottom: 8px; }\n    .diagramBlock .outputs .output-port {\n      display: grid;\n      grid-template-columns: calc(100% - 12px) 12px;\n      grid-template-rows: 100%; }\n      .diagramBlock .outputs .output-port .output-port-plug {\n        grid-column: 2;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        position: relative;\n        margin-left: 4px; }\n        .diagramBlock .outputs .output-port .output-port-plug:hover .output-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .outputs .output-port .output-port-plug .output-port-type {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .outputs .output-port .output-port-plug .output-port-type img {\n            width: 20px; }\n      .diagramBlock .outputs .output-port .output-port-label {\n        text-align: right;\n        grid-column: 1;\n        grid-row: 1;\n        margin-bottom: 4px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock.texture-block {\n    display: grid;\n    grid-template-rows: 30px auto 1fr;\n    grid-template-columns: calc(100% - 60px) 60px;\n    background: #323232;\n    color: white; }\n    .diagramBlock.texture-block .inputs {\n      grid-column: 1;\n      grid-row: 2; }\n    .diagramBlock.texture-block .outputs {\n      grid-column: 2;\n      grid-row: 2 / span 2; }\n    .diagramBlock.texture-block .textureLine {\n      height: 140px;\n      grid-column: 1;\n      grid-row: 3;\n      overflow: hidden;\n      border-bottom-left-radius: 7px;\n      border: black 4px solid;\n      border-left: 0px;\n      border-bottom: 0px; }\n      .diagramBlock.texture-block .textureLine canvas {\n        width: 100%;\n        height: 100%; }\n", ""]);
+exports.push([module.i, ".srd-node {\n  width: 200px; }\n\n.srd-node--selected .diagramBlock {\n  border-color: white !important; }\n\n.srd-default-link--path-selected {\n  animation: 0s !important;\n  stroke: #ffffff !important; }\n\n.srd-port {\n  grid-column: 1;\n  grid-row: 1;\n  background: #2796B2;\n  border-radius: 20px;\n  transform: scale(1);\n  width: 20px;\n  height: 20px; }\n  .srd-port.connected {\n    background: #CAB422; }\n  .srd-port:hover {\n    background: #DDDDDD !important; }\n\n.diagramBlock {\n  background: gray;\n  width: 100%;\n  border: 4px solid black;\n  border-radius: 12px;\n  display: grid;\n  grid-template-rows: 30px auto;\n  grid-template-columns: 50% 50%;\n  color: white; }\n  .diagramBlock.input {\n    background: #40866E;\n    color: white; }\n    .diagramBlock.input .value {\n      grid-row: 2; }\n    .diagramBlock.input .outputs {\n      transform: translateY(5px); }\n    .diagramBlock.input.Float {\n      background: #cb9e27; }\n    .diagramBlock.input.Vector2 {\n      background: #16bcb1; }\n    .diagramBlock.input.Vector3 {\n      background: #b786cb; }\n    .diagramBlock.input.Color3 {\n      background: #b786cb; }\n    .diagramBlock.input.Vector4 {\n      background: #be5126; }\n    .diagramBlock.input.Color4 {\n      background: #be5126; }\n    .diagramBlock.input.Matrix {\n      background: #591990; }\n  .diagramBlock.trigonometry {\n    background: #405c86;\n    color: white; }\n    .diagramBlock.trigonometry .value {\n      grid-row: 2; }\n  .diagramBlock.remap {\n    color: white;\n    background: #4086BB; }\n    .diagramBlock.remap .value {\n      grid-row: 3; }\n    .diagramBlock.remap .outputs, .diagramBlock.remap .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.clamp {\n    color: white;\n    background: #4086BB; }\n    .diagramBlock.clamp .value {\n      grid-row: 2; }\n    .diagramBlock.clamp .outputs, .diagramBlock.clamp .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.gradient {\n    height: 70px; }\n    .diagramBlock.gradient .outputs, .diagramBlock.gradient .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.attribute {\n    background: #40866E; }\n  .diagramBlock.output {\n    background: #6a2c83;\n    color: white; }\n    .diagramBlock.output .inputs {\n      color: white; }\n  .diagramBlock .header {\n    grid-row: 1;\n    grid-column: 1 / span 2;\n    border: 4px solid black;\n    border-top-right-radius: 7px;\n    border-top-left-radius: 7px;\n    font-size: 16px;\n    text-align: center;\n    margin-top: -1px;\n    transform: scaleX(1.001);\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    background: black;\n    color: white; }\n    .diagramBlock .header.constant {\n      border-color: #4E5C74;\n      background: #4E5C74 !important; }\n    .diagramBlock .header.inspector {\n      border-color: #396437;\n      background: #396437 !important; }\n  .diagramBlock .value {\n    grid-row: 3;\n    grid-column: 1 / span 2;\n    height: 34px;\n    text-align: center;\n    font-size: 18px;\n    font-weight: bold;\n    margin: 0 10px; }\n    .diagramBlock .value .value-text {\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden; }\n  .diagramBlock .inputs {\n    grid-row: 2;\n    grid-column: 1;\n    padding-bottom: 8px; }\n    .diagramBlock .inputs .input-port {\n      display: grid;\n      grid-template-columns: 12px calc(100% - 12px);\n      grid-template-rows: 100%; }\n      .diagramBlock .inputs .input-port .input-port-plug {\n        grid-column: 1;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        margin-left: -11px;\n        position: relative; }\n        .diagramBlock .inputs .input-port .input-port-plug:hover .input-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .inputs .input-port .input-port-plug .input-port-type {\n          width: 15px;\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .inputs .input-port .input-port-plug .input-port-type img {\n            width: 20px; }\n      .diagramBlock .inputs .input-port .input-port-label {\n        grid-column: 2;\n        grid-row: 1;\n        margin-bottom: 4px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock .outputs {\n    grid-row: 2;\n    grid-column: 2;\n    padding-bottom: 8px; }\n    .diagramBlock .outputs .output-port {\n      display: grid;\n      grid-template-columns: calc(100% - 12px) 12px;\n      grid-template-rows: 100%; }\n      .diagramBlock .outputs .output-port .output-port-plug {\n        grid-column: 2;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        position: relative;\n        margin-left: 4px; }\n        .diagramBlock .outputs .output-port .output-port-plug:hover .output-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .outputs .output-port .output-port-plug .output-port-type {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .outputs .output-port .output-port-plug .output-port-type img {\n            width: 20px; }\n      .diagramBlock .outputs .output-port .output-port-label {\n        text-align: right;\n        grid-column: 1;\n        grid-row: 1;\n        margin-bottom: 4px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock.texture-block {\n    display: grid;\n    grid-template-rows: 30px auto 1fr;\n    grid-template-columns: calc(100% - 60px) 60px;\n    background: #323232;\n    color: white; }\n    .diagramBlock.texture-block .inputs {\n      grid-column: 1;\n      grid-row: 2; }\n    .diagramBlock.texture-block .outputs {\n      grid-column: 2;\n      grid-row: 2 / span 2; }\n    .diagramBlock.texture-block .textureLine {\n      height: 140px;\n      grid-column: 1;\n      grid-row: 3;\n      overflow: hidden;\n      border-bottom-left-radius: 7px;\n      border: black 4px solid;\n      border-left: 0px;\n      border-bottom: 0px; }\n      .diagramBlock.texture-block .textureLine canvas {\n        width: 100%;\n        height: 100%; }\n", ""]);
 
 // exports
 
@@ -68366,11 +68366,26 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+
+
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
     BlockTools.GetBlockFromString = function (data, scene, nodeMaterial) {
         switch (data) {
+            case "RefractBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["RefractBlock"]("Refract");
+            case "ReflectBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ReflectBlock"]("Reflect");
+            case "DerivativeBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["DerivativeBlock"]("Derivative");
+            case "Rotate2dBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["Rotate2dBlock"]("Rotate2d");
+            case "NormalBlendBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NormalBlendBlock"]("NormalBlend");
             case "WorleyNoise3DBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["WorleyNoise3DBlock"]("WorleyNoise3D");
             case "SimplexPerlin3DBlock":
@@ -68946,7 +68961,7 @@ var ClampNodeWidget = /** @class */ (function (_super) {
         var inputPorts = _portHelper__WEBPACK_IMPORTED_MODULE_2__["PortHelper"].GenerateInputPorts(this.props.node, undefined, true);
         var outputPorts = _portHelper__WEBPACK_IMPORTED_MODULE_2__["PortHelper"].GenerateOutputPorts(this.props.node, true);
         var clampBlock = this.props.node.block;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock remap" },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock clamp" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, clampBlock.name),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "inputs" }, inputPorts),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts),
@@ -69682,12 +69697,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
 /* harmony import */ var _stringTools__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../stringTools */ "./stringTools.ts");
 /* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
-/* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
-/* harmony import */ var _propertyTab_properties_vector4PropertyTabComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../propertyTab/properties/vector4PropertyTabComponent */ "./components/propertyTab/properties/vector4PropertyTabComponent.tsx");
-/* harmony import */ var _propertyTab_properties_matrixPropertyTabComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../propertyTab/properties/matrixPropertyTabComponent */ "./components/propertyTab/properties/matrixPropertyTabComponent.tsx");
-/* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
-/* harmony import */ var _sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../../../sharedComponents/sliderLineComponent */ "./sharedComponents/sliderLineComponent.tsx");
-
+/* harmony import */ var _propertyTab_properties_vector4PropertyTabComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../propertyTab/properties/vector4PropertyTabComponent */ "./components/propertyTab/properties/vector4PropertyTabComponent.tsx");
+/* harmony import */ var _propertyTab_properties_matrixPropertyTabComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../propertyTab/properties/matrixPropertyTabComponent */ "./components/propertyTab/properties/matrixPropertyTabComponent.tsx");
+/* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
+/* harmony import */ var _sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../../sharedComponents/sliderLineComponent */ "./sharedComponents/sliderLineComponent.tsx");
 
 
 
@@ -69718,16 +69731,16 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Float: {
                 var cantDisplaySlider = (isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max);
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_15__["FloatLineComponent"], { label: "Min", target: inputBlock, propertyName: "min", onChange: function () {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_14__["FloatLineComponent"], { label: "Min", target: inputBlock, propertyName: "min", onChange: function () {
                             _this.forceUpdate();
                         } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_15__["FloatLineComponent"], { label: "Max", target: inputBlock, propertyName: "max", onChange: function () {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_14__["FloatLineComponent"], { label: "Max", target: inputBlock, propertyName: "max", onChange: function () {
                             _this.forceUpdate();
                         } }),
                     cantDisplaySlider &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_floatPropertyTabComponent__WEBPACK_IMPORTED_MODULE_8__["FloatPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }),
                     !cantDisplaySlider &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_16__["SliderLineComponent"], { label: "Value", target: inputBlock, propertyName: "value", step: (inputBlock.max - inputBlock.min) / 100.0, minimum: inputBlock.min, maximum: inputBlock.max, onChange: function () {
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_15__["SliderLineComponent"], { label: "Value", target: inputBlock, propertyName: "value", step: (inputBlock.max - inputBlock.min) / 100.0, minimum: inputBlock.min, maximum: inputBlock.max, onChange: function () {
                                 _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             } })));
             }
@@ -69739,9 +69752,9 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Vector3:
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["Vector3PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Vector4:
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_vector4PropertyTabComponent__WEBPACK_IMPORTED_MODULE_13__["Vector4PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_vector4PropertyTabComponent__WEBPACK_IMPORTED_MODULE_12__["Vector4PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Matrix:
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_matrixPropertyTabComponent__WEBPACK_IMPORTED_MODULE_14__["MatrixPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_matrixPropertyTabComponent__WEBPACK_IMPORTED_MODULE_13__["MatrixPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
         }
         return null;
     };
@@ -69817,6 +69830,11 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
         if (systemValuesOptions.length > 0) {
             modeOptions.push({ label: "System value", value: 2 });
         }
+        var typeOptions = [
+            { label: "None", value: 0 },
+            { label: "Visible in the inspector", value: 1 },
+            { label: "Constant", value: 2 }
+        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_9__["LineContainerComponent"], { title: "GENERAL" },
                 !inputBlock.isAttribute &&
@@ -69824,11 +69842,32 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { label: "Type", value: _stringTools__WEBPACK_IMPORTED_MODULE_10__["StringTools"].GetBaseType(inputBlock.type) })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_9__["LineContainerComponent"], { title: "PROPERTIES" },
                 inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AnimatedInputBlockTypes"].None &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_12__["CheckBoxLineComponent"], { label: "Visible in the Inspector", target: inputBlock, propertyName: "visibleInInspector" }),
-                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AnimatedInputBlockTypes"].None &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_12__["CheckBoxLineComponent"], { label: "IsConstant", target: inputBlock, propertyName: "isConstant", onValueChanged: function () {
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Type", options: typeOptions, target: inputBlock, noDirectUpdate: true, getSelection: function (block) {
+                            if (block.visibleInInspector) {
+                                return 1;
+                            }
+                            if (block.isConstant) {
+                                return 2;
+                            }
+                            return 0;
+                        }, onSelect: function (value) {
+                            switch (value) {
+                                case 0:
+                                    inputBlock.visibleInInspector = false;
+                                    inputBlock.isConstant = false;
+                                    break;
+                                case 1:
+                                    inputBlock.visibleInInspector = true;
+                                    inputBlock.isConstant = false;
+                                    break;
+                                case 2:
+                                    inputBlock.visibleInInspector = false;
+                                    inputBlock.isConstant = true;
+                                    break;
+                            }
+                            _this.forceUpdate();
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Mode", options: modeOptions, target: inputBlock, noDirectUpdate: true, getSelection: function (block) {
                         if (block.isAttribute) {
@@ -70012,10 +70051,10 @@ var InputNodeWidget = /** @class */ (function (_super) {
         else {
             name = "Not connected input";
         }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock input" + (inputBlock ? " " + babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"][inputBlock.type] : "") + (inputBlock && inputBlock.isConstant ? " constant" : ""), style: {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock input" + (inputBlock ? " " + babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"][inputBlock.type] : ""), style: {
                 background: color
             } },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, name),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" + (inputBlock && inputBlock.isConstant ? " constant" : "") + (inputBlock && inputBlock.visibleInInspector ? " inspector" : "") }, name),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" }, this.renderValue(value))));
     };
@@ -72012,16 +72051,16 @@ var NodeListComponent = /** @class */ (function (_super) {
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock"],
-            Interpolation: ["LerpBlock", "SmoothStepBlock", "NLerpBlock"],
+            Interpolation: ["LerpBlock", "StepBlock", "SmoothStepBlock", "NLerpBlock"],
             Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock"],
             Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "FrontFacingBlock"],
             Noises: ["SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Blocks: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
-            Round: ["StepBlock", "RoundBlock", "CeilingBlock", "FloorBlock"],
-            Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock", "PerturbNormalBlock"],
+            Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
+            Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock", "PerturbNormalBlock", "NormalBlendBlock"],
             Trigonometry: ["CosBlock", "SinBlock", "AbsBlock", "ExpBlock", "Exp2Block", "SqrtBlock", "PowBlock", "LogBlock", "ArcCosBlock", "ArcSinBlock", "TanBlock", "ArcTanBlock", "FractBlock", "SignBlock", "ArcTan2Block", "DegreesToRadiansBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "TriangleWaveBlock", "SquareWaveBlock"],
-            Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock"],
+            Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock", "Rotate2dBlock", "DerivativeBlock", "RefractBlock", "ReflectBlock"],
         };
         // Create node menu
         var blockMenu = [];
@@ -72029,7 +72068,8 @@ var NodeListComponent = /** @class */ (function (_super) {
             var blockList = allBlocks[key].filter(function (b) { return !_this.state.filter || b.toLowerCase().indexOf(_this.state.filter.toLowerCase()) !== -1; })
                 .sort(function (a, b) { return a.localeCompare(b); })
                 .map(function (block, i) {
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineComponent__WEBPACK_IMPORTED_MODULE_3__["DraggableLineComponent"], { key: block, data: block });
+                var tooltip = NodeListComponent._Tooltips[block] || "";
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineComponent__WEBPACK_IMPORTED_MODULE_3__["DraggableLineComponent"], { key: block, data: block, tooltip: tooltip });
             });
             if (blockList.length) {
                 blockMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { key: key + " blocks", title: key.replace("_", " "), closed: false }, blockList));
@@ -72041,6 +72081,97 @@ var NodeListComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "filter" },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", placeholder: "Filter", onChange: function (evt) { return _this.filterContent(evt.target.value); } })),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "list-container" }, blockMenu)))));
+    };
+    NodeListComponent._Tooltips = {
+        "BonesBlock": "Provides a world matrix for each vertex, based on skeletal (bone/joint) animation. mesh.matricesIndices and mesh.matricesWeights are the vertex to bone assignments and weighting, and assume no more than 4 bones influencing any given vertex. If a vertex is influenced by more than 4 bones, then mesh.matricesIndicesExtra and mesh.matricesWeightsExtra can be used for up to 8 bones of influence per vertex",
+        "MorphTargetsBlock": "Provides the final positions, normals, tangents, and uvs based on morph targets in a mesh",
+        "AddBlock": "Adds the left and right inputs together. Left and right inputs have to be of the same type",
+        "DistanceBlock": "Provides a distance vector based on the left and right input vectors",
+        "DivideBlock": "Divides the left input by the right input",
+        "LengthBlock": "Outputs the length of an input vector",
+        "MaxBlock": "Outputs the largest value between the left and right inputs",
+        "MinBlock": "Outputs the smallest value between the left and right inputs",
+        "MultiplyBlock": "Multiplies the left and right inputs together",
+        "NegateBlock": "Multiplies the input by -1",
+        "OneMinusBlock": "Subtracts the input value from 1 (1 - input)",
+        "RandomNumberBlock": "Provides a random number based on an input seed",
+        "ReciprocalBlock": "Outputs the reciprocal value(s) vased on the input value(s)",
+        "ScaleBlock": "Multiplies the input value(s) by the factor",
+        "SubtractBlock": "Subtracts the right input from the left input",
+        "PosterizeBlock": "Reduces the number of colors in an image to the value of input steps",
+        "ReplaceColorBlock": "Replaces a reference color in input value with a different replacement color. Distance is the tolerance variation of the color",
+        "ColorMergerBlock": "Combines individual color channels into color Vectors",
+        "ColorSplitterBlock": "Separates color Vectors into individual color channels",
+        "VectorMergerBlock": "Combines up to 4 input values into Vectors",
+        "VectorSplitterBlock": "Separates Vectors into individual elements",
+        "Color3": "A Vector3 representing combined color values (red, green, and blue)",
+        "Color4": "A Vector4 representing combined color and alpha values (red, green, blue, and alpha)",
+        "DeltaTimeBlock": "A Float representing the time value that's passed since the last frame has rendered",
+        "Float": "A Float for a single floating point value",
+        "TextureBlock": "A container node for a texture (image or url)",
+        "TimeBlock": "A Float of a constantly increasing floating point value, starting when the scene is loaded",
+        "Vector2": "A Vector2 representing two values",
+        "Vector3": "A Vector3 representing three values",
+        "Vector4": "A Vector4 representing four values",
+        "LerpBlock": "Provides linear interpolated value(s) between the left and right inputs, based on the gradient input",
+        "SmoothStepBlock": "Outputs a value based on a the input value's position on a curve between the two edge values",
+        "Matrix": "A container for a vector transformation",
+        "ProjectionMatrixBlock": "A matrix moving from 3D space to screen space",
+        "ViewMatrixBlock": "A matrix moving from 3D space to camera space",
+        "ViewProjectionMatrixBlock": "A matrix moving from 3D space to camera space, and ending in screen space",
+        "WorldMatrixBlock": "A matrix moving from local space to world space",
+        "WorldViewProjectionMatrixBlock": "A matrix moving from local space to world space, then to camera space, and ending in screen space",
+        "ColorBlock": "A Color4 representing the color of each vertex of the attached mesh",
+        "InstancesBlock": "Provides the world matrix for each instance. This is used to apply materials to instances as well as original meshes",
+        "MatrixIndicesBlock": "A Vector4 representing the vertex to bone skinning assignments",
+        "MatricesWeightsBlock": "A Vector4 representing the vertex to bone skinning weights",
+        "NormalBlock": "A Vector3 representing the normal of each vertex of the attached mesh",
+        "PositionBlock": "A Vector3 representing the position of each vertex of the attached mesh",
+        "TangentBlock": "A Vector3 representing the tangent of each vertex of the attached mesh",
+        "UVBlock": "A Vector2 representing the UV coordinates of each vertex of the attached mesh",
+        "DiscardBlock": "A final output node that will not output a pixel below the cutoff value",
+        "FragmentOutputBlock": "The final node for outputing the color of each pixel. This node must be included in every node material",
+        "VertexOutputBlock": "The final node for outputing the position of each vertex. This node must be included in every node material",
+        "ClampBlock": "Ignores all values of the input outside of the Minimum and Maximum property values",
+        "NormalizeBlock": "Remaps the length of a vector or color to 1",
+        "RemapBlock": "Remaps all input values between sourceMin and sourceMax, to be between targetMin and targetMax. source and target inputs can be static or variable inputs",
+        "CeilingBlock": "Outputs the highest value of the input",
+        "FloorBlock": "Outputs the lowest value of the input",
+        "RoundBlock": "Outputs the nearest whole number based on the input value",
+        "StepBlock": "Outputs 1 for any input value above the edge input, outputs 0 for any input value below the edge input",
+        "CameraPositionBlock": "A Vector3 position of the active scene camera",
+        "FogBlock": "Applies fog to a scene. Outputs fog with increasing value based on distance from the camera",
+        "FogColorBlock": "A Color3 for the fog color",
+        "ImageProcessingBlock": "Provides access to all of the Babylon image processing properties",
+        "LightBlock": "Returns the individual color values (red, green, and blue) of the diffuse or specular colors of the combined OR individual lighting within the scene",
+        "LightInformationBlock": "Provides the direction, color and intensity of a selected light based on its world position",
+        "PerturbNormalBlock": "Creates a new normal direction based on a normal map, the world position, and world normal",
+        "ReflectionTextureBlock": "Creates a reflection of the input texture",
+        "ViewDirectionBlock": "Outputs the direction vector of where the camera is aimed",
+        "AbsBlock": "Outputs the absolute value of the input value",
+        "ArcCosBlock": "Outputs the inverse of the cosine value based on the input value",
+        "ArcSinBlock": "Outputs the inverse of the sine value based on the input value",
+        "ArcTan2Block": "Outputs the inverse of the tangent value based on the input value",
+        "ArcTanBlock": "Outputs the inverse of the tangent value based on the input value",
+        "CosBlock": "Outputs the cosine value based on the input value",
+        "DegreesToRadiansBlock": "Converts the input value (degrees) to radians",
+        "Exp2Block": "Outputs the input value multiplied by itself 1 time. (Exponent of 2)",
+        "ExpBlock": "Outputs the input value multiplied by itself 9 time. (Exponent of 10)",
+        "FractBlock": "Everything after the period",
+        "LogBlock": "The logarithm value based on the input value",
+        "PowBlock": "Outputs the input value multiplied by itself the number of times equal to the power input (Exponent of power)",
+        "RadiansToDegreesBlock": "Converts the input value (radians) to degrees",
+        "SawToothWaveBlock": "Outputs a sawtooth pattern value between -1 and 1 based on the input value",
+        "SignBlock": "returns 1 if 10 or -1 if -10",
+        "SinBlock": "Outputs the the sine value based on the input value",
+        "SqrtBlock": "Outputs the the square root of the input value",
+        "SquareWaveBlock": "Outputs a stepped pattern value between -1 and 1 based on the input value",
+        "TanBlock": "Outputs the the tangent value based on the input value",
+        "TriangleWaveBlock": "Outputs a sawtooth pattern value between 0 and 1 based on the input value",
+        "CrossBlock": "Outputs a vector that is perpendicular to two input vectors",
+        "DotBlock": "Outputs the cos of the angle between two vectors",
+        "FresnelBlock": "Outputs the grazing angle of the surface of the mesh, relative to a camera. Angle can be influenced by the bias and power inputs",
+        "TransformBlock": "Transforms a input vector based on an input matrix"
     };
     return NodeListComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -72871,7 +73002,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Reset to default", onClick: function () {
                             _this.props.globalState.nodeMaterial.setToDefault();
-                            _this.props.globalState.onResetRequiredObservable.notifyObservers(null);
+                            _this.props.globalState.onResetRequiredObservable.notifyObservers();
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "UI" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Zoom to fit", onClick: function () {
@@ -73097,6 +73228,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_diagram_gradient_gradientNodeFactory__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! ./components/diagram/gradient/gradientNodeFactory */ "./components/diagram/gradient/gradientNodeFactory.tsx");
 /* harmony import */ var _components_diagram_reflectionTexture_reflectionTextureNodeFactory__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! ./components/diagram/reflectionTexture/reflectionTextureNodeFactory */ "./components/diagram/reflectionTexture/reflectionTextureNodeFactory.tsx");
 /* harmony import */ var _components_diagram_reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! ./components/diagram/reflectionTexture/reflectionTextureNodeModel */ "./components/diagram/reflectionTexture/reflectionTextureNodeModel.tsx");
+/* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_37__ = __webpack_require__(/*! ./serializationTools */ "./serializationTools.ts");
+
 
 
 
@@ -73188,8 +73321,8 @@ var GraphEditor = /** @class */ (function (_super) {
                 _this.buildMaterial();
             }
         });
-        _this.props.globalState.onResetRequiredObservable.add(function (locations) {
-            _this.build(false, locations);
+        _this.props.globalState.onResetRequiredObservable.add(function () {
+            _this.build(false);
             if (_this.props.globalState.nodeMaterial) {
                 _this.buildMaterial();
             }
@@ -73337,6 +73470,7 @@ var GraphEditor = /** @class */ (function (_super) {
             widget.setState({ document: this.props.globalState.hostDocument });
             this._onWidgetKeyUpPointer = this.onWidgetKeyUp.bind(this);
             this.props.globalState.hostDocument.addEventListener("keyup", this._onWidgetKeyUpPointer, false);
+            this.props.globalState.hostDocument.defaultView.addEventListener("blur", function () { return _this._altKeyIsPressed = false; }, false);
             var previousMouseMove_1 = widget.onMouseMove;
             widget.onMouseMove = function (evt) {
                 if (_this._altKeyIsPressed && evt.buttons === 1) {
@@ -73400,6 +73534,7 @@ var GraphEditor = /** @class */ (function (_super) {
         catch (err) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new _components_log_logComponent__WEBPACK_IMPORTED_MODULE_14__["LogEntry"](err, true));
         }
+        _serializationTools__WEBPACK_IMPORTED_MODULE_37__["SerializationTools"].UpdateLocations(this.props.globalState.nodeMaterial, this.props.globalState);
     };
     GraphEditor.prototype.applyFragmentOutputConstraints = function (rootInput) {
         var model = rootInput.parent;
@@ -73416,10 +73551,10 @@ var GraphEditor = /** @class */ (function (_super) {
             }
         }
     };
-    GraphEditor.prototype.build = function (needToWait, locations) {
+    GraphEditor.prototype.build = function (needToWait) {
         var _this = this;
         if (needToWait === void 0) { needToWait = false; }
-        if (locations === void 0) { locations = null; }
+        var locations = this.props.globalState.nodeMaterial.editorData;
         // setup the diagram model
         this._model = new storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramModel"]();
         this._nodes = [];
@@ -74004,6 +74139,19 @@ __webpack_require__.r(__webpack_exports__);
 var SerializationTools = /** @class */ (function () {
     function SerializationTools() {
     }
+    SerializationTools.UpdateLocations = function (material, globalState) {
+        material.editorData = [];
+        // Store node locations
+        for (var _i = 0, _a = material.attachedBlocks; _i < _a.length; _i++) {
+            var block = _a[_i];
+            var node = globalState.onGetNodeFromBlock(block);
+            material.editorData.push({
+                blockId: block.uniqueId,
+                x: node ? node.x : 0,
+                y: node ? node.y : 0
+            });
+        }
+    };
     SerializationTools.Serialize = function (material, globalState) {
         var bufferSerializationState = babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers;
         babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers = _dataStorage__WEBPACK_IMPORTED_MODULE_1__["DataStorage"].ReadBoolean("EmbedTextures", true);
@@ -74027,16 +74175,7 @@ var SerializationTools = /** @class */ (function () {
     SerializationTools.Deserialize = function (serializationObject, globalState) {
         globalState.onIsLoadingChanged.notifyObservers(true);
         globalState.nodeMaterial.loadFromSerialization(serializationObject, "");
-        // Check for id mapping
-        if (serializationObject.locations && serializationObject.map) {
-            var map = serializationObject.map;
-            var locations = serializationObject.locations;
-            for (var _i = 0, locations_1 = locations; _i < locations_1.length; _i++) {
-                var location = locations_1[_i];
-                location.blockId = map[location.blockId];
-            }
-        }
-        globalState.onResetRequiredObservable.notifyObservers(serializationObject.locations);
+        globalState.onResetRequiredObservable.notifyObservers();
     };
     return SerializationTools;
 }());
@@ -74119,7 +74258,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
             this._localChange = false;
             return true;
         }
-        return false;
+        return nextProps.label !== this.props.label;
     };
     CheckBoxLineComponent.prototype.onChange = function () {
         this._localChange = true;
@@ -74323,7 +74462,7 @@ var DraggableLineComponent = /** @class */ (function (_super) {
     }
     DraggableLineComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "draggableLine", draggable: true, onDragStart: function (event) {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "draggableLine", title: this.props.tooltip, draggable: true, onDragStart: function (event) {
                 event.dataTransfer.setData("babylonjs-material-node", _this.props.data);
             } }, this.props.data.replace("Block", "")));
     };
@@ -74844,7 +74983,7 @@ var OptionsLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "listLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "options" + (this.props.className ? " " + this.props.className : "") },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: this.state.value }, this.props.options.map(function (option) {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: this.state.value || "" }, this.props.options.map(function (option) {
                     return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: option.label, value: option.value }, option.label));
                 })))));
     };

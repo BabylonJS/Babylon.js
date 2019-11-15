@@ -25,6 +25,7 @@ import { Color3LineComponent } from '../../../lines/color3LineComponent';
 import { MorphTarget } from 'babylonjs/Morph/morphTarget';
 import { OptionsLineComponent } from '../../../lines/optionsLineComponent';
 import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
+import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -315,6 +316,10 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         mesh.isAnInstance &&
                         <TextLineComponent label="Source" value={(mesh as any).sourceMesh.name} onLink={() => this.onSourceMeshLink()} />
                     }
+                    <ButtonLineComponent label="Dispose" onClick={() => {
+                        mesh.dispose();
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                    }} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="TRANSFORMS">
                     <Vector3LineComponent label="Position" target={mesh} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

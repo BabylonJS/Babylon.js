@@ -15,8 +15,8 @@ gulp.task("intellisense", function() {
         .pipe(replace(/^\s*readonly _/gm, "protected readonly _"))
         .pipe(replace(/^\s*static _/gm, "private static _"))
         .pipe(replace(/^\s*class _/gm, "private class _"))
-        .pipe(replace(/^\s* _/gm, "private _"))
-        .pipe(replace(/^\s*_/gm, "private _"))
+        .pipe(replace(/^\s* _/gm, "protected _"))
+        .pipe(replace(/^\s*_/gm, "protected _"))
         .pipe(gulp.dest(config.build.playgroundDirectory));
 });
 

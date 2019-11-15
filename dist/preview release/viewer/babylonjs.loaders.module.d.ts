@@ -1930,6 +1930,27 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_specular" {
         private _loadSpecularPropertiesAsync;
     }
 }
+declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_mesh_quantization" {
+    import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
+    import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
+    /**
+     * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_mesh_quantization)
+     */
+    export class KHR_mesh_quantization implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+    }
+}
 declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_texture_transform" {
     import { Nullable } from "babylonjs/types";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
@@ -2145,6 +2166,7 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/index" {
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_clearcoat";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_sheen";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_specular";
+    export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_mesh_quantization";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_texture_transform";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/MSFT_audio_emitter";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/MSFT_lod";
@@ -4315,6 +4337,25 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
         private _loadSpecularPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_mesh_quantization)
+     */
+    export class KHR_mesh_quantization implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {

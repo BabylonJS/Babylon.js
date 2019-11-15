@@ -48,6 +48,7 @@ export class WebXRController {
         public inputSource: XRInputSource,
         private parentContainer: Nullable<AbstractMesh> = null) {
         this.pointer = new AbstractMesh("controllerPointer", scene);
+        this.pointer.rotationQuaternion = new Quaternion();
         if (parentContainer) {
             parentContainer.addChild(this.pointer);
         }
@@ -72,14 +73,13 @@ export class WebXRController {
 
         // Update the pointer mesh
         if (pose) {
-            Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, this._tmpMatrix);
-            if (!this.pointer.getScene().useRightHandedSystem) {
-                this._tmpMatrix.toggleModelMatrixHandInPlace();
+            this.pointer.position.copyFrom(<any>(pose.transform.position));
+            this.pointer.rotationQuaternion!.copyFrom(<any>(pose.transform.orientation));
+            if (!this.scene.useRightHandedSystem) {
+                this.pointer.position.z *= -1;
+                this.pointer.rotationQuaternion!.z *= -1;
+                this.pointer.rotationQuaternion!.w *= -1;
             }
-            if (!this.pointer.rotationQuaternion) {
-                this.pointer.rotationQuaternion = new Quaternion();
-            }
-            this._tmpMatrix.decompose(this.pointer.scaling, this.pointer.rotationQuaternion!, this.pointer.position);
         }
 
         // Update the grip mesh if it exists
@@ -87,7 +87,7 @@ export class WebXRController {
             let pose = xrFrame.getPose(this.inputSource.gripSpace, referenceSpace);
             if (pose) {
                 Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, this._tmpMatrix);
-                if (!this.grip.getScene().useRightHandedSystem) {
+                if (!this.scene.useRightHandedSystem) {
                     this._tmpMatrix.toggleModelMatrixHandInPlace();
                 }
                 if (!this.grip.rotationQuaternion) {

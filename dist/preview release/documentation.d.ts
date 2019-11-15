@@ -761,7 +761,7 @@ declare module BABYLON {
         static readonly TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV: number;
         /** FLOAT_32_UNSIGNED_INT_24_8_REV */
         static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV: number;
-        /** nearest is mag = nearest and min = nearest and mip = linear */
+        /** nearest is mag = nearest and min = nearest and mip = nearest */
         static readonly TEXTURE_NEAREST_SAMPLINGMODE: number;
         /** Bilinear is mag = linear and min = linear and mip = nearest */
         static readonly TEXTURE_BILINEAR_SAMPLINGMODE: number;
@@ -4458,6 +4458,16 @@ declare module BABYLON {
          */
         static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
         /**
+         * Stores a left-handed perspective projection into a given matrix with depth reversed
+         * @param fov defines the horizontal field of view
+         * @param aspect defines the aspect ratio
+         * @param znear defines the near clip plane
+         * @param zfar not used as infinity is used as far clip
+         * @param result defines the target matrix
+         * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+         */
+        static PerspectiveFovReverseLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
+        /**
          * Creates a right-handed perspective projection matrix
          * @param fov defines the horizontal field of view
          * @param aspect defines the aspect ratio
@@ -4476,6 +4486,16 @@ declare module BABYLON {
          * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
          */
         static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
+        /**
+         * Stores a right-handed perspective projection into a given matrix
+         * @param fov defines the horizontal field of view
+         * @param aspect defines the aspect ratio
+         * @param znear defines the near clip plane
+         * @param zfar not used as infinity is used as far clip
+         * @param result defines the target matrix
+         * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+         */
+        static PerspectiveFovReverseRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed?: boolean): void;
         /**
          * Stores a perspective projection for WebVR info a given matrix
          * @param fov defines the field of view
@@ -16005,7 +16025,7 @@ declare module BABYLON {
          * Get the current texture matrix which includes the requested offsetting, tiling and rotation components.
          * @returns the transform matrix of the texture.
          */
-        getTextureMatrix(): Matrix;
+        getTextureMatrix(uBase?: number): Matrix;
         /**
          * Get the current matrix used to apply reflection. This is useful to rotate an environment texture for instance.
          * @returns The reflection texture transform
@@ -25575,6 +25595,11 @@ declare module BABYLON {
         private _isNotBuilt;
         private _lastParticleId;
         private _idxOfId;
+        private _multimaterialEnabled;
+        private _indicesByMaterial;
+        private _materialIndexes;
+        private _depthSortFunction;
+        private _materialSortFunction;
         /**
          * Creates a SPS (Solid Particle System) object.
          * @param name (String) is the SPS name, this will be the underlying mesh name.
@@ -25583,6 +25608,7 @@ declare module BABYLON {
          * * updatable (optional boolean, default true) : if the SPS must be updatable or immutable.
          * * isPickable (optional boolean, default false) : if the solid particles must be pickable.
          * * enableDepthSort (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.
+         * * enableMultiMaterial (optional boolean, default false) : if the solid particles can be given different materials.
          * * expandable (optional boolean, default false) : if particles can still be added after the initial SPS mesh creation.
          * * particleIntersection (optional boolean, default false) : if the solid particle intersections must be computed.
          * * boundingSphereOnly (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
@@ -25597,6 +25623,7 @@ declare module BABYLON {
             boundingSphereOnly?: boolean;
             bSphereRadiusFactor?: number;
             expandable?: boolean;
+            enableMultiMaterial?: boolean;
         });
         /**
          * Builds the SPS underlying mesh. Returns a standard Mesh.
@@ -25774,6 +25801,21 @@ declare module BABYLON {
          */
         getParticlesByShapeIdToRef(shapeId: number, ref: SolidParticle[]): SolidParticleSystem;
         /**
+         * Computes the required SubMeshes according the materials assigned to the particles.
+         * @returns the solid particle system.
+         * Does nothing if called before the SPS mesh is built.
+         */
+        computeSubMeshes(): SolidParticleSystem;
+        /**
+         * Sorts the solid particles by material when MultiMaterial is enabled.
+         * Updates the indices32 array.
+         * Updates the indicesByMaterial array.
+         * Updates the mesh indices array.
+         * @returns the SPS
+         * @hidden
+         */
+        private _sortParticlesByMaterial;
+        /**
          * Visibilty helper : Recomputes the visible size according to the mesh bounding box
          * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
          * @returns the SPS.
@@ -25866,6 +25908,10 @@ declare module BABYLON {
          * Default : `false`
          */
         readonly expandable: boolean;
+        /**
+         * Gets if the SPS supports the Multi Materials
+         */
+        readonly multimaterialEnabled: boolean;
         /**
          * This function does nothing. It may be overwritten to set all the particle first values.
          * The SPS doesn't call this function, you may have to call it by your own.
@@ -26025,6 +26071,10 @@ declare module BABYLON {
          */
         parentId: Nullable<number>;
         /**
+         * The particle material identifier (integer) when MultiMaterials are enabled in the SPS.
+         */
+        materialIndex: Nullable<number>;
+        /**
          * The culling strategy to use to check whether the solid particle must be culled or not when using isInFrustum().
          * The possible values are :
          * - AbstractMesh.CULLINGSTRATEGY_STANDARD
@@ -26051,8 +26101,9 @@ declare module BABYLON {
          * @param idxInShape (integer) is the index of the particle in the current model (ex: the 10th box of addShape(box, 30))
          * @param sps defines the sps it is associated to
          * @param modelBoundingInfo is the reference to the model BoundingInfo used for intersection computations.
+         * @param materialIndex is the particle material identifier (integer) when the MultiMaterials are enabled in the SPS.
          */
-        constructor(particleIndex: number, particleId: number, positionIndex: number, indiceIndex: number, model: Nullable<ModelShape>, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo?: Nullable<BoundingInfo>);
+        constructor(particleIndex: number, particleId: number, positionIndex: number, indiceIndex: number, model: Nullable<ModelShape>, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo?: Nullable<BoundingInfo>, materialIndex?: Nullable<number>);
         /**
          * Copies the particle property values into the existing target : position, rotation, scaling, uvs, colors, pivot, parent, visibility, alive
          * @param target the particle target
@@ -26152,6 +26203,7 @@ declare module BABYLON {
     }
     /**
      * Represents a Depth Sorted Particle in the solid particle system.
+     * @hidden
      */
     export class DepthSortedParticle {
         /**
@@ -26166,6 +26218,15 @@ declare module BABYLON {
          * Squared distance from the particle to the camera
          */
         sqDistance: number;
+        /**
+         * Material index when used with MultiMaterials
+         */
+        materialIndex: number;
+        /**
+         * Creates a new sorted particle
+         * @param materialIndex
+         */
+        constructor(materialIndex: number);
     }
 }
 declare module BABYLON {
@@ -29361,6 +29422,8 @@ declare module BABYLON {
         deterministicLockstep?: boolean;
         /** Defines the maximum steps to use with deterministic lock step mode */
         lockstepMaxSteps?: number;
+        /** Defines the seconds between each deterministic lock step */
+        timeStep?: number;
         /**
          * Defines that engine should ignore context lost events
          * If this event happens when this parameter is true, you will have to reload the page to restore rendering
@@ -29438,6 +29501,11 @@ declare module BABYLON {
         preventCacheWipeBetweenFrames: boolean;
         /** Gets or sets a boolean indicating if the engine should validate programs after compilation */
         validateShaderPrograms: boolean;
+        /**
+         * Gets or sets a boolean indicating if depth buffer should be reverse, going from far to near.
+         * This can provide greater z depth for distant objects.
+         */
+        useReverseDepthBuffer: boolean;
         /**
          * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
          */
@@ -30356,6 +30424,11 @@ declare module BABYLON {
          * @returns frame number
          */
         static QueueNewFrame(func: () => void, requester?: any): number;
+        /**
+         * Gets host document
+         * @returns the host document object
+         */
+        getHostDocument(): Document;
     }
 }
 declare module BABYLON {
@@ -31657,6 +31730,7 @@ declare module BABYLON {
         protected _alphaEquation: number;
         private _deterministicLockstep;
         private _lockstepMaxSteps;
+        private _timeStep;
         protected readonly _supportsHardwareTextureRescaling: boolean;
         private _fps;
         private _deltaTime;
@@ -31705,11 +31779,6 @@ declare module BABYLON {
          */
         getScreenAspectRatio(): number;
         /**
-         * Gets host document
-         * @returns the host document object
-         */
-        getHostDocument(): Document;
-        /**
          * Gets the client rect of the HTML canvas attached with the current webGL context
          * @returns a client rectanglee
          */
@@ -31731,6 +31800,11 @@ declare module BABYLON {
          * @returns the max steps
          */
         getLockstepMaxSteps(): number;
+        /**
+         * Returns the time in ms between steps when using deterministic lock step.
+         * @returns time step in (ms)
+         */
+        getTimeStep(): number;
         /**
          * Force the mipmap generation for the given render target texture
          * @param texture defines the render target texture to use
@@ -41499,6 +41573,18 @@ declare module BABYLON {
          * A list of meshes to be used as the teleportation floor. (default: empty)
          */
         floorMeshes?: Mesh[];
+        /**
+         * The teleportation mode. (default: TELEPORTATIONMODE_CONSTANTTIME)
+         */
+        teleportationMode?: number;
+        /**
+         * The duration of the animation in ms, apply when animationMode is TELEPORTATIONMODE_CONSTANTTIME. (default 122ms)
+         */
+        teleportationTime?: number;
+        /**
+         * The speed of the animation in distance/sec, apply when animationMode is TELEPORTATIONMODE_CONSTANTSPEED. (default 20 units / sec)
+         */
+        teleportationSpeed?: number;
     }
     /**
      * Options to modify the vr experience helper's behavior.
@@ -41603,6 +41689,9 @@ declare module BABYLON {
         private _teleportActive;
         private _floorMeshName;
         private _floorMeshesCollection;
+        private _teleportationMode;
+        private _teleportationTime;
+        private _teleportationSpeed;
         private _rotationAllowed;
         private _teleportBackwardsVector;
         private _teleportationTarget;
@@ -41815,6 +41904,14 @@ declare module BABYLON {
         private _workingQuaternion;
         private _workingMatrix;
         /**
+         * Time Constant Teleportation Mode
+         */
+        static readonly TELEPORTATIONMODE_CONSTANTTIME: number;
+        /**
+         * Speed Constant Teleportation Mode
+         */
+        static readonly TELEPORTATIONMODE_CONSTANTSPEED: number;
+        /**
          * Teleports the users feet to the desired location
          * @param location The location where the user's feet should be placed
          */
@@ -41990,7 +42087,7 @@ declare module BABYLON {
          * @param optionalFeatures defines optional values to pass to the session builder
          * @returns a promise which will resolve once the session has been initialized
          */
-        initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures?: any): any;
+        initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures?: any): Promise<XRSession>;
         /**
          * Sets the reference space on the xr session
          * @param referenceSpace space to set
@@ -42051,7 +42148,10 @@ declare module BABYLON {
      * @see https://doc.babylonjs.com/how_to/webxr
      */
     export class WebXRCamera extends FreeCamera {
-        private static _TmpMatrix;
+        /**
+         * Is the camera in debug mode. Used when using an emulator
+         */
+        debugMode: boolean;
         /**
          * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
          * @param name the name of the camera
@@ -42122,7 +42222,7 @@ declare module BABYLON {
          * @param renderTarget the output canvas that will be used to enter XR mode
          * @returns promise that resolves after xr mode has entered
          */
-        enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget): any;
+        enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget): Promise<WebXRSessionManager>;
         /**
          * Updates the global position of the camera by moving the camera's container
          * This should be used instead of modifying the camera's position as it will be overwritten by an xrSessions's update frame
@@ -42183,6 +42283,16 @@ declare module BABYLON {
          * User provided buttons to enable/disable WebXR. The system will provide default if not set
          */
         customButtons?: Array<WebXREnterExitUIButton>;
+        /**
+         * A session mode to use when creating the default button.
+         * Default is immersive-vr
+         */
+        sessionMode?: XRSessionMode;
+        /**
+         * A reference space type to use when creating the default button.
+         * Default is local-floor
+         */
+        referenceSpaceType?: XRReferenceSpaceType;
     }
     /**
      * UI to allow the user to enter/exit XR mode
@@ -42995,6 +43105,11 @@ declare module BABYLON {
      * Loads a controller model and adds it as a child of the WebXRControllers grip when the controller is created
      */
     export class WebXRControllerModelLoader {
+        /**
+         * an observable that triggers when a new model (the mesh itself) was initialized.
+         * To know when the mesh was loaded use the controller's own modelLoaded() method
+         */
+        onControllerModelLoaded: Observable<WebXRController>;
         /**
          * Creates the WebXRControllerModelLoader
          * @param input xr input that creates the controllers
@@ -45437,6 +45552,7 @@ declare module BABYLON {
          * @returns the current alpha mode
          */
         getAlphaMode(): number;
+        setInt(uniform: WebGLUniformLocation, int: number): void;
         setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void;
         setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void;
         setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void;
@@ -45455,7 +45571,6 @@ declare module BABYLON {
         setFloat(uniform: WebGLUniformLocation, value: number): void;
         setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void;
         setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void;
-        setBool(uniform: WebGLUniformLocation, bool: number): void;
         setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
         setColor3(uniform: WebGLUniformLocation, color3: Color3): void;
         setColor4(uniform: WebGLUniformLocation, color3: Color3, alpha: number): void;
@@ -45730,6 +45845,7 @@ declare module BABYLON {
         private _scaleRatio;
         private _uniformScalingMesh;
         private _octahedron;
+        private _sensitivity;
         /** Fires an event when any of it's sub gizmos are dragged */
         onDragStartObservable: Observable<unknown>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
@@ -45749,6 +45865,10 @@ declare module BABYLON {
          * Ratio for the scale of the gizmo (Default: 1)
          */
         scaleRatio: number;
+        /**
+         * Sensitivity factor for dragging (Default: 1)
+         */
+        sensitivity: number;
         /**
          * Disposes of the gizmo
          */
@@ -45780,6 +45900,10 @@ declare module BABYLON {
          * If the scaling operation should be done on all axis (default: false)
          */
         uniformScaling: boolean;
+        /**
+         * Custom sensitivity value for the drag strength
+         */
+        sensitivity: number;
         private _isEnabled;
         private _parent;
         private _arrow;
@@ -46386,8 +46510,9 @@ declare module BABYLON {
     export class LightGizmo extends Gizmo {
         private _lightMesh;
         private _material;
-        private cachedPosition;
-        private cachedForward;
+        private _cachedPosition;
+        private _cachedForward;
+        private _attachedMeshParent;
         /**
          * Creates a LightGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -46411,7 +46536,7 @@ declare module BABYLON {
         /**
          * Creates the lines for a light mesh
          */
-        private static _createLightLines;
+        private static _CreateLightLines;
         /**
          * Disposes of the light gizmo
          */
@@ -53638,6 +53763,11 @@ declare module BABYLON {
         /** Get the inspector from bundle or global */
         private _getGlobalNodeMaterialEditor;
         /**
+         * Gets or sets data used by visual editor
+         * @see https://nme.babylonjs.com
+         */
+        editorData: any;
+        /**
          * Gets or sets a boolean indicating that alpha value must be ignored (This will turn alpha blending off even if an alpha value is produced by the material)
          */
         ignoreAlpha: boolean;
@@ -53882,6 +54012,7 @@ declare module BABYLON {
     export class TextureBlock extends NodeMaterialBlock {
         private _defineName;
         private _linearDefineName;
+        private _tempTextureRead;
         private _samplerName;
         private _transformedUVName;
         private _textureTransformName;
@@ -53934,10 +54065,12 @@ declare module BABYLON {
         autoConfigure(material: NodeMaterial): void;
         initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        private _getTextureBase;
         isReady(): boolean;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         private readonly _isMixed;
         private _injectVertexCode;
+        private _writeTextureRead;
         private _writeOutput;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
         protected _dumpPropertiesCode(): string;
@@ -54998,6 +55131,36 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Block used to get the derivative value on x and y of a given input
+     */
+    export class DerivativeBlock extends NodeMaterialBlock {
+        /**
+         * Create a new DerivativeBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        readonly input: NodeMaterialConnectionPoint;
+        /**
+         * Gets the derivative output on x
+         */
+        readonly dx: NodeMaterialConnectionPoint;
+        /**
+         * Gets the derivative output on y
+         */
+        readonly dy: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
      * Block used to add support for scene fog
      */
     export class FogBlock extends NodeMaterialBlock {
@@ -55438,6 +55601,7 @@ declare module BABYLON {
         protected _buildBlock(state: NodeMaterialBuildState): this;
         serialize(): any;
         _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        protected _dumpPropertiesCode(): string;
     }
 }
 declare module BABYLON {
@@ -56365,9 +56529,9 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the position input component
+         * Gets the seed input component
          */
-        readonly position: NodeMaterialConnectionPoint;
+        readonly seed: NodeMaterialConnectionPoint;
         /**
          * Gets the jitter input component
          */
@@ -56407,14 +56571,139 @@ declare module BABYLON {
          */
         getClassName(): string;
         /**
-         * Gets the position operand input component
+         * Gets the seed operand input component
          */
-        readonly position: NodeMaterialConnectionPoint;
+        readonly seed: NodeMaterialConnectionPoint;
         /**
          * Gets the output component
          */
         readonly output: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this | undefined;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to blend normals
+     */
+    export class NormalBlendBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new NormalBlendBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the first input component
+         */
+        readonly input0: NodeMaterialConnectionPoint;
+        /**
+         * Gets the second input component
+         */
+        readonly input1: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to rotate a 2d vector by a given angle
+     */
+    export class Rotate2dBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new Rotate2dBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input vector
+         */
+        readonly input: NodeMaterialConnectionPoint;
+        /**
+         * Gets the input angle
+         */
+        readonly angle: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        autoConfigure(material: NodeMaterial): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get the reflected vector from a direction and a normal
+     */
+    export class ReflectBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new ReflectBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the incident component
+         */
+        readonly incident: NodeMaterialConnectionPoint;
+        /**
+         * Gets the normal component
+         */
+        readonly normal: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get the refracted vector from a direction and a normal
+     */
+    export class RefractBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new RefractBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the incident component
+         */
+        readonly incident: NodeMaterialConnectionPoint;
+        /**
+         * Gets the normal component
+         */
+        readonly normal: NodeMaterialConnectionPoint;
+        /**
+         * Gets the index of refraction component
+         */
+        readonly ior: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
 declare module BABYLON {
@@ -65936,6 +66225,8 @@ declare module BABYLON.GUI {
         /** @hidden */
         _isClipped: boolean;
         /** @hidden */
+        _automaticSize: boolean;
+        /** @hidden */
         _tag: any;
         /**
          * Gets or sets the unique id of the node. Please note that this number will be updated when the control is added to a container
@@ -66260,8 +66551,13 @@ declare module BABYLON.GUI {
          * @param scene defines the hosting scene
          */
         moveToVector3(position: BABYLON.Vector3, scene: BABYLON.Scene): void;
-        /** @hidden */
-        _getDescendants(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
+        /**
+         * Will store all controls that have this control as ascendant in a given array
+         * @param results defines the array where to store the descendants
+         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+         * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+         */
+        getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /**
          * Will return all controls that have this control as ascendant
          * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
@@ -66491,8 +66787,7 @@ declare module BABYLON.GUI {
         protected _postMeasure(): void;
         /** @hidden */
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
-        /** @hidden */
-        _getDescendants(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
+        getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /** @hidden */
         _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
         /** @hidden */
@@ -66640,7 +66935,7 @@ declare module BABYLON.GUI {
         protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         private _drawText;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         protected _applyStates(context: CanvasRenderingContext2D): void;
         protected _breakLines(refWidth: number, context: CanvasRenderingContext2D): object[];
         protected _parseLine(line: string | undefined, context: CanvasRenderingContext2D): object;
@@ -66962,7 +67257,7 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         /** @hidden */
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
         /**
@@ -67204,7 +67499,7 @@ declare module BABYLON.GUI {
         private _onCutText;
         /** @hidden */
         private _onPasteText;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
         _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
@@ -67598,7 +67893,7 @@ declare module BABYLON.GUI {
         horizontalAlignment: number;
         verticalAlignment: number;
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         _measure(): void;
         protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -67735,7 +68030,7 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
     }
 }
 declare module BABYLON.GUI {
@@ -68101,7 +68396,7 @@ declare module BABYLON.GUI {
          * @param name defines the control name
          */
         constructor(name?: string | undefined);
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         protected _getTypeName(): string;
     }
 }
@@ -68134,7 +68429,7 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
     }
 }
 declare module BABYLON.GUI {
@@ -70708,6 +71003,25 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
         private _loadSpecularPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
+     * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_mesh_quantization)
+     */
+    export class KHR_mesh_quantization implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
