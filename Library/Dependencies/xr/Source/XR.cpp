@@ -584,6 +584,19 @@ namespace xr
             layersPtr = reinterpret_cast<XrCompositionLayerBaseHeader*>(&layer);
         }
 
+#ifdef _DEBUG
+        if (!Views.empty())
+        {
+            // 'SetPrivateData' is intercepted by the special fork of RenderDoc in order to detect that
+            // a frame is being presented. This can be done to any swapchain image texture returned
+            // by xrEnumerateSwapchainImages. This should be done after all rendering is complete for the
+            // frame (and not for each eye backbuffer).
+            ID3D11Texture2D* texture = reinterpret_cast<ID3D11Texture2D*>(Views.front().ColorTexturePointer);
+            int dummy;
+            texture->SetPrivateData({0xD4544440, 0x90B9, 0x4815, 0x8B, 0x99, 0x18, 0xC0, 0x23, 0xA5, 0x73, 0xF1}, sizeof(dummy), &dummy);
+        }
+#endif
+
         // Submit the composition layers for the predicted display time.
         XrFrameEndInfo frameEndInfo{ XR_TYPE_FRAME_END_INFO };
         frameEndInfo.displayTime = m_displayTime;

@@ -30,7 +30,7 @@ namespace xr
 
     constexpr std::array<SwapchainFormat, 2> SUPPORTED_COLOR_FORMATS
     {
-        DXGI_FORMAT_R8G8B8A8_UNORM,
+        DXGI_FORMAT_B8G8R8A8_UNORM_SRGB,
         DXGI_FORMAT_R8G8B8A8_UNORM_SRGB
     };
 
@@ -43,10 +43,10 @@ namespace xr
     {
         switch (format)
         {
-        case DXGI_FORMAT_R8G8B8A8_UNORM:
-            return xr::TextureFormat::RGBA8;
+        case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
+            return xr::TextureFormat::BGRA8_SRGB;
         case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
-            return xr::TextureFormat::RGBA8S;
+            return xr::TextureFormat::RGBA8_SRGB;
         case DXGI_FORMAT_D24_UNORM_S8_UINT:
             return xr::TextureFormat::D24S8;
         default:
