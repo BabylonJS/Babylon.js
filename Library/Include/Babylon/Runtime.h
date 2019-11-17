@@ -67,19 +67,12 @@ namespace babylon
         void Eval(const std::string& string, const std::string& sourceUrl);
 
         /**
-         * Execute an arbitrary function on the same thread that drives the JavaScript environment.
+         * Dispatch an arbitrary function on the same thread that drives the JavaScript environment.
          * This method is thread-safe, but it is implicitly asynchronous: order of execution is
          * guaranteed, but not immediacy of execution. This is the correct way to force code to be
          * run in a particular order relative to calls to LoadScript() and Eval().
          */
-        void Execute(std::function<void(Runtime&)>);
-
-        /**
-         * Retrieves the JavaScript environment. This method is NOT thread-safe, and the environment
-         * itself is not thread-safe. Consequently, this method can only be safely used inside a call
-         * to Execute().
-         */
-        babylon::Env& Env() const;
+        void Dispatch(std::function<void(Env&)> callback);
 
         /**
          * Retrieves the root URL provided at the time the Runtime was created (a default value may

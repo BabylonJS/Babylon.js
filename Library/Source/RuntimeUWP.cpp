@@ -29,9 +29,9 @@ namespace babylon
 
     void RuntimeImpl::ThreadProcedure()
     {
-        this->Execute([](RuntimeImpl& runtimeImpl)
+        this->Dispatch([](Env& env)
         {
-            InitializeNativeXr(runtimeImpl.Env());
+            InitializeNativeXr(env);
         });
 
         RuntimeImpl::BaseThreadProcedure();
