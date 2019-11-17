@@ -10,9 +10,9 @@ import { Color3 } from 'babylonjs/Maths/math.color';
 const NAME = "KHR_materials_sheen";
 
 interface IKHR_materials_sheen {
-    sheenFactor: number;
-    sheenColor: number[];
-    sheenTexture: ITextureInfo;
+    intensityFactor: number;
+    colorFactor: number[];
+    colorIntensityTexture: ITextureInfo;
 }
 
 /**
@@ -68,19 +68,19 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
 
         babylonMaterial.sheen.isEnabled = true;
 
-        if (properties.sheenFactor != undefined) {
-            babylonMaterial.sheen.intensity = properties.sheenFactor;
+        if (properties.intensityFactor != undefined) {
+            babylonMaterial.sheen.intensity = properties.intensityFactor;
         }
         else {
             babylonMaterial.sheen.intensity = 0;
         }
 
-        if (properties.sheenColor != undefined) {
-            babylonMaterial.sheen.color = Color3.FromArray(properties.sheenColor);
+        if (properties.colorFactor != undefined) {
+            babylonMaterial.sheen.color = Color3.FromArray(properties.colorFactor);
         }
 
-        if (properties.sheenTexture) {
-            promises.push(this._loader.loadTextureInfoAsync(`${context}/sheenTexture`, properties.sheenTexture, (texture) => {
+        if (properties.colorIntensityTexture) {
+            promises.push(this._loader.loadTextureInfoAsync(`${context}/sheenTexture`, properties.colorIntensityTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Sheen Intensity)`;
                 babylonMaterial.sheen.texture = texture;
             }));
