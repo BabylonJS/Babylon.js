@@ -757,17 +757,17 @@ var KHR_materials_sheen = /** @class */ (function () {
         }
         var promises = new Array();
         babylonMaterial.sheen.isEnabled = true;
-        if (properties.sheenFactor != undefined) {
-            babylonMaterial.sheen.intensity = properties.sheenFactor;
+        if (properties.intensityFactor != undefined) {
+            babylonMaterial.sheen.intensity = properties.intensityFactor;
         }
         else {
             babylonMaterial.sheen.intensity = 0;
         }
-        if (properties.sheenColor != undefined) {
-            babylonMaterial.sheen.color = babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(properties.sheenColor);
+        if (properties.colorFactor != undefined) {
+            babylonMaterial.sheen.color = babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(properties.colorFactor);
         }
-        if (properties.sheenTexture) {
-            promises.push(this._loader.loadTextureInfoAsync(context + "/sheenTexture", properties.sheenTexture, function (texture) {
+        if (properties.colorIntensityTexture) {
+            promises.push(this._loader.loadTextureInfoAsync(context + "/sheenTexture", properties.colorIntensityTexture, function (texture) {
                 texture.name = babylonMaterial.name + " (Sheen Intensity)";
                 babylonMaterial.sheen.texture = texture;
             }));
