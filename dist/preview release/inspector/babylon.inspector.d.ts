@@ -1794,6 +1794,7 @@ declare module INSPECTOR {
         noExpand?: boolean;
         onClose: () => void;
         onPopup: () => void;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
     }
     export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps> {
         private _once;

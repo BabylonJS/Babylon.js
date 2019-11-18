@@ -5,7 +5,7 @@ import { SceneExplorerComponent } from "../sceneExplorer/sceneExplorerComponent"
 import { ActionTabsComponent } from "../actionTabs/actionTabsComponent";
 import { Scene } from "babylonjs/scene";
 import { GlobalState } from "../../components/globalState";
-import { IExplorerExtensibilityGroup } from 'babylonjs';
+import { IExplorerExtensibilityGroup } from 'babylonjs/Debug/debugLayer';
 
 const Split = require('split.js').default;
 
