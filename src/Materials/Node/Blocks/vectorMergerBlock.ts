@@ -99,6 +99,22 @@ export class VectorMergerBlock extends NodeMaterialBlock {
         return this._outputs[2];
     }
 
+    /**
+     * Gets the xy component (output)
+     * @deprecated Please use xyOut instead
+     */
+    public get xy(): NodeMaterialConnectionPoint {
+        return this.xyOut;
+    }
+
+    /**
+     * Gets the xyz component (output)
+     * @deprecated Please use xyzOut instead
+     */
+    public get xyz(): NodeMaterialConnectionPoint {
+        return this.xyzOut;
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 

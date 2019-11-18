@@ -55668,6 +55668,11 @@ declare module BABYLON {
          * Gets the rgb component (output)
          */
         readonly rgbOut: NodeMaterialConnectionPoint;
+        /**
+         * Gets the rgb component (output)
+         * @deprecated Please use rgbOut instead
+         */
+        readonly rgb: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -55722,6 +55727,16 @@ declare module BABYLON {
          * Gets the xy component (output)
          */
         readonly xyOut: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xy component (output)
+         * @deprecated Please use xyOut instead
+         */
+        readonly xy: NodeMaterialConnectionPoint;
+        /**
+         * Gets the xyz component (output)
+         * @deprecated Please use xyzOut instead
+         */
+        readonly xyz: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
