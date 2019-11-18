@@ -18994,7 +18994,7 @@ declare module BABYLON {
         /** Gets the list of lights affecting that mesh */
         readonly lightSources: Light[];
         _resyncLightSources(): void;
-        _resyncLighSource(light: Light): void;
+        _resyncLightSource(light: Light): void;
         _removeLightSource(light: Light, dispose: boolean): void;
         /**
          * If the source mesh receives shadows
@@ -26624,7 +26624,7 @@ declare module BABYLON {
         /** @hidden */
         _resyncLightSources(): void;
         /** @hidden */
-        _resyncLighSource(light: Light): void;
+        _resyncLightSource(light: Light): void;
         /** @hidden */
         _unBindEffect(): void;
         /** @hidden */
