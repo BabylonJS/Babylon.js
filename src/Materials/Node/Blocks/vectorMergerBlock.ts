@@ -16,12 +16,12 @@ export class VectorMergerBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Neutral);
 
+        this.registerInput("xyz ", NodeMaterialBlockConnectionPointTypes.Vector3, true);
+        this.registerInput("xy ", NodeMaterialBlockConnectionPointTypes.Vector2, true);
         this.registerInput("x", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("y", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("z", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("w", NodeMaterialBlockConnectionPointTypes.Float, true);
-        this.registerInput("xy ", NodeMaterialBlockConnectionPointTypes.Vector2, true);
-        this.registerInput("xyz ", NodeMaterialBlockConnectionPointTypes.Vector3, true);
 
         this.registerOutput("xyzw", NodeMaterialBlockConnectionPointTypes.Vector4);
         this.registerOutput("xyz", NodeMaterialBlockConnectionPointTypes.Vector3);
@@ -34,47 +34,47 @@ export class VectorMergerBlock extends NodeMaterialBlock {
      */
     public getClassName() {
         return "VectorMergerBlock";
+    } 
+
+    /**
+     * Gets the xyz component (input)
+     */
+    public get xyzIn(): NodeMaterialConnectionPoint {
+        return this._inputs[0];
     }
+    
+    /**
+     * Gets the xy component (input)
+     */
+    public get xyIn(): NodeMaterialConnectionPoint {
+        return this._inputs[1];
+    }     
 
     /**
      * Gets the x component (input)
      */
     public get x(): NodeMaterialConnectionPoint {
-        return this._inputs[0];
+        return this._inputs[2];
     }
 
     /**
      * Gets the y component (input)
      */
     public get y(): NodeMaterialConnectionPoint {
-        return this._inputs[1];
+        return this._inputs[3];
     }
 
     /**
      * Gets the z component (input)
      */
     public get z(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
+        return this._inputs[4];
     }
 
     /**
      * Gets the w component (input)
      */
     public get w(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
-    }
-
-    /**
-     * Gets the xy component (input)
-     */
-    public get xyIn(): NodeMaterialConnectionPoint {
-        return this._inputs[4];
-    }    
-
-    /**
-     * Gets the xyz component (input)
-     */
-    public get xyzIn(): NodeMaterialConnectionPoint {
         return this._inputs[5];
     }
 

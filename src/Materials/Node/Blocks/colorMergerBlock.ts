@@ -16,11 +16,11 @@ export class ColorMergerBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment);
 
+        this.registerInput("rgb ", NodeMaterialBlockConnectionPointTypes.Color3, true);
         this.registerInput("r", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("g", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("b", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("a", NodeMaterialBlockConnectionPointTypes.Float, true);  
-        this.registerInput("rgb ", NodeMaterialBlockConnectionPointTypes.Color3, true);
 
         this.registerOutput("rgba", NodeMaterialBlockConnectionPointTypes.Color4);
         this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3);
@@ -35,37 +35,37 @@ export class ColorMergerBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the rgb component (input)
+     */
+    public get rgbIn(): NodeMaterialConnectionPoint {
+        return this._inputs[0];
+    }
+
+    /**
      * Gets the r component (input)
      */
     public get r(): NodeMaterialConnectionPoint {
-        return this._inputs[0];
+        return this._inputs[1];
     }
 
     /**
      * Gets the g component (input)
      */
     public get g(): NodeMaterialConnectionPoint {
-        return this._inputs[1];
+        return this._inputs[2];
     }
 
     /**
      * Gets the b component (input)
      */
     public get b(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
+        return this._inputs[3];
     }
 
     /**
      * Gets the a component (input)
      */
     public get a(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
-    }
-
-    /**
-     * Gets the rgb component (input)
-     */
-    public get rgbIn(): NodeMaterialConnectionPoint {
         return this._inputs[4];
     }
 
