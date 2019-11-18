@@ -21,7 +21,7 @@ export class WebXRDefaultExperienceOptions {
     /**
      * Enable or disable default UI to enter XR
      */
-    public disableDefaultUI: boolean;
+    public disableDefaultUI?: boolean;
 
     /**
      * optional configuration for the output canvas
