@@ -34,7 +34,7 @@ export class VectorMergerBlock extends NodeMaterialBlock {
      */
     public getClassName() {
         return "VectorMergerBlock";
-    } 
+    }
 
     /**
      * Gets the xyz component (input)
@@ -42,13 +42,13 @@ export class VectorMergerBlock extends NodeMaterialBlock {
     public get xyzIn(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
-    
+
     /**
      * Gets the xy component (input)
      */
     public get xyIn(): NodeMaterialConnectionPoint {
         return this._inputs[1];
-    }     
+    }
 
     /**
      * Gets the x component (input)
@@ -113,7 +113,7 @@ export class VectorMergerBlock extends NodeMaterialBlock {
         let v3Output = this._outputs[1];
         let v2Output = this._outputs[2];
 
-        if (xyInput.isConnected) {            
+        if (xyInput.isConnected) {
             if (v4Output.hasEndpoints) {
                 state.compilationString += this._declareOutput(v4Output, state) + ` = vec4(${xyInput.associatedVariableName}, ${zInput.isConnected ? this._writeVariable(zInput) : "0.0"}, ${wInput.isConnected ? this._writeVariable(wInput) : "0.0"});\r\n`;
             } else if (v3Output.hasEndpoints) {
@@ -128,7 +128,7 @@ export class VectorMergerBlock extends NodeMaterialBlock {
                 state.compilationString += this._declareOutput(v3Output, state) + ` = ${xyzInput.associatedVariableName};\r\n`;
             } else if (v2Output.hasEndpoints) {
                 state.compilationString += this._declareOutput(v2Output, state) + ` = ${xyzInput.associatedVariableName}.xy;\r\n`;
-            }            
+            }
         } else {
             if (v4Output.hasEndpoints) {
                 state.compilationString += this._declareOutput(v4Output, state) + ` = vec4(${xInput.isConnected ? this._writeVariable(xInput) : "0.0"}, ${yInput.isConnected ? this._writeVariable(yInput) : "0.0"}, ${zInput.isConnected ? this._writeVariable(zInput) : "0.0"}, ${wInput.isConnected ? this._writeVariable(wInput) : "0.0"});\r\n`;

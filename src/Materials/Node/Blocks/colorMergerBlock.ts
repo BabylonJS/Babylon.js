@@ -20,7 +20,7 @@ export class ColorMergerBlock extends NodeMaterialBlock {
         this.registerInput("r", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("g", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("b", NodeMaterialBlockConnectionPointTypes.Float, true);
-        this.registerInput("a", NodeMaterialBlockConnectionPointTypes.Float, true);  
+        this.registerInput("a", NodeMaterialBlockConnectionPointTypes.Float, true);
 
         this.registerOutput("rgba", NodeMaterialBlockConnectionPointTypes.Color4);
         this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3);
