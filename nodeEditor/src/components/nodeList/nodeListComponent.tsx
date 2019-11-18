@@ -119,7 +119,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         const allBlocks = {
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Basic_Math: ["AddBlock",  "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock", "OneMinusBlock", "MaxBlock", "MinBlock", "LengthBlock", "DistanceBlock", "NegateBlock", "RandomNumberBlock", "ReciprocalBlock"],
-            Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock"],
+            Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock"],
             Interpolation: ["LerpBlock", "StepBlock", "SmoothStepBlock", "NLerpBlock"],
@@ -147,7 +147,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
 
             if (blockList.length) {
                 blockMenu.push(
-                    <LineContainerComponent key={key + " blocks"} title={key.replace("_", " ")} closed={false}>
+                    <LineContainerComponent key={key + " blocks"} title={key.replace("__", ":").replace("_", " ")} closed={false}>
                         {blockList}
                     </LineContainerComponent>
                 );

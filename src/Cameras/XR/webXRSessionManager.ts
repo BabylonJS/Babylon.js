@@ -208,21 +208,7 @@ export class WebXRSessionManager implements IDisposable {
      * @returns true if supported
      */
     public supportsSessionAsync(sessionMode: XRSessionMode) {
-        if (!(navigator as any).xr) {
-            return Promise.resolve(false);
-        }
-        // When the specs are final, remove supportsSession!
-        const functionToUse = (navigator as any).xr.isSessionSupported || (navigator as any).xr.supportsSession;
-        if (!functionToUse) {
-            return Promise.resolve(false);
-        } else {
-            return functionToUse.call((navigator as any).xr, sessionMode).then(() => {
-                return Promise.resolve(true);
-            }).catch((e: any) => {
-                Logger.Warn(e);
-                return Promise.resolve(false);
-            });
-        }
+        return WebXRSessionManager.IsSessionSupportedAsync(sessionMode);
     }
 
     /**
@@ -269,5 +255,28 @@ export class WebXRSessionManager implements IDisposable {
     public dispose() {
         this.onXRFrameObservable.clear();
         this.onXRSessionEnded.clear();
+    }
+
+    /**
+     * Gets a promise returning true when fullfiled if the given session mode is supported
+     * @param sessionMode defines the session to test
+     * @returns a promise
+     */
+    public static IsSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean> {
+        if (!(navigator as any).xr) {
+            return Promise.resolve(false);
+        }
+        // When the specs are final, remove supportsSession!
+        const functionToUse = (navigator as any).xr.isSessionSupported || (navigator as any).xr.supportsSession;
+        if (!functionToUse) {
+            return Promise.resolve(false);
+        } else {
+            return functionToUse.call((navigator as any).xr, sessionMode).then(() => {
+                return Promise.resolve(true);
+            }).catch((e: any) => {
+                Logger.Warn(e);
+                return Promise.resolve(false);
+            });
+        }
     }
 }
