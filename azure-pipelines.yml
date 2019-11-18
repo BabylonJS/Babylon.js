@@ -88,7 +88,7 @@ jobs:
     
 - job: win32_x86    
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-latest'
 
   steps:
   - script: |
@@ -98,7 +98,7 @@ jobs:
   - script: |
       mkdir buildWin32_x86
       cd buildWin32_x86
-      cmake .. -G "Visual Studio 15 2017"
+      cmake .. -G "Visual Studio 16 2019" -A Win32
     displayName: 'Generate Win32_x86 solution'
     
   - task: MSBuild@1
@@ -156,7 +156,7 @@ jobs:
 
 - job: uwp_x86
   pool:
-    vmImage: 'vs2017-win2016'  
+    vmImage: 'windows-latest'  
 
   steps:
   - script: |
@@ -166,7 +166,7 @@ jobs:
   - script: |
       mkdir buildUWP_x86
       cd buildUWP_x86
-      cmake .. -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -G "Visual Studio 15 2017"
+      cmake .. -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -G "Visual Studio 16 2019" -A Win32
     displayName: 'Generate UWP_x86 solution'
 
   - task: VSBuild@1
