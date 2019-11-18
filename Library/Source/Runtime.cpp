@@ -38,17 +38,9 @@ namespace babylon
         m_impl->Eval(string, url);
     }
 
-    void Runtime::Execute(std::function<void(Runtime&)> func)
+    void Runtime::Dispatch(std::function<void(Env&)> func)
     {
-        m_impl->Execute([this, func = std::move(func)](auto&)
-        {
-            func(*this);
-        });
-    }
-
-    babylon::Env& Runtime::Env() const
-    {
-        return m_impl->Env();
+        m_impl->Dispatch(func);
     }
 
     const std::string& Runtime::RootUrl() const

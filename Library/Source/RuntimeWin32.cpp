@@ -30,9 +30,9 @@ namespace babylon
         assert(SUCCEEDED(hr));
         auto coInitializeScopeGuard = gsl::finally([] { CoUninitialize(); });
 
-        Execute([](RuntimeImpl& runtime)
+        Dispatch([](Env& env)
         {
-            InitializeNativeXr(runtime.Env());
+            InitializeNativeXr(env);
         });
 
         RuntimeImpl::BaseThreadProcedure();
