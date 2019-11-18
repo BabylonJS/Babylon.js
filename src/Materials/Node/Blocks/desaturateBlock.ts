@@ -56,8 +56,8 @@ export class DesaturateBlock extends NodeMaterialBlock {
         let color = this.color;
         let colorName = color.associatedVariableName;
         let tempMin = state._getFreeVariableName("colorMin");
-        let tempMax= state._getFreeVariableName("colorMax");
-        let tempMerge= state._getFreeVariableName("colorMerge");
+        let tempMax = state._getFreeVariableName("colorMax");
+        let tempMerge = state._getFreeVariableName("colorMerge");
 
         state.compilationString += `float ${tempMin} = min(min(${colorName}.x, ${colorName}.y), ${colorName}.z);\r\n`;
         state.compilationString += `float ${tempMax} = max(max(${colorName}.x, ${colorName}.y), ${colorName}.z);\r\n`;

@@ -91,7 +91,9 @@ export interface VRExperienceHelperOptions extends WebVROptions {
      * Distortion metrics for the fallback vrDeviceOrientationCamera (default: VRCameraMetrics.Default)
      */
     vrDeviceOrientationCameraMetrics?: VRCameraMetrics;
-
+    /**
+     * Defines if WebXR should be used instead of WebVR (if available)
+     */
     useXR?: boolean;
 }
 
@@ -771,7 +773,7 @@ export class VRExperienceHelper {
 
         if (this.webVROptions.useXR && (navigator as any).xr) {
             // force-check XR session support
-            WebXRSessionManager.IsSessionSupported("immersive-vr").then((supported) => {
+            WebXRSessionManager.IsSessionSupportedAsync("immersive-vr").then((supported) => {
                 if (supported) {
                     Logger.Log("Using WebXR. It is recommended to use the WebXRDefaultExperience directly");
                     // it is possible to use XR, let's do it!

@@ -208,7 +208,7 @@ export class WebXRSessionManager implements IDisposable {
      * @returns true if supported
      */
     public supportsSessionAsync(sessionMode: XRSessionMode) {
-        return WebXRSessionManager.IsSessionSupported(sessionMode);
+        return WebXRSessionManager.IsSessionSupportedAsync(sessionMode);
     }
 
     /**
@@ -257,7 +257,12 @@ export class WebXRSessionManager implements IDisposable {
         this.onXRSessionEnded.clear();
     }
 
-    public static IsSessionSupported(sessionMode: XRSessionMode): Promise<boolean> {
+    /**
+     * Gets a promise returning true when fullfiled if the given session mode is supported
+     * @param sessionMode defines the session to test
+     * @returns a promise
+     */
+    public static IsSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean> {
         if (!(navigator as any).xr) {
             return Promise.resolve(false);
         }
