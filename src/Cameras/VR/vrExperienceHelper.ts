@@ -36,6 +36,10 @@ import "../../Meshes/Builders/cylinderBuilder";
 import "../../Gamepads/gamepadSceneComponent";
 import "../../Animations/animatable";
 import { Axis } from '../../Maths/math.axis';
+import { WebXRSessionManager } from '../XR/webXRSessionManager';
+import { WebXRDefaultExperience } from '../XR/webXRDefaultExperience';
+import { WebXRState } from '../XR/webXRTypes';
+import { WebXRControllerTeleportation } from '../XR/webXRControllerTeleportation';
 
 /**
  * Options to modify the vr teleportation behavior.
@@ -87,6 +91,10 @@ export interface VRExperienceHelperOptions extends WebVROptions {
      * Distortion metrics for the fallback vrDeviceOrientationCamera (default: VRCameraMetrics.Default)
      */
     vrDeviceOrientationCameraMetrics?: VRCameraMetrics;
+    /**
+     * Defines if WebXR should be used instead of WebVR (if available)
+     */
+    useXR?: boolean;
 }
 
 class VRExperienceHelperGazer implements IDisposable {
@@ -425,7 +433,7 @@ export class VRExperienceHelper {
      * Observable raised when a new mesh is selected based on meshSelectionPredicate.
      * This observable will provide the mesh and the controller used to select the mesh
      */
-    public onMeshSelectedWithController = new Observable<{mesh: AbstractMesh, controller: WebVRController}>();
+    public onMeshSelectedWithController = new Observable<{ mesh: AbstractMesh, controller: WebVRController }>();
 
     /**
      * Observable raised when a new mesh is picked based on meshSelectionPredicate
@@ -672,6 +680,19 @@ export class VRExperienceHelper {
      */
     public requestPointerLockOnFullScreen = true;
 
+    // XR
+
+    /**
+     * If asking to force XR, this will be populated with the default xr experience
+     */
+    public xr: WebXRDefaultExperience;
+
+    /**
+     * Was the XR test done already. If this is true AND this.xr exists, xr is initialized.
+     * If this is true and no this.xr, xr exists but is not supported, using WebVR.
+     */
+    public xrTestDone: boolean = false;
+
     /**
      * Instantiates a VRExperienceHelper.
      * Helps to quickly add VR support to an existing scene.
@@ -750,6 +771,98 @@ export class VRExperienceHelper {
             this._existingCamera = this._scene.activeCamera;
         }
 
+        if (this.webVROptions.useXR && (navigator as any).xr) {
+            // force-check XR session support
+            WebXRSessionManager.IsSessionSupportedAsync("immersive-vr").then((supported) => {
+                if (supported) {
+                    Logger.Log("Using WebXR. It is recommended to use the WebXRDefaultExperience directly");
+                    // it is possible to use XR, let's do it!
+                    scene.createDefaultXRExperienceAsync({
+                        floorMeshes: webVROptions.floorMeshes || []
+                    }).then((xr) => {
+                        this.xr = xr;
+                        // connect observables
+                        this.xrTestDone = true;
+
+                        this._cameraGazer = new VRExperienceHelperCameraGazer(() => { return this.xr.baseExperience.camera; }, scene);
+
+                        this.xr.baseExperience.onStateChangedObservable.add((state) => {
+                            // support for entering / exiting
+                            switch (state) {
+                                case WebXRState.ENTERING_XR:
+                                    this.onEnteringVRObservable.notifyObservers(this);
+                                    if (this._interactionsEnabled) {
+                                        this._scene.registerBeforeRender(this.beforeRender);
+                                    }
+                                    if (this._displayLaserPointer) {
+                                        [this._leftController, this._rightController].forEach((controller) => {
+                                            if (controller) {
+                                                controller._activatePointer();
+                                            }
+                                        });
+                                    }
+                                    break;
+                                case WebXRState.EXITING_XR:
+                                    this.onExitingVRObservable.notifyObservers(this);
+                                    if (this._interactionsEnabled) {
+                                        this._scene.unregisterBeforeRender(this.beforeRender);
+                                        this._cameraGazer._gazeTracker.isVisible = false;
+                                        if (this._leftController) {
+                                            this._leftController._gazeTracker.isVisible = false;
+                                        }
+                                        if (this._rightController) {
+                                            this._rightController._gazeTracker.isVisible = false;
+                                        }
+                                    }
+
+                                    // resize to update width and height when exiting vr exits fullscreen
+                                    this._scene.getEngine().resize();
+
+                                    [this._leftController, this._rightController].forEach((controller) => {
+                                        if (controller) {
+                                            controller._deactivatePointer();
+                                        }
+                                    });
+                                    break;
+                                case WebXRState.IN_XR:
+                                    this._hasEnteredVR = true;
+                                    break;
+                                case WebXRState.NOT_IN_XR:
+                                    this._hasEnteredVR = false;
+                                    break;
+                            }
+                        });
+
+                        this.xr.input.onControllerAddedObservable.add((controller) => {
+                            var webVRController = controller.gamepadController;
+                            if (webVRController) {
+                                var localController = new VRExperienceHelperControllerGazer(webVRController, this._scene, this._cameraGazer._gazeTracker);
+
+                                if (controller.inputSource.handedness === "right" || (this._leftController && this._leftController.webVRController != webVRController)) {
+                                    this._rightController = localController;
+                                } else {
+                                    this._leftController = localController;
+                                }
+
+                                this._tryEnableInteractionOnController(localController);
+                            }
+                        });
+                    });
+                } else {
+                    // XR not supported (thou exists), continue WebVR init
+                    this.completeVRInit(scene, webVROptions);
+                }
+            });
+        } else {
+            // no XR, continue init synchronous
+            this.completeVRInit(scene, webVROptions);
+        }
+
+    }
+
+    private completeVRInit(scene: Scene,
+        webVROptions: VRExperienceHelperOptions): void {
+        this.xrTestDone = true;
         // Create VR cameras
         if (webVROptions.createFallbackVRDeviceOrientationFreeCamera) {
             if (webVROptions.useMultiview) {
@@ -771,7 +884,8 @@ export class VRExperienceHelper {
             this._btnVR.className = "babylonVRicon";
             this._btnVR.id = "babylonVRiconbtn";
             this._btnVR.title = "Click to switch to VR";
-            var css = ".babylonVRicon { position: absolute; right: 20px; height: 50px; width: 80px; background-color: rgba(51,51,51,0.7); background-image: url(data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%222048%22%20height%3D%221152%22%20viewBox%3D%220%200%202048%201152%22%20version%3D%221.1%22%3E%3Cpath%20transform%3D%22rotate%28180%201024%2C576.0000000000001%29%22%20d%3D%22m1109%2C896q17%2C0%2030%2C-12t13%2C-30t-12.5%2C-30.5t-30.5%2C-12.5l-170%2C0q-18%2C0%20-30.5%2C12.5t-12.5%2C30.5t13%2C30t30%2C12l170%2C0zm-85%2C256q59%2C0%20132.5%2C-1.5t154.5%2C-5.5t164.5%2C-11.5t163%2C-20t150%2C-30t124.5%2C-41.5q23%2C-11%2042%2C-24t38%2C-30q27%2C-25%2041%2C-61.5t14%2C-72.5l0%2C-257q0%2C-123%20-47%2C-232t-128%2C-190t-190%2C-128t-232%2C-47l-81%2C0q-37%2C0%20-68.5%2C14t-60.5%2C34.5t-55.5%2C45t-53%2C45t-53%2C34.5t-55.5%2C14t-55.5%2C-14t-53%2C-34.5t-53%2C-45t-55.5%2C-45t-60.5%2C-34.5t-68.5%2C-14l-81%2C0q-123%2C0%20-232%2C47t-190%2C128t-128%2C190t-47%2C232l0%2C257q0%2C68%2038%2C115t97%2C73q54%2C24%20124.5%2C41.5t150%2C30t163%2C20t164.5%2C11.5t154.5%2C5.5t132.5%2C1.5zm939%2C-298q0%2C39%20-24.5%2C67t-58.5%2C42q-54%2C23%20-122%2C39.5t-143.5%2C28t-155.5%2C19t-157%2C11t-148.5%2C5t-129.5%2C1.5q-59%2C0%20-130%2C-1.5t-148%2C-5t-157%2C-11t-155.5%2C-19t-143.5%2C-28t-122%2C-39.5q-34%2C-14%20-58.5%2C-42t-24.5%2C-67l0%2C-257q0%2C-106%2040.5%2C-199t110%2C-162.5t162.5%2C-109.5t199%2C-40l81%2C0q27%2C0%2052%2C14t50%2C34.5t51%2C44.5t55.5%2C44.5t63.5%2C34.5t74%2C14t74%2C-14t63.5%2C-34.5t55.5%2C-44.5t51%2C-44.5t50%2C-34.5t52%2C-14l14%2C0q37%2C0%2070%2C0.5t64.5%2C4.5t63.5%2C12t68%2C23q71%2C30%20128.5%2C78.5t98.5%2C110t63.5%2C133.5t22.5%2C149l0%2C257z%22%20fill%3D%22white%22%20/%3E%3C/svg%3E%0A); background-size: 80%; background-repeat:no-repeat; background-position: center; border: none; outline: none; transition: transform 0.125s ease-out } .babylonVRicon:hover { transform: scale(1.05) } .babylonVRicon:active {background-color: rgba(51,51,51,1) } .babylonVRicon:focus {background-color: rgba(51,51,51,1) }";
+            const url = !window.SVGSVGElement ? "https://cdn.babylonjs.com/Assets/vrButton.png" : "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%222048%22%20height%3D%221152%22%20viewBox%3D%220%200%202048%201152%22%20version%3D%221.1%22%3E%3Cpath%20transform%3D%22rotate%28180%201024%2C576.0000000000001%29%22%20d%3D%22m1109%2C896q17%2C0%2030%2C-12t13%2C-30t-12.5%2C-30.5t-30.5%2C-12.5l-170%2C0q-18%2C0%20-30.5%2C12.5t-12.5%2C30.5t13%2C30t30%2C12l170%2C0zm-85%2C256q59%2C0%20132.5%2C-1.5t154.5%2C-5.5t164.5%2C-11.5t163%2C-20t150%2C-30t124.5%2C-41.5q23%2C-11%2042%2C-24t38%2C-30q27%2C-25%2041%2C-61.5t14%2C-72.5l0%2C-257q0%2C-123%20-47%2C-232t-128%2C-190t-190%2C-128t-232%2C-47l-81%2C0q-37%2C0%20-68.5%2C14t-60.5%2C34.5t-55.5%2C45t-53%2C45t-53%2C34.5t-55.5%2C14t-55.5%2C-14t-53%2C-34.5t-53%2C-45t-55.5%2C-45t-60.5%2C-34.5t-68.5%2C-14l-81%2C0q-123%2C0%20-232%2C47t-190%2C128t-128%2C190t-47%2C232l0%2C257q0%2C68%2038%2C115t97%2C73q54%2C24%20124.5%2C41.5t150%2C30t163%2C20t164.5%2C11.5t154.5%2C5.5t132.5%2C1.5zm939%2C-298q0%2C39%20-24.5%2C67t-58.5%2C42q-54%2C23%20-122%2C39.5t-143.5%2C28t-155.5%2C19t-157%2C11t-148.5%2C5t-129.5%2C1.5q-59%2C0%20-130%2C-1.5t-148%2C-5t-157%2C-11t-155.5%2C-19t-143.5%2C-28t-122%2C-39.5q-34%2C-14%20-58.5%2C-42t-24.5%2C-67l0%2C-257q0%2C-106%2040.5%2C-199t110%2C-162.5t162.5%2C-109.5t199%2C-40l81%2C0q27%2C0%2052%2C14t50%2C34.5t51%2C44.5t55.5%2C44.5t63.5%2C34.5t74%2C14t74%2C-14t63.5%2C-34.5t55.5%2C-44.5t51%2C-44.5t50%2C-34.5t52%2C-14l14%2C0q37%2C0%2070%2C0.5t64.5%2C4.5t63.5%2C12t68%2C23q71%2C30%20128.5%2C78.5t98.5%2C110t63.5%2C133.5t22.5%2C149l0%2C257z%22%20fill%3D%22white%22%20/%3E%3C/svg%3E%0A";
+            var css = ".babylonVRicon { position: absolute; right: 20px; height: 50px; width: 80px; background-color: rgba(51,51,51,0.7); background-image: url(" + url + "); background-size: 80%; background-repeat:no-repeat; background-position: center; border: none; outline: none; transition: transform 0.125s ease-out } .babylonVRicon:hover { transform: scale(1.05) } .babylonVRicon:active {background-color: rgba(51,51,51,1) } .babylonVRicon:focus {background-color: rgba(51,51,51,1) }";
             css += ".babylonVRicon.vrdisplaypresenting { display: none; }";
             // TODO: Add user feedback so that they know what state the VRDisplay is in (disconnected, connected, entering-VR)
             // css += ".babylonVRicon.vrdisplaysupported { }";
@@ -944,7 +1058,7 @@ export class VRExperienceHelper {
      * Gets a value indicating if we are currently in VR mode.
      */
     public get isInVRMode(): boolean {
-        return this._webVRpresenting || this._fullscreenVRpresenting;
+        return (this.xr && this.webVROptions.useXR && this.xr.baseExperience.state === WebXRState.IN_XR) || (this._webVRpresenting || this._fullscreenVRpresenting);
     }
 
     private onVrDisplayPresentChange() {
@@ -1006,6 +1120,10 @@ export class VRExperienceHelper {
      * Otherwise, will use the fullscreen API.
      */
     public enterVR() {
+        if (this.xr) {
+            this.xr.baseExperience.enterXRAsync("immersive-vr", "local-floor", this.xr.renderTarget);
+            return;
+        }
         if (this.onEnteringVRObservable) {
             try {
                 this.onEnteringVRObservable.notifyObservers(this);
@@ -1098,6 +1216,10 @@ export class VRExperienceHelper {
      * Attempt to exit VR, or fullscreen.
      */
     public exitVR() {
+        if (this.xr) {
+            this.xr.baseExperience.exitXRAsync();
+            return;
+        }
         if (this._hasEnteredVR) {
             if (this.onExitingVRObservable) {
                 try {
@@ -1317,6 +1439,42 @@ export class VRExperienceHelper {
             this._teleportationRequested = true;
 
             this.enableInteractions();
+
+            if (this.webVROptions.useXR && (vrTeleportationOptions.floorMeshes || vrTeleportationOptions.floorMeshName)) {
+                const floorMeshes: AbstractMesh[] = vrTeleportationOptions.floorMeshes || [];
+                if (!floorMeshes.length) {
+                    const floorMesh = this._scene.getMeshByName(vrTeleportationOptions.floorMeshName!);
+                    if (floorMesh) {
+                        floorMeshes.push(floorMesh);
+                    }
+                }
+                if (this.xr) {
+                    this.xr.teleportation = new WebXRControllerTeleportation(this.xr.input, floorMeshes);
+                    return;
+                } else if (!this.xrTestDone) {
+                    const waitForXr = () => {
+                        if (this.xrTestDone) {
+                            this._scene.unregisterBeforeRender(waitForXr);
+                            if (this.xr) {
+                                this.xr.teleportation = new WebXRControllerTeleportation(this.xr.input, floorMeshes);
+                            } else {
+                                this.enableTeleportation(vrTeleportationOptions);
+                            }
+                        }
+                    };
+                    this._scene.registerBeforeRender(waitForXr);
+                    return;
+                }
+            }
+
+            if (this.xr && vrTeleportationOptions.floorMeshes) {
+                this.xr.teleportation = new WebXRControllerTeleportation(this.xr.input, vrTeleportationOptions.floorMeshes);
+                return;
+            } else {
+                if (this.webVROptions.useXR && !this.xrTestDone) {
+
+                }
+            }
 
             if (vrTeleportationOptions.floorMeshName) {
                 this._floorMeshName = vrTeleportationOptions.floorMeshName;
@@ -2039,7 +2197,7 @@ export class VRExperienceHelper {
                         this.onNewMeshSelected.notifyObservers(hit.pickedMesh);
                         let gazerAsControllerGazer = gazer as VRExperienceHelperControllerGazer;
                         if (gazerAsControllerGazer.webVRController) {
-                            this.onMeshSelectedWithController.notifyObservers({mesh: hit.pickedMesh, controller: gazerAsControllerGazer.webVRController});
+                            this.onMeshSelectedWithController.notifyObservers({ mesh: hit.pickedMesh, controller: gazerAsControllerGazer.webVRController });
                         }
                     }
                     catch (err) {
@@ -2125,7 +2283,7 @@ export class VRExperienceHelper {
         if (this._vrDeviceOrientationCamera) {
             this._vrDeviceOrientationCamera.dispose();
         }
-        if (!this._useCustomVRButton  && this._btnVR && this._btnVR.parentNode) {
+        if (!this._useCustomVRButton && this._btnVR && this._btnVR.parentNode) {
             document.body.removeChild(this._btnVR);
         }
 
@@ -2145,6 +2303,10 @@ export class VRExperienceHelper {
 
         if (this._teleportationTarget) {
             this._teleportationTarget.dispose();
+        }
+
+        if (this.xr) {
+            this.xr.dispose();
         }
 
         this._floorMeshesCollection = [];

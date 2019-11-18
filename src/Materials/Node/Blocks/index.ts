@@ -44,3 +44,4 @@ export * from "./normalBlendBlock";
 export * from "./rotate2dBlock";
 export * from "./reflectBlock";
 export * from "./refractBlock";
+export * from "./desaturateBlock";
