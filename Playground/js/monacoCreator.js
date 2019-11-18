@@ -51,7 +51,7 @@ class MonacoCreator {
      * Load the Monaco Node module.
      */
     async loadMonaco(typings) {
-        let response = await fetch(typings || "babylon.d.txt");
+        let response = await fetch(typings || "https://preview.babylonjs.com/babylon.d.ts");
         if (!response.ok)
             return;
 
@@ -77,16 +77,20 @@ class MonacoCreator {
             return !suggestion.label.startsWith("_");
         }
 
-        provider.prototype.provideCompletionItems = function(model, position, context, token) {
+        provider.prototype.provideCompletionItems = async function(model, position, context, token) {
             // reuse 'this' to preserve context through call (using apply)
-            return hooked
-                .apply(this, [model, position, context, token])
-                .then(result => {
-                    if (!result.suggestions)
-                        return result;
+            var result = await hooked.apply(this, [model, position, context, token]);
+            
+            if (!result || !result.suggestions)
+                return result;
 
-                    return { suggestions: result.suggestions.filter(suggestionFilter)};
-                });
+            const suggestions = result.suggestions.filter(suggestionFilter);
+            const incomplete = result.incomplete && result.incomplete == true;
+
+            return { 
+                suggestions: suggestions,
+                incomplete: incomplete
+            };
         }
     }
 
