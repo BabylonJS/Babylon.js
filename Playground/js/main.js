@@ -42,7 +42,7 @@ compileAndRun = function(parent, fpsLabel) {
         parent.menuPG.showBJSPGMenu();
         parent.monacoCreator.JsEditor.updateOptions({ readOnly: false });
 
-        if (BABYLON.Engine.LastCreatedScene && BABYLON.Engine.LastCreatedScene.debugLayer.isVisible()) {
+        if (BABYLON.Engine.LastCreatedScene && BABYLON.Engine.LastCreatedScene.debugLayer && BABYLON.Engine.LastCreatedScene.debugLayer.isVisible()) {
             showInspector = true;
         }
 

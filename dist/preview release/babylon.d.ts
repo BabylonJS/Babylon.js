@@ -16025,7 +16025,7 @@ declare module BABYLON {
          * Get the current texture matrix which includes the requested offsetting, tiling and rotation components.
          * @returns the transform matrix of the texture.
          */
-        getTextureMatrix(): Matrix;
+        getTextureMatrix(uBase?: number): Matrix;
         /**
          * Get the current matrix used to apply reflection. This is useful to rotate an environment texture for instance.
          * @returns The reflection texture transform
@@ -25595,6 +25595,11 @@ declare module BABYLON {
         private _isNotBuilt;
         private _lastParticleId;
         private _idxOfId;
+        private _multimaterialEnabled;
+        private _indicesByMaterial;
+        private _materialIndexes;
+        private _depthSortFunction;
+        private _materialSortFunction;
         /**
          * Creates a SPS (Solid Particle System) object.
          * @param name (String) is the SPS name, this will be the underlying mesh name.
@@ -25603,6 +25608,7 @@ declare module BABYLON {
          * * updatable (optional boolean, default true) : if the SPS must be updatable or immutable.
          * * isPickable (optional boolean, default false) : if the solid particles must be pickable.
          * * enableDepthSort (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.
+         * * enableMultiMaterial (optional boolean, default false) : if the solid particles can be given different materials.
          * * expandable (optional boolean, default false) : if particles can still be added after the initial SPS mesh creation.
          * * particleIntersection (optional boolean, default false) : if the solid particle intersections must be computed.
          * * boundingSphereOnly (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
@@ -25617,6 +25623,7 @@ declare module BABYLON {
             boundingSphereOnly?: boolean;
             bSphereRadiusFactor?: number;
             expandable?: boolean;
+            enableMultiMaterial?: boolean;
         });
         /**
          * Builds the SPS underlying mesh. Returns a standard Mesh.
@@ -25654,6 +25661,7 @@ declare module BABYLON {
         /**
          * Inserts the shape model geometry in the global SPS mesh by updating the positions, indices, normals, colors, uvs arrays
          * @param p the current index in the positions array to be updated
+         * @param ind the current index in the indices array
          * @param shape a Vector3 array, the shape geometry
          * @param positions the positions array to be updated
          * @param meshInd the shape indices array
@@ -25794,6 +25802,21 @@ declare module BABYLON {
          */
         getParticlesByShapeIdToRef(shapeId: number, ref: SolidParticle[]): SolidParticleSystem;
         /**
+         * Computes the required SubMeshes according the materials assigned to the particles.
+         * @returns the solid particle system.
+         * Does nothing if called before the SPS mesh is built.
+         */
+        computeSubMeshes(): SolidParticleSystem;
+        /**
+         * Sorts the solid particles by material when MultiMaterial is enabled.
+         * Updates the indices32 array.
+         * Updates the indicesByMaterial array.
+         * Updates the mesh indices array.
+         * @returns the SPS
+         * @hidden
+         */
+        private _sortParticlesByMaterial;
+        /**
          * Visibilty helper : Recomputes the visible size according to the mesh bounding box
          * doc : http://doc.babylonjs.com/how_to/Solid_Particle_System#sps-visibility
          * @returns the SPS.
@@ -25886,6 +25909,10 @@ declare module BABYLON {
          * Default : `false`
          */
         readonly expandable: boolean;
+        /**
+         * Gets if the SPS supports the Multi Materials
+         */
+        readonly multimaterialEnabled: boolean;
         /**
          * This function does nothing. It may be overwritten to set all the particle first values.
          * The SPS doesn't call this function, you may have to call it by your own.
@@ -26045,6 +26072,10 @@ declare module BABYLON {
          */
         parentId: Nullable<number>;
         /**
+         * The particle material identifier (integer) when MultiMaterials are enabled in the SPS.
+         */
+        materialIndex: Nullable<number>;
+        /**
          * The culling strategy to use to check whether the solid particle must be culled or not when using isInFrustum().
          * The possible values are :
          * - AbstractMesh.CULLINGSTRATEGY_STANDARD
@@ -26071,8 +26102,9 @@ declare module BABYLON {
          * @param idxInShape (integer) is the index of the particle in the current model (ex: the 10th box of addShape(box, 30))
          * @param sps defines the sps it is associated to
          * @param modelBoundingInfo is the reference to the model BoundingInfo used for intersection computations.
+         * @param materialIndex is the particle material identifier (integer) when the MultiMaterials are enabled in the SPS.
          */
-        constructor(particleIndex: number, particleId: number, positionIndex: number, indiceIndex: number, model: Nullable<ModelShape>, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo?: Nullable<BoundingInfo>);
+        constructor(particleIndex: number, particleId: number, positionIndex: number, indiceIndex: number, model: Nullable<ModelShape>, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo?: Nullable<BoundingInfo>, materialIndex?: Nullable<number>);
         /**
          * Copies the particle property values into the existing target : position, rotation, scaling, uvs, colors, pivot, parent, visibility, alive
          * @param target the particle target
@@ -26172,6 +26204,7 @@ declare module BABYLON {
     }
     /**
      * Represents a Depth Sorted Particle in the solid particle system.
+     * @hidden
      */
     export class DepthSortedParticle {
         /**
@@ -26186,6 +26219,15 @@ declare module BABYLON {
          * Squared distance from the particle to the camera
          */
         sqDistance: number;
+        /**
+         * Material index when used with MultiMaterials
+         */
+        materialIndex: number;
+        /**
+         * Creates a new sorted particle
+         * @param materialIndex
+         */
+        constructor(ind: number, indLength: number, materialIndex: number);
     }
 }
 declare module BABYLON {
@@ -29381,6 +29423,8 @@ declare module BABYLON {
         deterministicLockstep?: boolean;
         /** Defines the maximum steps to use with deterministic lock step mode */
         lockstepMaxSteps?: number;
+        /** Defines the seconds between each deterministic lock step */
+        timeStep?: number;
         /**
          * Defines that engine should ignore context lost events
          * If this event happens when this parameter is true, you will have to reload the page to restore rendering
@@ -30381,6 +30425,11 @@ declare module BABYLON {
          * @returns frame number
          */
         static QueueNewFrame(func: () => void, requester?: any): number;
+        /**
+         * Gets host document
+         * @returns the host document object
+         */
+        getHostDocument(): Document;
     }
 }
 declare module BABYLON {
@@ -31682,6 +31731,7 @@ declare module BABYLON {
         protected _alphaEquation: number;
         private _deterministicLockstep;
         private _lockstepMaxSteps;
+        private _timeStep;
         protected readonly _supportsHardwareTextureRescaling: boolean;
         private _fps;
         private _deltaTime;
@@ -31730,11 +31780,6 @@ declare module BABYLON {
          */
         getScreenAspectRatio(): number;
         /**
-         * Gets host document
-         * @returns the host document object
-         */
-        getHostDocument(): Document;
-        /**
          * Gets the client rect of the HTML canvas attached with the current webGL context
          * @returns a client rectanglee
          */
@@ -31756,6 +31801,11 @@ declare module BABYLON {
          * @returns the max steps
          */
         getLockstepMaxSteps(): number;
+        /**
+         * Returns the time in ms between steps when using deterministic lock step.
+         * @returns time step in (ms)
+         */
+        getTimeStep(): number;
         /**
          * Force the mipmap generation for the given render target texture
          * @param texture defines the render target texture to use
@@ -54016,6 +54066,7 @@ declare module BABYLON {
         autoConfigure(material: NodeMaterial): void;
         initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
+        private _getTextureBase;
         isReady(): boolean;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         private readonly _isMixed;
@@ -55076,6 +55127,36 @@ declare module BABYLON {
          * Gets the output component
          */
         readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get the derivative value on x and y of a given input
+     */
+    export class DerivativeBlock extends NodeMaterialBlock {
+        /**
+         * Create a new DerivativeBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        readonly input: NodeMaterialConnectionPoint;
+        /**
+         * Gets the derivative output on x
+         */
+        readonly dx: NodeMaterialConnectionPoint;
+        /**
+         * Gets the derivative output on y
+         */
+        readonly dy: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }
@@ -56559,6 +56640,70 @@ declare module BABYLON {
          */
         readonly output: NodeMaterialConnectionPoint;
         autoConfigure(material: NodeMaterial): void;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get the reflected vector from a direction and a normal
+     */
+    export class ReflectBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new ReflectBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the incident component
+         */
+        readonly incident: NodeMaterialConnectionPoint;
+        /**
+         * Gets the normal component
+         */
+        readonly normal: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+    }
+}
+declare module BABYLON {
+    /**
+     * Block used to get the refracted vector from a direction and a normal
+     */
+    export class RefractBlock extends NodeMaterialBlock {
+        /**
+         * Creates a new RefractBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the incident component
+         */
+        readonly incident: NodeMaterialConnectionPoint;
+        /**
+         * Gets the normal component
+         */
+        readonly normal: NodeMaterialConnectionPoint;
+        /**
+         * Gets the index of refraction component
+         */
+        readonly ior: NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        readonly output: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
     }
 }

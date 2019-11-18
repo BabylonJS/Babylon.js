@@ -50,26 +50,49 @@ class MonacoCreator {
     /**
      * Load the Monaco Node module.
      */
-    loadMonaco(typings) {
-        var xhr = new XMLHttpRequest();
+    async loadMonaco(typings) {
+        let response = await fetch(typings || "https://preview.babylonjs.com/babylon.d.ts");
+        if (!response.ok)
+            return;
 
-        xhr.open('GET', typings || "babylon.d.txt", true);
+        const libContent = await response.text();
+        require.config({ paths: { 'vs': 'node_modules/monaco-editor/dev/vs' } });
 
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
-                    require.config({ paths: { 'vs': 'node_modules/monaco-editor/min/vs' } });
-                    require(['vs/editor/editor.main'], function () {
-                        this.setupMonacoCompilationPipeline(xhr.responseText);
-                        this.setupMonacoColorProvider();
+        require(['vs/editor/editor.main'], () => {
+            this.setupMonacoCompilationPipeline(libContent);
+            this.setupMonacoColorProvider();
 
-                        this.parent.main.run();
-                    }.bind(this));
-                }
-            }
-        }.bind(this);
-        xhr.send(null);
+            require(['vs/language/typescript/languageFeatures'], module => {
+                this.hookMonacoCompletionProvider(module.SuggestAdapter);
+            });
+
+            this.parent.main.run();
+        });
     };
+
+    hookMonacoCompletionProvider(provider) {
+        const hooked = provider.prototype.provideCompletionItems;
+
+        const suggestionFilter = function(suggestion) {
+            return !suggestion.label.startsWith("_");
+        }
+
+        provider.prototype.provideCompletionItems = async function(model, position, context, token) {
+            // reuse 'this' to preserve context through call (using apply)
+            var result = await hooked.apply(this, [model, position, context, token]);
+            
+            if (!result || !result.suggestions)
+                return result;
+
+            const suggestions = result.suggestions.filter(suggestionFilter);
+            const incomplete = result.incomplete && result.incomplete == true;
+
+            return { 
+                suggestions: suggestions,
+                incomplete: incomplete
+            };
+        }
+    }
 
     setupMonacoCompilationPipeline(libContent) {
         const typescript = monaco.languages.typescript;
@@ -84,8 +107,13 @@ class MonacoCreator {
         } else {
             typescript.typescriptDefaults.setCompilerOptions({
                 module: typescript.ModuleKind.AMD,
-                target: typescript.ScriptTarget.ES5,
+                target: typescript.ScriptTarget.ESNext,
                 noLib: false,
+                strict: false,
+                alwaysStrict: false,
+                strictFunctionTypes: false,
+                suppressExcessPropertyErrors: false,
+                suppressImplicitAnyIndexErrors: true,
                 noResolve: true,
                 suppressOutputPathCheck: true,
 

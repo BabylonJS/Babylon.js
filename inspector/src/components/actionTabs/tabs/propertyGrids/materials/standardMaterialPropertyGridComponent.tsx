@@ -1,7 +1,6 @@
 import * as React from "react";
 
 import { Observable } from "babylonjs/Misc/observable";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
@@ -23,7 +22,7 @@ interface IStandardMaterialPropertyGridComponentProps {
 }
 
 export class StandardMaterialPropertyGridComponent extends React.Component<IStandardMaterialPropertyGridComponentProps> {
-    private _onDebugSelectionChangeObservable = new Observable<BaseTexture>();
+    private _onDebugSelectionChangeObservable = new Observable<TextureLinkLineComponent>();
 
     constructor(props: IStandardMaterialPropertyGridComponentProps) {
         super(props);
