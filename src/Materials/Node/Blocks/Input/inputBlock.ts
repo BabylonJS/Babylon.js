@@ -553,6 +553,7 @@ export class InputBlock extends NodeMaterialBlock {
                     returnValue += `${this._codeVariableName}.min = ${this.min};\r\n`;
                     returnValue += `${this._codeVariableName}.max = ${this.max};\r\n`;
                     returnValue += `${this._codeVariableName}.matrixMode = ${this.matrixMode};\r\n`;
+                    returnValue += `${this._codeVariableName}.animationType  = BABYLON.AnimatedInputBlockTypes.${AnimatedInputBlockTypes[this.animationType]};\r\n`;
 
                     return returnValue;
                 case NodeMaterialBlockConnectionPointTypes.Vector2:

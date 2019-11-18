@@ -832,7 +832,7 @@ export class VRExperienceHelper {
 
         // Exiting VR mode double tapping the touch screen
         this._scene.onPrePointerObservable.add(() => {
-            if (this.isInVRMode && this.exitVROnDoubleTap) {
+            if (this._hasEnteredVR && this.exitVROnDoubleTap) {
                 this.exitVR();
                 if (this._fullscreenVRpresenting) {
                     this._scene.getEngine().exitFullscreen();
