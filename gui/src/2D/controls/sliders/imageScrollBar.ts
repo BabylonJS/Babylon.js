@@ -10,7 +10,7 @@ import { Measure } from "../../measure";
 export class ImageScrollBar extends BaseSlider {
     private _backgroundImage: Image;
     private _thumbImage: Image;
-    private _thumbMeasure = new Measure(0, 0, 0, 0);
+    private _tempMeasure = new Measure(0, 0, 0, 0);
 
     /**
      * Gets or sets the image used to render the background
@@ -91,27 +91,27 @@ export class ImageScrollBar extends BaseSlider {
 
        // Background
         if (this._backgroundImage) {
-            this._thumbMeasure.copyFromFloats(left, top, width, height);
+            this._tempMeasure.copyFromFloats(left, top, width, height);
             if (this.isVertical) {
-                this._thumbMeasure.copyFromFloats(left, this._currentMeasure.top, width, height);
-                this._thumbMeasure.height += this._effectiveThumbThickness;
-                this._backgroundImage._currentMeasure.copyFrom(this._thumbMeasure);
+                this._tempMeasure.copyFromFloats(left, this._currentMeasure.top, width, height);
+                this._tempMeasure.height += this._effectiveThumbThickness;
+                this._backgroundImage._currentMeasure.copyFrom(this._tempMeasure);
             } else {
-                this._thumbMeasure.copyFromFloats(this._currentMeasure.left, top, width, height);
-                this._thumbMeasure.width += this._effectiveThumbThickness;
-                this._backgroundImage._currentMeasure.copyFrom(this._thumbMeasure);
+                this._tempMeasure.copyFromFloats(this._currentMeasure.left, top, width, height);
+                this._tempMeasure.width += this._effectiveThumbThickness;
+                this._backgroundImage._currentMeasure.copyFrom(this._tempMeasure);
             }
             this._backgroundImage._draw(context);
         }
 
         // Thumb
         if (this.isVertical) {
-            this._thumbMeasure.copyFromFloats(left - this._effectiveBarOffset, this._currentMeasure.top + thumbPosition, this._currentMeasure.width, this._effectiveThumbThickness);
+            this._tempMeasure.copyFromFloats(left - this._effectiveBarOffset, this._currentMeasure.top + thumbPosition, this._currentMeasure.width, this._effectiveThumbThickness);
         } else {
-            this._thumbMeasure.copyFromFloats(this._currentMeasure.left + thumbPosition, this._currentMeasure.top, this._effectiveThumbThickness, this._currentMeasure.height);
+            this._tempMeasure.copyFromFloats(this._currentMeasure.left + thumbPosition, this._currentMeasure.top, this._effectiveThumbThickness, this._currentMeasure.height);
         }
 
-        this._thumbImage._currentMeasure.copyFrom(this._thumbMeasure);
+        this._thumbImage._currentMeasure.copyFrom(this._tempMeasure);
         this._thumbImage._draw(context);
 
         context.restore();
@@ -135,7 +135,7 @@ export class ImageScrollBar extends BaseSlider {
             this._originY = y;
 
             // Check if move is required
-            if (x < this._thumbMeasure.left || x > this._thumbMeasure.left + this._thumbMeasure.width || y < this._thumbMeasure.top || y > this._thumbMeasure.top + this._thumbMeasure.height) {
+            if (x < this._tempMeasure.left || x > this._tempMeasure.left + this._tempMeasure.width || y < this._tempMeasure.top || y > this._tempMeasure.top + this._tempMeasure.height) {
                 if (this.isVertical) {
                     this.value = this.minimum + (1 - ((y - this._currentMeasure.top) / this._currentMeasure.height)) * (this.maximum - this.minimum);
                 }
