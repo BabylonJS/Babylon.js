@@ -46,6 +46,7 @@
 - Added `RawTexture2DArray` to enable use of WebGL2 2D array textures by custom shaders ([atg](https://github.com/atg))
 - Added multiview support for the shader material (and the line-mesh class) ([RaananW](https://github.com/RaananW/))
 - Added various (interpolation) functions to Path3D, also `alignTangentsWithPath`, `slice`, `getClosestPositionTo` ([Poolminer](https://github.com/Poolminer/))
+- Allow setting of `BABYLON.Basis.JSModuleURL` and `BABYLON.Basis.WasmModuleURL`, for hosting the Basis transcoder locally ([JasonAyre])(https://github.com/jasonyre))
 - PNG support for browsers not supporting SVG ([RaananW](https://github.com/RaananW/))
 
 ### Engine
@@ -176,7 +177,7 @@
 - Added the feature `expandable` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 - Added the feature `removeParticles()` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 - Added the feature "storable particles" and `insertParticlesFromArray()` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
-- Added the support for MultiMaterials to the Solid Particle System ([jerome](https://github.com/jbousquie/))  
+- Added the support for MultiMaterials to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 
 ### Navigation Mesh
 
