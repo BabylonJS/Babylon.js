@@ -87,7 +87,7 @@ export class WebXRSessionManager implements IDisposable {
      * @param optionalFeatures defines optional values to pass to the session builder
      * @returns a promise which will resolve once the session has been initialized
      */
-    public initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures: any = {}) {
+    public initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures: any = {}): Promise<XRSession> {
         return this._xrNavigator.xr.requestSession(xrSessionMode, optionalFeatures).then((session: XRSession) => {
             this.session = session;
             this._sessionEnded = false;
@@ -106,6 +106,7 @@ export class WebXRSessionManager implements IDisposable {
                 this.onXRSessionEnded.notifyObservers(null);
                 this.scene.getEngine()._renderLoop();
             }, { once: true });
+            return this.session;
         });
     }
 
@@ -192,7 +193,11 @@ export class WebXRSessionManager implements IDisposable {
      */
     public exitXRAsync() {
         if (this.session) {
-            return this.session.end();
+            try {
+                return this.session.end();
+            } catch (e) {
+                Logger.Warn("could not end XR session. It has ended already.");
+            }
         }
         return Promise.resolve();
     }
@@ -203,21 +208,7 @@ export class WebXRSessionManager implements IDisposable {
      * @returns true if supported
      */
     public supportsSessionAsync(sessionMode: XRSessionMode) {
-        if (!(navigator as any).xr) {
-            return Promise.resolve(false);
-        }
-        // When the specs are final, remove supportsSession!
-        const functionToUse = (navigator as any).xr.isSessionSupported || (navigator as any).xr.supportsSession;
-        if (!functionToUse) {
-            return Promise.resolve(false);
-        } else {
-            return functionToUse.call((navigator as any).xr, sessionMode).then(() => {
-                return Promise.resolve(true);
-            }).catch((e: any) => {
-                Logger.Warn(e);
-                return Promise.resolve(false);
-            });
-        }
+        return WebXRSessionManager.IsSessionSupportedAsync(sessionMode);
     }
 
     /**
@@ -264,5 +255,28 @@ export class WebXRSessionManager implements IDisposable {
     public dispose() {
         this.onXRFrameObservable.clear();
         this.onXRSessionEnded.clear();
+    }
+
+    /**
+     * Gets a promise returning true when fullfiled if the given session mode is supported
+     * @param sessionMode defines the session to test
+     * @returns a promise
+     */
+    public static IsSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean> {
+        if (!(navigator as any).xr) {
+            return Promise.resolve(false);
+        }
+        // When the specs are final, remove supportsSession!
+        const functionToUse = (navigator as any).xr.isSessionSupported || (navigator as any).xr.supportsSession;
+        if (!functionToUse) {
+            return Promise.resolve(false);
+        } else {
+            return functionToUse.call((navigator as any).xr, sessionMode).then(() => {
+                return Promise.resolve(true);
+            }).catch((e: any) => {
+                Logger.Warn(e);
+                return Promise.resolve(false);
+            });
+        }
     }
 }

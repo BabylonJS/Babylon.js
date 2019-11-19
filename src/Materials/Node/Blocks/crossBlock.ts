@@ -17,15 +17,16 @@ export class CrossBlock extends NodeMaterialBlock {
 
         this.registerInput("left", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerInput("right", NodeMaterialBlockConnectionPointTypes.AutoDetect);
-        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
+        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector3);
 
-        this._outputs[0]._typeConnectionSource = this._inputs[0];
         this._linkConnectionTypes(0, 1);
 
         this._inputs[0].excludedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Float);
         this._inputs[0].excludedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Matrix);
+        this._inputs[0].excludedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector2);
         this._inputs[1].excludedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Float);
         this._inputs[1].excludedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Matrix);
+        this._inputs[1].excludedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector2);
     }
 
     /**
@@ -62,7 +63,7 @@ export class CrossBlock extends NodeMaterialBlock {
 
         let output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = cross(${this.left.associatedVariableName}, ${this.right.associatedVariableName});\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = cross(${this.left.associatedVariableName}.xyz, ${this.right.associatedVariableName}.xyz);\r\n`;
 
         return this;
     }

@@ -655,7 +655,7 @@ export abstract class Light extends Node {
             var result = oldPush.apply(array, items);
 
             for (var item of items) {
-                item._resyncLighSource(this);
+                item._resyncLightSource(this);
             }
 
             return result;
@@ -666,14 +666,14 @@ export abstract class Light extends Node {
             var deleted = oldSplice.apply(array, [index, deleteCount]);
 
             for (var item of deleted) {
-                item._resyncLighSource(this);
+                item._resyncLightSource(this);
             }
 
             return deleted;
         };
 
         for (var item of array) {
-            item._resyncLighSource(this);
+            item._resyncLightSource(this);
         }
     }
 
@@ -701,7 +701,7 @@ export abstract class Light extends Node {
 
     private _resyncMeshes() {
         for (var mesh of this.getScene().meshes) {
-            mesh._resyncLighSource(this);
+            mesh._resyncLightSource(this);
         }
     }
 

@@ -134,7 +134,7 @@ export class StackPanel extends Container {
                     child._top.ignoreAdaptiveScaling = true;
                 }
 
-                if (child._height.isPercentage) {
+                if (child._height.isPercentage && !child._automaticSize) {
                     if (!this.ignoreLayoutWarnings) {
                         Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using height in percentage mode inside a vertical StackPanel`);
                     }
@@ -148,7 +148,7 @@ export class StackPanel extends Container {
                     child._left.ignoreAdaptiveScaling = true;
                 }
 
-                if (child._width.isPercentage) {
+                if (child._width.isPercentage && !child._automaticSize) {
                     if (!this.ignoreLayoutWarnings) {
                         Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using width in percentage mode inside a horizontal StackPanel`);
                     }

@@ -57,6 +57,7 @@ import { GradientNodeFactory } from './components/diagram/gradient/gradientNodeF
 import { ReflectionTextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/reflectionTextureBlock';
 import { ReflectionTextureNodeFactory } from './components/diagram/reflectionTexture/reflectionTextureNodeFactory';
 import { ReflectionTextureNodeModel } from './components/diagram/reflectionTexture/reflectionTextureNodeModel';
+import { SerializationTools } from './serializationTools';
 
 require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
@@ -180,6 +181,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             widget.setState({ document: this.props.globalState.hostDocument })
             this._onWidgetKeyUpPointer = this.onWidgetKeyUp.bind(this)
             this.props.globalState.hostDocument!.addEventListener("keyup", this._onWidgetKeyUpPointer, false);
+            this.props.globalState.hostDocument!.defaultView!.addEventListener("blur", () => this._altKeyIsPressed = false, false);
 
             let previousMouseMove = widget.onMouseMove;
             widget.onMouseMove = (evt: any) => {
@@ -368,6 +370,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         catch (err) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
         }
+
+        SerializationTools.UpdateLocations(this.props.globalState.nodeMaterial, this.props.globalState);
     }
 
     applyFragmentOutputConstraints(rootInput: DefaultPortModel) {
