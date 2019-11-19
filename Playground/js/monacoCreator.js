@@ -6,6 +6,8 @@ class MonacoCreator {
         this.parent = parent;
         
         this.jsEditor = null;
+        this.diffEditor = null;
+        this.diffNavigator = null;
         this.monacoMode = "javascript";
         this.blockEditorChange = false;
 
@@ -48,26 +50,49 @@ class MonacoCreator {
     /**
      * Load the Monaco Node module.
      */
-    loadMonaco(typings) {
-        var xhr = new XMLHttpRequest();
+    async loadMonaco(typings) {
+        let response = await fetch(typings || "https://preview.babylonjs.com/babylon.d.ts");
+        if (!response.ok)
+            return;
 
-        xhr.open('GET', typings || "babylon.d.txt", true);
+        const libContent = await response.text();
+        require.config({ paths: { 'vs': 'node_modules/monaco-editor/dev/vs' } });
 
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
-                    require.config({ paths: { 'vs': 'node_modules/monaco-editor/min/vs' } });
-                    require(['vs/editor/editor.main'], function () {
-                        this.setupMonacoCompilationPipeline(xhr.responseText);
-                        this.setupMonacoColorProvider();
+        require(['vs/editor/editor.main'], () => {
+            this.setupMonacoCompilationPipeline(libContent);
+            this.setupMonacoColorProvider();
 
-                        this.parent.main.run();
-                    }.bind(this));
-                }
-            }
-        }.bind(this);
-        xhr.send(null);
+            require(['vs/language/typescript/languageFeatures'], module => {
+                this.hookMonacoCompletionProvider(module.SuggestAdapter);
+            });
+
+            this.parent.main.run();
+        });
     };
+
+    hookMonacoCompletionProvider(provider) {
+        const hooked = provider.prototype.provideCompletionItems;
+
+        const suggestionFilter = function(suggestion) {
+            return !suggestion.label.startsWith("_");
+        }
+
+        provider.prototype.provideCompletionItems = async function(model, position, context, token) {
+            // reuse 'this' to preserve context through call (using apply)
+            var result = await hooked.apply(this, [model, position, context, token]);
+            
+            if (!result || !result.suggestions)
+                return result;
+
+            const suggestions = result.suggestions.filter(suggestionFilter);
+            const incomplete = result.incomplete && result.incomplete == true;
+
+            return { 
+                suggestions: suggestions,
+                incomplete: incomplete
+            };
+        }
+    }
 
     setupMonacoCompilationPipeline(libContent) {
         const typescript = monaco.languages.typescript;
@@ -82,8 +107,13 @@ class MonacoCreator {
         } else {
             typescript.typescriptDefaults.setCompilerOptions({
                 module: typescript.ModuleKind.AMD,
-                target: typescript.ScriptTarget.ES6,
+                target: typescript.ScriptTarget.ESNext,
                 noLib: false,
+                strict: false,
+                alwaysStrict: false,
+                strictFunctionTypes: false,
+                suppressExcessPropertyErrors: false,
+                suppressImplicitAnyIndexErrors: true,
                 noResolve: true,
                 suppressOutputPathCheck: true,
 
@@ -191,23 +221,47 @@ class MonacoCreator {
             contextmenu: false,
             fontSize: this.parent.settingsPG.fontSize
         }
-       
-        const diffEditor = monaco.editor.createDiffEditor(diffView, diffOptions);
-        diffEditor.setModel({
+
+        this.diffEditor = monaco.editor.createDiffEditor(diffView, diffOptions);
+        this.diffEditor.setModel({
             original: leftModel,
             modified: rightModel
         });
 
-        const cleanup = function() {
-            diffView.style.display = "none";
-            // We need to properly dispose, else the monaco script editor will use those models in the editor compilation pipeline!
-            leftModel.dispose();
-            rightModel.dispose();
-            diffEditor.dispose();
-        }
+        this.diffNavigator = monaco.editor.createDiffNavigator(this.diffEditor, {
+            followsCaret: true,
+            ignoreCharChanges: true
+        });
+        
+        const menuPG = this.parent.menuPG;
+        const main = this.parent.main;
+        const monacoCreator = this;
 
-        diffEditor.addCommand(monaco.KeyCode.Escape, cleanup);
-        diffEditor.focus();
+        this.diffEditor.addCommand(monaco.KeyCode.Escape, function() { main.toggleDiffEditor(monacoCreator, menuPG); });
+        // Adding default VSCode bindinds for previous/next difference
+        this.diffEditor.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.F5, function() { main.navigateToNext(); });
+        this.diffEditor.addCommand(monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.F5, function() { main.navigateToPrevious(); });
+
+        this.diffEditor.focus();
+    }
+
+    disposeDiff() {
+        if (!this.diffEditor)
+            return;
+
+        // We need to properly dispose, else the monaco script editor will use those models in the editor compilation pipeline!
+        let model = this.diffEditor.getModel();
+        let leftModel = model.original;
+        let rightModel = model.modified;
+        
+        leftModel.dispose();
+        rightModel.dispose();
+
+        this.diffNavigator.dispose();
+        this.diffEditor.dispose();
+
+        this.diffNavigator = null;
+        this.diffEditor = null;
     }
 
     /**

@@ -15,8 +15,8 @@ export class NormalBlendBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Neutral);
 
-        this.registerInput("input0", NodeMaterialBlockConnectionPointTypes.Vector3);
-        this.registerInput("input1", NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.registerInput("normalMap0", NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.registerInput("normalMap1", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector3);
 
         this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Color3);
@@ -39,14 +39,14 @@ export class NormalBlendBlock extends NodeMaterialBlock {
     /**
      * Gets the first input component
      */
-    public get input0(): NodeMaterialConnectionPoint {
+    public get normalMap0(): NodeMaterialConnectionPoint {
         return this._inputs[0];
     }
 
     /**
      * Gets the second input component
      */
-    public get input1(): NodeMaterialConnectionPoint {
+    public get normalMap1(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
 

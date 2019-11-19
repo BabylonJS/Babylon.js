@@ -57,10 +57,25 @@ import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 import { WorleyNoise3DBlock } from 'babylonjs/Materials/Node/Blocks/worleyNoise3DBlock';
 import { SimplexPerlin3DBlock } from 'babylonjs/Materials/Node/Blocks/simplexPerlin3DBlock';
 import { NormalBlendBlock } from 'babylonjs/Materials/Node/Blocks/normalBlendBlock';
+import { Rotate2dBlock } from 'babylonjs/Materials/Node/Blocks/rotate2dBlock';
+import { DerivativeBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/derivativeBlock';
+import { RefractBlock } from 'babylonjs/Materials/Node/Blocks/refractBlock';
+import { ReflectBlock } from 'babylonjs/Materials/Node/Blocks/reflectBlock';
+import { DesaturateBlock } from 'babylonjs/Materials/Node/Blocks/desaturateBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
+            case "DesaturateBlock":
+                return new DesaturateBlock("Desaturate");                  
+            case "RefractBlock":
+                return new RefractBlock("Refract");               
+            case "ReflectBlock":
+                return new ReflectBlock("Reflect");              
+            case "DerivativeBlock":
+                return new DerivativeBlock("Derivative");               
+            case "Rotate2dBlock":
+                return new Rotate2dBlock("Rotate2d");            
             case "NormalBlendBlock":
                 return new NormalBlendBlock("NormalBlend");
             case "WorleyNoise3DBlock":

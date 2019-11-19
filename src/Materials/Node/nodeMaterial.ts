@@ -525,7 +525,7 @@ export class NodeMaterial extends PushMaterial {
      * Build the material and generates the inner effect
      * @param verbose defines if the build should log activity
      */
-    public build(verbose: boolean = true) {
+    public build(verbose: boolean = false) {
         this._buildWasSuccessful = false;
         var engine = this.getScene().getEngine();
 
@@ -987,6 +987,8 @@ export class NodeMaterial extends PushMaterial {
      */
     public setToDefault() {
         this.clear();
+
+        this.editorData = null;
 
         var positionInput = new InputBlock("position");
         positionInput.setAsAttribute("position");
