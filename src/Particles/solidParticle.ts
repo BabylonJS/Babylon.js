@@ -7,6 +7,7 @@ import { BoundingSphere } from "../Culling/boundingSphere";
 import { SolidParticleSystem } from "./solidParticleSystem";
 import { AbstractMesh } from '../Meshes/abstractMesh';
 import { Plane } from '../Maths/math.plane';
+import { Material } from '../Materials/material';
 /**
  * Represents one particle of a solid particle system.
  */
@@ -324,6 +325,11 @@ export class ModelShape {
      * @hidden
      */
     public _vertexFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>;
+    /**
+     * Model material (internal use)
+     * @hidden
+     */
+    public _material: Nullable<Material>;
 
     /**
      * Creates a ModelShape object. This is an internal simplified reference to a mesh used as for a model to replicate particles from by the SPS.
@@ -331,7 +337,8 @@ export class ModelShape {
      * @hidden
      */
     constructor(id: number, shape: Vector3[], indices: number[], normals: number[], colors: number[], shapeUV: number[],
-        posFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>, vtxFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>) {
+        posFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>, vtxFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>,
+        material: Nullable<Material>) {
         this.shapeID = id;
         this._shape = shape;
         this._indices = indices;
@@ -341,6 +348,7 @@ export class ModelShape {
         this._normals = normals;
         this._positionFunction = posFunction;
         this._vertexFunction = vtxFunction;
+        this._material = material;
     }
 }
 
