@@ -126,6 +126,7 @@
 - Added `scene.environmentIntensity` to control the IBL strength overall in a scene ([Sebavan](https://github.com/sebavan/))
 - Added support of image processing for `WaterMaterial` ([julien-moreau](https://github.com/julien-moreau))
 - Added `pbrBRDFConfiguration.useSpecularGlossinessInputEnergyConservation` to allow Specular-Workflow energy conservation to be turned off ([ColorDigital-PS](https://github.com/ColorDigital-PS)).
+- Added support for the `freeze` / `unfreeze` functions in `ShaderMaterial` ([Popov72](https://github.com/Popov72))
 - Added `depthFunction` new property to `Material` base class ([Popov72](https://github.com/Popov72))
 
 ### ScreenshotTools
