@@ -61,6 +61,11 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
     lockstepMaxSteps?: number;
 
     /**
+     * Defines the seconds between each deterministic lock step
+     */
+    timeStep?: number;
+
+    /**
      * Defines that engine should ignore modifying touch action attribute and style
      * If not handle, you might need to set it up on your side for expected touch devices behavior.
      */
@@ -218,6 +223,8 @@ export class WebGPUEngine extends Engine {
 
         this._deterministicLockstep = options.deterministicLockstep;
         this._lockstepMaxSteps = options.lockstepMaxSteps;
+        this._timeStep = options.timeStep || 1 / 60;
+
         this._doNotHandleContextLost = true;
 
         this._canvas = canvas;
@@ -1021,7 +1028,7 @@ export class WebGPUEngine extends Engine {
             commandEncoder.copyBufferToTexture(bufferView, textureView, textureExtent);
         }
 
-        this._device.getQueue().submit([commandEncoder.finish()]);
+        this._device.defaultQueue.submit([commandEncoder.finish()]);
 
         this._releaseBuffer(dataBuffer);
     }
@@ -1439,7 +1446,7 @@ export class WebGPUEngine extends Engine {
         this._commandBuffers[0] = this._uploadEncoder.finish();
         this._commandBuffers[1] = this._renderEncoder.finish();
 
-        this._device.getQueue().submit(this._commandBuffers);
+        this._device.defaultQueue.submit(this._commandBuffers);
 
         super.endFrame();
     }
