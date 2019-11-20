@@ -2,7 +2,7 @@
 #import <Babylon/RuntimeApple.h>
 #import <Shared/InputManager.h>
 
-std::unique_ptr<babylon::RuntimeApple> runtime{};
+std::unique_ptr<Babylon::RuntimeApple> runtime{};
 std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
 
 
@@ -20,10 +20,10 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
     NSURL * resourceUrl = [main resourceURL];
 
     NSWindow* nativeWindow = [[self view] window];
-    runtime = std::make_unique<babylon::RuntimeApple>(
+    runtime = std::make_unique<Babylon::RuntimeApple>(
         (__bridge void*)nativeWindow, 
         [[NSString stringWithFormat:@"file://%s", [resourceUrl fileSystemRepresentation]] UTF8String],
-        [](const char* message, babylon::LogLevel level)
+        [](const char* message, Babylon::LogLevel level)
         {
             NSLog(@"%s", message);
         });

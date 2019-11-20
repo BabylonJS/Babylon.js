@@ -3,7 +3,7 @@
 #include "Runtime.h"
 #include <Windows.h>
 
-namespace babylon
+namespace Babylon
 {
     class RuntimeWin32 final : public Runtime
     {

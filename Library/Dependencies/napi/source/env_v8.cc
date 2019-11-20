@@ -88,7 +88,7 @@ namespace
     };
 }
 
-namespace babylon
+namespace Babylon
 {
     Env::Env(const char* executablePath, std::function<void(std::function<void()>)> executeOnScriptThread)
         : Napi::Env{ new napi_env_local{ CreateIsolate(executablePath) } }

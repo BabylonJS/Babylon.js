@@ -2,7 +2,7 @@
 #include "RuntimeImpl.h"
 #include <curl/curl.h>
 
-namespace babylon
+namespace Babylon
 {
     Napi::FunctionReference XMLHttpRequest::CreateConstructor(Napi::Env& env)
     {

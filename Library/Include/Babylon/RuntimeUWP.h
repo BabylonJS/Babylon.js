@@ -3,7 +3,7 @@
 #include <windows.ui.core.h>
 #include <windows.ui.xaml.controls.h>
 
-namespace babylon
+namespace Babylon
 {
     class Runtime;
 

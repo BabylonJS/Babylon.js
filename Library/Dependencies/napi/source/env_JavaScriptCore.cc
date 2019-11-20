@@ -3,9 +3,8 @@
 #include "JavaScriptCore/JavaScriptCore.h"
 #include "js_native_api_JavaScriptCore.h"
 
-namespace babylon
+namespace Babylon
 {
-
     class napi_env_local : public napi_env__
     {
     public:

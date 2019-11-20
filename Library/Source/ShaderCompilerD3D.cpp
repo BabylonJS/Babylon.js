@@ -9,12 +9,7 @@
 #include <d3dcompiler.h>
 #include <wrl/client.h>
 
-namespace glslang
-{
-    extern const TBuiltInResource DefaultTBuiltInResource;
-}
-
-namespace babylon
+namespace Babylon
 {
     namespace
     {

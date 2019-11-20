@@ -15,7 +15,7 @@ struct Filepath : public std::string
 typedef std::filesystem::path Filepath;
 #endif
 
-namespace babylon
+namespace Babylon
 {
     using babylon_dispatcher = arcana::dispatcher<128>;
 

@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace babylon
+namespace Babylon
 {
     class RuntimeImpl;
     class Env;

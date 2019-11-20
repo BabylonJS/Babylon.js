@@ -24,13 +24,13 @@ extern "C" {
     JNIEXPORT void JNICALL Java_com_android_appviewer_AndroidViewAppActivity_step(JNIEnv* env, jobject obj);
 };
 
-std::unique_ptr<babylon::RuntimeAndroid> runtime{};
+std::unique_ptr<Babylon::RuntimeAndroid> runtime{};
 std::string androidPackagePath;
 std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
 
 static AAssetManager* g_assetMgrNative = nullptr;
 
-namespace babylon
+namespace
 {
     // this is the way to load apk embedded assets.
     std::vector<char> GetFileContents(const std::string &file_name)
@@ -61,17 +61,17 @@ Java_com_android_appviewer_AndroidViewAppActivity_finishEngine(JNIEnv* env, jobj
 {
 }
 
-void LogMessage(const char* message, babylon::LogLevel level)
+void LogMessage(const char* message, Babylon::LogLevel level)
 {
     switch (level)
     {
-    case babylon::LogLevel::Log:
+    case Babylon::LogLevel::Log:
         __android_log_write(ANDROID_LOG_INFO, "BabylonNative", message);
         break;
-    case babylon::LogLevel::Warn:
+    case Babylon::LogLevel::Warn:
         __android_log_write(ANDROID_LOG_WARN, "BabylonNative", message);
         break;
-    case babylon::LogLevel::Error:
+    case Babylon::LogLevel::Error:
         __android_log_write(ANDROID_LOG_ERROR, "BabylonNative", message);
         break;
     }
@@ -84,7 +84,7 @@ Java_com_android_appviewer_AndroidViewAppActivity_surfaceCreated(JNIEnv* env, jo
     {
         ANativeWindow *window = ANativeWindow_fromSurface(env, surface);
 
-        runtime = std::make_unique<babylon::RuntimeAndroid>(window, "file:///data/local/tmp", LogMessage);
+        runtime = std::make_unique<Babylon::RuntimeAndroid>(window, "file:///data/local/tmp", LogMessage);
 
         inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);
         InputManager::Initialize(*runtime, *inputBuffer);
@@ -126,4 +126,3 @@ JNIEXPORT void JNICALL
 Java_com_android_appviewer_AndroidViewAppActivity_setPinchInfo(JNIEnv* env, jobject obj, jfloat zoom)
 {
 }
-

@@ -2,7 +2,7 @@
 #import <Babylon/RuntimeApple.h>
 #import <Shared/InputManager.h>
 
-std::unique_ptr<babylon::RuntimeApple> runtime{};
+std::unique_ptr<Babylon::RuntimeApple> runtime{};
 std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
 
 @implementation LibNativeBridge
@@ -22,10 +22,10 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
 {
     NSBundle* main = [NSBundle mainBundle];
     NSURL* resourceUrl = [main resourceURL];
-    runtime = std::make_unique<babylon::RuntimeApple>(
+    runtime = std::make_unique<Babylon::RuntimeApple>(
         CALayerPtr, 
         [[NSString stringWithFormat:@"file://%s", [resourceUrl fileSystemRepresentation]] UTF8String],
-        [](const char* message, babylon::LogLevel level)
+        [](const char* message, Babylon::LogLevel level)
         {
             NSLog(@"%s", message);
         });

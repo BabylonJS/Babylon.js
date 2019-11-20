@@ -6,7 +6,7 @@
 #include <arcana/type_traits.h>
 #include <unordered_map>
 
-namespace babylon
+namespace Babylon
 {
     class RuntimeImpl;
 

@@ -4,7 +4,7 @@
 
 class ANativeWindow;
 
-namespace babylon
+namespace Babylon
 {
     class RuntimeAndroid final : public Runtime
     {

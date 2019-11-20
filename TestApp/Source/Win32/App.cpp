@@ -16,7 +16,7 @@
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
-std::unique_ptr<babylon::RuntimeWin32> runtime{};
+std::unique_ptr<Babylon::RuntimeWin32> runtime{};
 std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
 
 // Forward declarations of functions included in this code module:
@@ -68,7 +68,7 @@ namespace
         return arguments;
     }
 
-    static void DebugString(const char* message, babylon::LogLevel)
+    static void DebugString(const char* message, Babylon::LogLevel)
     {
         OutputDebugStringA(message);
     }
@@ -76,7 +76,7 @@ namespace
     void RefreshBabylon(HWND hWnd)
     {
         std::string rootUrl{ GetUrlFromPath(GetModulePath().parent_path().parent_path()) };
-        runtime = std::make_unique<babylon::RuntimeWin32>(hWnd, rootUrl, DebugString);
+        runtime = std::make_unique<Babylon::RuntimeWin32>(hWnd, rootUrl, DebugString);
 
         inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);
         InputManager::Initialize(*runtime, *inputBuffer);

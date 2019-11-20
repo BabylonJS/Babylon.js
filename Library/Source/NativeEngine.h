@@ -15,7 +15,7 @@
 
 #include <assert.h>
 
-namespace babylon
+namespace Babylon
 {
     class ViewClearState final
     {

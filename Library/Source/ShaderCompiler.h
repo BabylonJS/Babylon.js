@@ -9,7 +9,7 @@ namespace glslang
     class TShader;
 }
 
-namespace babylon
+namespace Babylon
 {
     class ShaderCompiler
     {

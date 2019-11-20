@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-namespace babylon
+namespace Babylon
 {
     Napi::ObjectReference Console::Create(Napi::Env env, LogCallback& callback)
     {

@@ -2,9 +2,8 @@
 #include "RuntimeImpl.h"
 //#include <filesystem>
 
-namespace babylon
+namespace Babylon
 {
-
     RuntimeApple::RuntimeApple(void* nativeWindowPtr, LogCallback callback)
     : RuntimeApple{nativeWindowPtr, ".", std::move(callback) } // todo : use parent module path. std::filesystem or std::experimental::filesystem not supported
     {
@@ -20,5 +19,4 @@ namespace babylon
     {
         RuntimeImpl::BaseThreadProcedure();
     }
-
 }

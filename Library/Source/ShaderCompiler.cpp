@@ -2,7 +2,7 @@
 #include <glslang/Public/ShaderLang.h>
 #include <glslang/MachineIndependent/localintermediate.h>
 
-namespace babylon
+namespace Babylon
 {
     namespace
     {

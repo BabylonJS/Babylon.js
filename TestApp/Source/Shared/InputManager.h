@@ -11,7 +11,7 @@ public:
     class InputBuffer
     {
     public:
-        InputBuffer(babylon::Runtime& runtime)
+        InputBuffer(Babylon::Runtime& runtime)
             : m_runtime{ runtime }
         {}
         InputBuffer(const InputBuffer&) = delete;
@@ -50,14 +50,14 @@ public:
         }
 
     private:
-        babylon::Runtime& m_runtime;
+        Babylon::Runtime& m_runtime;
 
         int m_pointerX{};
         int m_pointerY{};
         bool m_isPointerDown{};
     };
 
-    static void Initialize(babylon::Runtime& runtime, InputBuffer& inputBuffer)
+    static void Initialize(Babylon::Runtime& runtime, InputBuffer& inputBuffer)
     {
         runtime.Dispatch([data = &inputBuffer](auto& env)
         {

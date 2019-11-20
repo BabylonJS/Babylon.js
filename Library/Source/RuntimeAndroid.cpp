@@ -2,9 +2,8 @@
 #include "RuntimeImpl.h"
 //#include <filesystem>
 
-namespace babylon
+namespace Babylon
 {
-
     RuntimeAndroid::RuntimeAndroid(ANativeWindow* nativeWindowPtr, LogCallback callback)
         : RuntimeAndroid{ nativeWindowPtr, ".", std::move(callback) } // todo : GetModulePath().parent_path() std::fs experimental not available with ndk
     {
@@ -20,5 +19,4 @@ namespace babylon
     {
         RuntimeImpl::BaseThreadProcedure();
     }
-
 }

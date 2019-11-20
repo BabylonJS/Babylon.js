@@ -3,7 +3,7 @@
 #include <napi/napi.h>
 #include <Babylon/Runtime.h>
 
-namespace babylon
+namespace Babylon
 {
     class Console final : public Napi::ObjectWrap<Console>
     {

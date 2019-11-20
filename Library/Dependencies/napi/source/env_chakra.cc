@@ -26,7 +26,7 @@ namespace
     }
 }
 
-namespace babylon
+namespace Babylon
 {
     class napi_env_local : public napi_env__
     {
@@ -94,7 +94,6 @@ namespace babylon
             JsValueRef prototype;
             ThrowIfFailed(JsGetPrototype(object, &prototype));
 
-            JsValueRef hasOwnPropertyFunc;
             ThrowIfFailed(JsGetPropertyIdFromName(L"hasOwnProperty", &propertyId));
             ThrowIfFailed(JsGetProperty(prototype, propertyId, &has_own_property_function));
         }

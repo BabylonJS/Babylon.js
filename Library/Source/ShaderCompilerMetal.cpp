@@ -17,7 +17,7 @@ namespace glslang
         shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_0);
         shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_0);
 
-        if (!shader.parse(&babylon::DefaultTBuiltInResource, 450, false, EShMsgDefault))
+        if (!shader.parse(&Babylon::DefaultTBuiltInResource, 450, false, EShMsgDefault))
         {
             throw std::exception();//shader.getInfoDebugLog());
         }
@@ -87,7 +87,7 @@ namespace glslang
     }
 }
 
-namespace babylon
+namespace Babylon
 {
     ShaderCompiler::ShaderCompiler()
     {

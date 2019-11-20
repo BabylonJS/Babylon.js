@@ -5,7 +5,7 @@
 
 #include <arcana/containers/ticketed_collection.h>
 
-namespace babylon
+namespace Babylon
 {
     class NativeWindow : public Napi::ObjectWrap<NativeWindow>
     {

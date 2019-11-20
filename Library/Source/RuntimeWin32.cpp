@@ -5,7 +5,7 @@
 
 #include <filesystem>
 
-namespace babylon
+namespace Babylon
 {
     RuntimeWin32::RuntimeWin32(HWND hWnd, LogCallback callback)
         : RuntimeWin32{ hWnd, GetUrlFromPath(GetModulePath().parent_path()), std::move(callback) }

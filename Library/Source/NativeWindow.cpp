@@ -2,7 +2,7 @@
 
 #include <basen.hpp>
 
-namespace babylon
+namespace Babylon
 {
     namespace
     {

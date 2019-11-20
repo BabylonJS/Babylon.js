@@ -2,7 +2,7 @@
 
 #include "Runtime.h"
 
-namespace babylon
+namespace Babylon
 {
     class RuntimeApple final : public Runtime
     {

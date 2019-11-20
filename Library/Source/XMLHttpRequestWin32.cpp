@@ -1,6 +1,6 @@
 #include "XMLHttpRequest.h"
 
-namespace babylon
+namespace Babylon
 {
     arcana::task<void, std::exception_ptr> XMLHttpRequest::SendAsync()
     {

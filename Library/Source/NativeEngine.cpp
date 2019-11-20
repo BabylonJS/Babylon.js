@@ -29,7 +29,7 @@ namespace bgfx
 #include <regex>
 #include <sstream>
 
-namespace babylon
+namespace Babylon
 {
     namespace
     {

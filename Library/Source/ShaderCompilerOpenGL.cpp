@@ -1,6 +1,6 @@
 #include "ShaderCompiler.h"
 
-namespace babylon
+namespace Babylon
 {
     ShaderCompiler::ShaderCompiler()
     {

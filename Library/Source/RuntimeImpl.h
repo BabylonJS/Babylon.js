@@ -10,7 +10,7 @@ namespace Napi
     class Env;
 }
 
-namespace babylon
+namespace Babylon
 {
     class Env;
     class NativeWindow;
@@ -71,7 +71,7 @@ namespace babylon
         // occasionally need access to the env as well; m_env provides this
         // access when the env is available, reverting to nullptr once the env
         // is destroyed.
-        babylon::Env* m_env{};
+        Babylon::Env* m_env{};
         const std::string m_rootUrl{};
         LogCallback m_logCallback{};
     };
