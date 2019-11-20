@@ -38,7 +38,9 @@ export class ScrollViewer extends Rectangle {
     private _clientWidth: number;
     private _clientHeight: number;
     private _useImageBar: Boolean;
-    private _thumbSize: number = 1;
+    private _thumbLength: number = 0.5;
+    private _thumbHeight: number = 1;
+    private _barImageHeight: number = 1;
 
     /**
      * Gets the horizontal scrollbar
@@ -216,15 +218,15 @@ export class ScrollViewer extends Rectangle {
 
     /** Gets or sets the scroll bar container background color */
     public get scrollBackground(): string {
-        return this._dragSpace.background;
+        return this._horizontalBarSpace.background;
     }
 
     public set scrollBackground(color: string) {
-        if (this._dragSpace.background === color) {
+        if (this._horizontalBarSpace.background === color) {
             return;
         }
-
-        this._dragSpace.background = color;
+        this._horizontalBarSpace.background = color;
+        this._verticalBarSpace.background = color;
     }
 
     /** Gets or sets the bar color */
@@ -243,17 +245,17 @@ export class ScrollViewer extends Rectangle {
     }
 
     /** Gets or sets the bar image */
-    public get barImage(): Image {
+    public get thumbImage(): Image {
         return this._barImage;
     }
 
-    public set barImage(value: Image) {
+    public set thumbImage(value: Image) {
         if (this._barImage === value) {
             return;
         }
 
         this._barImage = value;
-        let hb = <ImageScrollBar>this.horizontalBar;
+        let hb = <ImageScrollBar>this._horizontalBar;
         let vb = <ImageScrollBar>this._verticalBar;
         hb.thumbImage = value;
         vb.thumbImage = value;
@@ -280,17 +282,72 @@ export class ScrollViewer extends Rectangle {
         }
     }
 
-    /** Gets or sets the size of the thumb */
-    public get thumbSize(): number {
-        return this._thumbSize;
+    /** Gets or sets the length of the thumb */
+    public get thumbLength(): number {
+        return this._thumbLength;
     }
 
-    public set thumbSize(value: number) {
-        if (this._thumbSize === value) {
+    public set thumbLength(value: number) {
+        if (this._thumbLength === value) {
             return;
         }
+        if (value <= 0) {
+            value = 0.1;
+        }
+        if (value > 1) {
+            value = 1;
+        }
+        this._thumbLength = value;
+        var hb = <ImageScrollBar>this._horizontalBar;
+        var vb = <ImageScrollBar>this._verticalBar;
+        hb.thumbLength = value;
+        vb.thumbLength = value;
+        this._markAsDirty();
+    }
 
-        this._thumbSize = value;
+    /** Gets or sets the height of the thumb */
+    public get thumbHeight(): number {
+        return this._thumbHeight;
+    }
+
+    public set thumbHeight(value: number) {
+        if (this._thumbHeight === value) {
+            return;
+        }
+        if (value <= 0) {
+            value = 0.1;
+        }
+        if (value > 1) {
+            value = 1;
+        }
+        this._thumbHeight = value;
+        var hb = <ImageScrollBar>this._horizontalBar;
+        var vb = <ImageScrollBar>this._verticalBar;
+        hb.thumbHeight = value;
+        vb.thumbHeight = value;
+        this._markAsDirty();
+    }
+
+    /** Gets or sets the height of the bar image */
+    public get barImageHeight(): number {
+        return this._barImageHeight;
+    }
+
+    public set barImageHeight(value: number) {
+        if (this._barImageHeight === value) {
+            return;
+        }
+        if (value <= 0) {
+            value = 0.1;
+        }
+        if (value > 1) {
+            value = 1;
+        }
+        this._barImageHeight = value;
+        var hb = <ImageScrollBar>this._horizontalBar;
+        var vb = <ImageScrollBar>this._verticalBar;
+        hb.barImageHeight = value;
+        vb.barImageHeight = value;
         this._markAsDirty();
     }
 
@@ -313,11 +370,11 @@ export class ScrollViewer extends Rectangle {
     }
 
     /** Gets or sets the bar background image */
-    public get barBackgroundImage(): Image {
+    public get barImage(): Image {
         return this._barBackgroundImage;
     }
 
-    public set barBackgroundImage(value: Image) {
+    public set barImage(value: Image) {
         if (this._barBackgroundImage === value) {
         }
 
@@ -374,17 +431,8 @@ export class ScrollViewer extends Rectangle {
             this._rebuildLayout = true;
         }
 
-        if (this._useImageBar && this._barImage) {
-            this._horizontalBar.thumbWidth = Math.min(0.9 * this._clientWidth, this._thumbSize * this._barImage.domImage.width * this._horizontalBarSpace.heightInPixels / this._barImage.domImage.height) + "px";
-            this._verticalBar.thumbWidth = Math.min(0.9 * this._clientHeight, this._thumbSize * this._barImage.domImage.width * this._verticalBarSpace.widthInPixels / this._barImage.domImage.height) + "px";
-        }
-        else {
-            let horizontalMultiplicator = this._clientWidth / windowContentsWidth;
-            let verticalMultiplicator = this._clientHeight / windowContentsHeight;
-
-            this._horizontalBar.thumbWidth = Math.min(0.9 * this._clientWidth, this._thumbSize * (this._clientWidth * horizontalMultiplicator)) + "px";
-            this._verticalBar.thumbWidth = Math.min(0.9 * this._clientHeight, this._thumbSize * (this._clientHeight * verticalMultiplicator)) + "px";
-        }
+        this._horizontalBar.thumbWidth = this._thumbLength * 0.9 * this._clientWidth + "px";
+        this._verticalBar.thumbWidth = this._thumbLength *  0.9 * this._clientHeight + "px";
     }
 
     public _link(host: AdvancedDynamicTexture): void {
