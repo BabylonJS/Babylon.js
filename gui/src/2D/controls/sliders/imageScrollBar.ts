@@ -10,6 +10,9 @@ import { Measure } from "../../measure";
 export class ImageScrollBar extends BaseSlider {
     private _backgroundImage: Image;
     private _thumbImage: Image;
+    private _thumbLength: number = 0.5;
+    private _thumbHeight: number = 1;
+    private _barImageHeight: number = 1;
     private _tempMeasure = new Measure(0, 0, 0, 0);
 
     /**
@@ -55,6 +58,57 @@ export class ImageScrollBar extends BaseSlider {
     }
 
     /**
+     * Gets or sets the length of the thumb
+     */
+    public get thumbLength(): number {
+        return this._thumbLength;
+    }
+
+    public set thumbLength(value: number) {
+        if (this._thumbLength === value) {
+            return;
+        }
+
+        this._thumbLength = value;
+
+        this._markAsDirty();
+    }
+
+    /**
+     * Gets or sets the height of the thumb
+     */
+    public get thumbHeight(): number {
+        return this._thumbHeight;
+    }
+
+    public set thumbHeight(value: number) {
+        if (this._thumbLength === value) {
+            return;
+        }
+
+        this._thumbHeight = value;
+
+        this._markAsDirty();
+    }
+
+    /**
+     * Gets or sets the height of the bar image
+     */
+    public get barImageHeight(): number {
+        return this._barImageHeight;
+    }
+
+    public set barImageHeight(value: number) {
+        if (this._barImageHeight === value) {
+            return;
+        }
+
+        this._barImageHeight = value;
+
+        this._markAsDirty();
+    }
+
+    /**
      * Creates a new ImageScrollBar
      * @param name defines the control name
      */
@@ -90,25 +144,27 @@ export class ImageScrollBar extends BaseSlider {
         var height = this._renderHeight;
 
        // Background
-        if (this._backgroundImage) {
-            this._tempMeasure.copyFromFloats(left, top, width, height);
-            if (this.isVertical) {
-                this._tempMeasure.copyFromFloats(left, this._currentMeasure.top, width, height);
-                this._tempMeasure.height += this._effectiveThumbThickness;
-                this._backgroundImage._currentMeasure.copyFrom(this._tempMeasure);
-            } else {
-                this._tempMeasure.copyFromFloats(this._currentMeasure.left, top, width, height);
-                this._tempMeasure.width += this._effectiveThumbThickness;
-                this._backgroundImage._currentMeasure.copyFrom(this._tempMeasure);
-            }
-            this._backgroundImage._draw(context);
+       if (this._backgroundImage) {
+        this._tempMeasure.copyFromFloats(left, top, width, height);
+        if (this.isVertical) {
+            this._tempMeasure.copyFromFloats(left + width * (1 - this._barImageHeight) * 0.5, this._currentMeasure.top, width * this._barImageHeight, height);
+            this._tempMeasure.height += this._effectiveThumbThickness;
+            this._backgroundImage._currentMeasure.copyFrom(this._tempMeasure);
         }
+        else {
+            this._tempMeasure.copyFromFloats(this._currentMeasure.left, top + height * (1 - this._barImageHeight) * 0.5, width, height * this._barImageHeight);
+            this._tempMeasure.width += this._effectiveThumbThickness;
+            this._backgroundImage._currentMeasure.copyFrom(this._tempMeasure);
+        }
+        this._backgroundImage._draw(context);
+    }
 
         // Thumb
         if (this.isVertical) {
-            this._tempMeasure.copyFromFloats(left - this._effectiveBarOffset, this._currentMeasure.top + thumbPosition, this._currentMeasure.width, this._effectiveThumbThickness);
-        } else {
-            this._tempMeasure.copyFromFloats(this._currentMeasure.left + thumbPosition, this._currentMeasure.top, this._effectiveThumbThickness, this._currentMeasure.height);
+            this._tempMeasure.copyFromFloats(left - this._effectiveBarOffset + this._currentMeasure.width * (1 - this._thumbHeight) * 0.5, this._currentMeasure.top + thumbPosition, this._currentMeasure.width * this._thumbHeight, this._effectiveThumbThickness);
+        }
+        else {
+            this._tempMeasure.copyFromFloats(this._currentMeasure.left + thumbPosition, this._currentMeasure.top + this._currentMeasure.height * (1 - this._thumbHeight) * 0.5, this._effectiveThumbThickness, this._currentMeasure.height * this._thumbHeight);
         }
 
         this._thumbImage._currentMeasure.copyFrom(this._tempMeasure);
