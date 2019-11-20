@@ -81,7 +81,7 @@ Engine.prototype.unRegisterView = function(canvas: HTMLCanvasElement): Engine {
     }
 
     for (var view of this.views) {
-        if (view.target = canvas) {
+        if (view.target === canvas) {
             let index = this.views.indexOf(view);
 
             if (index !== -1) {

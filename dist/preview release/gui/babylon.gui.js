@@ -1751,7 +1751,7 @@ var Checkbox = /** @class */ (function (_super) {
         return "Checkbox";
     };
     /** @hidden */
-    Checkbox.prototype._draw = function (context) {
+    Checkbox.prototype._draw = function (context, invalidatedRectangle) {
         context.save();
         this._applyStates(context);
         var actualWidth = this._currentMeasure.width - this._thickness;
@@ -3569,8 +3569,7 @@ var Container = /** @class */ (function (_super) {
             child._render(context, invalidatedRectangle);
         }
     };
-    /** @hidden */
-    Container.prototype._getDescendants = function (results, directDescendantsOnly, predicate) {
+    Container.prototype.getDescendantsToRef = function (results, directDescendantsOnly, predicate) {
         if (directDescendantsOnly === void 0) { directDescendantsOnly = false; }
         if (!this.children) {
             return;
@@ -3581,7 +3580,7 @@ var Container = /** @class */ (function (_super) {
                 results.push(item);
             }
             if (!directDescendantsOnly) {
-                item._getDescendants(results, false, predicate);
+                item.getDescendantsToRef(results, false, predicate);
             }
         }
     };
@@ -3729,6 +3728,8 @@ var Control = /** @class */ (function () {
         this._rebuildLayout = false;
         /** @hidden */
         this._isClipped = false;
+        /** @hidden */
+        this._automaticSize = false;
         /**
          * Gets or sets an object used to store user defined information for the node
          */
@@ -4727,8 +4728,13 @@ var Control = /** @class */ (function () {
         }
         this.notRenderable = false;
     };
-    /** @hidden */
-    Control.prototype._getDescendants = function (results, directDescendantsOnly, predicate) {
+    /**
+     * Will store all controls that have this control as ascendant in a given array
+     * @param results defines the array where to store the descendants
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     */
+    Control.prototype.getDescendantsToRef = function (results, directDescendantsOnly, predicate) {
         if (directDescendantsOnly === void 0) { directDescendantsOnly = false; }
         // Do nothing by default
     };
@@ -4740,7 +4746,7 @@ var Control = /** @class */ (function () {
      */
     Control.prototype.getDescendants = function (directDescendantsOnly, predicate) {
         var results = new Array();
-        this._getDescendants(results, directDescendantsOnly, predicate);
+        this.getDescendantsToRef(results, directDescendantsOnly, predicate);
         return results;
     };
     /**
@@ -5665,7 +5671,7 @@ var DisplayGrid = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
-    DisplayGrid.prototype._draw = function (context) {
+    DisplayGrid.prototype._draw = function (context, invalidatedRectangle) {
         context.save();
         this._applyStates(context);
         if (this._isEnabled) {
@@ -6667,7 +6673,7 @@ var Image = /** @class */ (function (_super) {
      */
     Image.prototype._svgCheck = function (value) {
         var _this = this;
-        if ((value.search(/.svg#/gi) !== -1) && (value.indexOf("#") === value.lastIndexOf("#"))) {
+        if (window.SVGSVGElement && (value.search(/.svg#/gi) !== -1) && (value.indexOf("#") === value.lastIndexOf("#"))) {
             var svgsrc = value.split('#')[0];
             var elemid = value.split('#')[1];
             // check if object alr exist in document
@@ -7955,7 +7961,7 @@ var InputText = /** @class */ (function (_super) {
         var insertPosition = this._text.length - this._cursorOffset;
         this.text = this._text.slice(0, insertPosition) + data + this._text.slice(insertPosition);
     };
-    InputText.prototype._draw = function (context) {
+    InputText.prototype._draw = function (context, invalidatedRectangle) {
         var _this = this;
         context.save();
         this._applyStates(context);
@@ -8199,6 +8205,7 @@ var Line = /** @class */ (function (_super) {
         _this._x2 = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__["ValueAndUnit"](0);
         _this._y2 = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__["ValueAndUnit"](0);
         _this._dash = new Array();
+        _this._automaticSize = true;
         _this.isHitTestVisible = false;
         _this._horizontalAlignment = _control__WEBPACK_IMPORTED_MODULE_2__["Control"].HORIZONTAL_ALIGNMENT_LEFT;
         _this._verticalAlignment = _control__WEBPACK_IMPORTED_MODULE_2__["Control"].VERTICAL_ALIGNMENT_TOP;
@@ -8469,6 +8476,7 @@ var MultiLine = /** @class */ (function (_super) {
         _this.onPointUpdate = function () {
             _this._markAsDirty();
         };
+        _this._automaticSize = true;
         _this.isHitTestVisible = false;
         _this._horizontalAlignment = _control__WEBPACK_IMPORTED_MODULE_2__["Control"].HORIZONTAL_ALIGNMENT_LEFT;
         _this._verticalAlignment = _control__WEBPACK_IMPORTED_MODULE_2__["Control"].VERTICAL_ALIGNMENT_TOP;
@@ -8609,7 +8617,7 @@ var MultiLine = /** @class */ (function (_super) {
     MultiLine.prototype._getTypeName = function () {
         return "MultiLine";
     };
-    MultiLine.prototype._draw = function (context) {
+    MultiLine.prototype._draw = function (context, invalidatedRectangle) {
         context.save();
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
             context.shadowColor = this.shadowColor;
@@ -10587,7 +10595,7 @@ var ImageBasedSlider = /** @class */ (function (_super) {
     ImageBasedSlider.prototype._getTypeName = function () {
         return "ImageBasedSlider";
     };
-    ImageBasedSlider.prototype._draw = function (context) {
+    ImageBasedSlider.prototype._draw = function (context, invalidatedRectangle) {
         context.save();
         this._applyStates(context);
         this._prepareRenderingData("rectangle");
@@ -10896,7 +10904,7 @@ var Slider = /** @class */ (function (_super) {
     Slider.prototype._getTypeName = function () {
         return "Slider";
     };
-    Slider.prototype._draw = function (context) {
+    Slider.prototype._draw = function (context, invalidatedRectangle) {
         context.save();
         this._applyStates(context);
         this._prepareRenderingData(this.isThumbCircle ? "circle" : "rectangle");
@@ -11197,7 +11205,7 @@ var StackPanel = /** @class */ (function (_super) {
                     this._rebuildLayout = true;
                     child._top.ignoreAdaptiveScaling = true;
                 }
-                if (child._height.isPercentage) {
+                if (child._height.isPercentage && !child._automaticSize) {
                     if (!this.ignoreLayoutWarnings) {
                         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Control (Name:" + child.name + ", UniqueId:" + child.uniqueId + ") is using height in percentage mode inside a vertical StackPanel");
                     }
@@ -11212,7 +11220,7 @@ var StackPanel = /** @class */ (function (_super) {
                     this._rebuildLayout = true;
                     child._left.ignoreAdaptiveScaling = true;
                 }
-                if (child._width.isPercentage) {
+                if (child._width.isPercentage && !child._automaticSize) {
                     if (!this.ignoreLayoutWarnings) {
                         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Control (Name:" + child.name + ", UniqueId:" + child.uniqueId + ") is using width in percentage mode inside a horizontal StackPanel");
                     }
@@ -11639,7 +11647,7 @@ var TextBlock = /** @class */ (function (_super) {
         context.fillText(text, this._currentMeasure.left + x, y);
     };
     /** @hidden */
-    TextBlock.prototype._draw = function (context) {
+    TextBlock.prototype._draw = function (context, invalidatedRectangle) {
         context.save();
         this._applyStates(context);
         // Render lines

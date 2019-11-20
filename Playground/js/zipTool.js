@@ -150,9 +150,18 @@ class ZipTool {
 
         document.getElementById("statusBar").innerHTML = "Creating archive... Please wait.";
 
-        if (this.zipCode.indexOf("textures/worldHeightMap.jpg") !== -1) {
-            textures.push({ name: "textures/worldHeightMap.jpg" });
-        }
+        var regex = /CreateGroundFromHeightMap\(".+", "(.+)"/g;
+
+        do {
+            let match = regex.exec(this.zipCode);            
+
+            if (!match) {
+                break;
+            }
+
+            textures.push({ name: match[1] });
+        } while(true);
+
 
         this.addContentToZip(zip,
             "index.html",

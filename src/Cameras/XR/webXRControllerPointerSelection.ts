@@ -39,7 +39,7 @@ export class WebXRControllerPointerSelection {
             this._updatePointerDistance(laserPointer, 1);
             laserPointer.isPickable = false;
 
-            // Create a gaze tracker for the  XR controlelr
+            // Create a gaze tracker for the  XR controller
             cursorMesh = Mesh.CreateTorus("gazeTracker", 0.0035 * 3, 0.0025 * 3, 20, scene, false);
             cursorMesh.bakeCurrentTransformIntoVertices();
             cursorMesh.isPickable = false;
@@ -55,7 +55,15 @@ export class WebXRControllerPointerSelection {
                 controller.getWorldPointerRayToRef(this._tmpRay);
                 let pick = scene.pickWithRay(this._tmpRay);
                 if (pick) {
-                    if (controller.inputSource.gamepad && controller.inputSource.gamepad.buttons[0] && controller.inputSource.gamepad.buttons[0].value > 0.7) {
+                    let pressed = false;
+                    if (controller.inputSource.gamepad) {
+                        if (controller.inputSource.gamepad.buttons[0] && controller.inputSource.gamepad.buttons[0].value > 0.7) {
+                            pressed = true;
+                        } else if (controller.inputSource.gamepad.buttons[1] && controller.inputSource.gamepad.buttons[1].pressed) {
+                            pressed = true;
+                        }
+                    }
+                    if (pressed) {
                         if (!triggerDown) {
                             scene.simulatePointerDown(pick, { pointerId: id });
                         }

@@ -15,7 +15,6 @@ import { Color3LineComponent } from '../../../lines/color3LineComponent';
 import { Vector3LineComponent } from '../../../lines/vector3LineComponent';
 import { Vector4LineComponent } from '../../../lines/vector4LineComponent';
 import { Vector2LineComponent } from '../../../lines/vector2LineComponent';
-import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { TextureLinkLineComponent } from '../../../lines/textureLinkLineComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
@@ -29,7 +28,7 @@ interface INodeMaterialPropertyGridComponentProps {
 }
 
 export class NodeMaterialPropertyGridComponent extends React.Component<INodeMaterialPropertyGridComponentProps> {
-    private _onDebugSelectionChangeObservable = new Observable<BaseTexture>();
+    private _onDebugSelectionChangeObservable = new Observable<TextureLinkLineComponent>();
     
     constructor(props: INodeMaterialPropertyGridComponentProps) {
         super(props);

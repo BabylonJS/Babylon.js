@@ -7,7 +7,7 @@
 		exports["babylonjs-node-editor"] = factory(require("babylonjs"));
 	else
 		root["NODEEDITOR"] = factory(root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_Textures_texture__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -296,7 +296,6 @@ var PREFIX_TO_STYLE = {
   'fas': 'solid',
   'far': 'regular',
   'fal': 'light',
-  'fad': 'duotone',
   'fab': 'brands',
   'fa': 'solid'
 };
@@ -304,11 +303,10 @@ var STYLE_TO_PREFIX = {
   'solid': 'fas',
   'regular': 'far',
   'light': 'fal',
-  'duotone': 'fad',
   'brands': 'fab'
 };
 var LAYERS_TEXT_CLASSNAME = 'fa-layers-text';
-var FONT_FAMILY_PATTERN = /Font Awesome 5 (Solid|Regular|Light|Duotone|Brands|Free|Pro)/;
+var FONT_FAMILY_PATTERN = /Font Awesome 5 (Solid|Regular|Light|Brands|Free|Pro)/;
 var FONT_WEIGHT_TO_PREFIX = {
   '900': 'fas',
   '400': 'far',
@@ -318,13 +316,7 @@ var FONT_WEIGHT_TO_PREFIX = {
 var oneToTen = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 var oneToTwenty = oneToTen.concat([11, 12, 13, 14, 15, 16, 17, 18, 19, 20]);
 var ATTRIBUTES_WATCHED_FOR_MUTATION = ['class', 'data-prefix', 'data-icon', 'data-fa-transform', 'data-fa-mask'];
-var DUOTONE_CLASSES = {
-  GROUP: 'group',
-  SWAP_OPACITY: 'swap-opacity',
-  PRIMARY: 'primary',
-  SECONDARY: 'secondary'
-};
-var RESERVED_CLASSES = ['xs', 'sm', 'lg', 'fw', 'ul', 'li', 'border', 'pull-left', 'pull-right', 'spin', 'pulse', 'rotate-90', 'rotate-180', 'rotate-270', 'flip-horizontal', 'flip-vertical', 'flip-both', 'stack', 'stack-1x', 'stack-2x', 'inverse', 'layers', 'layers-text', 'layers-counter', DUOTONE_CLASSES.GROUP, DUOTONE_CLASSES.SWAP_OPACITY, DUOTONE_CLASSES.PRIMARY, DUOTONE_CLASSES.SECONDARY].concat(oneToTen.map(function (n) {
+var RESERVED_CLASSES = ['xs', 'sm', 'lg', 'fw', 'ul', 'li', 'border', 'pull-left', 'pull-right', 'spin', 'pulse', 'rotate-90', 'rotate-180', 'rotate-270', 'flip-horizontal', 'flip-vertical', 'flip-both', 'stack', 'stack-1x', 'stack-2x', 'inverse', 'layers', 'layers-text', 'layers-counter'].concat(oneToTen.map(function (n) {
   return "".concat(n, "x");
 })).concat(oneToTwenty.map(function (n) {
   return "w-".concat(n);
@@ -848,25 +840,6 @@ var ALL_SPACE = {
   width: '100%',
   height: '100%'
 };
-
-function fillBlack(abstract) {
-  var force = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-
-  if (abstract.attributes && (abstract.attributes.fill || force)) {
-    abstract.attributes.fill = 'black';
-  }
-
-  return abstract;
-}
-
-function deGroup(abstract) {
-  if (abstract.tag === 'g') {
-    return abstract.children;
-  } else {
-    return [abstract];
-  }
-}
-
 function makeIconMasking (_ref) {
   var children = _ref.children,
       attributes = _ref.attributes,
@@ -888,16 +861,15 @@ function makeIconMasking (_ref) {
       fill: 'white'
     })
   };
-  var maskInnerGroupChildrenMixin = mainPath.children ? {
-    children: mainPath.children.map(fillBlack)
-  } : {};
   var maskInnerGroup = {
     tag: 'g',
     attributes: _objectSpread({}, trans.inner),
-    children: [fillBlack(_objectSpread({
-      tag: mainPath.tag,
-      attributes: _objectSpread({}, mainPath.attributes, trans.path)
-    }, maskInnerGroupChildrenMixin))]
+    children: [{
+      tag: 'path',
+      attributes: _objectSpread({}, mainPath.attributes, trans.path, {
+        fill: 'black'
+      })
+    }]
   };
   var maskOuterGroup = {
     tag: 'g',
@@ -922,7 +894,7 @@ function makeIconMasking (_ref) {
       attributes: {
         id: clipId
       },
-      children: deGroup(maskPath)
+      children: [maskPath]
     }, maskTag]
   };
   children.push(defs, {
@@ -1197,7 +1169,7 @@ var p = config.measurePerformance && PERFORMANCE && PERFORMANCE.mark && PERFORMA
   mark: noop$1,
   measure: noop$1
 };
-var preamble = "FA \"5.11.2\"";
+var preamble = "FA \"5.9.0\"";
 
 var begin = function begin(name) {
   p.mark("".concat(preamble, " ").concat(name, " begins"));
@@ -1383,7 +1355,7 @@ function getCanonicalIcon(values) {
 
     if (styles$1[cls]) {
       acc.prefix = cls;
-    } else if (config.autoFetchSvg && ['fas', 'far', 'fal', 'fad', 'fab', 'fa'].indexOf(cls) > -1) {
+    } else if (config.autoFetchSvg && ['fas', 'far', 'fal', 'fab', 'fa'].indexOf(cls) > -1) {
       acc.prefix = cls;
     } else if (iconName) {
       var shim = acc.prefix === 'fa' ? byOldName(iconName) : {};
@@ -1463,7 +1435,6 @@ var mutators = {
 
     var forSvg = new RegExp("".concat(config.familyPrefix, "-.*"));
     delete abstract[0].attributes.style;
-    delete abstract[0].attributes.id;
     var splitClasses = abstract[0].attributes.class.split(' ').reduce(function (acc, cls) {
       if (cls === config.replacementClass || cls.match(forSvg)) {
         acc.toSvg.push(cls);
@@ -1847,55 +1818,6 @@ var missing = {
 };
 
 var styles$2 = namespace.styles;
-function asFoundIcon(icon) {
-  var width = icon[0];
-  var height = icon[1];
-
-  var _icon$slice = icon.slice(4),
-      _icon$slice2 = _slicedToArray(_icon$slice, 1),
-      vectorData = _icon$slice2[0];
-
-  var element = null;
-
-  if (Array.isArray(vectorData)) {
-    element = {
-      tag: 'g',
-      attributes: {
-        class: "".concat(config.familyPrefix, "-").concat(DUOTONE_CLASSES.GROUP)
-      },
-      children: [{
-        tag: 'path',
-        attributes: {
-          class: "".concat(config.familyPrefix, "-").concat(DUOTONE_CLASSES.SECONDARY),
-          fill: 'currentColor',
-          d: vectorData[0]
-        }
-      }, {
-        tag: 'path',
-        attributes: {
-          class: "".concat(config.familyPrefix, "-").concat(DUOTONE_CLASSES.PRIMARY),
-          fill: 'currentColor',
-          d: vectorData[1]
-        }
-      }]
-    };
-  } else {
-    element = {
-      tag: 'path',
-      attributes: {
-        fill: 'currentColor',
-        d: vectorData
-      }
-    };
-  }
-
-  return {
-    found: true,
-    width: width,
-    height: height,
-    icon: element
-  };
-}
 function findIcon(iconName, prefix) {
   return new picked(function (resolve, reject) {
     var val = {
@@ -1907,13 +1829,22 @@ function findIcon(iconName, prefix) {
 
     if (iconName && prefix && styles$2[prefix] && styles$2[prefix][iconName]) {
       var icon = styles$2[prefix][iconName];
-      return resolve(asFoundIcon(icon));
-    }
-
-    var headers = {};
-
-    if (_typeof(WINDOW.FontAwesomeKitConfig) === 'object' && typeof window.FontAwesomeKitConfig.token === 'string') {
-      headers['fa-kit-token'] = WINDOW.FontAwesomeKitConfig.token;
+      var width = icon[0];
+      var height = icon[1];
+      var vectorData = icon.slice(4);
+      val = {
+        found: true,
+        width: width,
+        height: height,
+        icon: {
+          tag: 'path',
+          attributes: {
+            fill: 'currentColor',
+            d: vectorData[0]
+          }
+        }
+      };
+      return resolve(val);
     }
 
     if (iconName && prefix && !config.showMissingIcons) {
@@ -2100,7 +2031,7 @@ function replaceForPosition(node, position) {
       return resolve();
     } else if (fontFamily) {
       var content = styles.getPropertyValue('content');
-      var prefix = ~['Solid', 'Regular', 'Light', 'Duotone', 'Brands'].indexOf(fontFamily[1]) ? STYLE_TO_PREFIX[fontFamily[1].toLowerCase()] : FONT_WEIGHT_TO_PREFIX[fontWeight];
+      var prefix = ~['Light', 'Regular', 'Solid', 'Brands'].indexOf(fontFamily[1]) ? STYLE_TO_PREFIX[fontFamily[1].toLowerCase()] : FONT_WEIGHT_TO_PREFIX[fontWeight];
       var hexValue = toHex(content.length === 3 ? content.substr(1, 1) : content);
       var iconName = byUnicode(prefix, hexValue);
       var iconIdentifier = iconName; // Only convert the pseudo element in this :before/:after position into an icon if we haven't
@@ -2177,7 +2108,7 @@ function searchPseudoElements (root) {
   });
 }
 
-var baseStyles = "svg:not(:root).svg-inline--fa {\n  overflow: visible;\n}\n\n.svg-inline--fa {\n  display: inline-block;\n  font-size: inherit;\n  height: 1em;\n  overflow: visible;\n  vertical-align: -0.125em;\n}\n.svg-inline--fa.fa-lg {\n  vertical-align: -0.225em;\n}\n.svg-inline--fa.fa-w-1 {\n  width: 0.0625em;\n}\n.svg-inline--fa.fa-w-2 {\n  width: 0.125em;\n}\n.svg-inline--fa.fa-w-3 {\n  width: 0.1875em;\n}\n.svg-inline--fa.fa-w-4 {\n  width: 0.25em;\n}\n.svg-inline--fa.fa-w-5 {\n  width: 0.3125em;\n}\n.svg-inline--fa.fa-w-6 {\n  width: 0.375em;\n}\n.svg-inline--fa.fa-w-7 {\n  width: 0.4375em;\n}\n.svg-inline--fa.fa-w-8 {\n  width: 0.5em;\n}\n.svg-inline--fa.fa-w-9 {\n  width: 0.5625em;\n}\n.svg-inline--fa.fa-w-10 {\n  width: 0.625em;\n}\n.svg-inline--fa.fa-w-11 {\n  width: 0.6875em;\n}\n.svg-inline--fa.fa-w-12 {\n  width: 0.75em;\n}\n.svg-inline--fa.fa-w-13 {\n  width: 0.8125em;\n}\n.svg-inline--fa.fa-w-14 {\n  width: 0.875em;\n}\n.svg-inline--fa.fa-w-15 {\n  width: 0.9375em;\n}\n.svg-inline--fa.fa-w-16 {\n  width: 1em;\n}\n.svg-inline--fa.fa-w-17 {\n  width: 1.0625em;\n}\n.svg-inline--fa.fa-w-18 {\n  width: 1.125em;\n}\n.svg-inline--fa.fa-w-19 {\n  width: 1.1875em;\n}\n.svg-inline--fa.fa-w-20 {\n  width: 1.25em;\n}\n.svg-inline--fa.fa-pull-left {\n  margin-right: 0.3em;\n  width: auto;\n}\n.svg-inline--fa.fa-pull-right {\n  margin-left: 0.3em;\n  width: auto;\n}\n.svg-inline--fa.fa-border {\n  height: 1.5em;\n}\n.svg-inline--fa.fa-li {\n  width: 2em;\n}\n.svg-inline--fa.fa-fw {\n  width: 1.25em;\n}\n\n.fa-layers svg.svg-inline--fa {\n  bottom: 0;\n  left: 0;\n  margin: auto;\n  position: absolute;\n  right: 0;\n  top: 0;\n}\n\n.fa-layers {\n  display: inline-block;\n  height: 1em;\n  position: relative;\n  text-align: center;\n  vertical-align: -0.125em;\n  width: 1em;\n}\n.fa-layers svg.svg-inline--fa {\n  -webkit-transform-origin: center center;\n          transform-origin: center center;\n}\n\n.fa-layers-counter, .fa-layers-text {\n  display: inline-block;\n  position: absolute;\n  text-align: center;\n}\n\n.fa-layers-text {\n  left: 50%;\n  top: 50%;\n  -webkit-transform: translate(-50%, -50%);\n          transform: translate(-50%, -50%);\n  -webkit-transform-origin: center center;\n          transform-origin: center center;\n}\n\n.fa-layers-counter {\n  background-color: #ff253a;\n  border-radius: 1em;\n  -webkit-box-sizing: border-box;\n          box-sizing: border-box;\n  color: #fff;\n  height: 1.5em;\n  line-height: 1;\n  max-width: 5em;\n  min-width: 1.5em;\n  overflow: hidden;\n  padding: 0.25em;\n  right: 0;\n  text-overflow: ellipsis;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top right;\n          transform-origin: top right;\n}\n\n.fa-layers-bottom-right {\n  bottom: 0;\n  right: 0;\n  top: auto;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: bottom right;\n          transform-origin: bottom right;\n}\n\n.fa-layers-bottom-left {\n  bottom: 0;\n  left: 0;\n  right: auto;\n  top: auto;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: bottom left;\n          transform-origin: bottom left;\n}\n\n.fa-layers-top-right {\n  right: 0;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top right;\n          transform-origin: top right;\n}\n\n.fa-layers-top-left {\n  left: 0;\n  right: auto;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top left;\n          transform-origin: top left;\n}\n\n.fa-lg {\n  font-size: 1.3333333333em;\n  line-height: 0.75em;\n  vertical-align: -0.0667em;\n}\n\n.fa-xs {\n  font-size: 0.75em;\n}\n\n.fa-sm {\n  font-size: 0.875em;\n}\n\n.fa-1x {\n  font-size: 1em;\n}\n\n.fa-2x {\n  font-size: 2em;\n}\n\n.fa-3x {\n  font-size: 3em;\n}\n\n.fa-4x {\n  font-size: 4em;\n}\n\n.fa-5x {\n  font-size: 5em;\n}\n\n.fa-6x {\n  font-size: 6em;\n}\n\n.fa-7x {\n  font-size: 7em;\n}\n\n.fa-8x {\n  font-size: 8em;\n}\n\n.fa-9x {\n  font-size: 9em;\n}\n\n.fa-10x {\n  font-size: 10em;\n}\n\n.fa-fw {\n  text-align: center;\n  width: 1.25em;\n}\n\n.fa-ul {\n  list-style-type: none;\n  margin-left: 2.5em;\n  padding-left: 0;\n}\n.fa-ul > li {\n  position: relative;\n}\n\n.fa-li {\n  left: -2em;\n  position: absolute;\n  text-align: center;\n  width: 2em;\n  line-height: inherit;\n}\n\n.fa-border {\n  border: solid 0.08em #eee;\n  border-radius: 0.1em;\n  padding: 0.2em 0.25em 0.15em;\n}\n\n.fa-pull-left {\n  float: left;\n}\n\n.fa-pull-right {\n  float: right;\n}\n\n.fa.fa-pull-left,\n.fas.fa-pull-left,\n.far.fa-pull-left,\n.fal.fa-pull-left,\n.fab.fa-pull-left {\n  margin-right: 0.3em;\n}\n.fa.fa-pull-right,\n.fas.fa-pull-right,\n.far.fa-pull-right,\n.fal.fa-pull-right,\n.fab.fa-pull-right {\n  margin-left: 0.3em;\n}\n\n.fa-spin {\n  -webkit-animation: fa-spin 2s infinite linear;\n          animation: fa-spin 2s infinite linear;\n}\n\n.fa-pulse {\n  -webkit-animation: fa-spin 1s infinite steps(8);\n          animation: fa-spin 1s infinite steps(8);\n}\n\n@-webkit-keyframes fa-spin {\n  0% {\n    -webkit-transform: rotate(0deg);\n            transform: rotate(0deg);\n  }\n  100% {\n    -webkit-transform: rotate(360deg);\n            transform: rotate(360deg);\n  }\n}\n\n@keyframes fa-spin {\n  0% {\n    -webkit-transform: rotate(0deg);\n            transform: rotate(0deg);\n  }\n  100% {\n    -webkit-transform: rotate(360deg);\n            transform: rotate(360deg);\n  }\n}\n.fa-rotate-90 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=1)\";\n  -webkit-transform: rotate(90deg);\n          transform: rotate(90deg);\n}\n\n.fa-rotate-180 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2)\";\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n\n.fa-rotate-270 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=3)\";\n  -webkit-transform: rotate(270deg);\n          transform: rotate(270deg);\n}\n\n.fa-flip-horizontal {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=0, mirror=1)\";\n  -webkit-transform: scale(-1, 1);\n          transform: scale(-1, 1);\n}\n\n.fa-flip-vertical {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)\";\n  -webkit-transform: scale(1, -1);\n          transform: scale(1, -1);\n}\n\n.fa-flip-both, .fa-flip-horizontal.fa-flip-vertical {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)\";\n  -webkit-transform: scale(-1, -1);\n          transform: scale(-1, -1);\n}\n\n:root .fa-rotate-90,\n:root .fa-rotate-180,\n:root .fa-rotate-270,\n:root .fa-flip-horizontal,\n:root .fa-flip-vertical,\n:root .fa-flip-both {\n  -webkit-filter: none;\n          filter: none;\n}\n\n.fa-stack {\n  display: inline-block;\n  height: 2em;\n  position: relative;\n  width: 2.5em;\n}\n\n.fa-stack-1x,\n.fa-stack-2x {\n  bottom: 0;\n  left: 0;\n  margin: auto;\n  position: absolute;\n  right: 0;\n  top: 0;\n}\n\n.svg-inline--fa.fa-stack-1x {\n  height: 1em;\n  width: 1.25em;\n}\n.svg-inline--fa.fa-stack-2x {\n  height: 2em;\n  width: 2.5em;\n}\n\n.fa-inverse {\n  color: #fff;\n}\n\n.sr-only {\n  border: 0;\n  clip: rect(0, 0, 0, 0);\n  height: 1px;\n  margin: -1px;\n  overflow: hidden;\n  padding: 0;\n  position: absolute;\n  width: 1px;\n}\n\n.sr-only-focusable:active, .sr-only-focusable:focus {\n  clip: auto;\n  height: auto;\n  margin: 0;\n  overflow: visible;\n  position: static;\n  width: auto;\n}\n\n.svg-inline--fa .fa-primary {\n  fill: var(--fa-primary-color, currentColor);\n  opacity: 1;\n  opacity: var(--fa-primary-opacity, 1);\n}\n\n.svg-inline--fa .fa-secondary {\n  fill: var(--fa-secondary-color, currentColor);\n  opacity: 0.4;\n  opacity: var(--fa-secondary-opacity, 0.4);\n}\n\n.svg-inline--fa.fa-swap-opacity .fa-primary {\n  opacity: 0.4;\n  opacity: var(--fa-secondary-opacity, 0.4);\n}\n\n.svg-inline--fa.fa-swap-opacity .fa-secondary {\n  opacity: 1;\n  opacity: var(--fa-primary-opacity, 1);\n}\n\n.svg-inline--fa mask .fa-primary,\n.svg-inline--fa mask .fa-secondary {\n  fill: black;\n}\n\n.fad.fa-inverse {\n  color: #fff;\n}";
+var baseStyles = "svg:not(:root).svg-inline--fa {\n  overflow: visible;\n}\n\n.svg-inline--fa {\n  display: inline-block;\n  font-size: inherit;\n  height: 1em;\n  overflow: visible;\n  vertical-align: -0.125em;\n}\n.svg-inline--fa.fa-lg {\n  vertical-align: -0.225em;\n}\n.svg-inline--fa.fa-w-1 {\n  width: 0.0625em;\n}\n.svg-inline--fa.fa-w-2 {\n  width: 0.125em;\n}\n.svg-inline--fa.fa-w-3 {\n  width: 0.1875em;\n}\n.svg-inline--fa.fa-w-4 {\n  width: 0.25em;\n}\n.svg-inline--fa.fa-w-5 {\n  width: 0.3125em;\n}\n.svg-inline--fa.fa-w-6 {\n  width: 0.375em;\n}\n.svg-inline--fa.fa-w-7 {\n  width: 0.4375em;\n}\n.svg-inline--fa.fa-w-8 {\n  width: 0.5em;\n}\n.svg-inline--fa.fa-w-9 {\n  width: 0.5625em;\n}\n.svg-inline--fa.fa-w-10 {\n  width: 0.625em;\n}\n.svg-inline--fa.fa-w-11 {\n  width: 0.6875em;\n}\n.svg-inline--fa.fa-w-12 {\n  width: 0.75em;\n}\n.svg-inline--fa.fa-w-13 {\n  width: 0.8125em;\n}\n.svg-inline--fa.fa-w-14 {\n  width: 0.875em;\n}\n.svg-inline--fa.fa-w-15 {\n  width: 0.9375em;\n}\n.svg-inline--fa.fa-w-16 {\n  width: 1em;\n}\n.svg-inline--fa.fa-w-17 {\n  width: 1.0625em;\n}\n.svg-inline--fa.fa-w-18 {\n  width: 1.125em;\n}\n.svg-inline--fa.fa-w-19 {\n  width: 1.1875em;\n}\n.svg-inline--fa.fa-w-20 {\n  width: 1.25em;\n}\n.svg-inline--fa.fa-pull-left {\n  margin-right: 0.3em;\n  width: auto;\n}\n.svg-inline--fa.fa-pull-right {\n  margin-left: 0.3em;\n  width: auto;\n}\n.svg-inline--fa.fa-border {\n  height: 1.5em;\n}\n.svg-inline--fa.fa-li {\n  width: 2em;\n}\n.svg-inline--fa.fa-fw {\n  width: 1.25em;\n}\n\n.fa-layers svg.svg-inline--fa {\n  bottom: 0;\n  left: 0;\n  margin: auto;\n  position: absolute;\n  right: 0;\n  top: 0;\n}\n\n.fa-layers {\n  display: inline-block;\n  height: 1em;\n  position: relative;\n  text-align: center;\n  vertical-align: -0.125em;\n  width: 1em;\n}\n.fa-layers svg.svg-inline--fa {\n  -webkit-transform-origin: center center;\n          transform-origin: center center;\n}\n\n.fa-layers-counter, .fa-layers-text {\n  display: inline-block;\n  position: absolute;\n  text-align: center;\n}\n\n.fa-layers-text {\n  left: 50%;\n  top: 50%;\n  -webkit-transform: translate(-50%, -50%);\n          transform: translate(-50%, -50%);\n  -webkit-transform-origin: center center;\n          transform-origin: center center;\n}\n\n.fa-layers-counter {\n  background-color: #ff253a;\n  border-radius: 1em;\n  -webkit-box-sizing: border-box;\n          box-sizing: border-box;\n  color: #fff;\n  height: 1.5em;\n  line-height: 1;\n  max-width: 5em;\n  min-width: 1.5em;\n  overflow: hidden;\n  padding: 0.25em;\n  right: 0;\n  text-overflow: ellipsis;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top right;\n          transform-origin: top right;\n}\n\n.fa-layers-bottom-right {\n  bottom: 0;\n  right: 0;\n  top: auto;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: bottom right;\n          transform-origin: bottom right;\n}\n\n.fa-layers-bottom-left {\n  bottom: 0;\n  left: 0;\n  right: auto;\n  top: auto;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: bottom left;\n          transform-origin: bottom left;\n}\n\n.fa-layers-top-right {\n  right: 0;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top right;\n          transform-origin: top right;\n}\n\n.fa-layers-top-left {\n  left: 0;\n  right: auto;\n  top: 0;\n  -webkit-transform: scale(0.25);\n          transform: scale(0.25);\n  -webkit-transform-origin: top left;\n          transform-origin: top left;\n}\n\n.fa-lg {\n  font-size: 1.3333333333em;\n  line-height: 0.75em;\n  vertical-align: -0.0667em;\n}\n\n.fa-xs {\n  font-size: 0.75em;\n}\n\n.fa-sm {\n  font-size: 0.875em;\n}\n\n.fa-1x {\n  font-size: 1em;\n}\n\n.fa-2x {\n  font-size: 2em;\n}\n\n.fa-3x {\n  font-size: 3em;\n}\n\n.fa-4x {\n  font-size: 4em;\n}\n\n.fa-5x {\n  font-size: 5em;\n}\n\n.fa-6x {\n  font-size: 6em;\n}\n\n.fa-7x {\n  font-size: 7em;\n}\n\n.fa-8x {\n  font-size: 8em;\n}\n\n.fa-9x {\n  font-size: 9em;\n}\n\n.fa-10x {\n  font-size: 10em;\n}\n\n.fa-fw {\n  text-align: center;\n  width: 1.25em;\n}\n\n.fa-ul {\n  list-style-type: none;\n  margin-left: 2.5em;\n  padding-left: 0;\n}\n.fa-ul > li {\n  position: relative;\n}\n\n.fa-li {\n  left: -2em;\n  position: absolute;\n  text-align: center;\n  width: 2em;\n  line-height: inherit;\n}\n\n.fa-border {\n  border: solid 0.08em #eee;\n  border-radius: 0.1em;\n  padding: 0.2em 0.25em 0.15em;\n}\n\n.fa-pull-left {\n  float: left;\n}\n\n.fa-pull-right {\n  float: right;\n}\n\n.fa.fa-pull-left,\n.fas.fa-pull-left,\n.far.fa-pull-left,\n.fal.fa-pull-left,\n.fab.fa-pull-left {\n  margin-right: 0.3em;\n}\n.fa.fa-pull-right,\n.fas.fa-pull-right,\n.far.fa-pull-right,\n.fal.fa-pull-right,\n.fab.fa-pull-right {\n  margin-left: 0.3em;\n}\n\n.fa-spin {\n  -webkit-animation: fa-spin 2s infinite linear;\n          animation: fa-spin 2s infinite linear;\n}\n\n.fa-pulse {\n  -webkit-animation: fa-spin 1s infinite steps(8);\n          animation: fa-spin 1s infinite steps(8);\n}\n\n@-webkit-keyframes fa-spin {\n  0% {\n    -webkit-transform: rotate(0deg);\n            transform: rotate(0deg);\n  }\n  100% {\n    -webkit-transform: rotate(360deg);\n            transform: rotate(360deg);\n  }\n}\n\n@keyframes fa-spin {\n  0% {\n    -webkit-transform: rotate(0deg);\n            transform: rotate(0deg);\n  }\n  100% {\n    -webkit-transform: rotate(360deg);\n            transform: rotate(360deg);\n  }\n}\n.fa-rotate-90 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=1)\";\n  -webkit-transform: rotate(90deg);\n          transform: rotate(90deg);\n}\n\n.fa-rotate-180 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2)\";\n  -webkit-transform: rotate(180deg);\n          transform: rotate(180deg);\n}\n\n.fa-rotate-270 {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=3)\";\n  -webkit-transform: rotate(270deg);\n          transform: rotate(270deg);\n}\n\n.fa-flip-horizontal {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=0, mirror=1)\";\n  -webkit-transform: scale(-1, 1);\n          transform: scale(-1, 1);\n}\n\n.fa-flip-vertical {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)\";\n  -webkit-transform: scale(1, -1);\n          transform: scale(1, -1);\n}\n\n.fa-flip-both, .fa-flip-horizontal.fa-flip-vertical {\n  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)\";\n  -webkit-transform: scale(-1, -1);\n          transform: scale(-1, -1);\n}\n\n:root .fa-rotate-90,\n:root .fa-rotate-180,\n:root .fa-rotate-270,\n:root .fa-flip-horizontal,\n:root .fa-flip-vertical,\n:root .fa-flip-both {\n  -webkit-filter: none;\n          filter: none;\n}\n\n.fa-stack {\n  display: inline-block;\n  height: 2em;\n  position: relative;\n  width: 2.5em;\n}\n\n.fa-stack-1x,\n.fa-stack-2x {\n  bottom: 0;\n  left: 0;\n  margin: auto;\n  position: absolute;\n  right: 0;\n  top: 0;\n}\n\n.svg-inline--fa.fa-stack-1x {\n  height: 1em;\n  width: 1.25em;\n}\n.svg-inline--fa.fa-stack-2x {\n  height: 2em;\n  width: 2.5em;\n}\n\n.fa-inverse {\n  color: #fff;\n}\n\n.sr-only {\n  border: 0;\n  clip: rect(0, 0, 0, 0);\n  height: 1px;\n  margin: -1px;\n  overflow: hidden;\n  padding: 0;\n  position: absolute;\n  width: 1px;\n}\n\n.sr-only-focusable:active, .sr-only-focusable:focus {\n  clip: auto;\n  height: auto;\n  margin: 0;\n  overflow: visible;\n  position: static;\n  width: auto;\n}";
 
 function css () {
   var dfp = DEFAULT_FAMILY_PREFIX;
@@ -2188,9 +2119,8 @@ function css () {
 
   if (fp !== dfp || rc !== drc) {
     var dPatt = new RegExp("\\.".concat(dfp, "\\-"), 'g');
-    var customPropPatt = new RegExp("\\--".concat(dfp, "\\-"), 'g');
     var rPatt = new RegExp("\\.".concat(drc), 'g');
-    s = s.replace(dPatt, ".".concat(fp, "-")).replace(customPropPatt, "--".concat(fp, "-")).replace(rPatt, ".".concat(rc));
+    s = s.replace(dPatt, ".".concat(fp, "-")).replace(rPatt, ".".concat(rc));
   }
 
   return s;
@@ -2246,6 +2176,24 @@ function () {
 
   return Library;
 }();
+
+function prepIcon(icon) {
+  var width = icon[0];
+  var height = icon[1];
+  var vectorData = icon.slice(4);
+  return {
+    found: true,
+    width: width,
+    height: height,
+    icon: {
+      tag: 'path',
+      attributes: {
+        fill: 'currentColor',
+        d: vectorData[0]
+      }
+    }
+  };
+}
 
 function ensureCss() {
   if (config.autoAddCss && !_cssInserted) {
@@ -2400,8 +2348,8 @@ var icon = resolveIcons(function (iconDefinition) {
 
     return makeInlineSvgAbstract({
       icons: {
-        main: asFoundIcon(icon),
-        mask: mask ? asFoundIcon(mask.icon) : {
+        main: prepIcon(icon),
+        mask: mask ? prepIcon(mask.icon) : {
           found: false,
           width: null,
           height: null,
@@ -2477,9 +2425,6 @@ var counter = function counter(content) {
   });
 };
 var layer = function layer(assembler) {
-  var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-  var _params$classes4 = params.classes,
-      classes = _params$classes4 === void 0 ? [] : _params$classes4;
   return apiObject({
     type: 'layer'
   }, function () {
@@ -2493,7 +2438,7 @@ var layer = function layer(assembler) {
     return [{
       tag: 'span',
       attributes: {
-        class: ["".concat(config.familyPrefix, "-layers")].concat(_toConsumableArray(classes)).join(' ')
+        class: "".concat(config.familyPrefix, "-layers")
       },
       children: children
     }];
@@ -5117,7 +5062,7 @@ var _iconsCache = {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FontAwesomeIcon", function() { return FontAwesomeIcon; });
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FontAwesomeIcon", function() { return FontAwesomeIcon; });
 /* harmony import */ var _fortawesome_fontawesome_svg_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @fortawesome/fontawesome-svg-core */ "../../node_modules/@fortawesome/fontawesome-svg-core/index.es.js");
 /* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! prop-types */ "../../node_modules/prop-types/index.js");
 /* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_1__);
@@ -5231,62 +5176,143 @@ function _nonIterableSpread() {
   throw new TypeError("Invalid attempt to spread non-iterable instance");
 }
 
-// Get CSS class list from a props object
-function classList(props) {
-  var _classes;
+var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
-  var spin = props.spin,
-      pulse = props.pulse,
-      fixedWidth = props.fixedWidth,
-      inverse = props.inverse,
-      border = props.border,
-      listItem = props.listItem,
-      flip = props.flip,
-      size = props.size,
-      rotation = props.rotation,
-      pull = props.pull; // map of CSS class names to properties
-
-  var classes = (_classes = {
-    'fa-spin': spin,
-    'fa-pulse': pulse,
-    'fa-fw': fixedWidth,
-    'fa-inverse': inverse,
-    'fa-border': border,
-    'fa-li': listItem,
-    'fa-flip-horizontal': flip === 'horizontal' || flip === 'both',
-    'fa-flip-vertical': flip === 'vertical' || flip === 'both'
-  }, _defineProperty(_classes, "fa-".concat(size), typeof size !== 'undefined' && size !== null), _defineProperty(_classes, "fa-rotate-".concat(rotation), typeof rotation !== 'undefined' && rotation !== null), _defineProperty(_classes, "fa-pull-".concat(pull), typeof pull !== 'undefined' && pull !== null), _defineProperty(_classes, 'fa-swap-opacity', props.swapOpacity), _classes); // map over all the keys in the classes object
-  // return an array of the keys where the value for the key is not null
-
-  return Object.keys(classes).map(function (key) {
-    return classes[key] ? key : null;
-  }).filter(function (key) {
-    return key;
-  });
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
 
-// Camelize taken from humps
-// humps is copyright © 2012+ Dom Christie
-// Released under the MIT license.
-// Performant way to determine if object coerces to a number
-function _isNumerical(obj) {
-  obj = obj - 0; // eslint-disable-next-line no-self-compare
+var humps = createCommonjsModule(function (module) {
+(function(global) {
 
-  return obj === obj;
-}
+  var _processKeys = function(convert, obj, options) {
+    if(!_isObject(obj) || _isDate(obj) || _isRegExp(obj) || _isBoolean(obj) || _isFunction(obj)) {
+      return obj;
+    }
 
-function camelize(string) {
-  if (_isNumerical(string)) {
-    return string;
-  } // eslint-disable-next-line no-useless-escape
+    var output,
+        i = 0,
+        l = 0;
 
+    if(_isArray(obj)) {
+      output = [];
+      for(l=obj.length; i<l; i++) {
+        output.push(_processKeys(convert, obj[i], options));
+      }
+    }
+    else {
+      output = {};
+      for(var key in obj) {
+        if(Object.prototype.hasOwnProperty.call(obj, key)) {
+          output[convert(key, options)] = _processKeys(convert, obj[key], options);
+        }
+      }
+    }
+    return output;
+  };
 
-  string = string.replace(/[\-_\s]+(.)?/g, function (match, chr) {
-    return chr ? chr.toUpperCase() : '';
-  }); // Ensure 1st char is always lowercase
+  // String conversion methods
 
-  return string.substr(0, 1).toLowerCase() + string.substr(1);
-}
+  var separateWords = function(string, options) {
+    options = options || {};
+    var separator = options.separator || '_';
+    var split = options.split || /(?=[A-Z])/;
+
+    return string.split(split).join(separator);
+  };
+
+  var camelize = function(string) {
+    if (_isNumerical(string)) {
+      return string;
+    }
+    string = string.replace(/[\-_\s]+(.)?/g, function(match, chr) {
+      return chr ? chr.toUpperCase() : '';
+    });
+    // Ensure 1st char is always lowercase
+    return string.substr(0, 1).toLowerCase() + string.substr(1);
+  };
+
+  var pascalize = function(string) {
+    var camelized = camelize(string);
+    // Ensure 1st char is always uppercase
+    return camelized.substr(0, 1).toUpperCase() + camelized.substr(1);
+  };
+
+  var decamelize = function(string, options) {
+    return separateWords(string, options).toLowerCase();
+  };
+
+  // Utilities
+  // Taken from Underscore.js
+
+  var toString = Object.prototype.toString;
+
+  var _isFunction = function(obj) {
+    return typeof(obj) === 'function';
+  };
+  var _isObject = function(obj) {
+    return obj === Object(obj);
+  };
+  var _isArray = function(obj) {
+    return toString.call(obj) == '[object Array]';
+  };
+  var _isDate = function(obj) {
+    return toString.call(obj) == '[object Date]';
+  };
+  var _isRegExp = function(obj) {
+    return toString.call(obj) == '[object RegExp]';
+  };
+  var _isBoolean = function(obj) {
+    return toString.call(obj) == '[object Boolean]';
+  };
+
+  // Performant way to determine if obj coerces to a number
+  var _isNumerical = function(obj) {
+    obj = obj - 0;
+    return obj === obj;
+  };
+
+  // Sets up function which handles processing keys
+  // allowing the convert function to be modified by a callback
+  var _processor = function(convert, options) {
+    var callback = options && 'process' in options ? options.process : options;
+
+    if(typeof(callback) !== 'function') {
+      return convert;
+    }
+
+    return function(string, options) {
+      return callback(string, convert, options);
+    }
+  };
+
+  var humps = {
+    camelize: camelize,
+    decamelize: decamelize,
+    pascalize: pascalize,
+    depascalize: decamelize,
+    camelizeKeys: function(object, options) {
+      return _processKeys(_processor(camelize, options), object);
+    },
+    decamelizeKeys: function(object, options) {
+      return _processKeys(_processor(decamelize, options), object, options);
+    },
+    pascalizeKeys: function(object, options) {
+      return _processKeys(_processor(pascalize, options), object);
+    },
+    depascalizeKeys: function () {
+      return this.decamelizeKeys.apply(this, arguments);
+    }
+  };
+
+  if (module.exports) {
+    module.exports = humps;
+  } else {
+    global.humps = humps;
+  }
+
+})(commonjsGlobal);
+});
 
 function capitalize(val) {
   return val.charAt(0).toUpperCase() + val.slice(1);
@@ -5299,7 +5325,7 @@ function styleToObject(style) {
     return s;
   }).reduce(function (acc, pair) {
     var i = pair.indexOf(':');
-    var prop = camelize(pair.slice(0, i));
+    var prop = humps.camelize(pair.slice(0, i));
     var value = pair.slice(i + 1).trim();
     prop.startsWith('webkit') ? acc[capitalize(prop)] = value : acc[prop] = value;
     return acc;
@@ -5333,7 +5359,7 @@ function convert(createElement, element) {
         if (key.indexOf('aria-') === 0 || key.indexOf('data-') === 0) {
           acc.attrs[key.toLowerCase()] = val;
         } else {
-          acc.attrs[camelize(key)] = val;
+          acc.attrs[humps.camelize(key)] = val;
         }
 
     }
@@ -5365,27 +5391,45 @@ function log () {
   }
 }
 
-// Normalize icon arguments
+function objectWithKey(key, value) {
+  return Array.isArray(value) && value.length > 0 || !Array.isArray(value) && value ? _defineProperty({}, key, value) : {};
+}
+
+function classList(props) {
+  var _classes;
+
+  var classes = (_classes = {
+    'fa-spin': props.spin,
+    'fa-pulse': props.pulse,
+    'fa-fw': props.fixedWidth,
+    'fa-inverse': props.inverse,
+    'fa-border': props.border,
+    'fa-li': props.listItem,
+    'fa-flip-horizontal': props.flip === 'horizontal' || props.flip === 'both',
+    'fa-flip-vertical': props.flip === 'vertical' || props.flip === 'both'
+  }, _defineProperty(_classes, "fa-".concat(props.size), props.size !== null), _defineProperty(_classes, "fa-rotate-".concat(props.rotation), props.rotation !== null), _defineProperty(_classes, "fa-pull-".concat(props.pull), props.pull !== null), _classes);
+  return Object.keys(classes).map(function (key) {
+    return classes[key] ? key : null;
+  }).filter(function (key) {
+    return key;
+  });
+}
+
 function normalizeIconArgs(icon$$1) {
-  // if the icon is null, there's nothing to do
   if (icon$$1 === null) {
     return null;
-  } // if the icon is an object and has a prefix and an icon name, return it
-
+  }
 
   if (_typeof(icon$$1) === 'object' && icon$$1.prefix && icon$$1.iconName) {
     return icon$$1;
-  } // if it's an array with length of two
-
+  }
 
   if (Array.isArray(icon$$1) && icon$$1.length === 2) {
-    // use the first item as prefix, second as icon name
     return {
       prefix: icon$$1[0],
       iconName: icon$$1[1]
     };
-  } // if it's a string, use it as the icon name
-
+  }
 
   if (typeof icon$$1 === 'string') {
     return {
@@ -5393,17 +5437,6 @@ function normalizeIconArgs(icon$$1) {
       iconName: icon$$1
     };
   }
-}
-
-// creates an object with a key of key
-// and a value of value
-// if certain conditions are met
-function objectWithKey(key, value) {
-  // if the value is a non-empty array
-  // or it's not an array but it is truthy
-  // then create the object with the key and the value
-  // if not, return an empty array
-  return Array.isArray(value) && value.length > 0 || !Array.isArray(value) && value ? _defineProperty({}, key, value) : {};
 }
 
 function FontAwesomeIcon(props) {
@@ -5452,8 +5485,7 @@ FontAwesomeIcon.propTypes = {
   spin: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool,
   symbol: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool, prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string]),
   title: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string,
-  transform: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string, prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.object]),
-  swapOpacity: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.bool
+  transform: prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.string, prop_types__WEBPACK_IMPORTED_MODULE_1___default.a.object])
 };
 FontAwesomeIcon.defaultProps = {
   border: false,
@@ -5471,20 +5503,20 @@ FontAwesomeIcon.defaultProps = {
   spin: false,
   symbol: false,
   title: '',
-  transform: null,
-  swapOpacity: false
+  transform: null
 };
 var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement);
 
 
 
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../webpack/buildin/global.js */ "../../node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
-/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./components/diagram/diagram.scss":
-/*!**********************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/diagram/diagram.scss ***!
-  \**********************************************************************************************************************************************/
+/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/diagram/diagram.scss":
+/*!************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/diagram/diagram.scss ***!
+  \************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5493,17 +5525,17 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, ".srd-node {\n  width: 200px; }\n\n.srd-node--selected .diagramBlock {\n  border-color: white !important; }\n\n.srd-default-link--path-selected {\n  animation: 0s !important;\n  stroke: #ffffff !important; }\n\n.srd-port {\n  grid-column: 1;\n  grid-row: 1;\n  background: #2796B2;\n  border-radius: 20px;\n  transform: scale(1);\n  width: 20px;\n  height: 20px; }\n  .srd-port.connected {\n    background: #CAB422; }\n  .srd-port:hover {\n    background: #DDDDDD !important; }\n\n.diagramBlock {\n  background: gray;\n  width: 100%;\n  border: 4px solid black;\n  border-radius: 12px;\n  display: grid;\n  grid-template-rows: 30px auto;\n  grid-template-columns: 50% 50%;\n  color: white; }\n  .diagramBlock.input {\n    background: #40866E;\n    color: white; }\n    .diagramBlock.input .value {\n      grid-row: 2; }\n    .diagramBlock.input .outputs {\n      transform: translateY(5px); }\n    .diagramBlock.input.Float {\n      background: #cb9e27; }\n    .diagramBlock.input.Vector2 {\n      background: #16bcb1; }\n    .diagramBlock.input.Vector3 {\n      background: #b786cb; }\n    .diagramBlock.input.Color3 {\n      background: #b786cb; }\n    .diagramBlock.input.Vector4 {\n      background: #be5126; }\n    .diagramBlock.input.Color4 {\n      background: #be5126; }\n    .diagramBlock.input.Matrix {\n      background: #591990; }\n  .diagramBlock.trigonometry {\n    background: #405c86;\n    color: white; }\n    .diagramBlock.trigonometry .value {\n      grid-row: 2; }\n  .diagramBlock.remap {\n    color: white;\n    background: #4086BB; }\n    .diagramBlock.remap .value {\n      grid-row: 3; }\n    .diagramBlock.remap .outputs, .diagramBlock.remap .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.gradient {\n    height: 70px; }\n    .diagramBlock.gradient .outputs, .diagramBlock.gradient .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.attribute {\n    background: #40866E; }\n  .diagramBlock.constant {\n    background: #646464 !important; }\n  .diagramBlock.output {\n    background: #6a2c83;\n    color: white; }\n    .diagramBlock.output .inputs {\n      color: white; }\n  .diagramBlock .header {\n    grid-row: 1;\n    grid-column: 1 / span 2;\n    border: 4px solid black;\n    border-top-right-radius: 7px;\n    border-top-left-radius: 7px;\n    font-size: 16px;\n    text-align: center;\n    margin-top: -1px;\n    transform: scaleX(1.001);\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    background: black;\n    color: white; }\n  .diagramBlock .value {\n    grid-row: 3;\n    grid-column: 1 / span 2;\n    height: 34px;\n    text-align: center;\n    font-size: 18px;\n    font-weight: bold;\n    margin: 0 10px; }\n    .diagramBlock .value .value-text {\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden; }\n  .diagramBlock .inputs {\n    grid-row: 2;\n    grid-column: 1;\n    padding-bottom: 8px; }\n    .diagramBlock .inputs .input-port {\n      display: grid;\n      grid-template-columns: 12px calc(100% - 12px);\n      grid-template-rows: 100%; }\n      .diagramBlock .inputs .input-port .input-port-plug {\n        grid-column: 1;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        margin-left: -11px;\n        position: relative; }\n        .diagramBlock .inputs .input-port .input-port-plug:hover .input-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .inputs .input-port .input-port-plug .input-port-type {\n          width: 15px;\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .inputs .input-port .input-port-plug .input-port-type img {\n            width: 20px; }\n      .diagramBlock .inputs .input-port .input-port-label {\n        grid-column: 2;\n        grid-row: 1;\n        margin-bottom: 4px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock .outputs {\n    grid-row: 2;\n    grid-column: 2;\n    padding-bottom: 8px; }\n    .diagramBlock .outputs .output-port {\n      display: grid;\n      grid-template-columns: calc(100% - 12px) 12px;\n      grid-template-rows: 100%; }\n      .diagramBlock .outputs .output-port .output-port-plug {\n        grid-column: 2;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        position: relative;\n        margin-left: 4px; }\n        .diagramBlock .outputs .output-port .output-port-plug:hover .output-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .outputs .output-port .output-port-plug .output-port-type {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .outputs .output-port .output-port-plug .output-port-type img {\n            width: 20px; }\n      .diagramBlock .outputs .output-port .output-port-label {\n        text-align: right;\n        grid-column: 1;\n        grid-row: 1;\n        margin-bottom: 4px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock.texture-block {\n    display: grid;\n    grid-template-rows: 30px auto 1fr;\n    grid-template-columns: calc(100% - 60px) 60px;\n    background: #323232;\n    color: white; }\n    .diagramBlock.texture-block .inputs {\n      grid-column: 1;\n      grid-row: 2; }\n    .diagramBlock.texture-block .outputs {\n      grid-column: 2;\n      grid-row: 2 / span 2; }\n    .diagramBlock.texture-block .textureLine {\n      height: 140px;\n      grid-column: 1;\n      grid-row: 3;\n      overflow: hidden;\n      border-bottom-left-radius: 7px;\n      border: black 4px solid;\n      border-left: 0px;\n      border-bottom: 0px; }\n      .diagramBlock.texture-block .textureLine canvas {\n        width: 100%;\n        height: 100%; }\n", ""]);
+exports.push([module.i, ".srd-node {\n  width: 200px; }\n\n.srd-node--selected .diagramBlock {\n  border-color: white !important; }\n\n.srd-default-link--path-selected {\n  animation: 0s !important;\n  stroke: #ffffff !important; }\n\n.srd-port {\n  grid-column: 1;\n  grid-row: 1;\n  background: #2796B2;\n  border-radius: 20px;\n  transform: scale(1);\n  width: 20px;\n  height: 20px; }\n  .srd-port.connected {\n    background: #CAB422; }\n  .srd-port:hover {\n    background: #DDDDDD !important; }\n\n.diagramBlock {\n  background: gray;\n  width: 100%;\n  border: 4px solid black;\n  border-radius: 12px;\n  display: grid;\n  grid-template-rows: 30px auto;\n  grid-template-columns: 50% 50%;\n  color: white; }\n  .diagramBlock.input {\n    background: #40866E;\n    color: white; }\n    .diagramBlock.input .value {\n      grid-row: 2; }\n    .diagramBlock.input .outputs {\n      transform: translateY(5px); }\n    .diagramBlock.input.Float {\n      background: #cb9e27; }\n    .diagramBlock.input.Vector2 {\n      background: #16bcb1; }\n    .diagramBlock.input.Vector3 {\n      background: #b786cb; }\n    .diagramBlock.input.Color3 {\n      background: #b786cb; }\n    .diagramBlock.input.Vector4 {\n      background: #be5126; }\n    .diagramBlock.input.Color4 {\n      background: #be5126; }\n    .diagramBlock.input.Matrix {\n      background: #591990; }\n  .diagramBlock.trigonometry {\n    background: #405c86;\n    color: white; }\n    .diagramBlock.trigonometry .value {\n      grid-row: 2; }\n  .diagramBlock.remap {\n    color: white;\n    background: #4086BB; }\n    .diagramBlock.remap .value {\n      grid-row: 3; }\n    .diagramBlock.remap .outputs, .diagramBlock.remap .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.clamp {\n    color: white;\n    background: #4086BB; }\n    .diagramBlock.clamp .value {\n      grid-row: 2; }\n    .diagramBlock.clamp .outputs, .diagramBlock.clamp .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.gradient {\n    height: 70px; }\n    .diagramBlock.gradient .outputs, .diagramBlock.gradient .inputs {\n      transform: translateY(5px); }\n  .diagramBlock.attribute {\n    background: #40866E; }\n  .diagramBlock.output {\n    background: #6a2c83;\n    color: white; }\n    .diagramBlock.output .inputs {\n      color: white; }\n  .diagramBlock .header {\n    grid-row: 1;\n    grid-column: 1 / span 2;\n    border: 4px solid black;\n    border-top-right-radius: 7px;\n    border-top-left-radius: 7px;\n    font-size: 16px;\n    text-align: center;\n    margin-top: -1px;\n    transform: scaleX(1.001);\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n    background: black;\n    color: white; }\n    .diagramBlock .header.constant {\n      border-color: #4E5C74;\n      background: #4E5C74 !important; }\n    .diagramBlock .header.inspector {\n      border-color: #396437;\n      background: #396437 !important; }\n  .diagramBlock .value {\n    grid-row: 3;\n    grid-column: 1 / span 2;\n    height: 34px;\n    text-align: center;\n    font-size: 18px;\n    font-weight: bold;\n    margin: 0 10px; }\n    .diagramBlock .value .value-text {\n      white-space: nowrap;\n      text-overflow: ellipsis;\n      overflow: hidden; }\n  .diagramBlock .inputs {\n    grid-row: 2;\n    grid-column: 1;\n    padding-bottom: 8px; }\n    .diagramBlock .inputs .input-port {\n      display: grid;\n      grid-template-columns: 12px calc(100% - 12px);\n      grid-template-rows: 100%; }\n      .diagramBlock .inputs .input-port .input-port-plug {\n        grid-column: 1;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        margin-left: -11px;\n        position: relative; }\n        .diagramBlock .inputs .input-port .input-port-plug:hover .input-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .inputs .input-port .input-port-plug .input-port-type {\n          width: 15px;\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .inputs .input-port .input-port-plug .input-port-type img {\n            width: 20px; }\n      .diagramBlock .inputs .input-port .input-port-label {\n        grid-column: 2;\n        grid-row: 1;\n        margin-bottom: 4px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock .outputs {\n    grid-row: 2;\n    grid-column: 2;\n    padding-bottom: 8px; }\n    .diagramBlock .outputs .output-port {\n      display: grid;\n      grid-template-columns: calc(100% - 12px) 12px;\n      grid-template-rows: 100%; }\n      .diagramBlock .outputs .output-port .output-port-plug {\n        grid-column: 2;\n        grid-row: 1;\n        display: grid;\n        align-content: center;\n        position: relative;\n        margin-left: 4px; }\n        .diagramBlock .outputs .output-port .output-port-plug:hover .output-port-connection {\n          background: greenyellow !important; }\n        .diagramBlock .outputs .output-port .output-port-plug .output-port-type {\n          pointer-events: none;\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          align-items: center;\n          justify-items: center;\n          transform: scale(1); }\n          .diagramBlock .outputs .output-port .output-port-plug .output-port-type img {\n            width: 20px; }\n      .diagramBlock .outputs .output-port .output-port-label {\n        text-align: right;\n        grid-column: 1;\n        grid-row: 1;\n        margin-bottom: 4px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis; }\n  .diagramBlock.texture-block {\n    display: grid;\n    grid-template-rows: 30px auto 1fr;\n    grid-template-columns: calc(100% - 60px) 60px;\n    background: #323232;\n    color: white; }\n    .diagramBlock.texture-block .inputs {\n      grid-column: 1;\n      grid-row: 2; }\n    .diagramBlock.texture-block .outputs {\n      grid-column: 2;\n      grid-row: 2 / span 2; }\n    .diagramBlock.texture-block .textureLine {\n      height: 140px;\n      grid-column: 1;\n      grid-row: 3;\n      overflow: hidden;\n      border-bottom-left-radius: 7px;\n      border: black 4px solid;\n      border-left: 0px;\n      border-bottom: 0px; }\n      .diagramBlock.texture-block .textureLine canvas {\n        width: 100%;\n        height: 100%; }\n", ""]);
 
 // exports
 
 
 /***/ }),
 
-/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./components/log/log.scss":
-/*!**************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/log/log.scss ***!
-  \**************************************************************************************************************************************/
+/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/log/log.scss":
+/*!****************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/log/log.scss ***!
+  \****************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5519,10 +5551,10 @@ exports.push([module.i, "#log-console {\n  background: #333333;\n  height: 120px
 
 /***/ }),
 
-/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./components/nodeList/nodeList.scss":
-/*!************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/nodeList/nodeList.scss ***!
-  \************************************************************************************************************************************************/
+/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/nodeList/nodeList.scss":
+/*!**************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/nodeList/nodeList.scss ***!
+  \**************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5538,10 +5570,10 @@ exports.push([module.i, "#nodeList {\n  background: #333333;\n  height: 100%;\n 
 
 /***/ }),
 
-/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss":
-/*!******************************************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss ***!
-  \******************************************************************************************************************************************************/
+/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/propertyTab/propertyTab.scss":
+/*!********************************************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./components/propertyTab/propertyTab.scss ***!
+  \********************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5557,10 +5589,10 @@ exports.push([module.i, "#propertyTab {\n  color: white;\n  background: #333333;
 
 /***/ }),
 
-/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./main.scss":
-/*!************************************************************************************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./main.scss ***!
-  \************************************************************************************************************************/
+/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./main.scss":
+/*!**************************************************************************************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/css-loader!C:/Repos/Babylon.js/node_modules/sass-loader/lib/loader.js!./main.scss ***!
+  \**************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18482,7 +18514,7 @@ module.exports = last;
   var undefined;
 
   /** Used as the semantic version number. */
-  var VERSION = '4.17.15';
+  var VERSION = '4.17.14';
 
   /** Used as the size to enable large array optimizations. */
   var LARGE_ARRAY_SIZE = 200;
@@ -63228,7 +63260,7 @@ if (false) {} else {
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/** @license React v16.10.2
+/** @license React v16.8.6
  * react-is.development.js
  *
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -63250,29 +63282,25 @@ Object.defineProperty(exports, '__esModule', { value: true });
 // The Symbol used to tag the ReactElement-like types. If there is no native Symbol
 // nor polyfill, then a plain number is used for performance.
 var hasSymbol = typeof Symbol === 'function' && Symbol.for;
+
 var REACT_ELEMENT_TYPE = hasSymbol ? Symbol.for('react.element') : 0xeac7;
 var REACT_PORTAL_TYPE = hasSymbol ? Symbol.for('react.portal') : 0xeaca;
 var REACT_FRAGMENT_TYPE = hasSymbol ? Symbol.for('react.fragment') : 0xeacb;
 var REACT_STRICT_MODE_TYPE = hasSymbol ? Symbol.for('react.strict_mode') : 0xeacc;
 var REACT_PROFILER_TYPE = hasSymbol ? Symbol.for('react.profiler') : 0xead2;
 var REACT_PROVIDER_TYPE = hasSymbol ? Symbol.for('react.provider') : 0xeacd;
-var REACT_CONTEXT_TYPE = hasSymbol ? Symbol.for('react.context') : 0xeace; // TODO: We don't use AsyncMode or ConcurrentMode anymore. They were temporary
-// (unstable) APIs that have been removed. Can we remove the symbols?
-
+var REACT_CONTEXT_TYPE = hasSymbol ? Symbol.for('react.context') : 0xeace;
 var REACT_ASYNC_MODE_TYPE = hasSymbol ? Symbol.for('react.async_mode') : 0xeacf;
 var REACT_CONCURRENT_MODE_TYPE = hasSymbol ? Symbol.for('react.concurrent_mode') : 0xeacf;
 var REACT_FORWARD_REF_TYPE = hasSymbol ? Symbol.for('react.forward_ref') : 0xead0;
 var REACT_SUSPENSE_TYPE = hasSymbol ? Symbol.for('react.suspense') : 0xead1;
-var REACT_SUSPENSE_LIST_TYPE = hasSymbol ? Symbol.for('react.suspense_list') : 0xead8;
 var REACT_MEMO_TYPE = hasSymbol ? Symbol.for('react.memo') : 0xead3;
 var REACT_LAZY_TYPE = hasSymbol ? Symbol.for('react.lazy') : 0xead4;
-var REACT_FUNDAMENTAL_TYPE = hasSymbol ? Symbol.for('react.fundamental') : 0xead5;
-var REACT_RESPONDER_TYPE = hasSymbol ? Symbol.for('react.responder') : 0xead6;
-var REACT_SCOPE_TYPE = hasSymbol ? Symbol.for('react.scope') : 0xead7;
 
 function isValidElementType(type) {
-  return typeof type === 'string' || typeof type === 'function' || // Note: its typeof might be other than 'symbol' or 'number' if it's a polyfill.
-  type === REACT_FRAGMENT_TYPE || type === REACT_CONCURRENT_MODE_TYPE || type === REACT_PROFILER_TYPE || type === REACT_STRICT_MODE_TYPE || type === REACT_SUSPENSE_TYPE || type === REACT_SUSPENSE_LIST_TYPE || typeof type === 'object' && type !== null && (type.$$typeof === REACT_LAZY_TYPE || type.$$typeof === REACT_MEMO_TYPE || type.$$typeof === REACT_PROVIDER_TYPE || type.$$typeof === REACT_CONTEXT_TYPE || type.$$typeof === REACT_FORWARD_REF_TYPE || type.$$typeof === REACT_FUNDAMENTAL_TYPE || type.$$typeof === REACT_RESPONDER_TYPE || type.$$typeof === REACT_SCOPE_TYPE);
+  return typeof type === 'string' || typeof type === 'function' ||
+  // Note: its typeof might be other than 'symbol' or 'number' if it's a polyfill.
+  type === REACT_FRAGMENT_TYPE || type === REACT_CONCURRENT_MODE_TYPE || type === REACT_PROFILER_TYPE || type === REACT_STRICT_MODE_TYPE || type === REACT_SUSPENSE_TYPE || typeof type === 'object' && type !== null && (type.$$typeof === REACT_LAZY_TYPE || type.$$typeof === REACT_MEMO_TYPE || type.$$typeof === REACT_PROVIDER_TYPE || type.$$typeof === REACT_CONTEXT_TYPE || type.$$typeof === REACT_FORWARD_REF_TYPE);
 }
 
 /**
@@ -63288,11 +63316,12 @@ function isValidElementType(type) {
  * paths. Removing the logging code for production environments will keep the
  * same logic and follow the same code paths.
  */
-var lowPriorityWarningWithoutStack = function () {};
+
+var lowPriorityWarning = function () {};
 
 {
   var printWarning = function (format) {
-    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
       args[_key - 1] = arguments[_key];
     }
 
@@ -63300,11 +63329,9 @@ var lowPriorityWarningWithoutStack = function () {};
     var message = 'Warning: ' + format.replace(/%s/g, function () {
       return args[argIndex++];
     });
-
     if (typeof console !== 'undefined') {
       console.warn(message);
     }
-
     try {
       // --- Welcome to debugging React ---
       // This error was thrown as a convenience so that you can use this stack
@@ -63313,27 +63340,25 @@ var lowPriorityWarningWithoutStack = function () {};
     } catch (x) {}
   };
 
-  lowPriorityWarningWithoutStack = function (condition, format) {
+  lowPriorityWarning = function (condition, format) {
     if (format === undefined) {
-      throw new Error('`lowPriorityWarningWithoutStack(condition, format, ...args)` requires a warning ' + 'message argument');
+      throw new Error('`lowPriorityWarning(condition, format, ...args)` requires a warning ' + 'message argument');
     }
-
     if (!condition) {
-      for (var _len2 = arguments.length, args = new Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
+      for (var _len2 = arguments.length, args = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
         args[_key2 - 2] = arguments[_key2];
       }
 
-      printWarning.apply(void 0, [format].concat(args));
+      printWarning.apply(undefined, [format].concat(args));
     }
   };
 }
 
-var lowPriorityWarningWithoutStack$1 = lowPriorityWarningWithoutStack;
+var lowPriorityWarning$1 = lowPriorityWarning;
 
 function typeOf(object) {
   if (typeof object === 'object' && object !== null) {
     var $$typeof = object.$$typeof;
-
     switch ($$typeof) {
       case REACT_ELEMENT_TYPE:
         var type = object.type;
@@ -63346,7 +63371,6 @@ function typeOf(object) {
           case REACT_STRICT_MODE_TYPE:
           case REACT_SUSPENSE_TYPE:
             return type;
-
           default:
             var $$typeofType = type && type.$$typeof;
 
@@ -63355,13 +63379,10 @@ function typeOf(object) {
               case REACT_FORWARD_REF_TYPE:
               case REACT_PROVIDER_TYPE:
                 return $$typeofType;
-
               default:
                 return $$typeof;
             }
-
         }
-
       case REACT_LAZY_TYPE:
       case REACT_MEMO_TYPE:
       case REACT_PORTAL_TYPE:
@@ -63370,8 +63391,9 @@ function typeOf(object) {
   }
 
   return undefined;
-} // AsyncMode is deprecated along with isAsyncMode
+}
 
+// AsyncMode is deprecated along with isAsyncMode
 var AsyncMode = REACT_ASYNC_MODE_TYPE;
 var ConcurrentMode = REACT_CONCURRENT_MODE_TYPE;
 var ContextConsumer = REACT_CONTEXT_TYPE;
@@ -63385,16 +63407,17 @@ var Portal = REACT_PORTAL_TYPE;
 var Profiler = REACT_PROFILER_TYPE;
 var StrictMode = REACT_STRICT_MODE_TYPE;
 var Suspense = REACT_SUSPENSE_TYPE;
-var hasWarnedAboutDeprecatedIsAsyncMode = false; // AsyncMode should be deprecated
 
+var hasWarnedAboutDeprecatedIsAsyncMode = false;
+
+// AsyncMode should be deprecated
 function isAsyncMode(object) {
   {
     if (!hasWarnedAboutDeprecatedIsAsyncMode) {
       hasWarnedAboutDeprecatedIsAsyncMode = true;
-      lowPriorityWarningWithoutStack$1(false, 'The ReactIs.isAsyncMode() alias has been deprecated, ' + 'and will be removed in React 17+. Update your code to use ' + 'ReactIs.isConcurrentMode() instead. It has the exact same API.');
+      lowPriorityWarning$1(false, 'The ReactIs.isAsyncMode() alias has been deprecated, ' + 'and will be removed in React 17+. Update your code to use ' + 'ReactIs.isConcurrentMode() instead. It has the exact same API.');
     }
   }
-
   return isConcurrentMode(object) || typeOf(object) === REACT_ASYNC_MODE_TYPE;
 }
 function isConcurrentMode(object) {
@@ -68285,8 +68308,16 @@ module.exports = function(module) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BlockTools", function() { return BlockTools; });
-/* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/Fragment/discardBlock */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/Fragment/discardBlock */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__);
+
+
+
+
+
+
+
+
 
 
 
@@ -68346,6 +68377,22 @@ var BlockTools = /** @class */ (function () {
     }
     BlockTools.GetBlockFromString = function (data, scene, nodeMaterial) {
         switch (data) {
+            case "DesaturateBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["DesaturateBlock"]("Desaturate");
+            case "RefractBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["RefractBlock"]("Refract");
+            case "ReflectBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ReflectBlock"]("Reflect");
+            case "DerivativeBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["DerivativeBlock"]("Derivative");
+            case "Rotate2dBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["Rotate2dBlock"]("Rotate2d");
+            case "NormalBlendBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["NormalBlendBlock"]("NormalBlend");
+            case "WorleyNoise3DBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["WorleyNoise3DBlock"]("WorleyNoise3D");
+            case "SimplexPerlin3DBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["SimplexPerlin3DBlock"]("SimplexPerlin3D");
             case "BonesBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["BonesBlock"]("Bones");
             case "InstancesBlock":
@@ -68917,7 +68964,7 @@ var ClampNodeWidget = /** @class */ (function (_super) {
         var inputPorts = _portHelper__WEBPACK_IMPORTED_MODULE_2__["PortHelper"].GenerateInputPorts(this.props.node, undefined, true);
         var outputPorts = _portHelper__WEBPACK_IMPORTED_MODULE_2__["PortHelper"].GenerateOutputPorts(this.props.node, true);
         var clampBlock = this.props.node.block;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock remap" },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock clamp" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, clampBlock.name),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "inputs" }, inputPorts),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts),
@@ -69018,7 +69065,7 @@ var DefaultNodeModel = /** @class */ (function (_super) {
 /***/ (function(module, exports, __webpack_require__) {
 
 
-var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/dist/cjs.js!./diagram.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./components/diagram/diagram.scss");
+var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/lib/loader.js!./diagram.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/diagram/diagram.scss");
 
 if(typeof content === 'string') content = [[module.i, content, '']];
 
@@ -69175,7 +69222,10 @@ var GenericNodeModel = /** @class */ (function (_super) {
             this.block.getClassName() === "PerturbNormalBlock" &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "PROPERTIES" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Invert X axis", target: this.block, propertyName: "invertX", onValueChanged: function () { return globalState.onRebuildRequiredObservable.notifyObservers(); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Invert Y axis", target: this.block, propertyName: "invertY", onValueChanged: function () { return globalState.onRebuildRequiredObservable.notifyObservers(); } }))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Invert Y axis", target: this.block, propertyName: "invertY", onValueChanged: function () { return globalState.onRebuildRequiredObservable.notifyObservers(); } })),
+            this.block.getClassName() === "WorleyNoise3DBlock" &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { title: "PROPERTIES" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Use Manhattan Distance", target: this.block, propertyName: "manhattanDistance", onValueChanged: function () { return globalState.onRebuildRequiredObservable.notifyObservers(); } }))));
     };
     return GenericNodeModel;
 }(_defaultNodeModel__WEBPACK_IMPORTED_MODULE_2__["DefaultNodeModel"]));
@@ -69346,7 +69396,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
 /* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
 /* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
-/* harmony import */ var babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/gradientBlock */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/gradientBlock */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _gradientStepComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./gradientStepComponent */ "./components/diagram/gradient/gradientStepComponent.tsx");
 /* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
@@ -69478,7 +69528,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
 /* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__);
 
 
@@ -69641,7 +69691,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _propertyTab_properties_vector2PropertyTabComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../propertyTab/properties/vector2PropertyTabComponent */ "./components/propertyTab/properties/vector2PropertyTabComponent.tsx");
 /* harmony import */ var _propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../propertyTab/properties/vector3PropertyTabComponent */ "./components/propertyTab/properties/vector3PropertyTabComponent.tsx");
-/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
 /* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
@@ -69650,12 +69700,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
 /* harmony import */ var _stringTools__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../stringTools */ "./stringTools.ts");
 /* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
-/* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
-/* harmony import */ var _propertyTab_properties_vector4PropertyTabComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../propertyTab/properties/vector4PropertyTabComponent */ "./components/propertyTab/properties/vector4PropertyTabComponent.tsx");
-/* harmony import */ var _propertyTab_properties_matrixPropertyTabComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../propertyTab/properties/matrixPropertyTabComponent */ "./components/propertyTab/properties/matrixPropertyTabComponent.tsx");
-/* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
-/* harmony import */ var _sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../../../sharedComponents/sliderLineComponent */ "./sharedComponents/sliderLineComponent.tsx");
-
+/* harmony import */ var _propertyTab_properties_vector4PropertyTabComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../propertyTab/properties/vector4PropertyTabComponent */ "./components/propertyTab/properties/vector4PropertyTabComponent.tsx");
+/* harmony import */ var _propertyTab_properties_matrixPropertyTabComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../propertyTab/properties/matrixPropertyTabComponent */ "./components/propertyTab/properties/matrixPropertyTabComponent.tsx");
+/* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
+/* harmony import */ var _sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../../sharedComponents/sliderLineComponent */ "./sharedComponents/sliderLineComponent.tsx");
 
 
 
@@ -69686,16 +69734,16 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Float: {
                 var cantDisplaySlider = (isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max);
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_15__["FloatLineComponent"], { label: "Min", target: inputBlock, propertyName: "min", onChange: function () {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_14__["FloatLineComponent"], { label: "Min", target: inputBlock, propertyName: "min", onChange: function () {
                             _this.forceUpdate();
                         } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_15__["FloatLineComponent"], { label: "Max", target: inputBlock, propertyName: "max", onChange: function () {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_14__["FloatLineComponent"], { label: "Max", target: inputBlock, propertyName: "max", onChange: function () {
                             _this.forceUpdate();
                         } }),
                     cantDisplaySlider &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_floatPropertyTabComponent__WEBPACK_IMPORTED_MODULE_8__["FloatPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }),
                     !cantDisplaySlider &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_16__["SliderLineComponent"], { label: "Value", target: inputBlock, propertyName: "value", step: (inputBlock.max - inputBlock.min) / 100.0, minimum: inputBlock.min, maximum: inputBlock.max, onChange: function () {
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_15__["SliderLineComponent"], { label: "Value", target: inputBlock, propertyName: "value", step: (inputBlock.max - inputBlock.min) / 100.0, minimum: inputBlock.min, maximum: inputBlock.max, onChange: function () {
                                 _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             } })));
             }
@@ -69707,9 +69755,9 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Vector3:
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_vector3PropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["Vector3PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Vector4:
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_vector4PropertyTabComponent__WEBPACK_IMPORTED_MODULE_13__["Vector4PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_vector4PropertyTabComponent__WEBPACK_IMPORTED_MODULE_12__["Vector4PropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialBlockConnectionPointTypes"].Matrix:
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_matrixPropertyTabComponent__WEBPACK_IMPORTED_MODULE_14__["MatrixPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyTab_properties_matrixPropertyTabComponent__WEBPACK_IMPORTED_MODULE_13__["MatrixPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }));
         }
         return null;
     };
@@ -69785,6 +69833,11 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
         if (systemValuesOptions.length > 0) {
             modeOptions.push({ label: "System value", value: 2 });
         }
+        var typeOptions = [
+            { label: "None", value: 0 },
+            { label: "Visible in the inspector", value: 1 },
+            { label: "Constant", value: 2 }
+        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_9__["LineContainerComponent"], { title: "GENERAL" },
                 !inputBlock.isAttribute &&
@@ -69792,11 +69845,32 @@ var InputPropertyTabComponentProps = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextLineComponent"], { label: "Type", value: _stringTools__WEBPACK_IMPORTED_MODULE_10__["StringTools"].GetBaseType(inputBlock.type) })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_9__["LineContainerComponent"], { title: "PROPERTIES" },
                 inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AnimatedInputBlockTypes"].None &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_12__["CheckBoxLineComponent"], { label: "Visible in the Inspector", target: inputBlock, propertyName: "visibleInInspector" }),
-                inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_4__["AnimatedInputBlockTypes"].None &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_12__["CheckBoxLineComponent"], { label: "IsConstant", target: inputBlock, propertyName: "isConstant", onValueChanged: function () {
-                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Type", options: typeOptions, target: inputBlock, noDirectUpdate: true, getSelection: function (block) {
+                            if (block.visibleInInspector) {
+                                return 1;
+                            }
+                            if (block.isConstant) {
+                                return 2;
+                            }
+                            return 0;
+                        }, onSelect: function (value) {
+                            switch (value) {
+                                case 0:
+                                    inputBlock.visibleInInspector = false;
+                                    inputBlock.isConstant = false;
+                                    break;
+                                case 1:
+                                    inputBlock.visibleInInspector = true;
+                                    inputBlock.isConstant = false;
+                                    break;
+                                case 2:
+                                    inputBlock.visibleInInspector = false;
+                                    inputBlock.isConstant = true;
+                                    break;
+                            }
+                            _this.forceUpdate();
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Mode", options: modeOptions, target: inputBlock, noDirectUpdate: true, getSelection: function (block) {
                         if (block.isAttribute) {
@@ -69863,7 +69937,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialSystemValues */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialSystemValues */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _stringTools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../stringTools */ "./stringTools.ts");
 /* harmony import */ var _portHelper__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../portHelper */ "./components/diagram/portHelper.tsx");
@@ -69980,10 +70054,10 @@ var InputNodeWidget = /** @class */ (function (_super) {
         else {
             name = "Not connected input";
         }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock input" + (inputBlock ? " " + babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"][inputBlock.type] : "") + (inputBlock && inputBlock.isConstant ? " constant" : ""), style: {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "diagramBlock input" + (inputBlock ? " " + babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"][inputBlock.type] : ""), style: {
                 background: color
             } },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" }, name),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "header" + (inputBlock && inputBlock.isConstant ? " constant" : "") + (inputBlock && inputBlock.visibleInInspector ? " inspector" : "") }, name),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "outputs" }, outputPorts),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value" }, this.renderValue(value))));
     };
@@ -70654,7 +70728,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PortHelper", function() { return PortHelper; });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _port_defaultPortWidget__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./port/defaultPortWidget */ "./components/diagram/port/defaultPortWidget.tsx");
 /* harmony import */ var _blockTools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../blockTools */ "./blockTools.ts");
@@ -71331,7 +71405,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../sharedComponents/fileButtonLineComponent */ "./sharedComponents/fileButtonLineComponent.tsx");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
@@ -71697,7 +71771,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
 /* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
 /* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
-/* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/trigonometryBlock */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/trigonometryBlock */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_6__);
 
 
@@ -71769,7 +71843,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _portHelper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../portHelper */ "./components/diagram/portHelper.tsx");
-/* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/trigonometryBlock */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/trigonometryBlock */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_3__);
 
 
@@ -71823,7 +71897,7 @@ var TrigonometryNodeWidget = /** @class */ (function (_super) {
 /***/ (function(module, exports, __webpack_require__) {
 
 
-var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/dist/cjs.js!./log.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./components/log/log.scss");
+var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/lib/loader.js!./log.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/log/log.scss");
 
 if(typeof content === 'string') content = [[module.i, content, '']];
 
@@ -71919,7 +71993,7 @@ var LogComponent = /** @class */ (function (_super) {
 /***/ (function(module, exports, __webpack_require__) {
 
 
-var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/dist/cjs.js!./nodeList.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./components/nodeList/nodeList.scss");
+var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/lib/loader.js!./nodeList.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/nodeList/nodeList.scss");
 
 if(typeof content === 'string') content = [[module.i, content, '']];
 
@@ -71977,18 +72051,19 @@ var NodeListComponent = /** @class */ (function (_super) {
         var allBlocks = {
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Basic_Math: ["AddBlock", "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock", "OneMinusBlock", "MaxBlock", "MinBlock", "LengthBlock", "DistanceBlock", "NegateBlock", "RandomNumberBlock", "ReciprocalBlock"],
-            Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock"],
+            Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock"],
-            Interpolation: ["LerpBlock", "SmoothStepBlock", "NLerpBlock"],
+            Interpolation: ["LerpBlock", "StepBlock", "SmoothStepBlock", "NLerpBlock"],
             Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock"],
-            Mesh_Attributes: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "FrontFacingBlock"],
+            Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "FrontFacingBlock"],
+            Noises: ["SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Blocks: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
-            Round: ["StepBlock", "RoundBlock", "CeilingBlock", "FloorBlock"],
-            Scene_Attributes: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock", "PerturbNormalBlock"],
+            Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
+            Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock", "PerturbNormalBlock", "NormalBlendBlock"],
             Trigonometry: ["CosBlock", "SinBlock", "AbsBlock", "ExpBlock", "Exp2Block", "SqrtBlock", "PowBlock", "LogBlock", "ArcCosBlock", "ArcSinBlock", "TanBlock", "ArcTanBlock", "FractBlock", "SignBlock", "ArcTan2Block", "DegreesToRadiansBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "TriangleWaveBlock", "SquareWaveBlock"],
-            Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock"],
+            Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock", "Rotate2dBlock", "DerivativeBlock", "RefractBlock", "ReflectBlock"],
         };
         // Create node menu
         var blockMenu = [];
@@ -71996,10 +72071,11 @@ var NodeListComponent = /** @class */ (function (_super) {
             var blockList = allBlocks[key].filter(function (b) { return !_this.state.filter || b.toLowerCase().indexOf(_this.state.filter.toLowerCase()) !== -1; })
                 .sort(function (a, b) { return a.localeCompare(b); })
                 .map(function (block, i) {
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineComponent__WEBPACK_IMPORTED_MODULE_3__["DraggableLineComponent"], { key: block, data: block });
+                var tooltip = NodeListComponent._Tooltips[block] || "";
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineComponent__WEBPACK_IMPORTED_MODULE_3__["DraggableLineComponent"], { key: block, data: block, tooltip: tooltip });
             });
             if (blockList.length) {
-                blockMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { key: key + " blocks", title: key.replace("_", " "), closed: false }, blockList));
+                blockMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { key: key + " blocks", title: key.replace("__", ":").replace("_", " "), closed: false }, blockList));
             }
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "nodeList" },
@@ -72008,6 +72084,97 @@ var NodeListComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "filter" },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", placeholder: "Filter", onChange: function (evt) { return _this.filterContent(evt.target.value); } })),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "list-container" }, blockMenu)))));
+    };
+    NodeListComponent._Tooltips = {
+        "BonesBlock": "Provides a world matrix for each vertex, based on skeletal (bone/joint) animation. mesh.matricesIndices and mesh.matricesWeights are the vertex to bone assignments and weighting, and assume no more than 4 bones influencing any given vertex. If a vertex is influenced by more than 4 bones, then mesh.matricesIndicesExtra and mesh.matricesWeightsExtra can be used for up to 8 bones of influence per vertex",
+        "MorphTargetsBlock": "Provides the final positions, normals, tangents, and uvs based on morph targets in a mesh",
+        "AddBlock": "Adds the left and right inputs together. Left and right inputs have to be of the same type",
+        "DistanceBlock": "Provides a distance vector based on the left and right input vectors",
+        "DivideBlock": "Divides the left input by the right input",
+        "LengthBlock": "Outputs the length of an input vector",
+        "MaxBlock": "Outputs the largest value between the left and right inputs",
+        "MinBlock": "Outputs the smallest value between the left and right inputs",
+        "MultiplyBlock": "Multiplies the left and right inputs together",
+        "NegateBlock": "Multiplies the input by -1",
+        "OneMinusBlock": "Subtracts the input value from 1 (1 - input)",
+        "RandomNumberBlock": "Provides a random number based on an input seed",
+        "ReciprocalBlock": "Outputs the reciprocal value(s) vased on the input value(s)",
+        "ScaleBlock": "Multiplies the input value(s) by the factor",
+        "SubtractBlock": "Subtracts the right input from the left input",
+        "PosterizeBlock": "Reduces the number of colors in an image to the value of input steps",
+        "ReplaceColorBlock": "Replaces a reference color in input value with a different replacement color. Distance is the tolerance variation of the color",
+        "ColorMergerBlock": "Combines individual color channels into color Vectors",
+        "ColorSplitterBlock": "Separates color Vectors into individual color channels",
+        "VectorMergerBlock": "Combines up to 4 input values into Vectors",
+        "VectorSplitterBlock": "Separates Vectors into individual elements",
+        "Color3": "A Vector3 representing combined color values (red, green, and blue)",
+        "Color4": "A Vector4 representing combined color and alpha values (red, green, blue, and alpha)",
+        "DeltaTimeBlock": "A Float representing the time value that's passed since the last frame has rendered",
+        "Float": "A Float for a single floating point value",
+        "TextureBlock": "A container node for a texture (image or url)",
+        "TimeBlock": "A Float of a constantly increasing floating point value, starting when the scene is loaded",
+        "Vector2": "A Vector2 representing two values",
+        "Vector3": "A Vector3 representing three values",
+        "Vector4": "A Vector4 representing four values",
+        "LerpBlock": "Provides linear interpolated value(s) between the left and right inputs, based on the gradient input",
+        "SmoothStepBlock": "Outputs a value based on a the input value's position on a curve between the two edge values",
+        "Matrix": "A container for a vector transformation",
+        "ProjectionMatrixBlock": "A matrix moving from 3D space to screen space",
+        "ViewMatrixBlock": "A matrix moving from 3D space to camera space",
+        "ViewProjectionMatrixBlock": "A matrix moving from 3D space to camera space, and ending in screen space",
+        "WorldMatrixBlock": "A matrix moving from local space to world space",
+        "WorldViewProjectionMatrixBlock": "A matrix moving from local space to world space, then to camera space, and ending in screen space",
+        "ColorBlock": "A Color4 representing the color of each vertex of the attached mesh",
+        "InstancesBlock": "Provides the world matrix for each instance. This is used to apply materials to instances as well as original meshes",
+        "MatrixIndicesBlock": "A Vector4 representing the vertex to bone skinning assignments",
+        "MatricesWeightsBlock": "A Vector4 representing the vertex to bone skinning weights",
+        "NormalBlock": "A Vector3 representing the normal of each vertex of the attached mesh",
+        "PositionBlock": "A Vector3 representing the position of each vertex of the attached mesh",
+        "TangentBlock": "A Vector3 representing the tangent of each vertex of the attached mesh",
+        "UVBlock": "A Vector2 representing the UV coordinates of each vertex of the attached mesh",
+        "DiscardBlock": "A final output node that will not output a pixel below the cutoff value",
+        "FragmentOutputBlock": "The final node for outputing the color of each pixel. This node must be included in every node material",
+        "VertexOutputBlock": "The final node for outputing the position of each vertex. This node must be included in every node material",
+        "ClampBlock": "Ignores all values of the input outside of the Minimum and Maximum property values",
+        "NormalizeBlock": "Remaps the length of a vector or color to 1",
+        "RemapBlock": "Remaps all input values between sourceMin and sourceMax, to be between targetMin and targetMax. source and target inputs can be static or variable inputs",
+        "CeilingBlock": "Outputs the highest value of the input",
+        "FloorBlock": "Outputs the lowest value of the input",
+        "RoundBlock": "Outputs the nearest whole number based on the input value",
+        "StepBlock": "Outputs 1 for any input value above the edge input, outputs 0 for any input value below the edge input",
+        "CameraPositionBlock": "A Vector3 position of the active scene camera",
+        "FogBlock": "Applies fog to a scene. Outputs fog with increasing value based on distance from the camera",
+        "FogColorBlock": "A Color3 for the fog color",
+        "ImageProcessingBlock": "Provides access to all of the Babylon image processing properties",
+        "LightBlock": "Returns the individual color values (red, green, and blue) of the diffuse or specular colors of the combined OR individual lighting within the scene",
+        "LightInformationBlock": "Provides the direction, color and intensity of a selected light based on its world position",
+        "PerturbNormalBlock": "Creates a new normal direction based on a normal map, the world position, and world normal",
+        "ReflectionTextureBlock": "Creates a reflection of the input texture",
+        "ViewDirectionBlock": "Outputs the direction vector of where the camera is aimed",
+        "AbsBlock": "Outputs the absolute value of the input value",
+        "ArcCosBlock": "Outputs the inverse of the cosine value based on the input value",
+        "ArcSinBlock": "Outputs the inverse of the sine value based on the input value",
+        "ArcTan2Block": "Outputs the inverse of the tangent value based on the input value",
+        "ArcTanBlock": "Outputs the inverse of the tangent value based on the input value",
+        "CosBlock": "Outputs the cosine value based on the input value",
+        "DegreesToRadiansBlock": "Converts the input value (degrees) to radians",
+        "Exp2Block": "Outputs the input value multiplied by itself 1 time. (Exponent of 2)",
+        "ExpBlock": "Outputs the input value multiplied by itself 9 time. (Exponent of 10)",
+        "FractBlock": "Everything after the period",
+        "LogBlock": "The logarithm value based on the input value",
+        "PowBlock": "Outputs the input value multiplied by itself the number of times equal to the power input (Exponent of power)",
+        "RadiansToDegreesBlock": "Converts the input value (radians) to degrees",
+        "SawToothWaveBlock": "Outputs a sawtooth pattern value between -1 and 1 based on the input value",
+        "SignBlock": "returns 1 if 10 or -1 if -10",
+        "SinBlock": "Outputs the the sine value based on the input value",
+        "SqrtBlock": "Outputs the the square root of the input value",
+        "SquareWaveBlock": "Outputs a stepped pattern value between -1 and 1 based on the input value",
+        "TanBlock": "Outputs the the tangent value based on the input value",
+        "TriangleWaveBlock": "Outputs a sawtooth pattern value between 0 and 1 based on the input value",
+        "CrossBlock": "Outputs a vector that is perpendicular to two input vectors",
+        "DotBlock": "Outputs the cos of the angle between two vectors",
+        "FresnelBlock": "Outputs the grazing angle of the surface of the mesh, relative to a camera. Angle can be influenced by the bias and power inputs",
+        "TransformBlock": "Transforms a input vector based on an input matrix"
     };
     return NodeListComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -72031,7 +72198,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
 /* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../dataStorage */ "./dataStorage.ts");
 
@@ -72129,7 +72296,7 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PreviewManager", function() { return PreviewManager; });
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterial */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterial */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _previewMeshType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./previewMeshType */ "./components/preview/previewMeshType.ts");
 /* harmony import */ var _log_logComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../log/logComponent */ "./components/log/logComponent.tsx");
@@ -72733,7 +72900,7 @@ var Vector4PropertyTabComponent = /** @class */ (function (_super) {
 /***/ (function(module, exports, __webpack_require__) {
 
 
-var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/dist/cjs.js!./propertyTab.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./components/propertyTab/propertyTab.scss");
+var content = __webpack_require__(/*! !../../../../node_modules/css-loader!../../../../node_modules/sass-loader/lib/loader.js!./propertyTab.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./components/propertyTab/propertyTab.scss");
 
 if(typeof content === 'string') content = [[module.i, content, '']];
 
@@ -72772,7 +72939,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
 /* harmony import */ var _stringTools__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../stringTools */ "./stringTools.ts");
 /* harmony import */ var _sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../sharedComponents/fileButtonLineComponent */ "./sharedComponents/fileButtonLineComponent.tsx");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__);
 /* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../serializationTools */ "./serializationTools.ts");
 /* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
@@ -72838,7 +73005,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Reset to default", onClick: function () {
                             _this.props.globalState.nodeMaterial.setToDefault();
-                            _this.props.globalState.onResetRequiredObservable.notifyObservers(null);
+                            _this.props.globalState.onResetRequiredObservable.notifyObservers();
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "UI" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Zoom to fit", onClick: function () {
@@ -72968,7 +73135,7 @@ var DataStorage = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GlobalState", function() { return GlobalState; });
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/preview/previewMeshType */ "./components/preview/previewMeshType.ts");
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./dataStorage */ "./dataStorage.ts");
@@ -73031,7 +73198,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _components_diagram_generic_genericNodeFactory__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/diagram/generic/genericNodeFactory */ "./components/diagram/generic/genericNodeFactory.tsx");
 /* harmony import */ var _components_diagram_generic_genericNodeModel__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/diagram/generic/genericNodeModel */ "./components/diagram/generic/genericNodeModel.tsx");
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _components_nodeList_nodeListComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/nodeList/nodeListComponent */ "./components/nodeList/nodeListComponent.tsx");
 /* harmony import */ var _components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./components/propertyTab/propertyTabComponent */ "./components/propertyTab/propertyTabComponent.tsx");
@@ -73064,6 +73231,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_diagram_gradient_gradientNodeFactory__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! ./components/diagram/gradient/gradientNodeFactory */ "./components/diagram/gradient/gradientNodeFactory.tsx");
 /* harmony import */ var _components_diagram_reflectionTexture_reflectionTextureNodeFactory__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! ./components/diagram/reflectionTexture/reflectionTextureNodeFactory */ "./components/diagram/reflectionTexture/reflectionTextureNodeFactory.tsx");
 /* harmony import */ var _components_diagram_reflectionTexture_reflectionTextureNodeModel__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! ./components/diagram/reflectionTexture/reflectionTextureNodeModel */ "./components/diagram/reflectionTexture/reflectionTextureNodeModel.tsx");
+/* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_37__ = __webpack_require__(/*! ./serializationTools */ "./serializationTools.ts");
+
 
 
 
@@ -73155,8 +73324,8 @@ var GraphEditor = /** @class */ (function (_super) {
                 _this.buildMaterial();
             }
         });
-        _this.props.globalState.onResetRequiredObservable.add(function (locations) {
-            _this.build(false, locations);
+        _this.props.globalState.onResetRequiredObservable.add(function () {
+            _this.build(false);
             if (_this.props.globalState.nodeMaterial) {
                 _this.buildMaterial();
             }
@@ -73304,6 +73473,7 @@ var GraphEditor = /** @class */ (function (_super) {
             widget.setState({ document: this.props.globalState.hostDocument });
             this._onWidgetKeyUpPointer = this.onWidgetKeyUp.bind(this);
             this.props.globalState.hostDocument.addEventListener("keyup", this._onWidgetKeyUpPointer, false);
+            this.props.globalState.hostDocument.defaultView.addEventListener("blur", function () { return _this._altKeyIsPressed = false; }, false);
             var previousMouseMove_1 = widget.onMouseMove;
             widget.onMouseMove = function (evt) {
                 if (_this._altKeyIsPressed && evt.buttons === 1) {
@@ -73367,6 +73537,7 @@ var GraphEditor = /** @class */ (function (_super) {
         catch (err) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new _components_log_logComponent__WEBPACK_IMPORTED_MODULE_14__["LogEntry"](err, true));
         }
+        _serializationTools__WEBPACK_IMPORTED_MODULE_37__["SerializationTools"].UpdateLocations(this.props.globalState.nodeMaterial, this.props.globalState);
     };
     GraphEditor.prototype.applyFragmentOutputConstraints = function (rootInput) {
         var model = rootInput.parent;
@@ -73383,10 +73554,10 @@ var GraphEditor = /** @class */ (function (_super) {
             }
         }
     };
-    GraphEditor.prototype.build = function (needToWait, locations) {
+    GraphEditor.prototype.build = function (needToWait) {
         var _this = this;
         if (needToWait === void 0) { needToWait = false; }
-        if (locations === void 0) { locations = null; }
+        var locations = this.props.globalState.nodeMaterial.editorData;
         // setup the diagram model
         this._model = new storm_react_diagrams__WEBPACK_IMPORTED_MODULE_1__["DiagramModel"]();
         this._nodes = [];
@@ -73506,6 +73677,9 @@ var GraphEditor = /** @class */ (function (_super) {
                                 if (_this.props.globalState.nodeMaterial) {
                                     _this.buildMaterial();
                                 }
+                            }
+                            else {
+                                e.link.remove();
                             }
                         }
                     });
@@ -73812,7 +73986,7 @@ if (typeof globalObject !== "undefined") {
 /***/ (function(module, exports, __webpack_require__) {
 
 
-var content = __webpack_require__(/*! !../../node_modules/css-loader!../../node_modules/sass-loader/dist/cjs.js!./main.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./main.scss");
+var content = __webpack_require__(/*! !../../node_modules/css-loader!../../node_modules/sass-loader/lib/loader.js!./main.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/lib/loader.js!./main.scss");
 
 if(typeof content === 'string') content = [[module.i, content, '']];
 
@@ -73960,7 +74134,7 @@ var Portal = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SerializationTools", function() { return SerializationTools; });
-/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Textures/texture */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Textures/texture */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./dataStorage */ "./dataStorage.ts");
 
@@ -73968,6 +74142,19 @@ __webpack_require__.r(__webpack_exports__);
 var SerializationTools = /** @class */ (function () {
     function SerializationTools() {
     }
+    SerializationTools.UpdateLocations = function (material, globalState) {
+        material.editorData = [];
+        // Store node locations
+        for (var _i = 0, _a = material.attachedBlocks; _i < _a.length; _i++) {
+            var block = _a[_i];
+            var node = globalState.onGetNodeFromBlock(block);
+            material.editorData.push({
+                blockId: block.uniqueId,
+                x: node ? node.x : 0,
+                y: node ? node.y : 0
+            });
+        }
+    };
     SerializationTools.Serialize = function (material, globalState) {
         var bufferSerializationState = babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers;
         babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers = _dataStorage__WEBPACK_IMPORTED_MODULE_1__["DataStorage"].ReadBoolean("EmbedTextures", true);
@@ -73991,16 +74178,7 @@ var SerializationTools = /** @class */ (function () {
     SerializationTools.Deserialize = function (serializationObject, globalState) {
         globalState.onIsLoadingChanged.notifyObservers(true);
         globalState.nodeMaterial.loadFromSerialization(serializationObject, "");
-        // Check for id mapping
-        if (serializationObject.locations && serializationObject.map) {
-            var map = serializationObject.map;
-            var locations = serializationObject.locations;
-            for (var _i = 0, locations_1 = locations; _i < locations_1.length; _i++) {
-                var location = locations_1[_i];
-                location.blockId = map[location.blockId];
-            }
-        }
-        globalState.onResetRequiredObservable.notifyObservers(serializationObject.locations);
+        globalState.onResetRequiredObservable.notifyObservers();
     };
     return SerializationTools;
 }());
@@ -74083,7 +74261,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
             this._localChange = false;
             return true;
         }
-        return false;
+        return nextProps.label !== this.props.label;
     };
     CheckBoxLineComponent.prototype.onChange = function () {
         this._localChange = true;
@@ -74135,7 +74313,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _numericInputComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./numericInputComponent */ "./sharedComponents/numericInputComponent.tsx");
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
@@ -74287,7 +74465,7 @@ var DraggableLineComponent = /** @class */ (function (_super) {
     }
     DraggableLineComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "draggableLine", draggable: true, onDragStart: function (event) {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "draggableLine", title: this.props.tooltip, draggable: true, onDragStart: function (event) {
                 event.dataTransfer.setData("babylonjs-material-node", _this.props.data);
             } }, this.props.data.replace("Block", "")));
     };
@@ -74497,7 +74675,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./vector4LineComponent */ "./sharedComponents/vector4LineComponent.tsx");
 /* harmony import */ var _optionsLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
@@ -74808,7 +74986,7 @@ var OptionsLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "listLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "options" + (this.props.className ? " " + this.props.className : "") },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: this.state.value }, this.props.options.map(function (option) {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: this.state.value || "" }, this.props.options.map(function (option) {
                     return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: option.label, value: option.value }, option.label));
                 })))));
     };
@@ -74918,7 +75096,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__);
 
 
@@ -75150,7 +75328,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Engines/constants */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Engines/constants */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__);
 
 
@@ -75626,7 +75804,7 @@ var Vector4LineComponent = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "StringTools", function() { return StringTools; });
-/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__);
 
 var StringTools = /** @class */ (function () {
@@ -75725,14 +75903,14 @@ var StringTools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs/Materials/Textures/texture":
+/***/ "babylonjs/Misc/observable":
 /*!****************************************************************************************************!*\
   !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
   \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_Textures_texture__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__;
 
 /***/ })
 

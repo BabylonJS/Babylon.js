@@ -1,7 +1,6 @@
 import * as React from "react";
 
 import { Observable } from "babylonjs/Misc/observable";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
@@ -25,7 +24,7 @@ interface IPBRMaterialPropertyGridComponentProps {
 }
 
 export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMaterialPropertyGridComponentProps> {
-    private _onDebugSelectionChangeObservable = new Observable<BaseTexture>();
+    private _onDebugSelectionChangeObservable = new Observable<TextureLinkLineComponent>();
     constructor(props: IPBRMaterialPropertyGridComponentProps) {
         super(props);
     }
@@ -42,7 +41,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
         this.props.material.debugMode = state ? 63 : 0;
     }
 
-    renderTextures(onDebugSelectionChangeObservable: Observable<BaseTexture>) {
+    renderTextures(onDebugSelectionChangeObservable: Observable<TextureLinkLineComponent>) {
         const material = this.props.material;
 
         return (
