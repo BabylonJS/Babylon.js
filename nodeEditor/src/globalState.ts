@@ -4,7 +4,6 @@ import { Observable } from 'babylonjs/Misc/observable';
 import { DefaultNodeModel } from './components/diagram/defaultNodeModel';
 import { LogEntry } from './components/log/logComponent';
 import { NodeModel } from 'storm-react-diagrams';
-import { INodeLocationInfo } from './nodeLocationInfo';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { PreviewMeshType } from './components/preview/previewMeshType';
 import { DataStorage } from './dataStorage';
@@ -16,7 +15,7 @@ export class GlobalState {
     hostDocument: HTMLDocument;
     onSelectionChangedObservable = new Observable<Nullable<DefaultNodeModel>>();
     onRebuildRequiredObservable = new Observable<void>();
-    onResetRequiredObservable = new Observable<Nullable<INodeLocationInfo[]>>();
+    onResetRequiredObservable = new Observable<void>();
     onUpdateRequiredObservable = new Observable<void>();
     onZoomToFitRequiredObservable = new Observable<void>();
     onReOrganizedRequiredObservable = new Observable<void>();

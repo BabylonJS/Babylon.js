@@ -47,7 +47,7 @@ export class TargetCamera extends Camera {
     public speed = 2.0;
 
     /**
-     * Add cconstraint to the camera to prevent it to move freely in all directions and
+     * Add constraint to the camera to prevent it to move freely in all directions and
      * around all axis.
      */
     public noRotationConstraint = false;

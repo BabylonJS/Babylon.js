@@ -54,6 +54,7 @@ interface INativeEngine {
     setBlendMode(blendMode: number): void;
 
     setMatrix(uniform: WebGLUniformLocation, matrix: Float32Array): void;
+    setInt(uniform: WebGLUniformLocation, int: number): void;
     setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void;
     setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void;
     setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void;
@@ -68,7 +69,6 @@ interface INativeEngine {
     setFloat(uniform: WebGLUniformLocation, value: number): void;
     setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void;
     setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void;
-    setBool(uniform: WebGLUniformLocation, bool: number): void;
     setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
 
     createTexture(): WebGLTexture;
@@ -626,6 +626,14 @@ export class NativeEngine extends Engine {
         return this._alphaMode;
     }
 
+    public setInt(uniform: WebGLUniformLocation, int: number): void {
+        if (!uniform) {
+            return;
+        }
+
+        this._native.setInt(uniform, int);
+    }
+
     public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void {
         if (!uniform) {
             return;
@@ -768,14 +776,6 @@ export class NativeEngine extends Engine {
         }
 
         this._native.setFloat3(uniform, x, y, z);
-    }
-
-    public setBool(uniform: WebGLUniformLocation, bool: number): void {
-        if (!uniform) {
-            return;
-        }
-
-        this._native.setBool(uniform, bool);
     }
 
     public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void {

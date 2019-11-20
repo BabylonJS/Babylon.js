@@ -745,6 +745,21 @@ body {
 .save-layer .save-form .save-form-buttons div:hover {
     font-weight: bold;
 }
+.save-layer .diff-form {
+    height: 200px;
+}
+.displayOnDiff {
+    display: none;
+}
+.diff-view {
+    display: none;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
 
 /* Media queries */
 
