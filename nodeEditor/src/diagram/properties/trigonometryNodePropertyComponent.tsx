@@ -1,26 +1,20 @@
 
 import * as React from "react";
-import { GlobalState } from '../../../globalState';
-import { TrigonometryNodeModel } from './trigonometryNodeModel';
-import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
-import { LineContainerComponent } from '../../../sharedComponents/lineContainerComponent';
-import { TextInputLineComponent } from '../../../sharedComponents/textInputLineComponent';
-import { OptionsLineComponent } from '../../../sharedComponents/optionsLineComponent';
-import { TrigonometryBlockOperations } from 'babylonjs/Materials/Node/Blocks/trigonometryBlock';
+import { TextLineComponent } from '../../sharedComponents/textLineComponent';
+import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
+import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
+import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
+import { TrigonometryBlockOperations, TrigonometryBlock } from 'babylonjs/Materials/Node/Blocks/trigonometryBlock';
+import { IPropertyComponentProps } from './propertyComponentProps';
 
-interface ITrigonometryTabComponentProps {
-    globalState: GlobalState;
-    trigonometryNode: TrigonometryNodeModel;
-}
+export class TrigonometryPropertyTabComponent extends React.Component<IPropertyComponentProps> {
 
-export class TrigonometryPropertyTabComponentProps extends React.Component<ITrigonometryTabComponentProps> {
-
-    constructor(props: ITrigonometryTabComponentProps) {
+    constructor(props: IPropertyComponentProps) {
         super(props)
     }
 
     render() {
-        let trigonometryBlock = this.props.trigonometryNode.trigonometryBlock;
+        let trigonometryBlock = this.props.block as TrigonometryBlock;
         
         var operationOptions: {label: string, value: TrigonometryBlockOperations}[] = [
             {label: "Cos", value: TrigonometryBlockOperations.Cos},

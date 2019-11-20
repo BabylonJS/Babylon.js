@@ -1,7 +1,5 @@
-import * as React from "react";
 import { DefaultNodeModel } from '../defaultNodeModel';
 import { GlobalState } from '../../../globalState';
-import { InputPropertyTabComponentProps } from './inputNodePropertyComponent';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 
 /**
@@ -21,8 +19,6 @@ export class InputNodeModel extends DefaultNodeModel {
     }
 
     renderProperties(globalState: GlobalState) {
-        return (
-            <InputPropertyTabComponentProps globalState={globalState} inputNode={this} />
-        );
+        return null;
     }
 }

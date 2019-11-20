@@ -1,8 +1,6 @@
-import * as React from "react";
 import { DefaultNodeModel } from '../defaultNodeModel';
 import { GlobalState } from '../../../globalState';
 import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
-import { ClampPropertyTabComponentProps } from './clampNodePropertyComponent';
 
 export class ClampNodeModel extends DefaultNodeModel {
 
@@ -18,8 +16,6 @@ export class ClampNodeModel extends DefaultNodeModel {
     }
 
     renderProperties(globalState: GlobalState) {
-        return (
-            <ClampPropertyTabComponentProps globalState={globalState} remapNode={this} />
-        );
+        return null;
     }
 }

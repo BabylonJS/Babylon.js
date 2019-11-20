@@ -23,15 +23,6 @@ export class LightNodeWidget extends React.Component<ILightNodeWidgetProps> {
     constructor(props: ILightNodeWidgetProps) {
         super(props);
         this.state = {};
-
-        if (this.props.node) {
-            this.props.node.addListener({
-                selectionChanged: () => {
-                    let selected = (this.props.node as any).selected;
-                    this.props.globalState.onSelectionChangedObservable.notifyObservers(selected ? this.props.node : null);
-                }
-            });
-        }
     }
 
     render() {

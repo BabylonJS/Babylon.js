@@ -1,37 +1,32 @@
 
 import * as React from "react";
-import { Vector2PropertyTabComponent } from '../../propertyTab/properties/vector2PropertyTabComponent';
-import { Vector3PropertyTabComponent } from '../../propertyTab/properties/vector3PropertyTabComponent';
-import { GlobalState } from '../../../globalState';
-import { InputNodeModel } from './inputNodeModel';
+import { GlobalState } from '../../globalState';
+import { FloatLineComponent } from '../../sharedComponents/floatLineComponent';
+import { FloatPropertyTabComponent } from '../../components/propertyTab/properties/floatPropertyTabComponent';
+import { SliderLineComponent } from '../../sharedComponents/sliderLineComponent';
+import { Vector2PropertyTabComponent } from '../../components/propertyTab/properties/vector2PropertyTabComponent';
+import { Color3PropertyTabComponent } from '../../components/propertyTab/properties/color3PropertyTabComponent';
+import { Vector3PropertyTabComponent } from '../../components/propertyTab/properties/vector3PropertyTabComponent';
+import { Vector4PropertyTabComponent } from '../../components/propertyTab/properties/vector4PropertyTabComponent';
+import { MatrixPropertyTabComponent } from '../../components/propertyTab/properties/matrixPropertyTabComponent';
+import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
+import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
+import { TextLineComponent } from '../../sharedComponents/textLineComponent';
+import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
-import { OptionsLineComponent } from '../../../sharedComponents/optionsLineComponent';
 import { NodeMaterialSystemValues } from 'babylonjs/Materials/Node/Enums/nodeMaterialSystemValues';
-import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
-import { Color3PropertyTabComponent } from '../../propertyTab/properties/color3PropertyTabComponent';
-import { FloatPropertyTabComponent } from '../../propertyTab/properties/floatPropertyTabComponent';
-import { LineContainerComponent } from '../../../sharedComponents/lineContainerComponent';
-import { StringTools } from '../../../stringTools';
 import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
-import { TextInputLineComponent } from '../../../sharedComponents/textInputLineComponent';
-import { Vector4PropertyTabComponent } from '../../propertyTab/properties/vector4PropertyTabComponent';
-import { MatrixPropertyTabComponent } from '../../propertyTab/properties/matrixPropertyTabComponent';
-import { FloatLineComponent } from '../../../sharedComponents/floatLineComponent';
-import { SliderLineComponent } from '../../../sharedComponents/sliderLineComponent';
+import { StringTools } from '../../stringTools';
+import { IPropertyComponentProps } from './propertyComponentProps';
+import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 
-interface IInputPropertyTabComponentProps {
-    globalState: GlobalState;
-    inputNode: InputNodeModel;
-}
-
-export class InputPropertyTabComponentProps extends React.Component<IInputPropertyTabComponentProps> {
-
-    constructor(props: IInputPropertyTabComponentProps) {
+export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+    constructor(props: IPropertyComponentProps) {
         super(props)
     }
 
     renderValue(globalState: GlobalState) {
-        let inputBlock = this.props.inputNode.inputBlock;
+        let inputBlock = this.props.block as InputBlock;
         switch (inputBlock.type) {
             case NodeMaterialBlockConnectionPointTypes.Float: {
                 let cantDisplaySlider = (isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max);
@@ -84,12 +79,12 @@ export class InputPropertyTabComponentProps extends React.Component<IInputProper
     }
 
     setDefaultValue() {
-        let inputBlock = this.props.inputNode.inputBlock;
+        let inputBlock = this.props.block as InputBlock;
         inputBlock.setDefaultValue();
     }
 
     render() {
-        let inputBlock = this.props.inputNode.inputBlock;
+        let inputBlock = this.props.block as InputBlock;
 
         var systemValuesOptions: {label: string, value: NodeMaterialSystemValues}[] = [];
         var attributeOptions: {label: string, value: string}[] = [];

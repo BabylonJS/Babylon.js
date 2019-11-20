@@ -1,7 +1,5 @@
-import * as React from "react";
 import { DefaultNodeModel } from '../defaultNodeModel';
 import { GlobalState } from '../../../globalState';
-import { TrigonometryPropertyTabComponentProps } from './trigonometryNodePropertyComponent';
 import { TrigonometryBlock } from 'babylonjs/Materials/Node/Blocks/trigonometryBlock';
 
 /**
@@ -21,8 +19,6 @@ export class TrigonometryNodeModel extends DefaultNodeModel {
     }
 
     renderProperties(globalState: GlobalState) {
-        return (
-            <TrigonometryPropertyTabComponentProps globalState={globalState} trigonometryNode={this} />
-        );
+        return null;
     }
 }

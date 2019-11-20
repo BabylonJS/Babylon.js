@@ -1,20 +1,15 @@
 
 import * as React from "react";
-import { GlobalState } from '../../../globalState';
-import { RemapNodeModel } from './remapNodeModel';
-import { LineContainerComponent } from '../../../sharedComponents/lineContainerComponent';
-import { Vector2LineComponent } from '../../../sharedComponents/vector2LineComponent';
-import { TextInputLineComponent } from '../../../sharedComponents/textInputLineComponent';
-import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
+import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
+import { Vector2LineComponent } from '../../sharedComponents/vector2LineComponent';
+import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
+import { TextLineComponent } from '../../sharedComponents/textLineComponent';
+import { IPropertyComponentProps } from './propertyComponentProps';
+import { RemapBlock } from 'babylonjs/Materials/Node/Blocks/remapBlock';
 
-interface IRemapPropertyTabComponentProps {
-    globalState: GlobalState;
-    remapNode: RemapNodeModel;
-}
+export class RemapPropertyTabComponent extends React.Component<IPropertyComponentProps> {
 
-export class RemapPropertyTabComponentProps extends React.Component<IRemapPropertyTabComponentProps> {
-
-    constructor(props: IRemapPropertyTabComponentProps) {
+    constructor(props: IPropertyComponentProps) {
         super(props)
     }
 
@@ -24,7 +19,7 @@ export class RemapPropertyTabComponentProps extends React.Component<IRemapProper
     }
 
     render() {
-        let remapBlock = this.props.remapNode.remapBlock;
+        let remapBlock = this.props.block as RemapBlock;
       
         return (
             <div>

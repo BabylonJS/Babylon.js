@@ -1,40 +1,39 @@
 
 import * as React from "react";
-import { GlobalState } from '../../../globalState';
 import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
-import { FileButtonLineComponent } from '../../../sharedComponents/fileButtonLineComponent';
+import { FileButtonLineComponent } from '../../sharedComponents/fileButtonLineComponent';
 import { Tools } from 'babylonjs/Misc/tools';
-import { TextureNodeModel } from './textureNodeModel';
-import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
-import { LineContainerComponent } from '../../../sharedComponents/lineContainerComponent';
-import { TextInputLineComponent } from '../../../sharedComponents/textInputLineComponent';
-import { CheckBoxLineComponent } from '../../../sharedComponents/checkBoxLineComponent';
+import { TextLineComponent } from '../../sharedComponents/textLineComponent';
+import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
+import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
+import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
-import { SliderLineComponent } from '../../../sharedComponents/sliderLineComponent';
-import { FloatLineComponent } from '../../../sharedComponents/floatLineComponent';
-import { ButtonLineComponent } from '../../../sharedComponents/buttonLineComponent';
-import { ReflectionTextureNodeModel } from '../reflectionTexture/reflectionTextureNodeModel';
+import { SliderLineComponent } from '../../sharedComponents/sliderLineComponent';
+import { FloatLineComponent } from '../../sharedComponents/floatLineComponent';
+import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent';
 import { CubeTexture } from 'babylonjs/Materials/Textures/cubeTexture';
-import { OptionsLineComponent } from '../../../sharedComponents/optionsLineComponent';
+import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
+import { IPropertyComponentProps } from './propertyComponentProps';
+import { ReflectionTextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/reflectionTextureBlock';
+import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
 
-interface ITexturePropertyTabComponentProps {
-    globalState: GlobalState;
-    node: TextureNodeModel | ReflectionTextureNodeModel;
-}
+export class TexturePropertyTabComponent extends React.Component<IPropertyComponentProps, {isEmbedded: boolean, loadAsCubeTexture: boolean}> {
 
-export class TexturePropertyTabComponent extends React.Component<ITexturePropertyTabComponentProps, {isEmbedded: boolean, loadAsCubeTexture: boolean}> {
+    get textureBlock(): TextureBlock | ReflectionTextureBlock {
+        return this.props.block as TextureBlock | ReflectionTextureBlock;
+    }
 
-    constructor(props: ITexturePropertyTabComponentProps) {
+    constructor(props: IPropertyComponentProps) {
         super(props);
 
-        let texture = this.props.node.texture as BaseTexture;
+        let texture = this.textureBlock.texture as BaseTexture;
 
         this.state = {isEmbedded: !texture || texture.name.substring(0, 4) === "data", loadAsCubeTexture: texture && texture.isCube};
     }
 
-    UNSAFE_componentWillUpdate(nextProps: ITexturePropertyTabComponentProps, nextState: {isEmbedded: boolean, loadAsCubeTexture: boolean}) {
-        if (nextProps.node !== this.props.node) {
-            let texture = nextProps.node.texture as BaseTexture;
+    UNSAFE_componentWillUpdate(nextProps: IPropertyComponentProps, nextState: {isEmbedded: boolean, loadAsCubeTexture: boolean}) {
+        if (nextProps.block !== this.props.block) {
+            let texture = (nextProps.block as TextureBlock | ReflectionTextureBlock).texture as BaseTexture;
 
             nextState.isEmbedded = !texture || texture.name.substring(0, 4) === "data";
             nextState.loadAsCubeTexture = texture && texture.isCube;
@@ -56,19 +55,19 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
     }
 
     removeTexture() {
-        let texture = this.props.node.texture as BaseTexture;
+        let texture = this.textureBlock.texture as BaseTexture;
 
         if (texture) {
             texture.dispose();
             (texture as any) = null;
-            this.props.node.texture = null;
+            this.textureBlock.texture = null;
         }
 
         this.updateAfterTextureLoad();
     }
 
     _prepareTexture() {
-        let texture = this.props.node.texture as BaseTexture;
+        let texture = this.textureBlock.texture as BaseTexture;
 
         if (texture && texture.isCube !== this.state.loadAsCubeTexture) {
             texture.dispose();
@@ -77,12 +76,12 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
 
         if (!texture) {
             if (!this.state.loadAsCubeTexture) {
-                this.props.node.texture = new Texture(null, this.props.globalState.nodeMaterial.getScene(), false, this.props.node instanceof ReflectionTextureNodeModel);
-                texture = this.props.node.texture;
+                this.textureBlock.texture = new Texture(null, this.props.globalState.nodeMaterial.getScene(), false, this.textureBlock instanceof ReflectionTextureBlock);
+                texture = this.textureBlock.texture;
                 texture.coordinatesMode = Texture.EQUIRECTANGULAR_MODE;
             } else {
-                this.props.node.texture = new CubeTexture("", this.props.globalState.nodeMaterial.getScene());
-                texture = this.props.node.texture;
+                this.textureBlock.texture = new CubeTexture("", this.props.globalState.nodeMaterial.getScene());
+                texture = this.textureBlock.texture;
                 texture.coordinatesMode = Texture.CUBIC_MODE;
             }
         }  
@@ -93,13 +92,9 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
 	 * @param file the file of the texture to use
 	 */
     replaceTexture(file: File) {
-        if (!this.props.node) {
-            return;
-        }
-
         this._prepareTexture();
 
-        let texture = this.props.node.texture as BaseTexture;
+        let texture = this.textureBlock.texture as BaseTexture;
         Tools.ReadFile(file, (data) => {
             var blob = new Blob([data], { type: "octet/stream" });
 
@@ -123,8 +118,8 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
     replaceTextureWithUrl(url: string) {
         this._prepareTexture();
 
-        let texture = this.props.node.texture as BaseTexture;       
-        if (texture.isCube || this.props.node instanceof ReflectionTextureNodeModel) {
+        let texture = this.textureBlock.texture as BaseTexture;       
+        if (texture.isCube || this.textureBlock instanceof ReflectionTextureBlock) {
             let extension: string | undefined = undefined;
             if (url.toLowerCase().indexOf(".dds") > 0) {
                 extension = ".dds";
@@ -141,14 +136,14 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
     render() {
         let url = "";
 
-        let texture = this.props.node.texture as BaseTexture;
+        let texture = this.textureBlock.texture as BaseTexture;
         if (texture && texture.name && texture.name.substring(0, 4) !== "data") {
             url = texture.name;
         }
 
         url = url.replace(/\?nocache=\d+/, "");
 
-        let isInReflectionMode = this.props.node instanceof ReflectionTextureNodeModel;
+        let isInReflectionMode = this.textureBlock instanceof ReflectionTextureBlock;
 
         var reflectionModeOptions: {label: string, value: number}[] = [
             {
@@ -183,11 +178,11 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
         return (
             <div>
                 <LineContainerComponent title="GENERAL">
-                    <TextLineComponent label="Type" value={this.props.node.block!.getClassName()} />
-                    <TextInputLineComponent globalState={this.props.globalState} label="Name" propertyName="name" target={this.props.node.block!} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
+                    <TextLineComponent label="Type" value={this.props.block.getClassName()} />
+                    <TextInputLineComponent globalState={this.props.globalState} label="Name" propertyName="name" target={this.props.block} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
                 </LineContainerComponent>
                 <LineContainerComponent title="PROPERTIES">
-                    <CheckBoxLineComponent label="Auto select UV" propertyName="autoSelectUV" target={this.props.node.block!} onValueChanged={() => {                        
+                    <CheckBoxLineComponent label="Auto select UV" propertyName="autoSelectUV" target={this.props.block} onValueChanged={() => {                        
                         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                     }}/> 
                     {
@@ -276,7 +271,7 @@ export class TexturePropertyTabComponent extends React.Component<ITexturePropert
                 <LineContainerComponent title="SOURCE">
                     <CheckBoxLineComponent label="Embed static texture" isSelected={() => this.state.isEmbedded} onSelect={value => {
                         this.setState({isEmbedded: value});
-                        this.props.node.texture = null;
+                        this.textureBlock.texture = null;
                         this.updateAfterTextureLoad();
                     }}/>
                     {

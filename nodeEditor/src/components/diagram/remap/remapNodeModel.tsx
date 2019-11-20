@@ -1,7 +1,5 @@
-import * as React from "react";
 import { DefaultNodeModel } from '../defaultNodeModel';
 import { GlobalState } from '../../../globalState';
-import { RemapPropertyTabComponentProps } from './remapNodePropertyComponent';
 import { RemapBlock } from 'babylonjs/Materials/Node/Blocks/remapBlock';
 
 /**
@@ -21,8 +19,6 @@ export class RemapNodeModel extends DefaultNodeModel {
     }
 
     renderProperties(globalState: GlobalState) {
-        return (
-            <RemapPropertyTabComponentProps globalState={globalState} remapNode={this} />
-        );
+        return null;
     }
 }

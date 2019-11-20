@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { Nullable } from 'babylonjs/types';
 import { DefaultNodeModel } from '../defaultNodeModel';
 import { GlobalState } from '../../../globalState';
@@ -6,7 +5,6 @@ import { NodeCreationOptions, GraphEditor } from '../../../graphEditor';
 import { DiagramModel } from 'storm-react-diagrams/dist/@types/src/models/DiagramModel';
 import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { ReflectionTextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/reflectionTextureBlock';
-import { TexturePropertyTabComponent } from '../texture/texturePropertyTabComponent';
 
 /**
  * Texture node model which stores information about a node editor block
@@ -33,9 +31,7 @@ export class ReflectionTextureNodeModel extends DefaultNodeModel {
     }
 
     renderProperties(globalState: GlobalState) {
-        return (
-            <TexturePropertyTabComponent globalState={globalState} node={this} />
-        );
+        return null;
     }
 
     prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor) {
