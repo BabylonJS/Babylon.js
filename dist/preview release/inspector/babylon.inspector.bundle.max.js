@@ -41387,7 +41387,7 @@ var OptionsLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "listLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "options" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: this.state.value }, this.props.options.map(function (option) {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: this.state.value || "" }, this.props.options.map(function (option) {
                     return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: option.label, value: option.value }, option.label));
                 })))));
     };
@@ -42052,8 +42052,8 @@ var TextureLinkLineComponent = /** @class */ (function (_super) {
         if (!this.props.onDebugSelectionChangeObservable) {
             return;
         }
-        this._onDebugSelectionChangeObserver = this.props.onDebugSelectionChangeObservable.add(function (texture) {
-            if (_this.props.texture !== texture) {
+        this._onDebugSelectionChangeObserver = this.props.onDebugSelectionChangeObservable.add(function (line) {
+            if (line !== _this) {
                 _this.setState({ isDebugSelected: false });
             }
         });
@@ -42068,6 +42068,9 @@ var TextureLinkLineComponent = /** @class */ (function (_super) {
             var newState = !this.state.isDebugSelected;
             this.props.customDebugAction(newState);
             this.setState({ isDebugSelected: newState });
+            if (this.props.onDebugSelectionChangeObservable) {
+                this.props.onDebugSelectionChangeObservable.notifyObservers(this);
+            }
             return;
         }
         var texture = this.props.texture;
@@ -42117,7 +42120,7 @@ var TextureLinkLineComponent = /** @class */ (function (_super) {
         material.reservedDataStore.level = texture.level;
         texture.level = 1.0;
         if (this.props.onDebugSelectionChangeObservable) {
-            this.props.onDebugSelectionChangeObservable.notifyObservers(texture);
+            this.props.onDebugSelectionChangeObservable.notifyObservers(this);
         }
         if (needToDisposeCheckMaterial) {
             checkMaterial.dispose();
@@ -47819,14 +47822,14 @@ var EmbedHostComponent = /** @class */ (function (_super) {
         if (this.props.popupMode) {
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "split", className: "splitPopup" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "topPart" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_4__["SceneExplorerComponent"], { scene: this.props.scene, popupMode: true, globalState: this.props.globalState, noHeader: true })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_4__["SceneExplorerComponent"], { scene: this.props.scene, extensibilityGroups: this.props.extensibilityGroups, popupMode: true, globalState: this.props.globalState, noHeader: true })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "separator" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "bottomPart", style: { marginTop: "4px", overflow: "hidden" } },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_actionTabs_actionTabsComponent__WEBPACK_IMPORTED_MODULE_5__["ActionTabsComponent"], { scene: this.props.scene, popupMode: true, globalState: this.props.globalState, noHeader: true }))));
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { ref: "split", id: "split", className: "noPopup" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "topPart", ref: "topPart" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_4__["SceneExplorerComponent"], { scene: this.props.scene, globalState: this.props.globalState, popupMode: true, noHeader: true })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sceneExplorer_sceneExplorerComponent__WEBPACK_IMPORTED_MODULE_4__["SceneExplorerComponent"], { scene: this.props.scene, extensibilityGroups: this.props.extensibilityGroups, globalState: this.props.globalState, popupMode: true, noHeader: true })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "bottomPart", ref: "bottomPart", style: { marginTop: "4px", overflow: "hidden" } },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_actionTabs_actionTabsComponent__WEBPACK_IMPORTED_MODULE_5__["ActionTabsComponent"], { scene: this.props.scene, globalState: this.props.globalState, popupMode: true, noHeader: true }))));
     };
@@ -50208,6 +50211,7 @@ var Inspector = /** @class */ (function () {
             this._OpenedPane++;
             var embedHostElement = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_embedHost_embedHostComponent__WEBPACK_IMPORTED_MODULE_6__["EmbedHostComponent"], {
                 globalState: this._GlobalState, scene: scene,
+                extensibilityGroups: options.explorerExtensibility,
                 noExpand: !options.enablePopup,
                 noClose: !options.enableClose,
                 popupMode: options.popup, onPopup: function () {

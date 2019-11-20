@@ -42,10 +42,12 @@
 - Added support for 180 VR videos in `VideoDome` ([RaananW](https://github.com/RaananW/))
 - Added optional parameter to use Euler angles in planeRotationGizmo ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Added `AnimationGroup.onAnimationGroupLoopObservable` ([Deltakosh](https://github.com/deltakosh/))
-- Supports custom materials to generate glow through ```referenceMeshToUseItsOwnMaterial``` in the ```GlowLayer``` ([sebavan](http://www.github.com/sebavan))
+- Supports custom materials to generate glow through `referenceMeshToUseItsOwnMaterial` in the `GlowLayer` ([sebavan](http://www.github.com/sebavan))
 - Added `RawTexture2DArray` to enable use of WebGL2 2D array textures by custom shaders ([atg](https://github.com/atg))
 - Added multiview support for the shader material (and the line-mesh class) ([RaananW](https://github.com/RaananW/))
 - Added various (interpolation) functions to Path3D, also `alignTangentsWithPath`, `slice`, `getClosestPositionTo` ([Poolminer](https://github.com/Poolminer/))
+- Allow setting of `BABYLON.Basis.JSModuleURL` and `BABYLON.Basis.WasmModuleURL`, for hosting the Basis transcoder locally ([JasonAyre])(https://github.com/jasonyre))
+- PNG support for browsers not supporting SVG ([RaananW](https://github.com/RaananW/))
 
 ### Engine
 
@@ -85,6 +87,7 @@
 - Added a color picker and previewer for BABYLON.ColorX invocations in the playground ([sailro](http://www.github.com/sailro))
 - Added support for diffing snippets in the playground ([sailro](http://www.github.com/sailro))
 - Added diff navigator in the playground ([sailro](http://www.github.com/sailro))
+- Added custom filter to remove internals from the completion in the playground ([sailro](http://www.github.com/sailro))
 
 ### Meshes
 
@@ -112,6 +115,8 @@
 - Added support for GLTF clearcoat extension [Sebavan](https://github.com/sebavan/)
 - Added support for GLTF specular extension [Sebavan](https://github.com/sebavan/)
 - Added support for GLTF sheen extension [Sebavan](https://github.com/sebavan/)
+- Added support for GLTF mesh quantization extension ([zeux](https://github.com/zeux))
+- Added support for 8 bone influences to glTF loader ([zeux](https://github.com/zeux))
 
 ### Materials
 
@@ -152,7 +157,7 @@
 - UI Button has options to set different session mode and reference type ([RaananW](https://github.com/RaananW/))
 - Added option to change the teleportation duration in the VRExperienceHelper class ([https://github.com/LeoRodz](https://github.com/LeoRodz))
 - Added support to teleport the camera at constant speed in the VRExperienceHelper class ([https://github.com/LeoRodz](https://github.com/LeoRodz))
-
+- VRExperienceHelper has now an XR fallback to force XR usage (Beta) ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
@@ -172,6 +177,7 @@
 - Added the feature `expandable` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 - Added the feature `removeParticles()` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 - Added the feature "storable particles" and `insertParticlesFromArray()` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
+- Added the support for MultiMaterials to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 
 ### Navigation Mesh
 
@@ -228,12 +234,13 @@
 - Fixed an issue with size of texture in multiview ([RaananW](https://github.com/RaananW/))
 - Fixed Path3D (bi)normals computation for specific edge cases ([Poolminer](https://github.com/Poolminer/))
 - WebXR UI BUtton will only change to "In XR" after XR Session started ([RaananW](https://github.com/RaananW/))
+- Fix bug when we call `Mesh.render` twice and the material is still not ready on the second call ([barroij](https://github.com/barroij/))
 
 ## Breaking changes
 
 - Setting mesh.scaling to a new vector will no longer automatically call forceUpdate (this should be done manually when needed) ([TrevorDev](https://github.com/TrevorDev))
 - `Tools.ExtractMinAndMaxIndexed` and `Tools.ExtractMinAndMax` are now ambiant functions (available on `BABYLON.extractMinAndMaxIndexed` and `BABYLON.extractMinAndMax`) ([Deltakosh](https://github.com/deltakosh/))
 - `Tools.QueueNewFrame` was removed in favor of `Engine.QueueNewFrame` ([Deltakosh](https://github.com/deltakosh/))
-- Removed external data from Engine (`addExternalData`, `getExternalData`, `getOrAddExternalDataWithFactory`, `removeExternalData`)  ([Deltakosh](https://github.com/deltakosh/))
+- Removed external data from Engine (`addExternalData`, `getExternalData`, `getOrAddExternalDataWithFactory`, `removeExternalData`) ([Deltakosh](https://github.com/deltakosh/))
 - The glTF loader extensions that map to glTF 2.0 extensions will now be disabled if the extension is not present in `extensionsUsed`. ([bghgary](https://github.com/bghgary))
-- The STL loader does not create light or camera automatically, please use ```scene.createDefaultCameraOrLight();``` in your code [Sebavan](https://github.com/sebavan/)
+- The STL loader does not create light or camera automatically, please use `scene.createDefaultCameraOrLight();` in your code [Sebavan](https://github.com/sebavan/)

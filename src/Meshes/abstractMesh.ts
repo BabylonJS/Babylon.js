@@ -802,7 +802,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @hidden */
-    public _resyncLighSource(light: Light): void {
+    public _resyncLightSource(light: Light): void {
         var isIn = light.isEnabled() && light.canAffectMesh(this);
 
         var index = this._lightSources.indexOf(light);

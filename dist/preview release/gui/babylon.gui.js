@@ -3728,6 +3728,8 @@ var Control = /** @class */ (function () {
         this._rebuildLayout = false;
         /** @hidden */
         this._isClipped = false;
+        /** @hidden */
+        this._automaticSize = false;
         /**
          * Gets or sets an object used to store user defined information for the node
          */
@@ -6671,7 +6673,7 @@ var Image = /** @class */ (function (_super) {
      */
     Image.prototype._svgCheck = function (value) {
         var _this = this;
-        if ((value.search(/.svg#/gi) !== -1) && (value.indexOf("#") === value.lastIndexOf("#"))) {
+        if (window.SVGSVGElement && (value.search(/.svg#/gi) !== -1) && (value.indexOf("#") === value.lastIndexOf("#"))) {
             var svgsrc = value.split('#')[0];
             var elemid = value.split('#')[1];
             // check if object alr exist in document
@@ -8203,6 +8205,7 @@ var Line = /** @class */ (function (_super) {
         _this._x2 = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__["ValueAndUnit"](0);
         _this._y2 = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__["ValueAndUnit"](0);
         _this._dash = new Array();
+        _this._automaticSize = true;
         _this.isHitTestVisible = false;
         _this._horizontalAlignment = _control__WEBPACK_IMPORTED_MODULE_2__["Control"].HORIZONTAL_ALIGNMENT_LEFT;
         _this._verticalAlignment = _control__WEBPACK_IMPORTED_MODULE_2__["Control"].VERTICAL_ALIGNMENT_TOP;
@@ -8473,6 +8476,7 @@ var MultiLine = /** @class */ (function (_super) {
         _this.onPointUpdate = function () {
             _this._markAsDirty();
         };
+        _this._automaticSize = true;
         _this.isHitTestVisible = false;
         _this._horizontalAlignment = _control__WEBPACK_IMPORTED_MODULE_2__["Control"].HORIZONTAL_ALIGNMENT_LEFT;
         _this._verticalAlignment = _control__WEBPACK_IMPORTED_MODULE_2__["Control"].VERTICAL_ALIGNMENT_TOP;
@@ -11201,7 +11205,7 @@ var StackPanel = /** @class */ (function (_super) {
                     this._rebuildLayout = true;
                     child._top.ignoreAdaptiveScaling = true;
                 }
-                if (child._height.isPercentage) {
+                if (child._height.isPercentage && !child._automaticSize) {
                     if (!this.ignoreLayoutWarnings) {
                         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Control (Name:" + child.name + ", UniqueId:" + child.uniqueId + ") is using height in percentage mode inside a vertical StackPanel");
                     }
@@ -11216,7 +11220,7 @@ var StackPanel = /** @class */ (function (_super) {
                     this._rebuildLayout = true;
                     child._left.ignoreAdaptiveScaling = true;
                 }
-                if (child._width.isPercentage) {
+                if (child._width.isPercentage && !child._automaticSize) {
                     if (!this.ignoreLayoutWarnings) {
                         babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Control (Name:" + child.name + ", UniqueId:" + child.uniqueId + ") is using width in percentage mode inside a horizontal StackPanel");
                     }
