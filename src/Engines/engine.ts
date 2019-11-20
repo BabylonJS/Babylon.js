@@ -427,6 +427,7 @@ export class Engine extends ThinEngine {
     // Deterministic lockstepMaxSteps
     protected _deterministicLockstep: boolean = false;
     protected _lockstepMaxSteps: number = 4;
+    protected _timeStep: number = 1 / 60;
 
     protected get _supportsHardwareTextureRescaling() {
         return !!Engine._RescalePostProcessFactory;
@@ -548,6 +549,8 @@ export class Engine extends ThinEngine {
 
             this._deterministicLockstep = !!options.deterministicLockstep;
             this._lockstepMaxSteps = options.lockstepMaxSteps || 0;
+            this._timeStep = options.timeStep || 1 / 60;
+
         }
 
         // Load WebVR Devices
@@ -635,18 +638,6 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Gets host document
-     * @returns the host document object
-     */
-    public getHostDocument(): Document {
-        if (this._renderingCanvas && this._renderingCanvas.ownerDocument) {
-            return this._renderingCanvas.ownerDocument;
-        }
-
-        return document;
-    }
-
-    /**
      * Gets the client rect of the HTML canvas attached with the current webGL context
      * @returns a client rectanglee
      */
@@ -684,6 +675,14 @@ export class Engine extends ThinEngine {
      */
     public getLockstepMaxSteps(): number {
         return this._lockstepMaxSteps;
+    }
+
+    /**
+     * Returns the time in ms between steps when using deterministic lock step.
+     * @returns time step in (ms)
+     */
+    public getTimeStep(): number {
+        return this._timeStep * 1000;
     }
 
     /**

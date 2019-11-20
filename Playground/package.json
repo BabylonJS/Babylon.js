@@ -15,6 +15,6 @@
     "test": "browser-sync start --server --files **/* --no-inject-changes --startPath index.html"
   },
   "dependencies": {
-    "npm": "^6.11.2"
+    "npm": "^6.13.0"
   }
 }

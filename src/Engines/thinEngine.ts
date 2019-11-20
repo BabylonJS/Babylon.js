@@ -89,10 +89,13 @@ export interface EngineOptions extends WebGLContextAttributes {
     deterministicLockstep?: boolean;
     /** Defines the maximum steps to use with deterministic lock step mode */
     lockstepMaxSteps?: number;
+    /** Defines the seconds between each deterministic lock step */
+    timeStep?: number;
     /**
      * Defines that engine should ignore context lost events
      * If this event happens when this parameter is true, you will have to reload the page to restore rendering
      */
+
     doNotHandleContextLost?: boolean;
     /**
      * Defines that engine should ignore modifying touch action attribute and style
@@ -129,14 +132,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-beta.2";
+        return "babylonjs@4.1.0-beta.3";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-beta.2";
+        return "4.1.0-beta.3";
     }
 
     /**
@@ -507,6 +510,10 @@ export class ThinEngine {
                 options.lockstepMaxSteps = 4;
             }
 
+            if (options.timeStep === undefined) {
+                options.timeStep = 1 / 60;
+            }
+
             if (options.preserveDrawingBuffer === undefined) {
                 options.preserveDrawingBuffer = false;
             }
@@ -764,7 +771,7 @@ export class ThinEngine {
             maxCombinedTexturesImageUnits: this._gl.getParameter(this._gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS),
             maxVertexTextureImageUnits: this._gl.getParameter(this._gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS),
             maxTextureSize: this._gl.getParameter(this._gl.MAX_TEXTURE_SIZE),
-            maxSamples: this._gl.getParameter(this._gl.MAX_SAMPLES),
+            maxSamples: this._webGLVersion > 1 ? this._gl.getParameter(this._gl.MAX_SAMPLES) : 1,
             maxCubemapTextureSize: this._gl.getParameter(this._gl.MAX_CUBE_MAP_TEXTURE_SIZE),
             maxRenderTextureSize: this._gl.getParameter(this._gl.MAX_RENDERBUFFER_SIZE),
             maxVertexAttribs: this._gl.getParameter(this._gl.MAX_VERTEX_ATTRIBS),
@@ -4167,5 +4174,17 @@ export class ThinEngine {
         else {
             return window.setTimeout(func, 16);
         }
+    }
+
+    /**
+     * Gets host document
+     * @returns the host document object
+     */
+    public getHostDocument(): Document {
+        if (this._renderingCanvas && this._renderingCanvas.ownerDocument) {
+            return this._renderingCanvas.ownerDocument;
+        }
+
+        return document;
     }
 }

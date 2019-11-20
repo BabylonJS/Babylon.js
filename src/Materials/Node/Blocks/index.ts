@@ -42,3 +42,6 @@ export * from "./worleyNoise3DBlock";
 export * from "./simplexPerlin3DBlock";
 export * from "./normalBlendBlock";
 export * from "./rotate2dBlock";
+export * from "./reflectBlock";
+export * from "./refractBlock";
+export * from "./desaturateBlock";

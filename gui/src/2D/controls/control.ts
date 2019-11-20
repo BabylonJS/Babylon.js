@@ -103,6 +103,9 @@ export class Control {
     public _isClipped = false;
 
     /** @hidden */
+    public _automaticSize = false;
+
+    /** @hidden */
     public _tag: any;
 
     /**
