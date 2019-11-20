@@ -423,6 +423,16 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export interface IButtonLineComponentProps {
+        label: string;
+        onClick: () => void;
+    }
+    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
+        constructor(props: IButtonLineComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface ICommonMaterialPropertyGridComponentProps {
         globalState: GlobalState;
         material: BABYLON.Material;
@@ -466,7 +476,7 @@ declare module INSPECTOR {
         texture: BABYLON.Nullable<BABYLON.BaseTexture>;
         material?: BABYLON.Material;
         onSelectionChangedObservable?: BABYLON.Observable<any>;
-        onDebugSelectionChangeObservable?: BABYLON.Observable<BABYLON.BaseTexture>;
+        onDebugSelectionChangeObservable?: BABYLON.Observable<TextureLinkLineComponent>;
         propertyName?: string;
         onTextureCreated?: (texture: BABYLON.BaseTexture) => void;
         customDebugAction?: (state: boolean) => void;
@@ -496,16 +506,6 @@ declare module INSPECTOR {
         private _onDebugSelectionChangeObservable;
         constructor(props: IStandardMaterialPropertyGridComponentProps);
         renderTextures(): JSX.Element;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    export interface IButtonLineComponentProps {
-        label: string;
-        onClick: () => void;
-    }
-    export class ButtonLineComponent extends React.Component<IButtonLineComponentProps> {
-        constructor(props: IButtonLineComponentProps);
         render(): JSX.Element;
     }
 }
@@ -629,7 +629,7 @@ declare module INSPECTOR {
         switchAmbientMode(state: boolean): void;
         switchMetallicMode(state: boolean): void;
         switchRoughnessMode(state: boolean): void;
-        renderTextures(onDebugSelectionChangeObservable: BABYLON.Observable<BABYLON.BaseTexture>): JSX.Element;
+        renderTextures(onDebugSelectionChangeObservable: BABYLON.Observable<TextureLinkLineComponent>): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -1465,6 +1465,7 @@ declare module INSPECTOR {
         mesh: BABYLON.AbstractMesh;
         extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
         onClick: () => void;
+        globalState: GlobalState;
     }
     export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponentProps, {
         isBoundingBoxEnabled: boolean;
@@ -1793,6 +1794,7 @@ declare module INSPECTOR {
         noExpand?: boolean;
         onClose: () => void;
         onPopup: () => void;
+        extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
     }
     export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps> {
         private _once;

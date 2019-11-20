@@ -77,7 +77,7 @@ export class InstancedMesh extends AbstractMesh {
         // Do nothing as all the work will be done by source mesh
     }
 
-    public _resyncLighSource(light: Light): void {
+    public _resyncLightSource(light: Light): void {
         // Do nothing as all the work will be done by source mesh
     }
 

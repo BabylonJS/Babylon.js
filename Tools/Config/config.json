@@ -12,7 +12,6 @@
         "packageES6FolderName": "packageES6",
         "packageES6DevFolderName": "packageES6Dev",
         "playgroundDirectory": "../../Playground/",
-        "intellisenseFile": "babylon.d.txt",
         "documentationFile": "documentation.d.ts",
         "intellisenseSources": [
             "../../dist/preview release/babylon.d.ts",
@@ -138,8 +137,8 @@
                 ],
                 "typings": "babylon.module.d.ts",
                 "index": "babylon.js",
-                "dependencies": [],
-                "devDependencies": []
+                "dependencies": {},
+                "devDependencies": {}
             },
             "es6": {
                 "packageName": "@babylonjs/core",

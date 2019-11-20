@@ -42,7 +42,7 @@ compileAndRun = function(parent, fpsLabel) {
         parent.menuPG.showBJSPGMenu();
         parent.monacoCreator.JsEditor.updateOptions({ readOnly: false });
 
-        if (BABYLON.Engine.LastCreatedScene && BABYLON.Engine.LastCreatedScene.debugLayer.isVisible()) {
+        if (BABYLON.Engine.LastCreatedScene && BABYLON.Engine.LastCreatedScene.debugLayer && BABYLON.Engine.LastCreatedScene.debugLayer.isVisible()) {
             showInspector = true;
         }
 
@@ -131,10 +131,8 @@ compileAndRun = function(parent, fpsLabel) {
                     : defaultEngineZip;
 
                 parent.zipTool.zipCode =
-                    code + "\r\n\r\n" +
                     "var engine = " + createEngineZip + ";\r\n" +
-                    "var scene = " + createSceneFunction + "();";
-
+                    code + "\r\n\r\n";
             }
 
             engine = engine;
@@ -234,6 +232,13 @@ class Main {
         document.getElementById("saveFormButtonCancel").addEventListener("click", function () {
             document.getElementById("saveLayer").style.display = "none";
         });
+        document.getElementById("diffFormButtonOk").addEventListener("click", function () {
+            document.getElementById("diffLayer").style.display = "none";
+            this.diff();
+        }.bind(this));
+        document.getElementById("diffFormButtonCancel").addEventListener("click", function () {
+            document.getElementById("diffLayer").style.display = "none";
+        });
 
         // Resize the render view when resizing the window
         window.addEventListener("resize",
@@ -273,6 +278,13 @@ class Main {
         }.bind(this));
         // Save
         this.parent.utils.setToMultipleID("saveButton", "click", this.askForSave.bind(this));
+        // Diff
+        this.parent.utils.setToMultipleID("diffButton", "click", this.askForDiff.bind(this));
+        this.parent.utils.setToMultipleID("previousButton", "click", this.navigateToPrevious.bind(this));
+        this.parent.utils.setToMultipleID("nextButton", "click", this.navigateToNext.bind(this));
+        this.parent.utils.setToMultipleID("exitButton", "click", function() {
+            this.toggleDiffEditor(this.parent.monacoCreator, this.parent.menuPG)
+        }.bind(this));
         // Zip
         this.parent.utils.setToMultipleID("zipButton", "click", function () {
             this.parent.zipTool.getZip(engine);
@@ -770,7 +782,87 @@ class Main {
         }
     };
 
+    askForDiff() {
+        const diffLayer = document.getElementById("diffLayer");
+        const right = document.getElementById("diffFormCompareTo");
 
+        if (this.previousHash && right.value === "") {
+            // Use the previous snippet hash for right comparison, if present
+            right.value = this.previousHash;
+        } 
+
+        diffLayer.style.display = "block";
+    }
+
+    async loadSnippetCode(snippetid) {
+        if (!snippetid || snippetid === "")
+            return "";
+
+        let response = await fetch(`${this.snippetV3Url}/${snippetid.replace(/#/g, "/")}`);
+        if (!response.ok)
+            throw new Error(`Unable to load snippet ${snippetid}`)
+
+        let result = await response.json();
+        return JSON.parse(result.jsonPayload).code.toString();
+    }
+	
+	async getSnippetCode(value) {
+        if (!value || value === "") {
+            // use current snippet
+            return this.parent.monacoCreator.JsEditor.getValue();
+        } else {
+            // load script
+            return await this.loadSnippetCode(value);
+        }
+    }
+
+    async diff() {
+        try {
+            const leftText = await this.getSnippetCode(document.getElementById("diffFormSource").value);
+            const rightText = await this.getSnippetCode(document.getElementById("diffFormCompareTo").value);
+
+            this.toggleDiffEditor(this.parent.monacoCreator, this.parent.menuPG, leftText, rightText);
+        } catch(e) {
+            // only pass the message, we don't want to inspect the stacktrace in this case
+            this.parent.utils.showError(e.message, null);
+        }
+    }
+
+    toggleDiffEditor(monacoCreator, menuPG, leftText, rightText) {
+        const diffView = document.getElementById("diffView");
+
+        if (leftText && rightText) {
+            menuPG.resizeForDiff();
+            diffView.style.display = "block";
+            monacoCreator.createDiff(leftText, rightText, diffView);
+        } else {
+            monacoCreator.disposeDiff();
+            diffView.style.display = "none";
+            if (menuPG.isMobileVersion) {
+                menuPG.resizeBigJsEditor();
+            } else {
+                menuPG.resizeSplitted();
+            }
+        }
+    }
+
+    navigateToPrevious() {
+        var dn = this.parent.monacoCreator.diffNavigator;
+        if (!dn)
+            return;
+
+        if (dn.canNavigate())
+            dn.previous();
+    }
+
+    navigateToNext() {
+        var dn = this.parent.monacoCreator.diffNavigator;
+        if (!dn)
+            return;
+
+        if (dn.canNavigate())
+            dn.next();
+    }
 
     /**
          * Toggle the code editor
