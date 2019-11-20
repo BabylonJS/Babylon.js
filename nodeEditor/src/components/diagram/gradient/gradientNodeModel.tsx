@@ -1,8 +1,6 @@
-import * as React from "react";
 import { DefaultNodeModel } from '../defaultNodeModel';
 import { GlobalState } from '../../../globalState';
 import { GradientBlock } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
-import { GradientPropertyTabComponentProps } from './gradientNodePropertyComponent';
 
 export class GradientNodeModel extends DefaultNodeModel {
 
@@ -18,8 +16,6 @@ export class GradientNodeModel extends DefaultNodeModel {
     }
 
     renderProperties(globalState: GlobalState) {
-        return (
-            <GradientPropertyTabComponentProps globalState={globalState} gradientNode={this} />
-        );
+        return null;
     }
 }

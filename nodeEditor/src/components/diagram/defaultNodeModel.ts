@@ -45,20 +45,20 @@ export class DefaultNodeModel extends NodeModel {
 
             if (connection.connectedPoint) {
                 // Block is not a leaf node, create node for the given block type
-                var connectedNode;
-                var existingNodes = nodes.filter((n) => { return n.block === (connection as any)._connectedPoint._ownerBlock });
-                if (existingNodes.length == 0) {
-                    connectedNode = graphEditor.createNodeFromObject({ nodeMaterialBlock: connection.connectedPoint._ownerBlock });
-                } else {
-                    connectedNode = existingNodes[0];
-                }
+              //  var connectedNode;
+                // var existingNodes = nodes.filter((n) => { return n.block === (connection as any)._connectedPoint._ownerBlock });
+                // if (existingNodes.length == 0) {
+                //     connectedNode = graphEditor.createNodeFromObject({ nodeMaterialBlock: connection.connectedPoint._ownerBlock });
+                // } else {
+                //     connectedNode = existingNodes[0];
+                // }
 
-                let link = connectedNode.ports[connection.connectedPoint.name].link(inputPort);
-                if (graphEditor._toAdd) {
-                    graphEditor._toAdd.push(link);
-                } else {
-                    model.addAll(link);
-                }
+                // let link = connectedNode.ports[connection.connectedPoint.name].link(inputPort);
+                // if (graphEditor._toAdd) {
+                //     graphEditor._toAdd.push(link);
+                // } else {
+                //     model.addAll(link);
+                // }
             }
         });
     }

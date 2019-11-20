@@ -1,23 +1,17 @@
 
 import * as React from "react";
-import { GlobalState } from '../../../globalState';
-import { LineContainerComponent } from '../../../sharedComponents/lineContainerComponent';
-import { TextInputLineComponent } from '../../../sharedComponents/textInputLineComponent';
-import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
-import { GradientNodeModel } from './gradientNodeModel';
-import { GradientBlockColorStep } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
-import { GradientStepComponent } from './gradientStepComponent';
-import { ButtonLineComponent } from '../../../sharedComponents/buttonLineComponent';
+import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
+import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
+import { TextLineComponent } from '../../sharedComponents/textLineComponent';
+import { GradientBlockColorStep, GradientBlock } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
+import { GradientStepComponent } from '../../components/diagram/gradient/gradientStepComponent';
+import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent';
 import { Color3 } from 'babylonjs/Maths/math.color';
+import { IPropertyComponentProps } from './propertyComponentProps';
 
-interface IGradientPropertyTabComponentProps {
-    globalState: GlobalState;
-    gradientNode: GradientNodeModel;
-}
+export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
 
-export class GradientPropertyTabComponentProps extends React.Component<IGradientPropertyTabComponentProps> {
-
-    constructor(props: IGradientPropertyTabComponentProps) {
+    constructor(props: IPropertyComponentProps) {
         super(props)
     }
 
@@ -27,7 +21,7 @@ export class GradientPropertyTabComponentProps extends React.Component<IGradient
     }
 
     deleteStep(step: GradientBlockColorStep) {
-        let gradientBlock = this.props.gradientNode.gradientBlock;
+        let gradientBlock = this.props.block as GradientBlock;
 
         let index = gradientBlock.colorSteps.indexOf(step);
 
@@ -39,7 +33,7 @@ export class GradientPropertyTabComponentProps extends React.Component<IGradient
     }
 
     addNewStep() {
-        let gradientBlock = this.props.gradientNode.gradientBlock;
+        let gradientBlock = this.props.block as GradientBlock;
 
         let newStep = new GradientBlockColorStep(1.0, Color3.White());
         gradientBlock.colorSteps.push(newStep);
@@ -49,7 +43,7 @@ export class GradientPropertyTabComponentProps extends React.Component<IGradient
     }
 
     render() {
-        let gradientBlock = this.props.gradientNode.gradientBlock;
+        let gradientBlock = this.props.block as GradientBlock;
       
         return (
             <div>

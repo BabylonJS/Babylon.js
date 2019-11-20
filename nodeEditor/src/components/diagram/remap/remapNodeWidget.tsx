@@ -26,15 +26,6 @@ export class RemapNodeWidget extends React.Component<RemapNodeWidgetProps> {
     constructor(props: RemapNodeWidgetProps) {
         super(props);
         this.state = {};
-
-        if (this.props.node) {
-            this.props.node.addListener({
-                selectionChanged: () => {
-                    let selected = (this.props.node as any).selected;
-                    this.props.globalState.onSelectionChangedObservable.notifyObservers(selected ? this.props.node : null);
-                }
-            });
-        }
     }
 
     renderValue(value: string) {

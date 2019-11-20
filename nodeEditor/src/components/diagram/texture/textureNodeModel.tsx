@@ -1,8 +1,6 @@
-import * as React from 'react';
 import { Nullable } from 'babylonjs/types';
 import { DefaultNodeModel } from '../defaultNodeModel';
 import { GlobalState } from '../../../globalState';
-import { TexturePropertyTabComponent } from './texturePropertyTabComponent';
 import { NodeCreationOptions, GraphEditor } from '../../../graphEditor';
 import { DiagramModel } from 'storm-react-diagrams/dist/@types/src/models/DiagramModel';
 import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
@@ -33,9 +31,7 @@ export class TextureNodeModel extends DefaultNodeModel {
     }
 
     renderProperties(globalState: GlobalState) {
-        return (
-            <TexturePropertyTabComponent globalState={globalState} node={this} />
-        );
+        return null;
     }
 
     prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor) {

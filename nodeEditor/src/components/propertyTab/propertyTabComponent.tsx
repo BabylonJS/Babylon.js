@@ -2,7 +2,6 @@
 import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { Nullable } from 'babylonjs/types';
-import { DefaultNodeModel } from '../../components/diagram/defaultNodeModel';
 import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent';
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
 import { StringTools } from '../../stringTools';
@@ -11,13 +10,14 @@ import { Tools } from 'babylonjs/Misc/tools';
 import { SerializationTools } from '../../serializationTools';
 import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
 import { DataStorage } from '../../dataStorage';
+import { GraphNode } from '../../diagram/graphNode';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
 }
 
-export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, { currentNode: Nullable<DefaultNodeModel> }> {
+export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, { currentNode: Nullable<GraphNode> }> {
 
     constructor(props: IPropertyTabComponentProps) {
         super(props)
@@ -26,8 +26,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     componentDidMount() {
-        this.props.globalState.onSelectionChangedObservable.add(block => {
-            this.setState({ currentNode: block });
+        this.props.globalState.onSelectionChangedObservable.add(graphNode => {
+            this.setState({ currentNode: graphNode });
         });
     }
 
@@ -63,7 +63,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             NODE MATERIAL EDITOR
                         </div>
                     </div>
-                    {this.state.currentNode.renderProperties(this.props.globalState)}
+                    {this.state.currentNode.renderProperties()}
                 </div>
             );
         }

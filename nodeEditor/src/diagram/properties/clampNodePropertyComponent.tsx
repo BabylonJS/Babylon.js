@@ -1,20 +1,15 @@
 
 import * as React from "react";
-import { GlobalState } from '../../../globalState';
-import { LineContainerComponent } from '../../../sharedComponents/lineContainerComponent';
-import { TextInputLineComponent } from '../../../sharedComponents/textInputLineComponent';
-import { TextLineComponent } from '../../../sharedComponents/textLineComponent';
-import { ClampNodeModel } from './clampNodeModel';
-import { FloatLineComponent } from '../../../sharedComponents/floatLineComponent';
+import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
+import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
+import { TextLineComponent } from '../../sharedComponents/textLineComponent';
+import { FloatLineComponent } from '../../sharedComponents/floatLineComponent';
+import { IPropertyComponentProps } from './propertyComponentProps';
+import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
 
-interface IClampPropertyTabComponentProps {
-    globalState: GlobalState;
-    remapNode: ClampNodeModel;
-}
+export class ClampPropertyTabComponent extends React.Component<IPropertyComponentProps> {
 
-export class ClampPropertyTabComponentProps extends React.Component<IClampPropertyTabComponentProps> {
-
-    constructor(props: IClampPropertyTabComponentProps) {
+    constructor(props: IPropertyComponentProps) {
         super(props)
     }
 
@@ -24,7 +19,7 @@ export class ClampPropertyTabComponentProps extends React.Component<IClampProper
     }
 
     render() {
-        let clampBlock = this.props.remapNode.clampBlock;
+        let clampBlock = this.props.block as ClampBlock
       
         return (
             <div>

@@ -1,9 +1,7 @@
-import * as React from 'react';
 import { Nullable } from 'babylonjs/types';
 import { Light } from 'babylonjs/Lights/light';
 import { DefaultNodeModel } from '../defaultNodeModel';
 import { GlobalState } from '../../../globalState';
-import { LightPropertyTabComponent } from './lightPropertyTabComponent';
 import { NodeCreationOptions, GraphEditor } from '../../../graphEditor';
 import { DiagramModel } from 'storm-react-diagrams/dist/@types/src/models/DiagramModel';
 import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
@@ -33,9 +31,7 @@ export class LightNodeModel extends DefaultNodeModel {
     }
 
     renderProperties(globalState: GlobalState) {
-        return (
-            <LightPropertyTabComponent globalState={globalState} node={this} />
-        );
+        return null;
     }
 
     prepare(options: NodeCreationOptions, nodes: Array<DefaultNodeModel>, model: DiagramModel, graphEditor: GraphEditor) {
