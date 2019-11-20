@@ -719,6 +719,8 @@ declare module "babylonjs-gui/2D/controls/control" {
         /** @hidden */
         _isClipped: boolean;
         /** @hidden */
+        _automaticSize: boolean;
+        /** @hidden */
         _tag: any;
         /**
          * Gets or sets the unique id of the node. Please note that this number will be updated when the control is added to a container
@@ -4638,6 +4640,8 @@ declare module BABYLON.GUI {
         protected _rebuildLayout: boolean;
         /** @hidden */
         _isClipped: boolean;
+        /** @hidden */
+        _automaticSize: boolean;
         /** @hidden */
         _tag: any;
         /**

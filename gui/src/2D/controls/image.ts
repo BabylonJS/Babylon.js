@@ -378,7 +378,7 @@ export class Image extends Control {
      * Checks for svg document with icon id present
      */
     private _svgCheck(value: string): string {
-        if ((value.search(/.svg#/gi) !== -1) && (value.indexOf("#") === value.lastIndexOf("#"))) {
+        if (window.SVGSVGElement && (value.search(/.svg#/gi) !== -1) && (value.indexOf("#") === value.lastIndexOf("#"))) {
             var svgsrc = value.split('#')[0];
             var elemid = value.split('#')[1];
             // check if object alr exist in document

@@ -68368,11 +68368,23 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+
+
 var BlockTools = /** @class */ (function () {
     function BlockTools() {
     }
     BlockTools.GetBlockFromString = function (data, scene, nodeMaterial) {
         switch (data) {
+            case "DesaturateBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["DesaturateBlock"]("Desaturate");
+            case "RefractBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["RefractBlock"]("Refract");
+            case "ReflectBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["ReflectBlock"]("Reflect");
+            case "DerivativeBlock":
+                return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["DerivativeBlock"]("Derivative");
             case "Rotate2dBlock":
                 return new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["Rotate2dBlock"]("Rotate2d");
             case "NormalBlendBlock":
@@ -72039,7 +72051,7 @@ var NodeListComponent = /** @class */ (function (_super) {
         var allBlocks = {
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Basic_Math: ["AddBlock", "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock", "OneMinusBlock", "MaxBlock", "MinBlock", "LengthBlock", "DistanceBlock", "NegateBlock", "RandomNumberBlock", "ReciprocalBlock"],
-            Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock"],
+            Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock"],
             Interpolation: ["LerpBlock", "StepBlock", "SmoothStepBlock", "NLerpBlock"],
@@ -72051,7 +72063,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock", "PerturbNormalBlock", "NormalBlendBlock"],
             Trigonometry: ["CosBlock", "SinBlock", "AbsBlock", "ExpBlock", "Exp2Block", "SqrtBlock", "PowBlock", "LogBlock", "ArcCosBlock", "ArcSinBlock", "TanBlock", "ArcTanBlock", "FractBlock", "SignBlock", "ArcTan2Block", "DegreesToRadiansBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "TriangleWaveBlock", "SquareWaveBlock"],
-            Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock", "Rotate2dBlock"],
+            Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock", "Rotate2dBlock", "DerivativeBlock", "RefractBlock", "ReflectBlock"],
         };
         // Create node menu
         var blockMenu = [];
@@ -72063,7 +72075,7 @@ var NodeListComponent = /** @class */ (function (_super) {
                 return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineComponent__WEBPACK_IMPORTED_MODULE_3__["DraggableLineComponent"], { key: block, data: block, tooltip: tooltip });
             });
             if (blockList.length) {
-                blockMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { key: key + " blocks", title: key.replace("_", " "), closed: false }, blockList));
+                blockMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { key: key + " blocks", title: key.replace("__", ":").replace("_", " "), closed: false }, blockList));
             }
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "nodeList" },
@@ -74974,7 +74986,7 @@ var OptionsLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "listLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "options" + (this.props.className ? " " + this.props.className : "") },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: this.state.value }, this.props.options.map(function (option) {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: this.state.value || "" }, this.props.options.map(function (option) {
                     return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: option.label, value: option.value }, option.label));
                 })))));
     };

@@ -634,7 +634,7 @@ class GPUDevice extends EventTarget implements GPUObjectBase {
     descriptor: GPURenderBundleEncoderDescriptor
   ): GPURenderBundleEncoder;
 
-  getQueue(): GPUQueue;
+  defaultQueue: GPUQueue;
 
   pushErrorScope(filter: GPUErrorFilter): void;
   popErrorScope(): Promise<GPUError | null>;
