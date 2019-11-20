@@ -234,7 +234,8 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     inputBlock.setAsSystemValue(systemValuesOptions[0].value);
                                     break;
                             }
-                            this.forceUpdate();
+                            this.forceUpdate();                            
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         }} />
                     {
@@ -242,6 +243,8 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         <OptionsLineComponent label="Attribute" valuesAreStrings={true} options={attributeOptions} target={inputBlock} propertyName="name" onSelect={(value: any) => {
                             inputBlock.setAsAttribute(value);
                             this.forceUpdate();
+                            
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         }} />
                     }
@@ -249,6 +252,8 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         inputBlock.isUniform && animationOptions.length > 0 &&
                         <OptionsLineComponent label="Animation type" options={animationOptions} target={inputBlock} propertyName="animationType" onSelect={(value: any) => {
                             this.forceUpdate();
+                            
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         }} />
                     }   
@@ -261,6 +266,8 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         <OptionsLineComponent label="System value" options={systemValuesOptions} target={inputBlock} propertyName="systemValue" onSelect={(value: any) => {
                             inputBlock.setAsSystemValue(value);
                             this.forceUpdate();
+                            
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                         }} />
                     }

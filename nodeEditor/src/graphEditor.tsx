@@ -1,6 +1,5 @@
 import {
     DiagramEngine,
-    DiagramModel,
     DiagramWidget,
     LinkModel
 } from "storm-react-diagrams";
@@ -8,43 +7,27 @@ import {
 import * as React from "react";
 import { GlobalState } from './globalState';
 
-import { GenericNodeFactory } from './components/diagram/generic/genericNodeFactory';
-import { GenericNodeModel } from './components/diagram/generic/genericNodeModel';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
 import { NodeListComponent } from './components/nodeList/nodeListComponent';
 import { PropertyTabComponent } from './components/propertyTab/propertyTabComponent';
 import { Portal } from './portal';
-import { TextureNodeFactory } from './components/diagram/texture/textureNodeFactory';
-import { DefaultNodeModel } from './components/diagram/defaultNodeModel';
-import { DefaultPortModel } from './components/diagram/port/defaultPortModel';
-import { InputNodeFactory } from './components/diagram/input/inputNodeFactory';
 import { LogComponent, LogEntry } from './components/log/logComponent';
-import { LightNodeFactory } from './components/diagram/light/lightNodeFactory';
 import { DataStorage } from './dataStorage';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { Nullable } from 'babylonjs/types';
 import { MessageDialogComponent } from './sharedComponents/messageDialog';
 import { BlockTools } from './blockTools';
-import { AdvancedLinkFactory } from './components/diagram/link/advancedLinkFactory';
-import { RemapNodeFactory } from './components/diagram/remap/remapNodeFactory';
 import { PreviewManager } from './components/preview/previewManager';
 import { INodeLocationInfo } from './nodeLocationInfo';
 import { PreviewMeshControlComponent } from './components/preview/previewMeshControlComponent';
-import { TrigonometryNodeFactory } from './components/diagram/trigonometry/trigonometryNodeFactory';
-import { ClampNodeFactory } from './components/diagram/clamp/clampNodeFactory';
-import { LightInformationNodeFactory } from './components/diagram/lightInformation/lightInformationNodeFactory';
 import { PreviewAreaComponent } from './components/preview/previewAreaComponent';
-import { GradientNodeFactory } from './components/diagram/gradient/gradientNodeFactory';
-import { ReflectionTextureNodeFactory } from './components/diagram/reflectionTexture/reflectionTextureNodeFactory';
 import { SerializationTools } from './serializationTools';
 import { GraphCanvasComponent } from './diagram/graphCanvas';
 import { GraphNode } from './diagram/graphNode';
 
-require("storm-react-diagrams/dist/style.min.css");
 require("./main.scss");
-require("./components/diagram/diagram.scss");
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -60,7 +43,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     private readonly NodeWidth = 100;
     private _graphCanvas: GraphCanvasComponent;
     private _engine: DiagramEngine;
-    private _model: DiagramModel;
 
     private _startX: number;
     private _moveInProgress: boolean;
@@ -68,13 +50,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     private _leftWidth = DataStorage.ReadNumber("LeftWidth", 200);
     private _rightWidth = DataStorage.ReadNumber("RightWidth", 300);
 
-    private _nodes = new Array<GraphNode>();
     private _blocks = new Array<NodeMaterialBlock>();
 
     private _previewManager: PreviewManager;
-    private _copiedNodes: DefaultNodeModel[] = [];
-    private _mouseLocationX = 0;
-    private _mouseLocationY = 0;
+    // private _copiedNodes: GraphNode[] = [];
+    // private _mouseLocationX = 0;
+    // private _mouseLocationY = 0;
     private _onWidgetKeyUpPointer: any;
 
     private _altKeyIsPressed = false;
@@ -89,7 +70,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
      */
     public createNodeFromObject(options: NodeCreationOptions) {
         if (this._blocks.indexOf(options.nodeMaterialBlock) !== -1) {        
-            return this._nodes.filter(n => n.block === options.nodeMaterialBlock)[0];
+            return this._graphCanvas.nodes.filter(n => n.block === options.nodeMaterialBlock)[0];
         }
 
         this._blocks.push(options.nodeMaterialBlock);
@@ -168,7 +149,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.visibility = "visible";
         }
 
-        this.build(true);
+        this.build();
     }
 
     componentWillUnmount() {
@@ -187,17 +168,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         // setup the diagram engine
         this._engine = new DiagramEngine();
         this._engine.installDefaultFactories()
-        this._engine.registerNodeFactory(new GenericNodeFactory(this.props.globalState));
-        this._engine.registerNodeFactory(new TextureNodeFactory(this.props.globalState));
-        this._engine.registerNodeFactory(new LightNodeFactory(this.props.globalState));
-        this._engine.registerNodeFactory(new InputNodeFactory(this.props.globalState));
-        this._engine.registerNodeFactory(new RemapNodeFactory(this.props.globalState));
-        this._engine.registerNodeFactory(new TrigonometryNodeFactory(this.props.globalState));
-        this._engine.registerNodeFactory(new ClampNodeFactory(this.props.globalState));
-        this._engine.registerNodeFactory(new LightInformationNodeFactory(this.props.globalState));
-        this._engine.registerNodeFactory(new GradientNodeFactory(this.props.globalState));
-        this._engine.registerNodeFactory(new ReflectionTextureNodeFactory(this.props.globalState));
-        this._engine.registerLinkFactory(new AdvancedLinkFactory());
 
         this.props.globalState.onRebuildRequiredObservable.add(() => {
             if (this.props.globalState.nodeMaterial) {
@@ -206,7 +176,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         });
 
         this.props.globalState.onResetRequiredObservable.add(() => {
-            this.build(false);
+            this.build();
             if (this.props.globalState.nodeMaterial) {
                 this.buildMaterial();
             }
@@ -224,9 +194,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             this.reOrganize();
         });
 
-        // this.props.globalState.onGetNodeFromBlock = (block) => {
-        //     return this._nodes.filter(n => n.block === block)[0];
-        // }
+        this.props.globalState.onGetNodeFromBlock = (block) => {
+             return this._graphCanvas.nodes.filter(n => n.block === block)[0];
+        }
 
         this.props.globalState.hostDocument!.addEventListener("keydown", evt => {
             this._altKeyIsPressed = evt.altKey;
@@ -235,62 +205,62 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                 return;
             }
 
-            if (evt.key === "c") {
-                let selectedItems = this._engine.diagramModel.getSelectedItems();
-                if (!selectedItems.length) {
-                    return;
-                }
+            // if (evt.key === "c") {
+            //     let selectedItems = this._engine.diagramModel.getSelectedItems();
+            //     if (!selectedItems.length) {
+            //         return;
+            //     }
     
-                let selectedItem = selectedItems[0] as DefaultNodeModel;
+            //     let selectedItem = selectedItems[0] as DefaultNodeModel;
     
-                if (!selectedItem.block) {
-                    return;
-                }
+            //     if (!selectedItem.block) {
+            //         return;
+            //     }
 
-                this._copiedNodes = selectedItems.map(i => (i as DefaultNodeModel)!);
-            } else if (evt.key === "v") {
-                if (!this._copiedNodes.length) {
-                    return;
-                }
+            //     this._copiedNodes = selectedItems.map(i => (i as DefaultNodeModel)!);
+            // } else if (evt.key === "v") {
+            //     if (!this._copiedNodes.length) {
+            //         return;
+            //     }
 
-                const rootElement = this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement;
-                const zoomLevel = this._engine.diagramModel.getZoomLevel() / 100.0;
-                let currentX = (this._mouseLocationX - rootElement.offsetLeft - this._engine.diagramModel.getOffsetX() - this.NodeWidth) / zoomLevel;
-                let currentY = (this._mouseLocationY - rootElement.offsetTop - this._engine.diagramModel.getOffsetY() - 20) / zoomLevel;
-                let originalNode: Nullable<DefaultNodeModel> = null;
+            //     const rootElement = this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement;
+            //     const zoomLevel = this._engine.diagramModel.getZoomLevel() / 100.0;
+            //     let currentX = (this._mouseLocationX - rootElement.offsetLeft - this._engine.diagramModel.getOffsetX() - this.NodeWidth) / zoomLevel;
+            //     let currentY = (this._mouseLocationY - rootElement.offsetTop - this._engine.diagramModel.getOffsetY() - 20) / zoomLevel;
+            //     let originalNode: Nullable<DefaultNodeModel> = null;
 
-                for (var node of this._copiedNodes) {
-                    let block = node.block;
+            //     for (var node of this._copiedNodes) {
+            //         let block = node.block;
 
-                    if (!block) {
-                        continue;
-                    }
+            //         if (!block) {
+            //             continue;
+            //         }
 
-                    let clone = block.clone(this.props.globalState.nodeMaterial.getScene());
+            //         let clone = block.clone(this.props.globalState.nodeMaterial.getScene());
 
-                    if (!clone) {
-                        return;
-                    }
+            //         if (!clone) {
+            //             return;
+            //         }
                     
-                    let newNode = this.createNodeFromObject({ nodeMaterialBlock: clone });
+            //         let newNode = this.createNodeFromObject({ nodeMaterialBlock: clone });
 
-                    let x = 0;
-                    let y = 0;
-                    if (originalNode) {
-                        x = currentX + node.x - originalNode.x;
-                        y = currentY + node.y - originalNode.y;
-                    } else {
-                        originalNode = node;
-                        x = currentX;
-                        y = currentY;
-                    }
+            //         let x = 0;
+            //         let y = 0;
+            //         if (originalNode) {
+            //             x = currentX + node.x - originalNode.x;
+            //             y = currentY + node.y - originalNode.y;
+            //         } else {
+            //             originalNode = node;
+            //             x = currentX;
+            //             y = currentY;
+            //         }
 
-                    newNode.x = x;
-                    newNode.y = y;
-                }
+            //         newNode.x = x;
+            //         newNode.y = y;
+            //     }
 
-                this._engine.repaintCanvas();
-            }
+            //     this._engine.repaintCanvas();
+            // }
 
         }, false);
     }
@@ -315,28 +285,26 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         SerializationTools.UpdateLocations(this.props.globalState.nodeMaterial, this.props.globalState);
     }
 
-    applyFragmentOutputConstraints(rootInput: DefaultPortModel) {
-        var model = rootInput.parent as GenericNodeModel;
-        for (var inputKey in model.getPorts()) {                                       
-            let input = model.getPorts()[inputKey];
+    // applyFragmentOutputConstraints(rootInput: DefaultPortModel) {
+    //     var model = rootInput.parent as GenericNodeModel;
+    //     for (var inputKey in model.getPorts()) {                                       
+    //         let input = model.getPorts()[inputKey];
 
-            if (rootInput.name === "rgba" && (inputKey === "a" || inputKey === "rgb")
-                ||
-                (rootInput.name === "a" || rootInput.name === "rgb") && inputKey === "rgba") {
-                    for (var key in input.links) {
-                        let other = input.links[key];
-                        other.remove();
-                    }
-                continue;
-            }
-        }
-    }
+    //         if (rootInput.name === "rgba" && (inputKey === "a" || inputKey === "rgb")
+    //             ||
+    //             (rootInput.name === "a" || rootInput.name === "rgb") && inputKey === "rgba") {
+    //                 for (var key in input.links) {
+    //                     let other = input.links[key];
+    //                     other.remove();
+    //                 }
+    //             continue;
+    //         }
+    //     }
+    // }
 
-    build(needToWait = false) {        
+    build() {        
         let locations: Nullable<INodeLocationInfo[]> = this.props.globalState.nodeMaterial.editorData;
         // setup the diagram model
-        this._model = new DiagramModel();
-        this._nodes = [];
         this._blocks = [];
         this._graphCanvas.reset();
 
@@ -501,36 +469,26 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             });
         }
 
-        // load model into engine
-        setTimeout(() => {
-            if (this._toAdd) {
-                this._model.addAll(...this._toAdd);
-            }
-            this._toAdd = null;
-            this._engine.setDiagramModel(this._model);
-
-            this.forceUpdate();
-
-            this.reOrganize(locations);
-        }, needToWait ? 500 : 1);
+        this.reOrganize(locations);
     }
 
     reOrganize(locations: Nullable<INodeLocationInfo[]> = null) {
         if (!locations) {
             this._graphCanvas.distributeGraph();
         } else {
-            // TO DO
-            // for (var location of locations) {
-            //     for (var node of this._nodes) {
-            //         if (node.block && node.block.uniqueId === location.blockId) {
-            //             node.setPosition(location.x, location.y);
-            //             break;
-            //         }
-            //     }
-            // }
+            this._graphCanvas.x = 0;
+            this._graphCanvas.y = 0;
+            this._graphCanvas.zoom = 1;
+            for (var location of locations) {
+                for (var node of this._graphCanvas.nodes) {
+                    if (node.block && node.block.uniqueId === location.blockId) {
+                        node.x = location.x;
+                        node.y = location.y;
+                        break;
+                    }
+                }
+            }
         }
-
-        this._engine.repaintCanvas();
     }
 
     onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
@@ -650,8 +608,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                         gridTemplateColumns: this.buildColumnLayout()
                     }}
                     onMouseMove={evt => {
-                        this._mouseLocationX = evt.pageX;
-                        this._mouseLocationY = evt.pageY;
+                        // this._mouseLocationX = evt.pageX;
+                        // this._mouseLocationY = evt.pageY;
                     }}
                     onMouseDown={(evt) => {
                         if ((evt.target as HTMLElement).nodeName === "INPUT") {

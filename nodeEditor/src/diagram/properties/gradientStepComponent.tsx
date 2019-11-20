@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { GlobalState } from '../../../globalState';
+import { GlobalState } from '../../globalState';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { Color3 } from 'babylonjs/Maths/math.color';
