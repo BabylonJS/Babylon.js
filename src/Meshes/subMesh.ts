@@ -37,7 +37,6 @@ export class BaseSubMesh {
 
     /**
      * Sets material defines used by the effect associated to the sub mesh
-     * @param defines defines the set of defines used to compile the effect
      */
     public set materialDefines(defines: Nullable<MaterialDefines>) {
         this._materialDefines = defines;
