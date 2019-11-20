@@ -2,7 +2,6 @@ import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial"
 import { Nullable } from "babylonjs/types"
 import { Observable } from 'babylonjs/Misc/observable';
 import { LogEntry } from './components/log/logComponent';
-import { NodeModel } from 'storm-react-diagrams';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { PreviewMeshType } from './components/preview/previewMeshType';
 import { DataStorage } from './dataStorage';
@@ -28,7 +27,7 @@ export class GlobalState {
     onBackFaceCullingChanged = new Observable<void>();
     onDepthPrePassChanged = new Observable<void>();
     onAnimationCommandActivated = new Observable<void>();
-    onGetNodeFromBlock: (block: NodeMaterialBlock) => NodeModel;
+    onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
     previewMeshType: PreviewMeshType;
     previewMeshFile: File;
     rotatePreview: boolean;

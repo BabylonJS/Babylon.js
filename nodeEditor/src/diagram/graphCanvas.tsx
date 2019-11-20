@@ -20,6 +20,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _y = 0;
     private _zoom = 1;
 
+    public get nodes() {
+        return this._nodes;
+    }
+
     public get zoom() {
         return this._zoom;
     }

@@ -4,7 +4,7 @@ import { LineContainerComponent } from '../../sharedComponents/lineContainerComp
 import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
 import { TextLineComponent } from '../../sharedComponents/textLineComponent';
 import { GradientBlockColorStep, GradientBlock } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
-import { GradientStepComponent } from '../../components/diagram/gradient/gradientStepComponent';
+import { GradientStepComponent } from './gradientStepComponent';
 import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { IPropertyComponentProps } from './propertyComponentProps';

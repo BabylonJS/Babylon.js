@@ -57,7 +57,7 @@ export class InputDisplayManager implements IDisplayManager {
         return color;
     }
 
-    public setPreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
+    public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
         let value = "";
         let inputBlock = block as InputBlock;
 

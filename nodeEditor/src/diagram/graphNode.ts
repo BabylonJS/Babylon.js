@@ -10,7 +10,7 @@ import { PropertyLedger } from './propertyLedger';
 import * as React from 'react';
 import { GenericPropertyTabComponent } from './properties/genericNodePropertyComponent';
 import { DisplayLedger } from './displayLedger';
-import { IDisplayManager } from './previews/displayManager';
+import { IDisplayManager } from './display/displayManager';
 
 export class GraphNode {
     private _visual: HTMLDivElement;
@@ -27,7 +27,10 @@ export class GraphNode {
     private _mouseStartPointY: Nullable<number> = null    
     private _globalState: GlobalState;
     private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode>>>;   
+    private _onUpdateRequiredObserver: Nullable<Observer<void>>;  
     private _ownerCanvas: GraphCanvasComponent; 
+    private _isSelected: boolean;
+    private _displayManager: Nullable<IDisplayManager> = null;
 
     public get x() {
         return this._x;
@@ -63,6 +66,24 @@ export class GraphNode {
         return this.block.name;
     }
 
+    public get isSelected() {
+        return this._isSelected;
+    }
+
+    public set isSelected(value: boolean) {
+        if (this._isSelected === value) {
+            return;            
+        }
+
+        this._isSelected = value;
+
+        if (!value) {
+            this._visual.classList.remove("selected");
+        } else {
+            this._globalState.onSelectionChangedObservable.notifyObservers(this);  
+        }
+    }
+
     public constructor(public block: NodeMaterialBlock, globalState: GlobalState) {
         this._globalState = globalState;
 
@@ -72,7 +93,21 @@ export class GraphNode {
             } else {
                 this._visual.classList.remove("selected");
             }
-        })
+        });
+
+        this._onUpdateRequiredObserver = this._globalState.onUpdateRequiredObservable.add(() => {
+            this._refresh();
+        });
+    }
+
+    private _refresh() {
+        if (this._displayManager) {
+            this._header.innerHTML = this._displayManager.getHeaderText(this.block);
+            this._displayManager.updatePreviewContent(this.block, this._content);
+            this._visual.style.background = this._displayManager.getBackgroundColor(this.block);
+        } else {
+            this._header.innerHTML = this.block.name;
+        }
     }
 
     private _appendConnection(connectionPoint: NodeMaterialConnectionPoint, root: HTMLDivElement, displayManager: Nullable<IDisplayManager>) {
@@ -167,10 +202,10 @@ export class GraphNode {
 
         // Display manager
         let displayManagerClass = DisplayLedger.RegisteredControls[this.block.getClassName()];
-        let displayManager: Nullable<IDisplayManager> = null;
+        
 
         if (displayManagerClass) {
-            displayManager = new displayManagerClass();
+            this._displayManager = new displayManagerClass();
         }
 
         // DOM
@@ -181,21 +216,13 @@ export class GraphNode {
         this._visual.addEventListener("pointerup", evt => this._onUp(evt));
         this._visual.addEventListener("pointermove", evt => this._onMove(evt));
 
-        if (displayManager) {
-            this._visual.style.background = displayManager.getBackgroundColor(this.block);
-        }
-
         this._header = root.ownerDocument!.createElement("div");
         this._header.classList.add("header");
-        if (displayManager) {
-            this._header.innerHTML = displayManager.getHeaderText(this.block);
-        } else {
-            this._header.innerHTML = this.block.name;
-        }
+
         this._visual.appendChild(this._header);      
 
-        if (displayManager) {
-            let additionalClass = displayManager.getHeaderClass(this.block);
+        if (this._displayManager) {
+            let additionalClass = this._displayManager.getHeaderClass(this.block);
             if (additionalClass) {
                 this._header.classList.add(additionalClass);
             }
@@ -216,26 +243,29 @@ export class GraphNode {
         this._content = root.ownerDocument!.createElement("div");
         this._content.classList.add("content");
         this._visual.appendChild(this._content);     
-        
-        if (displayManager) {
-            displayManager.setPreviewContent(this.block, this._content);
-        }
+
 
         root.appendChild(this._visual);
 
         // Connections
         for (var input of this.block.inputs) {
-            this._inputPorts.push(this._appendConnection(input, this._inputsContainer, displayManager));
+            this._inputPorts.push(this._appendConnection(input, this._inputsContainer, this._displayManager));
         }
 
         for (var output of this.block.outputs) {
-            this._outputPorts.push(this._appendConnection(output, this._outputsContainer, displayManager));
+            this._outputPorts.push(this._appendConnection(output, this._outputsContainer, this._displayManager));
         }
+
+        this._refresh();
     }
 
     public dispose() {
         if (this._onSelectionChangedObserver) {
             this._globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
+        }
+
+        if (this._onUpdateRequiredObserver) {
+            this._globalState.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
         }
     }
 }
