@@ -1,7 +1,6 @@
 import * as React from "react";
 
 import { Observable } from "babylonjs/Misc/observable";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { PBRMetallicRoughnessMaterial } from "babylonjs/Materials/PBR/pbrMetallicRoughnessMaterial";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
@@ -22,7 +21,7 @@ interface IPBRMetallicRoughnessMaterialPropertyGridComponentProps {
 }
 
 export class PBRMetallicRoughnessMaterialPropertyGridComponent extends React.Component<IPBRMetallicRoughnessMaterialPropertyGridComponentProps> {
-    private _onDebugSelectionChangeObservable = new Observable<BaseTexture>();
+    private _onDebugSelectionChangeObservable = new Observable<TextureLinkLineComponent>();
 
     constructor(props: IPBRMetallicRoughnessMaterialPropertyGridComponentProps) {
         super(props);

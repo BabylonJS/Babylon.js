@@ -86,6 +86,7 @@ export class ShaderMaterial extends Material {
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _renderId: number;
+    private _multiview: boolean = false;
 
     /**
      * Instantiate a new shader material.
@@ -491,6 +492,19 @@ export class ShaderMaterial extends Material {
         var attribs = [];
         var fallbacks = new EffectFallbacks();
 
+        // global multiview
+        if (engine.getCaps().multiview &&
+            scene.activeCamera &&
+            scene.activeCamera.outputRenderTarget &&
+            scene.activeCamera.outputRenderTarget.getViewCount() > 1) {
+            this._multiview = true;
+            defines.push("#define MULTIVIEW");
+            if (this._options.uniforms.indexOf("viewProjection") !== -1 &&
+                this._options.uniforms.push("viewProjectionR") === -1) {
+                this._options.uniforms.push("viewProjectionR");
+            }
+        }
+
         for (var index = 0; index < this._options.defines.length; index++) {
             defines.push(this._options.defines[index]);
         }
@@ -632,6 +646,9 @@ export class ShaderMaterial extends Material {
 
             if (this._options.uniforms.indexOf("viewProjection") !== -1) {
                 this._effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+                if (this._multiview) {
+                    this._effect.setMatrix("viewProjectionR", this.getScene()._transformMatrixR);
+                }
             }
 
             // Bones

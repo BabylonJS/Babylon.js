@@ -43,7 +43,7 @@ export class ClampNodeWidget extends React.Component<ClampNodeWidgetProps> {
         let clampBlock = this.props.node!.block! as ClampBlock;
 
         return (
-            <div className={"diagramBlock remap"}>
+            <div className={"diagramBlock clamp"}>
                 <div className="header">
                     {clampBlock.name}
                 </div>

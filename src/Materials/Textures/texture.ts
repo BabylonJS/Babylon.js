@@ -427,17 +427,17 @@ export class Texture extends BaseTexture {
     }
 
     private _prepareRowForTextureGeneration(x: number, y: number, z: number, t: Vector3): void {
-        x *= this.uScale;
-        y *= this.vScale;
+        x *= this._cachedUScale;
+        y *= this._cachedVScale;
 
-        x -= this.uRotationCenter * this.uScale;
-        y -= this.vRotationCenter * this.vScale;
+        x -= this.uRotationCenter * this._cachedUScale;
+        y -= this.vRotationCenter * this._cachedVScale;
         z -= this.wRotationCenter;
 
         Vector3.TransformCoordinatesFromFloatsToRef(x, y, z, this._rowGenerationMatrix!, t);
 
-        t.x += this.uRotationCenter * this.uScale + this.uOffset;
-        t.y += this.vRotationCenter * this.vScale + this.vOffset;
+        t.x += this.uRotationCenter * this._cachedUScale + this._cachedUOffset;
+        t.y += this.vRotationCenter * this._cachedVScale + this._cachedVOffset;
         t.z += this.wRotationCenter;
     }
 
@@ -445,11 +445,11 @@ export class Texture extends BaseTexture {
      * Get the current texture matrix which includes the requested offsetting, tiling and rotation components.
      * @returns the transform matrix of the texture.
      */
-    public getTextureMatrix(): Matrix {
+    public getTextureMatrix(uBase = 1): Matrix {
         if (
             this.uOffset === this._cachedUOffset &&
             this.vOffset === this._cachedVOffset &&
-            this.uScale === this._cachedUScale &&
+            this.uScale * uBase === this._cachedUScale &&
             this.vScale === this._cachedVScale &&
             this.uAng === this._cachedUAng &&
             this.vAng === this._cachedVAng &&
@@ -459,7 +459,7 @@ export class Texture extends BaseTexture {
 
         this._cachedUOffset = this.uOffset;
         this._cachedVOffset = this.vOffset;
-        this._cachedUScale = this.uScale;
+        this._cachedUScale = this.uScale * uBase;
         this._cachedVScale = this.vScale;
         this._cachedUAng = this.uAng;
         this._cachedVAng = this.vAng;
@@ -701,7 +701,7 @@ export class Texture extends BaseTexture {
             } else {
                 var texture: Texture;
                 if (parsedTexture.base64String) {
-                    texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene, !generateMipMaps);
+                    texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene, !generateMipMaps, parsedTexture.invertY);
                 } else {
                     let url = rootUrl + parsedTexture.name;
 
