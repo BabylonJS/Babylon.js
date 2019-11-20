@@ -12,6 +12,7 @@ import { Nullable } from '../../../../types';
 import { _TypeStore } from '../../../../Misc/typeStore';
 import { Texture } from '../../../Textures/texture';
 import { Scene } from '../../../../scene';
+import { Constants } from '../../../../Engines/constants';
 
 import "../../../../Shaders/ShadersInclude/helperFunctions";
 
@@ -185,13 +186,25 @@ export class TextureBlock extends NodeMaterialBlock {
 
         defines.setValue(this._linearDefineName, !this.texture.gammaSpace);
         if (this._isMixed) {
-            if (!this.texture.getTextureMatrix().isIdentityAs3x2()) {
+            if (!this.texture.getTextureMatrix(this._getTextureBase(mesh as Mesh)).isIdentityAs3x2()) {
                 defines.setValue(this._defineName, true);
             } else {
                 defines.setValue(this._defineName, false);
                 defines.setValue(this._mainUVDefineName, true);
             }
         }
+    }
+
+    private _getTextureBase(mesh?: Mesh) {
+        let base = 1;
+        // By default textures loaded by the node material are loaded with invertY set to false. But for regular meshes (created by the MeshBuilder) we need to switch it
+        if (this.texture && mesh && (mesh.overrideMaterialSideOrientation === null || mesh.overrideMaterialSideOrientation === Constants.MATERIAL_CounterClockWiseSideOrientation)) {
+            if (!this.texture.invertY) {
+                base = -1;
+            }
+        }
+
+        return base;
     }
 
     public isReady() {
@@ -209,7 +222,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
         if (this._isMixed) {
             effect.setFloat(this._textureInfoName, this.texture.level);
-            effect.setMatrix(this._textureTransformName, this.texture.getTextureMatrix());
+            effect.setMatrix(this._textureTransformName, this.texture.getTextureMatrix(this._getTextureBase(mesh)));
         }
         effect.setTexture(this._samplerName, this.texture);
     }

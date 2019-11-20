@@ -156,6 +156,8 @@ export class Line extends Control {
     constructor(public name?: string) {
         super(name);
 
+        this._automaticSize = true;
+
         this.isHitTestVisible = false;
         this._horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         this._verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
