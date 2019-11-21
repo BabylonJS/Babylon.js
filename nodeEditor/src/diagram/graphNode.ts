@@ -11,6 +11,11 @@ import * as React from 'react';
 import { GenericPropertyTabComponent } from './properties/genericNodePropertyComponent';
 import { DisplayLedger } from './displayLedger';
 import { IDisplayManager } from './display/displayManager';
+import { NodeLink } from './nodeLink';
+
+export class ExtendedHTMLDivElement extends HTMLDivElement {
+    tag: NodeMaterialConnectionPoint;
+}
 
 export class GraphNode {
     private _visual: HTMLDivElement;
@@ -19,8 +24,9 @@ export class GraphNode {
     private _inputsContainer: HTMLDivElement;
     private _outputsContainer: HTMLDivElement;
     private _content: HTMLDivElement;
-    private _inputPorts: HTMLDivElement[] = [];
-    private _outputPorts: HTMLDivElement[] = [];
+    private _inputPorts: ExtendedHTMLDivElement[] = [];
+    private _outputPorts: ExtendedHTMLDivElement[] = [];
+    private _links: NodeLink[] = [];    
     private _x = 0;
     private _y = 0;
     private _mouseStartPointX: Nullable<number> = null;
@@ -31,14 +37,25 @@ export class GraphNode {
     private _ownerCanvas: GraphCanvasComponent; 
     private _isSelected: boolean;
     private _displayManager: Nullable<IDisplayManager> = null;
+    private _candidateLink: Nullable<NodeLink> = null;
+
+    public get links() {
+        return this._links;
+    }
 
     public get x() {
         return this._x;
     }
 
     public set x(value: number) {
+        if (this._x === value) {
+            return;
+        }
+        
         this._x = value;
         this._visual.style.left = `${value}px`;
+
+        this._refreshLinks();
     }
 
     public get y() {
@@ -46,8 +63,14 @@ export class GraphNode {
     }
 
     public set y(value: number) {
+        if (this._y === value) {
+            return;
+        }
+
         this._y = value;
         this._visual.style.top = `${value}px`;
+
+        this._refreshLinks();
     }
 
     public get width() {
@@ -100,6 +123,32 @@ export class GraphNode {
         });
     }
 
+    public getPortForConnectionPoint(point: NodeMaterialConnectionPoint) {
+        for (var port of this._inputPorts) {
+            let attachedPoint = (port as any).tag as NodeMaterialConnectionPoint;
+
+            if (attachedPoint === point) {
+                return port;
+            }
+        }
+
+        for (var port of this._outputPorts) {
+            let attachedPoint = (port as any).tag as NodeMaterialConnectionPoint;
+
+            if (attachedPoint === point) {
+                return port;
+            }
+        }
+
+        return null;
+    }
+
+    private _refreshLinks() {
+        for (var link of this._links) {
+            link.update();
+        }
+    }
+
     private _refresh() {
         if (this._displayManager) {
             this._header.innerHTML = this._displayManager.getHeaderText(this.block);
@@ -108,6 +157,34 @@ export class GraphNode {
         } else {
             this._header.innerHTML = this.block.name;
         }
+    }
+
+    private _onPortDown(evt: PointerEvent, port: ExtendedHTMLDivElement) {
+        if (!this._candidateLink) {
+            this._candidateLink = new NodeLink(this._ownerCanvas, port, this);
+        }        
+        port.setPointerCapture(evt.pointerId);
+        evt.stopPropagation();
+    }
+
+    private _onPortUp(evt: PointerEvent, port: ExtendedHTMLDivElement) {        
+        port.releasePointerCapture(evt.pointerId);
+        evt.stopPropagation();
+
+        if (this._candidateLink) {
+            this._candidateLink.dispose();
+            this._candidateLink = null;
+        }
+    }
+
+    private _onPortMove(evt: PointerEvent, port: ExtendedHTMLDivElement) {       
+        if (!this._candidateLink) {
+            return;
+        }
+
+        const rootRect = this._ownerCanvas.canvasContainer.getBoundingClientRect();
+
+        this._candidateLink.update((evt.pageX - rootRect.left) / this._ownerCanvas.zoom, (evt.pageY - rootRect.top) / this._ownerCanvas.zoom, true);
     }
 
     private _appendConnection(connectionPoint: NodeMaterialConnectionPoint, root: HTMLDivElement, displayManager: Nullable<IDisplayManager>) {
@@ -122,7 +199,7 @@ export class GraphNode {
             portContainer.appendChild(portLabel);
         }
 
-        let port = root.ownerDocument!.createElement("div");
+        let port = root.ownerDocument!.createElement("div") as ExtendedHTMLDivElement;
         port.classList.add("port");     
         port.style.background = BlockTools.GetColorFromConnectionNodeType(connectionPoint.type);
         portContainer.appendChild(port);
@@ -150,7 +227,16 @@ export class GraphNode {
         }
         port.appendChild(portImg);
 
-        return portContainer;
+        port.tag = connectionPoint;
+
+        // Drag support
+        port.ondragstart= () => false;
+
+        port.addEventListener("pointerdown", evt => this._onPortDown(evt, port));
+        port.addEventListener("pointerup", evt => this._onPortUp(evt, port));
+        port.addEventListener("pointermove", evt => this._onPortMove(evt, port));
+
+        return port;
     }
 
     private _onDown(evt: PointerEvent) {
@@ -267,5 +353,15 @@ export class GraphNode {
         if (this._onUpdateRequiredObserver) {
             this._globalState.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
         }
+
+        if (this._visual.parentElement) {
+            this._visual.parentElement.removeChild(this._visual);
+        }
+
+        for (var link of this._links) {
+            link.dispose();           
+        }
+
+        this.block.dispose();
     }
 }

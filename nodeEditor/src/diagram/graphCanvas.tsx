@@ -3,7 +3,9 @@ import { GlobalState } from '../globalState';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { GraphNode } from './graphNode';
 import * as dagre from 'dagre';
-import { Nullable } from 'babylonjs';
+import { Nullable } from 'babylonjs/types';
+import { NodeMaterialConnectionPoint } from 'babylonjs';
+import { NodeLink } from './nodeLink';
 
 require("./graphCanvas.scss");
 
@@ -12,16 +14,24 @@ export interface IGraphCanvasComponentProps {
 }
 
 export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentProps> {
-    private _rootCanvas: HTMLDivElement;
+    private _graphCanvas: HTMLDivElement;
+    private _svgCanvas: HTMLElement;
+    private _rootContainer: HTMLDivElement;
     private _nodes: GraphNode[] = [];
+    private _links: NodeLink[] = [];
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null
     private _x = 0;
     private _y = 0;
     private _zoom = 1;
+    private _selectedNodes: GraphNode[] = [];
 
     public get nodes() {
         return this._nodes;
+    }
+
+    public get links() {
+        return this._links;
     }
 
     public get zoom() {
@@ -30,7 +40,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     public set zoom(value: number) {
         this._zoom = value;
-        this._rootCanvas.style.transform = `scale(${value})`;
+        this._rootContainer.style.transform = `scale(${value})`;
     }    
 
     public get x() {
@@ -39,7 +49,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     public set x(value: number) {
         this._x = value;
-        this._rootCanvas.style.left = `${value}px`;
+        this._rootContainer.style.left = `${value}px`;
     }
 
     public get y() {
@@ -48,22 +58,90 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     public set y(value: number) {
         this._y = value;
-        this._rootCanvas.style.top = `${value}px`;
+        this._rootContainer.style.top = `${value}px`;
+    }
+
+    public get selectedNodes() {
+        return this._selectedNodes;
+    }
+
+    public get canvasContainer() {
+        return this._graphCanvas;
     }
 
     constructor(props: IGraphCanvasComponentProps) {
         super(props);
+
+        props.globalState.onSelectionChangedObservable.add(node => {
+            if (!node) {
+                this._selectedNodes = [];
+            } else {
+                this._selectedNodes = [node];
+            }
+        });
+    }
+
+    findNodeFromBlock(block: NodeMaterialBlock) {
+        return this.nodes.filter(n => n.block === block)[0];
     }
 
     reset() {
+        for (var node of this._nodes) {
+            node.dispose();
+        }
         this._nodes = [];
-        this._rootCanvas.innerHTML = "";
+        this._links = [];
+        this._graphCanvas.innerHTML = "";
+        this._svgCanvas.innerHTML = "";
+    }
+
+    connectPorts(pointA: NodeMaterialConnectionPoint, pointB: NodeMaterialConnectionPoint) {
+        var blockA = pointA.ownerBlock;
+        var blockB = pointB.ownerBlock;
+        var nodeA = this.findNodeFromBlock(blockA);
+        var nodeB = this.findNodeFromBlock(blockB);
+
+        if (!nodeA || !nodeB) {
+            return;
+        }
+
+        var portA = nodeA.getPortForConnectionPoint(pointA);
+        var portB = nodeB.getPortForConnectionPoint(pointB);
+
+        if (!portA || !portB) {
+            return;
+        }
+
+        for (var currentLink of this._links) {
+            if (currentLink.portA === portA && currentLink.portB === portB) {
+                return;
+            }
+            if (currentLink.portA === portB && currentLink.portB === portA) {
+                return;
+            }
+        }
+
+        const link = new NodeLink(this, portA, nodeA, portB, nodeB);
+        this._links.push(link);
+
+        nodeA.links.push(link);
+        nodeB.links.push(link);
+    }
+
+    removeLink(link: NodeLink) {
+        let index = this._links.indexOf(link);
+
+        if (index > -1) {
+            this._links.splice(index, 1);
+        }
+
+        link.dispose();
     }
 
     appendBlock(block: NodeMaterialBlock) {
         let newNode = new GraphNode(block, this.props.globalState);
 
-        newNode.appendVisual(this._rootCanvas, this);
+        newNode.appendVisual(this._graphCanvas, this);
 
         this._nodes.push(newNode);
 
@@ -118,11 +196,13 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     componentDidMount() {
-        this._rootCanvas = this.props.globalState.hostDocument.getElementById("graph-canvas-container") as HTMLDivElement;
+        this._rootContainer = this.props.globalState.hostDocument.getElementById("graph-container") as HTMLDivElement;
+        this._graphCanvas = this.props.globalState.hostDocument.getElementById("graph-canvas-container") as HTMLDivElement;
+        this._svgCanvas = this.props.globalState.hostDocument.getElementById("graph-svg-container") as HTMLElement;
     }    
 
     onMove(evt: React.PointerEvent) {        
-        this._rootCanvas.style.cursor = "move";
+        this._rootContainer.style.cursor = "move";
 
         if (this._mouseStartPointX === null || this._mouseStartPointY === null) {
             return;
@@ -138,13 +218,13 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
-        this._rootCanvas.setPointerCapture(evt.pointerId);
+        this._rootContainer.setPointerCapture(evt.pointerId);
     }
 
     onUp(evt: React.PointerEvent) {
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
-        this._rootCanvas.releasePointerCapture(evt.pointerId);
+        this._rootContainer.releasePointerCapture(evt.pointerId);
     }
 
     onWheel(evt: React.WheelEvent) {
@@ -162,8 +242,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     zoomToFit() {
-        const xFactor = this._rootCanvas.clientWidth / this._rootCanvas.scrollWidth;
-        const yFactor = this._rootCanvas.clientHeight / this._rootCanvas.scrollHeight;
+        const xFactor = this._rootContainer.clientWidth / this._rootContainer.scrollWidth;
+        const yFactor = this._rootContainer.clientHeight / this._rootContainer.scrollHeight;
         const zoomFactor = xFactor < yFactor ? xFactor : yFactor;
         
         this.zoom = zoomFactor;
@@ -179,8 +259,12 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 onPointerDown={evt =>  this.onDown(evt)}   
                 onPointerUp={evt =>  this.onUp(evt)}   
             >    
-                <div id="graph-canvas-container">
-                </div>     
+                <div id="graph-container">
+                    <div id="graph-canvas-container">
+                    </div>     
+                    <svg id="graph-svg-container">
+                    </svg>
+                </div>
             </div>
         );
     }
