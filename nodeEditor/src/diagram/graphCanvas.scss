@@ -17,11 +17,23 @@
         transform-origin: left top;
 
         #graph-svg-container {
-            z-index: -10;
             position:absolute;
             width: 100%;
             height: 100%;  
-            overflow: visible;  
+            overflow: visible; 
+            
+            .link {
+                stroke-width: 4px;                       
+            }
+
+            .selection-link {
+                stroke-width: 16px;
+                &:hover, &.selected {
+                    stroke: white !important;
+                    opacity: 0.4;
+                }
+                stroke: transparent;                        
+            }
         }
 
         #graph-canvas-container {
@@ -32,6 +44,7 @@
             top: 0;
 
             .visual {
+                z-index: 1;
                 width: 200px;
                 position: absolute;
                 left: 0;
@@ -91,7 +104,7 @@
                             width: 100%;
                         }     
                         
-                        &:hover {
+                        &:hover, &.selected {
                             filter: brightness(2);
                         }
                     }

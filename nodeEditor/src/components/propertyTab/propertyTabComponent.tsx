@@ -26,8 +26,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     componentDidMount() {
-        this.props.globalState.onSelectionChangedObservable.add(graphNode => {
-            this.setState({ currentNode: graphNode });
+        this.props.globalState.onSelectionChangedObservable.add(selection => {
+            if (selection instanceof GraphNode) {
+                this.setState({ currentNode: selection });
+            } else {
+                this.setState({ currentNode: null });
+            }
         });
     }
 

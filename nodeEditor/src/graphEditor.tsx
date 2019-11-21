@@ -1,9 +1,3 @@
-import {
-    DiagramEngine,
-    DiagramWidget,
-    LinkModel
-} from "storm-react-diagrams";
-
 import * as React from "react";
 import { GlobalState } from './globalState';
 
@@ -35,7 +29,6 @@ interface IGraphEditorProps {
 export class GraphEditor extends React.Component<IGraphEditorProps> {
     private readonly NodeWidth = 100;
     private _graphCanvas: GraphCanvasComponent;
-    private _engine: DiagramEngine;
 
     private _startX: number;
     private _moveInProgress: boolean;
@@ -50,12 +43,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     private _mouseLocationX = 0;
     private _mouseLocationY = 0;
     private _onWidgetKeyUpPointer: any;
-
-    private _altKeyIsPressed = false;
-    private _oldY = -1;
-
-    /** @hidden */
-    public _toAdd: LinkModel[] | null = [];
 
     /**
      * Creates a node and recursivly creates its parent nodes from it's input
@@ -107,54 +94,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         return this.createNodeFromObject(newInputBlock)
     }
 
-    onWidgetKeyUp(evt: any) {        
-        this._altKeyIsPressed = false;
-        this._oldY = -1;
-
-        var widget = (this.refs["test"] as DiagramWidget);
-
-        if (!widget || this.props.globalState.blockKeyboardEvents) {
-            return;
-        }
-
-        widget.onKeyUp(evt)
-    }
-
     componentDidMount() {
         if (this.props.globalState.hostDocument) {
             this._graphCanvas = (this.refs["graphCanvas"] as GraphCanvasComponent);
-
-
-            var widget = (this.refs["test"] as DiagramWidget);
-            widget.setState({ document: this.props.globalState.hostDocument })
-            this._onWidgetKeyUpPointer = this.onWidgetKeyUp.bind(this)
-            this.props.globalState.hostDocument!.addEventListener("keyup", this._onWidgetKeyUpPointer, false);
-            this.props.globalState.hostDocument!.defaultView!.addEventListener("blur", () => this._altKeyIsPressed = false, false);
-
-            let previousMouseMove = widget.onMouseMove;
-            widget.onMouseMove = (evt: any) => {
-                if (this._altKeyIsPressed && evt.buttons === 1) {
-                    if (this._oldY < 0) {
-                        this._oldY = evt.pageY;
-                    }
-
-                    let zoomDelta = (evt.pageY - this._oldY) / 10;
-                    if (Math.abs(zoomDelta) > 5) {
-                        this._engine.diagramModel.setZoomLevel(this._engine.diagramModel.getZoomLevel() + zoomDelta);
-                        this._engine.repaintCanvas();
-                        this._oldY = evt.pageY;      
-                    }
-                    return;
-                }
-                previousMouseMove(evt);
-            }
-
-            let previousMouseUp = widget.onMouseUp;
-            widget.onMouseUp = (evt: any) => {
-                this._oldY = -1;
-                previousMouseUp(evt);
-            }
-
             this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
         }
 
@@ -178,10 +120,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     constructor(props: IGraphEditorProps) {
         super(props);
 
-        // setup the diagram engine
-        this._engine = new DiagramEngine();
-        this._engine.installDefaultFactories()
-
         this.props.globalState.onRebuildRequiredObservable.add(() => {
             if (this.props.globalState.nodeMaterial) {
                 this.buildMaterial();
@@ -195,8 +133,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             }
         });
 
-        this.props.globalState.onUpdateRequiredObservable.add(() => {          
-            this._engine.repaintCanvas();  
+        this.props.globalState.onUpdateRequiredObservable.add(() => {
+            // Do nothing for now
         });
 
         this.props.globalState.onZoomToFitRequiredObservable.add(() => {
@@ -212,13 +150,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
 
         this.props.globalState.hostDocument!.addEventListener("keydown", evt => {
-            this._altKeyIsPressed = evt.altKey;
-
             if (evt.keyCode === 46) { // Delete                
                 let selectedItems = this._graphCanvas.selectedNodes;
-                if (!selectedItems.length) {
-                    return;
-                }
 
                 for (var selectedItem of selectedItems) {
                     selectedItem.dispose();
@@ -229,8 +162,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
                     if (blockIndex > -1) {
                         this._blocks.splice(blockIndex, 1);
-                    }
-                                  
+                    }                                  
+                }
+
+                if (this._graphCanvas.selectedLink) {
+                    this._graphCanvas.selectedLink.dispose();
                 }
 
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);  
@@ -294,8 +230,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     newNode.x = x;
                     newNode.y = y;
                 }
-
-                this._engine.repaintCanvas();
             }
 
         }, false);
@@ -320,23 +254,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
         SerializationTools.UpdateLocations(this.props.globalState.nodeMaterial, this.props.globalState);
     }
-
-    // applyFragmentOutputConstraints(rootInput: DefaultPortModel) {
-    //     var model = rootInput.parent as GenericNodeModel;
-    //     for (var inputKey in model.getPorts()) {                                       
-    //         let input = model.getPorts()[inputKey];
-
-    //         if (rootInput.name === "rgba" && (inputKey === "a" || inputKey === "rgb")
-    //             ||
-    //             (rootInput.name === "a" || rootInput.name === "rgb") && inputKey === "rgba") {
-    //                 for (var key in input.links) {
-    //                     let other = input.links[key];
-    //                     other.remove();
-    //                 }
-    //             continue;
-    //         }
-    //     }
-    // }
 
     build() {        
         let locations: Nullable<INodeLocationInfo[]> = this.props.globalState.nodeMaterial.editorData;
@@ -451,7 +368,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                 }
             } 
 
-            this._toAdd = [];
             block.autoConfigure(this.props.globalState.nodeMaterial);       
             newNode = this.createNodeFromObject(block);
         };
@@ -491,7 +407,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     {
                         gridTemplateColumns: this.buildColumnLayout()
                     }}
-                    onMouseMove={evt => {
+                    onMouseMove={evt => {                
                         this._mouseLocationX = evt.pageX;
                         this._mouseLocationY = evt.pageY;
                     }}
@@ -520,11 +436,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                             event.preventDefault();
                         }}
                     >
-                        <DiagramWidget className="diagram" deleteKeys={[46]} ref={"test"} 
-                        allowLooseLinks={false}
-                        inverseZoom={true} 
-                        diagramEngine={this._engine} 
-                        maxNumberPointsPerLink={0} />
                         <GraphCanvasComponent ref={"graphCanvas"} globalState={this.props.globalState}/>
                     </div>
 
