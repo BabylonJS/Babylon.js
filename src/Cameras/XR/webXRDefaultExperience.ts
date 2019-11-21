@@ -21,7 +21,7 @@ export class WebXRDefaultExperienceOptions {
     /**
      * Background meshes that will be hidden in AR mode.
      */
-    public backgroundMeshes: Array<AbstractMesh>;
+    public backgroundMeshes? : Array<AbstractMesh>;
 
     /**
      * Floor meshes that should be used for teleporting
@@ -94,14 +94,14 @@ export class WebXRDefaultExperience {
             const sessionMode = options.sessionMode || "immersive-vr";
             const shouldShowBackgroundInXR = sessionMode != "immersive-ar";
             
-            if (options.backgroundMeshes) {
-                result.baseExperience.onStateChangedObservable.add((state) => {
+            result.baseExperience.onStateChangedObservable.add((state) => {
+                if (options.backgroundMeshes) {
                     const shouldShowBackground = (state === WebXRState.IN_XR) ? shouldShowBackgroundInXR : true;
                     options.backgroundMeshes.forEach((backgroundMesh) => {
                         backgroundMesh.isVisible = shouldShowBackground;
                     });
-                });
-            }
+                }
+            });
 
             if (options.floorMeshes) {
                 result.teleportation = new WebXRControllerTeleportation(result.input, options.floorMeshes);
