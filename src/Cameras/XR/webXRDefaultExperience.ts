@@ -4,7 +4,7 @@ import { WebXRInput } from './webXRInput';
 import { WebXRControllerModelLoader } from './webXRControllerModelLoader';
 import { WebXRControllerPointerSelection } from './webXRControllerPointerSelection';
 import { WebXRControllerTeleportation } from './webXRControllerTeleportation';
-import { WebXRRenderTarget } from './webXRTypes';
+import { WebXRRenderTarget, WebXRState } from './webXRTypes';
 import { WebXREnterExitUI } from './webXREnterExitUI';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { WebXRManagedOutputCanvasOptions } from './webXRManagedOutputCanvas';
@@ -13,6 +13,16 @@ import { WebXRManagedOutputCanvasOptions } from './webXRManagedOutputCanvas';
  * Options for the default xr helper
  */
 export class WebXRDefaultExperienceOptions {
+    /**
+     * Optional xr mode to enter.  If null, defaults to "immersive-vr".
+     */
+    public sessionMode? : XRSessionMode;
+
+    /**
+     * Background meshes that will be hidden in AR mode.
+     */
+    public backgroundMeshes: Array<AbstractMesh>;
+
     /**
      * Floor meshes that should be used for teleporting
      */
@@ -80,6 +90,19 @@ export class WebXRDefaultExperience {
             result.controllerModelLoader = new WebXRControllerModelLoader(result.input);
             result.pointerSelection = new WebXRControllerPointerSelection(result.input);
 
+            // default to VR
+            const sessionMode = options.sessionMode || "immersive-vr";
+            const shouldShowBackgroundInXR = sessionMode != "immersive-ar";
+            
+            if (options.backgroundMeshes) {
+                result.baseExperience.onStateChangedObservable.add((state) => {
+                    const shouldShowBackground = (state === WebXRState.IN_XR) ? shouldShowBackgroundInXR : true;
+                    options.backgroundMeshes.forEach((backgroundMesh) => {
+                        backgroundMesh.isVisible = shouldShowBackground;
+                    });
+                });
+            }
+
             if (options.floorMeshes) {
                 result.teleportation = new WebXRControllerTeleportation(result.input, options.floorMeshes);
             }
@@ -89,7 +112,7 @@ export class WebXRDefaultExperience {
 
             if (!options.disableDefaultUI) {
                 // Create ui for entering/exiting xr
-                return WebXREnterExitUI.CreateAsync(scene, result.baseExperience, { renderTarget: result.renderTarget }).then((ui) => {
+                return WebXREnterExitUI.CreateAsync(scene, result.baseExperience, { renderTarget: result.renderTarget, sessionMode: sessionMode }).then((ui) => {
                     result.enterExitUI = ui;
                 });
             } else {
