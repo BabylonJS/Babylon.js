@@ -31,7 +31,6 @@ export class WebXRController {
      */
     public onDisposeObservable = new Observable<{}>();
 
-    private _tmpMatrix = new Matrix();
     private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3();
 
@@ -55,6 +54,7 @@ export class WebXRController {
 
         if (this.inputSource.gripSpace) {
             this.grip = new AbstractMesh("controllerGrip", this.scene);
+            this.grip.rotationQuaternion = new Quaternion();
             if (this.parentContainer) {
                 this.parentContainer.addChild(this.grip);
             }
@@ -86,14 +86,13 @@ export class WebXRController {
         if (this.inputSource.gripSpace && this.grip) {
             let pose = xrFrame.getPose(this.inputSource.gripSpace, referenceSpace);
             if (pose) {
-                Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, this._tmpMatrix);
+                this.grip.position.copyFrom(<any>(pose.transform.position));
+                this.grip.rotationQuaternion!.copyFrom(<any>(pose.transform.orientation));
                 if (!this.scene.useRightHandedSystem) {
-                    this._tmpMatrix.toggleModelMatrixHandInPlace();
+                    this.grip.position.z *= -1;
+                    this.grip.rotationQuaternion!.z *= -1;
+                    this.grip.rotationQuaternion!.w *= -1;
                 }
-                if (!this.grip.rotationQuaternion) {
-                    this.grip.rotationQuaternion = new Quaternion();
-                }
-                this._tmpMatrix.decompose(this.grip.scaling, this.grip.rotationQuaternion!, this.grip.position);
             }
         }
         if (this.gamepadController) {
