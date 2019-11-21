@@ -1,7 +1,7 @@
 import { Nullable } from "../../types";
 import { Observable } from "../../Misc/observable";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Matrix, Quaternion, Vector3 } from '../../Maths/math.vector';
+import { Quaternion, Vector3 } from '../../Maths/math.vector';
 import { Ray } from '../../Culling/ray';
 import { Scene } from '../../scene';
 import { WebVRController } from '../../Gamepads/Controllers/webVRController';
