@@ -95,6 +95,7 @@
 - Added new CreateTiledPlane and CreateTiledBox ([JohnK](https://github.com/BabylonJSGuide/))
 - Added absolute scaling and rotation getters ([haroldma](https://github.com/haroldma))
 - Added `BILLBOARDMODE_USE_POSITION` flag to billboards allowing use of camera positioning instead of orientation for mesh rotation ([delaneyj](https://github.com/delaneyj))
+- Added accessor functions for `SubMesh._materialDefines` ([Popov72](https://github.com/Popov72))
 
 ### Physics
 
@@ -126,6 +127,7 @@
 - Added `scene.environmentIntensity` to control the IBL strength overall in a scene ([Sebavan](https://github.com/sebavan/))
 - Added support of image processing for `WaterMaterial` ([julien-moreau](https://github.com/julien-moreau))
 - Added `pbrBRDFConfiguration.useSpecularGlossinessInputEnergyConservation` to allow Specular-Workflow energy conservation to be turned off ([ColorDigital-PS](https://github.com/ColorDigital-PS)).
+- Added support for the `freeze` / `unfreeze` functions in `ShaderMaterial` ([Popov72](https://github.com/Popov72))
 - Added `depthFunction` new property to `Material` base class ([Popov72](https://github.com/Popov72))
 
 ### ScreenshotTools
@@ -171,13 +173,14 @@
 - Added `Container.maxLayoutCycle` and `Container.logLayoutCycleErrors` to get more control over layout cycles ([Deltakosh](https://github.com/deltakosh/))
 - Added `StackPanel.ignoreLayoutWarnings` to disable console warnings when controls with percentage size are added to a StackPanel ([Deltakosh](https://github.com/deltakosh/))
 - Added `_getSVGAttribs` functionality for loading multiple svg icons from an external svg file via icon id. Fixed bug for Chrome. Strip icon id from image url for firefox.([lockphase](https://github.com/lockphase/))
+- Scroll Viewer extended to include the use of images in the scroll bars([JohnK](https://github.com/BabylonJSGuide/))
 
 ### Particles
 
 - Added the feature `expandable` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 - Added the feature `removeParticles()` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 - Added the feature "storable particles" and `insertParticlesFromArray()` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
-- Added the support for MultiMaterials to the Solid Particle System ([jerome](https://github.com/jbousquie/))
+- Added the support for MultiMaterials to the Solid Particle System ([jerome](https://github.com/jbousquie/))  
 
 ### Navigation Mesh
 
@@ -235,6 +238,7 @@
 - Fixed Path3D (bi)normals computation for specific edge cases ([Poolminer](https://github.com/Poolminer/))
 - WebXR UI BUtton will only change to "In XR" after XR Session started ([RaananW](https://github.com/RaananW/))
 - Fix bug when we call `Mesh.render` twice and the material is still not ready on the second call ([barroij](https://github.com/barroij/))
+- Fixed an issue with pose input in webxr ([RaananW](https://github.com/RaananW/))
 
 ## Breaking changes
 

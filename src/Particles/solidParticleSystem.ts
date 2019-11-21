@@ -131,6 +131,7 @@ export class SolidParticleSystem implements IDisposable {
     private _multimaterial: MultiMaterial;
     private _materialIndexesById: any;
     private _defaultMaterial: Material;
+    private _autoUpdateSubMeshes: boolean = false;
 
     /**
      * Creates a SPS (Solid Particle System) object.
@@ -656,9 +657,8 @@ export class SolidParticleSystem implements IDisposable {
         var modelShape = new ModelShape(this._shapeCounter, shape, indices, shapeNormals, shapeColors, shapeUV, posfunc, vtxfunc, material);
 
         // particles
-        var idx = this.nbParticles;
         for (var i = 0; i < nb; i++) {
-            this._insertNewParticle(idx, i, modelShape, shape, meshInd, meshUV, meshCol, meshNor, bbInfo, storage, options);
+            this._insertNewParticle(this.nbParticles, i, modelShape, shape, meshInd, meshUV, meshCol, meshNor, bbInfo, storage, options);
         }
         this._shapeCounter++;
         this._isNotBuilt = true;        // buildMesh() call is now expected for setParticles() to work
@@ -1265,6 +1265,9 @@ export class SolidParticleSystem implements IDisposable {
                 mesh._boundingInfo = new BoundingInfo(minimum, maximum, mesh._worldMatrix);
             }
         }
+        if (this._autoUpdateSubMeshes) {
+            this.computeSubMeshes();
+        }
         this.afterUpdateParticles(start, end, update);
         return this;
     }
@@ -1661,7 +1664,15 @@ export class SolidParticleSystem implements IDisposable {
     public set multimaterial(mm) {
         this._multimaterial = mm;
     }
-
+    /**
+     * If the subMeshes must be updated on the next call to setParticles()
+     */
+    public get autoUpdateSubMeshes(): boolean {
+        return this._autoUpdateSubMeshes;
+    }
+    public set autoUpdateSubMeshes(val: boolean) {
+        this._autoUpdateSubMeshes = val;
+    }
     // =======================================================================
     // Particle behavior logic
     // these following methods may be overwritten by the user to fit his needs
