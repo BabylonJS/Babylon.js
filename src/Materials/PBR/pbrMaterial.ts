@@ -115,7 +115,7 @@ export class PBRMaterial extends PBRBaseMaterial {
     public ambientTextureImpactOnAnalyticalLights: number = PBRMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
 
     /**
-     * Stores the alpha values in a texture.
+     * Stores the alpha values in a texture. Use luminance if texture.getAlphaFromRGB is true.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
