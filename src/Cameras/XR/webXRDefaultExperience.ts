@@ -94,14 +94,16 @@ export class WebXRDefaultExperience {
             const sessionMode = options.sessionMode || "immersive-vr";
             const shouldShowBackgroundInXR = sessionMode != "immersive-ar";
             
-            result.baseExperience.onStateChangedObservable.add((state) => {
-                if (options.backgroundMeshes) {
-                    const shouldShowBackground = (state === WebXRState.IN_XR) ? shouldShowBackgroundInXR : true;
-                    options.backgroundMeshes.forEach((backgroundMesh) => {
-                        backgroundMesh.isVisible = shouldShowBackground;
-                    });
-                }
-            });
+            if (options.backgroundMeshes) {
+                result.baseExperience.onStateChangedObservable.add((state) => {
+                    if (options.backgroundMeshes) {
+                        const shouldShowBackground = (state === WebXRState.IN_XR) ? shouldShowBackgroundInXR : true;
+                        options.backgroundMeshes.forEach((backgroundMesh) => {
+                            backgroundMesh.isVisible = shouldShowBackground;
+                        });
+                    }
+                });
+            }
 
             if (options.floorMeshes) {
                 result.teleportation = new WebXRControllerTeleportation(result.input, options.floorMeshes);
