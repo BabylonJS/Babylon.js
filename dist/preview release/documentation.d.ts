@@ -21044,6 +21044,13 @@ declare module BABYLON {
         /** @hidden */
         _materialEffect: Nullable<Effect>;
         /**
+         * Gets material defines used by the effect associated to the sub mesh
+         */
+        /**
+        * Sets material defines used by the effect associated to the sub mesh
+        */
+        materialDefines: Nullable<MaterialDefines>;
+        /**
          * Gets associated effect
          */
         readonly effect: Nullable<Effect>;
@@ -26516,6 +26523,7 @@ declare module BABYLON {
         private _multimaterial;
         private _materialIndexesById;
         private _defaultMaterial;
+        private _autoUpdateSubMeshes;
         /**
          * Creates a SPS (Solid Particle System) object.
          * @param name (String) is the SPS name, this will be the underlying mesh name.
@@ -26866,6 +26874,10 @@ declare module BABYLON {
          * The SPS computed multimaterial object
          */
         multimaterial: MultiMaterial;
+        /**
+         * If the subMeshes must be updated on the next call to setParticles()
+         */
+        autoUpdateSubMeshes: boolean;
         /**
          * This function does nothing. It may be overwritten to set all the particle first values.
          * The SPS doesn't call this function, you may have to call it by your own.
@@ -41943,7 +41955,6 @@ declare module BABYLON {
          * Event that fires when the controller is removed/disposed
          */
         onDisposeObservable: Observable<{}>;
-        private _tmpMatrix;
         private _tmpQuaternion;
         private _tmpVector;
         /**
@@ -49062,7 +49073,7 @@ declare module BABYLON {
          */
         ambientTextureImpactOnAnalyticalLights: number;
         /**
-         * Stores the alpha values in a texture.
+         * Stores the alpha values in a texture. Use luminance if texture.getAlphaFromRGB is true.
          */
         opacityTexture: BaseTexture;
         /**
@@ -68384,13 +68395,61 @@ declare module BABYLON.GUI {
         name?: string | undefined;
         private _background;
         private _borderColor;
-        private _thumbMeasure;
+        private _tempMeasure;
         /** Gets or sets border color */
         borderColor: string;
         /** Gets or sets background color */
         background: string;
         /**
          * Creates a new Slider
+         * @param name defines the control name
+         */
+        constructor(name?: string | undefined);
+        protected _getTypeName(): string;
+        protected _getThumbThickness(): number;
+        _draw(context: CanvasRenderingContext2D): void;
+        private _first;
+        private _originX;
+        private _originY;
+        /** @hidden */
+        protected _updateValueFromPointer(x: number, y: number): void;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create slider controls
+     */
+    export class ImageScrollBar extends BaseSlider {
+        name?: string | undefined;
+        private _backgroundImage;
+        private _thumbImage;
+        private _thumbLength;
+        private _thumbHeight;
+        private _barImageHeight;
+        private _tempMeasure;
+        /**
+         * Gets or sets the image used to render the background
+         */
+        backgroundImage: Image;
+        /**
+         * Gets or sets the image used to render the thumb
+         */
+        thumbImage: Image;
+        /**
+         * Gets or sets the length of the thumb
+         */
+        thumbLength: number;
+        /**
+         * Gets or sets the height of the thumb
+         */
+        thumbHeight: number;
+        /**
+         * Gets or sets the height of the bar image
+         */
+        barImageHeight: number;
+        /**
+         * Creates a new ImageScrollBar
          * @param name defines the control name
          */
         constructor(name?: string | undefined);
@@ -68418,6 +68477,8 @@ declare module BABYLON.GUI {
         private _verticalBar;
         private _barColor;
         private _barBackground;
+        private _barImage;
+        private _barBackgroundImage;
         private _barSize;
         private _endLeft;
         private _endTop;
@@ -68427,14 +68488,18 @@ declare module BABYLON.GUI {
         private _onPointerObserver;
         private _clientWidth;
         private _clientHeight;
+        private _useImageBar;
+        private _thumbLength;
+        private _thumbHeight;
+        private _barImageHeight;
         /**
          * Gets the horizontal scrollbar
          */
-        readonly horizontalBar: ScrollBar;
+        readonly horizontalBar: ScrollBar | ImageScrollBar;
         /**
          * Gets the vertical scrollbar
          */
-        readonly verticalBar: ScrollBar;
+        readonly verticalBar: ScrollBar | ImageScrollBar;
         /**
          * Adds a new control to the current container
          * @param control defines the control to add
@@ -68454,7 +68519,7 @@ declare module BABYLON.GUI {
         * Creates a new ScrollViewer
         * @param name of ScrollViewer
         */
-        constructor(name?: string);
+        constructor(name?: string, isImageBased?: boolean);
         /** Reset the scroll viewer window to initial size */
         resetWindow(): void;
         protected _getTypeName(): string;
@@ -68466,15 +68531,29 @@ declare module BABYLON.GUI {
          * from 0 to 1 with a default value of 0.05
          * */
         wheelPrecision: number;
+        /** Gets or sets the scroll bar container background color */
+        scrollBackground: string;
         /** Gets or sets the bar color */
         barColor: string;
+        /** Gets or sets the bar image */
+        thumbImage: Image;
         /** Gets or sets the size of the bar */
         barSize: number;
+        /** Gets or sets the length of the thumb */
+        thumbLength: number;
+        /** Gets or sets the height of the thumb */
+        thumbHeight: number;
+        /** Gets or sets the height of the bar image */
+        barImageHeight: number;
         /** Gets or sets the bar background */
         barBackground: string;
+        /** Gets or sets the bar background image */
+        barImage: Image;
         /** @hidden */
         private _updateScroller;
         _link(host: AdvancedDynamicTexture): void;
+        /** @hidden */
+        private _addBar;
         /** @hidden */
         private _attachWheel;
         _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
