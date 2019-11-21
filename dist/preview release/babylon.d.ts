@@ -21044,6 +21044,13 @@ declare module BABYLON {
         /** @hidden */
         _materialEffect: Nullable<Effect>;
         /**
+         * Gets material defines used by the effect associated to the sub mesh
+         */
+        /**
+        * Sets material defines used by the effect associated to the sub mesh
+        */
+        materialDefines: Nullable<MaterialDefines>;
+        /**
          * Gets associated effect
          */
         readonly effect: Nullable<Effect>;
@@ -26516,6 +26523,7 @@ declare module BABYLON {
         private _multimaterial;
         private _materialIndexesById;
         private _defaultMaterial;
+        private _autoUpdateSubMeshes;
         /**
          * Creates a SPS (Solid Particle System) object.
          * @param name (String) is the SPS name, this will be the underlying mesh name.
@@ -26866,6 +26874,10 @@ declare module BABYLON {
          * The SPS computed multimaterial object
          */
         multimaterial: MultiMaterial;
+        /**
+         * If the subMeshes must be updated on the next call to setParticles()
+         */
+        autoUpdateSubMeshes: boolean;
         /**
          * This function does nothing. It may be overwritten to set all the particle first values.
          * The SPS doesn't call this function, you may have to call it by your own.
@@ -41943,7 +41955,6 @@ declare module BABYLON {
          * Event that fires when the controller is removed/disposed
          */
         onDisposeObservable: Observable<{}>;
-        private _tmpMatrix;
         private _tmpQuaternion;
         private _tmpVector;
         /**
@@ -49062,7 +49073,7 @@ declare module BABYLON {
          */
         ambientTextureImpactOnAnalyticalLights: number;
         /**
-         * Stores the alpha values in a texture.
+         * Stores the alpha values in a texture. Use luminance if texture.getAlphaFromRGB is true.
          */
         opacityTexture: BaseTexture;
         /**
