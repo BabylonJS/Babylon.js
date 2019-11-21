@@ -522,6 +522,21 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Remove a block from the current node material
+     * @param block defines the block to remove
+     */
+    public removeBlock(block: NodeMaterialBlock) {
+        let attachedBlockIndex = this.attachedBlocks.indexOf(block);
+        if (attachedBlockIndex > -1) {
+            this.attachedBlocks.splice(attachedBlockIndex, 1);
+        }
+
+        if (block.isFinalMerger) {
+            this.removeOutputNode(block);
+        }
+    }
+
+    /**
      * Build the material and generates the inner effect
      * @param verbose defines if the build should log activity
      */

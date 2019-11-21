@@ -53959,6 +53959,11 @@ declare module BABYLON {
         private _initializeBlock;
         private _resetDualBlocks;
         /**
+         * Remove a block from the current node material
+         * @param block defines the block to remove
+         */
+        removeBlock(block: NodeMaterialBlock): void;
+        /**
          * Build the material and generates the inner effect
          * @param verbose defines if the build should log activity
          */

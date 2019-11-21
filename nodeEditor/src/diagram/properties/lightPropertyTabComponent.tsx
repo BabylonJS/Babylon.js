@@ -5,7 +5,7 @@ import { LineContainerComponent } from '../../sharedComponents/lineContainerComp
 import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { IPropertyComponentProps } from './propertyComponentProps';
-import { LightBlock } from 'babylonjs';
+import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
 
 export class LightPropertyTabComponent extends React.Component<IPropertyComponentProps> {
 
