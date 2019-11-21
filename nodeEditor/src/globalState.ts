@@ -7,12 +7,15 @@ import { PreviewMeshType } from './components/preview/previewMeshType';
 import { DataStorage } from './dataStorage';
 import { Color4 } from 'babylonjs/Maths/math.color';
 import { GraphNode } from './diagram/graphNode';
+import { Vector2 } from 'babylonjs/Maths/math.vector';
+import { NodePort } from './diagram/nodePort';
+import { NodeLink } from './diagram/nodeLink';
 
 export class GlobalState {
     nodeMaterial: NodeMaterial;
     hostElement: HTMLElement;
     hostDocument: HTMLDocument;
-    onSelectionChangedObservable = new Observable<Nullable<GraphNode>>();
+    onSelectionChangedObservable = new Observable<Nullable<GraphNode | NodeLink>>();
     onRebuildRequiredObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<void>();
     onUpdateRequiredObservable = new Observable<void>();
@@ -27,6 +30,8 @@ export class GlobalState {
     onBackFaceCullingChanged = new Observable<void>();
     onDepthPrePassChanged = new Observable<void>();
     onAnimationCommandActivated = new Observable<void>();
+    onCandidateLinkMoved = new Observable<Nullable<Vector2>>();    
+    onCandidatePortSelected = new Observable<Nullable<NodePort>>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
     previewMeshType: PreviewMeshType;
     previewMeshFile: File;

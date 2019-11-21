@@ -3,8 +3,6 @@ import { GlobalState } from '../globalState';
 import { Nullable } from 'babylonjs/types';
 import { Observer } from 'babylonjs/Misc/observable';
 import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
-import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
-import { BlockTools } from '../blockTools';
 import { GraphCanvasComponent } from './graphCanvas';
 import { PropertyLedger } from './propertyLedger';
 import * as React from 'react';
@@ -12,10 +10,7 @@ import { GenericPropertyTabComponent } from './properties/genericNodePropertyCom
 import { DisplayLedger } from './displayLedger';
 import { IDisplayManager } from './display/displayManager';
 import { NodeLink } from './nodeLink';
-
-export class ExtendedHTMLDivElement extends HTMLDivElement {
-    tag: NodeMaterialConnectionPoint;
-}
+import { NodePort } from './nodePort';
 
 export class GraphNode {
     private _visual: HTMLDivElement;
@@ -24,20 +19,19 @@ export class GraphNode {
     private _inputsContainer: HTMLDivElement;
     private _outputsContainer: HTMLDivElement;
     private _content: HTMLDivElement;
-    private _inputPorts: ExtendedHTMLDivElement[] = [];
-    private _outputPorts: ExtendedHTMLDivElement[] = [];
+    private _inputPorts: NodePort[] = [];
+    private _outputPorts: NodePort[] = [];
     private _links: NodeLink[] = [];    
     private _x = 0;
     private _y = 0;
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null    
     private _globalState: GlobalState;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode>>>;   
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink>>>;   
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;  
     private _ownerCanvas: GraphCanvasComponent; 
     private _isSelected: boolean;
     private _displayManager: Nullable<IDisplayManager> = null;
-    private _candidateLink: Nullable<NodeLink> = null;
 
     public get links() {
         return this._links;
@@ -114,18 +108,22 @@ export class GraphNode {
             if (node === this) {
                 this._visual.classList.add("selected");
             } else {
-                this._visual.classList.remove("selected");
+                setTimeout(() => {
+                    if (this._ownerCanvas.selectedNodes.indexOf(this) === -1) {
+                        this._visual.classList.remove("selected");
+                    }
+                })
             }
         });
 
         this._onUpdateRequiredObserver = this._globalState.onUpdateRequiredObservable.add(() => {
-            this._refresh();
+            this.refresh();
         });
     }
 
     public getPortForConnectionPoint(point: NodeMaterialConnectionPoint) {
         for (var port of this._inputPorts) {
-            let attachedPoint = (port as any).tag as NodeMaterialConnectionPoint;
+            let attachedPoint = port.connectionPoint;
 
             if (attachedPoint === point) {
                 return port;
@@ -133,7 +131,7 @@ export class GraphNode {
         }
 
         for (var port of this._outputPorts) {
-            let attachedPoint = (port as any).tag as NodeMaterialConnectionPoint;
+            let attachedPoint = port.connectionPoint;
 
             if (attachedPoint === point) {
                 return port;
@@ -143,13 +141,17 @@ export class GraphNode {
         return null;
     }
 
+    public getLinksForConnectionPoint(point: NodeMaterialConnectionPoint) {
+        return this._links.filter(link => link.portA.connectionPoint === point || link.portB!.connectionPoint === point);
+    }
+
     private _refreshLinks() {
         for (var link of this._links) {
             link.update();
         }
     }
 
-    private _refresh() {
+    public refresh() {
         if (this._displayManager) {
             this._header.innerHTML = this._displayManager.getHeaderText(this.block);
             this._displayManager.updatePreviewContent(this.block, this._content);
@@ -157,34 +159,14 @@ export class GraphNode {
         } else {
             this._header.innerHTML = this.block.name;
         }
-    }
 
-    private _onPortDown(evt: PointerEvent, port: ExtendedHTMLDivElement) {
-        if (!this._candidateLink) {
-            this._candidateLink = new NodeLink(this._ownerCanvas, port, this);
-        }        
-        port.setPointerCapture(evt.pointerId);
-        evt.stopPropagation();
-    }
-
-    private _onPortUp(evt: PointerEvent, port: ExtendedHTMLDivElement) {        
-        port.releasePointerCapture(evt.pointerId);
-        evt.stopPropagation();
-
-        if (this._candidateLink) {
-            this._candidateLink.dispose();
-            this._candidateLink = null;
-        }
-    }
-
-    private _onPortMove(evt: PointerEvent, port: ExtendedHTMLDivElement) {       
-        if (!this._candidateLink) {
-            return;
+        for (var port of this._inputPorts) {
+            port.refresh();
         }
 
-        const rootRect = this._ownerCanvas.canvasContainer.getBoundingClientRect();
-
-        this._candidateLink.update((evt.pageX - rootRect.left) / this._ownerCanvas.zoom, (evt.pageY - rootRect.top) / this._ownerCanvas.zoom, true);
+        for (var port of this._outputPorts) {
+            port.refresh();
+        }
     }
 
     private _appendConnection(connectionPoint: NodeMaterialConnectionPoint, root: HTMLDivElement, displayManager: Nullable<IDisplayManager>) {
@@ -198,48 +180,16 @@ export class GraphNode {
             portLabel.innerHTML = connectionPoint.name;        
             portContainer.appendChild(portLabel);
         }
-
-        let port = root.ownerDocument!.createElement("div") as ExtendedHTMLDivElement;
-        port.classList.add("port");     
-        port.style.background = BlockTools.GetColorFromConnectionNodeType(connectionPoint.type);
-        portContainer.appendChild(port);
-
-        let portImg = root.ownerDocument!.createElement("img");
-        switch (connectionPoint.type) {
-            case NodeMaterialBlockConnectionPointTypes.Float:
-            case NodeMaterialBlockConnectionPointTypes.Int:
-                portImg.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5WZWN0b3IxPC90aXRsZT48ZyBpZD0iTGF5ZXJfNSIgZGF0YS1uYW1lPSJMYXllciA1Ij48Y2lyY2xlIGNsYXNzPSJjbHMtMSIgY3g9IjEwLjUiIGN5PSIxMC41IiByPSI3LjUiLz48L2c+PC9zdmc+";
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Vector2:
-                portImg.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5WZWN0b3IyPC90aXRsZT48ZyBpZD0iTGF5ZXJfNSIgZGF0YS1uYW1lPSJMYXllciA1Ij48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0zLDEwLjVhNy41Miw3LjUyLDAsMCwwLDYuNSw3LjQzVjMuMDdBNy41Miw3LjUyLDAsMCwwLDMsMTAuNVoiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0xMS41LDMuMDdWMTcuOTNhNy41LDcuNSwwLDAsMCwwLTE0Ljg2WiIvPjwvZz48L3N2Zz4=";
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Vector3:
-            case NodeMaterialBlockConnectionPointTypes.Color3:
-                portImg.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5WZWN0b3IzPC90aXRsZT48ZyBpZD0iTGF5ZXJfNSIgZGF0YS1uYW1lPSJMYXllciA1Ij48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0zLjU3LDEzLjMxLDkuNSw5Ljg5VjNBNy41MSw3LjUxLDAsMCwwLDMsMTAuNDYsNy4zMiw3LjMyLDAsMCwwLDMuNTcsMTMuMzFaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMTYuNDMsMTUsMTAuNSwxMS42Miw0LjU3LDE1YTcuNDgsNy40OCwwLDAsMCwxMS44NiwwWiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTE4LDEwLjQ2QTcuNTEsNy41MSwwLDAsMCwxMS41LDNWOS44OWw1LjkzLDMuNDJBNy4zMiw3LjMyLDAsMCwwLDE4LDEwLjQ2WiIvPjwvZz48L3N2Zz4=";
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Vector4:
-            case NodeMaterialBlockConnectionPointTypes.Color4:
-                portImg.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5WZWN0b3I0PC90aXRsZT48ZyBpZD0iTGF5ZXJfNSIgZGF0YS1uYW1lPSJMYXllciA1Ij48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0xMS41LDExLjV2Ni40M2E3LjUxLDcuNTEsMCwwLDAsNi40My02LjQzWiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsMy4wN1Y5LjVoNi40M0E3LjUxLDcuNTEsMCwwLDAsMTEuNSwzLjA3WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTkuNSwxNy45M1YxMS41SDMuMDdBNy41MSw3LjUxLDAsMCwwLDkuNSwxNy45M1oiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik05LjUsMy4wN0E3LjUxLDcuNTEsMCwwLDAsMy4wNyw5LjVIOS41WiIvPjwvZz48L3N2Zz4=";
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Matrix:
-                portImg.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5NYXRyaXg8L3RpdGxlPjxnIGlkPSJMYXllcl81IiBkYXRhLW5hbWU9IkxheWVyIDUiPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsNi4xMVY5LjVoMy4zOUE0LjUxLDQuNTEsMCwwLDAsMTEuNSw2LjExWiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsMTQuODlhNC41MSw0LjUxLDAsMCwwLDMuMzktMy4zOUgxMS41WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsMy4wN3YyQTUuNTQsNS41NCwwLDAsMSwxNS45Miw5LjVoMkE3LjUxLDcuNTEsMCwwLDAsMTEuNSwzLjA3WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTE1LjkyLDExLjVhNS41NCw1LjU0LDAsMCwxLTQuNDIsNC40MnYyYTcuNTEsNy41MSwwLDAsMCw2LjQzLTYuNDNaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNNS4wOCwxMS41aC0yQTcuNTEsNy41MSwwLDAsMCw5LjUsMTcuOTN2LTJBNS41NCw1LjU0LDAsMCwxLDUuMDgsMTEuNVoiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik05LjUsMy4wN0E3LjUxLDcuNTEsMCwwLDAsMy4wNyw5LjVoMkE1LjU0LDUuNTQsMCwwLDEsOS41LDUuMDhaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNOS41LDExLjVINi4xMUE0LjUxLDQuNTEsMCwwLDAsOS41LDE0Ljg5WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTkuNSw2LjExQTQuNTEsNC41MSwwLDAsMCw2LjExLDkuNUg5LjVaIi8+PC9nPjwvc3ZnPg==";
-                break;
-        }
-        port.appendChild(portImg);
-
-        port.tag = connectionPoint;
-
-        // Drag support
-        port.ondragstart= () => false;
-
-        port.addEventListener("pointerdown", evt => this._onPortDown(evt, port));
-        port.addEventListener("pointerup", evt => this._onPortUp(evt, port));
-        port.addEventListener("pointermove", evt => this._onPortMove(evt, port));
-
-        return port;
+    
+        return new NodePort(portContainer, connectionPoint, this, this._globalState);
     }
 
     private _onDown(evt: PointerEvent) {
+        // Check if this is coming from the port
+        if (evt.srcElement && (evt.srcElement as HTMLElement).nodeName === "IMG") {
+            return;
+        }
+
         this._globalState.onSelectionChangedObservable.notifyObservers(this);
         evt.stopPropagation();
 
@@ -342,7 +292,7 @@ export class GraphNode {
             this._outputPorts.push(this._appendConnection(output, this._outputsContainer, this._displayManager));
         }
 
-        this._refresh();
+        this.refresh();
     }
 
     public dispose() {
@@ -356,6 +306,14 @@ export class GraphNode {
 
         if (this._visual.parentElement) {
             this._visual.parentElement.removeChild(this._visual);
+        }
+
+        for (var port of this._inputPorts) {
+            port.dispose();
+        }
+
+        for (var port of this._outputPorts) {
+            port.dispose();
         }
 
         for (var link of this._links) {
