@@ -6,6 +6,7 @@ import { TextureLineComponent } from '../../sharedComponents/textureLineComponen
 
 export class TextureDisplayManager implements IDisplayManager {
     private _previewCanvas: HTMLCanvasElement;
+    private _previewImage: HTMLImageElement;
 
     public getHeaderClass(block: NodeMaterialBlock) {
         return "";
@@ -30,7 +31,9 @@ export class TextureDisplayManager implements IDisplayManager {
             contentArea.classList.add("texture-block");
 
             this._previewCanvas = contentArea.ownerDocument!.createElement("canvas");
-            contentArea.appendChild(this._previewCanvas);
+            this._previewImage = contentArea.ownerDocument!.createElement("img");
+            contentArea.appendChild(this._previewImage);
+            this._previewImage.classList.add("empty");
         }
 
         if (textureBlock.texture) {
@@ -40,7 +43,12 @@ export class TextureDisplayManager implements IDisplayManager {
                 displayAlpha: true,
                 displayBlue: true,
                 displayGreen: true
+            }, () => {
+                this._previewImage.src = this._previewCanvas.toDataURL("image/png");
+                this._previewImage.classList.remove("empty");
             });
+        } else {
+            this._previewImage.classList.add("empty");
         }
     }
 }

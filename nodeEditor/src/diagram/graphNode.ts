@@ -318,7 +318,8 @@ export class GraphNode {
             port.dispose();
         }
 
-        for (var link of this._links) {
+        let links = this._links.slice(0);
+        for (var link of links) {
             link.dispose();           
         }
 
