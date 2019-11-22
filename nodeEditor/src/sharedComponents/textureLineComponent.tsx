@@ -49,13 +49,13 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
     }
 
     public updatePreview() {
-        TextureLineComponent.UpdatePreview(this.refs.canvas as HTMLCanvasElement, this.props.texture, this.props.width, this.state, this.props.globalState);
+        TextureLineComponent.UpdatePreview(this.refs.canvas as HTMLCanvasElement, this.props.texture, this.props.width, this.state, undefined, this.props.globalState);
     }
 
-    public static UpdatePreview(previewCanvas: HTMLCanvasElement, texture: BaseTexture, width: number, options: ITextureLineComponentState, globalState?: any) {
+    public static UpdatePreview(previewCanvas: HTMLCanvasElement, texture: BaseTexture, width: number, options: ITextureLineComponentState, onReady?: ()=> void, globalState?: any) {
         if (!texture.isReady() && texture._texture) {
             texture._texture.onLoadedObservable.addOnce(() => {
-                TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, globalState);
+                TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, onReady, globalState);
             })
         }
         var scene = texture.getScene()!;
@@ -79,7 +79,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             // Try again later
             passPostProcess.dispose();
 
-            setTimeout(() => TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, globalState), 250);
+            setTimeout(() => TextureLineComponent.UpdatePreview(previewCanvas, texture, width, options, onReady, globalState), 250);
 
             return;
         }
@@ -161,6 +161,10 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
                 var castData = imageData.data;
                 castData.set(data);
                 context.putImageData(imageData, 0, 0);
+
+                if (onReady) {
+                    onReady();
+                }
             }
 
             // Unbind
