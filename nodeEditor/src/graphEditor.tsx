@@ -133,10 +133,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             }
         });
 
-        this.props.globalState.onUpdateRequiredObservable.add(() => {
-            // Do nothing for now
-        });
-
         this.props.globalState.onZoomToFitRequiredObservable.add(() => {
             this.zoomToFit();
         });
@@ -227,8 +223,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                         y = currentY;
                     }
 
-                    newNode.x = x;
-                    newNode.y = y;
+                    newNode.x = this._graphCanvas.getGridPosition(x);
+                    newNode.y = this._graphCanvas.getGridPosition(y);
                 }
             }
 
@@ -301,8 +297,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             for (var location of locations) {
                 for (var node of this._graphCanvas.nodes) {
                     if (node.block && node.block.uniqueId === location.blockId) {
-                        node.x = location.x;
-                        node.y = location.y;
+                        node.x = this._graphCanvas.getGridPosition(location.x);
+                        node.y = this._graphCanvas.getGridPosition(location.y);
                         break;
                     }
                 }
@@ -372,11 +368,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             newNode = this.createNodeFromObject(block);
         };
 
-        let x = (event.clientX - event.currentTarget.offsetLeft - this._graphCanvas.x - this.NodeWidth) / this._graphCanvas.zoom;
-        let y = (event.clientY - event.currentTarget.offsetTop - this._graphCanvas.y - 20) / this._graphCanvas.zoom;
+        let x = this._graphCanvas.getGridPosition(event.clientX - event.currentTarget.offsetLeft - this._graphCanvas.x - this.NodeWidth);
+        let y = this._graphCanvas.getGridPosition(event.clientY - event.currentTarget.offsetTop - this._graphCanvas.y - 20);
         
-        newNode.x = x;
-        newNode.y = y;
+        newNode.x = x / this._graphCanvas.zoom;
+        newNode.y = y / this._graphCanvas.zoom;
 
         this.props.globalState.onSelectionChangedObservable.notifyObservers(newNode);
 
@@ -390,8 +386,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                 let connectedNode = existingNodes[0];
 
                 if (connectedNode.x === 0 && connectedNode.y === 0) {
-                    connectedNode.x = x
-                    connectedNode.y = y;
+                    connectedNode.x = this._graphCanvas.getGridPosition(x) / this._graphCanvas.zoom; 
+                    connectedNode.y = this._graphCanvas.getGridPosition(y) / this._graphCanvas.zoom;
                     y += 80;
                 }
             }
