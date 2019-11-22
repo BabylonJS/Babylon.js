@@ -80,9 +80,11 @@ export class NodeLink {
         }
 
         this._onSelectionChangedObserver = this._graphCanvas.globalState.onSelectionChangedObservable.add(selection => {
-            if (selection === this) {
+            if (selection === this) {                
+                this._path.classList.add("selected");
                 this._selectionPath.classList.add("selected");
-            } else {
+            } else {                
+                this._path.classList.remove("selected");
                 this._selectionPath.classList.remove("selected");
             }
         });

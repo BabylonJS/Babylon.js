@@ -11,6 +11,7 @@ import { SerializationTools } from '../../serializationTools';
 import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
 import { DataStorage } from '../../dataStorage';
 import { GraphNode } from '../../diagram/graphNode';
+import { SliderLineComponent } from '../../sharedComponents/sliderLineComponent';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -71,6 +72,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 </div>
             );
         }
+        let gridSize = DataStorage.ReadNumber("GridSize", 20);
 
         return (
             <div id="propertyTab">
@@ -100,6 +102,15 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             isSelected={() => DataStorage.ReadBoolean("EmbedTextures", true)}
                             onSelect={(value: boolean) => {
                                 DataStorage.StoreBoolean("EmbedTextures", value);
+                            }}
+                        />
+                        <SliderLineComponent label="Grid size" minimum={0} maximum={50} step={5} 
+                            decimalCount={0} 
+                            directValue={gridSize}
+                            onChange={value => {
+                                DataStorage.StoreNumber("GridSize", value);                                
+                                this.props.globalState.onGridSizeChanged.notifyObservers();
+                                this.forceUpdate();
                             }}
                         />
                     </LineContainerComponent>

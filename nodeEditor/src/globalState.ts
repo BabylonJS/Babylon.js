@@ -33,6 +33,7 @@ export class GlobalState {
     onCandidateLinkMoved = new Observable<Nullable<Vector2>>();    
     onCandidatePortSelected = new Observable<Nullable<NodePort>>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
+    onGridSizeChanged = new Observable<void>();
     previewMeshType: PreviewMeshType;
     previewMeshFile: File;
     rotatePreview: boolean;

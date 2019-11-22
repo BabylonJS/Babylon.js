@@ -212,13 +212,22 @@ export class GraphNode {
             return;
         }
 
+        let newX = this._ownerCanvas.getGridPosition(evt.clientX - this._mouseStartPointX);
+        let newY = this._ownerCanvas.getGridPosition(evt.clientY - this._mouseStartPointY);
+
         for (var selectedNode of this._ownerCanvas.selectedNodes) {
-            selectedNode.x += (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
-            selectedNode.y += (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
+            selectedNode.x += newX / this._ownerCanvas.zoom;
+            selectedNode.y += newY / this._ownerCanvas.zoom;
         }
 
-        this._mouseStartPointX = evt.clientX;
-        this._mouseStartPointY = evt.clientY;   
+        if (Math.abs(newX) > 0) { 
+            this._mouseStartPointX = evt.clientX;
+        }
+
+        if (Math.abs(newY) > 0) {
+            this._mouseStartPointY = evt.clientY;   
+        }
+
         evt.stopPropagation();
     }
 

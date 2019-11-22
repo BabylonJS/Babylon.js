@@ -10,6 +10,7 @@ import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection, Node
 import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+import { DataStorage } from '../dataStorage';
 
 require("./graphCanvas.scss");
 
@@ -18,6 +19,7 @@ export interface IGraphCanvasComponentProps {
 }
 
 export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentProps> {
+    private _hostCanvas: HTMLDivElement;
     private _graphCanvas: HTMLDivElement;
     private _svgCanvas: HTMLElement;
     private _rootContainer: HTMLDivElement;
@@ -34,10 +36,24 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _selectedLink: Nullable<NodeLink> = null;
     private _candidateLink: Nullable<NodeLink> = null;
     private _candidatePort: Nullable<NodePort> = null;
+    private _gridSize = 20;
 
     private _altKeyIsPressed = false;
     private _ctrlKeyIsPressed = false;
     private _oldY = -1;
+
+    public get gridSize() {
+        return this._gridSize;
+    }
+
+    public set gridSize(value: number) {
+        if (this._gridSize === value) {
+            return;
+        }
+        this._gridSize = value;
+
+        this._hostCanvas.style.backgroundSize = `${value}px ${value}px`;
+    }
 
     public get globalState(){
         return this.props.globalState;
@@ -104,6 +120,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     constructor(props: IGraphCanvasComponentProps) {
         super(props);
 
+        this.gridSize = DataStorage.ReadNumber("GridSize", 20);
+
         props.globalState.onSelectionChangedObservable.add(selection => {
             
             if (!selection) {
@@ -128,6 +146,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this._candidatePort = port;
         });
 
+        props.globalState.onGridSizeChanged.add(() => {
+            this.gridSize = DataStorage.ReadNumber("GridSize", 20);
+        });
+
         this.props.globalState.hostDocument!.addEventListener("keyup", () => this.onKeyUp(), false);
         this.props.globalState.hostDocument!.addEventListener("keydown", evt => {
             this._altKeyIsPressed = evt.altKey;            
@@ -138,6 +160,14 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this._ctrlKeyIsPressed = false;
         }, false);     
     }
+
+    public getGridPosition(position: number) {
+        let gridSize = this.gridSize;
+		if (gridSize === 0) {
+			return position;
+		}
+		return gridSize * Math.floor((position + gridSize / 2) / gridSize);
+	}
 
     updateTransform() {
         this._rootContainer.style.transform = `translate(${this._x}px, ${this._y}px) scale(${this._zoom})`;
@@ -255,8 +285,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         dagreNodes.forEach(dagreNode => {
             for (var node of this._nodes) {
                 if (node.id === dagreNode.id) {
-                    node.x = dagreNode.x - dagreNode.width / 2;
-                    node.y = dagreNode.y - dagreNode.height / 2;
+                    node.x = this.getGridPosition(dagreNode.x - dagreNode.width / 2);
+                    node.y = this.getGridPosition(dagreNode.y - dagreNode.height / 2);
                     return;
                 }
             }
@@ -264,6 +294,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     componentDidMount() {
+        this._hostCanvas = this.props.globalState.hostDocument.getElementById("graph-canvas") as HTMLDivElement;
         this._rootContainer = this.props.globalState.hostDocument.getElementById("graph-container") as HTMLDivElement;
         this._graphCanvas = this.props.globalState.hostDocument.getElementById("graph-canvas-container") as HTMLDivElement;
         this._svgCanvas = this.props.globalState.hostDocument.getElementById("graph-svg-container") as HTMLElement;        
@@ -345,15 +376,24 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     onWheel(evt: React.WheelEvent) {
-        let delta = -evt.deltaY / 50;
+        let delta = evt.deltaY < 0 ? 0.1 : -0.1;
 
-        if (evt.ctrlKey && delta % 1 !== 0) {
-            delta /= 3;
-        } else {
-            delta /= 60;
-        }
+        let oldZoom = this.zoom;
+        this.zoom = Math.min(Math.max(0.1, this.zoom + delta), 4);
 
-        this.zoom = Math.min(Math.max(0.4, this.zoom + delta), 4);
+        const boundingRect = evt.currentTarget.getBoundingClientRect();
+        const clientWidth = boundingRect.width;
+        const clientHeight = boundingRect.height;
+        const widthDiff = clientWidth * this.zoom - clientWidth * oldZoom;
+        const heightDiff = clientHeight * this.zoom - clientHeight * oldZoom;
+        const clientX = evt.clientX - boundingRect.left;
+        const clientY = evt.clientY - boundingRect.top;
+
+        const xFactor = (clientX - this.x) / oldZoom / clientWidth;
+        const yFactor = (clientY - this.y) / oldZoom / clientHeight;
+
+        this.x = this.x - widthDiff * xFactor;
+        this.y = this.y - heightDiff * yFactor;
 
         evt.stopPropagation();
     }
