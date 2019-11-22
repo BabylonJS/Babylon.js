@@ -1,5 +1,4 @@
 #graph-canvas {
-    position: relative;
     width: 100%;
     height: 100%;
     margin: 0;
@@ -9,15 +8,18 @@
     overflow: hidden;
 
     #graph-container {
-        position: absolute;
         width: 100%;
         height: 100%;
         left: 0;
         top: 0;
         transform-origin: left top;
+        display: grid;
+        grid-template: 100% 100%;
 
         #graph-svg-container {
-            position:absolute;
+            grid-row: 1;
+            grid-column: 1;
+            position: relative;
             width: 100%;
             height: 100%;  
             overflow: visible; 
@@ -37,11 +39,11 @@
         }
 
         #graph-canvas-container {
-            position: absolute;
+            grid-row: 1;
+            grid-column: 1;
+            position: relative;
             width: 100%;
             height: 100%;
-            left: 0;
-            top: 0;
 
             .visual {
                 z-index: 1;
