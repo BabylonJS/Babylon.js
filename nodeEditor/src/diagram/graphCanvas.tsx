@@ -56,8 +56,13 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     public set zoom(value: number) {
+        if (this._zoom === value) {
+            return;
+        }
+
         this._zoom = value;
-        this._rootContainer.style.transform = `scale(${value})`;
+        
+        this.updateTransform();
     }    
 
     public get x() {
@@ -66,7 +71,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     public set x(value: number) {
         this._x = value;
-        this._rootContainer.style.left = `${value}px`;
+        
+        this.updateTransform();
     }
 
     public get y() {
@@ -75,7 +81,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     public set y(value: number) {
         this._y = value;
-        this._rootContainer.style.top = `${value}px`;
+        
+        this.updateTransform();
     }
 
     public get selectedNodes() {
@@ -90,7 +97,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         return this._graphCanvas;
     }
 
-     public get svgCanvas() {
+    public get svgCanvas() {
         return this._svgCanvas;
     }
 
@@ -107,7 +114,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     this._selectedLink = selection;
                 } else {
                     if (this._ctrlKeyIsPressed) {
-                        this._selectedNodes.push(selection);
+                        if (this._selectedNodes.indexOf(selection) === -1) {
+                            this._selectedNodes.push(selection);
+                        }
                     } else {                    
                         this._selectedNodes = [selection];
                     }
@@ -127,7 +136,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.props.globalState.hostDocument!.defaultView!.addEventListener("blur", () => {
             this._altKeyIsPressed = false;
             this._ctrlKeyIsPressed = false;
-        }, false);        
+        }, false);     
+    }
+
+    updateTransform() {
+        this._rootContainer.style.transform = `translate(${this._x}px, ${this._y}px) scale(${this._zoom})`;
     }
 
     onKeyUp() {        
@@ -253,7 +266,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     componentDidMount() {
         this._rootContainer = this.props.globalState.hostDocument.getElementById("graph-container") as HTMLDivElement;
         this._graphCanvas = this.props.globalState.hostDocument.getElementById("graph-canvas-container") as HTMLDivElement;
-        this._svgCanvas = this.props.globalState.hostDocument.getElementById("graph-svg-container") as HTMLElement;
+        this._svgCanvas = this.props.globalState.hostDocument.getElementById("graph-svg-container") as HTMLElement;        
+        
+        this.updateTransform();
     }    
 
     onMove(evt: React.PointerEvent) {        

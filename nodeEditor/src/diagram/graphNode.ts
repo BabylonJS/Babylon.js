@@ -212,8 +212,10 @@ export class GraphNode {
             return;
         }
 
-        this.x += (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
-        this.y += (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
+        for (var selectedNode of this._ownerCanvas.selectedNodes) {
+            selectedNode.x += (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
+            selectedNode.y += (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
+        }
 
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;   
