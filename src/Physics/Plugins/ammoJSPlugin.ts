@@ -145,7 +145,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
     /**
      * The create custom shape handler function to be called when using BABYLON.PhysicsImposter.CustomImpostor
-     * @returns the current timestep in seconds
+     * @param impostor to create the custom shape for
+     * @returns the custom physics impostor shape
      */
     public onCreateCustomShape: (impostor: PhysicsImpostor) => any;
 
