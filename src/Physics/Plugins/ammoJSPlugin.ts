@@ -143,6 +143,12 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         return this._timeStep;
     }
 
+    /**
+     * The create custom shape handler function to be called when using BABYLON.PhysicsImposter.CustomImpostor
+     * @returns the current timestep in seconds
+     */
+    public onCreateCustomShape: (impostor: PhysicsImpostor) => any;
+
     // Ammo's contactTest and contactPairTest take a callback that runs synchronously, wrap them so that they are easier to consume
     private _isImpostorInContact(impostor: PhysicsImpostor) {
         this._tmpContactCallbackResult = false;
@@ -802,6 +808,21 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         return ropeBody;
     }
 
+    /**
+     * Create a custom physics impostor shape using the plugin's onCreateCustomShape handler
+     * @param impostor to create the custom physics shape for
+     */
+    private _createCustom(impostor: PhysicsImpostor): any {
+        let returnValue: any = null;
+        if (this.onCreateCustomShape) {
+            returnValue = this.onCreateCustomShape(impostor);
+        }
+        if (returnValue == null) {
+            returnValue = new Ammo.btCompoundShape();
+        }
+        return returnValue;
+    }
+
     // adds all verticies (including child verticies) to the convex hull shape
     private _addHullVerts(btConvexHullShape: any, topLevelObject: IPhysicsEnabledObject, object: IPhysicsEnabledObject) {
         var triangleCount = 0;
@@ -958,6 +979,10 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             case PhysicsImpostor.NoImpostor:
                 // Fill with sphere but collision is disabled on the rigid body in generatePhysicsBody, using an empty shape caused unexpected movement with joints
                 returnValue = new Ammo.btSphereShape(extendSize.x / 2);
+                break;
+            case PhysicsImpostor.CustomImpostor:
+                // Only usable when the plugin's onCreateCustomShape is set
+                returnValue = this._createCustom(impostor);
                 break;
             case PhysicsImpostor.SoftbodyImpostor:
                 // Only usable with a mesh that has sufficient and shared vertices
