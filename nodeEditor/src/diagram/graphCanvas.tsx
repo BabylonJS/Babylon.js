@@ -120,8 +120,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     constructor(props: IGraphCanvasComponentProps) {
         super(props);
 
-        this.gridSize = DataStorage.ReadNumber("GridSize", 20);
-
         props.globalState.onSelectionChangedObservable.add(selection => {
             
             if (!selection) {
@@ -299,6 +297,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this._graphCanvas = this.props.globalState.hostDocument.getElementById("graph-canvas-container") as HTMLDivElement;
         this._svgCanvas = this.props.globalState.hostDocument.getElementById("graph-svg-container") as HTMLElement;        
         
+        this.gridSize = DataStorage.ReadNumber("GridSize", 20);
         this.updateTransform();
     }    
 
