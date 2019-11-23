@@ -104,13 +104,20 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 DataStorage.StoreBoolean("EmbedTextures", value);
                             }}
                         />
-                        <SliderLineComponent label="Grid size" minimum={0} maximum={50} step={5} 
+                        <SliderLineComponent label="Grid size" minimum={0} maximum={100} step={5} 
                             decimalCount={0} 
                             directValue={gridSize}
                             onChange={value => {
                                 DataStorage.StoreNumber("GridSize", value);                                
                                 this.props.globalState.onGridSizeChanged.notifyObservers();
                                 this.forceUpdate();
+                            }}
+                        />
+                        <CheckBoxLineComponent label="Show grid" 
+                            isSelected={() => DataStorage.ReadBoolean("ShowGrid", true)}
+                            onSelect={(value: boolean) => {
+                                DataStorage.StoreBoolean("ShowGrid", value);                
+                                this.props.globalState.onGridSizeChanged.notifyObservers();
                             }}
                         />
                     </LineContainerComponent>
