@@ -88,6 +88,7 @@
 - Added support for diffing snippets in the playground ([sailro](http://www.github.com/sailro))
 - Added diff navigator in the playground ([sailro](http://www.github.com/sailro))
 - Added custom filter to remove internals from the completion in the playground ([sailro](http://www.github.com/sailro))
+- Added support for tagging deprecated members (both in editor and for completion) in the playground ([sailro](http://www.github.com/sailro))
 
 ### Meshes
 
