@@ -124,6 +124,10 @@ class MonacoCreator {
                 const wordInfo = model.getWordAtPosition(position);
                 const offset = model.getOffsetAt(position);
 
+                // continue if we already found an issue here
+                if (markers.find(m => m.startLineNumber == position.lineNumber && m.startColumn == position.column))
+                    continue;
+
                 // the following is time consuming on all suggestions, that's why we precompute deprecated candidate names in the definition worker to filter calls
                 const details = await languageService.getCompletionEntryDetails(uri.toString(), offset, wordInfo.word);
                 if (this.isDeprecatedEntry(details)) {
