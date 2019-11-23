@@ -6,10 +6,21 @@
     font: 14px "acumin-pro";  
     user-select: none;
     overflow: hidden;
-
     background-image:
-        linear-gradient(to right, grey 1px, transparent 1px),
-        linear-gradient(to bottom, grey 1px, transparent 1px);  
+        linear-gradient(to right, #4F4E4F 1px, transparent 1px),
+        linear-gradient(to bottom, #4F4E4F 1px, transparent 1px);  
+
+    #selection-container {
+        pointer-events: none;
+        
+        .selection-box {
+            z-index: 10;
+            position: absolute;
+            background: rgba(72, 72, 196, 0.5);
+            border: blue solid 4px;
+            border-radius: 10px;
+        }
+    }
 
     #graph-container {
         width: 100%;
@@ -18,7 +29,8 @@
         top: 0;
         transform-origin: left top;
         display: grid;
-        grid-template: 100% 100%;        
+        grid-template: 100% 100%;     
+        cursor: move;   
 
         #graph-svg-container {
             grid-row: 1;
@@ -33,16 +45,19 @@
                 &.selected {                    
                     stroke: white !important;
                     stroke-dasharray: 10, 2;
-                }                   
+                }       
             }
 
             .selection-link {
                 stroke-width: 16px;
+                opacity: 0;
                 &:hover, &.selected {
                     stroke: white !important;
                     opacity: 0.4;
                 }
+                transition: opacity 75ms;
                 stroke: transparent;                        
+                cursor: pointer;
             }
         }
 
@@ -67,8 +82,21 @@
                 grid-template-columns: 100%;
                 color: white;
 
+                .selection-border {                    
+                    grid-row: 1 / span 3;
+                    grid-column: 1;
+                    margin: -4px;
+
+                    transition: border-color 100ms;
+
+                    border: 4px solid transparent;
+                    border-radius: 12px;
+                }
+
                 &.selected {
-                    border-color: white;
+                    .selection-border {  
+                        border-color: white;
+                    }
                 }
 
                 .header {

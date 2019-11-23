@@ -19,8 +19,12 @@ export interface IGraphCanvasComponentProps {
 }
 
 export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentProps> {
+    private readonly MinZoom = 0.1;
+    private readonly MaxZoom = 4;
+
     private _hostCanvas: HTMLDivElement;
     private _graphCanvas: HTMLDivElement;
+    private _selectionContainer: HTMLDivElement;
     private _svgCanvas: HTMLElement;
     private _rootContainer: HTMLDivElement;
     private _nodes: GraphNode[] = [];
@@ -29,6 +33,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _mouseStartPointY: Nullable<number> = null
     private _dropPointX = 0;
     private _dropPointY = 0;
+    private _selectionStartX = 0;
+    private _selectionStartY = 0;
     private _x = 0;
     private _y = 0;
     private _zoom = 1;
@@ -37,6 +43,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _candidateLink: Nullable<NodeLink> = null;
     private _candidatePort: Nullable<NodePort> = null;
     private _gridSize = 20;
+    private _selectionBox: Nullable<HTMLDivElement> = null;
 
     private _altKeyIsPressed = false;
     private _ctrlKeyIsPressed = false;
@@ -47,12 +54,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     public set gridSize(value: number) {
-        if (this._gridSize === value) {
-            return;
-        }
         this._gridSize = value;
-
-        this._hostCanvas.style.backgroundSize = `${value}px ${value}px`;
+        
+        this.updateTransform();
     }
 
     public get globalState(){
@@ -164,11 +168,18 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 		if (gridSize === 0) {
 			return position;
 		}
-		return gridSize * Math.floor((position + gridSize / 2) / gridSize);
+		return gridSize * Math.floor(position / gridSize);
 	}
 
     updateTransform() {
         this._rootContainer.style.transform = `translate(${this._x}px, ${this._y}px) scale(${this._zoom})`;
+
+        if (DataStorage.ReadBoolean("ShowGrid", true)) {
+            this._hostCanvas.style.backgroundSize = `${this._gridSize * this._zoom}px ${this._gridSize * this._zoom}px`;
+            this._hostCanvas.style.backgroundPosition = `${this._x}px ${this._y}px`;
+        } else {
+            this._hostCanvas.style.backgroundSize = `0`;
+        }
     }
 
     onKeyUp() {        
@@ -283,8 +294,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         dagreNodes.forEach(dagreNode => {
             for (var node of this._nodes) {
                 if (node.id === dagreNode.id) {
-                    node.x = this.getGridPosition(dagreNode.x - dagreNode.width / 2);
-                    node.y = this.getGridPosition(dagreNode.y - dagreNode.height / 2);
+                    node.x = dagreNode.x - dagreNode.width / 2;
+                    node.y = dagreNode.y - dagreNode.height / 2;
+                    node.cleanAccumulation();
                     return;
                 }
             }
@@ -296,12 +308,41 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this._rootContainer = this.props.globalState.hostDocument.getElementById("graph-container") as HTMLDivElement;
         this._graphCanvas = this.props.globalState.hostDocument.getElementById("graph-canvas-container") as HTMLDivElement;
         this._svgCanvas = this.props.globalState.hostDocument.getElementById("graph-svg-container") as HTMLElement;        
+        this._selectionContainer = this.props.globalState.hostDocument.getElementById("selection-container") as HTMLDivElement;        
         
         this.gridSize = DataStorage.ReadNumber("GridSize", 20);
         this.updateTransform();
     }    
 
     onMove(evt: React.PointerEvent) {        
+        // Selection box
+        if (this._selectionBox) {
+            const rootRect = this.canvasContainer.getBoundingClientRect();      
+
+            const localX = evt.pageX - rootRect.left;
+            const localY = evt.pageY - rootRect.top;
+
+            if (localX > this._selectionStartX) {
+                this._selectionBox.style.left = `${this._selectionStartX / this.zoom}px`;
+                this._selectionBox.style.width = `${(localX - this._selectionStartX) / this.zoom}px`;
+            } else {
+                this._selectionBox.style.left = `${localX / this.zoom}px`;
+                this._selectionBox.style.width = `${(this._selectionStartX - localX) / this.zoom}px`;
+            }
+
+            if (localY > this._selectionStartY) {                
+                this._selectionBox.style.top = `${this._selectionStartY / this.zoom}px`;
+                this._selectionBox.style.height = `${(localY - this._selectionStartY) / this.zoom}px`;
+            } else {
+                this._selectionBox.style.top = `${localY / this.zoom}px`;
+                this._selectionBox.style.height = `${(this._selectionStartY - localY) / this.zoom}px`;
+            }
+            
+            this.props.globalState.onSelectionBoxMoved.notifyObservers(this._selectionBox.getBoundingClientRect());
+
+            return;
+        }
+
         // Candidate link
         if (this._candidateLink) {        
             const rootRect = this.canvasContainer.getBoundingClientRect();       
@@ -323,7 +364,18 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
             let zoomDelta = (evt.pageY - this._oldY) / 10;
             if (Math.abs(zoomDelta) > 5) {
-                this.zoom += zoomDelta / 100;
+                const oldZoom = this.zoom;
+                this.zoom = Math.max(Math.min(this.MaxZoom, this.zoom + zoomDelta / 100), this.MinZoom);
+
+                const boundingRect = evt.currentTarget.getBoundingClientRect();
+                const clientWidth = boundingRect.width;
+                const widthDiff = clientWidth * this.zoom - clientWidth * oldZoom;
+                const clientX = evt.clientX - boundingRect.left;
+        
+                const xFactor = (clientX - this.x) / oldZoom / clientWidth;
+        
+                this.x = this.x - widthDiff * xFactor;
+
                 this._oldY = evt.pageY;      
             }
             return;
@@ -345,6 +397,22 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     onDown(evt: React.PointerEvent<HTMLElement>) {
         this._rootContainer.setPointerCapture(evt.pointerId);
 
+        // Selection?
+        if (evt.currentTarget === this._hostCanvas && evt.ctrlKey) {
+            this._selectionBox = this.props.globalState.hostDocument.createElement("div");
+            this._selectionBox.classList.add("selection-box");
+            this._selectionContainer.appendChild(this._selectionBox);
+
+            const rootRect = this.canvasContainer.getBoundingClientRect();      
+            this._selectionStartX = (evt.pageX - rootRect.left);
+            this._selectionStartY = (evt.pageY - rootRect.top);
+            this._selectionBox.style.left = `${this._selectionStartX / this.zoom}px`;
+            this._selectionBox.style.top = `${this._selectionStartY / this.zoom}px`;
+            this._selectionBox.style.width = "0px";
+            this._selectionBox.style.height = "0px";
+        }
+
+        // Port dragging
         if (evt.nativeEvent.srcElement && (evt.nativeEvent.srcElement as HTMLElement).nodeName === "IMG") {
             if (!this._candidateLink) {
                 let portElement = ((evt.nativeEvent.srcElement as HTMLElement).parentElement as any).port as NodePort;
@@ -355,8 +423,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         this._mouseStartPointX = evt.clientX;
-        this._mouseStartPointY = evt.clientY;
-        
+        this._mouseStartPointY = evt.clientY;        
     }
 
     onUp(evt: React.PointerEvent) {
@@ -372,13 +439,18 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this._candidateLink = null;
             this._candidatePort = null;
         }
+
+        if (this._selectionBox) {
+           this._selectionBox.parentElement!.removeChild(this._selectionBox);
+           this._selectionBox = null;
+        }
     }
 
     onWheel(evt: React.WheelEvent) {
         let delta = evt.deltaY < 0 ? 0.1 : -0.1;
 
         let oldZoom = this.zoom;
-        this.zoom = Math.min(Math.max(0.1, this.zoom + delta), 4);
+        this.zoom = Math.min(Math.max(this.MinZoom, this.zoom + delta * this.zoom), this.MaxZoom);
 
         const boundingRect = evt.currentTarget.getBoundingClientRect();
         const clientWidth = boundingRect.width;
@@ -503,13 +575,15 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 onWheel={evt => this.onWheel(evt)}
                 onPointerMove={evt => this.onMove(evt)}
                 onPointerDown={evt =>  this.onDown(evt)}   
-                onPointerUp={evt =>  this.onUp(evt)}   
+                onPointerUp={evt =>  this.onUp(evt)} 
             >    
                 <div id="graph-container">
                     <div id="graph-canvas-container">
                     </div>     
                     <svg id="graph-svg-container">
                     </svg>
+                    <div id="selection-container">                        
+                    </div>
                 </div>
             </div>
         );

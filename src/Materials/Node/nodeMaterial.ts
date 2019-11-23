@@ -1231,18 +1231,26 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // UI related info
-        if (source.locations) {
+        if (source.locations || source.editorData && source.editorData.locations) {
             let locations: {
                 blockId: number;
                 x: number;
                 y: number;
-            }[] = source.locations;
+            }[] = source.locations || source.editorData.locations;
 
             for (var location of locations) {
                 location.blockId = map[location.blockId].uniqueId;
             }
 
-            this.editorData = locations;
+            if (source.locations) {
+                this.editorData = {
+                    locations: locations
+                }
+            } else {
+                this.editorData = source.editorData;
+                this.editorData.locations = locations;
+            }
+
         }
     }
 

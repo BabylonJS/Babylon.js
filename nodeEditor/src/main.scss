@@ -127,6 +127,7 @@
         width: 100%;
         display: grid;
         outline: 0 !important;
+        user-select: none;
 
         #preview-canvas {
             width: 100%;

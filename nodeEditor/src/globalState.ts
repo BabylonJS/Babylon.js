@@ -30,7 +30,8 @@ export class GlobalState {
     onBackFaceCullingChanged = new Observable<void>();
     onDepthPrePassChanged = new Observable<void>();
     onAnimationCommandActivated = new Observable<void>();
-    onCandidateLinkMoved = new Observable<Nullable<Vector2>>();    
+    onCandidateLinkMoved = new Observable<Nullable<Vector2>>();   
+    onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();   
     onCandidatePortSelected = new Observable<Nullable<NodePort>>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
     onGridSizeChanged = new Observable<void>();
@@ -45,6 +46,7 @@ export class GlobalState {
     directionalLight0: boolean;
     directionalLight1: boolean;
     controlCamera: boolean;    
+    storeEditorData:(serializationObject: any) => void;
     
     customSave?: {label: string, action: (data: string) => Promise<void>};
 

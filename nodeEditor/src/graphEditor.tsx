@@ -13,7 +13,7 @@ import { Nullable } from 'babylonjs/types';
 import { MessageDialogComponent } from './sharedComponents/messageDialog';
 import { BlockTools } from './blockTools';
 import { PreviewManager } from './components/preview/previewManager';
-import { INodeLocationInfo } from './nodeLocationInfo';
+import { IEditorData } from './nodeLocationInfo';
 import { PreviewMeshControlComponent } from './components/preview/previewMeshControlComponent';
 import { PreviewAreaComponent } from './components/preview/previewAreaComponent';
 import { SerializationTools } from './serializationTools';
@@ -166,6 +166,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                 }
 
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);  
+                this.props.globalState.onRebuildRequiredObservable.notifyObservers();  
                 return;
             }
 
@@ -223,12 +224,19 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                         y = currentY;
                     }
 
-                    newNode.x = this._graphCanvas.getGridPosition(x);
-                    newNode.y = this._graphCanvas.getGridPosition(y);
+                    newNode.x = x;
+                    newNode.y = y;
+                    newNode.cleanAccumulation();
                 }
             }
 
         }, false);
+
+        this.props.globalState.storeEditorData = (editorData) => {
+            editorData.zoom = this._graphCanvas.zoom;
+            editorData.x = this._graphCanvas.x;
+            editorData.y = this._graphCanvas.y;
+        }
     }
 
     zoomToFit() {
@@ -252,7 +260,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     }
 
     build() {        
-        let locations: Nullable<INodeLocationInfo[]> = this.props.globalState.nodeMaterial.editorData;
+        let editorData = this.props.globalState.nodeMaterial.editorData;
+
+        if (editorData instanceof Array) {
+            editorData = {
+                locations: editorData
+            }
+        }
+
         // setup the diagram model
         this._blocks = [];
         this._graphCanvas.reset();
@@ -280,25 +295,25 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                         }
                     }
                 }
-            });
-            
+            });            
         }
 
-        this.reOrganize(locations);
+        this.reOrganize(editorData);
     }
 
-    reOrganize(locations: Nullable<INodeLocationInfo[]> = null) {
-        if (!locations) {
+    reOrganize(editorData: Nullable<IEditorData> = null) {
+        if (!editorData || !editorData.locations) {
             this._graphCanvas.distributeGraph();
         } else {
-            this._graphCanvas.x = 0;
-            this._graphCanvas.y = 0;
-            this._graphCanvas.zoom = 1;
-            for (var location of locations) {
+            this._graphCanvas.x = editorData.x || 0;
+            this._graphCanvas.y = editorData.y || 0;
+            this._graphCanvas.zoom = editorData.zoom || 1;
+            for (var location of editorData.locations) {
                 for (var node of this._graphCanvas.nodes) {
                     if (node.block && node.block.uniqueId === location.blockId) {
-                        node.x = this._graphCanvas.getGridPosition(location.x);
-                        node.y = this._graphCanvas.getGridPosition(location.y);
+                        node.x = location.x;
+                        node.y = location.y;
+                        node.cleanAccumulation();
                         break;
                     }
                 }
@@ -368,11 +383,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             newNode = this.createNodeFromObject(block);
         };
 
-        let x = this._graphCanvas.getGridPosition(event.clientX - event.currentTarget.offsetLeft - this._graphCanvas.x - this.NodeWidth);
-        let y = this._graphCanvas.getGridPosition(event.clientY - event.currentTarget.offsetTop - this._graphCanvas.y - 20);
+        let x = event.clientX - event.currentTarget.offsetLeft - this._graphCanvas.x - this.NodeWidth;
+        let y = event.clientY - event.currentTarget.offsetTop - this._graphCanvas.y - 20;
         
         newNode.x = x / this._graphCanvas.zoom;
         newNode.y = y / this._graphCanvas.zoom;
+        newNode.cleanAccumulation();
 
         this.props.globalState.onSelectionChangedObservable.notifyObservers(newNode);
 
@@ -386,8 +402,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                 let connectedNode = existingNodes[0];
 
                 if (connectedNode.x === 0 && connectedNode.y === 0) {
-                    connectedNode.x = this._graphCanvas.getGridPosition(x) / this._graphCanvas.zoom; 
-                    connectedNode.y = this._graphCanvas.getGridPosition(y) / this._graphCanvas.zoom;
+                    connectedNode.x = x / this._graphCanvas.zoom; 
+                    connectedNode.y = y / this._graphCanvas.zoom;
+                    connectedNode.cleanAccumulation();
                     y += 80;
                 }
             }

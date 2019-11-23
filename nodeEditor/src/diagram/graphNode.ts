@@ -24,10 +24,13 @@ export class GraphNode {
     private _links: NodeLink[] = [];    
     private _x = 0;
     private _y = 0;
+    private _gridAlignedX = 0;
+    private _gridAlignedY = 0;    
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null    
     private _globalState: GlobalState;
     private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink>>>;   
+    private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;  
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;  
     private _ownerCanvas: GraphCanvasComponent; 
     private _isSelected: boolean;
@@ -35,6 +38,14 @@ export class GraphNode {
 
     public get links() {
         return this._links;
+    }
+
+    public get gridAlignedX() {
+        return this._gridAlignedX;
+    }
+
+    public get gridAlignedY() {
+        return this._gridAlignedY;
     }
 
     public get x() {
@@ -45,9 +56,10 @@ export class GraphNode {
         if (this._x === value) {
             return;
         }
-        
         this._x = value;
-        this._visual.style.left = `${value}px`;
+        
+        this._gridAlignedX = this._ownerCanvas.getGridPosition(value);
+        this._visual.style.left = `${this._gridAlignedX}px`;
 
         this._refreshLinks();
     }
@@ -62,7 +74,9 @@ export class GraphNode {
         }
 
         this._y = value;
-        this._visual.style.top = `${value}px`;
+
+        this._gridAlignedY = this._ownerCanvas.getGridPosition(value);
+        this._visual.style.top = `${this._gridAlignedY}px`;
 
         this._refreshLinks();
     }
@@ -95,7 +109,12 @@ export class GraphNode {
         this._isSelected = value;
 
         if (!value) {
-            this._visual.classList.remove("selected");
+            this._visual.classList.remove("selected");    
+            let indexInSelection = this._ownerCanvas.selectedNodes.indexOf(this);
+
+            if (indexInSelection > -1) {
+                this._ownerCanvas.selectedNodes.splice(indexInSelection, 1);
+            }
         } else {
             this._globalState.onSelectionChangedObservable.notifyObservers(this);  
         }
@@ -118,6 +137,16 @@ export class GraphNode {
 
         this._onUpdateRequiredObserver = this._globalState.onUpdateRequiredObservable.add(() => {
             this.refresh();
+        });
+
+        this._onSelectionBoxMovedObserver = this._globalState.onSelectionBoxMoved.add(rect1 => {
+            const rect2 = this._visual.getBoundingClientRect();
+            var overlap = !(rect1.right < rect2.left || 
+                rect1.left > rect2.right || 
+                rect1.bottom < rect2.top || 
+                rect1.top > rect2.bottom);
+
+            this.isSelected = overlap;
         });
     }
 
@@ -190,7 +219,13 @@ export class GraphNode {
             return;
         }
 
-        this._globalState.onSelectionChangedObservable.notifyObservers(this);
+        const indexInSelection = this._ownerCanvas.selectedNodes.indexOf(this) ;
+        if (indexInSelection=== -1) {
+            this._globalState.onSelectionChangedObservable.notifyObservers(this);
+        } else if (evt.ctrlKey) {
+            this.isSelected = false;
+        }
+
         evt.stopPropagation();
 
         this._mouseStartPointX = evt.clientX;
@@ -199,8 +234,17 @@ export class GraphNode {
         this._visual.setPointerCapture(evt.pointerId);
     }
 
+    public cleanAccumulation() {
+        this.x = this.gridAlignedX;
+        this.y = this.gridAlignedY;
+    }
+
     private _onUp(evt: PointerEvent) {
         evt.stopPropagation();
+
+        for (var selectedNode of this._ownerCanvas.selectedNodes) {
+            selectedNode.cleanAccumulation();
+        }
         
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
@@ -208,25 +252,20 @@ export class GraphNode {
     }
 
     private _onMove(evt: PointerEvent) {
-        if (this._mouseStartPointX === null || this._mouseStartPointY === null) {
+        if (this._mouseStartPointX === null || this._mouseStartPointY === null || evt.ctrlKey) {
             return;
         }
 
-        let newX = this._ownerCanvas.getGridPosition(evt.clientX - this._mouseStartPointX);
-        let newY = this._ownerCanvas.getGridPosition(evt.clientY - this._mouseStartPointY);
+        let newX = evt.clientX - this._mouseStartPointX;
+        let newY = evt.clientY - this._mouseStartPointY;
 
         for (var selectedNode of this._ownerCanvas.selectedNodes) {
             selectedNode.x += newX / this._ownerCanvas.zoom;
             selectedNode.y += newY / this._ownerCanvas.zoom;
         }
 
-        if (Math.abs(newX) > 0) { 
-            this._mouseStartPointX = evt.clientX;
-        }
-
-        if (Math.abs(newY) > 0) {
-            this._mouseStartPointY = evt.clientY;   
-        }
+        this._mouseStartPointX = evt.clientX;
+        this._mouseStartPointY = evt.clientY;   
 
         evt.stopPropagation();
     }
@@ -288,8 +327,12 @@ export class GraphNode {
         this._connections.appendChild(this._outputsContainer);      
 
         this._content = root.ownerDocument!.createElement("div");
-        this._content.classList.add("content");
+        this._content.classList.add("content");        
         this._visual.appendChild(this._content);     
+
+        var selectionBorder = root.ownerDocument!.createElement("div");
+        selectionBorder.classList.add("selection-border");
+        this._visual.appendChild(selectionBorder);     
 
 
         root.appendChild(this._visual);
@@ -313,6 +356,10 @@ export class GraphNode {
 
         if (this._onUpdateRequiredObserver) {
             this._globalState.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
+        }
+
+        if (this._onSelectionBoxMovedObserver) {
+            this._globalState.onSelectionBoxMoved.remove(this._onSelectionBoxMovedObserver);
         }
 
         if (this._visual.parentElement) {
