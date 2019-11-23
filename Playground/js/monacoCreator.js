@@ -135,8 +135,8 @@ class MonacoCreator {
                     markers.push({
                         startLineNumber: match.range.startLineNumber,
                         endLineNumber: match.range.endLineNumber,
-                        startColumn: match.range.startColumn,
-                        endColumn: match.range.endColumn,
+                        startColumn: wordInfo.startColumn,
+                        endColumn: wordInfo.endColumn,
                         message: deprecatedInfo.text,
                         severity: monaco.MarkerSeverity.Warning,
                         source: source,
