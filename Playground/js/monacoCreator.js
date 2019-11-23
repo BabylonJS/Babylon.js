@@ -112,7 +112,7 @@ class MonacoCreator {
             worker = await monaco.languages.typescript.getTypeScriptWorker();
 
         const languageService = await worker(uri);
-        const source = 'babylonjs';
+        const source = '[deprecated members]';
 
         monaco.editor.setModelMarkers(model, source, []);
         const markers = [];
