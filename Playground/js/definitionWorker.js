@@ -85,7 +85,7 @@ function visit(node) {
 
 function processDefinition(code) {
     if (deprecatedCandidates.length == 0) {
-        var sourceFile = ts.createSourceFile('babylon.js', code, ts.ScriptTarget.ESNext, true);
+        const sourceFile = ts.createSourceFile('babylon.js', code, ts.ScriptTarget.ESNext, true);
         ts.forEachChild(sourceFile, visit);
     }
 
