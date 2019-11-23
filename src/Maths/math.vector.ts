@@ -1311,7 +1311,7 @@ export class Vector3 {
      * @param array defines the source array
      * @param offset defines the offset in the source array
      * @returns the new Vector3
-     * @deprecated Please use Use FromArray instead.
+     * @deprecated Please use FromArray instead.
      */
     public static FromFloatArray(array: DeepImmutable<Float32Array>, offset?: number): Vector3 {
         return Vector3.FromArray(array, offset);
