@@ -7,19 +7,19 @@
     // Attach the Controls to the canvas
     camera.attachControl(canvas, true);
     
-    // Load the JSON file, for simplicity in this demonstration it is included inline.
+    // Load the JSON file, for simplicity in this demonstration it is included in-line.
     let atlasJSON = getJSONFile();
     
     // Load the SpriteSheet Associated with the JSON Atlas.
     let spriteSheet = new BABYLON.Texture('./textures/spriteMap/none_trimmed/Legends_Level_A.png', scene,
     false, //NoMipMaps
-    false, //InvertY usuaslly false if exported from TexturePacker
-    0, //Sampling Mode
+    false, //InvertY usually false if exported from TexturePacker
+    BABYLON.Texture.NEAREST_NEAREST, //Sampling Mode
     null, //Onload, you could spin up the sprite map in a function nested here
     null, //OnError
     null, //CustomBuffer
     false, //DeleteBuffer
-    5 //ImageFormageType RGBA
+    BABYLON.Engine.TEXTURETYPE_RGBA //ImageFormageType RGBA
     );
     
     spriteSheet.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
@@ -38,57 +38,56 @@
     },
     scene);    
     
-    //Set all the available tiles to the top left corner of the background for Visual debugging, and refrence.
+    //Set all the available tiles to the top left corner of the background for Visual debugging, and reference.
     for(var i = 0; i<background.spriteCount; i++){
-        background.changeTiles(0, new BABYLON.Vector2(i+1, backgroundSize.y-1), i)
+        background.changeTiles(0, new BABYLON.Vector2(i + 1, backgroundSize.y - 1), i)
     }
 
     //TILE, FRAME, NEXT TILE, Timing, Speed
     //See documentation for Animation Map Information. - TODO
-    let eighth = 1/8
-    let speed = 0.5
-    background.addAnimationToTile(1, 0, 2, eighth*1, speed)
-    background.addAnimationToTile(1, 1, 3, eighth*2, speed)
-    background.addAnimationToTile(1, 2, 4, eighth*3, speed)
-    background.addAnimationToTile(1, 3, 5, eighth*4, speed)
-    background.addAnimationToTile(1, 4, 6, eighth*5, speed)
-    background.addAnimationToTile(1, 5, 7, eighth*6, speed)
-    background.addAnimationToTile(1, 6, 8, eighth*7, speed)
-    background.addAnimationToTile(1, 7, 1, 1   , speed)
+    let eighth = 1 / 8
+    let speed = 0.005
+    background.addAnimationToTile(1, 0, 2, eighth * 1, speed)
+    background.addAnimationToTile(1, 1, 3, eighth * 2, speed)
+    background.addAnimationToTile(1, 2, 4, eighth * 3, speed)
+    background.addAnimationToTile(1, 3, 5, eighth * 4, speed)
+    background.addAnimationToTile(1, 4, 6, eighth * 5, speed)
+    background.addAnimationToTile(1, 5, 7, eighth * 6, speed)
+    background.addAnimationToTile(1, 6, 8, eighth * 7, speed)
+    background.addAnimationToTile(1, 7, 1, 1, 	  	   speed)
 
-    background.addAnimationToTile(25, 0, 26, eighth*1, speed)
-    background.addAnimationToTile(25, 1, 27, eighth*2, speed)
-    background.addAnimationToTile(25, 2, 28, eighth*3, speed)
-    background.addAnimationToTile(25, 3, 29, eighth*4, speed)
-    background.addAnimationToTile(25, 4, 30, eighth*5, speed)
-    background.addAnimationToTile(25, 5, 31, eighth*6, speed)
-    background.addAnimationToTile(25, 6, 29, eighth*7, speed)
-    background.addAnimationToTile(25, 7, 25, 1     , speed)
+    background.addAnimationToTile(25, 0, 26, eighth * 1, speed)
+    background.addAnimationToTile(25, 1, 27, eighth * 2, speed)
+    background.addAnimationToTile(25, 2, 28, eighth * 3, speed)
+    background.addAnimationToTile(25, 3, 29, eighth * 4, speed)
+    background.addAnimationToTile(25, 4, 30, eighth * 5, speed)
+    background.addAnimationToTile(25, 5, 31, eighth * 6, speed)
+    background.addAnimationToTile(25, 6, 29, eighth * 7, speed)
+    background.addAnimationToTile(25, 7, 25, 1, 	 	 speed)
 
-    background.addAnimationToTile(48, 0, 49, 0.25, speed)
-    background.addAnimationToTile(48, 1, 50, 0.5, speed)
-    background.addAnimationToTile(48, 2, 51, 0.75, speed)
-    background.addAnimationToTile(48, 4, 48, 1, speed)
+    background.addAnimationToTile(48, 0, 49, 0.25, 	speed)
+    background.addAnimationToTile(48, 1, 50, 0.5, 	speed)
+    background.addAnimationToTile(48, 2, 51, 0.75, 	speed)
+    background.addAnimationToTile(48, 4, 48, 1, 	speed)
 
-    background.addAnimationToTile(49, 0, 50, 0.25, speed*0.5)
-    background.addAnimationToTile(49, 1, 51, 0.5, speed*0.5)
-    background.addAnimationToTile(49, 2, 48, 0.75, speed*0.5)
-    background.addAnimationToTile(49, 4, 49, 1, speed*0.5)
+    background.addAnimationToTile(49, 0, 50, 0.25, 	speed * 0.5)
+    background.addAnimationToTile(49, 1, 51, 0.5, 	speed * 0.5)
+    background.addAnimationToTile(49, 2, 48, 0.75, 	speed * 0.5)
+    background.addAnimationToTile(49, 4, 49, 1, 	speed * 0.5)
 
-    background.addAnimationToTile(50, 0, 51, 0.25, speed*0.3)
-    background.addAnimationToTile(50, 1, 48, 0.5, speed*0.3)
-    background.addAnimationToTile(50, 2, 49, 0.75, speed*0.3)
-    background.addAnimationToTile(50, 4, 50, 1, speed*0.3)
+    background.addAnimationToTile(50, 0, 51, 0.25,  speed * 0.3)
+    background.addAnimationToTile(50, 1, 48, 0.5,   speed * 0.3)
+    background.addAnimationToTile(50, 2, 49, 0.75,  speed * 0.3)
+    background.addAnimationToTile(50, 4, 50, 1, 	speed * 0.3)
 
     background.position.z = 5;
-
 
     //Procedurally Editing the Tiles
     //Adding Water to BG
     let tilePositions = []
-    for(let x=15; x<backgroundSize.x-15; x++){
-        for(let y=backgroundSize.y-26; y>0; y--){
-            if(x%12 == 0){
+    for(let x = 15; x < backgroundSize.x - 15; x++){
+        for(let y = backgroundSize.y - 26; y > 0; y--){
+            if(x % 12 == 0){
                 tilePositions.push(new BABYLON.Vector2(x, y))
             }
         }
@@ -97,18 +96,18 @@
     
     //Adding Sewer Drains to BG
     tilePositions = []
-    for(let x=15; x<backgroundSize.x-15; x++){
-        if(x%12 == 0){
-            tilePositions.push(new BABYLON.Vector2(x, backgroundSize.y-26))
+    for(let x = 15; x < backgroundSize.x - 15; x++){
+        if(x % 12 == 0){
+            tilePositions.push(new BABYLON.Vector2(x, backgroundSize.y - 26))
         }
     }
     background.changeTiles(1, tilePositions, 25)
     
     //More Water!
     tilePositions = []
-    for(let x=15; x<backgroundSize.x-15; x++){
-        for(let y=backgroundSize.y-12; y>0; y--){
-            if((x+6)%12 == 0){
+    for(let x = 15; x < backgroundSize.x - 15; x++){
+        for(let y = backgroundSize.y - 12; y > 0; y--){
+            if((x + 6) % 12 == 0){
                 tilePositions.push(new BABYLON.Vector2(x, y))
             }
         }
@@ -141,8 +140,8 @@
     
     //Making a hole.
     tilePositions = []
-    for(let x=15; x<levelSize.x-15; x++){
-        for(let y=levelSize.y-15; y>15; y--){
+    for(let x = 15; x < levelSize.x - 15; x++){
+        for(let y = levelSize.y - 15; y > 15; y--){
             tilePositions.push(new BABYLON.Vector2(x, y))
         }
     }
@@ -150,9 +149,9 @@
 
     //Adding Columns
     tilePositions = []
-    for(let x=15; x<levelSize.x-15; x++){
-        for(let y=levelSize.y-16; y>16; y--){
-            if(x%6 == 0){
+    for(let x = 15; x < levelSize.x - 15; x++){
+        for(let y = levelSize.y - 16; y > 16; y--){
+            if(x % 6 == 0){
                 tilePositions.push(new BABYLON.Vector2(x, y))
             }
         }
@@ -160,8 +159,8 @@
     levelBase.changeTiles(0, tilePositions, 23)
 
     //Adding Torches
-    for(let x=15; x<levelSize.x-15; x++){
-        if((x+6)%12 == 0){
+    for(let x = 15; x < levelSize.x - 15; x++){
+        if((x + 6) % 12 == 0){
             levelBase.changeTiles(1, new BABYLON.Vector2(x, 18),
             pTiles[Math.floor(Math.random()*pTiles.length)])
         }
@@ -169,18 +168,17 @@
 
     //Adding Caps
     tilePositions = []
-    for(let x=15; x<levelSize.x-15; x++){
-        if(x%6 == 0){
+    for(let x =1 5; x < levelSize.x - 15; x++){
+        if(x % 6 == 0){
          tilePositions.push(new BABYLON.Vector2(x, 16))
         }
     }
     levelBase.changeTiles(0, tilePositions, 24)
 
-
     //Adding Bases
     tilePositions = []
-    for(let x=15; x<levelSize.x-15; x++){
-        if(x%6 == 0){
+    for(let x = 15; x < levelSize.x - 15; x++){
+        if(x % 6 == 0){
             tilePositions.push(new BABYLON.Vector2(x, 25))
         }
     }
@@ -188,21 +186,14 @@
 
     //Now this last section was created like all the last two, except it was later exported from the browser and saved.
     //This shows how to load from the .tilemaps file
-    //Additonally if you uncomment the editable argument and hit play
-    //You will go into editor mode for that spritemap allowing you to paint tiles.
-    // - and + to change tile number
-    // [ and ] to change layer number
-    //Make sure you right click on the canvas to get focus before trying to edit.
-    //Left click to paint, right click to  pan camera.
-    
+       
     levelStage = new BABYLON.SpriteMap('levelStage', atlasJSON, spriteSheet,
     {
         stageSize: levelSize,
         maxAnimationFrames:8,
         baseTile : 42,
         layerCount: 2,
-        flipU: true,
-        //editable : true
+        flipU: true
     },
     scene);
 
@@ -212,7 +203,7 @@
 
     //To download .tilemaps file for this SpriteMap uncomment the below line.
     //levelStage.saveTileMaps();
-
+	
     return scene;
 }
 
