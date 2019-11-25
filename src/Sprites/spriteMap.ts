@@ -14,115 +14,115 @@ import "../Meshes/Builders/planeBuilder";
  * Defines the basic options interface of a SpriteMap
  */
 export interface ISpriteMapOptions{
-	
-	/**
+
+    /**
 	 * Vector2 of the number of cells in the grid.
 	 */
-	stageSize?: Vector2;
-	
-	/**
+    stageSize?: Vector2;
+
+    /**
 	 * Vector2 of the size of the output plane in World Units.
 	 */
-	outputSize?: Vector2;
-	
-	/**
+    outputSize?: Vector2;
+
+    /**
 	 * Vector3 of the position of the output plane in World Units.
 	 */
-	outputPosition?: Vector3;
-	
-	//TODO ROTATION
-	
-	/**
+    outputPosition?: Vector3;
+
+    //TODO ROTATION
+
+    /**
 	 * number of layers that the system will reserve in resources.
 	 */
-	layerCount?: number;
-	
-	/**
+    layerCount?: number;
+
+    /**
 	 * number of max animation frames a single cell will reserve in resources.
 	 */
-	maxAnimationFrames?: number;
-	
-	/**
+    maxAnimationFrames?: number;
+
+    /**
 	 * number cell index of the base tile when the system compiles.
 	 */
-	baseTile?: number;
+    baseTile?: number;
 
-	/**
+    /**
 	* boolean flip the sprite after its been repositioned by the framing data.
 	*/
-	flipU?: boolean;
-	
-	/**
+    flipU?: boolean;
+
+    /**
 	 * Vector3 scalar of the global RGB values of the SpriteMap.
 	 */
-	colorMultiply?: Vector3;
-	
+    colorMultiply?: Vector3;
+
 }
 
 /**
  * Defines the basic options interface of a Sprite Frame Source Size.
- */ 
+ */
 export interface ISpriteJSONSpriteSourceSize{
     /**
 	 * number of the original width of the Frame
 	 */
     w : number;
-    
+
     /**
      * number of the original height of the Frame
      */
     h : number;
-} 
+}
 
 /**
  * Defines the basic options interface of a Sprite Frame Data.
- */ 
+ */
 export interface ISpriteJSONSpriteFrameData{
     /**
 	 * number of the x offset of the Frame
 	 */
     x : number;
-    
+
     /**
 	 * number of the y offset of the Frame
 	 */
     y : number;
-    
+
     /**
 	 * number of the width of the Frame
 	 */
     w : number;
-    
+
     /**
      * number of the height of the Frame
      */
     h : number;
-} 
+}
 
 /**
  * Defines the basic options interface of a JSON Sprite.
- */ 
+ */
 export interface ISpriteJSONSprite{
     /**
 	 * string name of the Frame
 	 */
     filename : string;
-    
+
     /**
 	 * ISpriteJSONSpriteFrame basic object of the frame data
 	 */
     frame : ISpriteJSONSpriteFrameData;
-    
+
     /**
     * boolean to flag is the frame was rotated.
     */
     rotated : boolean;
-    
+
     /**
     * boolean to flag is the frame was trimmed.
     */
     trimmed : boolean;
-    
+
     /**
 	 * ISpriteJSONSpriteFrame basic object of the source data
 	 */
@@ -131,51 +131,51 @@ export interface ISpriteJSONSprite{
     /**
 	 * ISpriteJSONSpriteFrame basic object of the source data
 	 */
-    sourceSize : ISpriteJSONSpriteSourceSize;        
+    sourceSize : ISpriteJSONSpriteSourceSize;
 }
 
 /**
  * Defines the basic options interface of a JSON atlas.
  */
 export interface ISpriteJSONAtlas{
-	
-	/**
+
+    /**
 	 * Array of objects that contain the frame data.
 	 */
-	frames: Array<ISpriteJSONSprite>;
-	
-	/**
+    frames: Array<ISpriteJSONSprite>;
+
+    /**
 	 * object basic object containing the sprite meta data.
 	 */
-	meta?: object;
-	
+    meta?: object;
+
 }
 
 /**
  * Defines the IDisposable interface in order to be cleanable from resources.
  */
 export interface ISpriteMap extends IDisposable {
-	
-	/**
+
+    /**
 	 * String name of the SpriteMap.
 	 */
     name: string;
-	
-	/**
+
+    /**
 	 * The JSON Array file from a https://www.codeandweb.com/texturepacker export.  Or similar structure.
 	 */
     atlasJSON: ISpriteJSONAtlas;
-    
+
     /**
 	 * Texture of the SpriteMap.
 	 */
     spriteSheet: Texture;
-    
+
     /**
 	 * The parameters to initialize the SpriteMap with.
 	 */
     options: ISpriteMapOptions;
-    
+
 }
 
 /**
@@ -217,7 +217,7 @@ export class SpriteMap implements ISpriteMap {
     public get animationMap() {
         return this._animationMap;
     }
-	
+
     /** Sets the AnimationMap*/
     public set animationMap(v: RawTexture) {
         let buffer = v!._texture!._bufferView;
@@ -226,7 +226,7 @@ export class SpriteMap implements ISpriteMap {
         this._animationMap = am;
         this._material.setTexture('animationMap', this._animationMap);
     }
-   
+
     /** Scene that the SpriteMap was created in */
     private _scene: Scene;
 
@@ -267,7 +267,7 @@ export class SpriteMap implements ISpriteMap {
     /**
     * Run through the options and set what ever defaults are needed that where not declared.
     */
-	this.options = options;
+    this.options = options;
     this.options.stageSize = this.options.stageSize || new Vector2(1, 1);
     this.options.outputSize = this.options.outputSize || this.options.stageSize;
     this.options.outputPosition = this.options.outputPosition || Vector3.Zero();
@@ -278,7 +278,6 @@ export class SpriteMap implements ISpriteMap {
     this.options.colorMultiply = this.options.colorMultiply || new Vector3(1, 1, 1);
 
     this._scene = scene;
-    
 
     this._frameMap = this.createFrameBuffer();
 
@@ -291,36 +290,36 @@ export class SpriteMap implements ISpriteMap {
 
     let defines = [];
     defines.push("#define LAYERS " + this.options.layerCount);
-	
-	if(this.options.flipU){
-		defines.push("#define FLIPU");
-	}
 
-	this._material = new ShaderMaterial("spriteMap:" + this.name, this._scene, {
-		vertex: "spriteMap",
-		fragment: "spriteMap",
-	}, {
-		defines,
-		attributes: ["position", "normal", "uv"],
-		uniforms: [
-			"worldViewProjection",
-			"time",
-			'stageSize',
-			'outputSize',
-			'spriteMapSize',
-			'spriteCount',
-			'time',
-			'maxAnimationFrames',
-			'colorMul',
-			'mousePosition',
-			'curTile',
-			'flipU'
-		],
-		samplers: [
-		   "spriteSheet", "frameMap", "tileMaps", "animationMap"
-		],
-		needAlphaBlending: true
-	});
+    if (this.options.flipU) {
+        defines.push("#define FLIPU");
+    }
+
+    this._material = new ShaderMaterial("spriteMap:" + this.name, this._scene, {
+        vertex: "spriteMap",
+        fragment: "spriteMap",
+    }, {
+        defines,
+        attributes: ["position", "normal", "uv"],
+        uniforms: [
+            "worldViewProjection",
+            "time",
+            'stageSize',
+            'outputSize',
+            'spriteMapSize',
+            'spriteCount',
+            'time',
+            'maxAnimationFrames',
+            'colorMul',
+            'mousePosition',
+            'curTile',
+            'flipU'
+        ],
+        samplers: [
+           "spriteSheet", "frameMap", "tileMaps", "animationMap"
+        ],
+        needAlphaBlending: true
+    });
 
     this._time = 0;
 
@@ -329,15 +328,14 @@ export class SpriteMap implements ISpriteMap {
     this._material.setVector2('stageSize', this.options.stageSize);
     this._material.setVector2('outputSize', this.options.outputSize);
     this._material.setTexture('spriteSheet', this.spriteSheet);
-    this._material.setVector2('spriteMapSize', new Vector2(1,1));
+    this._material.setVector2('spriteMapSize', new Vector2(1, 1));
     this._material.setVector3('colorMul', this.options.colorMultiply);
-    
 
     let tickSave = 0;
-	
+
     const bindSpriteTexture = () => {
         if ((this.spriteSheet) && this.spriteSheet.isReady()) {
-            if (this.spriteSheet._texture) {             
+            if (this.spriteSheet._texture) {
                 this._material.setVector2('spriteMapSize', new Vector2(this.spriteSheet._texture.baseWidth || 1, this.spriteSheet._texture.baseHeight || 1));
                 return;
             }
@@ -360,13 +358,13 @@ export class SpriteMap implements ISpriteMap {
     this._output.scaling.y = this.options.outputSize.y;
 
     let obfunction = () => {
-		this._time += this._scene.getEngine().getDeltaTime();
-		this._material.setFloat('time', this._time);
-    };        
+        this._time += this._scene.getEngine().getDeltaTime();
+        this._material.setFloat('time', this._time);
+    };
 
-	this._scene.onBeforeRenderObservable.add(obfunction);
-	this._output.material = this._material;
-	
+    this._scene.onBeforeRenderObservable.add(obfunction);
+    this._output.material = this._material;
+
     }
 
     /**
@@ -475,11 +473,11 @@ export class SpriteMap implements ISpriteMap {
     * @returns RawTexture of the tileMap
     */
     private createTileBuffer(buffer: any, _layer: number = 0): RawTexture {
-        
-		let data = new Array();
-		let _ty = (this.options.stageSize!.y) || 0;
-		let _tx = (this.options.stageSize!.x) || 0;
-		
+
+        let data = new Array();
+        let _ty = (this.options.stageSize!.y) || 0;
+        let _tx = (this.options.stageSize!.x) || 0;
+
         if (!buffer) {
             let bt = this.options.baseTile;
             if (_layer != 0) {
@@ -530,8 +528,8 @@ export class SpriteMap implements ISpriteMap {
         } else {
             p = pos;
         }
-		
-		let _tx = (this.options.stageSize!.x) || 0;
+
+        let _tx = (this.options.stageSize!.x) || 0;
 
         for (let i = 0; i < p.length; i++) {
             let _p = p[i];
@@ -626,11 +624,11 @@ export class SpriteMap implements ISpriteMap {
     * Imports the .tilemaps file
     * @param url of the .tilemaps file
     */
-    public loadTileMaps( url : string ) : void {
+    public loadTileMaps(url : string) : void {
         let xhr = new XMLHttpRequest();
         xhr.open("GET", url);
-		
-		let _lc =  this.options!.layerCount || 0;
+
+        let _lc =  this.options!.layerCount || 0;
 
         xhr.onload = () =>
         {
