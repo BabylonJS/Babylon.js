@@ -98,7 +98,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -13452,8 +13452,12 @@ var XmlLoader = /** @class */ (function () {
                 this._nodes[node.nodeName + Object.keys(this._nodes).length + "_gen"] = guiNode;
                 return guiNode;
             }
-            if (!this._nodes[node.attributes.getNamedItem("id").nodeValue]) {
-                this._nodes[node.attributes.getNamedItem("id").nodeValue] = guiNode;
+            var id = node.attributes.getNamedItem("id").value;
+            if (id.startsWith("{{") && id.endsWith("}}")) {
+                id = this._getChainElement(id.substring(2, id.length - 2));
+            }
+            if (!this._nodes[id]) {
+                this._nodes[id] = guiNode;
             }
             else {
                 throw "XmlLoader Exception : Duplicate ID, every element should have an unique ID attribute";
@@ -13597,7 +13601,7 @@ var XmlLoader = /** @class */ (function () {
             return;
         }
         if (generated) {
-            node.setAttribute("id", parent.id + parent._children.length + 1);
+            node.setAttribute("id", parent.id + (parent._children.length + 1));
         }
         var guiNode = this._createGuiElement(node, parent);
         if (node.nodeName == "Grid") {
