@@ -2667,10 +2667,10 @@ declare module BABYLON {
         static FromArray(array: DeepImmutable<ArrayLike<number>>, offset?: number): Vector3;
         /**
          * Returns a new Vector3 set from the index "offset" of the given Float32Array
-         * This function is deprecated. Use FromArray instead
          * @param array defines the source array
          * @param offset defines the offset in the source array
          * @returns the new Vector3
+         * @deprecated Please use FromArray instead.
          */
         static FromFloatArray(array: DeepImmutable<Float32Array>, offset?: number): Vector3;
         /**
@@ -2682,10 +2682,10 @@ declare module BABYLON {
         static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Vector3): void;
         /**
          * Sets the given vector "result" with the element values from the index "offset" of the given Float32Array
-         * This function is deprecated.  Use FromArrayToRef instead.
          * @param array defines the source array
          * @param offset defines the offset in the source array
          * @param result defines the Vector3 where to store the result
+         * @deprecated Please use FromArrayToRef instead.
          */
         static FromFloatArrayToRef(array: DeepImmutable<Float32Array>, offset: number, result: Vector3): void;
         /**
@@ -6272,8 +6272,8 @@ declare module BABYLON {
         /**
          * Gets the stride in float32 units (i.e. byte stride / 4).
          * May not be an integer if the byte stride is not divisible by 4.
-         * DEPRECATED. Use byteStride instead.
          * @returns the stride in float32 units
+         * @deprecated Please use byteStride instead.
          */
         getStrideSize(): number;
         /**
@@ -6402,14 +6402,14 @@ declare module BABYLON {
         /**
          * Gets the stride in float32 units (i.e. byte stride / 4).
          * May not be an integer if the byte stride is not divisible by 4.
-         * DEPRECATED. Use byteStride instead.
          * @returns the stride in float32 units
+         * @deprecated Please use byteStride instead.
          */
         getStrideSize(): number;
         /**
          * Returns the offset as a multiple of the type byte length.
-         * DEPRECATED. Use byteOffset instead.
          * @returns the offset in bytes
+         * @deprecated Please use byteOffset instead.
          */
         getOffset(): number;
         /**
@@ -16322,7 +16322,7 @@ declare module BABYLON {
          * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
          * @param update defines whether texture is immediately update (default is true)
          */
-        drawText(text: string, x: number, y: number, font: string, color: string, clearColor: string, invertY?: boolean, update?: boolean): void;
+        drawText(text: string, x: number | null | undefined, y: number | null | undefined, font: string, color: string, clearColor: string, invertY?: boolean, update?: boolean): void;
         /**
          * Clones the texture
          * @returns the clone of the texture.
@@ -23732,6 +23732,10 @@ declare module BABYLON {
          * ConvexHull-Impostor type (Ammo.js plugin only)
          */
         static ConvexHullImpostor: number;
+        /**
+         * Custom-Imposter type (Ammo.js plugin only)
+         */
+        static CustomImpostor: number;
         /**
          * Rope-Imposter type
          */
@@ -42891,6 +42895,10 @@ declare module BABYLON {
          * The speed of the animation in distance/sec, apply when animationMode is TELEPORTATIONMODE_CONSTANTSPEED. (default 20 units / sec)
          */
         teleportationSpeed?: number;
+        /**
+         * The easing function used in the animation or null for Linear. (default CircleEase)
+         */
+        easingFunction?: EasingFunction;
     }
     /**
      * Options to modify the vr experience helper's behavior.
@@ -43002,6 +43010,7 @@ declare module BABYLON {
         private _teleportationMode;
         private _teleportationTime;
         private _teleportationSpeed;
+        private _teleportationEasing;
         private _rotationAllowed;
         private _teleportBackwardsVector;
         private _teleportationTarget;
@@ -52205,6 +52214,10 @@ declare module BABYLON {
          * @returns the current timestep in seconds
          */
         getTimeStep(): number;
+        /**
+         * The create custom shape handler function to be called when using BABYLON.PhysicsImposter.CustomImpostor
+         */
+        onCreateCustomShape: (impostor: PhysicsImpostor) => any;
         private _isImpostorInContact;
         private _isImpostorPairInContact;
         private _stepSimulation;
@@ -52290,6 +52303,11 @@ declare module BABYLON {
          * @param impostor to create the softbody for
          */
         private _createRope;
+        /**
+         * Create a custom physics impostor shape using the plugin's onCreateCustomShape handler
+         * @param impostor to create the custom physics shape for
+         */
+        private _createCustom;
         private _addHullVerts;
         private _createShape;
         /**
@@ -55746,7 +55764,7 @@ declare module BABYLON {
         readonly rgbOut: NodeMaterialConnectionPoint;
         /**
          * Gets the rgb component (output)
-         * @deprecated Please use rgbOut instead
+         * @deprecated Please use rgbOut instead.
          */
         readonly rgb: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
@@ -55805,12 +55823,12 @@ declare module BABYLON {
         readonly xyOut: NodeMaterialConnectionPoint;
         /**
          * Gets the xy component (output)
-         * @deprecated Please use xyOut instead
+         * @deprecated Please use xyOut instead.
          */
         readonly xy: NodeMaterialConnectionPoint;
         /**
          * Gets the xyz component (output)
-         * @deprecated Please use xyzOut instead
+         * @deprecated Please use xyzOut instead.
          */
         readonly xyz: NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
