@@ -53988,6 +53988,11 @@ declare module BABYLON {
         private _initializeBlock;
         private _resetDualBlocks;
         /**
+         * Remove a block from the current node material
+         * @param block defines the block to remove
+         */
+        removeBlock(block: NodeMaterialBlock): void;
+        /**
          * Build the material and generates the inner effect
          * @param verbose defines if the build should log activity
          */
@@ -54765,6 +54770,15 @@ declare module BABYLON {
         TargetIncompatible = 2
     }
     /**
+     * Defines the direction of a connection point
+     */
+    export enum NodeMaterialConnectionPointDirection {
+        /** Input */
+        Input = 0,
+        /** Output */
+        Output = 1
+    }
+    /**
      * Defines a connection point for a block
      */
     export class NodeMaterialConnectionPoint {
@@ -54774,6 +54788,7 @@ declare module BABYLON {
         _connectedPoint: Nullable<NodeMaterialConnectionPoint>;
         private _endpoints;
         private _associatedVariableName;
+        private _direction;
         /** @hidden */
         _typeConnectionSource: Nullable<NodeMaterialConnectionPoint>;
         /** @hidden */
@@ -54781,6 +54796,8 @@ declare module BABYLON {
         private _type;
         /** @hidden */
         _enforceAssociatedVariableName: boolean;
+        /** Gets the direction of the point */
+        readonly direction: NodeMaterialConnectionPointDirection;
         /**
          * Gets or sets the additional types supported by this connection point
          */
@@ -54850,8 +54867,9 @@ declare module BABYLON {
          * Creates a new connection point
          * @param name defines the connection point name
          * @param ownerBlock defines the block hosting this connection point
+         * @param direction defines the direction of the connection point
          */
-        constructor(name: string, ownerBlock: NodeMaterialBlock);
+        constructor(name: string, ownerBlock: NodeMaterialBlock, direction: NodeMaterialConnectionPointDirection);
         /**
          * Gets the current class name e.g. "NodeMaterialConnectionPoint"
          * @returns the class name

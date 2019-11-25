@@ -2,7 +2,6 @@
 import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { Nullable } from 'babylonjs/types';
-import { DefaultNodeModel } from '../../components/diagram/defaultNodeModel';
 import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent';
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
 import { StringTools } from '../../stringTools';
@@ -11,13 +10,15 @@ import { Tools } from 'babylonjs/Misc/tools';
 import { SerializationTools } from '../../serializationTools';
 import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
 import { DataStorage } from '../../dataStorage';
+import { GraphNode } from '../../diagram/graphNode';
+import { SliderLineComponent } from '../../sharedComponents/sliderLineComponent';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
 }
 
-export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, { currentNode: Nullable<DefaultNodeModel> }> {
+export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, { currentNode: Nullable<GraphNode> }> {
 
     constructor(props: IPropertyTabComponentProps) {
         super(props)
@@ -26,8 +27,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     componentDidMount() {
-        this.props.globalState.onSelectionChangedObservable.add(block => {
-            this.setState({ currentNode: block });
+        this.props.globalState.onSelectionChangedObservable.add(selection => {
+            if (selection instanceof GraphNode) {
+                this.setState({ currentNode: selection });
+            } else {
+                this.setState({ currentNode: null });
+            }
         });
     }
 
@@ -63,10 +68,11 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             NODE MATERIAL EDITOR
                         </div>
                     </div>
-                    {this.state.currentNode.renderProperties(this.props.globalState)}
+                    {this.state.currentNode.renderProperties()}
                 </div>
             );
         }
+        let gridSize = DataStorage.ReadNumber("GridSize", 20);
 
         return (
             <div id="propertyTab">
@@ -96,6 +102,22 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             isSelected={() => DataStorage.ReadBoolean("EmbedTextures", true)}
                             onSelect={(value: boolean) => {
                                 DataStorage.StoreBoolean("EmbedTextures", value);
+                            }}
+                        />
+                        <SliderLineComponent label="Grid size" minimum={0} maximum={100} step={5} 
+                            decimalCount={0} 
+                            directValue={gridSize}
+                            onChange={value => {
+                                DataStorage.StoreNumber("GridSize", value);                                
+                                this.props.globalState.onGridSizeChanged.notifyObservers();
+                                this.forceUpdate();
+                            }}
+                        />
+                        <CheckBoxLineComponent label="Show grid" 
+                            isSelected={() => DataStorage.ReadBoolean("ShowGrid", true)}
+                            onSelect={(value: boolean) => {
+                                DataStorage.StoreBoolean("ShowGrid", value);                
+                                this.props.globalState.onGridSizeChanged.notifyObservers();
                             }}
                         />
                     </LineContainerComponent>
