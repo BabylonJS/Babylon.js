@@ -1,11 +1,10 @@
 
 import * as React from "react";
-import { TextLineComponent } from '../../sharedComponents/textLineComponent';
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
-import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { IPropertyComponentProps } from './propertyComponentProps';
 import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
+import { GenericPropertyTabComponent } from './genericNodePropertyComponent';
 
 export class LightPropertyTabComponent extends React.Component<IPropertyComponentProps> {
 
@@ -20,12 +19,8 @@ export class LightPropertyTabComponent extends React.Component<IPropertyComponen
         let lightBlock = this.props.block as LightBlock;
 
         return (
-            <div>
-                <LineContainerComponent title="GENERAL">
-                    <TextLineComponent label="Type" value="LightBlock" />
-                    <TextInputLineComponent globalState={this.props.globalState} label="Name" propertyName="name" target={lightBlock} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
-                </LineContainerComponent>
-
+            <div>                
+                <GenericPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
                 <LineContainerComponent title="PROPERTIES">
                     <OptionsLineComponent label="Light" defaultIfNull={0} noDirectUpdate={true} valuesAreStrings={true} options={lightOptions} target={lightBlock} propertyName="name" onSelect={(name: any) => {
                         if (name === "") {

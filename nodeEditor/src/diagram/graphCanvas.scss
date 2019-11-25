@@ -6,6 +6,7 @@
     font: 14px "acumin-pro";  
     user-select: none;
     overflow: hidden;
+    cursor: move;   
     background-image:
         linear-gradient(to right, #4F4E4F 1px, transparent 1px),
         linear-gradient(to bottom, #4F4E4F 1px, transparent 1px);  
@@ -17,8 +18,7 @@
             z-index: 10;
             position: absolute;
             background: rgba(72, 72, 196, 0.5);
-            border: blue solid 4px;
-            border-radius: 10px;
+            border: blue solid 2px;
         }
     }
 
@@ -30,7 +30,6 @@
         transform-origin: left top;
         display: grid;
         grid-template: 100% 100%;     
-        cursor: move;   
 
         #graph-svg-container {
             grid-row: 1;
@@ -81,6 +80,18 @@
                 grid-template-rows: 30px auto;
                 grid-template-columns: 100%;
                 color: white;
+
+                .comments {
+                    position: absolute;
+                    top: -50px;
+                    width: 200px;
+                    height: 45px;
+                    overflow: hidden;                    
+                    font-style: italic;
+                    opacity: 0.8;
+                    display: grid;
+                    align-items: flex-end;
+                }
 
                 .selection-border {                    
                     grid-row: 1 / span 3;

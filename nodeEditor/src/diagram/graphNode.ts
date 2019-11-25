@@ -18,7 +18,8 @@ export class GraphNode {
     private _connections: HTMLDivElement;
     private _inputsContainer: HTMLDivElement;
     private _outputsContainer: HTMLDivElement;
-    private _content: HTMLDivElement;
+    private _content: HTMLDivElement;    
+    private _comments: HTMLDivElement;
     private _inputPorts: NodePort[] = [];
     private _outputPorts: NodePort[] = [];
     private _links: NodeLink[] = [];    
@@ -196,6 +197,9 @@ export class GraphNode {
         for (var port of this._outputPorts) {
             port.refresh();
         }
+
+        this._comments.innerHTML = this.block.comments;
+        this._comments.title = this.block.comments;
     }
 
     private _appendConnection(connectionPoint: NodeMaterialConnectionPoint, root: HTMLDivElement, displayManager: Nullable<IDisplayManager>) {
@@ -334,8 +338,13 @@ export class GraphNode {
         selectionBorder.classList.add("selection-border");
         this._visual.appendChild(selectionBorder);     
 
-
         root.appendChild(this._visual);
+
+        // Comments
+        this._comments = root.ownerDocument!.createElement("div");
+        this._comments.classList.add("comments");
+            
+        this._visual.appendChild(this._comments);    
 
         // Connections
         for (var input of this.block.inputs) {
