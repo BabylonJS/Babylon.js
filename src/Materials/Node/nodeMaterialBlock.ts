@@ -48,7 +48,7 @@ export class NodeMaterialBlock {
     /**
      * Gets or sets the comments associated with this block
      */
-    public comments: string = "";    
+    public comments: string = "";
 
     /**
      * Gets a boolean indicating that this block can only be used once per NodeMaterial
@@ -556,6 +556,9 @@ export class NodeMaterialBlock {
 
         // Declaration
         codeString = `\r\n// ${this.getClassName()}\r\n`;
+        if (this.comments) {
+            codeString += `// ${this.comments}\r\n`;
+        }
         codeString += `var ${this._codeVariableName} = new BABYLON.${this.getClassName()}("${this.name}");\r\n`;
 
         // Properties
