@@ -1331,12 +1331,9 @@ export class _Exporter {
                         }
                         else {
                             return promise.then((node) => {
-                                const directDescendents = babylonNode.getDescendants(true, (node: Node) => { return (node instanceof Node); });
-                                if (directDescendents.length || node.mesh != null || (node.extensions)) {
-                                    this._nodes.push(node);
-                                    nodeIndex = this._nodes.length - 1;
-                                    nodeMap[babylonNode.uniqueId] = nodeIndex;
-                                }
+                                this._nodes.push(node);
+                                nodeIndex = this._nodes.length - 1;
+                                nodeMap[babylonNode.uniqueId] = nodeIndex;
 
                                 if (!babylonScene.animationGroups.length && babylonNode.animations.length) {
                                     _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, this._convertToRightHandedSystem, this._animationSampleRate);
