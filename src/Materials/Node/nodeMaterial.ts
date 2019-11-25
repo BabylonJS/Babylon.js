@@ -1245,7 +1245,7 @@ export class NodeMaterial extends PushMaterial {
             if (source.locations) {
                 this.editorData = {
                     locations: locations
-                }
+                };
             } else {
                 this.editorData = source.editorData;
                 this.editorData.locations = locations;
