@@ -94,7 +94,74 @@ class MonacoCreator {
             && tag.name == "deprecated";
     }
 
+    debounceAsync(fn, wait = 0, options = {}) {
+        let lastCallAt
+        let deferred
+        let timer
+        let pendingArgs = []
+        return function debounced(...args) {
+            const currentWait = getWait(wait)
+            const currentTime = new Date().getTime()
+
+            const isCold = !lastCallAt || (currentTime - lastCallAt) > currentWait
+
+            lastCallAt = currentTime
+
+            if (isCold && options.leading) {
+                return options.accumulate
+                    ? Promise.resolve(fn.call(this, [args])).then(result => result[0])
+                    : Promise.resolve(fn.call(this, ...args))
+            }
+
+            if (deferred) {
+                clearTimeout(timer)
+            } else {
+                deferred = defer()
+            }
+
+            pendingArgs.push(args)
+            timer = setTimeout(flush.bind(this), currentWait)
+
+            if (options.accumulate) {
+                const argsIndex = pendingArgs.length - 1
+                return deferred.promise.then(results => results[argsIndex])
+            }
+
+            return deferred.promise
+        }
+
+        function getWait(wait) {
+            return (typeof wait === 'function') ? wait() : wait
+        }
+    
+        function defer() {
+            const deferred = {}
+            deferred.promise = new Promise((resolve, reject) => {
+                deferred.resolve = resolve
+                deferred.reject = reject
+            })
+            return deferred
+        }
+
+        function flush() {
+            const thisDeferred = deferred
+            clearTimeout(timer)
+
+            Promise.resolve(
+                options.accumulate
+                    ? fn.call(this, pendingArgs)
+                    : fn.apply(this, pendingArgs[pendingArgs.length - 1])
+            )
+                .then(thisDeferred.resolve, thisDeferred.reject)
+
+            pendingArgs = []
+            deferred = null
+        }
+    }    
+
     async analyzeCode() {
+        console.log("here");
+
         // if the definition worker is very fast, this can be called out of context
         if (!this.jsEditor)
             return;
@@ -290,11 +357,13 @@ class MonacoCreator {
         };
         editorOptions.minimap.enabled = document.getElementById("minimapToggle1280").classList.contains('checked');
         this.jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
-
         this.jsEditor.setValue(oldCode);
+
+        const analyzeCodeDebounced = this.debounceAsync((async) => this.analyzeCode(), 1000);
+
         this.jsEditor.onDidChangeModelContent(function () {
             this.parent.utils.markDirty();
-            this.analyzeCode();
+            analyzeCodeDebounced();
         }.bind(this));
     };
 
