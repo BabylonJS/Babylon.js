@@ -644,7 +644,7 @@ export class Vector2 {
 }
 
 /**
- * Classed used to store (x,y,z) vector representation
+ * Class used to store (x,y,z) vector representation
  * A Vector3 is the main object used in 3D geometry
  * It can represent etiher the coordinates of a point the space, either a direction
  * Reminder: js uses a left handed forward facing system
