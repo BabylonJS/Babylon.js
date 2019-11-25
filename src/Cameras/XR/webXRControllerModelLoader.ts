@@ -1,5 +1,5 @@
 import { Quaternion, Vector3 } from '../../Maths/math.vector';
-import { WindowsMotionController } from '../../Gamepads/Controllers/windowsMotionController';
+import { XRWindowsMotionController } from '../../Gamepads/Controllers/windowsMotionController';
 import { OculusTouchController } from '../../Gamepads/Controllers/oculusTouchController';
 import { WebXRInput } from './webXRInput';
 import { ViveController } from '../../Gamepads/Controllers/viveController';
@@ -52,7 +52,7 @@ export class WebXRControllerModelLoader {
                     break;
                 }
                 default: {
-                    controllerModel = new WindowsMotionController(c.inputSource.gamepad);
+                    controllerModel = new XRWindowsMotionController(c.inputSource.gamepad);
                     rotation = Quaternion.FromEulerAngles(0, Math.PI, 0);
                     break;
                 }
