@@ -10,15 +10,13 @@ import { Vector3PropertyTabComponent } from '../../components/propertyTab/proper
 import { Vector4PropertyTabComponent } from '../../components/propertyTab/properties/vector4PropertyTabComponent';
 import { MatrixPropertyTabComponent } from '../../components/propertyTab/properties/matrixPropertyTabComponent';
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
-import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
-import { TextLineComponent } from '../../sharedComponents/textLineComponent';
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialSystemValues } from 'babylonjs/Materials/Node/Enums/nodeMaterialSystemValues';
 import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
-import { StringTools } from '../../stringTools';
 import { IPropertyComponentProps } from './propertyComponentProps';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+import { GenericPropertyTabComponent } from './genericNodePropertyComponent';
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -164,13 +162,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
 
         return (
             <div>
-                <LineContainerComponent title="GENERAL">
-                    {
-                        !inputBlock.isAttribute &&
-                        <TextInputLineComponent  globalState={this.props.globalState} label="Name" propertyName="name" target={inputBlock} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
-                    }
-                    <TextLineComponent label="Type" value={StringTools.GetBaseType(inputBlock.type)} />
-                </LineContainerComponent>
+                <GenericPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
                 <LineContainerComponent title="PROPERTIES">
                     {
                         inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&

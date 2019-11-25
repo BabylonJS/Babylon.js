@@ -1,13 +1,12 @@
 
 import * as React from "react";
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
-import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
-import { TextLineComponent } from '../../sharedComponents/textLineComponent';
 import { GradientBlockColorStep, GradientBlock } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
 import { GradientStepComponent } from './gradientStepComponent';
 import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { IPropertyComponentProps } from './propertyComponentProps';
+import { GenericPropertyTabComponent } from './genericNodePropertyComponent';
 
 export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
 
@@ -47,10 +46,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
       
         return (
             <div>
-                <LineContainerComponent title="GENERAL">
-                    <TextInputLineComponent globalState={this.props.globalState} label="Name" propertyName="name" target={gradientBlock} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
-                    <TextLineComponent label="Type" value={gradientBlock.getClassName()} />
-                </LineContainerComponent>
+                <GenericPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
                 <LineContainerComponent title="STEPS">
                     <ButtonLineComponent label="Add new step" onClick={() => this.addNewStep()} />
                     {

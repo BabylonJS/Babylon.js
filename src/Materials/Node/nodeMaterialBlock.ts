@@ -46,6 +46,11 @@ export class NodeMaterialBlock {
     public uniqueId: number;
 
     /**
+     * Gets or sets the comments associated with this block
+     */
+    public comments: string = "";    
+
+    /**
      * Gets a boolean indicating that this block can only be used once per NodeMaterial
      */
     public get isUnique() {
@@ -641,6 +646,7 @@ export class NodeMaterialBlock {
         serializationObject.customType = "BABYLON." + this.getClassName();
         serializationObject.id = this.uniqueId;
         serializationObject.name = this.name;
+        serializationObject.comments = this.comments;
 
         serializationObject.inputs = [];
 
@@ -654,6 +660,7 @@ export class NodeMaterialBlock {
     /** @hidden */
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         this.name = serializationObject.name;
+        this.comments = serializationObject.comments;
     }
 
     /**

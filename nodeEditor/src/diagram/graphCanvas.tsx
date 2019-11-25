@@ -43,7 +43,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _candidateLink: Nullable<NodeLink> = null;
     private _candidatePort: Nullable<NodePort> = null;
     private _gridSize = 20;
-    private _selectionBox: Nullable<HTMLDivElement> = null;
+    private _selectionBox: Nullable<HTMLDivElement> = null;  
 
     private _altKeyIsPressed = false;
     private _ctrlKeyIsPressed = false;
