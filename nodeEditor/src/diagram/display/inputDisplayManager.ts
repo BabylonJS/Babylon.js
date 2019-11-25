@@ -46,8 +46,10 @@ export class InputDisplayManager implements IDisplayManager {
         switch (inputBlock.type) {                    
             case NodeMaterialBlockConnectionPointTypes.Color3:
             case NodeMaterialBlockConnectionPointTypes.Color4: {
-                color = (inputBlock.value as Color3).toHexString();
-                break;
+                if (inputBlock.value) {
+                    color = (inputBlock.value as Color3).toHexString();
+                    break;
+                }
             }
             default:
                 color = BlockTools.GetColorFromConnectionNodeType(inputBlock.type);

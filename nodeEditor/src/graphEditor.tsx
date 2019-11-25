@@ -165,6 +165,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     this._graphCanvas.selectedLink.dispose();
                 }
 
+                if (this._graphCanvas.selectedGroup) {
+                    this._graphCanvas.selectedGroup.dispose();
+                }
+
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);  
                 this.props.globalState.onRebuildRequiredObservable.notifyObservers();  
                 return;
@@ -231,12 +235,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             }
 
         }, false);
-
-        this.props.globalState.storeEditorData = (editorData) => {
-            editorData.zoom = this._graphCanvas.zoom;
-            editorData.x = this._graphCanvas.x;
-            editorData.y = this._graphCanvas.y;
-        }
     }
 
     zoomToFit() {

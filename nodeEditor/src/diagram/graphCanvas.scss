@@ -22,6 +22,20 @@
         }
     }
 
+    #group-container {
+        overflow: visible;
+        
+        .group-box {
+            position: absolute;
+            background: rgba(72, 72, 72, 0.5);
+            border: rgba(255, 255, 255, 0.432) solid 2px;
+
+            &.selected {
+                border-color: white;
+            }
+        }
+    }
+
     #graph-container {
         width: 100%;
         height: 100%;

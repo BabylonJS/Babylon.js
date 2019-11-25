@@ -1135,6 +1135,7 @@ export class NodeMaterial extends PushMaterial {
         serializationObject.customType = "BABYLON.NodeMaterial";
 
         serializationObject.outputNodes = [];
+        serializationObject.editorData = this.editorData;
 
         let blocks: NodeMaterialBlock[] = [];
 
