@@ -91,7 +91,6 @@
         "shelljs": "^0.8.3",
         "sinon": "^6.1.4",
         "split.js": "^1.5.9",
-        "storm-react-diagrams": "^5.2.1",
         "style-loader": "^0.21.0",
         "through2": "~2.0.3",
         "ts-loader": "^5.2.1",

@@ -1,19 +1,21 @@
 import { NodeMaterial } from "babylonjs/Materials/Node/nodeMaterial"
 import { Nullable } from "babylonjs/types"
 import { Observable } from 'babylonjs/Misc/observable';
-import { DefaultNodeModel } from './components/diagram/defaultNodeModel';
 import { LogEntry } from './components/log/logComponent';
-import { NodeModel } from 'storm-react-diagrams';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 import { PreviewMeshType } from './components/preview/previewMeshType';
 import { DataStorage } from './dataStorage';
 import { Color4 } from 'babylonjs/Maths/math.color';
+import { GraphNode } from './diagram/graphNode';
+import { Vector2 } from 'babylonjs/Maths/math.vector';
+import { NodePort } from './diagram/nodePort';
+import { NodeLink } from './diagram/nodeLink';
 
 export class GlobalState {
     nodeMaterial: NodeMaterial;
     hostElement: HTMLElement;
     hostDocument: HTMLDocument;
-    onSelectionChangedObservable = new Observable<Nullable<DefaultNodeModel>>();
+    onSelectionChangedObservable = new Observable<Nullable<GraphNode | NodeLink>>();
     onRebuildRequiredObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<void>();
     onUpdateRequiredObservable = new Observable<void>();
@@ -28,7 +30,11 @@ export class GlobalState {
     onBackFaceCullingChanged = new Observable<void>();
     onDepthPrePassChanged = new Observable<void>();
     onAnimationCommandActivated = new Observable<void>();
-    onGetNodeFromBlock: (block: NodeMaterialBlock) => NodeModel;
+    onCandidateLinkMoved = new Observable<Nullable<Vector2>>();   
+    onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();   
+    onCandidatePortSelected = new Observable<Nullable<NodePort>>();
+    onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
+    onGridSizeChanged = new Observable<void>();
     previewMeshType: PreviewMeshType;
     previewMeshFile: File;
     rotatePreview: boolean;
@@ -40,6 +46,7 @@ export class GlobalState {
     directionalLight0: boolean;
     directionalLight1: boolean;
     controlCamera: boolean;    
+    storeEditorData:(serializationObject: any) => void;
     
     customSave?: {label: string, action: (data: string) => Promise<void>};
 
