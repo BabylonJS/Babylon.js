@@ -27,6 +27,6 @@ void main() {
     vec4 p = vec4( position, 1. );
     vPosition = p.xyz;
     vUV = uv;
-    tUV = uv*stageSize;	
-	gl_Position = worldViewProjection * p;
+    tUV = uv * stageSize;	
+    gl_Position = worldViewProjection * p;
 }

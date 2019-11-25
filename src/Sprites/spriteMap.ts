@@ -2,24 +2,180 @@ import { Engine } from "../Engines/engine";
 import { IDisposable, Scene } from "../scene";
 import { Nullable } from "../types";
 import { Vector2, Vector3 } from "../Maths/math.vector";
-//import { Color3 } from "../Maths/math.color";
-//import { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
 import { Mesh } from "../Meshes/mesh";
-import { Observer } from "../Misc/observable";
-import { ExecuteCodeAction } from "../Actions/directActions";
-import { ActionManager } from "../Actions/actionManager";
 import { PickingInfo } from "../Collisions/pickingInfo";
 
 import "../Meshes/Builders/planeBuilder";
 
 /**
- * Defines the minimum interface to fulfill in order to be a sprite map.
+ * Defines the basic options interface of a SpriteMap
+ */
+export interface ISpriteMapOptions{
+	
+	/**
+	 * Vector2 of the number of cells in the grid.
+	 */
+	stageSize?: Vector2;
+	
+	/**
+	 * Vector2 of the size of the output plane in World Units.
+	 */
+	outputSize?: Vector2;
+	
+	/**
+	 * Vector3 of the position of the output plane in World Units.
+	 */
+	outputPosition?: Vector3;
+	
+	//TODO ROTATION
+	
+	/**
+	 * number of layers that the system will reserve in resources.
+	 */
+	layerCount?: number;
+	
+	/**
+	 * number of max animation frames a single cell will reserve in resources.
+	 */
+	maxAnimationFrames?: number;
+	
+	/**
+	 * number cell index of the base tile when the system compiles.
+	 */
+	baseTile?: number;
+
+	/**
+	* boolean flip the sprite after its been repositioned by the framing data.
+	*/
+	flipU?: boolean;
+	
+	/**
+	 * Vector3 scalar of the global RGB values of the SpriteMap.
+	 */
+	colorMultiply?: Vector3;
+	
+}
+
+/**
+ * Defines the basic options interface of a Sprite Frame Source Size.
+ */ 
+export interface ISpriteJSONSpriteSourceSize{
+    /**
+	 * number of the original width of the Frame
+	 */
+    w : number;
+    
+    /**
+     * number of the original height of the Frame
+     */
+    h : number;
+} 
+
+/**
+ * Defines the basic options interface of a Sprite Frame Data.
+ */ 
+export interface ISpriteJSONSpriteFrameData{
+    /**
+	 * number of the x offset of the Frame
+	 */
+    x : number;
+    
+    /**
+	 * number of the y offset of the Frame
+	 */
+    y : number;
+    
+    /**
+	 * number of the width of the Frame
+	 */
+    w : number;
+    
+    /**
+     * number of the height of the Frame
+     */
+    h : number;
+} 
+
+/**
+ * Defines the basic options interface of a JSON Sprite.
+ */ 
+export interface ISpriteJSONSprite{
+    /**
+	 * string name of the Frame
+	 */
+    filename : string;
+    
+    /**
+	 * ISpriteJSONSpriteFrame basic object of the frame data
+	 */
+    frame : ISpriteJSONSpriteFrameData;
+    
+    /**
+    * boolean to flag is the frame was rotated.
+    */
+    rotated : boolean;
+    
+    /**
+    * boolean to flag is the frame was trimmed.
+    */
+    trimmed : boolean;
+    
+    /**
+	 * ISpriteJSONSpriteFrame basic object of the source data
+	 */
+    spriteSourceSize : ISpriteJSONSpriteFrameData;
+
+    /**
+	 * ISpriteJSONSpriteFrame basic object of the source data
+	 */
+    sourceSize : ISpriteJSONSpriteSourceSize;        
+}
+
+/**
+ * Defines the basic options interface of a JSON atlas.
+ */
+export interface ISpriteJSONAtlas{
+	
+	/**
+	 * Array of objects that contain the frame data.
+	 */
+	frames: Array<ISpriteJSONSprite>;
+	
+	/**
+	 * object basic object containing the sprite meta data.
+	 */
+	meta?: object;
+	
+}
+
+/**
+ * Defines the IDisposable interface in order to be cleanable from resources.
  */
 export interface ISpriteMap extends IDisposable {
-
+	
+	/**
+	 * String name of the SpriteMap.
+	 */
+    name: string;
+	
+	/**
+	 * The JSON Array file from a https://www.codeandweb.com/texturepacker export.  Or similar structure.
+	 */
+    atlasJSON: ISpriteJSONAtlas;
+    
+    /**
+	 * Texture of the SpriteMap.
+	 */
+    spriteSheet: Texture;
+    
+    /**
+	 * The parameters to initialize the SpriteMap with.
+	 */
+    options: ISpriteMapOptions;
+    
 }
 
 /**
@@ -28,19 +184,19 @@ export interface ISpriteMap extends IDisposable {
 export class SpriteMap implements ISpriteMap {
 
     /** The Name of the spriteMap */
-    public name : string;
+    public name: string;
 
     /** The JSON file with the frame and meta data */
-    public atlasJSON : {frames: Array<any>, meta: object};
+    public atlasJSON: ISpriteJSONAtlas;
 
-     /** The systems Sprite Sheet Texture */
-    public spriteSheet : Texture;
+    /** The systems Sprite Sheet Texture */
+    public spriteSheet: Texture;
 
     /** Arguments passed with the Constructor */
-    public options : any;
+    public options: ISpriteMapOptions;
 
     /** Public Sprite Storage array, parsed from atlasJSON */
-    public sprites : Array<any>;
+    public sprites: Array<ISpriteJSONSprite>;
 
     /** Returns the Number of Sprites in the System */
     public get spriteCount(): number {
@@ -61,7 +217,8 @@ export class SpriteMap implements ISpriteMap {
     public get animationMap() {
         return this._animationMap;
     }
-        /** Sets the AnimationMap*/
+	
+    /** Sets the AnimationMap*/
     public set animationMap(v: RawTexture) {
         let buffer = v!._texture!._bufferView;
         let am = this.createTileAnimationBuffer(buffer);
@@ -69,34 +226,7 @@ export class SpriteMap implements ISpriteMap {
         this._animationMap = am;
         this._material.setTexture('animationMap', this._animationMap);
     }
-
-    /** gets Editor Tile*/
-    public get editorTile() {
-        return this._editorTile;
-    }
-    /** Sets Editor Tile*/
-    public set editorTile(v) {
-        this._editorTile = v;
-    }
-
-    /** gets Editor Layer*/
-    public get editorLayer() {
-        return this._editorLayer;
-    }
-    /** Sets Editor Layer*/
-    public set editorLayer(v) {
-        this._editorLayer = v;
-    }
-
-    /** gets Editor Last Position*/
-    public get editorPos() {
-        return this._editorPos;
-    }
-    /** Sets Editor Last Position*/
-    public set editorPos(v) {
-        this._editorPos = v;
-    }
-
+   
     /** Scene that the SpriteMap was created in */
     private _scene: Scene;
 
@@ -118,16 +248,6 @@ export class SpriteMap implements ISpriteMap {
     /** Systems Time Ticker*/
     private _time: number;
 
-    /** Private param that controls the editor mode of the SpriteMap*/
-    private _editable : boolean;
-
-    /**Storage for the Edtior mode*/
-    private _editorTile : number = 0;
-    /**Storage for the Edtior mode*/
-    private _editorLayer : number = 0;
-    /**Storage for the Edtior mode*/
-    private _editorPos : Vector2 = new Vector2(-1, -1);
-
     /**
      * Creates a new SpriteMap
      * @param name defines the SpriteMaps Name
@@ -136,17 +256,7 @@ export class SpriteMap implements ISpriteMap {
      * @param options a basic deployment configuration
      * @param scene The Scene that the map is deployed on
      */
-    constructor(name : string, atlasJSON: { meta: object, frames: Array<any> }, spriteSheet: Texture, options: {
-        stageSize?: Vector2,
-        outputSize?: Vector2
-        outputPosition?: Vector3,
-        layerCount?: number,
-        maxAnimationFrames?: number,
-        baseTile?: number,
-        flipU?: number,
-        colorMultiply?: Vector3,
-        editable?: boolean
-    }, scene : Scene) {
+    constructor(name : string, atlasJSON: ISpriteJSONAtlas, spriteSheet: Texture, options: ISpriteMapOptions, scene : Scene) {
 
     this.name = name;
     this.sprites = [];
@@ -157,61 +267,60 @@ export class SpriteMap implements ISpriteMap {
     /**
     * Run through the options and set what ever defaults are needed that where not declared.
     */
-    options.stageSize = options.stageSize || new Vector2(1, 1);
-    options.outputSize = options.outputSize || options.stageSize;
-    options.outputPosition = options.outputPosition || Vector3.Zero();
-    options.layerCount = options.layerCount || 1;
-    options.maxAnimationFrames = options.maxAnimationFrames || 0;
-    options.baseTile = options.baseTile || 0;
-    options.flipU = options.flipU || 0;
-    options.editable = options.editable || false;
-    options.colorMultiply = options.colorMultiply || new Vector3(1, 1, 1);
+	this.options = options;
+    this.options.stageSize = this.options.stageSize || new Vector2(1, 1);
+    this.options.outputSize = this.options.outputSize || this.options.stageSize;
+    this.options.outputPosition = this.options.outputPosition || Vector3.Zero();
+    this.options.layerCount = this.options.layerCount || 1;
+    this.options.maxAnimationFrames = this.options.maxAnimationFrames || 0;
+    this.options.baseTile = this.options.baseTile || 0;
+    this.options.flipU = this.options.flipU || false;
+    this.options.colorMultiply = this.options.colorMultiply || new Vector3(1, 1, 1);
 
     this._scene = scene;
-    this.options = options;
+    
 
     this._frameMap = this.createFrameBuffer();
 
     this._tileMaps = new Array();
-    for (let i = 0; i < options.layerCount; i++) {
-            this._tileMaps.push(this.createTileBuffer(null, i));
+    for (let i = 0; i < this.options.layerCount; i++) {
+        this._tileMaps.push(this.createTileBuffer(null, i));
     }
 
     this._animationMap = this.createTileAnimationBuffer(null);
-    this._editable = options.editable;
 
     let defines = [];
     defines.push("#define LAYERS " + this.options.layerCount);
+	
+	if(this.options.flipU){
+		defines.push("#define FLIPU");
+	}
 
-    if (this.options.editable) {
-        defines.push("#define EDITABLE");
-    }
-
-   this._material = new ShaderMaterial("spriteMap:" + this.name, this._scene, {
-        vertex: "spriteMap",
-        fragment: "spriteMap",
-    }, {
-        defines,
-        attributes: ["position", "normal", "uv"],
-        uniforms: [
-            "worldViewProjection",
-            "time",
-            'stageSize',
-            'outputSize',
-            'spriteMapSize',
-            'spriteCount',
-            'time',
-            'maxAnimationFrames',
-            'colorMul',
-            'mousePosition',
-            'curTile',
-            'flipU'
-        ],
-        samplers: [
-           "spriteSheet", "frameMap", "tileMaps", "animationMap"
-        ],
-        needAlphaBlending: true
-    });
+	this._material = new ShaderMaterial("spriteMap:" + this.name, this._scene, {
+		vertex: "spriteMap",
+		fragment: "spriteMap",
+	}, {
+		defines,
+		attributes: ["position", "normal", "uv"],
+		uniforms: [
+			"worldViewProjection",
+			"time",
+			'stageSize',
+			'outputSize',
+			'spriteMapSize',
+			'spriteCount',
+			'time',
+			'maxAnimationFrames',
+			'colorMul',
+			'mousePosition',
+			'curTile',
+			'flipU'
+		],
+		samplers: [
+		   "spriteSheet", "frameMap", "tileMaps", "animationMap"
+		],
+		needAlphaBlending: true
+	});
 
     this._time = 0;
 
@@ -220,16 +329,15 @@ export class SpriteMap implements ISpriteMap {
     this._material.setVector2('stageSize', this.options.stageSize);
     this._material.setVector2('outputSize', this.options.outputSize);
     this._material.setTexture('spriteSheet', this.spriteSheet);
-    this._material.setVector2('spriteMapSize', new Vector2(1, 1));
+    this._material.setVector2('spriteMapSize', new Vector2(1,1));
     this._material.setVector3('colorMul', this.options.colorMultiply);
-    this._material.setFloat('flipU', this.options.flipU);
+    
 
-    //let parent = this;
     let tickSave = 0;
+	
     const bindSpriteTexture = () => {
         if ((this.spriteSheet) && this.spriteSheet.isReady()) {
-            if (this.spriteSheet._texture) {
-                console.log('SpriteSheet size Set!');
+            if (this.spriteSheet._texture) {             
                 this._material.setVector2('spriteMapSize', new Vector2(this.spriteSheet._texture.baseWidth || 1, this.spriteSheet._texture.baseHeight || 1));
                 return;
             }
@@ -251,114 +359,33 @@ export class SpriteMap implements ISpriteMap {
     this._output.scaling.x = this.options.outputSize.x;
     this._output.scaling.y = this.options.outputSize.y;
 
-    let obfunction = null;
-       if (this._editable) {
+    let obfunction = () => {
+		this._time += this._scene.getEngine().getDeltaTime();
+		this._material.setFloat('time', this._time);
+    };        
 
-            obfunction = () => {
-                this._time += this._scene.getEngine().getDeltaTime() * 0.01;
-                this._material.setFloat('time', this._time);
-                this._material.setVector2('mousePosition', this.getMousePosition());
-                this._material.setFloat('curTile', this.editorTile);
-            };
-
-            this._output.actionManager = new ActionManager(this._scene);
-            const drawing = () => {
-                let pos = this.getTileID();
-                console.log(pos);
-                if (pos.x == this.editorPos.x &&
-                    pos.y == this.editorPos.y) {
-                        return;
-                    }
-                this.editorPos = pos;
-                this.changeTiles(this.editorLayer, pos, this.editorTile);
-            };
-
-            let _drawObs: Nullable<Observer<Scene>> = null;
-
-            this._output.actionManager.registerAction(new ExecuteCodeAction(
-                ActionManager.OnLeftPickTrigger,
-                (evt: any) => {
-                        if (((this._scene) && this._scene.activeCamera)) {
-                        if (this._scene.getEngine && this._scene.getEngine().getInputElement) {
-                            let canvas: Nullable<HTMLElement> = this._scene.getEngine().getInputElement();
-                            if (!canvas) {
-                                return;
-                            }
-                            this._scene.activeCamera.detachControl(canvas);
-                            _drawObs = this._scene.onAfterRenderObservable.add(drawing);
-                        }
-                    }
-                })
-            );
-
-            this._output.actionManager.registerAction(new ExecuteCodeAction(
-                ActionManager.OnPickUpTrigger,
-                (evt: any) => {
-                    if (((this._scene) && this._scene.activeCamera)) {
-                        if (this._scene.getEngine && this._scene.getEngine().getInputElement) {
-                            let canvas: Nullable<HTMLElement> = this._scene.getEngine().getInputElement();
-                            if (!canvas) {
-                                return;
-                            }
-                            this._scene.activeCamera.attachControl(canvas);
-                            this._scene.onAfterRenderObservable.remove(_drawObs);
-                            this.editorPos = new Vector2(-1, -1);
-                        }
-                    }
-                })
-            );
-
-            if (!this._scene.actionManager) {
-                 this._scene.actionManager = new ActionManager(this._scene);
-            }
-
-            this._scene.actionManager.registerAction(
-                new ExecuteCodeAction(ActionManager.OnKeyDownTrigger, (evt: any) => {
-                    switch (evt.sourceEvent.key){
-                        case '-':
-                            this.editorTile = Math.max(0.0, this.editorTile - 1) ;
-                        break;
-                        case '=':
-                            this.editorTile = Math.min(this.editorTile + 1, this.spriteCount);
-                        break;
-                        case '[':
-                            this.editorLayer = Math.max(0.0, this.editorLayer - 1) ;
-                        break;
-                        case ']':
-                            this.editorLayer = Math.min(this.editorLayer + 1, this.options.layerCount);
-                        break;
-                    }
-                })
-            );
-
-        }else {
-            obfunction = () => {
-                this._time += this._scene.getEngine().getDeltaTime() * 0.01;
-                this._material.setFloat('time', this._time);
-            };
-        }
-
-        this._scene.onBeforeRenderObservable.add(obfunction);
-        this._output.material = this._material;
+	this._scene.onBeforeRenderObservable.add(obfunction);
+	this._output.material = this._material;
+	
     }
 
     /**
     * Returns tileID location
     * @returns Vector2 the cell position ID
     */
-    getTileID(): Vector2 {
+    public getTileID(): Vector2 {
         let p = this.getMousePosition();
-        p.multiplyInPlace(this.options.stageSize);
+        p.multiplyInPlace(this.options.stageSize || Vector2.Zero());
         p.x = Math.floor(p.x);
         p.y = Math.floor(p.y);
         return p;
     }
 
     /**
-    * Gets the UV location of the mouse over the SpriteMap, if In editable mode.
+    * Gets the UV location of the mouse over the SpriteMap.
     * @returns Vector2 the UV position of the mouse interaction
     */
-    getMousePosition(): Vector2 {
+    public getMousePosition(): Vector2 {
         let out = this._output;
         var pickinfo: Nullable<PickingInfo> = this._scene.pick(this._scene.pointerX, this._scene.pointerY, (mesh) => {
             if (mesh !== out) {
@@ -391,7 +418,7 @@ export class SpriteMap implements ISpriteMap {
     * "sourceSize": {"w":32,"h":32}
     * @returns RawTexture of the frameMap
     */
-    createFrameBuffer(): RawTexture {
+    private createFrameBuffer(): RawTexture {
         let data = new Array();
         //Do two Passes
         for (let i = 0; i < this.spriteCount; i++) {
@@ -443,32 +470,36 @@ export class SpriteMap implements ISpriteMap {
 
     /**
     * Creates the tileMap texture Buffer
-    * @param buffer normaly and array of numbers, or a false to generate from scratch
+    * @param buffer normally and array of numbers, or a false to generate from scratch
     * @param _layer indicates what layer for a logic trigger dealing with the baseTile.  The system uses this
     * @returns RawTexture of the tileMap
     */
-    createTileBuffer(buffer: any, _layer: number= 0): RawTexture {
-        let data = new Array();
-
+    private createTileBuffer(buffer: any, _layer: number = 0): RawTexture {
+        
+		let data = new Array();
+		let _ty = (this.options.stageSize!.y) || 0;
+		let _tx = (this.options.stageSize!.x) || 0;
+		
         if (!buffer) {
             let bt = this.options.baseTile;
             if (_layer != 0) {
                 bt = 0;
             }
-            for (let y = 0; y < this.options.stageSize.y; y++) {
-                for (let x = 0; x < this.options.stageSize.x * 4; x += 4) {
+
+            for (let y = 0; y < _ty; y++) {
+                for (let x = 0; x < _tx * 4; x += 4) {
                     data.push(bt, 0, 0, 0);
                 }
             }
-        }else {
+        } else {
             data = buffer;
         }
 
         let floatArray = new Float32Array(data);
         let t = RawTexture.CreateRGBATexture(
         floatArray,
-        this.options.stageSize.x,
-        this.options.stageSize.y,
+        _tx,
+        _ty,
         this._scene,
         false,
         false,
@@ -480,12 +511,12 @@ export class SpriteMap implements ISpriteMap {
     }
 
     /**
-    * Modfies the data of the tileMaps
+    * Modifies the data of the tileMaps
     * @param _layer is the ID of the layer you want to edit on the SpriteMap
     * @param pos is the iVector2 Coordinates of the Tile
     * @param tile The SpriteIndex of the new Tile
     */
-    changeTiles(_layer: number= 0, pos: any , tile: number= 0): void {
+    public changeTiles(_layer: number = 0, pos: any , tile: number = 0): void {
 
         let buffer: any = [];
         buffer = this._tileMaps[_layer]!._texture!._bufferView;
@@ -496,15 +527,17 @@ export class SpriteMap implements ISpriteMap {
         let p = new Array();
         if (pos instanceof Vector2) {
             p.push(pos);
-        }else {
+        } else {
             p = pos;
         }
+		
+		let _tx = (this.options.stageSize!.x) || 0;
 
         for (let i = 0; i < p.length; i++) {
             let _p = p[i];
             _p.x = Math.floor(_p.x);
             _p.y = Math.floor(_p.y);
-            let id = (_p.x * 4) + (_p.y * (this.options.stageSize.x * 4));
+            let id = (_p.x * 4) + (_p.y * (_tx * 4));
             buffer[id] = tile;
         }
 
@@ -516,10 +549,10 @@ export class SpriteMap implements ISpriteMap {
 
     /**
     * Creates the animationMap texture Buffer
-    * @param buffer normaly and array of numbers, or a false to generate from scratch
+    * @param buffer normally and array of numbers, or a false to generate from scratch
     * @returns RawTexture of the animationMap
     */
-    createTileAnimationBuffer(buffer: any): RawTexture {
+    private createTileAnimationBuffer(buffer: any): RawTexture {
         let data = new Array();
         if (!buffer) {
             for (let i = 0; i < this.spriteCount; i++) {
@@ -530,7 +563,7 @@ export class SpriteMap implements ISpriteMap {
                     count++;
                 }
             }
-        }else {
+        } else {
             data = buffer;
         }
 
@@ -549,14 +582,14 @@ export class SpriteMap implements ISpriteMap {
         return t;
     }
     /**
-    * Modfies the data of the animationMap
+    * Modifies the data of the animationMap
     * @param cellID is the Index of the Sprite
     * @param _frame is the target Animation frame
     * @param toCell is the Target Index of the next frame of the animation
     * @param time is a value between 0-1 that is the trigger for when the frame should change tiles
-    * @param speed is a global scalar of the time varable on the map.
+    * @param speed is a global scalar of the time variable on the map.
     */
-    addAnimationToTile(cellID: number= 0, _frame: number= 0, toCell: number= 0, time: number= 0, speed: number = 1): void {
+    public addAnimationToTile(cellID: number = 0, _frame: number = 0, toCell: number = 0, time: number = 0, speed: number = 1): void {
         let buffer: any = this._animationMap!._texture!._bufferView;
         let id: number = (cellID * 4) + (this.spriteCount * 4 * _frame);
         if (!buffer) {
@@ -574,7 +607,7 @@ export class SpriteMap implements ISpriteMap {
     /**
     * Exports the .tilemaps file
     */
-    saveTileMaps(): void {
+    public saveTileMaps(): void {
         let maps = '';
         for (var i = 0; i < this._tileMaps.length; i++) {
             if (i > 0) {maps += '\n\r'; }
@@ -593,15 +626,16 @@ export class SpriteMap implements ISpriteMap {
     * Imports the .tilemaps file
     * @param url of the .tilemaps file
     */
-    loadTileMaps(url: string): void {
+    public loadTileMaps( url : string ) : void {
         let xhr = new XMLHttpRequest();
         xhr.open("GET", url);
-        //xhr.responseType = "octet/stream"
+		
+		let _lc =  this.options!.layerCount || 0;
 
         xhr.onload = () =>
         {
             let data = xhr.response.split('\n\r');
-            for (let i = 0; i < this.options.layerCount; i++) {
+            for (let i = 0; i < _lc; i++) {
                 let d = (data[i].split(',')).map(Number);
                 let t = this.createTileBuffer(d);
                 this._tileMaps[i].dispose();
