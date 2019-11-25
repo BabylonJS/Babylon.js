@@ -1,7 +1,7 @@
 import { NodeMaterialBlockConnectionPointTypes } from './Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from './nodeMaterialBuildState';
 import { Nullable } from '../../types';
-import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
+import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from './nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
 import { Effect } from '../effect';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
@@ -208,7 +208,7 @@ export class NodeMaterialBlock {
      * @returns the current block
      */
     public registerInput(name: string, type: NodeMaterialBlockConnectionPointTypes, isOptional: boolean = false, target?: NodeMaterialBlockTargets) {
-        let point = new NodeMaterialConnectionPoint(name, this);
+        let point = new NodeMaterialConnectionPoint(name, this, NodeMaterialConnectionPointDirection.Input);
         point.type = type;
         point.isOptional = isOptional;
         if (target) {
@@ -228,7 +228,7 @@ export class NodeMaterialBlock {
      * @returns the current block
      */
     public registerOutput(name: string, type: NodeMaterialBlockConnectionPointTypes, target?: NodeMaterialBlockTargets) {
-        let point = new NodeMaterialConnectionPoint(name, this);
+        let point = new NodeMaterialConnectionPoint(name, this, NodeMaterialConnectionPointDirection.Output);
         point.type = type;
         if (target) {
             point.target = target;

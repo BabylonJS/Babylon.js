@@ -23067,6 +23067,18 @@ declare module BABYLON {
          */
         getTimeStep(): number;
         /**
+         * Set the sub time step of the physics engine.
+         * Default is 0 meaning there is no sub steps
+         * To increase physics resolution precision, set a small value (like 1 ms)
+         * @param subTimeStep defines the new sub timestep used for physics resolution.
+         */
+        setSubTimeStep(subTimeStep: number): void;
+        /**
+         * Get the sub time step of the physics engine.
+         * @returns the current sub time step
+         */
+        getSubTimeStep(): number;
+        /**
          * Release all resources
          */
         dispose(): void;
@@ -42450,7 +42462,25 @@ declare module BABYLON {
          */
         private static readonly GAMEPAD_ID_PATTERN;
         private _loadedMeshInfo;
-        private readonly _mapping;
+        protected readonly _mapping: {
+            buttons: string[];
+            buttonMeshNames: {
+                'trigger': string;
+                'menu': string;
+                'grip': string;
+                'thumbstick': string;
+                'trackpad': string;
+            };
+            buttonObservableNames: {
+                'trigger': string;
+                'menu': string;
+                'grip': string;
+                'thumbstick': string;
+                'trackpad': string;
+            };
+            axisMeshNames: string[];
+            pointingPoseMeshName: string;
+        };
         /**
          * Fired when the trackpad on this controller is clicked
          */
@@ -42492,7 +42522,7 @@ declare module BABYLON {
          * Fired when the touchpad values on this controller are modified
          */
         readonly onTouchpadValuesChangedObservable: Observable<StickValues>;
-        private _updateTrackpad;
+        protected _updateTrackpad(): void;
         /**
          * Called once per frame by the engine.
          */
@@ -42542,6 +42572,74 @@ declare module BABYLON {
         /**
         * Disposes of the controller
         */
+        dispose(): void;
+    }
+    /**
+     * This class represents a new windows motion controller in XR.
+     */
+    export class XRWindowsMotionController extends WindowsMotionController {
+        /**
+         * Changing the original WIndowsMotionController mapping to fir the new mapping
+         */
+        protected readonly _mapping: {
+            buttons: string[];
+            buttonMeshNames: {
+                'trigger': string;
+                'menu': string;
+                'grip': string;
+                'thumbstick': string;
+                'trackpad': string;
+            };
+            buttonObservableNames: {
+                'trigger': string;
+                'menu': string;
+                'grip': string;
+                'thumbstick': string;
+                'trackpad': string;
+            };
+            axisMeshNames: string[];
+            pointingPoseMeshName: string;
+        };
+        /**
+         * Construct a new XR-Based windows motion controller
+         *
+         * @param gamepadInfo the gamepad object from the browser
+         */
+        constructor(gamepadInfo: any);
+        /**
+         * holds the thumbstick values (X,Y)
+         */
+        readonly thumbstickValues: StickValues;
+        /**
+         * Fired when the thumbstick on this controller is clicked
+         */
+        onThumbstickStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the thumbstick on this controller is modified
+         */
+        onThumbstickValuesChangedObservable: Observable<StickValues>;
+        /**
+         * Fired when the touchpad button on this controller is modified
+         */
+        onTrackpadChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the touchpad values on this controller are modified
+         */
+        onTrackpadValuesChangedObservable: Observable<StickValues>;
+        /**
+         * Fired when the thumbstick button on this controller is modified
+         * here to prevent breaking changes
+         */
+        readonly onThumbstickButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * updating the thumbstick(!) and not the trackpad.
+         * This is named this way due to the difference between WebVR and XR and to avoid
+         * changing the parent class.
+         */
+        protected _updateTrackpad(): void;
+        /**
+         * Disposes the class with joy
+         */
         dispose(): void;
     }
 }
@@ -51791,6 +51889,7 @@ declare module BABYLON {
         static Epsilon: number;
         private _impostors;
         private _joints;
+        private _subTimeStep;
         /**
          * Gets the gravity vector used by the simulation
          */
@@ -51824,6 +51923,18 @@ declare module BABYLON {
          * @returns the current time step
          */
         getTimeStep(): number;
+        /**
+         * Set the sub time step of the physics engine.
+         * Default is 0 meaning there is no sub steps
+         * To increase physics resolution precision, set a small value (like 1 ms)
+         * @param subTimeStep defines the new sub timestep used for physics resolution.
+         */
+        setSubTimeStep(subTimeStep?: number): void;
+        /**
+         * Get the sub time step of the physics engine.
+         * @returns the current sub time step
+         */
+        getSubTimeStep(): number;
         /**
          * Release all resources
          */
@@ -53988,6 +54099,11 @@ declare module BABYLON {
         private _initializeBlock;
         private _resetDualBlocks;
         /**
+         * Remove a block from the current node material
+         * @param block defines the block to remove
+         */
+        removeBlock(block: NodeMaterialBlock): void;
+        /**
          * Build the material and generates the inner effect
          * @param verbose defines if the build should log activity
          */
@@ -54765,6 +54881,15 @@ declare module BABYLON {
         TargetIncompatible = 2
     }
     /**
+     * Defines the direction of a connection point
+     */
+    export enum NodeMaterialConnectionPointDirection {
+        /** Input */
+        Input = 0,
+        /** Output */
+        Output = 1
+    }
+    /**
      * Defines a connection point for a block
      */
     export class NodeMaterialConnectionPoint {
@@ -54774,6 +54899,7 @@ declare module BABYLON {
         _connectedPoint: Nullable<NodeMaterialConnectionPoint>;
         private _endpoints;
         private _associatedVariableName;
+        private _direction;
         /** @hidden */
         _typeConnectionSource: Nullable<NodeMaterialConnectionPoint>;
         /** @hidden */
@@ -54781,6 +54907,8 @@ declare module BABYLON {
         private _type;
         /** @hidden */
         _enforceAssociatedVariableName: boolean;
+        /** Gets the direction of the point */
+        readonly direction: NodeMaterialConnectionPointDirection;
         /**
          * Gets or sets the additional types supported by this connection point
          */
@@ -54850,8 +54978,9 @@ declare module BABYLON {
          * Creates a new connection point
          * @param name defines the connection point name
          * @param ownerBlock defines the block hosting this connection point
+         * @param direction defines the direction of the connection point
          */
-        constructor(name: string, ownerBlock: NodeMaterialBlock);
+        constructor(name: string, ownerBlock: NodeMaterialBlock, direction: NodeMaterialConnectionPointDirection);
         /**
          * Gets the current class name e.g. "NodeMaterialConnectionPoint"
          * @returns the class name
@@ -60015,6 +60144,8 @@ declare module BABYLON {
         interface Scene {
             /** @hidden (Backing field) */
             _physicsEngine: Nullable<IPhysicsEngine>;
+            /** @hidden */
+            _physicsTimeAccumulator: number;
             /**
              * Gets the current physics engine
              * @returns a IPhysicsEngine or null if none attached
