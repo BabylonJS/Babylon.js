@@ -1,0 +1,280 @@
+#graph-canvas {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;            
+    font: 14px "acumin-pro";  
+    user-select: none;
+    overflow: hidden;
+    background-image:
+        linear-gradient(to right, #4F4E4F 1px, transparent 1px),
+        linear-gradient(to bottom, #4F4E4F 1px, transparent 1px);  
+
+    #selection-container {
+        pointer-events: none;
+        
+        .selection-box {
+            z-index: 10;
+            position: absolute;
+            background: rgba(72, 72, 196, 0.5);
+            border: blue solid 4px;
+            border-radius: 10px;
+        }
+    }
+
+    #graph-container {
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        transform-origin: left top;
+        display: grid;
+        grid-template: 100% 100%;     
+        cursor: move;   
+
+        #graph-svg-container {
+            grid-row: 1;
+            grid-column: 1;
+            position: relative;
+            width: 100%;
+            height: 100%;  
+            overflow: visible; 
+            
+            .link {
+                stroke-width: 4px;    
+                &.selected {                    
+                    stroke: white !important;
+                    stroke-dasharray: 10, 2;
+                }       
+            }
+
+            .selection-link {
+                stroke-width: 16px;
+                opacity: 0;
+                &:hover, &.selected {
+                    stroke: white !important;
+                    opacity: 0.4;
+                }
+                transition: opacity 75ms;
+                stroke: transparent;                        
+                cursor: pointer;
+            }
+        }
+
+        #graph-canvas-container {
+            grid-row: 1;
+            grid-column: 1;
+            position: relative;
+            width: 100%;
+            height: 100%;                  
+
+            .visual {
+                z-index: 1;
+                width: 200px;
+                position: absolute;
+                left: 0;
+                top: 0;
+                background: gray;
+                border: 4px solid black;
+                border-radius: 12px;
+                display: grid;
+                grid-template-rows: 30px auto;
+                grid-template-columns: 100%;
+                color: white;
+
+                .selection-border {                    
+                    grid-row: 1 / span 3;
+                    grid-column: 1;
+                    margin: -4px;
+
+                    transition: border-color 100ms;
+
+                    border: 4px solid transparent;
+                    border-radius: 12px;
+                }
+
+                &.selected {
+                    .selection-border {  
+                        border-color: white;
+                    }
+                }
+
+                .header {
+                    grid-row: 1;
+                    grid-column: 1;
+                    border: 4px solid black;
+                    border-top-right-radius: 7px;
+                    border-top-left-radius: 7px;
+                    font-size: 16px;
+                    text-align: center;
+                    margin-top: -1px;
+                    margin-left: -1px;
+                    margin-right: -1px;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                    background: black;
+                    color: white;
+
+                    &.constant {
+                        border-color: #4E5C74;
+                        background: #4E5C74;
+                    }
+            
+                    &.inspector {
+                        border-color: #396437;
+                        background: #396437;
+                    }
+                }
+
+                .connections {
+                    grid-row: 2;
+                    grid-column: 1;
+
+                    display: grid;
+                    grid-template-columns: 50% 50%;
+
+                    .port {
+                        border-radius: 20px;
+                        width: 20px;
+                        height: 20px;                                                    
+                        align-self: center;   
+                        
+                        .img {
+                            width: 100%;
+                        }     
+                        
+                        &:hover, &.selected {
+                            filter: brightness(2);
+                        }
+                    }
+
+                    .portLine {
+                        height: 24px;
+                        display: grid;                
+                        grid-template-rows: 100%;
+                    }
+
+                    .label {                   
+                        align-items: center;
+                    }
+
+                    .inputsContainer {                        
+                        grid-row: 1;
+                        grid-column: 1;
+
+                        .portLine {
+                            grid-template-columns: 12px calc(100% - 15px);
+
+                            .label {                    
+                                grid-row: 1;
+                                grid-column: 2;
+                            }
+
+                            .port {                              
+                                grid-row: 1;
+                                grid-column: 1;
+                                transform: translateX(-12px);     
+                            }
+                        }
+                    }
+
+                    .outputsContainer {                        
+                        grid-row: 1;
+                        grid-column: 2;
+
+                        .portLine {
+                            grid-template-columns: calc(100% - 10px) 12px;
+
+                            .label {                    
+                                grid-row: 1;
+                                grid-column: 1;
+                                text-align: right;
+                            }
+
+                            .port {                              
+                                grid-row: 1;
+                                grid-column: 2;
+                                transform: translateX(2px);                        
+                            }
+                        
+                        }
+                    }
+                }
+
+                .content {
+                    min-height: 20px;
+                    grid-row: 3;
+                    grid-column: 1;
+
+                    &.input-block {
+                        grid-row: 2;
+                        height: 34px;
+                        text-align: center;
+                        font-size: 18px;
+                        font-weight: bold;
+                        margin: 0 10px;
+                    }
+
+                    &.output-block {
+                        min-height: 0px;
+                        height: 5px;
+                    }
+
+                    &.clamp-block {                    
+                        grid-row: 2;
+                        height: 34px;
+                        text-align: center;
+                        font-size: 18px;
+                        font-weight: bold;
+                        margin: 0 10px;
+                    }
+
+                    &.gradient-block {                    
+                        grid-row: 2;
+                        height: 34px;
+                    }
+
+                    &.texture-block {                    
+                        grid-row: 3;
+                        height: 140px;
+                        width: 140px;
+                        margin-top: -115px;
+                        overflow: hidden;
+                        border-bottom-left-radius: 7px;
+                        border: black 4px solid;
+                        border-left: 0px;
+                        border-bottom: 0px;
+
+                        img {
+                            width: 100%;
+                            height: 100%;
+                            pointer-events: none;
+
+                            &.empty {
+                                display: none;
+                            }
+                        }
+                    }
+
+                    &.remap-block {                    
+                        height: 34px;
+                        text-align: center;
+                        font-size: 18px;
+                        font-weight: bold;
+                        margin: 0 10px;
+                    }      
+                    
+                    &.trigonometry-block {                    
+                        grid-row: 2;
+                        height: 34px;
+                        text-align: center;
+                        font-size: 18px;
+                        font-weight: bold;
+                        margin: 0 10px;
+                    }
+                }
+            }
+        }
+    }
+}
