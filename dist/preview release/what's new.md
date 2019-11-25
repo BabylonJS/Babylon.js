@@ -88,6 +88,7 @@
 - Added support for diffing snippets in the playground ([sailro](http://www.github.com/sailro))
 - Added diff navigator in the playground ([sailro](http://www.github.com/sailro))
 - Added custom filter to remove internals from the completion in the playground ([sailro](http://www.github.com/sailro))
+- Added support for tagging deprecated members (both in editor and for completion) in the playground ([sailro](http://www.github.com/sailro))
 
 ### Meshes
 
@@ -102,6 +103,7 @@
 - Update Ammo.js library to support global collision contact callbacks ([MackeyK24](https://github.com/MackeyK24/))
 - Update Ammo.js library to allow native capsule shape impostors ([MackeyK24](https://github.com/MackeyK24/))
 - Update Ammo.js library to allow your own broadphase overlapping pair cache ([MackeyK24](https://github.com/MackeyK24/))
+- Update Ammo.js library for custom impostor shapes. PhysicsImpostor.CustomImposter type and AmmoJSPlugin.OnCreateCustomShape factoty function ([MackeyK24](https://github.com/MackeyK24/))
 - Update Ammo.js library and AmmoJS plugin to support ellipsoid ([CedricGuillemet](https://github.com/CedricGuillemet/))
 
 ### Loaders
@@ -160,6 +162,7 @@
 - Added option to change the teleportation duration in the VRExperienceHelper class ([https://github.com/LeoRodz](https://github.com/LeoRodz))
 - Added support to teleport the camera at constant speed in the VRExperienceHelper class ([https://github.com/LeoRodz](https://github.com/LeoRodz))
 - VRExperienceHelper has now an XR fallback to force XR usage (Beta) ([RaananW](https://github.com/RaananW/))
+- Added option to change the teleportation easing function in the VRExperienceHelper class ([https://github.com/LeoRodz](https://github.com/LeoRodz))
 
 ### Ray
 

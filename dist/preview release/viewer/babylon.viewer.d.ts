@@ -1036,14 +1036,14 @@ declare module BabylonViewer {
                             };
                     };
                     hideLoadingDelay?: number;
-                    /** Deprecated */
+                    /** @deprecated */
                     assetsRootURL?: string;
                     environmentMainColor?: {
                             r: number;
                             g: number;
                             b: number;
                     };
-                    /** Deprecated */
+                    /** @deprecated */
                     environmentMap?: {
                             /**
                                 * Environment map texture path in relative to the asset folder.
@@ -1906,29 +1906,9 @@ declare module BabylonViewer {
 }
 declare module BabylonViewer {
     export interface IGroundConfiguration {
-        size?: number;
-        receiveShadows?: boolean;
-        shadowLevel?: number;
-        shadowOnly?: boolean;
-        mirror?: boolean | {
-            sizeRatio?: number;
-            blurKernel?: number;
-            amount?: number;
-            fresnelWeight?: number;
-            fallOffDistance?: number;
-            textureType?: number;
-        };
-        texture?: string;
-        color?: {
-            r: number;
-            g: number;
-            b: number;
-        };
-        opacity?: number;
-        material?: {
-            [propName: string]: any;
-        };
-    }
+            size?: number;
+            receiveShadows?: boolean;
+            shadowLevel?: number;
 }
 declare module BabylonViewer {
     export interface IImageProcessingConfiguration {
@@ -2046,51 +2026,49 @@ declare module BabylonViewer {
 }
 declare module BabylonViewer {
     export interface ISceneConfiguration {
-            debug?: boolean;
-            clearColor?: {
-                    r: number;
-                    g: number;
-                    b: number;
-                    a: number;
-            };
-            /** Deprecated, use environmentMap.mainColor instead. */
-            mainColor?: {
-                    r?: number;
-                    g?: number;
-                    b?: number;
-            };
-            imageProcessingConfiguration?: IImageProcessingConfiguration;
-            environmentTexture?: string;
-            colorGrading?: IColorGradingConfiguration;
-            environmentRotationY?: number;
-            /**
-                * Deprecated, please use default rendering pipeline
-                */
-            glow?: boolean | BABYLON.IGlowLayerOptions;
-            disableHdr?: boolean;
-            renderInBackground?: boolean;
-            disableCameraControl?: boolean;
-            animationPropertiesOverride?: {
-                    [propName: string]: any;
-            };
-            defaultMaterial?: {
-                    materialType: "standard" | "pbr";
-                    [propName: string]: any;
-            };
-            flags?: {
-                    shadowsEnabled?: boolean;
-                    particlesEnabled?: boolean;
-                    collisionsEnabled?: boolean;
-                    lightsEnabled?: boolean;
-                    texturesEnabled?: boolean;
-                    lensFlaresEnabled?: boolean;
-                    proceduralTexturesEnabled?: boolean;
-                    renderTargetsEnabled?: boolean;
-                    spritesEnabled?: boolean;
-                    skeletonsEnabled?: boolean;
-                    audioEnabled?: boolean;
-            };
-            assetsRootURL?: string;
+        debug?: boolean;
+        clearColor?: {
+            r: number;
+            g: number;
+            b: number;
+            a: number;
+        };
+        /** @deprecated Please use environmentMap.mainColor instead. */
+        mainColor?: {
+            r?: number;
+            g?: number;
+            b?: number;
+        };
+        imageProcessingConfiguration?: IImageProcessingConfiguration;
+        environmentTexture?: string;
+        colorGrading?: IColorGradingConfiguration;
+        environmentRotationY?: number;
+        /** @deprecated Please use default rendering pipeline. */
+        glow?: boolean | BABYLON.IGlowLayerOptions;
+        disableHdr?: boolean;
+        renderInBackground?: boolean;
+        disableCameraControl?: boolean;
+        animationPropertiesOverride?: {
+            [propName: string]: any;
+        };
+        defaultMaterial?: {
+            materialType: "standard" | "pbr";
+            [propName: string]: any;
+        };
+        flags?: {
+            shadowsEnabled?: boolean;
+            particlesEnabled?: boolean;
+            collisionsEnabled?: boolean;
+            lightsEnabled?: boolean;
+            texturesEnabled?: boolean;
+            lensFlaresEnabled?: boolean;
+            proceduralTexturesEnabled?: boolean;
+            renderTargetsEnabled?: boolean;
+            spritesEnabled?: boolean;
+            skeletonsEnabled?: boolean;
+            audioEnabled?: boolean;
+        };
+        assetsRootURL?: string;
     }
 }
 declare module BabylonViewer {
@@ -2120,25 +2098,16 @@ declare module BabylonViewer {
 }
 declare module BabylonViewer {
     export interface ISkyboxConfiguration {
-        cubeTexture?: {
-            noMipMap?: boolean;
-            gammaSpace?: boolean;
-            url?: string | Array<string>;
-        };
-        color?: {
-            r: number;
-            g: number;
-            b: number;
-        };
-        pbr?: boolean;
-        scale?: number;
-        blur?: number;
-        material?: {
-            imageProcessingConfiguration?: IImageProcessingConfiguration;
-            [propName: string]: any;
-        };
-        infiniteDistance?: boolean;
-    }
+            cubeTexture?: {
+                    noMipMap?: boolean;
+                    gammaSpace?: boolean;
+                    url?: string | Array<string>;
+            };
+            color?: {
+                    r: number;
+                    g: number;
+                    b: number;
+            };
 }
 declare module BabylonViewer {
     /**
