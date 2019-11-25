@@ -602,6 +602,14 @@ declare module "babylonjs-node-editor/sharedComponents/lineContainerComponent" {
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/diagram/properties/propertyComponentProps" {
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
+    export interface IPropertyComponentProps {
+        globalState: GlobalState;
+        block: NodeMaterialBlock;
+    }
+}
 declare module "babylonjs-node-editor/sharedComponents/textInputLineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -645,29 +653,12 @@ declare module "babylonjs-node-editor/sharedComponents/textLineComponent" {
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-node-editor/stringTools" {
-    import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
-    export class StringTools {
-        private static _SaveAs;
-        private static _Click;
-        /**
-         * Gets the base math type of node material block connection point.
-         * @param type Type to parse.
-         */
-        static GetBaseType(type: NodeMaterialBlockConnectionPointTypes): string;
-        /**
-         * Download a string into a file that will be saved locally by the browser
-         * @param content defines the string to download locally as a file
-         */
-        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
-    }
-}
-declare module "babylonjs-node-editor/diagram/properties/propertyComponentProps" {
-    import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
-    export interface IPropertyComponentProps {
-        globalState: GlobalState;
-        block: NodeMaterialBlock;
+declare module "babylonjs-node-editor/diagram/properties/genericNodePropertyComponent" {
+    import * as React from "react";
+    import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
+    export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
     }
 }
 declare module "babylonjs-node-editor/diagram/properties/inputNodePropertyComponent" {
@@ -865,14 +856,6 @@ declare module "babylonjs-node-editor/diagram/propertyLedger" {
         };
     }
 }
-declare module "babylonjs-node-editor/diagram/properties/genericNodePropertyComponent" {
-    import * as React from "react";
-    import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
-    export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        render(): JSX.Element;
-    }
-}
 declare module "babylonjs-node-editor/diagram/display/displayManager" {
     import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
     export interface IDisplayManager {
@@ -881,6 +864,23 @@ declare module "babylonjs-node-editor/diagram/display/displayManager" {
         updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void;
         getBackgroundColor(block: NodeMaterialBlock): string;
         getHeaderText(block: NodeMaterialBlock): string;
+    }
+}
+declare module "babylonjs-node-editor/stringTools" {
+    import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
+    export class StringTools {
+        private static _SaveAs;
+        private static _Click;
+        /**
+         * Gets the base math type of node material block connection point.
+         * @param type Type to parse.
+         */
+        static GetBaseType(type: NodeMaterialBlockConnectionPointTypes): string;
+        /**
+         * Download a string into a file that will be saved locally by the browser
+         * @param content defines the string to download locally as a file
+         */
+        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
     }
 }
 declare module "babylonjs-node-editor/diagram/display/inputDisplayManager" {
@@ -1019,6 +1019,7 @@ declare module "babylonjs-node-editor/diagram/graphNode" {
         private _inputsContainer;
         private _outputsContainer;
         private _content;
+        private _comments;
         private _inputPorts;
         private _outputPorts;
         private _links;
@@ -1832,6 +1833,12 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface IPropertyComponentProps {
+        globalState: GlobalState;
+        block: BABYLON.NodeMaterialBlock;
+    }
+}
+declare module NODEEDITOR {
     interface ITextInputLineComponentProps {
         label: string;
         globalState: GlobalState;
@@ -1870,25 +1877,9 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class StringTools {
-        private static _SaveAs;
-        private static _Click;
-        /**
-         * Gets the base math type of node material block connection point.
-         * @param type Type to parse.
-         */
-        static GetBaseType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
-        /**
-         * Download a string into a file that will be saved locally by the browser
-         * @param content defines the string to download locally as a file
-         */
-        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
-    }
-}
-declare module NODEEDITOR {
-    export interface IPropertyComponentProps {
-        globalState: GlobalState;
-        block: BABYLON.NodeMaterialBlock;
+    export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
     }
 }
 declare module NODEEDITOR {
@@ -2051,18 +2042,28 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
     export interface IDisplayManager {
         getHeaderClass(block: BABYLON.NodeMaterialBlock): string;
         shouldDisplayPortLabels(block: BABYLON.NodeMaterialBlock): boolean;
         updatePreviewContent(block: BABYLON.NodeMaterialBlock, contentArea: HTMLDivElement): void;
         getBackgroundColor(block: BABYLON.NodeMaterialBlock): string;
         getHeaderText(block: BABYLON.NodeMaterialBlock): string;
+    }
+}
+declare module NODEEDITOR {
+    export class StringTools {
+        private static _SaveAs;
+        private static _Click;
+        /**
+         * Gets the base math type of node material block connection point.
+         * @param type Type to parse.
+         */
+        static GetBaseType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
+        /**
+         * Download a string into a file that will be saved locally by the browser
+         * @param content defines the string to download locally as a file
+         */
+        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
     }
 }
 declare module NODEEDITOR {
@@ -2178,6 +2179,7 @@ declare module NODEEDITOR {
         private _inputsContainer;
         private _outputsContainer;
         private _content;
+        private _comments;
         private _inputPorts;
         private _outputPorts;
         private _links;

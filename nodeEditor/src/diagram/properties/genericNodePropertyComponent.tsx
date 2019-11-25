@@ -4,7 +4,7 @@ import { LineContainerComponent } from '../../sharedComponents/lineContainerComp
 import { IPropertyComponentProps } from './propertyComponentProps';
 import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
 import { TextLineComponent } from '../../sharedComponents/textLineComponent';
-import { InputBlock } from 'babylonjs';
+import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 
 export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {

@@ -54534,6 +54534,10 @@ declare module BABYLON {
          */
         uniqueId: number;
         /**
+         * Gets or sets the comments associated with this block
+         */
+        comments: string;
+        /**
          * Gets a boolean indicating that this block can only be used once per NodeMaterial
          */
         readonly isUnique: boolean;

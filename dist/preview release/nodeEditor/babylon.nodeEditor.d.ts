@@ -477,6 +477,12 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface IPropertyComponentProps {
+        globalState: GlobalState;
+        block: BABYLON.NodeMaterialBlock;
+    }
+}
+declare module NODEEDITOR {
     interface ITextInputLineComponentProps {
         label: string;
         globalState: GlobalState;
@@ -515,25 +521,9 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class StringTools {
-        private static _SaveAs;
-        private static _Click;
-        /**
-         * Gets the base math type of node material block connection point.
-         * @param type Type to parse.
-         */
-        static GetBaseType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
-        /**
-         * Download a string into a file that will be saved locally by the browser
-         * @param content defines the string to download locally as a file
-         */
-        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
-    }
-}
-declare module NODEEDITOR {
-    export interface IPropertyComponentProps {
-        globalState: GlobalState;
-        block: BABYLON.NodeMaterialBlock;
+    export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
     }
 }
 declare module NODEEDITOR {
@@ -696,18 +686,28 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
     export interface IDisplayManager {
         getHeaderClass(block: BABYLON.NodeMaterialBlock): string;
         shouldDisplayPortLabels(block: BABYLON.NodeMaterialBlock): boolean;
         updatePreviewContent(block: BABYLON.NodeMaterialBlock, contentArea: HTMLDivElement): void;
         getBackgroundColor(block: BABYLON.NodeMaterialBlock): string;
         getHeaderText(block: BABYLON.NodeMaterialBlock): string;
+    }
+}
+declare module NODEEDITOR {
+    export class StringTools {
+        private static _SaveAs;
+        private static _Click;
+        /**
+         * Gets the base math type of node material block connection point.
+         * @param type Type to parse.
+         */
+        static GetBaseType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
+        /**
+         * Download a string into a file that will be saved locally by the browser
+         * @param content defines the string to download locally as a file
+         */
+        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
     }
 }
 declare module NODEEDITOR {
@@ -823,6 +823,7 @@ declare module NODEEDITOR {
         private _inputsContainer;
         private _outputsContainer;
         private _content;
+        private _comments;
         private _inputPorts;
         private _outputPorts;
         private _links;
