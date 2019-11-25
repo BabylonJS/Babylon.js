@@ -541,8 +541,14 @@ export class WindowsMotionController extends WebVRController {
     }
 }
 
+/**
+ * This class represents a new windows motion controller in XR.
+ */
 export class XRWindowsMotionController extends WindowsMotionController {
 
+    /**
+     * Changing the original WIndowsMotionController mapping to fir the new mapping
+     */
     protected readonly _mapping = {
         // Semantic button names
         buttons: ['trigger', 'grip', 'trackpad', 'thumbstick', 'menu'],
@@ -579,11 +585,19 @@ export class XRWindowsMotionController extends WindowsMotionController {
         pointingPoseMeshName: PoseEnabledController.POINTING_POSE
     };
 
+    /**
+     * Construct a new XR-Based windows motion controller
+     *
+     * @param gamepadInfo the gamepad object from the browser
+     */
     constructor(gamepadInfo: any) {
         super(gamepadInfo);
     }
 
-    public get thumbstickValues() {
+    /**
+     * holds the thumbstick values (X,Y)
+     */
+    public get thumbstickValues(): StickValues {
         return this.rightStick;
     }
 
@@ -627,6 +641,9 @@ export class XRWindowsMotionController extends WindowsMotionController {
         }
     }
 
+    /**
+     * Disposes the class with joy
+     */
     public dispose() {
         super.dispose();
         this.onThumbstickStateChangedObservable.clear();
