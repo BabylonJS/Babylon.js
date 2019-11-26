@@ -14,7 +14,7 @@ import { Effect, IEffectCreationOptions } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { WebVRFreeCamera } from '../Cameras/VR/webVRCamera';
 import { MaterialDefines } from "./materialDefines";
-import { Color3, TmpColors } from '../Maths/math.color';
+import { Color3 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
 
 /**
