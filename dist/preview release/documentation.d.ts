@@ -2265,7 +2265,7 @@ declare module BABYLON {
         static DistanceOfPointFromSegment(p: DeepImmutable<Vector2>, segA: DeepImmutable<Vector2>, segB: DeepImmutable<Vector2>): number;
     }
     /**
-     * Classed used to store (x,y,z) vector representation
+     * Class used to store (x,y,z) vector representation
      * A Vector3 is the main object used in 3D geometry
      * It can represent etiher the coordinates of a point the space, either a direction
      * Reminder: js uses a left handed forward facing system
@@ -54533,6 +54533,10 @@ declare module BABYLON {
          * Gets or sets the unique id of the node
          */
         uniqueId: number;
+        /**
+         * Gets or sets the comments associated with this block
+         */
+        comments: string;
         /**
          * Gets a boolean indicating that this block can only be used once per NodeMaterial
          */

@@ -1,11 +1,10 @@
 
 import * as React from "react";
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
-import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
-import { TextLineComponent } from '../../sharedComponents/textLineComponent';
 import { FloatLineComponent } from '../../sharedComponents/floatLineComponent';
 import { IPropertyComponentProps } from './propertyComponentProps';
 import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
+import { GenericPropertyTabComponent } from './genericNodePropertyComponent';
 
 export class ClampPropertyTabComponent extends React.Component<IPropertyComponentProps> {
 
@@ -23,10 +22,7 @@ export class ClampPropertyTabComponent extends React.Component<IPropertyComponen
       
         return (
             <div>
-                <LineContainerComponent title="GENERAL">
-                    <TextInputLineComponent globalState={this.props.globalState} label="Name" propertyName="name" target={clampBlock} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
-                    <TextLineComponent label="Type" value={clampBlock.getClassName()} />
-                </LineContainerComponent>
+                <GenericPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
                 <LineContainerComponent title="PROPERTIES">
                   <FloatLineComponent label="Minimum" propertyName="minimum" target={clampBlock} onChange={() => this.forceRebuild()} />
                   <FloatLineComponent label="Maximum" propertyName="maximum" target={clampBlock} onChange={() => this.forceRebuild()} />

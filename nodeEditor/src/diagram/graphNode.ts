@@ -11,6 +11,7 @@ import { DisplayLedger } from './displayLedger';
 import { IDisplayManager } from './display/displayManager';
 import { NodeLink } from './nodeLink';
 import { NodePort } from './nodePort';
+import { GraphNodeGroup } from './graphNodeGroup';
 
 export class GraphNode {
     private _visual: HTMLDivElement;
@@ -18,7 +19,8 @@ export class GraphNode {
     private _connections: HTMLDivElement;
     private _inputsContainer: HTMLDivElement;
     private _outputsContainer: HTMLDivElement;
-    private _content: HTMLDivElement;
+    private _content: HTMLDivElement;    
+    private _comments: HTMLDivElement;
     private _inputPorts: NodePort[] = [];
     private _outputPorts: NodePort[] = [];
     private _links: NodeLink[] = [];    
@@ -29,8 +31,9 @@ export class GraphNode {
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null    
     private _globalState: GlobalState;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink>>>;   
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphNodeGroup>>>;   
     private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;  
+    private _onGroupAboutToMoveObserver: Nullable<Observer<GraphNodeGroup>>;  
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;  
     private _ownerCanvas: GraphCanvasComponent; 
     private _isSelected: boolean;
@@ -148,6 +151,19 @@ export class GraphNode {
 
             this.isSelected = overlap;
         });
+
+        this._onGroupAboutToMoveObserver = this._globalState.onGroupAboutToMove.add(group => {
+            const rect2 = this._visual.getBoundingClientRect();
+            const rect1 = group.element.getBoundingClientRect();
+            var overlap = !(rect1.right < rect2.left || 
+                rect1.left > rect2.right || 
+                rect1.bottom < rect2.top || 
+                rect1.top > rect2.bottom);
+            
+            if (overlap) {
+                group.nodes.push(this);
+            }
+        });
     }
 
     public getPortForConnectionPoint(point: NodeMaterialConnectionPoint) {
@@ -196,6 +212,9 @@ export class GraphNode {
         for (var port of this._outputPorts) {
             port.refresh();
         }
+
+        this._comments.innerHTML = this.block.comments || "";
+        this._comments.title = this.block.comments || "";
     }
 
     private _appendConnection(connectionPoint: NodeMaterialConnectionPoint, root: HTMLDivElement, displayManager: Nullable<IDisplayManager>) {
@@ -256,12 +275,12 @@ export class GraphNode {
             return;
         }
 
-        let newX = evt.clientX - this._mouseStartPointX;
-        let newY = evt.clientY - this._mouseStartPointY;
+        let newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
+        let newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
 
         for (var selectedNode of this._ownerCanvas.selectedNodes) {
-            selectedNode.x += newX / this._ownerCanvas.zoom;
-            selectedNode.y += newY / this._ownerCanvas.zoom;
+            selectedNode.x += newX;
+            selectedNode.y += newY;
         }
 
         this._mouseStartPointX = evt.clientX;
@@ -334,8 +353,13 @@ export class GraphNode {
         selectionBorder.classList.add("selection-border");
         this._visual.appendChild(selectionBorder);     
 
-
         root.appendChild(this._visual);
+
+        // Comments
+        this._comments = root.ownerDocument!.createElement("div");
+        this._comments.classList.add("comments");
+            
+        this._visual.appendChild(this._comments);    
 
         // Connections
         for (var input of this.block.inputs) {
@@ -364,6 +388,10 @@ export class GraphNode {
 
         if (this._visual.parentElement) {
             this._visual.parentElement.removeChild(this._visual);
+        }
+
+        if (this._onGroupAboutToMoveObserver) {
+            this._globalState.onGroupAboutToMove.remove(this._onGroupAboutToMoveObserver);
         }
 
         for (var port of this._inputPorts) {

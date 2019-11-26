@@ -1,11 +1,10 @@
 
 import * as React from "react";
-import { TextLineComponent } from '../../sharedComponents/textLineComponent';
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
-import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { TrigonometryBlockOperations, TrigonometryBlock } from 'babylonjs/Materials/Node/Blocks/trigonometryBlock';
 import { IPropertyComponentProps } from './propertyComponentProps';
+import { GenericPropertyTabComponent } from './genericNodePropertyComponent';
 
 export class TrigonometryPropertyTabComponent extends React.Component<IPropertyComponentProps> {
 
@@ -41,13 +40,8 @@ export class TrigonometryPropertyTabComponent extends React.Component<IPropertyC
         })
         
         return (
-            <div>
-                <LineContainerComponent title="GENERAL">
-                    <TextInputLineComponent globalState={this.props.globalState} label="Name" propertyName="name" target={trigonometryBlock} onChange={() => {
-                        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-                    }} />
-                    <TextLineComponent label="Type" value={trigonometryBlock.getClassName()} />
-                </LineContainerComponent>
+            <div>                
+                <GenericPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
                 <LineContainerComponent title="PROPERTIES">  
                     <OptionsLineComponent label="Operation" options={operationOptions} target={trigonometryBlock} propertyName="operation" onSelect={(value: any) => {
                         this.forceUpdate();

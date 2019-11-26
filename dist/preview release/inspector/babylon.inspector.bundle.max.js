@@ -48317,7 +48317,7 @@ var CameraTreeItemComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_5__["createElement"]("div", { className: "cameraTools" },
             react__WEBPACK_IMPORTED_MODULE_5__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemLabelComponent"], { label: this.props.camera.name, onClick: function () { return _this.props.onClick(); }, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_2__["faCamera"], color: "green" }),
             (!scene.activeCameras || scene.activeCameras.length === 0) &&
-                react__WEBPACK_IMPORTED_MODULE_5__["createElement"]("div", { className: "activeCamera icon", onClick: function () { return _this.setActive(); }, title: "Set as main camera" }, isActiveElement),
+                react__WEBPACK_IMPORTED_MODULE_5__["createElement"]("div", { className: "activeCamera icon", onClick: function () { return _this.setActive(); }, title: "Set as main camera and attach to controls" }, isActiveElement),
             react__WEBPACK_IMPORTED_MODULE_5__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_4__["ExtensionsComponent"], { target: this.props.camera, extensibilityGroups: this.props.extensibilityGroups })));
     };
     return CameraTreeItemComponent;
