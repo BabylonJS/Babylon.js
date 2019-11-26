@@ -12,7 +12,8 @@ export class GraphNodeGroup {
     private _gridAlignedY = 0;    
     public width: number;
     public height: number;
-    public element: HTMLDivElement;    
+    public element: HTMLDivElement;   
+    private _headerElement: HTMLDivElement;    
     private _nodes: GraphNode[] = [];
     private _ownerCanvas: GraphCanvasComponent;
     private _mouseStartPointX: Nullable<number> = null;
@@ -37,7 +38,7 @@ export class GraphNodeGroup {
 
     public set name(value: string) {
         this._name = value;
-        this.element.innerHTML = value;
+        this._headerElement.innerHTML = value;
     }
 
     public get x() {
@@ -76,6 +77,10 @@ export class GraphNodeGroup {
         this.element.classList.add("group-box");
         root.appendChild(this.element);
 
+        this._headerElement = root.ownerDocument!.createElement("div");  
+        this._headerElement.classList.add("group-box-header");
+        this.element.appendChild(this._headerElement);
+
         this.x = parseFloat(candidate.style.left!.replace("px", ""));
         this.y = parseFloat(candidate.style.top!.replace("px", ""));
         this.width = parseFloat(candidate.style.width!.replace("px", ""));
@@ -86,9 +91,9 @@ export class GraphNodeGroup {
         this.element.style.width = `${this.width / canvas.zoom}px`;
         this.element.style.height = `${this.height / canvas.zoom}px`;
         
-        this.element.addEventListener("pointerdown", evt => this._onDown(evt));
-        this.element.addEventListener("pointerup", evt => this._onUp(evt));
-        this.element.addEventListener("pointermove", evt => this._onMove(evt));
+        this._headerElement.addEventListener("pointerdown", evt => this._onDown(evt));
+        this._headerElement.addEventListener("pointerup", evt => this._onUp(evt));
+        this._headerElement.addEventListener("pointermove", evt => this._onMove(evt));
 
         this._onSelectionChangedObserver = canvas.globalState.onSelectionChangedObservable.add(node => {
             if (node === this) {
@@ -110,7 +115,7 @@ export class GraphNodeGroup {
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;        
         
-        this.element.setPointerCapture(evt.pointerId);
+        this._headerElement.setPointerCapture(evt.pointerId);
         this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
 
         // Get nodes
@@ -128,7 +133,7 @@ export class GraphNodeGroup {
         this.cleanAccumulation();
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
-        this.element.releasePointerCapture(evt.pointerId);
+        this._headerElement.releasePointerCapture(evt.pointerId);
     }
 
     private _onMove(evt: PointerEvent) {

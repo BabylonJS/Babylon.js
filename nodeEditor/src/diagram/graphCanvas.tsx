@@ -148,9 +148,13 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 this._selectedGroup = null;
             } else {
                 if (selection instanceof NodeLink) {
+                    this._selectedNodes = [];
+                    this._selectedGroup = null;
                     this._selectedLink = selection;
                 } else if (selection instanceof GraphNodeGroup) {
+                    this._selectedNodes = [];
                     this._selectedGroup = selection;
+                    this._selectedLink = null;
                 } else{
                     if (this._ctrlKeyIsPressed) {
                         if (this._selectedNodes.indexOf(selection) === -1) {

@@ -27,11 +27,19 @@
         
         .group-box {
             position: absolute;
-            background: rgba(72, 72, 72, 0.5);
-            border: rgba(255, 255, 255, 0.432) solid 2px;
+            background: rgba(72, 72, 72, 0.7);
+            display: grid;
+            grid-template-rows: 40px calc(100% - 40px);
+            grid-template-columns: 100%;
+
+            .group-box-header {
+                grid-row: 1;
+                grid-column: 1;
+                background: rgba(72, 72, 72, 1);
+            }
 
             &.selected {
-                border-color: white;
+                border: white solid 4px;
             }
         }
     }
@@ -82,7 +90,7 @@
             height: 100%;                  
 
             .visual {
-                z-index: 1;
+                z-index: 2;
                 width: 200px;
                 position: absolute;
                 left: 0;
@@ -105,6 +113,7 @@
                     opacity: 0.8;
                     display: grid;
                     align-items: flex-end;
+                    pointer-events: none;
                 }
 
                 .selection-border {                    
