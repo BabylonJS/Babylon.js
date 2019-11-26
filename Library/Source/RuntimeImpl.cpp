@@ -41,10 +41,12 @@ namespace Babylon
 
     RuntimeImpl::RuntimeImpl(void* nativeWindowPtr, const std::string& rootUrl, LogCallback&& logCallback)
         : m_nativeWindowPtr{ nativeWindowPtr }
-        , m_thread{ [this] { ThreadProcedure(); } }
+        //, m_thread{ [this] { ThreadInit(); ThreadRun();} }
         , m_rootUrl{ rootUrl }
         , m_logCallback{ logCallback }
     {
+        ThreadInit();
+        m_thread = std::thread([this] { ThreadRun(); });
     }
 
     RuntimeImpl::~RuntimeImpl()
@@ -225,10 +227,8 @@ namespace Babylon
         global.Set(JS_XML_HTTP_REQUEST_CONSTRUCTOR_NAME, jsXmlHttpRequestConstructor.Value());
     }
 
-    void RuntimeImpl::BaseThreadProcedure()
+    void RuntimeImpl::BaseThreadInit()
     {
-        m_dispatcher.set_affinity(std::this_thread::get_id());
-
         auto executeOnScriptThread = [this](std::function<void()> action)
         {
             Dispatch([action = std::move(action)](auto&)
@@ -237,15 +237,16 @@ namespace Babylon
             });
         };
 
-        Env env{ GetModulePath().u8string().data(), std::move(executeOnScriptThread) };
-
-        m_env = &env;
-        auto hostScopeGuard = gsl::finally([this] { m_env = nullptr; });
+        m_env = std::make_unique<Env>(GetModulePath().u8string().data(), std::move(executeOnScriptThread));
 
         InitializeJavaScriptVariables();
-
+    }
+        
+    void RuntimeImpl::BaseThreadRun()
+    {
+        m_dispatcher.set_affinity(std::this_thread::get_id());
+        
         // TODO: Handle device lost/restored.
-
         while (!m_cancelSource.cancelled())
         {
             // check if suspended
@@ -255,6 +256,7 @@ namespace Babylon
             }
             m_dispatcher.blocking_tick(m_cancelSource);
         }
+        m_env = nullptr;
     }
 
     template arcana::task<std::string, std::exception_ptr> RuntimeImpl::LoadUrlAsync(const std::string& url);

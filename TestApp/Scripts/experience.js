@@ -48,6 +48,7 @@ function CreateInputHandling(scene) {
 
 var engine = new BABYLON.NativeEngine();
 var scene = new BABYLON.Scene(engine);
+engine.getHostDocument = function () { return {}; }
 
 CreateBoxAsync().then(function () {
 //CreateSpheresAsync().then(function () {
