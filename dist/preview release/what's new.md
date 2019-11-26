@@ -35,6 +35,7 @@
 - Display Oculus Quest controller when using a Quest in WebVR ([TrevorDev](https://github.com/TrevorDev))
 - Added startAndReleaseDragOnPointerEvents property to pointerDragBehavior which can be set to false for custom drag triggering ([TrevorDev](https://github.com/TrevorDev))
 - Added optional picking predicate to pointerDragBehavior for filtering affected meshes ([Exolun](https://github.com/Exolun))
+- Added accessor functions for `PointerDragBehavior._options` ([Popov72](https://github.com/Popov72))
 - Effect renderer to render one or multiple shader effects to a texture ([TrevorDev](https://github.com/TrevorDev))
 - Added url parameters to web request modifiers ([PierreLeBlond](https://github.com/PierreLeBlond))
 - Added `VRExperienceHelper.exitVROnDoubleTap` ([Deltakosh](https://github.com/deltakosh/))

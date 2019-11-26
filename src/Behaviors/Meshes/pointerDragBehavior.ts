@@ -98,6 +98,21 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     public useObjectOrienationForDragging = true;
 
     private _options: { dragAxis?: Vector3, dragPlaneNormal?: Vector3 };
+
+    /**
+     * Gets the options used by the behavior
+     */
+    public get options(): { dragAxis?: Vector3, dragPlaneNormal?: Vector3 } {
+        return this._options;
+    }
+
+    /**
+     * Sets the options used by the behavior
+     */
+    public set options(options: { dragAxis?: Vector3, dragPlaneNormal?: Vector3 }) {
+        this._options = options;
+    }
+
     /**
      * Creates a pointer drag behavior that can be attached to a mesh
      * @param options The drag axis or normal of the plane that will be dragged across. If no options are specified the drag plane will always face the ray's origin (eg. camera)
