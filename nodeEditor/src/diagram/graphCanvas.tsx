@@ -11,6 +11,7 @@ import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { DataStorage } from '../dataStorage';
+import { GraphNodeGroup } from './graphNodeGroup';
 
 require("./graphCanvas.scss");
 
@@ -25,6 +26,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _hostCanvas: HTMLDivElement;
     private _graphCanvas: HTMLDivElement;
     private _selectionContainer: HTMLDivElement;
+    private _groupContainer: HTMLDivElement;
     private _svgCanvas: HTMLElement;
     private _rootContainer: HTMLDivElement;
     private _nodes: GraphNode[] = [];
@@ -43,7 +45,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _candidateLink: Nullable<NodeLink> = null;
     private _candidatePort: Nullable<NodePort> = null;
     private _gridSize = 20;
-    private _selectionBox: Nullable<HTMLDivElement> = null;
+    private _selectionBox: Nullable<HTMLDivElement> = null;   
+    private _selectedGroup: Nullable<GraphNodeGroup> = null;   
+    private _groupCandidateBox: Nullable<HTMLDivElement> = null;  
+
+    private _groups: GraphNodeGroup[] = [];
 
     private _altKeyIsPressed = false;
     private _ctrlKeyIsPressed = false;
@@ -112,6 +118,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     public get selectedLink() {
         return this._selectedLink;
     }
+    public get selectedGroup() {
+        return this._selectedGroup;
+    }
 
     public get canvasContainer() {
         return this._graphCanvas;
@@ -121,18 +130,28 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         return this._svgCanvas;
     }
 
+    public get selectionContainer() {
+        return this._selectionContainer;
+    }
+
+    public get groupContainer() {
+        return this._groupContainer;
+    }
+
     constructor(props: IGraphCanvasComponentProps) {
         super(props);
 
-        props.globalState.onSelectionChangedObservable.add(selection => {
-            
+        props.globalState.onSelectionChangedObservable.add(selection => {            
             if (!selection) {
                 this._selectedNodes = [];
                 this._selectedLink = null;
+                this._selectedGroup = null;
             } else {
                 if (selection instanceof NodeLink) {
                     this._selectedLink = selection;
-                } else {
+                } else if (selection instanceof GraphNodeGroup) {
+                    this._selectedGroup = selection;
+                } else{
                     if (this._ctrlKeyIsPressed) {
                         if (this._selectedNodes.indexOf(selection) === -1) {
                             this._selectedNodes.push(selection);
@@ -161,6 +180,13 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this._altKeyIsPressed = false;
             this._ctrlKeyIsPressed = false;
         }, false);     
+
+        // Store additional data to serialization object
+        this.props.globalState.storeEditorData = (editorData) => {
+            editorData.zoom = this.zoom;
+            editorData.x = this.x;
+            editorData.y = this.y;
+        }
     }
 
     public getGridPosition(position: number) {
@@ -308,7 +334,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this._rootContainer = this.props.globalState.hostDocument.getElementById("graph-container") as HTMLDivElement;
         this._graphCanvas = this.props.globalState.hostDocument.getElementById("graph-canvas-container") as HTMLDivElement;
         this._svgCanvas = this.props.globalState.hostDocument.getElementById("graph-svg-container") as HTMLElement;        
-        this._selectionContainer = this.props.globalState.hostDocument.getElementById("selection-container") as HTMLDivElement;        
+        this._selectionContainer = this.props.globalState.hostDocument.getElementById("selection-container") as HTMLDivElement;   
+        this._groupContainer = this.props.globalState.hostDocument.getElementById("group-container") as HTMLDivElement;        
         
         this.gridSize = DataStorage.ReadNumber("GridSize", 20);
         this.updateTransform();
@@ -342,6 +369,32 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
             return;
         }
+
+        // Candidate group box
+        if (this._groupCandidateBox) {
+            const rootRect = this.canvasContainer.getBoundingClientRect();      
+
+            const localX = evt.pageX - rootRect.left;
+            const localY = evt.pageY - rootRect.top;
+
+            if (localX > this._selectionStartX) {
+                this._groupCandidateBox.style.left = `${this._selectionStartX / this.zoom}px`;
+                this._groupCandidateBox.style.width = `${(localX - this._selectionStartX) / this.zoom}px`;
+            } else {
+                this._groupCandidateBox.style.left = `${localX / this.zoom}px`;
+                this._groupCandidateBox.style.width = `${(this._selectionStartX - localX) / this.zoom}px`;
+            }
+
+            if (localY > this._selectionStartY) {                
+                this._groupCandidateBox.style.top = `${this._selectionStartY / this.zoom}px`;
+                this._groupCandidateBox.style.height = `${(localY - this._selectionStartY) / this.zoom}px`;
+            } else {
+                this._groupCandidateBox.style.top = `${localY / this.zoom}px`;
+                this._groupCandidateBox.style.height = `${(this._selectionStartY - localY) / this.zoom}px`;
+            }
+
+            return;
+        }        
 
         // Candidate link
         if (this._candidateLink) {        
@@ -410,6 +463,23 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this._selectionBox.style.top = `${this._selectionStartY / this.zoom}px`;
             this._selectionBox.style.width = "0px";
             this._selectionBox.style.height = "0px";
+            return;
+        }
+
+        // Group?
+        if (evt.currentTarget === this._hostCanvas && evt.shiftKey) {
+            this._groupCandidateBox = this.props.globalState.hostDocument.createElement("div");
+            this._groupCandidateBox.classList.add("group-box");
+            this._groupContainer.appendChild(this._groupCandidateBox);
+
+            const rootRect = this.canvasContainer.getBoundingClientRect();      
+            this._selectionStartX = (evt.pageX - rootRect.left);
+            this._selectionStartY = (evt.pageY - rootRect.top);
+            this._groupCandidateBox.style.left = `${this._selectionStartX / this.zoom}px`;
+            this._groupCandidateBox.style.top = `${this._selectionStartY / this.zoom}px`;
+            this._groupCandidateBox.style.width = "0px";
+            this._groupCandidateBox.style.height = "0px";
+            return;
         }
 
         // Port dragging
@@ -444,6 +514,14 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
            this._selectionBox.parentElement!.removeChild(this._selectionBox);
            this._selectionBox = null;
         }
+
+        if (this._groupCandidateBox) {            
+            let newGroup = new GraphNodeGroup(this._groupCandidateBox, this);
+            this._groups.push(newGroup);
+
+            this._groupCandidateBox.parentElement!.removeChild(this._groupCandidateBox);
+            this._groupCandidateBox = null;
+         }
     }
 
     onWheel(evt: React.WheelEvent) {
@@ -580,6 +658,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 <div id="graph-container">
                     <div id="graph-canvas-container">
                     </div>     
+                    <div id="group-container">                        
+                    </div>
                     <svg id="graph-svg-container">
                     </svg>
                     <div id="selection-container">                        

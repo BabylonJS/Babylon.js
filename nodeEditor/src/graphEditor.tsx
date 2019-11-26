@@ -146,7 +146,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
 
         this.props.globalState.hostDocument!.addEventListener("keydown", evt => {
-            if (evt.keyCode === 46) { // Delete                
+            if (evt.keyCode === 46 && !this.props.globalState.blockKeyboardEvents) { // Delete                
                 let selectedItems = this._graphCanvas.selectedNodes;
 
                 for (var selectedItem of selectedItems) {
@@ -163,6 +163,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
                 if (this._graphCanvas.selectedLink) {
                     this._graphCanvas.selectedLink.dispose();
+                }
+
+                if (this._graphCanvas.selectedGroup) {
+                    this._graphCanvas.selectedGroup.dispose();
                 }
 
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);  
@@ -231,12 +235,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             }
 
         }, false);
-
-        this.props.globalState.storeEditorData = (editorData) => {
-            editorData.zoom = this._graphCanvas.zoom;
-            editorData.x = this._graphCanvas.x;
-            editorData.y = this._graphCanvas.y;
-        }
     }
 
     zoomToFit() {

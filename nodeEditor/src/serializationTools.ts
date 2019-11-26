@@ -28,26 +28,9 @@ export class SerializationTools {
         let bufferSerializationState = Texture.SerializeBuffers;
         Texture.SerializeBuffers = DataStorage.ReadBoolean("EmbedTextures", true);
 
+        this.UpdateLocations(material, globalState);
+
         let serializationObject = material.serialize();
-
-        // Store node locations
-        for (var block of material.attachedBlocks) {
-            let node = globalState.onGetNodeFromBlock(block);
-
-            if (!serializationObject.editorData) {
-                serializationObject.editorData = {
-                    locations: []
-                };
-            }
-
-            serializationObject.editorData.locations.push({
-                blockId: block.uniqueId,
-                x: node ? node.x : 0,
-                y: node ? node.y : 0
-            });
-        }
-
-        globalState.storeEditorData(serializationObject.editorData);
 
         Texture.SerializeBuffers = bufferSerializationState;
 
