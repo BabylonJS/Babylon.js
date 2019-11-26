@@ -12,6 +12,7 @@ import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fr
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { DataStorage } from '../dataStorage';
 import { GraphFrame } from './graphFrame';
+import { IEditorData } from '../nodeLocationInfo';
 
 require("./graphCanvas.scss");
 
@@ -75,6 +76,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     public get links() {
         return this._links;
+    }
+
+    public get frames() {
+        return this._frames;
     }
 
     public get zoom() {
@@ -191,6 +196,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             editorData.zoom = this.zoom;
             editorData.x = this.x;
             editorData.y = this.y;
+
+            editorData.frames = [];
+            for (var frame of this._frames) {
+                editorData.frames.push(frame.serialize());
+            }
         }
     }
 
@@ -200,6 +210,14 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 			return position;
 		}
 		return gridSize * Math.floor(position / gridSize);
+    }
+    
+    public getGridPositionCeil(position: number) {
+        let gridSize = this.gridSize;
+		if (gridSize === 0) {
+			return position;
+		}
+		return gridSize * Math.ceil(position / gridSize);
 	}
 
     updateTransform() {
@@ -227,7 +245,13 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         for (var node of this._nodes) {
             node.dispose();
         }
+        
+        const frames = this._frames.splice(0);
+        for (var frame of frames) {
+            frame.dispose();
+        }
         this._nodes = [];
+        this._frames = [];
         this._links = [];
         this._graphCanvas.innerHTML = "";
         this._svgCanvas.innerHTML = "";
@@ -650,6 +674,25 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         nodeB.refresh();
 
         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+    }
+
+    processEditorData(editorData: IEditorData) {
+        const frames = this._frames.splice(0);
+        for (var frame of frames) {
+            frame.dispose();
+        }
+
+        this._frames = [];
+
+        this.x = editorData.x || 0;
+        this.y = editorData.y || 0;
+        this.zoom = editorData.zoom || 1;
+
+        // Frames
+        for (var frameData of editorData.frames) {
+            var frame = GraphFrame.Parse(frameData, this);
+            this._frames.push(frame);
+        }
     }
  
     render() {

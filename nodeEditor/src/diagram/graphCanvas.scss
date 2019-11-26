@@ -46,16 +46,31 @@
             background: rgba(72, 72, 72, 0.7);
             display: grid;
             grid-template-rows: 40px calc(100% - 40px);
-            grid-template-columns: 100%;
+            grid-template-columns: 100%;            
+            border: transparent solid 4px;
+            box-sizing: border-box;
 
             .group-box-header {
                 grid-row: 1;
                 grid-column: 1;
-                background: rgba(72, 72, 72, 1);
+                background: rgba(72, 72, 72, 1);    
+                color: white;
+                font-size: 24px;
+                text-align: center;
+                display: grid;
+                align-content: center;
+                overflow: hidden;
+                margin: -4px;
+                border: rgba(72, 72, 72, 1) solid 4px;
+                border-bottom: 0;
             }
 
             &.selected {
-                border: white solid 4px;
+                border-color: white;
+
+                .group-box-header {
+                    border-color: white !important;
+                }
             }
         }
 
