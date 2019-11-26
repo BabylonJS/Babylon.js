@@ -4,7 +4,7 @@ import { Nullable } from 'babylonjs/types';
 import { Observer } from 'babylonjs/Misc/observable';
 import { NodeLink } from './nodeLink';
 
-export class GraphNodeGroup {
+export class GraphFrame {
     private _name: string;
     private _x = 0;
     private _y = 0;
@@ -18,7 +18,7 @@ export class GraphNodeGroup {
     private _ownerCanvas: GraphCanvasComponent;
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphNodeGroup>>>;   
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame>>>;   
 
     public get nodes() {
         return this._nodes;
@@ -88,8 +88,8 @@ export class GraphNodeGroup {
 
         this.cleanAccumulation();        
 
-        this.element.style.width = `${this.width / canvas.zoom}px`;
-        this.element.style.height = `${this.height / canvas.zoom}px`;
+        this.element.style.width = `${this.width}px`;
+        this.element.style.height = `${this.height}px`;
         
         this._headerElement.addEventListener("pointerdown", evt => this._onDown(evt));
         this._headerElement.addEventListener("pointerup", evt => this._onUp(evt));

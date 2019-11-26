@@ -11,7 +11,7 @@ import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { DataStorage } from '../dataStorage';
-import { GraphNodeGroup } from './graphNodeGroup';
+import { GraphFrame } from './graphFrame';
 
 require("./graphCanvas.scss");
 
@@ -46,10 +46,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _candidatePort: Nullable<NodePort> = null;
     private _gridSize = 20;
     private _selectionBox: Nullable<HTMLDivElement> = null;   
-    private _selectedGroup: Nullable<GraphNodeGroup> = null;   
-    private _groupCandidateBox: Nullable<HTMLDivElement> = null;  
+    private _selectedFrame: Nullable<GraphFrame> = null;   
+    private _frameCandidate: Nullable<HTMLDivElement> = null;  
 
-    private _groups: GraphNodeGroup[] = [];
+    private _frames: GraphFrame[] = [];
 
     private _altKeyIsPressed = false;
     private _ctrlKeyIsPressed = false;
@@ -118,8 +118,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     public get selectedLink() {
         return this._selectedLink;
     }
-    public get selectedGroup() {
-        return this._selectedGroup;
+    public get selectedFrame() {
+        return this._selectedFrame;
     }
 
     public get canvasContainer() {
@@ -137,6 +137,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     public get groupContainer() {
         return this._groupContainer;
     }
+    
 
     constructor(props: IGraphCanvasComponentProps) {
         super(props);
@@ -145,15 +146,15 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             if (!selection) {
                 this._selectedNodes = [];
                 this._selectedLink = null;
-                this._selectedGroup = null;
+                this._selectedFrame = null;
             } else {
                 if (selection instanceof NodeLink) {
                     this._selectedNodes = [];
-                    this._selectedGroup = null;
+                    this._selectedFrame = null;
                     this._selectedLink = selection;
-                } else if (selection instanceof GraphNodeGroup) {
+                } else if (selection instanceof GraphFrame) {
                     this._selectedNodes = [];
-                    this._selectedGroup = selection;
+                    this._selectedFrame = selection;
                     this._selectedLink = null;
                 } else{
                     if (this._ctrlKeyIsPressed) {
@@ -375,26 +376,26 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
 
         // Candidate group box
-        if (this._groupCandidateBox) {
+        if (this._frameCandidate) {
             const rootRect = this.canvasContainer.getBoundingClientRect();      
 
             const localX = evt.pageX - rootRect.left;
             const localY = evt.pageY - rootRect.top;
 
             if (localX > this._selectionStartX) {
-                this._groupCandidateBox.style.left = `${this._selectionStartX / this.zoom}px`;
-                this._groupCandidateBox.style.width = `${(localX - this._selectionStartX) / this.zoom}px`;
+                this._frameCandidate.style.left = `${this._selectionStartX / this.zoom}px`;
+                this._frameCandidate.style.width = `${(localX - this._selectionStartX) / this.zoom}px`;
             } else {
-                this._groupCandidateBox.style.left = `${localX / this.zoom}px`;
-                this._groupCandidateBox.style.width = `${(this._selectionStartX - localX) / this.zoom}px`;
+                this._frameCandidate.style.left = `${localX / this.zoom}px`;
+                this._frameCandidate.style.width = `${(this._selectionStartX - localX) / this.zoom}px`;
             }
 
             if (localY > this._selectionStartY) {                
-                this._groupCandidateBox.style.top = `${this._selectionStartY / this.zoom}px`;
-                this._groupCandidateBox.style.height = `${(localY - this._selectionStartY) / this.zoom}px`;
+                this._frameCandidate.style.top = `${this._selectionStartY / this.zoom}px`;
+                this._frameCandidate.style.height = `${(localY - this._selectionStartY) / this.zoom}px`;
             } else {
-                this._groupCandidateBox.style.top = `${localY / this.zoom}px`;
-                this._groupCandidateBox.style.height = `${(this._selectionStartY - localY) / this.zoom}px`;
+                this._frameCandidate.style.top = `${localY / this.zoom}px`;
+                this._frameCandidate.style.height = `${(this._selectionStartY - localY) / this.zoom}px`;
             }
 
             return;
@@ -472,17 +473,17 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         // Group?
         if (evt.currentTarget === this._hostCanvas && evt.shiftKey) {
-            this._groupCandidateBox = this.props.globalState.hostDocument.createElement("div");
-            this._groupCandidateBox.classList.add("group-box");
-            this._groupContainer.appendChild(this._groupCandidateBox);
+            this._frameCandidate = this.props.globalState.hostDocument.createElement("div");
+            this._frameCandidate.classList.add("group-box");
+            this._groupContainer.appendChild(this._frameCandidate);
 
             const rootRect = this.canvasContainer.getBoundingClientRect();      
             this._selectionStartX = (evt.pageX - rootRect.left);
             this._selectionStartY = (evt.pageY - rootRect.top);
-            this._groupCandidateBox.style.left = `${this._selectionStartX / this.zoom}px`;
-            this._groupCandidateBox.style.top = `${this._selectionStartY / this.zoom}px`;
-            this._groupCandidateBox.style.width = "0px";
-            this._groupCandidateBox.style.height = "0px";
+            this._frameCandidate.style.left = `${this._selectionStartX / this.zoom}px`;
+            this._frameCandidate.style.top = `${this._selectionStartY / this.zoom}px`;
+            this._frameCandidate.style.width = "0px";
+            this._frameCandidate.style.height = "0px";
             return;
         }
 
@@ -519,12 +520,12 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
            this._selectionBox = null;
         }
 
-        if (this._groupCandidateBox) {            
-            let newGroup = new GraphNodeGroup(this._groupCandidateBox, this);
-            this._groups.push(newGroup);
+        if (this._frameCandidate) {            
+            let newGroup = new GraphFrame(this._frameCandidate, this);
+            this._frames.push(newGroup);
 
-            this._groupCandidateBox.parentElement!.removeChild(this._groupCandidateBox);
-            this._groupCandidateBox = null;
+            this._frameCandidate.parentElement!.removeChild(this._frameCandidate);
+            this._frameCandidate = null;
          }
     }
 
@@ -665,7 +666,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     <div id="group-container">                        
                     </div>
                     <svg id="graph-svg-container">
-                    </svg>
+                    </svg>                    
                     <div id="selection-container">                        
                     </div>
                 </div>
