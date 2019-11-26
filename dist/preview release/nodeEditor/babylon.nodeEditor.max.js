@@ -5582,7 +5582,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "#graph-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro\";\n  user-select: none;\n  overflow: hidden;\n  cursor: move;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #graph-canvas #selection-container {\n    pointer-events: none; }\n    #graph-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #graph-canvas #graph-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template: 100% 100%; }\n    #graph-canvas #graph-container #graph-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible; }\n      #graph-canvas #graph-container #graph-svg-container .link {\n        stroke-width: 4px; }\n        #graph-canvas #graph-container #graph-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n      #graph-canvas #graph-container #graph-svg-container .selection-link {\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link:hover, #graph-canvas #graph-container #graph-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #graph-canvas #graph-container #graph-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #graph-canvas #graph-container #graph-canvas-container .visual {\n        z-index: 1;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid transparent;\n          border-radius: 12px; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.constant {\n            border-color: #4E5C74;\n            background: #4E5C74; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.inspector {\n            border-color: #396437;\n            background: #396437; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .connections {\n          grid-row: 2;\n          grid-column: 1;\n          display: grid;\n          grid-template-columns: 50% 50%; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .port {\n            border-radius: 20px;\n            width: 20px;\n            height: 20px;\n            align-self: center; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .connections .port .img {\n              width: 100%; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .connections .port:hover, #graph-canvas #graph-container #graph-canvas-container .visual .connections .port.selected {\n              filter: brightness(2); }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .portLine {\n            height: 24px;\n            display: grid;\n            grid-template-rows: 100%; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .label {\n            align-items: center; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .inputsContainer {\n            grid-row: 1;\n            grid-column: 1; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .connections .inputsContainer .portLine {\n              grid-template-columns: 12px calc(100% - 15px); }\n              #graph-canvas #graph-container #graph-canvas-container .visual .connections .inputsContainer .portLine .label {\n                grid-row: 1;\n                grid-column: 2; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .connections .inputsContainer .portLine .port {\n                grid-row: 1;\n                grid-column: 1;\n                transform: translateX(-12px); }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .outputsContainer {\n            grid-row: 1;\n            grid-column: 2; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .connections .outputsContainer .portLine {\n              grid-template-columns: calc(100% - 10px) 12px; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .connections .outputsContainer .portLine .label {\n                grid-row: 1;\n                grid-column: 1;\n                text-align: right; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .connections .outputsContainer .portLine .port {\n                grid-row: 1;\n                grid-column: 2;\n                transform: translateX(2px); }\n        #graph-canvas #graph-container #graph-canvas-container .visual .content {\n          min-height: 20px;\n          grid-row: 3;\n          grid-column: 1; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.output-block {\n            min-height: 0px;\n            height: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.clamp-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.gradient-block {\n            grid-row: 2;\n            height: 34px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block {\n            grid-row: 3;\n            height: 140px;\n            width: 140px;\n            margin-top: -115px;\n            overflow: hidden;\n            border-bottom-left-radius: 7px;\n            border: black 4px solid;\n            border-left: 0px;\n            border-bottom: 0px; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img {\n              width: 100%;\n              height: 100%;\n              pointer-events: none; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img.empty {\n                display: none; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.remap-block {\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.trigonometry-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n", ""]);
+exports.push([module.i, "#graph-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro\";\n  user-select: none;\n  overflow: hidden;\n  cursor: move;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #graph-canvas #selection-container {\n    pointer-events: none; }\n    #graph-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #graph-canvas #group-container {\n    overflow: visible; }\n    #graph-canvas #group-container .group-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.5);\n      border: rgba(255, 255, 255, 0.432) solid 2px; }\n      #graph-canvas #group-container .group-box.selected {\n        border-color: white; }\n  #graph-canvas #graph-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template: 100% 100%; }\n    #graph-canvas #graph-container #graph-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible; }\n      #graph-canvas #graph-container #graph-svg-container .link {\n        stroke-width: 4px; }\n        #graph-canvas #graph-container #graph-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n      #graph-canvas #graph-container #graph-svg-container .selection-link {\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link:hover, #graph-canvas #graph-container #graph-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #graph-canvas #graph-container #graph-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #graph-canvas #graph-container #graph-canvas-container .visual {\n        z-index: 1;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid transparent;\n          border-radius: 12px; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.constant {\n            border-color: #4E5C74;\n            background: #4E5C74; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.inspector {\n            border-color: #396437;\n            background: #396437; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .connections {\n          grid-row: 2;\n          grid-column: 1;\n          display: grid;\n          grid-template-columns: 50% 50%; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .port {\n            border-radius: 20px;\n            width: 20px;\n            height: 20px;\n            align-self: center; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .connections .port .img {\n              width: 100%; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .connections .port:hover, #graph-canvas #graph-container #graph-canvas-container .visual .connections .port.selected {\n              filter: brightness(2); }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .portLine {\n            height: 24px;\n            display: grid;\n            grid-template-rows: 100%; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .label {\n            align-items: center; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .inputsContainer {\n            grid-row: 1;\n            grid-column: 1; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .connections .inputsContainer .portLine {\n              grid-template-columns: 12px calc(100% - 15px); }\n              #graph-canvas #graph-container #graph-canvas-container .visual .connections .inputsContainer .portLine .label {\n                grid-row: 1;\n                grid-column: 2; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .connections .inputsContainer .portLine .port {\n                grid-row: 1;\n                grid-column: 1;\n                transform: translateX(-12px); }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .outputsContainer {\n            grid-row: 1;\n            grid-column: 2; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .connections .outputsContainer .portLine {\n              grid-template-columns: calc(100% - 10px) 12px; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .connections .outputsContainer .portLine .label {\n                grid-row: 1;\n                grid-column: 1;\n                text-align: right; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .connections .outputsContainer .portLine .port {\n                grid-row: 1;\n                grid-column: 2;\n                transform: translateX(2px); }\n        #graph-canvas #graph-container #graph-canvas-container .visual .content {\n          min-height: 20px;\n          grid-row: 3;\n          grid-column: 1; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.output-block {\n            min-height: 0px;\n            height: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.clamp-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.gradient-block {\n            grid-row: 2;\n            height: 34px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block {\n            grid-row: 3;\n            height: 140px;\n            width: 140px;\n            margin-top: -115px;\n            overflow: hidden;\n            border-bottom-left-radius: 7px;\n            border: black 4px solid;\n            border-left: 0px;\n            border-bottom: 0px; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img {\n              width: 100%;\n              height: 100%;\n              pointer-events: none; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img.empty {\n                display: none; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.remap-block {\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.trigonometry-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n", ""]);
 
 // exports
 
@@ -52985,8 +52985,10 @@ var InputDisplayManager = /** @class */ (function () {
         switch (inputBlock.type) {
             case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color3:
             case babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialBlockConnectionPointTypes"].Color4: {
-                color = inputBlock.value.toHexString();
-                break;
+                if (inputBlock.value) {
+                    color = inputBlock.value.toHexString();
+                    break;
+                }
             }
             default:
                 color = _blockTools__WEBPACK_IMPORTED_MODULE_1__["BlockTools"].GetColorFromConnectionNodeType(inputBlock.type);
@@ -53345,6 +53347,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../dataStorage */ "./dataStorage.ts");
+/* harmony import */ var _graphNodeGroup__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./graphNodeGroup */ "./diagram/graphNodeGroup.ts");
+
 
 
 
@@ -53378,6 +53382,9 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         _this._candidatePort = null;
         _this._gridSize = 20;
         _this._selectionBox = null;
+        _this._selectedGroup = null;
+        _this._groupCandidateBox = null;
+        _this._groups = [];
         _this._altKeyIsPressed = false;
         _this._ctrlKeyIsPressed = false;
         _this._oldY = -1;
@@ -53385,10 +53392,14 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             if (!selection) {
                 _this._selectedNodes = [];
                 _this._selectedLink = null;
+                _this._selectedGroup = null;
             }
             else {
                 if (selection instanceof _nodeLink__WEBPACK_IMPORTED_MODULE_4__["NodeLink"]) {
                     _this._selectedLink = selection;
+                }
+                else if (selection instanceof _graphNodeGroup__WEBPACK_IMPORTED_MODULE_7__["GraphNodeGroup"]) {
+                    _this._selectedGroup = selection;
                 }
                 else {
                     if (_this._ctrlKeyIsPressed) {
@@ -53417,6 +53428,12 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             _this._altKeyIsPressed = false;
             _this._ctrlKeyIsPressed = false;
         }, false);
+        // Store additional data to serialization object
+        _this.props.globalState.storeEditorData = function (editorData) {
+            editorData.zoom = _this.zoom;
+            editorData.x = _this.x;
+            editorData.y = _this.y;
+        };
         return _this;
     }
     Object.defineProperty(GraphCanvasComponent.prototype, "gridSize", {
@@ -53501,6 +53518,13 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(GraphCanvasComponent.prototype, "selectedGroup", {
+        get: function () {
+            return this._selectedGroup;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(GraphCanvasComponent.prototype, "canvasContainer", {
         get: function () {
             return this._graphCanvas;
@@ -53511,6 +53535,20 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
     Object.defineProperty(GraphCanvasComponent.prototype, "svgCanvas", {
         get: function () {
             return this._svgCanvas;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphCanvasComponent.prototype, "selectionContainer", {
+        get: function () {
+            return this._selectionContainer;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphCanvasComponent.prototype, "groupContainer", {
+        get: function () {
+            return this._groupContainer;
         },
         enumerable: true,
         configurable: true
@@ -53639,6 +53677,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         this._graphCanvas = this.props.globalState.hostDocument.getElementById("graph-canvas-container");
         this._svgCanvas = this.props.globalState.hostDocument.getElementById("graph-svg-container");
         this._selectionContainer = this.props.globalState.hostDocument.getElementById("selection-container");
+        this._groupContainer = this.props.globalState.hostDocument.getElementById("group-container");
         this.gridSize = _dataStorage__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].ReadNumber("GridSize", 20);
         this.updateTransform();
     };
@@ -53665,6 +53704,29 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                 this._selectionBox.style.height = (this._selectionStartY - localY) / this.zoom + "px";
             }
             this.props.globalState.onSelectionBoxMoved.notifyObservers(this._selectionBox.getBoundingClientRect());
+            return;
+        }
+        // Candidate group box
+        if (this._groupCandidateBox) {
+            var rootRect = this.canvasContainer.getBoundingClientRect();
+            var localX = evt.pageX - rootRect.left;
+            var localY = evt.pageY - rootRect.top;
+            if (localX > this._selectionStartX) {
+                this._groupCandidateBox.style.left = this._selectionStartX / this.zoom + "px";
+                this._groupCandidateBox.style.width = (localX - this._selectionStartX) / this.zoom + "px";
+            }
+            else {
+                this._groupCandidateBox.style.left = localX / this.zoom + "px";
+                this._groupCandidateBox.style.width = (this._selectionStartX - localX) / this.zoom + "px";
+            }
+            if (localY > this._selectionStartY) {
+                this._groupCandidateBox.style.top = this._selectionStartY / this.zoom + "px";
+                this._groupCandidateBox.style.height = (localY - this._selectionStartY) / this.zoom + "px";
+            }
+            else {
+                this._groupCandidateBox.style.top = localY / this.zoom + "px";
+                this._groupCandidateBox.style.height = (this._selectionStartY - localY) / this.zoom + "px";
+            }
             return;
         }
         // Candidate link
@@ -53720,6 +53782,21 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             this._selectionBox.style.top = this._selectionStartY / this.zoom + "px";
             this._selectionBox.style.width = "0px";
             this._selectionBox.style.height = "0px";
+            return;
+        }
+        // Group?
+        if (evt.currentTarget === this._hostCanvas && evt.shiftKey) {
+            this._groupCandidateBox = this.props.globalState.hostDocument.createElement("div");
+            this._groupCandidateBox.classList.add("group-box");
+            this._groupContainer.appendChild(this._groupCandidateBox);
+            var rootRect = this.canvasContainer.getBoundingClientRect();
+            this._selectionStartX = (evt.pageX - rootRect.left);
+            this._selectionStartY = (evt.pageY - rootRect.top);
+            this._groupCandidateBox.style.left = this._selectionStartX / this.zoom + "px";
+            this._groupCandidateBox.style.top = this._selectionStartY / this.zoom + "px";
+            this._groupCandidateBox.style.width = "0px";
+            this._groupCandidateBox.style.height = "0px";
+            return;
         }
         // Port dragging
         if (evt.nativeEvent.srcElement && evt.nativeEvent.srcElement.nodeName === "IMG") {
@@ -53748,6 +53825,12 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         if (this._selectionBox) {
             this._selectionBox.parentElement.removeChild(this._selectionBox);
             this._selectionBox = null;
+        }
+        if (this._groupCandidateBox) {
+            var newGroup = new _graphNodeGroup__WEBPACK_IMPORTED_MODULE_7__["GraphNodeGroup"](this._groupCandidateBox, this);
+            this._groups.push(newGroup);
+            this._groupCandidateBox.parentElement.removeChild(this._groupCandidateBox);
+            this._groupCandidateBox = null;
         }
     };
     GraphCanvasComponent.prototype.onWheel = function (evt) {
@@ -53855,6 +53938,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "graph-canvas", onWheel: function (evt) { return _this.onWheel(evt); }, onPointerMove: function (evt) { return _this.onMove(evt); }, onPointerDown: function (evt) { return _this.onDown(evt); }, onPointerUp: function (evt) { return _this.onUp(evt); } },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "graph-container" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "graph-canvas-container" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "group-container" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { id: "graph-svg-container" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "selection-container" }))));
     };
@@ -53923,6 +54007,17 @@ var GraphNode = /** @class */ (function () {
                 rect1.bottom < rect2.top ||
                 rect1.top > rect2.bottom);
             _this.isSelected = overlap;
+        });
+        this._onGroupAboutToMoveObserver = this._globalState.onGroupAboutToMove.add(function (group) {
+            var rect2 = _this._visual.getBoundingClientRect();
+            var rect1 = group.element.getBoundingClientRect();
+            var overlap = !(rect1.right < rect2.left ||
+                rect1.left > rect2.right ||
+                rect1.bottom < rect2.top ||
+                rect1.top > rect2.bottom);
+            if (overlap) {
+                group.nodes.push(_this);
+            }
         });
     }
     Object.defineProperty(GraphNode.prototype, "links", {
@@ -54072,8 +54167,8 @@ var GraphNode = /** @class */ (function () {
             var port = _c[_b];
             port.refresh();
         }
-        this._comments.innerHTML = this.block.comments;
-        this._comments.title = this.block.comments;
+        this._comments.innerHTML = this.block.comments || "";
+        this._comments.title = this.block.comments || "";
     };
     GraphNode.prototype._appendConnection = function (connectionPoint, root, displayManager) {
         var portContainer = root.ownerDocument.createElement("div");
@@ -54122,12 +54217,12 @@ var GraphNode = /** @class */ (function () {
         if (this._mouseStartPointX === null || this._mouseStartPointY === null || evt.ctrlKey) {
             return;
         }
-        var newX = evt.clientX - this._mouseStartPointX;
-        var newY = evt.clientY - this._mouseStartPointY;
+        var newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
+        var newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
         for (var _i = 0, _a = this._ownerCanvas.selectedNodes; _i < _a.length; _i++) {
             var selectedNode = _a[_i];
-            selectedNode.x += newX / this._ownerCanvas.zoom;
-            selectedNode.y += newY / this._ownerCanvas.zoom;
+            selectedNode.x += newX;
+            selectedNode.y += newY;
         }
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
@@ -54210,6 +54305,9 @@ var GraphNode = /** @class */ (function () {
         if (this._visual.parentElement) {
             this._visual.parentElement.removeChild(this._visual);
         }
+        if (this._onGroupAboutToMoveObserver) {
+            this._globalState.onGroupAboutToMove.remove(this._onGroupAboutToMoveObserver);
+        }
         for (var _i = 0, _a = this._inputPorts; _i < _a.length; _i++) {
             var port = _a[_i];
             port.dispose();
@@ -54226,6 +54324,167 @@ var GraphNode = /** @class */ (function () {
         this.block.dispose();
     };
     return GraphNode;
+}());
+
+
+
+/***/ }),
+
+/***/ "./diagram/graphNodeGroup.ts":
+/*!***********************************!*\
+  !*** ./diagram/graphNodeGroup.ts ***!
+  \***********************************/
+/*! exports provided: GraphNodeGroup */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GraphNodeGroup", function() { return GraphNodeGroup; });
+var GraphNodeGroup = /** @class */ (function () {
+    function GraphNodeGroup(candidate, canvas) {
+        var _this = this;
+        this._x = 0;
+        this._y = 0;
+        this._gridAlignedX = 0;
+        this._gridAlignedY = 0;
+        this._nodes = [];
+        this._mouseStartPointX = null;
+        this._mouseStartPointY = null;
+        this._ownerCanvas = canvas;
+        var root = canvas.groupContainer;
+        this.element = root.ownerDocument.createElement("div");
+        this.element.classList.add("group-box");
+        root.appendChild(this.element);
+        this.x = parseFloat(candidate.style.left.replace("px", ""));
+        this.y = parseFloat(candidate.style.top.replace("px", ""));
+        this.width = parseFloat(candidate.style.width.replace("px", ""));
+        this.height = parseFloat(candidate.style.height.replace("px", ""));
+        this.cleanAccumulation();
+        this.element.style.width = this.width / canvas.zoom + "px";
+        this.element.style.height = this.height / canvas.zoom + "px";
+        this.element.addEventListener("pointerdown", function (evt) { return _this._onDown(evt); });
+        this.element.addEventListener("pointerup", function (evt) { return _this._onUp(evt); });
+        this.element.addEventListener("pointermove", function (evt) { return _this._onMove(evt); });
+        this._onSelectionChangedObserver = canvas.globalState.onSelectionChangedObservable.add(function (node) {
+            if (node === _this) {
+                _this.element.classList.add("selected");
+            }
+            else {
+                _this.element.classList.remove("selected");
+            }
+        });
+    }
+    Object.defineProperty(GraphNodeGroup.prototype, "nodes", {
+        get: function () {
+            return this._nodes;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphNodeGroup.prototype, "gridAlignedX", {
+        get: function () {
+            return this._gridAlignedX;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphNodeGroup.prototype, "gridAlignedY", {
+        get: function () {
+            return this._gridAlignedY;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphNodeGroup.prototype, "name", {
+        get: function () {
+            return this._name;
+        },
+        set: function (value) {
+            this._name = value;
+            this.element.innerHTML = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphNodeGroup.prototype, "x", {
+        get: function () {
+            return this._x;
+        },
+        set: function (value) {
+            if (this._x === value) {
+                return;
+            }
+            this._x = value;
+            this._gridAlignedX = this._ownerCanvas.getGridPosition(value);
+            this.element.style.left = this._gridAlignedX + "px";
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphNodeGroup.prototype, "y", {
+        get: function () {
+            return this._y;
+        },
+        set: function (value) {
+            if (this._y === value) {
+                return;
+            }
+            this._y = value;
+            this._gridAlignedY = this._ownerCanvas.getGridPosition(value);
+            this.element.style.top = this._gridAlignedY + "px";
+        },
+        enumerable: true,
+        configurable: true
+    });
+    GraphNodeGroup.prototype.cleanAccumulation = function () {
+        this.x = this.gridAlignedX;
+        this.y = this.gridAlignedY;
+    };
+    GraphNodeGroup.prototype._onDown = function (evt) {
+        evt.stopPropagation();
+        this._mouseStartPointX = evt.clientX;
+        this._mouseStartPointY = evt.clientY;
+        this.element.setPointerCapture(evt.pointerId);
+        this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
+        // Get nodes
+        this._nodes = [];
+        this._ownerCanvas.globalState.onGroupAboutToMove.notifyObservers(this);
+    };
+    GraphNodeGroup.prototype._onUp = function (evt) {
+        evt.stopPropagation();
+        for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
+            var selectedNode = _a[_i];
+            selectedNode.cleanAccumulation();
+        }
+        this.cleanAccumulation();
+        this._mouseStartPointX = null;
+        this._mouseStartPointY = null;
+        this.element.releasePointerCapture(evt.pointerId);
+    };
+    GraphNodeGroup.prototype._onMove = function (evt) {
+        if (this._mouseStartPointX === null || this._mouseStartPointY === null || evt.ctrlKey) {
+            return;
+        }
+        var newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
+        var newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
+        for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
+            var selectedNode = _a[_i];
+            selectedNode.x += newX;
+            selectedNode.y += newY;
+        }
+        this.x += newX;
+        this.y += newY;
+        this._mouseStartPointX = evt.clientX;
+        this._mouseStartPointY = evt.clientY;
+        evt.stopPropagation();
+    };
+    GraphNodeGroup.prototype.dispose = function () {
+        if (this._onSelectionChangedObserver) {
+            this._ownerCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
+        }
+        this.element.parentElement.removeChild(this.element);
+    };
+    return GraphNodeGroup;
 }());
 
 
@@ -55584,6 +55843,7 @@ var GlobalState = /** @class */ (function () {
         this.onAnimationCommandActivated = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onCandidateLinkMoved = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSelectionBoxMoved = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onGroupAboutToMove = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onCandidatePortSelected = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onGridSizeChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.blockKeyboardEvents = false;
@@ -55696,6 +55956,9 @@ var GraphEditor = /** @class */ (function (_super) {
                 if (_this._graphCanvas.selectedLink) {
                     _this._graphCanvas.selectedLink.dispose();
                 }
+                if (_this._graphCanvas.selectedGroup) {
+                    _this._graphCanvas.selectedGroup.dispose();
+                }
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                 _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                 return;
@@ -55751,11 +56014,6 @@ var GraphEditor = /** @class */ (function (_super) {
                 }
             }
         }, false);
-        _this.props.globalState.storeEditorData = function (editorData) {
-            editorData.zoom = _this._graphCanvas.zoom;
-            editorData.x = _this._graphCanvas.x;
-            editorData.y = _this._graphCanvas.y;
-        };
         return _this;
     }
     /**
@@ -56234,23 +56492,8 @@ var SerializationTools = /** @class */ (function () {
     SerializationTools.Serialize = function (material, globalState) {
         var bufferSerializationState = babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers;
         babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers = _dataStorage__WEBPACK_IMPORTED_MODULE_1__["DataStorage"].ReadBoolean("EmbedTextures", true);
+        this.UpdateLocations(material, globalState);
         var serializationObject = material.serialize();
-        // Store node locations
-        for (var _i = 0, _a = material.attachedBlocks; _i < _a.length; _i++) {
-            var block = _a[_i];
-            var node = globalState.onGetNodeFromBlock(block);
-            if (!serializationObject.editorData) {
-                serializationObject.editorData = {
-                    locations: []
-                };
-            }
-            serializationObject.editorData.locations.push({
-                blockId: block.uniqueId,
-                x: node ? node.x : 0,
-                y: node ? node.y : 0
-            });
-        }
-        globalState.storeEditorData(serializationObject.editorData);
         babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers = bufferSerializationState;
         return JSON.stringify(serializationObject, undefined, 2);
     };
