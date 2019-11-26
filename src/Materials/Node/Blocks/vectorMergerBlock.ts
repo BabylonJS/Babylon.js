@@ -101,7 +101,7 @@ export class VectorMergerBlock extends NodeMaterialBlock {
 
     /**
      * Gets the xy component (output)
-     * @deprecated Please use xyOut instead
+     * @deprecated Please use xyOut instead.
      */
     public get xy(): NodeMaterialConnectionPoint {
         return this.xyOut;
@@ -109,7 +109,7 @@ export class VectorMergerBlock extends NodeMaterialBlock {
 
     /**
      * Gets the xyz component (output)
-     * @deprecated Please use xyzOut instead
+     * @deprecated Please use xyzOut instead.
      */
     public get xyz(): NodeMaterialConnectionPoint {
         return this.xyzOut;

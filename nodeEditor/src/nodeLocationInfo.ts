@@ -3,3 +3,10 @@ export interface INodeLocationInfo {
     x: number;
     y: number;
 }
+
+export interface IEditorData {
+    locations: INodeLocationInfo[];
+    x: number;
+    y: number;
+    zoom: number;
+}
