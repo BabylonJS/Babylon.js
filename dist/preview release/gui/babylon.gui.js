@@ -6994,7 +6994,7 @@ babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredT
 /*!******************************!*\
   !*** ./2D/controls/index.ts ***!
   \******************************/
-/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, name */
+/*! exports provided: Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -7083,8 +7083,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sliders_scrollBar__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./sliders/scrollBar */ "./2D/controls/sliders/scrollBar.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScrollBar", function() { return _sliders_scrollBar__WEBPACK_IMPORTED_MODULE_23__["ScrollBar"]; });
 
-/* harmony import */ var _statics__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./statics */ "./2D/controls/statics.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "name", function() { return _statics__WEBPACK_IMPORTED_MODULE_24__["name"]; });
+/* harmony import */ var _sliders_imageScrollBar__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./sliders/imageScrollBar */ "./2D/controls/sliders/imageScrollBar.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ImageScrollBar", function() { return _sliders_imageScrollBar__WEBPACK_IMPORTED_MODULE_24__["ImageScrollBar"]; });
+
+/* harmony import */ var _statics__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./statics */ "./2D/controls/statics.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "name", function() { return _statics__WEBPACK_IMPORTED_MODULE_25__["name"]; });
+
 
 
 
@@ -9078,6 +9082,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../control */ "./2D/controls/control.ts");
 /* harmony import */ var _scrollViewerWindow__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./scrollViewerWindow */ "./2D/controls/scrollViewers/scrollViewerWindow.ts");
 /* harmony import */ var _sliders_scrollBar__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../sliders/scrollBar */ "./2D/controls/sliders/scrollBar.ts");
+/* harmony import */ var _sliders_imageScrollBar__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../sliders/imageScrollBar */ "./2D/controls/sliders/imageScrollBar.ts");
+
 
 
 
@@ -9095,11 +9101,15 @@ var ScrollViewer = /** @class */ (function (_super) {
     * Creates a new ScrollViewer
     * @param name of ScrollViewer
     */
-    function ScrollViewer(name) {
+    function ScrollViewer(name, isImageBased) {
         var _this = _super.call(this, name) || this;
         _this._barSize = 20;
         _this._pointerIsOver = false;
         _this._wheelPrecision = 0.05;
+        _this._thumbLength = 0.5;
+        _this._thumbHeight = 1;
+        _this._barImageHeight = 1;
+        _this._useImageBar = isImageBased ? isImageBased : false;
         _this.onDirtyObservable.add(function () {
             _this._horizontalBarSpace.color = _this.color;
             _this._verticalBarSpace.color = _this.color;
@@ -9112,8 +9122,14 @@ var ScrollViewer = /** @class */ (function (_super) {
             _this._pointerIsOver = false;
         });
         _this._grid = new _grid__WEBPACK_IMPORTED_MODULE_3__["Grid"]();
-        _this._horizontalBar = new _sliders_scrollBar__WEBPACK_IMPORTED_MODULE_6__["ScrollBar"]();
-        _this._verticalBar = new _sliders_scrollBar__WEBPACK_IMPORTED_MODULE_6__["ScrollBar"]();
+        if (_this._useImageBar) {
+            _this._horizontalBar = new _sliders_imageScrollBar__WEBPACK_IMPORTED_MODULE_7__["ImageScrollBar"]();
+            _this._verticalBar = new _sliders_imageScrollBar__WEBPACK_IMPORTED_MODULE_7__["ImageScrollBar"]();
+        }
+        else {
+            _this._horizontalBar = new _sliders_scrollBar__WEBPACK_IMPORTED_MODULE_6__["ScrollBar"]();
+            _this._verticalBar = new _sliders_scrollBar__WEBPACK_IMPORTED_MODULE_6__["ScrollBar"]();
+        }
         _this._window = new _scrollViewerWindow__WEBPACK_IMPORTED_MODULE_5__["_ScrollViewerWindow"]();
         _this._window.horizontalAlignment = _control__WEBPACK_IMPORTED_MODULE_4__["Control"].HORIZONTAL_ALIGNMENT_LEFT;
         _this._window.verticalAlignment = _control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_TOP;
@@ -9123,50 +9139,26 @@ var ScrollViewer = /** @class */ (function (_super) {
         _this._grid.addRowDefinition(0, true);
         _super.prototype.addControl.call(_this, _this._grid);
         _this._grid.addControl(_this._window, 0, 0);
-        _this._verticalBar.paddingLeft = 0;
-        _this._verticalBar.width = "100%";
-        _this._verticalBar.height = "100%";
-        _this._verticalBar.barOffset = 0;
-        _this._verticalBar.value = 0;
-        _this._verticalBar.maximum = 1;
-        _this._verticalBar.horizontalAlignment = _control__WEBPACK_IMPORTED_MODULE_4__["Control"].HORIZONTAL_ALIGNMENT_CENTER;
-        _this._verticalBar.verticalAlignment = _control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_CENTER;
-        _this._verticalBar.isVertical = true;
-        _this._verticalBar.rotation = Math.PI;
-        _this._verticalBar.isVisible = false;
         _this._verticalBarSpace = new _rectangle__WEBPACK_IMPORTED_MODULE_2__["Rectangle"]();
         _this._verticalBarSpace.horizontalAlignment = _control__WEBPACK_IMPORTED_MODULE_4__["Control"].HORIZONTAL_ALIGNMENT_LEFT;
         _this._verticalBarSpace.verticalAlignment = _control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_TOP;
         _this._verticalBarSpace.thickness = 1;
         _this._grid.addControl(_this._verticalBarSpace, 0, 1);
-        _this._verticalBarSpace.addControl(_this._verticalBar);
-        _this._verticalBar.onValueChangedObservable.add(function (value) {
-            _this._window.top = value * _this._endTop + "px";
-        });
-        _this._horizontalBar.paddingLeft = 0;
-        _this._horizontalBar.width = "100%";
-        _this._horizontalBar.height = "100%";
-        _this._horizontalBar.barOffset = 0;
-        _this._horizontalBar.value = 0;
-        _this._horizontalBar.maximum = 1;
-        _this._horizontalBar.horizontalAlignment = _control__WEBPACK_IMPORTED_MODULE_4__["Control"].HORIZONTAL_ALIGNMENT_CENTER;
-        _this._horizontalBar.verticalAlignment = _control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_CENTER;
-        _this._horizontalBar.isVisible = false;
+        _this._addBar(_this._verticalBar, _this._verticalBarSpace, true, Math.PI);
         _this._horizontalBarSpace = new _rectangle__WEBPACK_IMPORTED_MODULE_2__["Rectangle"]();
         _this._horizontalBarSpace.horizontalAlignment = _control__WEBPACK_IMPORTED_MODULE_4__["Control"].HORIZONTAL_ALIGNMENT_LEFT;
         _this._horizontalBarSpace.verticalAlignment = _control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_TOP;
         _this._horizontalBarSpace.thickness = 1;
         _this._grid.addControl(_this._horizontalBarSpace, 1, 0);
-        _this._horizontalBarSpace.addControl(_this._horizontalBar);
-        _this._horizontalBar.onValueChangedObservable.add(function (value) {
-            _this._window.left = value * _this._endLeft + "px";
-        });
+        _this._addBar(_this._horizontalBar, _this._horizontalBarSpace, false, 0);
         _this._dragSpace = new _rectangle__WEBPACK_IMPORTED_MODULE_2__["Rectangle"]();
         _this._dragSpace.thickness = 1;
         _this._grid.addControl(_this._dragSpace, 1, 1);
         // Colors
-        _this.barColor = "grey";
-        _this.barBackground = "transparent";
+        if (!_this._useImageBar) {
+            _this.barColor = "grey";
+            _this.barBackground = "transparent";
+        }
         return _this;
     }
     Object.defineProperty(ScrollViewer.prototype, "horizontalBar", {
@@ -9269,6 +9261,21 @@ var ScrollViewer = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(ScrollViewer.prototype, "scrollBackground", {
+        /** Gets or sets the scroll bar container background color */
+        get: function () {
+            return this._horizontalBarSpace.background;
+        },
+        set: function (color) {
+            if (this._horizontalBarSpace.background === color) {
+                return;
+            }
+            this._horizontalBarSpace.background = color;
+            this._verticalBarSpace.background = color;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(ScrollViewer.prototype, "barColor", {
         /** Gets or sets the bar color */
         get: function () {
@@ -9281,6 +9288,24 @@ var ScrollViewer = /** @class */ (function (_super) {
             this._barColor = color;
             this._horizontalBar.color = color;
             this._verticalBar.color = color;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ScrollViewer.prototype, "thumbImage", {
+        /** Gets or sets the bar image */
+        get: function () {
+            return this._barImage;
+        },
+        set: function (value) {
+            if (this._barImage === value) {
+                return;
+            }
+            this._barImage = value;
+            var hb = this._horizontalBar;
+            var vb = this._verticalBar;
+            hb.thumbImage = value;
+            vb.thumbImage = value;
         },
         enumerable: true,
         configurable: true
@@ -9306,6 +9331,81 @@ var ScrollViewer = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(ScrollViewer.prototype, "thumbLength", {
+        /** Gets or sets the length of the thumb */
+        get: function () {
+            return this._thumbLength;
+        },
+        set: function (value) {
+            if (this._thumbLength === value) {
+                return;
+            }
+            if (value <= 0) {
+                value = 0.1;
+            }
+            if (value > 1) {
+                value = 1;
+            }
+            this._thumbLength = value;
+            var hb = this._horizontalBar;
+            var vb = this._verticalBar;
+            hb.thumbLength = value;
+            vb.thumbLength = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ScrollViewer.prototype, "thumbHeight", {
+        /** Gets or sets the height of the thumb */
+        get: function () {
+            return this._thumbHeight;
+        },
+        set: function (value) {
+            if (this._thumbHeight === value) {
+                return;
+            }
+            if (value <= 0) {
+                value = 0.1;
+            }
+            if (value > 1) {
+                value = 1;
+            }
+            this._thumbHeight = value;
+            var hb = this._horizontalBar;
+            var vb = this._verticalBar;
+            hb.thumbHeight = value;
+            vb.thumbHeight = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ScrollViewer.prototype, "barImageHeight", {
+        /** Gets or sets the height of the bar image */
+        get: function () {
+            return this._barImageHeight;
+        },
+        set: function (value) {
+            if (this._barImageHeight === value) {
+                return;
+            }
+            if (value <= 0) {
+                value = 0.1;
+            }
+            if (value > 1) {
+                value = 1;
+            }
+            this._barImageHeight = value;
+            var hb = this._horizontalBar;
+            var vb = this._verticalBar;
+            hb.barImageHeight = value;
+            vb.barImageHeight = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(ScrollViewer.prototype, "barBackground", {
         /** Gets or sets the bar background */
         get: function () {
@@ -9316,9 +9416,28 @@ var ScrollViewer = /** @class */ (function (_super) {
                 return;
             }
             this._barBackground = color;
-            this._horizontalBar.background = color;
-            this._verticalBar.background = color;
+            var hb = this._horizontalBar;
+            var vb = this._verticalBar;
+            hb.background = color;
+            vb.background = color;
             this._dragSpace.background = color;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ScrollViewer.prototype, "barImage", {
+        /** Gets or sets the bar background image */
+        get: function () {
+            return this._barBackgroundImage;
+        },
+        set: function (value) {
+            if (this._barBackgroundImage === value) {
+            }
+            this._barBackgroundImage = value;
+            var hb = this._horizontalBar;
+            var vb = this._verticalBar;
+            hb.backgroundImage = value;
+            vb.backgroundImage = value;
         },
         enumerable: true,
         configurable: true
@@ -9362,14 +9481,36 @@ var ScrollViewer = /** @class */ (function (_super) {
             this._window.top = newTop;
             this._rebuildLayout = true;
         }
-        var horizontalMultiplicator = this._clientWidth / windowContentsWidth;
-        var verticalMultiplicator = this._clientHeight / windowContentsHeight;
-        this._horizontalBar.thumbWidth = (this._clientWidth * horizontalMultiplicator) + "px";
-        this._verticalBar.thumbWidth = (this._clientHeight * verticalMultiplicator) + "px";
+        this._horizontalBar.thumbWidth = this._thumbLength * 0.9 * this._clientWidth + "px";
+        this._verticalBar.thumbWidth = this._thumbLength * 0.9 * this._clientHeight + "px";
     };
     ScrollViewer.prototype._link = function (host) {
         _super.prototype._link.call(this, host);
         this._attachWheel();
+    };
+    /** @hidden */
+    ScrollViewer.prototype._addBar = function (barControl, barContainer, isVertical, rotation) {
+        var _this = this;
+        barControl.paddingLeft = 0;
+        barControl.width = "100%";
+        barControl.height = "100%";
+        barControl.barOffset = 0;
+        barControl.value = 0;
+        barControl.maximum = 1;
+        barControl.horizontalAlignment = _control__WEBPACK_IMPORTED_MODULE_4__["Control"].HORIZONTAL_ALIGNMENT_CENTER;
+        barControl.verticalAlignment = _control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_CENTER;
+        barControl.isVertical = isVertical;
+        barControl.rotation = rotation;
+        barControl.isVisible = false;
+        barContainer.addControl(barControl);
+        barControl.onValueChangedObservable.add(function (value) {
+            if (rotation > 0) {
+                _this._window.top = value * _this._endTop + "px";
+            }
+            else {
+                _this._window.left = value * _this._endLeft + "px";
+            }
+        });
     };
     /** @hidden */
     ScrollViewer.prototype._attachWheel = function () {
@@ -10660,6 +10801,225 @@ babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__["_TypeStore"].RegisteredTy
 
 /***/ }),
 
+/***/ "./2D/controls/sliders/imageScrollBar.ts":
+/*!***********************************************!*\
+  !*** ./2D/controls/sliders/imageScrollBar.ts ***!
+  \***********************************************/
+/*! exports provided: ImageScrollBar */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ImageScrollBar", function() { return ImageScrollBar; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _baseSlider__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./baseSlider */ "./2D/controls/sliders/baseSlider.ts");
+/* harmony import */ var _measure__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../measure */ "./2D/measure.ts");
+
+
+
+/**
+ * Class used to create slider controls
+ */
+var ImageScrollBar = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ImageScrollBar, _super);
+    /**
+     * Creates a new ImageScrollBar
+     * @param name defines the control name
+     */
+    function ImageScrollBar(name) {
+        var _this = _super.call(this, name) || this;
+        _this.name = name;
+        _this._thumbLength = 0.5;
+        _this._thumbHeight = 1;
+        _this._barImageHeight = 1;
+        _this._tempMeasure = new _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"](0, 0, 0, 0);
+        return _this;
+    }
+    Object.defineProperty(ImageScrollBar.prototype, "backgroundImage", {
+        /**
+         * Gets or sets the image used to render the background
+         */
+        get: function () {
+            return this._backgroundImage;
+        },
+        set: function (value) {
+            var _this = this;
+            if (this._backgroundImage === value) {
+                return;
+            }
+            this._backgroundImage = value;
+            if (value && !value.isLoaded) {
+                value.onImageLoadedObservable.addOnce(function () { return _this._markAsDirty(); });
+            }
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ImageScrollBar.prototype, "thumbImage", {
+        /**
+         * Gets or sets the image used to render the thumb
+         */
+        get: function () {
+            return this._thumbImage;
+        },
+        set: function (value) {
+            var _this = this;
+            if (this._thumbImage === value) {
+                return;
+            }
+            this._thumbImage = value;
+            if (value && !value.isLoaded) {
+                value.onImageLoadedObservable.addOnce(function () { return _this._markAsDirty(); });
+            }
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ImageScrollBar.prototype, "thumbLength", {
+        /**
+         * Gets or sets the length of the thumb
+         */
+        get: function () {
+            return this._thumbLength;
+        },
+        set: function (value) {
+            if (this._thumbLength === value) {
+                return;
+            }
+            this._thumbLength = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ImageScrollBar.prototype, "thumbHeight", {
+        /**
+         * Gets or sets the height of the thumb
+         */
+        get: function () {
+            return this._thumbHeight;
+        },
+        set: function (value) {
+            if (this._thumbLength === value) {
+                return;
+            }
+            this._thumbHeight = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ImageScrollBar.prototype, "barImageHeight", {
+        /**
+         * Gets or sets the height of the bar image
+         */
+        get: function () {
+            return this._barImageHeight;
+        },
+        set: function (value) {
+            if (this._barImageHeight === value) {
+                return;
+            }
+            this._barImageHeight = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ImageScrollBar.prototype._getTypeName = function () {
+        return "ImageScrollBar";
+    };
+    ImageScrollBar.prototype._getThumbThickness = function () {
+        var thumbThickness = 0;
+        if (this._thumbWidth.isPixel) {
+            thumbThickness = this._thumbWidth.getValue(this._host);
+        }
+        else {
+            thumbThickness = this._backgroundBoxThickness * this._thumbWidth.getValue(this._host);
+        }
+        return thumbThickness;
+    };
+    ImageScrollBar.prototype._draw = function (context) {
+        context.save();
+        this._applyStates(context);
+        this._prepareRenderingData("rectangle");
+        var thumbPosition = this._getThumbPosition();
+        var left = this._renderLeft;
+        var top = this._renderTop;
+        var width = this._renderWidth;
+        var height = this._renderHeight;
+        // Background
+        if (this._backgroundImage) {
+            this._tempMeasure.copyFromFloats(left, top, width, height);
+            if (this.isVertical) {
+                this._tempMeasure.copyFromFloats(left + width * (1 - this._barImageHeight) * 0.5, this._currentMeasure.top, width * this._barImageHeight, height);
+                this._tempMeasure.height += this._effectiveThumbThickness;
+                this._backgroundImage._currentMeasure.copyFrom(this._tempMeasure);
+            }
+            else {
+                this._tempMeasure.copyFromFloats(this._currentMeasure.left, top + height * (1 - this._barImageHeight) * 0.5, width, height * this._barImageHeight);
+                this._tempMeasure.width += this._effectiveThumbThickness;
+                this._backgroundImage._currentMeasure.copyFrom(this._tempMeasure);
+            }
+            this._backgroundImage._draw(context);
+        }
+        // Thumb
+        if (this.isVertical) {
+            this._tempMeasure.copyFromFloats(left - this._effectiveBarOffset + this._currentMeasure.width * (1 - this._thumbHeight) * 0.5, this._currentMeasure.top + thumbPosition, this._currentMeasure.width * this._thumbHeight, this._effectiveThumbThickness);
+        }
+        else {
+            this._tempMeasure.copyFromFloats(this._currentMeasure.left + thumbPosition, this._currentMeasure.top + this._currentMeasure.height * (1 - this._thumbHeight) * 0.5, this._effectiveThumbThickness, this._currentMeasure.height * this._thumbHeight);
+        }
+        this._thumbImage._currentMeasure.copyFrom(this._tempMeasure);
+        this._thumbImage._draw(context);
+        context.restore();
+    };
+    /** @hidden */
+    ImageScrollBar.prototype._updateValueFromPointer = function (x, y) {
+        if (this.rotation != 0) {
+            this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
+            x = this._transformedPosition.x;
+            y = this._transformedPosition.y;
+        }
+        if (this._first) {
+            this._first = false;
+            this._originX = x;
+            this._originY = y;
+            // Check if move is required
+            if (x < this._tempMeasure.left || x > this._tempMeasure.left + this._tempMeasure.width || y < this._tempMeasure.top || y > this._tempMeasure.top + this._tempMeasure.height) {
+                if (this.isVertical) {
+                    this.value = this.minimum + (1 - ((y - this._currentMeasure.top) / this._currentMeasure.height)) * (this.maximum - this.minimum);
+                }
+                else {
+                    this.value = this.minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this.maximum - this.minimum);
+                }
+            }
+        }
+        // Delta mode
+        var delta = 0;
+        if (this.isVertical) {
+            delta = -((y - this._originY) / (this._currentMeasure.height - this._effectiveThumbThickness));
+        }
+        else {
+            delta = (x - this._originX) / (this._currentMeasure.width - this._effectiveThumbThickness);
+        }
+        this.value += delta * (this.maximum - this.minimum);
+        this._originX = x;
+        this._originY = y;
+    };
+    ImageScrollBar.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
+        this._first = true;
+        return _super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex);
+    };
+    return ImageScrollBar;
+}(_baseSlider__WEBPACK_IMPORTED_MODULE_1__["BaseSlider"]));
+
+
+
+/***/ }),
+
 /***/ "./2D/controls/sliders/scrollBar.ts":
 /*!******************************************!*\
   !*** ./2D/controls/sliders/scrollBar.ts ***!
@@ -10690,7 +11050,7 @@ var ScrollBar = /** @class */ (function (_super) {
         _this.name = name;
         _this._background = "black";
         _this._borderColor = "white";
-        _this._thumbMeasure = new _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"](0, 0, 0, 0);
+        _this._tempMeasure = new _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"](0, 0, 0, 0);
         return _this;
     }
     Object.defineProperty(ScrollBar.prototype, "borderColor", {
@@ -10748,18 +11108,18 @@ var ScrollBar = /** @class */ (function (_super) {
         context.fillStyle = this.color;
         // Thumb
         if (this.isVertical) {
-            this._thumbMeasure.left = left - this._effectiveBarOffset;
-            this._thumbMeasure.top = this._currentMeasure.top + thumbPosition;
-            this._thumbMeasure.width = this._currentMeasure.width;
-            this._thumbMeasure.height = this._effectiveThumbThickness;
+            this._tempMeasure.left = left - this._effectiveBarOffset;
+            this._tempMeasure.top = this._currentMeasure.top + thumbPosition;
+            this._tempMeasure.width = this._currentMeasure.width;
+            this._tempMeasure.height = this._effectiveThumbThickness;
         }
         else {
-            this._thumbMeasure.left = this._currentMeasure.left + thumbPosition;
-            this._thumbMeasure.top = this._currentMeasure.top;
-            this._thumbMeasure.width = this._effectiveThumbThickness;
-            this._thumbMeasure.height = this._currentMeasure.height;
+            this._tempMeasure.left = this._currentMeasure.left + thumbPosition;
+            this._tempMeasure.top = this._currentMeasure.top;
+            this._tempMeasure.width = this._effectiveThumbThickness;
+            this._tempMeasure.height = this._currentMeasure.height;
         }
-        context.fillRect(this._thumbMeasure.left, this._thumbMeasure.top, this._thumbMeasure.width, this._thumbMeasure.height);
+        context.fillRect(this._tempMeasure.left, this._tempMeasure.top, this._tempMeasure.width, this._tempMeasure.height);
         context.restore();
     };
     /** @hidden */
@@ -10774,7 +11134,7 @@ var ScrollBar = /** @class */ (function (_super) {
             this._originX = x;
             this._originY = y;
             // Check if move is required
-            if (x < this._thumbMeasure.left || x > this._thumbMeasure.left + this._thumbMeasure.width || y < this._thumbMeasure.top || y > this._thumbMeasure.top + this._thumbMeasure.height) {
+            if (x < this._tempMeasure.left || x > this._tempMeasure.left + this._tempMeasure.width || y < this._tempMeasure.top || y > this._tempMeasure.top + this._tempMeasure.height) {
                 if (this.isVertical) {
                     this.value = this.minimum + (1 - ((y - this._currentMeasure.top) / this._currentMeasure.height)) * (this.maximum - this.minimum);
                 }
@@ -12072,7 +12432,7 @@ babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredT
 /*!*********************!*\
   !*** ./2D/index.ts ***!
   \*********************/
-/*! exports provided: AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, name */
+/*! exports provided: AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -12137,6 +12497,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ImageBasedSlider", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["ImageBasedSlider"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScrollBar", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["ScrollBar"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ImageScrollBar", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["ImageScrollBar"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "name", function() { return _controls__WEBPACK_IMPORTED_MODULE_0__["name"]; });
 
@@ -13090,8 +13452,12 @@ var XmlLoader = /** @class */ (function () {
                 this._nodes[node.nodeName + Object.keys(this._nodes).length + "_gen"] = guiNode;
                 return guiNode;
             }
-            if (!this._nodes[node.attributes.getNamedItem("id").nodeValue]) {
-                this._nodes[node.attributes.getNamedItem("id").nodeValue] = guiNode;
+            var id = node.attributes.getNamedItem("id").value;
+            if (id.startsWith("{{") && id.endsWith("}}")) {
+                id = this._getChainElement(id.substring(2, id.length - 2));
+            }
+            if (!this._nodes[id]) {
+                this._nodes[id] = guiNode;
             }
             else {
                 throw "XmlLoader Exception : Duplicate ID, every element should have an unique ID attribute";
@@ -13235,7 +13601,7 @@ var XmlLoader = /** @class */ (function () {
             return;
         }
         if (generated) {
-            node.setAttribute("id", parent.id + parent._children.length + 1);
+            node.setAttribute("id", parent.id + (parent._children.length + 1));
         }
         var guiNode = this._createGuiElement(node, parent);
         if (node.nodeName == "Grid") {
@@ -15910,7 +16276,7 @@ var Vector3WithInfo = /** @class */ (function (_super) {
 /*!******************!*\
   !*** ./index.ts ***!
   \******************/
-/*! exports provided: AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, GUI3DManager, Vector3WithInfo, Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, name, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial */
+/*! exports provided: AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, GUI3DManager, Vector3WithInfo, Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -15994,6 +16360,8 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScrollBar", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["ScrollBar"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ImageScrollBar", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["ImageScrollBar"]; });
+
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "name", function() { return _2D__WEBPACK_IMPORTED_MODULE_0__["name"]; });
 
 /* harmony import */ var _3D__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./3D */ "./3D/index.ts");
@@ -16039,7 +16407,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!**************************!*\
   !*** ./legacy/legacy.ts ***!
   \**************************/
-/*! exports provided: AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, GUI3DManager, Vector3WithInfo, Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, name, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial */
+/*! exports provided: AdvancedDynamicTexture, AdvancedDynamicTextureInstrumentation, Vector2WithInfo, Matrix2D, Measure, MultiLinePoint, Style, ValueAndUnit, XmlLoader, GUI3DManager, Vector3WithInfo, Button, Checkbox, ColorPicker, Container, Control, Ellipse, Grid, Image, InputText, InputPassword, Line, MultiLine, RadioButton, StackPanel, SelectorGroup, CheckboxGroup, RadioGroup, SliderGroup, SelectionPanel, ScrollViewer, TextWrapping, TextBlock, KeyPropertySet, VirtualKeyboard, Rectangle, DisplayGrid, BaseSlider, Slider, ImageBasedSlider, ScrollBar, ImageScrollBar, name, AbstractButton3D, Button3D, Container3D, Control3D, CylinderPanel, HolographicButton, MeshButton3D, PlanePanel, ScatterPanel, SpherePanel, StackPanel3D, VolumeBasedPanel, FluentMaterialDefines, FluentMaterial */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -16126,6 +16494,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ImageBasedSlider", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["ImageBasedSlider"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ScrollBar", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["ScrollBar"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ImageScrollBar", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["ImageScrollBar"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "name", function() { return _index__WEBPACK_IMPORTED_MODULE_0__["name"]; });
 

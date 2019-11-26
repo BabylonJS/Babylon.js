@@ -1595,7 +1595,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 /**
  * Converts Babylon Scene into glTF 2.0.
  * @hidden
@@ -2709,12 +2708,9 @@ var _Exporter = /** @class */ (function () {
                         }
                         else {
                             return promise.then(function (node) {
-                                var directDescendents = babylonNode.getDescendants(true, function (node) { return (node instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Node"]); });
-                                if (directDescendents.length || node.mesh != null || (node.extensions)) {
-                                    _this._nodes.push(node);
-                                    nodeIndex = _this._nodes.length - 1;
-                                    nodeMap[babylonNode.uniqueId] = nodeIndex;
-                                }
+                                _this._nodes.push(node);
+                                nodeIndex = _this._nodes.length - 1;
+                                nodeMap[babylonNode.uniqueId] = nodeIndex;
                                 if (!babylonScene.animationGroups.length && babylonNode.animations.length) {
                                     _glTFAnimation__WEBPACK_IMPORTED_MODULE_5__["_GLTFAnimation"]._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, _this._nodes, binaryWriter, _this._bufferViews, _this._accessors, _this._convertToRightHandedSystem, _this._animationSampleRate);
                                 }
