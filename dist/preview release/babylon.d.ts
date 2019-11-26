@@ -10062,6 +10062,23 @@ declare module BABYLON {
          */
         abstract transferToEffect(effect: Effect, lightIndex: string): Light;
         /**
+         * Sets the passed Effect "effect" with the Light textures.
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The light
+         */
+        transferTexturesToEffect(effect: Effect, lightIndex: string): Light;
+        /**
+         * Binds the lights information from the scene to the effect for the given mesh.
+         * @param lightIndex Light index
+         * @param scene The scene where the light belongs to
+         * @param effect The effect we are binding the data to
+         * @param useSpecular Defines if specular is supported
+         * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
+         * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
+         */
+        bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff?: boolean, rebuildInParallel?: boolean): void;
+        /**
          * Sets the passed Effect "effect" with the Light information.
          * @param effect The effect to update
          * @param lightDataUniformName The uniform used to store light data (position or direction)
@@ -38476,6 +38493,16 @@ declare module BABYLON {
         useObjectOrienationForDragging: boolean;
         private _options;
         /**
+         * Gets the options used by the behavior
+         */
+        /**
+        * Sets the options used by the behavior
+        */
+        options: {
+            dragAxis?: Vector3;
+            dragPlaneNormal?: Vector3;
+        };
+        /**
          * Creates a pointer drag behavior that can be attached to a mesh
          * @param options The drag axis or normal of the plane that will be dragged across. If no options are specified the drag plane will always face the ray's origin (eg. camera)
          */
@@ -46669,6 +46696,13 @@ declare module BABYLON {
         protected _computeProjectionTextureMatrix(): void;
         protected _buildUniformLayout(): void;
         private _computeAngleValues;
+        /**
+         * Sets the passed Effect "effect" with the Light textures.
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The light
+         */
+        transferTexturesToEffect(effect: Effect, lightIndex: string): Light;
         /**
          * Sets the passed Effect object with the SpotLight transfomed position (or position if not parented) and normalized direction.
          * @param effect The effect to update

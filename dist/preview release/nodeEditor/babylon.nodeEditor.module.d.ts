@@ -138,6 +138,7 @@ declare module "babylonjs-node-editor/diagram/graphNodeGroup" {
         width: number;
         height: number;
         element: HTMLDivElement;
+        private _headerElement;
         private _nodes;
         private _ownerCanvas;
         private _mouseStartPointX;
@@ -1467,6 +1468,7 @@ declare module NODEEDITOR {
         width: number;
         height: number;
         element: HTMLDivElement;
+        private _headerElement;
         private _nodes;
         private _ownerCanvas;
         private _mouseStartPointX;
