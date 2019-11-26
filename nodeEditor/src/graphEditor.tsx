@@ -165,8 +165,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     this._graphCanvas.selectedLink.dispose();
                 }
 
-                if (this._graphCanvas.selectedGroup) {
-                    this._graphCanvas.selectedGroup.dispose();
+                if (this._graphCanvas.selectedFrame) {
+                    this._graphCanvas.selectedFrame.dispose();
                 }
 
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);  
