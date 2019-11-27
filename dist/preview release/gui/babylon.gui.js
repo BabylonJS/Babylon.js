@@ -6565,6 +6565,21 @@ var Image = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    /** @hidden */
+    Image.prototype._rotate90 = function (n) {
+        var canvas = document.createElement('canvas');
+        var context = canvas.getContext('2d');
+        var width = this._domImage.width;
+        var height = this._domImage.height;
+        canvas.width = height;
+        canvas.height = width;
+        context.translate(canvas.width / 2, canvas.height / 2);
+        context.rotate(n * Math.PI / 2);
+        context.drawImage(this._domImage, 0, 0, width, height, -width / 2, -height / 2, width, height);
+        var dataUrl = canvas.toDataURL("image/jpg");
+        var rotatedImage = new Image(this.name + "rotated", dataUrl);
+        return rotatedImage;
+    };
     Object.defineProperty(Image.prototype, "domImage", {
         get: function () {
             return this._domImage;
@@ -10837,21 +10852,42 @@ var ImageScrollBar = /** @class */ (function (_super) {
     }
     Object.defineProperty(ImageScrollBar.prototype, "backgroundImage", {
         /**
-         * Gets or sets the image used to render the background
+         * Gets or sets the image used to render the background for horizontal bar
          */
         get: function () {
-            return this._backgroundImage;
+            return this._backgroundBaseImage;
         },
         set: function (value) {
             var _this = this;
-            if (this._backgroundImage === value) {
+            if (this._backgroundBaseImage === value) {
                 return;
             }
-            this._backgroundImage = value;
-            if (value && !value.isLoaded) {
-                value.onImageLoadedObservable.addOnce(function () { return _this._markAsDirty(); });
+            this._backgroundBaseImage = value;
+            if (this.isVertical) {
+                if (value && !value.isLoaded) {
+                    value.onImageLoadedObservable.addOnce(function () {
+                        var rotatedValue = value._rotate90(1);
+                        _this._backgroundImage = rotatedValue;
+                        if (!rotatedValue.isLoaded) {
+                            rotatedValue.onImageLoadedObservable.addOnce(function () {
+                                _this._markAsDirty();
+                            });
+                        }
+                        _this._markAsDirty();
+                    });
+                }
+                this._backgroundImage = value._rotate90(1);
+                this._markAsDirty();
             }
-            this._markAsDirty();
+            else {
+                this._backgroundImage = value;
+                if (value && !value.isLoaded) {
+                    value.onImageLoadedObservable.addOnce(function () {
+                        _this._markAsDirty();
+                    });
+                }
+                this._markAsDirty();
+            }
         },
         enumerable: true,
         configurable: true
@@ -10861,18 +10897,39 @@ var ImageScrollBar = /** @class */ (function (_super) {
          * Gets or sets the image used to render the thumb
          */
         get: function () {
-            return this._thumbImage;
+            return this._thumbBaseImage;
         },
         set: function (value) {
             var _this = this;
-            if (this._thumbImage === value) {
+            if (this._thumbBaseImage === value) {
                 return;
             }
-            this._thumbImage = value;
-            if (value && !value.isLoaded) {
-                value.onImageLoadedObservable.addOnce(function () { return _this._markAsDirty(); });
+            this._thumbBaseImage = value;
+            if (this.isVertical) {
+                if (value && !value.isLoaded) {
+                    value.onImageLoadedObservable.addOnce(function () {
+                        var rotatedValue = value._rotate90(-1);
+                        _this._thumbImage = rotatedValue;
+                        if (!rotatedValue.isLoaded) {
+                            rotatedValue.onImageLoadedObservable.addOnce(function () {
+                                _this._markAsDirty();
+                            });
+                        }
+                        _this._markAsDirty();
+                    });
+                }
+                this._thumbImage = value._rotate90(-1);
+                this._markAsDirty();
             }
-            this._markAsDirty();
+            else {
+                this._thumbImage = value;
+                if (value && !value.isLoaded) {
+                    value.onImageLoadedObservable.addOnce(function () {
+                        _this._markAsDirty();
+                    });
+                }
+                this._markAsDirty();
+            }
         },
         enumerable: true,
         configurable: true
