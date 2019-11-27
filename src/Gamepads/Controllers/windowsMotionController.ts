@@ -597,9 +597,7 @@ export class XRWindowsMotionController extends WindowsMotionController {
     /**
      * holds the thumbstick values (X,Y)
      */
-    public get thumbstickValues(): StickValues {
-        return this.rightStick;
-    }
+    public thumbstickValues: StickValues = { x: 0, y: 0 };
 
     /**
      * Fired when the thumbstick on this controller is clicked
