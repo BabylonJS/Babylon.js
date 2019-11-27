@@ -3,8 +3,8 @@ import { GraphCanvasComponent } from './graphCanvas';
 import { Nullable } from 'babylonjs/types';
 import { Observer } from 'babylonjs/Misc/observable';
 import { NodeLink } from './nodeLink';
-import { Color3 } from 'babylonjs';
 import { IFrameData } from '../nodeLocationInfo';
+import { Color3 } from 'babylonjs/Maths/math.color';
 
 export class GraphFrame {
     private _name: string;

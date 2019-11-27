@@ -689,9 +689,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.zoom = editorData.zoom || 1;
 
         // Frames
-        for (var frameData of editorData.frames) {
-            var frame = GraphFrame.Parse(frameData, this);
-            this._frames.push(frame);
+        if (editorData.frames) {
+            for (var frameData of editorData.frames) {
+                var frame = GraphFrame.Parse(frameData, this);
+                this._frames.push(frame);
+            }
         }
     }
  

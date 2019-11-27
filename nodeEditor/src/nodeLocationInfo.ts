@@ -18,5 +18,5 @@ export interface IEditorData {
     x: number;
     y: number;
     zoom: number;
-    frames: IFrameData[];
+    frames?: IFrameData[];
 }
