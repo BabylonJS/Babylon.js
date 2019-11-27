@@ -1135,7 +1135,7 @@ export class NodeMaterial extends PushMaterial {
         serializationObject.customType = "BABYLON.NodeMaterial";
 
         serializationObject.outputNodes = [];
-        serializationObject.editorData = this.editorData;
+        serializationObject.editorData = JSON.parse(JSON.stringify(this.editorData)); // Copy
 
         let blocks: NodeMaterialBlock[] = [];
 
@@ -1240,7 +1240,9 @@ export class NodeMaterial extends PushMaterial {
             }[] = source.locations || source.editorData.locations;
 
             for (var location of locations) {
-                location.blockId = map[location.blockId].uniqueId;
+                if (map[location.blockId]) {
+                    location.blockId = map[location.blockId].uniqueId;
+                }
             }
 
             if (source.locations) {
