@@ -151,6 +151,7 @@ export class ScreenshotTools {
         const renderToTexture = () => {
             scene.incrementRenderId();
             scene.resetCachedMaterial();
+            scene._intermediateRendering = true;
             texture.render(true);
             texture.dispose();
 
