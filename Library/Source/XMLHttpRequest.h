@@ -6,7 +6,7 @@
 #include <arcana/type_traits.h>
 #include <unordered_map>
 
-namespace babylon
+namespace Babylon
 {
     class RuntimeImpl;
 
@@ -93,13 +93,11 @@ namespace babylon
     class XMLHttpRequest final : public Napi::ObjectWrap<XMLHttpRequest>
     {
     public:
-        static void Initialize(Napi::Env& env, RuntimeImpl& runtimeImpl);
+        static Napi::FunctionReference CreateConstructor(Napi::Env& env);
 
         explicit XMLHttpRequest(const Napi::CallbackInfo& info);
 
     private:
-        static Napi::FunctionReference constructor;
-
         enum class ReadyState
         {
             Unsent = 0,

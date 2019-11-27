@@ -16,9 +16,10 @@ namespace xr
         std::string m_message{};
     };
 
-    enum TextureFormat
+    enum class TextureFormat
     {
-        RGBA8,
+        RGBA8_SRGB,
+        BGRA8_SRGB,
         D24S8
     };
 

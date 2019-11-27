@@ -11,15 +11,15 @@ public:
     class InputBuffer
     {
     public:
-        InputBuffer(babylon::Runtime& rt)
-            : m_runtime{ rt }
+        InputBuffer(Babylon::Runtime& runtime)
+            : m_runtime{ runtime }
         {}
         InputBuffer(const InputBuffer&) = delete;
         InputBuffer& operator=(const InputBuffer&) = delete;
 
         void SetPointerPosition(int x, int y)
         {
-            m_runtime.Execute([x, y, this](const auto&)
+            m_runtime.Dispatch([x, y, this](const auto&)
             {
                 m_pointerX = x;
                 m_pointerY = y;
@@ -28,7 +28,7 @@ public:
 
         void SetPointerDown(bool isPointerDown)
         {
-            m_runtime.Execute([isPointerDown, this](const auto&)
+            m_runtime.Dispatch([isPointerDown, this](const auto&)
             {
                 m_isPointerDown = isPointerDown;
             });
@@ -50,18 +50,17 @@ public:
         }
 
     private:
-        babylon::Runtime& m_runtime;
+        Babylon::Runtime& m_runtime;
 
         int m_pointerX{};
         int m_pointerY{};
         bool m_isPointerDown{};
     };
 
-    static void Initialize(babylon::Runtime& rt, InputBuffer& inputBuffer)
+    static void Initialize(Babylon::Runtime& runtime, InputBuffer& inputBuffer)
     {
-        rt.Execute([data = &inputBuffer](const auto& runtime)
+        runtime.Dispatch([data = &inputBuffer](auto& env)
         {
-            auto& env = runtime.Env();
             Napi::HandleScope scope{ env };
 
             Napi::Function func = DefineClass(

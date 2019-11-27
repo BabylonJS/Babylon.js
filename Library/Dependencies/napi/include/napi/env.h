@@ -2,7 +2,7 @@
 
 #include "napi.h"
 
-namespace babylon
+namespace Babylon
 {
     class Env : public Napi::Env
     {

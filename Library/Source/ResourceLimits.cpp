@@ -1,6 +1,6 @@
 #include "ResourceLimits.h"
 
-namespace babylon
+namespace Babylon
 {
     const TBuiltInResource DefaultTBuiltInResource =
     {

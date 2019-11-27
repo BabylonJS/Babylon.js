@@ -1,6 +1,6 @@
 #include <napi/env.h>
 
-namespace babylon
+namespace Babylon
 {
     void Env::Eval(const char* string, const char* sourceUrl)
     {

@@ -2,7 +2,7 @@
 
 #include <napi/env.h>
 
-namespace babylon
+namespace Babylon
 {
-    void InitializeNativeXr(babylon::Env& env);
+    void InitializeNativeXr(Env& env);
 }

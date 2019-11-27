@@ -1,7 +1,7 @@
 #include "Common.h"
 #include <Windows.h>
 
-namespace babylon
+namespace Babylon
 {
     std::filesystem::path GetModulePath()
     {

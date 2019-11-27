@@ -1,8 +1,7 @@
 #include "Common.h"
 
-namespace babylon
+namespace Babylon
 {
-
     Filepath GetModulePath()
     {
         return Filepath{ "." };

@@ -2,7 +2,7 @@
 #include <Windows.h>
 #include <Shlwapi.h>
 
-namespace babylon
+namespace Babylon
 {
     std::filesystem::path GetModulePath()
     {

@@ -2,7 +2,7 @@
 #include "RuntimeImpl.h"
 #include "Console.h"
 
-namespace babylon
+namespace Babylon
 {
     Runtime::Runtime(std::unique_ptr<RuntimeImpl> impl)
         : m_impl{ std::move(impl) }
@@ -38,36 +38,13 @@ namespace babylon
         m_impl->Eval(string, url);
     }
 
-    void Runtime::Execute(std::function<void(Runtime&)> func)
+    void Runtime::Dispatch(std::function<void(Env&)> func)
     {
-        m_impl->Execute([this, func = std::move(func)](auto&)
-        {
-            func(*this);
-        });
-    }
-
-    babylon::Env& Runtime::Env() const
-    {
-        return m_impl->Env();
+        m_impl->Dispatch(func);
     }
 
     const std::string& Runtime::RootUrl() const
     {
         return m_impl->RootUrl();
-    }
-
-    void Runtime::RegisterLogOutput(MessageLogger output)
-    {
-        Console::RegisterLogOutput(output);
-    }
-
-    void Runtime::RegisterWarnOutput(MessageLogger output)
-    {
-        Console::RegisterWarnOutput(output);
-    }
-
-    void Runtime::RegisterErrorOutput(MessageLogger output)
-    {
-        Console::RegisterErrorOutput(output);
     }
 }

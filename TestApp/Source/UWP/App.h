@@ -38,9 +38,9 @@ private:
     void OnOrientationChanged(Windows::Graphics::Display::DisplayInformation^ sender, Platform::Object^ args);
     void OnDisplayContentsInvalidated(Windows::Graphics::Display::DisplayInformation^ sender, Platform::Object^ args);
 
-    concurrency::task<void> RestartRuntimeAsync();
+    concurrency::task<void> RestartRuntimeAsync(Windows::Foundation::Rect);
 
-    std::unique_ptr<babylon::RuntimeUWP> m_runtime{};
+    std::unique_ptr<Babylon::RuntimeUWP> m_runtime{};
     std::unique_ptr<InputManager::InputBuffer> m_inputBuffer{};
     Windows::ApplicationModel::Activation::FileActivatedEventArgs^ m_fileActivatedArgs;
     bool m_windowClosed;

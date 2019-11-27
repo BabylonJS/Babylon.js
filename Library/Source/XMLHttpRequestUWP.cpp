@@ -10,7 +10,7 @@
 // the WinRT headers, we'd have to explicitly include unknwn.h, or build would fail with C2338.
 #include <arcana/threading/task_conversions.h>
 
-namespace babylon
+namespace Babylon
 {
     arcana::task<void, std::exception_ptr> XMLHttpRequest::SendAsync()
     {

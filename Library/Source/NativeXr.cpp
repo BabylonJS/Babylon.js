@@ -12,10 +12,18 @@ namespace
     {
         switch (format)
         {
-        case xr::TextureFormat::RGBA8:
+        // Color Formats
+        // NOTE: Use linear formats even though XR requests sRGB to match what happens on the web.
+        //       WebGL shaders expect sRGB output while native shaders expect linear output.
+        case xr::TextureFormat::BGRA8_SRGB:
+            return bgfx::TextureFormat::BGRA8;
+        case xr::TextureFormat::RGBA8_SRGB:
             return bgfx::TextureFormat::RGBA8;
+
+        // Depth Formats
         case xr::TextureFormat::D24S8:
             return bgfx::TextureFormat::D24S8;
+
         default:
             throw std::exception{ /* Unsupported texture format */ };
         }
@@ -93,7 +101,7 @@ namespace
 }
 
 // NativeXr implementation proper.
-namespace babylon
+namespace Babylon
 {
     class NativeXr
     {
@@ -131,6 +139,7 @@ namespace babylon
 
                 BeginFrame();
                 callback(*m_frame);
+                m_engineImpl->EndFrame();
                 EndFrame();
             });
         }
@@ -237,12 +246,9 @@ namespace babylon
                 assert(view.ColorTextureSize.Height == view.DepthTextureSize.Height);
 
                 auto colorTextureFormat = XrTextureFormatToBgfxFormat(view.ColorTextureFormat);
-                auto depthTextureFormat = XrTextureFormatToBgfxFormat(view.DepthTextureFormat);
-
-                assert(bgfx::isTextureValid(0, false, 1, colorTextureFormat, BGFX_TEXTURE_RT));
-                assert(bgfx::isTextureValid(0, false, 1, depthTextureFormat, BGFX_TEXTURE_RT));
-
                 auto colorTex = bgfx::createTexture2D(1, 1, false, 1, colorTextureFormat, BGFX_TEXTURE_RT);
+
+                auto depthTextureFormat = XrTextureFormatToBgfxFormat(view.DepthTextureFormat);
                 auto depthTex = bgfx::createTexture2D(1, 1, false, 1, depthTextureFormat, BGFX_TEXTURE_RT);
 
                 // Force BGFX to create the texture now, which is necessary in order to use overrideInternal.
@@ -286,7 +292,7 @@ namespace babylon
     }
 }
 
-namespace babylon
+namespace Babylon
 {
     namespace
     {
@@ -832,7 +838,6 @@ namespace babylon
                 {
                     m_xrFrame.Update(frame);
                     func->Call({ Napi::Value::From(env, -1), m_jsXRFrame.Value() });
-                    bgfx::frame();
                 });
 
                 // TODO: Timestamp, I think? Or frame handle? Look up what this return value is and return the right thing.
@@ -1051,7 +1056,7 @@ namespace babylon
         };
     }
 
-    void InitializeNativeXr(babylon::Env& env)
+    void InitializeNativeXr(Env& env)
     {
         XRWebGLLayer::Initialize(env);
         XRRigidTransform::Initialize(env);

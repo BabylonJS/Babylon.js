@@ -3,21 +3,24 @@
 #include "Console.h"
 #include "NativeEngine.h"
 #include "NativeWindow.h"
-#include "Window.h"
 #include "XMLHttpRequest.h"
 
 #include <curl/curl.h>
 #include <napi/env.h>
 #include <sstream>
 
-namespace babylon
+namespace Babylon
 {
     namespace
     {
+        static constexpr auto JS_WINDOW_NAME = "window";
         static constexpr auto JS_NATIVE_NAME = "_native";
         static constexpr auto JS_RUNTIME_NAME = "runtime";
-        static constexpr auto JS_WINDOW_NAME = "window";
+        static constexpr auto JS_NATIVE_WINDOW_NAME = "window";
+        static constexpr auto JS_CONSOLE_NAME = "console";
+
         static constexpr auto JS_ENGINE_CONSTRUCTOR_NAME = "Engine";
+        static constexpr auto JS_XML_HTTP_REQUEST_CONSTRUCTOR_NAME = "XMLHttpRequest";
     }
 
     RuntimeImpl& RuntimeImpl::GetRuntimeImplFromJavaScript(Napi::Env env)
@@ -36,10 +39,11 @@ namespace babylon
             .Get(JS_WINDOW_NAME).ToObject());
     }
 
-    RuntimeImpl::RuntimeImpl(void* nativeWindowPtr, const std::string& rootUrl)
+    RuntimeImpl::RuntimeImpl(void* nativeWindowPtr, const std::string& rootUrl, LogCallback&& logCallback)
         : m_nativeWindowPtr{ nativeWindowPtr }
         , m_thread{ [this] { ThreadProcedure(); } }
         , m_rootUrl{ rootUrl }
+        , m_logCallback{ logCallback }
     {
     }
 
@@ -76,18 +80,49 @@ namespace babylon
         m_suspendVariable.notify_one();
     }
 
+    void RuntimeImpl::LoadScript(const std::string& url)
+    {
+        auto lock = AcquireTaskLock();
+        Task = arcana::when_all(LoadUrlAsync<std::string>(GetAbsoluteUrl(url).data()), Task).then(m_dispatcher, m_cancelSource,
+            [this, url](const std::tuple<std::string, arcana::void_placeholder>& args)
+            {
+                m_env->Eval(std::get<0>(args).data(), url.data());
+            });
+    }
+
+    void RuntimeImpl::Eval(const std::string& string, const std::string& sourceUrl)
+    {
+        auto lock = AcquireTaskLock();
+        Task = Task.then(m_dispatcher, m_cancelSource, [this, string, sourceUrl]()
+        {
+            m_env->Eval(string.data(), sourceUrl.data());
+        });
+    }
+
+    void RuntimeImpl::Dispatch(std::function<void(Env&)> func)
+    {
+        auto lock = AcquireTaskLock();
+        Task = Task.then(m_dispatcher, m_cancelSource, [func = std::move(func), this]()
+        {
+            func(*m_env);
+        });
+    }
+
+    const std::string& RuntimeImpl::RootUrl() const
+    {
+        return m_rootUrl;
+    }
+
     std::string RuntimeImpl::GetAbsoluteUrl(const std::string& url)
     {
         auto curl = curl_url();
 
-        auto code = curl_url_set(curl, CURLUPART_URL, url.c_str(), 0);
+        auto code = curl_url_set(curl, CURLUPART_URL, url.data(), 0);
 
         // If input could not be turned into a valid URL, try using it as a regular URL.
         if (code == CURLUE_MALFORMED_INPUT)
         {
-            std::stringstream ss;
-            ss << m_rootUrl << "/" << url;
-            code = curl_url_set(curl, CURLUPART_URL, ss.str().c_str(), 0);
+            code = curl_url_set(curl, CURLUPART_URL, (m_rootUrl + "/" + url).data(), 0);
         }
 
         if (code != CURLUE_OK)
@@ -108,7 +143,7 @@ namespace babylon
         curl_free(buf);
         curl_url_cleanup(curl);
 
-        return absoluteUrl;
+        return std::move(absoluteUrl);
     }
 
     template<typename T> arcana::task<T, std::exception_ptr> RuntimeImpl::LoadUrlAsync(const std::string& url)
@@ -120,7 +155,7 @@ namespace babylon
             auto curl = curl_easy_init();
             if (curl)
             {
-                curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+                curl_easy_setopt(curl, CURLOPT_URL, url.data());
                 curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
                 curl_write_callback callback = [](char* buffer, size_t size, size_t nitems, void* userData)
@@ -142,47 +177,8 @@ namespace babylon
                 curl_easy_cleanup(curl);
             }
 
-            return data;
+            return std::move(data);
         });
-    }
-
-    void RuntimeImpl::LoadScript(const std::string& url)
-    {
-        auto lock = AcquireTaskLock();
-        Task = Task.then(m_dispatcher, m_cancelSource, [this, url]
-        {
-            return LoadUrlAsync<std::string>(GetAbsoluteUrl(url).c_str());
-        }).then(m_dispatcher, m_cancelSource, [this, url](const std::string& script)
-        {
-            Env().Eval(script.data(), url.data());
-        });
-    }
-
-    void RuntimeImpl::Eval(const std::string& string, const std::string& sourceUrl)
-    {
-        Execute([this, string, sourceUrl](auto&)
-        {
-            Env().Eval(string.data(), sourceUrl.data());
-        });
-    }
-
-    void RuntimeImpl::Execute(std::function<void(RuntimeImpl&)> func)
-    {
-        auto lock = AcquireTaskLock();
-        Task = Task.then(m_dispatcher, m_cancelSource, [func = std::move(func), this]()
-        {
-            func(*this);
-        });
-    }
-
-    Env& RuntimeImpl::Env()
-    {
-        return *this->m_env;
-    }
-
-    const std::string& RuntimeImpl::RootUrl() const
-    {
-        return m_rootUrl;
     }
 
     arcana::manual_dispatcher<babylon_dispatcher::work_size>& RuntimeImpl::Dispatcher()
@@ -203,18 +199,30 @@ namespace babylon
     void RuntimeImpl::InitializeJavaScriptVariables()
     {
         auto& env = *m_env;
+        auto global = env.Global();
+
+        global.Set(JS_WINDOW_NAME, global);
 
         auto jsNative = Napi::Object::New(env);
-        env.Global().Set(JS_NATIVE_NAME, jsNative);
+        global.Set(JS_NATIVE_NAME, jsNative);
 
         auto jsRuntime = Napi::External<RuntimeImpl>::New(env, this);
         jsNative.Set(JS_RUNTIME_NAME, jsRuntime);
 
         auto jsWindow = NativeWindow::Create(env, m_nativeWindowPtr, 32, 32);
-        jsNative.Set(JS_WINDOW_NAME, jsWindow.Value());
+        jsNative.Set(JS_NATIVE_WINDOW_NAME, jsWindow.Value());
+        global.Set("setTimeout", NativeWindow::GetSetTimeoutFunction(jsWindow).Value());
+        global.Set("atob", NativeWindow::GetAToBFunction(jsWindow).Value());
+
+        auto jsConsole = Console::Create(env, m_logCallback);
+        jsNative.Set(JS_CONSOLE_NAME, jsConsole.Value());
+        global.Set(JS_CONSOLE_NAME, jsConsole.Value());
 
         auto jsNativeEngineConstructor = NativeEngine::InitializeAndCreateConstructor(env);
         jsNative.Set(JS_ENGINE_CONSTRUCTOR_NAME, jsNativeEngineConstructor.Value());
+
+        auto jsXmlHttpRequestConstructor = XMLHttpRequest::CreateConstructor(env);
+        global.Set(JS_XML_HTTP_REQUEST_CONSTRUCTOR_NAME, jsXmlHttpRequestConstructor.Value());
     }
 
     void RuntimeImpl::BaseThreadProcedure()
@@ -223,24 +231,18 @@ namespace babylon
 
         auto executeOnScriptThread = [this](std::function<void()> action)
         {
-            Execute([action = std::move(action)](auto&)
+            Dispatch([action = std::move(action)](auto&)
             {
                 action();
             });
         };
 
-        babylon::Env env{ GetModulePath().u8string().data(), std::move(executeOnScriptThread) };
+        Env env{ GetModulePath().u8string().data(), std::move(executeOnScriptThread) };
 
         m_env = &env;
         auto hostScopeGuard = gsl::finally([this] { m_env = nullptr; });
 
         InitializeJavaScriptVariables();
-
-        Console::Initialize(env);
-
-        XMLHttpRequest::Initialize(env, *this);
-
-        Window window{ *this };
 
         // TODO: Handle device lost/restored.
 

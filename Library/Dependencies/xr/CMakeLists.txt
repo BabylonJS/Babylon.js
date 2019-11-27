@@ -8,7 +8,7 @@ set(SOURCES
     "Source/XR.cpp"
     "Source/XrPlatformCommon.h")
 
-if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
+if(WIN32 OR WINDOWS_STORE)
     set(SOURCES ${SOURCES} "Source/Windows/XrPlatform.h")
 else()
     message(FATAL_ERROR "XR support not implemented for platform ${BABYLON_NATIVE_PLATFORM}")
@@ -19,7 +19,7 @@ add_library(xr ${SOURCES})
 target_include_directories(xr PRIVATE "Dependencies/OpenXR-SDK/include")
 
 target_include_directories(xr PRIVATE "Source")
-if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
+if(WIN32 OR WINDOWS_STORE)
     target_include_directories(xr PRIVATE "Source/Windows")
 endif()
 

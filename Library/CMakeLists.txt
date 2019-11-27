@@ -15,13 +15,19 @@ if(ANDROID)
     add_subdirectory(Dependencies/openssl EXCLUDE_FROM_ALL)
 endif()
 
+set(SKIP_GLSLANG_INSTALL OFF CACHE BOOL "Skip installation")
+set(ENABLE_SPVREMAPPER OFF CACHE BOOL "Enables building of SPVRemapper")
+set(ENABLE_AMD_EXTENSIONS OFF CACHE BOOL "Enables support of AMD-specific extensions")
+set(ENABLE_GLSLANG_BINARIES OFF CACHE BOOL "Builds glslangValidator and spirv-remap")
+set(ENABLE_NV_EXTENSIONS OFF CACHE BOOL "Enables support of Nvidia-specific extensions")
+set(ENABLE_HLSL OFF CACHE BOOL "Enables HLSL input support")
+set(ENABLE_OPT OFF CACHE BOOL "Enables spirv-opt capability if present")
+
 add_subdirectory(Dependencies/glslang EXCLUDE_FROM_ALL)
 set_property(TARGET glslang PROPERTY FOLDER Dependencies/glslang)
 set_property(TARGET OGLCompiler PROPERTY FOLDER Dependencies/glslang)
 set_property(TARGET OSDependent PROPERTY FOLDER Dependencies/glslang)
 set_property(TARGET SPIRV PROPERTY FOLDER Dependencies/glslang)
-set_property(TARGET SPVRemapper PROPERTY FOLDER Dependencies/glslang)
-set_property(TARGET HLSL PROPERTY FOLDER Dependencies/glslang)
 
 add_subdirectory(Dependencies/SPIRV-Cross EXCLUDE_FROM_ALL)
 set_property(TARGET spirv-cross-core PROPERTY FOLDER Dependencies/SPIRV-Cross)
@@ -60,7 +66,7 @@ endif()
 
 if(APPLE)
     set(CMAKE_USE_SECTRANSP ON CACHE BOOL "enable Apple OS native SSL/TLS")
-elseif(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
+elseif(WIN32 OR WINDOWS_STORE)
     set(CMAKE_USE_WINSSL ON CACHE BOOL "Set cURL to use WinSSL by default.")
 else()
     set(CMAKE_USE_WINSSL OFF CACHE BOOL "Set cURL to use WinSSL by default.")
@@ -78,7 +84,7 @@ endif()
 
 # Currently OpenXR is only supported on Win32. More platforms will be added as 
 # they become viable/available.
-if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
+if(WIN32 OR WINDOWS_STORE)
     add_subdirectory(Dependencies/xr)
     set_property(TARGET xr PROPERTY FOLDER Dependencies/xr)
     set_property(TARGET openxr_loader PROPERTY FOLDER Dependencies/xr/OpenXR)
@@ -104,17 +110,16 @@ set(SOURCES
     "Source/RuntimeImpl.h"
     "Source/Runtime${BABYLON_NATIVE_PLATFORM}.cpp"
     "Source/ShaderCompiler.h"
-    "Source/Window.cpp"
-    "Source/Window.h"
+    "Source/ShaderCompiler.cpp"
     "Source/XMLHttpRequest.cpp"
     "Source/XMLHttpRequest.h"
     "Source/XMLHttpRequest${BABYLON_NATIVE_PLATFORM}.cpp")
 
 # Platform-specific shader compiler
-if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
+if(WIN32 OR WINDOWS_STORE)
     set(SOURCES ${SOURCES}
         "Source/ShaderCompilerD3D.cpp")
-elseif(BABYLON_NATIVE_PLATFORM STREQUAL "Android")
+elseif(ANDROID)
     set(SOURCES ${SOURCES}
         "Source/ShaderCompilerOpenGL.cpp")
 elseif(APPLE)
@@ -123,7 +128,7 @@ elseif(APPLE)
 endif()
 
 # Platform-specific XR plugin (only included when used)
-if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
+if(WIN32 OR WINDOWS_STORE)
     set(SOURCES ${SOURCES}
         "Source/NativeXr.cpp"
         "Source/NativeXr.h")
@@ -176,7 +181,7 @@ target_link_libraries(Library
 	PRIVATE crypto
 	PRIVATE ssl)
 
-if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
+if(WIN32 OR WINDOWS_STORE)
     target_link_libraries(Library PRIVATE xr)
 endif()
 
@@ -189,7 +194,7 @@ if(APPLE)
         PRIVATE spirv-cross-msl)
 endif()
 
-if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
+if(WIN32 OR WINDOWS_STORE)
     target_link_libraries(Library
         PRIVATE "crypt32.lib"
         PRIVATE "d2d1.lib"
