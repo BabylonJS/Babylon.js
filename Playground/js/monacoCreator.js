@@ -301,11 +301,13 @@ class MonacoCreator {
         };
         editorOptions.minimap.enabled = document.getElementById("minimapToggle1280").classList.contains('checked');
         this.jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
-
         this.jsEditor.setValue(oldCode);
+
+        const analyzeCodeDebounced = this.parent.utils.debounceAsync((async) => this.analyzeCode(), 500);
+
         this.jsEditor.onDidChangeModelContent(function () {
             this.parent.utils.markDirty();
-            this.analyzeCode();
+            analyzeCodeDebounced();
         }.bind(this));
     };
 
