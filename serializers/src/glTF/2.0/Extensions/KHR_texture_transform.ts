@@ -1,6 +1,4 @@
 import { ImageMimeType } from "babylonjs-gltf2interface";
-
-import { Nullable } from "babylonjs/types";
 import { Tools } from "babylonjs/Misc/tools";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
@@ -28,6 +26,8 @@ interface IKHRTextureTransform {
  * @hidden
  */
 export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
+    private _recordedTextures: ProceduralTexture[] = [];
+
     /** Name of this extension */
     public readonly name = NAME;
 
@@ -45,10 +45,14 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
     }
 
     public dispose() {
+        for (var texture of this._recordedTextures) {
+            texture.dispose();
+        }
+
         delete this._exporter;
     }
 
-    public preExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Nullable<Promise<Texture>> {
+    public preExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Texture> {
         return new Promise((resolve, reject) => {
             const scene = babylonTexture.getScene();
             if (!scene) {
@@ -70,6 +74,10 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
 
             if (babylonTexture.wAng !== 0) {
                 texture_transform_extension.rotation = babylonTexture.wAng;
+            }
+
+            if (babylonTexture.coordinatesIndex !== 0) {
+                texture_transform_extension.texCoord = babylonTexture.coordinatesIndex;
             }
 
             if (!Object.keys(texture_transform_extension).length) {
@@ -103,6 +111,14 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
                 resolve(babylonTexture);
             }
 
+            proceduralTexture.reservedDataStore = {
+                hidden: true,
+                source: babylonTexture
+            }
+
+            this._recordedTextures.push(proceduralTexture);
+
+            proceduralTexture.coordinatesIndex = babylonTexture.coordinatesIndex;
             proceduralTexture.setTexture("textureSampler", babylonTexture);
             proceduralTexture.setMatrix("textureTransformMat", babylonTexture.getTextureMatrix());
 
