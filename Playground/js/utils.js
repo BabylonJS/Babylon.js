@@ -4,7 +4,7 @@
 class Utils {
     constructor(parent) {
         this.parent = parent;
-
+        
         this.multipleSize = [1280, 1024, 'Mobile'];
     }
 
@@ -14,8 +14,8 @@ class Utils {
     markDirty() {
         if (this.parent.monacoCreator.BlockEditorChange) return;
 
-        this.setToMultipleID("safemodeToggle", "addClass", "checked"); !
-            this.setToMultipleID('safemodeToggle', 'innerHTML', 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
+        this.setToMultipleID("safemodeToggle", "addClass", "checked");!
+        this.setToMultipleID('safemodeToggle', 'innerHTML', 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
     };
 
     toLocationError(errorMessage, errorEvent) {
@@ -38,7 +38,7 @@ class Utils {
         }
 
         // Not an error with proper location
-        return null;
+        return null;        
     }
 
     /**
@@ -71,8 +71,8 @@ class Utils {
         const jsEditor = this.parent.monacoCreator.jsEditor;
         if (gotoLocation) {
             gotoLocation.addEventListener('click', function () {
-                const position = {
-                    lineNumber: Number(locationError.lineNumber),
+                const position = { 
+                    lineNumber: Number(locationError.lineNumber), 
                     column: Number(locationError.columnNumber)
                 };
 
@@ -115,8 +115,8 @@ class Utils {
      * Function to get the current screen size
      */
     getCurrentSize() {
-        for (var i = 0; i < this.multipleSize.length; i++) {
-            if (document.getElementById("menuButton" + this.multipleSize[i]).offsetHeight > 0) return this.multipleSize[i];
+        for(var i = 0; i < this.multipleSize.length; i++) {
+            if(document.getElementById("menuButton" + this.multipleSize[i]).offsetHeight > 0) return this.multipleSize[i];
         }
     };
 
