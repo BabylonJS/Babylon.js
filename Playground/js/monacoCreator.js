@@ -54,10 +54,21 @@ class MonacoCreator {
      */
     async loadMonaco(typings) {
         let response = await fetch(typings || "https://preview.babylonjs.com/babylon.d.ts");
-        if (!response.ok)
+        if (!response.ok) {
             return;
+        }
 
-        const libContent = await response.text();
+        let libContent = await response.text();
+
+        if (!typings) {
+            response = await fetch(typings || "https://preview.babylonjs.com/gui/babylon.gui.d.ts");
+            if (!response.ok) {
+                return;
+            }
+
+            libContent += await response.text();
+        }
+
         this.setupDefinitionWorker(libContent);
 
         require.config({ paths: { 'vs': 'node_modules/monaco-editor/dev/vs' } });
