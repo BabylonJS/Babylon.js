@@ -12,26 +12,31 @@ import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineCompon
 import { DataStorage } from '../../dataStorage';
 import { GraphNode } from '../../diagram/graphNode';
 import { SliderLineComponent } from '../../sharedComponents/sliderLineComponent';
+import { GraphFrame } from '../../diagram/graphFrame';
+import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
+import { Color3LineComponent } from '../../sharedComponents/color3LineComponent';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
 }
 
-export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, { currentNode: Nullable<GraphNode> }> {
+export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, { currentNode: Nullable<GraphNode>, currentFrame: Nullable<GraphFrame> }> {
 
     constructor(props: IPropertyTabComponentProps) {
         super(props)
 
-        this.state = { currentNode: null };
+        this.state = { currentNode: null, currentFrame: null };
     }
 
     componentDidMount() {
         this.props.globalState.onSelectionChangedObservable.add(selection => {
             if (selection instanceof GraphNode) {
-                this.setState({ currentNode: selection });
+                this.setState({ currentNode: selection, currentFrame: null });
+            } else if (selection instanceof GraphFrame) {
+                this.setState({ currentNode: null, currentFrame: selection });
             } else {
-                this.setState({ currentNode: null });
+                this.setState({ currentNode: null, currentFrame: null });
             }
         });
     }
@@ -72,6 +77,27 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 </div>
             );
         }
+
+        if (this.state.currentFrame) {
+            return (
+                <div id="propertyTab">
+                    <div id="header">
+                        <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
+                        <div id="title">
+                            NODE MATERIAL EDITOR
+                        </div>
+                    </div>
+                    <div>
+                        <LineContainerComponent title="GENERAL">
+                            <TextInputLineComponent globalState={this.props.globalState} label="Name" propertyName="name" target={this.state.currentFrame} />
+                            <Color3LineComponent label="Color" target={this.state.currentFrame} propertyName="color"></Color3LineComponent>
+                        </LineContainerComponent>
+                    </div>
+                </div>
+            );
+        }
+
+
         let gridSize = DataStorage.ReadNumber("GridSize", 20);
 
         return (

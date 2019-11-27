@@ -3,7 +3,7 @@ import { GraphNode } from './graphNode';
 import { NodePort } from './nodePort';
 import { Nullable } from 'babylonjs/types';
 import { Observer } from 'babylonjs/Misc/observable';
-import { GraphNodeGroup } from './graphNodeGroup';
+import { GraphFrame } from './graphFrame';
 
 export class NodeLink {   
     private _graphCanvas: GraphCanvasComponent;
@@ -13,7 +13,7 @@ export class NodeLink {
     private _nodeB?: GraphNode;
     private _path: SVGPathElement;
     private _selectionPath: SVGPathElement;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphNodeGroup>>>;
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame>>>;
 
     public get portA() {
         return this._portA;
