@@ -62,8 +62,8 @@ var createScene = function() {
 
     var areaLight = addAreaLight("areaLight", new BABYLON.Vector3(0.25, 0.25, 0.25));
     areaLight.rotation.x = -3 * Math.PI / 4;
-    areaLight.position.copyFromFloats(-5, 50, 50);
-    areaLight.radiosityInfo.color = new BABYLON.Vector3(1000, 1000, 1000);
+    areaLight.position.copyFromFloats(-5, 15, 15);
+    areaLight.radiosityInfo.color = new BABYLON.Vector3(2000, 2000, 2000);
 
     var pr;
 
@@ -82,7 +82,7 @@ var createScene = function() {
             }
             prepareUVS(ms);
 
-            pr = new BABYLON.RadiosityRenderer(scene, meshes, { near: 0.001, far: 1000, bias: 5e-5 });
+            pr = new BABYLON.RadiosityRenderer(scene, meshes, { near: 0.1, far: 150, bias: 5e-5, normalBias: 1e-10 });
             pr.createMaps();
 
             var wasPreviouslyReady = false;
@@ -90,19 +90,19 @@ var createScene = function() {
                 if (!pr.isReady()) {
                     return;
                 }
+                pr.gatherDirectLightOnly()
 
                 if (!wasPreviouslyReady) {
                     for (let i = 0; i < meshes.length; i++) {
-                        meshes[i].material.emissiveTexture = meshes[i].getRadiosityTexture();
-                        meshes[i].material.emissiveTexture.coordinatesIndex = 1;
+                        meshes[i].material.ambientTexture = meshes[i].getRadiosityTexture();
+                        meshes[i].material.ambientTexture.coordinatesIndex = 1;
                     }
                     wasPreviouslyReady = true;
                 }
 
-                if (!pr.gatherFor(2, 1)) { /* *** use pr.gatherRadiosity(16) for computing the solution all at once *** */
-                    console.log("Converged ! ");
-                    scene.onAfterRenderTargetsRenderObservable.remove(observer);
-                }
+                // if (!pr.gatherFor(2, 1)) { /* *** use pr.gatherRadiosity(16) for computing the solution all at once *** */
+                console.log("Converged ! ");
+                scene.onAfterRenderTargetsRenderObservable.remove(observer);
             });
         }
     );

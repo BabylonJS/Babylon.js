@@ -19,14 +19,6 @@ import "../Shaders/dilate.vertex";
   */
 export class RadiosityEffectsManager {
     /**
-      * If true, uses hemicube instead of hemispherical projection
-      */
-    public useHemicube: boolean;
-    /**
-      * If true, uses depth instead of surface id for visibility
-      */
-    public useDepthCompare: boolean;
-    /**
       * Effect for visibility
       */
     public visibilityEffect: Effect;
@@ -46,6 +38,10 @@ export class RadiosityEffectsManager {
       * Effect to dilate the lightmap. Useful to avoid seams.
       */
     public dilateEffect: Effect;
+    /**
+      * Effect to tonemap the lightmap. Necessary to map the dynamic range into 0;1.
+      */
+    public radiosityPostProcessEffect: Effect;
 
     private _vertexBuffer: VertexBuffer;
     private _indexBuffer: DataBuffer;
@@ -58,10 +54,8 @@ export class RadiosityEffectsManager {
       * @param useHemicube If true, uses hemicube instead of hemispherical projection
       * @param useDepthCompare If true, uses depth instead of surface id for visibility
       */
-    constructor(scene: Scene, useHemicube: boolean, useDepthCompare: boolean) {
+    constructor(scene: Scene) {
         this._scene = scene;
-        this.useHemicube = useHemicube;
-        this.useDepthCompare = useDepthCompare;
 
         this.prepareBuffers();
         this.createEffects();
@@ -90,6 +84,7 @@ export class RadiosityEffectsManager {
                     this.isRadiosityDataEffectReady(),
                     this.isShootEffectReady(),
                     this.isVisiblityEffectReady(),
+                    this.isRadiosityPostProcessReady(),
                     this.isDilateEffectReady()
                 ];
 
@@ -114,6 +109,7 @@ export class RadiosityEffectsManager {
                 this.isRadiosityDataEffectReady() &&
                 this.isShootEffectReady() &&
                 this.isVisiblityEffectReady() &&
+                this.isRadiosityPostProcessReady() &&
                 this.isDilateEffectReady();
     }
 
@@ -172,19 +168,12 @@ export class RadiosityEffectsManager {
         var attribs = [VertexBuffer.PositionKind, VertexBuffer.UV2Kind];
         var uniforms = ["view", "shootPos", "shootNormal", "shootEnergy", "shootDArea", "nearFar", "gatheringScale", "residualScale", "normalBias"];
         var samplers = ["itemBuffer", "worldPosBuffer", "worldNormalBuffer", "idBuffer", "residualBuffer", "gatheringBuffer"];
-        var defines = [];
-        if (this.useDepthCompare) {
-            defines.push("#define DEPTH_COMPARE");
-        }
-        if (this.useHemicube) {
-            defines.push("#define HEMICUBE");
-        }
 
         this.shootEffect = this._scene.getEngine().createEffect("radiosity",
             attribs,
             uniforms,
             samplers,
-            defines.join("\n"));
+            "");
 
         return this.shootEffect.isReady();
     }
@@ -228,5 +217,18 @@ export class RadiosityEffectsManager {
             ["inputTexture"], "");
 
         return this.dilateEffect.isReady();
+    }
+
+    /**
+     * Checks the ready state of the tonemap effect
+     * @returns true if the tonemap effect is ready
+     */
+    public isRadiosityPostProcessReady(): boolean {
+        this.radiosityPostProcessEffect = this._scene.getEngine().createEffect("radiosityPostProcess",
+            [VertexBuffer.PositionKind],
+            ["_ExposureAdjustment"],
+            ["inputTexture"], "");
+
+        return this.radiosityPostProcessEffect.isReady();
     }
 }

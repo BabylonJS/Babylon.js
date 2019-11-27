@@ -16,7 +16,7 @@ uniform float lightStrength;
 
 vec3 encode() {
 	float halfPixelSize = 0.5 / texSize;
-	float remain = patchOffset;//(vUV.x  - halfPixelSize) * texSize + (vUV.y - halfPixelSize) * texSize * texSize + patchOffset;
+	float remain = patchOffset;
 	vec3 result;
     result.x = mod(remain, 256.) / 255.;
     remain = floor(remain / 256.);
@@ -30,7 +30,6 @@ void main(void) {
 	glFragData[0] = vec4(worldPosition.xyz / worldPosition.w, 1.0);
 	glFragData[1] = vec4(normalize(worldNormal.xyz), 1.0);
 	glFragData[2] = vec4(encode(), 1.0);
-	// glFragData[2] = vec4(vUV, 0.0, 1.0);
 	glFragData[3] = vec4(color, 1.0);
 	glFragData[4] = vec4(color, 1.0);
 	glFragData[5] = vec4(0.0, 0.0, 0.0, 1.0); // offscreen textures

@@ -32,7 +32,7 @@ vec3 worldPos;    // world pos of receiving element
 vec3 worldNormal; // world normal of receiving element
 vec3 r;           // Direction from shooter to receiver
 
-vec3 visible()
+float visible()
 {
   // Look up projected point
   vec3 directionToLight = vec3(view * vec4(worldPos, 1.0)).xyz*vec3(1.0, -1.0, 1.0);
@@ -58,7 +58,7 @@ vec3 visible()
   
   float shadow = texture(itemBuffer, directionToLight).x + nBias;
   // return vec3(shadow - depth);
-  return vec3(step(depth, shadow));
+  return step(depth, shadow);
 }
 
 vec3 formFactorEnergy()
@@ -76,7 +76,7 @@ vec3 formFactorEnergy()
   // compute the disc approximation form factor
   float fij = max(cosi * cosj, 0.) / (pi * distance2 + shootDArea);
 
-  // fij *= visible();   // returns visibility as 0 or 1
+  fij *= visible();   // returns visibility as 0 or 1
 
   // Modulate shooter's energy by the receiver's reflectivity
   // and the area of the shooter.
@@ -94,8 +94,8 @@ void main(void) {
     worldNormal = texture(worldNormalBuffer, vUV).xyz;
 
     vec3 energy = formFactorEnergy();
-    // glFragData[0] = vec4(energy + residualScale * texture(residualBuffer, vUV).xyz, worldPos4.a);
-    // glFragData[1] = vec4(energy * gatheringScale + texture(gatheringBuffer, vUV).xyz, worldPos4.a);    
-    glFragData[0] = vec4(vec3(visible()), worldPos4.a);
-    glFragData[1] = vec4(vec3(visible()), worldPos4.a);
+    glFragData[0] = vec4(energy + residualScale * texture(residualBuffer, vUV).xyz, worldPos4.a);
+    glFragData[1] = vec4(energy * gatheringScale + texture(gatheringBuffer, vUV).xyz, worldPos4.a);    
+    // glFragData[0] = vec4(vec3(visible()), worldPos4.a);
+    // glFragData[1] = vec4(vec3(visible()), worldPos4.a);
 }
