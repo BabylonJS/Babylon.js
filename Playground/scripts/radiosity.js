@@ -94,8 +94,8 @@ var createScene = function() {
 
                 if (!wasPreviouslyReady) {
                     for (let i = 0; i < meshes.length; i++) {
-                        meshes[i].material.ambientTexture = meshes[i].getRadiosityTexture();
-                        meshes[i].material.ambientTexture.coordinatesIndex = 1;
+                        meshes[i].material.emissiveTexture = meshes[i].getRadiosityTexture();
+                        meshes[i].material.emissiveTexture.coordinatesIndex = 1;
                     }
                     wasPreviouslyReady = true;
                 }

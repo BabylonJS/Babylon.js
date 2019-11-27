@@ -11,7 +11,7 @@ import { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { Constants } from "../Engines/constants";
 import { Vector3 } from "../Maths/math";
-import { Color4 } from "../Maths/math";
+import { Color4, Color3 } from "../Maths/math";
 import { Matrix } from "../Maths/math";
 import { Camera } from "../Cameras/camera";
 import { RadiosityUtils } from "./radiosityUtils";
@@ -930,7 +930,8 @@ export class RadiosityRenderer {
         let vb: any = {};
         vb[VertexBuffer.PositionKind] = this._radiosityEffectsManager.screenQuadVB;
         effect.setTexture("inputTexture", origin);
-        effect.setFloat("_ExposureAdjustment", 100.0);
+        effect.setFloat("_ExposureAdjustment", 0.5); // TODO
+        effect.setColor3("ambientColor", new Color3(0.4, 0.4, 0.4)); // TODO
         engine.bindBuffers(vb, this._radiosityEffectsManager.screenQuadIB, effect);
 
         engine.setDirectViewport(0, 0, dest.getSize().width, dest.getSize().height);

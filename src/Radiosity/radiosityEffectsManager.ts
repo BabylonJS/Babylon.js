@@ -226,7 +226,7 @@ export class RadiosityEffectsManager {
     public isRadiosityPostProcessReady(): boolean {
         this.radiosityPostProcessEffect = this._scene.getEngine().createEffect("radiosityPostProcess",
             [VertexBuffer.PositionKind],
-            ["_ExposureAdjustment"],
+            ["_ExposureAdjustment", "ambientColor"],
             ["inputTexture"], "");
 
         return this.radiosityPostProcessEffect.isReady();
