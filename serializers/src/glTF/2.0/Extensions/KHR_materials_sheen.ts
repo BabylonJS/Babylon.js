@@ -66,7 +66,7 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
         }
     }
 
-    public postExportTexture?(context: string, textureInfo:ITextureInfo, babylonTexture: Texture): void {
+    public postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void {
         if (babylonTexture === this._exportedTexture || babylonTexture.reservedDataStore && babylonTexture.reservedDataStore.source === this._exportedTexture) {
             this._textureInfo = textureInfo;
         }
@@ -82,7 +82,7 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
 
         return [];
     }
-    
+
     public postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
         return new Promise((resolve, reject) => {
             if (babylonMaterial instanceof PBRMaterial) {
@@ -109,7 +109,7 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
             }
             resolve(node);
         });
-    }    
+    }
 }
 
 _Exporter.RegisterExtension(NAME, (exporter) => new KHR_materials_sheen(exporter));

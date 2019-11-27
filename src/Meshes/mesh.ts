@@ -1693,7 +1693,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
         var scene = this.getScene();
 
-        if (scene._isInIntermediateRendering()) {
+        if (this._internalAbstractMeshDataInfo._isActiveIntermediate) {
             this._internalAbstractMeshDataInfo._isActiveIntermediate = false;
         } else {
             this._internalAbstractMeshDataInfo._isActive = false;

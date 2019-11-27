@@ -114,7 +114,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
             proceduralTexture.reservedDataStore = {
                 hidden: true,
                 source: babylonTexture
-            }
+            };
 
             this._recordedTextures.push(proceduralTexture);
 
