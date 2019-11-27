@@ -8,6 +8,13 @@ add_subdirectory(Dependencies/napi EXCLUDE_FROM_ALL)
 set_property(TARGET napi PROPERTY FOLDER Dependencies/napi)
 set(BABYLON_NATIVE_DEPENDENCIES ${NAPI_DEPENDENCIES} PARENT_SCOPE)
 
+if(ANDROID)
+    set(OPENSSL_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/openssl/openssl")
+    set(OPENSSL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/openssl/openssl/include")
+    set(OPENSSL_CRYPTO_LIBRARY crypto.a)
+    add_subdirectory(Dependencies/openssl EXCLUDE_FROM_ALL)
+endif()
+
 add_subdirectory(Dependencies/glslang EXCLUDE_FROM_ALL)
 set_property(TARGET glslang PROPERTY FOLDER Dependencies/glslang)
 set_property(TARGET OGLCompiler PROPERTY FOLDER Dependencies/glslang)
@@ -165,7 +172,9 @@ target_link_libraries(Library
     PRIVATE libcurl
     PRIVATE glslang
     PRIVATE SPIRV
-    PRIVATE spirv-cross-hlsl)
+    PRIVATE spirv-cross-hlsl
+	PRIVATE crypto
+	PRIVATE ssl)
 
 if(BABYLON_NATIVE_PLATFORM STREQUAL "Win32" OR BABYLON_NATIVE_PLATFORM STREQUAL "UWP")
     target_link_libraries(Library PRIVATE xr)
