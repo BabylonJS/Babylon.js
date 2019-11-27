@@ -42636,7 +42636,7 @@ declare module BABYLON {
         /**
          * holds the thumbstick values (X,Y)
          */
-        readonly thumbstickValues: StickValues;
+        thumbstickValues: StickValues;
         /**
          * Fired when the thumbstick on this controller is clicked
          */
