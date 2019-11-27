@@ -165,8 +165,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     this._graphCanvas.selectedLink.dispose();
                 }
 
-                if (this._graphCanvas.selectedGroup) {
-                    this._graphCanvas.selectedGroup.dispose();
+                if (this._graphCanvas.selectedFrame) {
+                    this._graphCanvas.selectedFrame.dispose();
                 }
 
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);  
@@ -303,9 +303,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         if (!editorData || !editorData.locations) {
             this._graphCanvas.distributeGraph();
         } else {
-            this._graphCanvas.x = editorData.x || 0;
-            this._graphCanvas.y = editorData.y || 0;
-            this._graphCanvas.zoom = editorData.zoom || 1;
+            this._graphCanvas.processEditorData(editorData);
+
+            // Locations
             for (var location of editorData.locations) {
                 for (var node of this._graphCanvas.nodes) {
                     if (node.block && node.block.uniqueId === location.blockId) {

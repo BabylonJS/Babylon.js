@@ -7,7 +7,7 @@
 		exports["babylonjs-node-editor"] = factory(require("babylonjs"));
 	else
 		root["NODEEDITOR"] = factory(root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_Textures_texture__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -5582,7 +5582,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "#graph-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro\";\n  user-select: none;\n  overflow: hidden;\n  cursor: move;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #graph-canvas #selection-container {\n    pointer-events: none; }\n    #graph-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #graph-canvas #group-container {\n    overflow: visible; }\n    #graph-canvas #group-container .group-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%; }\n      #graph-canvas #group-container .group-box .group-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848; }\n      #graph-canvas #group-container .group-box.selected {\n        border: white solid 4px; }\n  #graph-canvas #graph-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template: 100% 100%; }\n    #graph-canvas #graph-container #graph-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible; }\n      #graph-canvas #graph-container #graph-svg-container .link {\n        stroke-width: 4px; }\n        #graph-canvas #graph-container #graph-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n      #graph-canvas #graph-container #graph-svg-container .selection-link {\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link:hover, #graph-canvas #graph-container #graph-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #graph-canvas #graph-container #graph-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #graph-canvas #graph-container #graph-canvas-container .visual {\n        z-index: 2;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid transparent;\n          border-radius: 12px; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.constant {\n            border-color: #4E5C74;\n            background: #4E5C74; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.inspector {\n            border-color: #396437;\n            background: #396437; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .connections {\n          grid-row: 2;\n          grid-column: 1;\n          display: grid;\n          grid-template-columns: 50% 50%; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .port {\n            border-radius: 20px;\n            width: 20px;\n            height: 20px;\n            align-self: center; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .connections .port .img {\n              width: 100%; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .connections .port:hover, #graph-canvas #graph-container #graph-canvas-container .visual .connections .port.selected {\n              filter: brightness(2); }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .portLine {\n            height: 24px;\n            display: grid;\n            grid-template-rows: 100%; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .label {\n            align-items: center; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .inputsContainer {\n            grid-row: 1;\n            grid-column: 1; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .connections .inputsContainer .portLine {\n              grid-template-columns: 12px calc(100% - 15px); }\n              #graph-canvas #graph-container #graph-canvas-container .visual .connections .inputsContainer .portLine .label {\n                grid-row: 1;\n                grid-column: 2; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .connections .inputsContainer .portLine .port {\n                grid-row: 1;\n                grid-column: 1;\n                transform: translateX(-12px); }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .outputsContainer {\n            grid-row: 1;\n            grid-column: 2; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .connections .outputsContainer .portLine {\n              grid-template-columns: calc(100% - 10px) 12px; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .connections .outputsContainer .portLine .label {\n                grid-row: 1;\n                grid-column: 1;\n                text-align: right; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .connections .outputsContainer .portLine .port {\n                grid-row: 1;\n                grid-column: 2;\n                transform: translateX(2px); }\n        #graph-canvas #graph-container #graph-canvas-container .visual .content {\n          min-height: 20px;\n          grid-row: 3;\n          grid-column: 1; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.output-block {\n            min-height: 0px;\n            height: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.clamp-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.gradient-block {\n            grid-row: 2;\n            height: 34px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block {\n            grid-row: 3;\n            height: 140px;\n            width: 140px;\n            margin-top: -115px;\n            overflow: hidden;\n            border-bottom-left-radius: 7px;\n            border: black 4px solid;\n            border-left: 0px;\n            border-bottom: 0px; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img {\n              width: 100%;\n              height: 100%;\n              pointer-events: none; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img.empty {\n                display: none; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.remap-block {\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.trigonometry-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n", ""]);
+exports.push([module.i, "#graph-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro\";\n  user-select: none;\n  overflow: hidden;\n  cursor: move;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #graph-canvas #selection-container {\n    pointer-events: none; }\n    #graph-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #graph-canvas #graph-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #graph-canvas #graph-container #group-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #graph-canvas #graph-container .group-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      border: transparent solid 4px;\n      box-sizing: border-box; }\n      #graph-canvas #graph-container .group-box .group-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        align-content: center;\n        overflow: hidden;\n        margin: -4px;\n        border: #484848 solid 4px;\n        border-bottom: 0; }\n      #graph-canvas #graph-container .group-box.selected {\n        border-color: white; }\n        #graph-canvas #graph-container .group-box.selected .group-box-header {\n          border-color: white !important; }\n    #graph-canvas #graph-container #graph-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none; }\n      #graph-canvas #graph-container #graph-svg-container .link {\n        stroke-width: 4px; }\n        #graph-canvas #graph-container #graph-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n      #graph-canvas #graph-container #graph-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link:hover, #graph-canvas #graph-container #graph-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #graph-canvas #graph-container #graph-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #graph-canvas #graph-container #graph-canvas-container .visual {\n        z-index: 2;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid transparent;\n          border-radius: 12px; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.constant {\n            border-color: #4E5C74;\n            background: #4E5C74; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.inspector {\n            border-color: #396437;\n            background: #396437; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .connections {\n          grid-row: 2;\n          grid-column: 1;\n          display: grid;\n          grid-template-columns: 50% 50%; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .port {\n            border-radius: 20px;\n            width: 20px;\n            height: 20px;\n            align-self: center; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .connections .port .img {\n              width: 100%; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .connections .port:hover, #graph-canvas #graph-container #graph-canvas-container .visual .connections .port.selected {\n              filter: brightness(2); }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .portLine {\n            height: 24px;\n            display: grid;\n            grid-template-rows: 100%; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .label {\n            align-items: center; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .inputsContainer {\n            grid-row: 1;\n            grid-column: 1; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .connections .inputsContainer .portLine {\n              grid-template-columns: 12px calc(100% - 15px); }\n              #graph-canvas #graph-container #graph-canvas-container .visual .connections .inputsContainer .portLine .label {\n                grid-row: 1;\n                grid-column: 2; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .connections .inputsContainer .portLine .port {\n                grid-row: 1;\n                grid-column: 1;\n                transform: translateX(-12px); }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .outputsContainer {\n            grid-row: 1;\n            grid-column: 2; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .connections .outputsContainer .portLine {\n              grid-template-columns: calc(100% - 10px) 12px; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .connections .outputsContainer .portLine .label {\n                grid-row: 1;\n                grid-column: 1;\n                text-align: right; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .connections .outputsContainer .portLine .port {\n                grid-row: 1;\n                grid-column: 2;\n                transform: translateX(2px); }\n        #graph-canvas #graph-container #graph-canvas-container .visual .content {\n          min-height: 20px;\n          grid-row: 3;\n          grid-column: 1; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.output-block {\n            min-height: 0px;\n            height: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.clamp-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.gradient-block {\n            grid-row: 2;\n            height: 34px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block {\n            grid-row: 3;\n            height: 140px;\n            width: 140px;\n            margin-top: -115px;\n            overflow: hidden;\n            border-bottom-left-radius: 7px;\n            border: black 4px solid;\n            border-left: 0px;\n            border-bottom: 0px; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img {\n              width: 100%;\n              height: 100%;\n              pointer-events: none; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img.empty {\n                display: none; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.remap-block {\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.trigonometry-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n", ""]);
 
 // exports
 
@@ -51129,7 +51129,7 @@ module.exports = function(module) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BlockTools", function() { return BlockTools; });
-/* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/Fragment/discardBlock */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/Fragment/discardBlock */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__);
 
 
@@ -51916,7 +51916,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
 /* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../dataStorage */ "./dataStorage.ts");
 
@@ -52014,7 +52014,7 @@ var PreviewAreaComponent = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PreviewManager", function() { return PreviewManager; });
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterial */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterial */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _previewMeshType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./previewMeshType */ "./components/preview/previewMeshType.ts");
 /* harmony import */ var _log_logComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../log/logComponent */ "./components/log/logComponent.tsx");
@@ -52657,13 +52657,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
 /* harmony import */ var _stringTools__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../stringTools */ "./stringTools.ts");
 /* harmony import */ var _sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../sharedComponents/fileButtonLineComponent */ "./sharedComponents/fileButtonLineComponent.tsx");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__);
 /* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../serializationTools */ "./serializationTools.ts");
 /* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../dataStorage */ "./dataStorage.ts");
 /* harmony import */ var _diagram_graphNode__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../diagram/graphNode */ "./diagram/graphNode.ts");
 /* harmony import */ var _sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../sharedComponents/sliderLineComponent */ "./sharedComponents/sliderLineComponent.tsx");
+/* harmony import */ var _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../diagram/graphFrame */ "./diagram/graphFrame.ts");
+/* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
+/* harmony import */ var _sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../sharedComponents/color3LineComponent */ "./sharedComponents/color3LineComponent.tsx");
+
+
+
 
 
 
@@ -52681,17 +52687,20 @@ var PropertyTabComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PropertyTabComponent, _super);
     function PropertyTabComponent(props) {
         var _this = _super.call(this, props) || this;
-        _this.state = { currentNode: null };
+        _this.state = { currentNode: null, currentFrame: null };
         return _this;
     }
     PropertyTabComponent.prototype.componentDidMount = function () {
         var _this = this;
         this.props.globalState.onSelectionChangedObservable.add(function (selection) {
             if (selection instanceof _diagram_graphNode__WEBPACK_IMPORTED_MODULE_10__["GraphNode"]) {
-                _this.setState({ currentNode: selection });
+                _this.setState({ currentNode: selection, currentFrame: null });
+            }
+            else if (selection instanceof _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_12__["GraphFrame"]) {
+                _this.setState({ currentNode: null, currentFrame: selection });
             }
             else {
-                _this.setState({ currentNode: null });
+                _this.setState({ currentNode: null, currentFrame: null });
             }
         });
     };
@@ -52723,6 +52732,16 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: "https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" }, "NODE MATERIAL EDITOR")),
                 this.state.currentNode.renderProperties()));
+        }
+        if (this.state.currentFrame) {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: "https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" }, "NODE MATERIAL EDITOR")),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_13__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: this.state.currentFrame }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_14__["Color3LineComponent"], { label: "Color", target: this.state.currentFrame, propertyName: "color" })))));
         }
         var gridSize = _dataStorage__WEBPACK_IMPORTED_MODULE_9__["DataStorage"].ReadNumber("GridSize", 20);
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" },
@@ -52946,7 +52965,7 @@ var GradientDisplayManager = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "InputDisplayManager", function() { return InputDisplayManager; });
-/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialSystemValues */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialSystemValues */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialSystemValues__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _blockTools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../blockTools */ "./blockTools.ts");
 /* harmony import */ var _stringTools__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../stringTools */ "./stringTools.ts");
@@ -53223,7 +53242,7 @@ var TextureDisplayManager = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TrigonometryDisplayManager", function() { return TrigonometryDisplayManager; });
-/* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/trigonometryBlock */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/trigonometryBlock */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_0__);
 
 var TrigonometryDisplayManager = /** @class */ (function () {
@@ -53344,10 +53363,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var dagre__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! dagre */ "../../node_modules/dagre/index.js");
 /* harmony import */ var dagre__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(dagre__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _nodeLink__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./nodeLink */ "./diagram/nodeLink.ts");
-/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_nodeMaterialBlockConnectionPoint__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../dataStorage */ "./dataStorage.ts");
-/* harmony import */ var _graphNodeGroup__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./graphNodeGroup */ "./diagram/graphNodeGroup.ts");
+/* harmony import */ var _graphFrame__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./graphFrame */ "./diagram/graphFrame.ts");
 
 
 
@@ -53382,9 +53401,9 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         _this._candidatePort = null;
         _this._gridSize = 20;
         _this._selectionBox = null;
-        _this._selectedGroup = null;
-        _this._groupCandidateBox = null;
-        _this._groups = [];
+        _this._selectedFrame = null;
+        _this._frameCandidate = null;
+        _this._frames = [];
         _this._altKeyIsPressed = false;
         _this._ctrlKeyIsPressed = false;
         _this._oldY = -1;
@@ -53392,17 +53411,17 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             if (!selection) {
                 _this._selectedNodes = [];
                 _this._selectedLink = null;
-                _this._selectedGroup = null;
+                _this._selectedFrame = null;
             }
             else {
                 if (selection instanceof _nodeLink__WEBPACK_IMPORTED_MODULE_4__["NodeLink"]) {
                     _this._selectedNodes = [];
-                    _this._selectedGroup = null;
+                    _this._selectedFrame = null;
                     _this._selectedLink = selection;
                 }
-                else if (selection instanceof _graphNodeGroup__WEBPACK_IMPORTED_MODULE_7__["GraphNodeGroup"]) {
+                else if (selection instanceof _graphFrame__WEBPACK_IMPORTED_MODULE_7__["GraphFrame"]) {
                     _this._selectedNodes = [];
-                    _this._selectedGroup = selection;
+                    _this._selectedFrame = selection;
                     _this._selectedLink = null;
                 }
                 else {
@@ -53437,6 +53456,11 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             editorData.zoom = _this.zoom;
             editorData.x = _this.x;
             editorData.y = _this.y;
+            editorData.frames = [];
+            for (var _i = 0, _a = _this._frames; _i < _a.length; _i++) {
+                var frame = _a[_i];
+                editorData.frames.push(frame.serialize());
+            }
         };
         return _this;
     }
@@ -53468,6 +53492,13 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
     Object.defineProperty(GraphCanvasComponent.prototype, "links", {
         get: function () {
             return this._links;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphCanvasComponent.prototype, "frames", {
+        get: function () {
+            return this._frames;
         },
         enumerable: true,
         configurable: true
@@ -53522,9 +53553,9 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(GraphCanvasComponent.prototype, "selectedGroup", {
+    Object.defineProperty(GraphCanvasComponent.prototype, "selectedFrame", {
         get: function () {
-            return this._selectedGroup;
+            return this._selectedFrame;
         },
         enumerable: true,
         configurable: true
@@ -53564,6 +53595,13 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         }
         return gridSize * Math.floor(position / gridSize);
     };
+    GraphCanvasComponent.prototype.getGridPositionCeil = function (position) {
+        var gridSize = this.gridSize;
+        if (gridSize === 0) {
+            return position;
+        }
+        return gridSize * Math.ceil(position / gridSize);
+    };
     GraphCanvasComponent.prototype.updateTransform = function () {
         this._rootContainer.style.transform = "translate(" + this._x + "px, " + this._y + "px) scale(" + this._zoom + ")";
         if (_dataStorage__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].ReadBoolean("ShowGrid", true)) {
@@ -53587,7 +53625,13 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             var node = _a[_i];
             node.dispose();
         }
+        var frames = this._frames.splice(0);
+        for (var _b = 0, frames_1 = frames; _b < frames_1.length; _b++) {
+            var frame = frames_1[_b];
+            frame.dispose();
+        }
         this._nodes = [];
+        this._frames = [];
         this._links = [];
         this._graphCanvas.innerHTML = "";
         this._svgCanvas.innerHTML = "";
@@ -53711,25 +53755,25 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             return;
         }
         // Candidate group box
-        if (this._groupCandidateBox) {
+        if (this._frameCandidate) {
             var rootRect = this.canvasContainer.getBoundingClientRect();
             var localX = evt.pageX - rootRect.left;
             var localY = evt.pageY - rootRect.top;
             if (localX > this._selectionStartX) {
-                this._groupCandidateBox.style.left = this._selectionStartX / this.zoom + "px";
-                this._groupCandidateBox.style.width = (localX - this._selectionStartX) / this.zoom + "px";
+                this._frameCandidate.style.left = this._selectionStartX / this.zoom + "px";
+                this._frameCandidate.style.width = (localX - this._selectionStartX) / this.zoom + "px";
             }
             else {
-                this._groupCandidateBox.style.left = localX / this.zoom + "px";
-                this._groupCandidateBox.style.width = (this._selectionStartX - localX) / this.zoom + "px";
+                this._frameCandidate.style.left = localX / this.zoom + "px";
+                this._frameCandidate.style.width = (this._selectionStartX - localX) / this.zoom + "px";
             }
             if (localY > this._selectionStartY) {
-                this._groupCandidateBox.style.top = this._selectionStartY / this.zoom + "px";
-                this._groupCandidateBox.style.height = (localY - this._selectionStartY) / this.zoom + "px";
+                this._frameCandidate.style.top = this._selectionStartY / this.zoom + "px";
+                this._frameCandidate.style.height = (localY - this._selectionStartY) / this.zoom + "px";
             }
             else {
-                this._groupCandidateBox.style.top = localY / this.zoom + "px";
-                this._groupCandidateBox.style.height = (this._selectionStartY - localY) / this.zoom + "px";
+                this._frameCandidate.style.top = localY / this.zoom + "px";
+                this._frameCandidate.style.height = (this._selectionStartY - localY) / this.zoom + "px";
             }
             return;
         }
@@ -53790,16 +53834,16 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         }
         // Group?
         if (evt.currentTarget === this._hostCanvas && evt.shiftKey) {
-            this._groupCandidateBox = this.props.globalState.hostDocument.createElement("div");
-            this._groupCandidateBox.classList.add("group-box");
-            this._groupContainer.appendChild(this._groupCandidateBox);
+            this._frameCandidate = this.props.globalState.hostDocument.createElement("div");
+            this._frameCandidate.classList.add("group-box");
+            this._groupContainer.appendChild(this._frameCandidate);
             var rootRect = this.canvasContainer.getBoundingClientRect();
             this._selectionStartX = (evt.pageX - rootRect.left);
             this._selectionStartY = (evt.pageY - rootRect.top);
-            this._groupCandidateBox.style.left = this._selectionStartX / this.zoom + "px";
-            this._groupCandidateBox.style.top = this._selectionStartY / this.zoom + "px";
-            this._groupCandidateBox.style.width = "0px";
-            this._groupCandidateBox.style.height = "0px";
+            this._frameCandidate.style.left = this._selectionStartX / this.zoom + "px";
+            this._frameCandidate.style.top = this._selectionStartY / this.zoom + "px";
+            this._frameCandidate.style.width = "0px";
+            this._frameCandidate.style.height = "0px";
             return;
         }
         // Port dragging
@@ -53830,11 +53874,11 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             this._selectionBox.parentElement.removeChild(this._selectionBox);
             this._selectionBox = null;
         }
-        if (this._groupCandidateBox) {
-            var newGroup = new _graphNodeGroup__WEBPACK_IMPORTED_MODULE_7__["GraphNodeGroup"](this._groupCandidateBox, this);
-            this._groups.push(newGroup);
-            this._groupCandidateBox.parentElement.removeChild(this._groupCandidateBox);
-            this._groupCandidateBox = null;
+        if (this._frameCandidate) {
+            var newGroup = new _graphFrame__WEBPACK_IMPORTED_MODULE_7__["GraphFrame"](this._frameCandidate, this);
+            this._frames.push(newGroup);
+            this._frameCandidate.parentElement.removeChild(this._frameCandidate);
+            this._frameCandidate = null;
         }
     };
     GraphCanvasComponent.prototype.onWheel = function (evt) {
@@ -53937,6 +53981,25 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         nodeB.refresh();
         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
     };
+    GraphCanvasComponent.prototype.processEditorData = function (editorData) {
+        var frames = this._frames.splice(0);
+        for (var _i = 0, frames_2 = frames; _i < frames_2.length; _i++) {
+            var frame = frames_2[_i];
+            frame.dispose();
+        }
+        this._frames = [];
+        this.x = editorData.x || 0;
+        this.y = editorData.y || 0;
+        this.zoom = editorData.zoom || 1;
+        // Frames
+        if (editorData.frames) {
+            for (var _a = 0, _b = editorData.frames; _a < _b.length; _a++) {
+                var frameData = _b[_a];
+                var frame = _graphFrame__WEBPACK_IMPORTED_MODULE_7__["GraphFrame"].Parse(frameData, this);
+                this._frames.push(frame);
+            }
+        }
+    };
     GraphCanvasComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "graph-canvas", onWheel: function (evt) { return _this.onWheel(evt); }, onPointerMove: function (evt) { return _this.onMove(evt); }, onPointerDown: function (evt) { return _this.onDown(evt); }, onPointerUp: function (evt) { return _this.onUp(evt); } },
@@ -53948,6 +54011,225 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
     };
     return GraphCanvasComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./diagram/graphFrame.ts":
+/*!*******************************!*\
+  !*** ./diagram/graphFrame.ts ***!
+  \*******************************/
+/*! exports provided: GraphFrame */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GraphFrame", function() { return GraphFrame; });
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__);
+
+var GraphFrame = /** @class */ (function () {
+    function GraphFrame(candidate, canvas) {
+        var _this = this;
+        this._x = 0;
+        this._y = 0;
+        this._gridAlignedX = 0;
+        this._gridAlignedY = 0;
+        this._nodes = [];
+        this._mouseStartPointX = null;
+        this._mouseStartPointY = null;
+        this._ownerCanvas = canvas;
+        var root = canvas.groupContainer;
+        this.element = root.ownerDocument.createElement("div");
+        this.element.classList.add("group-box");
+        root.appendChild(this.element);
+        this._headerElement = root.ownerDocument.createElement("div");
+        this._headerElement.classList.add("group-box-header");
+        this.element.appendChild(this._headerElement);
+        this.name = "Frame";
+        this.color = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromInts(72, 72, 72);
+        if (candidate) {
+            this.x = parseFloat(candidate.style.left.replace("px", ""));
+            this.y = parseFloat(candidate.style.top.replace("px", ""));
+            this.width = parseFloat(candidate.style.width.replace("px", ""));
+            this.height = parseFloat(candidate.style.height.replace("px", ""));
+            this.cleanAccumulation();
+        }
+        this._headerElement.addEventListener("pointerdown", function (evt) { return _this._onDown(evt); });
+        this._headerElement.addEventListener("pointerup", function (evt) { return _this._onUp(evt); });
+        this._headerElement.addEventListener("pointermove", function (evt) { return _this._onMove(evt); });
+        this._onSelectionChangedObserver = canvas.globalState.onSelectionChangedObservable.add(function (node) {
+            if (node === _this) {
+                _this.element.classList.add("selected");
+            }
+            else {
+                _this.element.classList.remove("selected");
+            }
+        });
+    }
+    Object.defineProperty(GraphFrame.prototype, "nodes", {
+        get: function () {
+            return this._nodes;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphFrame.prototype, "name", {
+        get: function () {
+            return this._name;
+        },
+        set: function (value) {
+            this._name = value;
+            this._headerElement.innerHTML = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphFrame.prototype, "color", {
+        get: function () {
+            return this._color;
+        },
+        set: function (value) {
+            this._color = value;
+            this._headerElement.style.background = "rgba(" + value.r * 255 + ", " + value.g * 255 + ", " + value.b * 255 + ", 1)";
+            this._headerElement.style.borderColor = "rgba(" + value.r * 255 + ", " + value.g * 255 + ", " + value.b * 255 + ", 1)";
+            this.element.style.background = "rgba(" + value.r * 255 + ", " + value.g * 255 + ", " + value.b * 255 + ", 0.7)";
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphFrame.prototype, "x", {
+        get: function () {
+            return this._x;
+        },
+        set: function (value) {
+            if (this._x === value) {
+                return;
+            }
+            this._x = value;
+            this._gridAlignedX = this._ownerCanvas.getGridPosition(value);
+            this.element.style.left = this._gridAlignedX + "px";
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphFrame.prototype, "y", {
+        get: function () {
+            return this._y;
+        },
+        set: function (value) {
+            if (this._y === value) {
+                return;
+            }
+            this._y = value;
+            this._gridAlignedY = this._ownerCanvas.getGridPosition(value);
+            this.element.style.top = this._gridAlignedY + "px";
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphFrame.prototype, "width", {
+        get: function () {
+            return this._width;
+        },
+        set: function (value) {
+            if (this._width === value) {
+                return;
+            }
+            this._width = value;
+            var gridAlignedRight = this._ownerCanvas.getGridPositionCeil(value + this._gridAlignedX);
+            this.element.style.width = gridAlignedRight - this._gridAlignedX + "px";
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphFrame.prototype, "height", {
+        get: function () {
+            return this._height;
+        },
+        set: function (value) {
+            if (this._height === value) {
+                return;
+            }
+            this._height = value;
+            var gridAlignedBottom = this._ownerCanvas.getGridPositionCeil(value + this._gridAlignedY);
+            this.element.style.height = gridAlignedBottom - this._gridAlignedY + "px";
+        },
+        enumerable: true,
+        configurable: true
+    });
+    GraphFrame.prototype.cleanAccumulation = function () {
+        this.x = this._gridAlignedX;
+        this.y = this._gridAlignedY;
+    };
+    GraphFrame.prototype._onDown = function (evt) {
+        evt.stopPropagation();
+        this._mouseStartPointX = evt.clientX;
+        this._mouseStartPointY = evt.clientY;
+        this._headerElement.setPointerCapture(evt.pointerId);
+        this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
+        // Get nodes
+        this._nodes = [];
+        this._ownerCanvas.globalState.onGroupAboutToMove.notifyObservers(this);
+    };
+    GraphFrame.prototype._onUp = function (evt) {
+        evt.stopPropagation();
+        for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
+            var selectedNode = _a[_i];
+            selectedNode.cleanAccumulation();
+        }
+        this.cleanAccumulation();
+        this._mouseStartPointX = null;
+        this._mouseStartPointY = null;
+        this._headerElement.releasePointerCapture(evt.pointerId);
+    };
+    GraphFrame.prototype._onMove = function (evt) {
+        if (this._mouseStartPointX === null || this._mouseStartPointY === null || evt.ctrlKey) {
+            return;
+        }
+        var newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
+        var newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
+        for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
+            var selectedNode = _a[_i];
+            selectedNode.x += newX;
+            selectedNode.y += newY;
+        }
+        this.x += newX;
+        this.y += newY;
+        this._mouseStartPointX = evt.clientX;
+        this._mouseStartPointY = evt.clientY;
+        evt.stopPropagation();
+    };
+    GraphFrame.prototype.dispose = function () {
+        if (this._onSelectionChangedObserver) {
+            this._ownerCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
+        }
+        this.element.parentElement.removeChild(this.element);
+        this._ownerCanvas.frames.splice(this._ownerCanvas.frames.indexOf(this), 1);
+    };
+    GraphFrame.prototype.serialize = function () {
+        return {
+            x: this._x,
+            y: this._y,
+            width: this._width,
+            height: this._height,
+            color: this._color.asArray(),
+            name: this.name
+        };
+    };
+    GraphFrame.Parse = function (serializationData, canvas) {
+        var newFrame = new GraphFrame(null, canvas);
+        newFrame.x = serializationData.x;
+        newFrame.y = serializationData.y;
+        newFrame.width = serializationData.width;
+        newFrame.height = serializationData.height;
+        newFrame.name = serializationData.name;
+        newFrame.color = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(serializationData.color);
+        return newFrame;
+    };
+    return GraphFrame;
+}());
 
 
 
@@ -54334,170 +54616,6 @@ var GraphNode = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "./diagram/graphNodeGroup.ts":
-/*!***********************************!*\
-  !*** ./diagram/graphNodeGroup.ts ***!
-  \***********************************/
-/*! exports provided: GraphNodeGroup */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GraphNodeGroup", function() { return GraphNodeGroup; });
-var GraphNodeGroup = /** @class */ (function () {
-    function GraphNodeGroup(candidate, canvas) {
-        var _this = this;
-        this._x = 0;
-        this._y = 0;
-        this._gridAlignedX = 0;
-        this._gridAlignedY = 0;
-        this._nodes = [];
-        this._mouseStartPointX = null;
-        this._mouseStartPointY = null;
-        this._ownerCanvas = canvas;
-        var root = canvas.groupContainer;
-        this.element = root.ownerDocument.createElement("div");
-        this.element.classList.add("group-box");
-        root.appendChild(this.element);
-        this._headerElement = root.ownerDocument.createElement("div");
-        this._headerElement.classList.add("group-box-header");
-        this.element.appendChild(this._headerElement);
-        this.x = parseFloat(candidate.style.left.replace("px", ""));
-        this.y = parseFloat(candidate.style.top.replace("px", ""));
-        this.width = parseFloat(candidate.style.width.replace("px", ""));
-        this.height = parseFloat(candidate.style.height.replace("px", ""));
-        this.cleanAccumulation();
-        this.element.style.width = this.width / canvas.zoom + "px";
-        this.element.style.height = this.height / canvas.zoom + "px";
-        this._headerElement.addEventListener("pointerdown", function (evt) { return _this._onDown(evt); });
-        this._headerElement.addEventListener("pointerup", function (evt) { return _this._onUp(evt); });
-        this._headerElement.addEventListener("pointermove", function (evt) { return _this._onMove(evt); });
-        this._onSelectionChangedObserver = canvas.globalState.onSelectionChangedObservable.add(function (node) {
-            if (node === _this) {
-                _this.element.classList.add("selected");
-            }
-            else {
-                _this.element.classList.remove("selected");
-            }
-        });
-    }
-    Object.defineProperty(GraphNodeGroup.prototype, "nodes", {
-        get: function () {
-            return this._nodes;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(GraphNodeGroup.prototype, "gridAlignedX", {
-        get: function () {
-            return this._gridAlignedX;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(GraphNodeGroup.prototype, "gridAlignedY", {
-        get: function () {
-            return this._gridAlignedY;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(GraphNodeGroup.prototype, "name", {
-        get: function () {
-            return this._name;
-        },
-        set: function (value) {
-            this._name = value;
-            this._headerElement.innerHTML = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(GraphNodeGroup.prototype, "x", {
-        get: function () {
-            return this._x;
-        },
-        set: function (value) {
-            if (this._x === value) {
-                return;
-            }
-            this._x = value;
-            this._gridAlignedX = this._ownerCanvas.getGridPosition(value);
-            this.element.style.left = this._gridAlignedX + "px";
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(GraphNodeGroup.prototype, "y", {
-        get: function () {
-            return this._y;
-        },
-        set: function (value) {
-            if (this._y === value) {
-                return;
-            }
-            this._y = value;
-            this._gridAlignedY = this._ownerCanvas.getGridPosition(value);
-            this.element.style.top = this._gridAlignedY + "px";
-        },
-        enumerable: true,
-        configurable: true
-    });
-    GraphNodeGroup.prototype.cleanAccumulation = function () {
-        this.x = this.gridAlignedX;
-        this.y = this.gridAlignedY;
-    };
-    GraphNodeGroup.prototype._onDown = function (evt) {
-        evt.stopPropagation();
-        this._mouseStartPointX = evt.clientX;
-        this._mouseStartPointY = evt.clientY;
-        this._headerElement.setPointerCapture(evt.pointerId);
-        this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
-        // Get nodes
-        this._nodes = [];
-        this._ownerCanvas.globalState.onGroupAboutToMove.notifyObservers(this);
-    };
-    GraphNodeGroup.prototype._onUp = function (evt) {
-        evt.stopPropagation();
-        for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
-            var selectedNode = _a[_i];
-            selectedNode.cleanAccumulation();
-        }
-        this.cleanAccumulation();
-        this._mouseStartPointX = null;
-        this._mouseStartPointY = null;
-        this._headerElement.releasePointerCapture(evt.pointerId);
-    };
-    GraphNodeGroup.prototype._onMove = function (evt) {
-        if (this._mouseStartPointX === null || this._mouseStartPointY === null || evt.ctrlKey) {
-            return;
-        }
-        var newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
-        var newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
-        for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
-            var selectedNode = _a[_i];
-            selectedNode.x += newX;
-            selectedNode.y += newY;
-        }
-        this.x += newX;
-        this.y += newY;
-        this._mouseStartPointX = evt.clientX;
-        this._mouseStartPointY = evt.clientY;
-        evt.stopPropagation();
-    };
-    GraphNodeGroup.prototype.dispose = function () {
-        if (this._onSelectionChangedObserver) {
-            this._ownerCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
-        }
-        this.element.parentElement.removeChild(this.element);
-    };
-    return GraphNodeGroup;
-}());
-
-
-
-/***/ }),
-
 /***/ "./diagram/nodeLink.ts":
 /*!*****************************!*\
   !*** ./diagram/nodeLink.ts ***!
@@ -54620,7 +54738,7 @@ var NodeLink = /** @class */ (function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "NodePort", function() { return NodePort; });
 /* harmony import */ var _blockTools__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../blockTools */ "./blockTools.ts");
-/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_1__);
 
 
@@ -54832,7 +54950,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
-/* harmony import */ var babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/gradientBlock */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/gradientBlock */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _gradientStepComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./gradientStepComponent */ "./diagram/properties/gradientStepComponent.tsx");
 /* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
@@ -54903,7 +55021,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
 /* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__);
 
 
@@ -54969,7 +55087,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_propertyTab_properties_matrixPropertyTabComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../components/propertyTab/properties/matrixPropertyTabComponent */ "./components/propertyTab/properties/matrixPropertyTabComponent.tsx");
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
 /* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
-/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./genericNodePropertyComponent */ "./diagram/properties/genericNodePropertyComponent.tsx");
 
@@ -55355,7 +55473,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _sharedComponents_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../sharedComponents/fileButtonLineComponent */ "./sharedComponents/fileButtonLineComponent.tsx");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
 /* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
@@ -55664,7 +55782,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
 /* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
-/* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/trigonometryBlock */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/trigonometryBlock */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_trigonometryBlock__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./genericNodePropertyComponent */ "./diagram/properties/genericNodePropertyComponent.tsx");
 
@@ -55823,7 +55941,7 @@ PropertyLedger.RegisteredControls["TrigonometryBlock"] = _properties_trigonometr
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GlobalState", function() { return GlobalState; });
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _components_preview_previewMeshType__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/preview/previewMeshType */ "./components/preview/previewMeshType.ts");
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./dataStorage */ "./dataStorage.ts");
@@ -55891,7 +56009,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _portal__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./portal */ "./portal.tsx");
 /* harmony import */ var _components_log_logComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/log/logComponent */ "./components/log/logComponent.tsx");
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./dataStorage */ "./dataStorage.ts");
-/* harmony import */ var babylonjs_Materials_Node_Blocks_Input_inputBlock__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/Input/inputBlock */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Blocks_Input_inputBlock__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! babylonjs/Materials/Node/Blocks/Input/inputBlock */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Blocks_Input_inputBlock__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Blocks_Input_inputBlock__WEBPACK_IMPORTED_MODULE_7__);
 /* harmony import */ var _sharedComponents_messageDialog__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./sharedComponents/messageDialog */ "./sharedComponents/messageDialog.tsx");
 /* harmony import */ var _blockTools__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./blockTools */ "./blockTools.ts");
@@ -55963,8 +56081,8 @@ var GraphEditor = /** @class */ (function (_super) {
                 if (_this._graphCanvas.selectedLink) {
                     _this._graphCanvas.selectedLink.dispose();
                 }
-                if (_this._graphCanvas.selectedGroup) {
-                    _this._graphCanvas.selectedGroup.dispose();
+                if (_this._graphCanvas.selectedFrame) {
+                    _this._graphCanvas.selectedFrame.dispose();
                 }
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                 _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
@@ -56142,9 +56260,8 @@ var GraphEditor = /** @class */ (function (_super) {
             this._graphCanvas.distributeGraph();
         }
         else {
-            this._graphCanvas.x = editorData.x || 0;
-            this._graphCanvas.y = editorData.y || 0;
-            this._graphCanvas.zoom = editorData.zoom || 1;
+            this._graphCanvas.processEditorData(editorData);
+            // Locations
             for (var _i = 0, _a = editorData.locations; _i < _a.length; _i++) {
                 var location = _a[_i];
                 for (var _b = 0, _c = this._graphCanvas.nodes; _b < _c.length; _b++) {
@@ -56472,7 +56589,7 @@ var Portal = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SerializationTools", function() { return SerializationTools; });
-/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Textures/texture */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Textures/texture */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./dataStorage */ "./dataStorage.ts");
 
@@ -56642,7 +56759,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _numericInputComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./numericInputComponent */ "./sharedComponents/numericInputComponent.tsx");
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "../../node_modules/@fortawesome/react-fontawesome/index.es.js");
@@ -57004,7 +57121,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./vector4LineComponent */ "./sharedComponents/vector4LineComponent.tsx");
 /* harmony import */ var _optionsLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
@@ -57425,7 +57542,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__);
 
 
@@ -57657,7 +57774,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Engines/constants */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Engines/constants */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__);
 
 
@@ -58135,7 +58252,7 @@ var Vector4LineComponent = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "StringTools", function() { return StringTools; });
-/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Materials/Textures/texture");
+/* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_0__);
 
 var StringTools = /** @class */ (function () {
@@ -58234,14 +58351,14 @@ var StringTools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs/Materials/Textures/texture":
+/***/ "babylonjs/Misc/observable":
 /*!****************************************************************************************************!*\
   !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
   \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Materials_Textures_texture__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__;
 
 /***/ })
 

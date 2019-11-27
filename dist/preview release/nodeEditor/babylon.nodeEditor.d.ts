@@ -60,14 +60,37 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class GraphNodeGroup {
+    export interface INodeLocationInfo {
+        blockId: number;
+        x: number;
+        y: number;
+    }
+    export interface IFrameData {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        color: number[];
+        name: string;
+    }
+    export interface IEditorData {
+        locations: INodeLocationInfo[];
+        x: number;
+        y: number;
+        zoom: number;
+        frames?: IFrameData[];
+    }
+}
+declare module NODEEDITOR {
+    export class GraphFrame {
         private _name;
+        private _color;
         private _x;
         private _y;
         private _gridAlignedX;
         private _gridAlignedY;
-        width: number;
-        height: number;
+        private _width;
+        private _height;
         element: HTMLDivElement;
         private _headerElement;
         private _nodes;
@@ -76,17 +99,20 @@ declare module NODEEDITOR {
         private _mouseStartPointY;
         private _onSelectionChangedObserver;
         readonly nodes: GraphNode[];
-        readonly gridAlignedX: number;
-        readonly gridAlignedY: number;
         name: string;
+        color: BABYLON.Color3;
         x: number;
         y: number;
-        constructor(candidate: HTMLDivElement, canvas: GraphCanvasComponent);
+        width: number;
+        height: number;
+        constructor(candidate: BABYLON.Nullable<HTMLDivElement>, canvas: GraphCanvasComponent);
         cleanAccumulation(): void;
         private _onDown;
         private _onUp;
         private _onMove;
         dispose(): void;
+        serialize(): IFrameData;
+        static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent): GraphFrame;
     }
 }
 declare module NODEEDITOR {
@@ -137,9 +163,9 @@ declare module NODEEDITOR {
         private _candidatePort;
         private _gridSize;
         private _selectionBox;
-        private _selectedGroup;
-        private _groupCandidateBox;
-        private _groups;
+        private _selectedFrame;
+        private _frameCandidate;
+        private _frames;
         private _altKeyIsPressed;
         private _ctrlKeyIsPressed;
         private _oldY;
@@ -147,18 +173,20 @@ declare module NODEEDITOR {
         readonly globalState: GlobalState;
         readonly nodes: GraphNode[];
         readonly links: NodeLink[];
+        readonly frames: GraphFrame[];
         zoom: number;
         x: number;
         y: number;
         readonly selectedNodes: GraphNode[];
         readonly selectedLink: BABYLON.Nullable<NodeLink>;
-        readonly selectedGroup: BABYLON.Nullable<GraphNodeGroup>;
+        readonly selectedFrame: BABYLON.Nullable<GraphFrame>;
         readonly canvasContainer: HTMLDivElement;
         readonly svgCanvas: HTMLElement;
         readonly selectionContainer: HTMLDivElement;
         readonly groupContainer: HTMLDivElement;
         constructor(props: IGraphCanvasComponentProps);
         getGridPosition(position: number): number;
+        getGridPositionCeil(position: number): number;
         updateTransform(): void;
         onKeyUp(): void;
         findNodeFromBlock(block: BABYLON.NodeMaterialBlock): GraphNode;
@@ -174,6 +202,7 @@ declare module NODEEDITOR {
         onWheel(evt: React.WheelEvent): void;
         zoomToFit(): void;
         processCandidatePort(): void;
+        processEditorData(editorData: IEditorData): void;
         render(): JSX.Element;
     }
 }
@@ -908,7 +937,7 @@ declare module NODEEDITOR {
         nodeMaterial: BABYLON.NodeMaterial;
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
-        onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<GraphNode | GraphNodeGroup | NodeLink>>;
+        onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<GraphNode | GraphFrame | NodeLink>>;
         onRebuildRequiredObservable: BABYLON.Observable<void>;
         onResetRequiredObservable: BABYLON.Observable<void>;
         onUpdateRequiredObservable: BABYLON.Observable<void>;
@@ -925,7 +954,7 @@ declare module NODEEDITOR {
         onAnimationCommandActivated: BABYLON.Observable<void>;
         onCandidateLinkMoved: BABYLON.Observable<BABYLON.Nullable<BABYLON.Vector2>>;
         onSelectionBoxMoved: BABYLON.Observable<ClientRect | DOMRect>;
-        onGroupAboutToMove: BABYLON.Observable<GraphNodeGroup>;
+        onGroupAboutToMove: BABYLON.Observable<GraphFrame>;
         onCandidatePortSelected: BABYLON.Observable<BABYLON.Nullable<NodePort>>;
         onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => GraphNode;
         onGridSizeChanged: BABYLON.Observable<void>;
@@ -984,6 +1013,7 @@ declare module NODEEDITOR {
     }
     export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, {
         currentNode: BABYLON.Nullable<GraphNode>;
+        currentFrame: BABYLON.Nullable<GraphFrame>;
     }> {
         constructor(props: IPropertyTabComponentProps);
         componentDidMount(): void;
@@ -1040,19 +1070,6 @@ declare module NODEEDITOR {
         private _forceCompilationAsync;
         private _updatePreview;
         dispose(): void;
-    }
-}
-declare module NODEEDITOR {
-    export interface INodeLocationInfo {
-        blockId: number;
-        x: number;
-        y: number;
-    }
-    export interface IEditorData {
-        locations: INodeLocationInfo[];
-        x: number;
-        y: number;
-        zoom: number;
     }
 }
 declare module NODEEDITOR {

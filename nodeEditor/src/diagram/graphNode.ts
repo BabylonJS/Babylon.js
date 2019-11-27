@@ -11,7 +11,7 @@ import { DisplayLedger } from './displayLedger';
 import { IDisplayManager } from './display/displayManager';
 import { NodeLink } from './nodeLink';
 import { NodePort } from './nodePort';
-import { GraphNodeGroup } from './graphNodeGroup';
+import { GraphFrame } from './graphFrame';
 
 export class GraphNode {
     private _visual: HTMLDivElement;
@@ -31,9 +31,9 @@ export class GraphNode {
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null    
     private _globalState: GlobalState;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphNodeGroup>>>;   
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame>>>;   
     private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;  
-    private _onGroupAboutToMoveObserver: Nullable<Observer<GraphNodeGroup>>;  
+    private _onGroupAboutToMoveObserver: Nullable<Observer<GraphFrame>>;  
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;  
     private _ownerCanvas: GraphCanvasComponent; 
     private _isSelected: boolean;
