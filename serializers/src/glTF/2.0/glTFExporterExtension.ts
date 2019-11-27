@@ -33,7 +33,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param textureInfo The glTF texture info
      * @param babylonTexture The Babylon.js texture
      */
-    postExportTexture?(context: string, textureInfo:ITextureInfo, babylonTexture: BaseTexture): void;    
+    postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: BaseTexture): void;
 
     /**
      * Define this method to modify the default behavior when exporting texture info
@@ -60,7 +60,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param babylonMaterial BabylonJS material
      * @returns nullable IMaterial promise
      */
-    postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;   
+    postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;
 
     /**
      * Defint this method to return additional textures to export from a material
@@ -68,7 +68,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param babylonMaterial BabylonJS material
      * @returns List of textures
      */
-    postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[];   
+    postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[];
 
     /**
      * Called after the exporter state changes to EXPORTING

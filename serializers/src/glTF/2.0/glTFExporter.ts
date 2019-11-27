@@ -150,19 +150,18 @@ export class _Exporter {
         let currentPromise = actionAsync(extensions[index], node);
 
         if (!currentPromise) {
-            return this._applyExtension(node, extensions, index + 1, actionAsync)
+            return this._applyExtension(node, extensions, index + 1, actionAsync);
         }
 
-        return currentPromise.then(newNode => this._applyExtension(newNode || node, extensions, index + 1, actionAsync));
+        return currentPromise.then((newNode) => this._applyExtension(newNode || node, extensions, index + 1, actionAsync));
     }
-
 
     private _applyExtensions<T>(node: T, actionAsync: (extension: IGLTFExporterExtensionV2, node: T) => Promise<Nullable<T>> | undefined): Promise<Nullable<T>> {
         var extensions: IGLTFExporterExtensionV2[] = [];
         for (const name of _Exporter._ExtensionNames) {
             extensions.push(this._extensions[name]);
         }
-        
+
         return this._applyExtension(node, extensions, 0, actionAsync);
     }
 
@@ -189,7 +188,7 @@ export class _Exporter {
             var extension = this._extensions[name];
 
             if (extension.postExportMaterialAdditionalTextures) {
-                output.push(...extension.postExportMaterialAdditionalTextures(context, material, babylonMaterial))
+                output.push(...extension.postExportMaterialAdditionalTextures(context, material, babylonMaterial));
             }
         }
 
@@ -258,7 +257,7 @@ export class _Exporter {
         this._glTFMaterialExporter = new _GLTFMaterialExporter(this);
         this._loadExtensions();
     }
-    
+
     public dispose() {
         for (var extensionKey in this._extensions) {
             const extension = this._extensions[extensionKey];

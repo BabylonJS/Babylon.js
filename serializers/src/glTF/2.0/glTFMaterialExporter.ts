@@ -356,10 +356,10 @@ export class _GLTFMaterialExporter {
         }
 
         glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
-        _GLTFMaterialExporter._SetAlphaMode(glTFMaterial, babylonStandardMaterial);        
+        _GLTFMaterialExporter._SetAlphaMode(glTFMaterial, babylonStandardMaterial);
 
         materials.push(glTFMaterial);
-        materialMap[babylonStandardMaterial.uniqueId] = materials.length - 1;        
+        materialMap[babylonStandardMaterial.uniqueId] = materials.length - 1;
 
         return this._finishMaterial(promises, glTFMaterial, babylonStandardMaterial, mimeType);
     }
@@ -386,7 +386,7 @@ export class _GLTFMaterialExporter {
                 if (!extensionWork) {
                     return glTFMaterial;
                 }
-                return extensionWork.then(() =>glTFMaterial);
+                return extensionWork.then(() => glTFMaterial);
             });
         });
     }
@@ -478,7 +478,7 @@ export class _GLTFMaterialExporter {
 
         materials.push(glTFMaterial);
         materialMap[babylonPBRMetalRoughMaterial.uniqueId] = materials.length - 1;
-    
+
         return this._finishMaterial(promises, glTFMaterial, babylonPBRMetalRoughMaterial, mimeType);
     }
 
