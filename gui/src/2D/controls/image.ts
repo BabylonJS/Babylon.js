@@ -260,6 +260,28 @@ export class Image extends Control {
         this._markAsDirty();
     }
 
+    /** @hidden */
+    public _rotate90(n: number): Image {
+        let canvas = document.createElement('canvas');
+
+        const context = canvas.getContext('2d')!;
+        const width = this._domImage.width;
+        const height = this._domImage.height;
+
+        canvas.width = height;
+        canvas.height = width;
+
+        context.translate(canvas.width / 2, canvas.height / 2);
+        context.rotate(n * Math.PI / 2);
+
+        context.drawImage(this._domImage, 0, 0, width, height, -width / 2, -height / 2, width, height);
+
+        const dataUrl: string = canvas.toDataURL("image/jpg");
+        const rotatedImage = new Image(this.name + "rotated", dataUrl);
+
+        return rotatedImage;
+    }
+
     /**
      * Gets or sets the internal DOM image used to render the control
      */

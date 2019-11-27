@@ -8,53 +8,97 @@ import { Measure } from "../../measure";
  * Class used to create slider controls
  */
 export class ImageScrollBar extends BaseSlider {
+    private _backgroundBaseImage: Image;
     private _backgroundImage: Image;
     private _thumbImage: Image;
+    private _thumbBaseImage: Image;
     private _thumbLength: number = 0.5;
     private _thumbHeight: number = 1;
     private _barImageHeight: number = 1;
     private _tempMeasure = new Measure(0, 0, 0, 0);
 
     /**
-     * Gets or sets the image used to render the background
+     * Gets or sets the image used to render the background for horizontal bar
      */
     public get backgroundImage(): Image {
-        return this._backgroundImage;
+        return this._backgroundBaseImage;
     }
 
     public set backgroundImage(value: Image) {
-        if (this._backgroundImage === value) {
+        if (this._backgroundBaseImage === value) {
             return;
         }
 
-        this._backgroundImage = value;
+        this._backgroundBaseImage = value;
 
-        if (value && !value.isLoaded) {
-            value.onImageLoadedObservable.addOnce(() => this._markAsDirty());
+        if (this.isVertical) {
+            if (value && !value.isLoaded) {
+                value.onImageLoadedObservable.addOnce(() => {
+                    const rotatedValue = value._rotate90(1);
+                    this._backgroundImage = rotatedValue;
+                    if (!rotatedValue.isLoaded) {
+                        rotatedValue.onImageLoadedObservable.addOnce(() => {
+                            this._markAsDirty();
+                        });
+                    }
+                    this._markAsDirty();
+                });
+            }
+            this._backgroundImage = value._rotate90(1);
+            this._markAsDirty();
         }
+        else {
+            this._backgroundImage = value;
+            if (value && !value.isLoaded) {
+                value.onImageLoadedObservable.addOnce(() => {
+                    this._markAsDirty();
+                });
+            }
 
-        this._markAsDirty();
+            this._markAsDirty();
+        }
     }
 
     /**
      * Gets or sets the image used to render the thumb
      */
     public get thumbImage(): Image {
-        return this._thumbImage;
+        return this._thumbBaseImage;
     }
 
     public set thumbImage(value: Image) {
-        if (this._thumbImage === value) {
+        if (this._thumbBaseImage === value) {
             return;
         }
 
-        this._thumbImage = value;
+        this._thumbBaseImage = value;
 
-        if (value && !value.isLoaded) {
-            value.onImageLoadedObservable.addOnce(() => this._markAsDirty());
+        if (this.isVertical) {
+            if (value && !value.isLoaded) {
+                value.onImageLoadedObservable.addOnce(() => {
+                    var rotatedValue = value._rotate90(-1);
+                    this._thumbImage = rotatedValue;
+                    if (!rotatedValue.isLoaded) {
+                        rotatedValue.onImageLoadedObservable.addOnce(() => {
+                            this._markAsDirty();
+                        });
+                    }
+                    this._markAsDirty();
+                });
+            }
+            this._thumbImage = value._rotate90(-1);
+            this._markAsDirty();
         }
+        else {
+            this._thumbImage = value;
+            if (value && !value.isLoaded) {
+                value.onImageLoadedObservable.addOnce(() => {
+                    this._markAsDirty();
+                });
+            }
 
-        this._markAsDirty();
+            this._markAsDirty();
+        }
     }
 
     /**
