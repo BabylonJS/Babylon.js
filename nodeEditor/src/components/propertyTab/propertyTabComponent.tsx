@@ -15,6 +15,8 @@ import { SliderLineComponent } from '../../sharedComponents/sliderLineComponent'
 import { GraphFrame } from '../../diagram/graphFrame';
 import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
 import { Color3LineComponent } from '../../sharedComponents/color3LineComponent';
+import { TextLineComponent } from '../../sharedComponents/textLineComponent';
+import { Engine } from 'babylonjs/Engines/engine';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -110,6 +112,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 </div>
                 <div>
                     <LineContainerComponent title="GENERAL">
+                        <TextLineComponent label="Version" value={Engine.Version}/>
                         <ButtonLineComponent label="Reset to default" onClick={() => {
                             this.props.globalState.nodeMaterial!.setToDefault();
                             this.props.globalState.onResetRequiredObservable.notifyObservers();
