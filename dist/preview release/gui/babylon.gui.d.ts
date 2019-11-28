@@ -3618,6 +3618,10 @@ declare module BABYLON.GUI {
         private _tooltipOutObserver;
         private _disposeTooltip;
         /**
+         * Rendering ground id of all the mesh in the button
+         */
+        renderingGroupId: number;
+        /**
          * Text to be displayed on the tooltip shown when hovering on the button. When set to null tooltip is disabled. (Default: null)
          */
         tooltipText: BABYLON.Nullable<string>;

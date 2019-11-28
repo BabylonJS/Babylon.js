@@ -183,12 +183,14 @@ export class CubeTexture extends BaseTexture {
         if (isEnv) {
             this.gammaSpace = false;
             this._prefiltered = false;
+            this.anisotropicFilteringLevel = 1;
         }
         else {
             this._prefiltered = prefiltered;
 
             if (prefiltered) {
                 this.gammaSpace = false;
+                this.anisotropicFilteringLevel = 1;
             }
         }
 
