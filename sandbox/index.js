@@ -45,9 +45,11 @@ if (kiosk) {
 if (BABYLON.Engine.isSupported()) {
     var engine = new BABYLON.Engine(canvas, true, { premultipliedAlpha: false, preserveDrawingBuffer: true });
     var htmlInput = document.getElementById("files");
+    var htmlInputAnimation = document.getElementById("animationFiles");
     var btnInspector = document.getElementById("btnInspector");
     var errorZone = document.getElementById("errorZone");
     var filesInput;
+    var filesInputAnimation;
     var currentScene;
     var currentSkybox;
     var currentPluginName;
@@ -58,6 +60,7 @@ if (BABYLON.Engine.isSupported()) {
 
     btnInspector.classList.add("hidden");
     btnEnvironment.classList.add("hidden");
+    // htmlInputAnimation.classList.add("hidden");
 
     canvas.addEventListener("contextmenu", function(evt) {
         evt.preventDefault();
@@ -86,7 +89,7 @@ if (BABYLON.Engine.isSupported()) {
         engine.resize();
     });
 
-    var sceneLoaded = function(sceneFile, babylonScene) {
+    var anyLoaded = function(sceneFile, babylonScene) {
         engine.clearInternalTexturesCache();
 
         // Clear dropdown that contains animation names
@@ -126,6 +129,19 @@ if (BABYLON.Engine.isSupported()) {
 
         currentScene = babylonScene;
         document.title = "Babylon.js - " + sceneFile.name;
+        htmlInputAnimation.value = "";
+    }
+
+    var assetContainerLoaded = function(sceneFile, babylonScene) {
+        anyLoaded(sceneFile, babylonScene);
+
+        // Fix for IE, otherwise it will change the default filter for files selection after first use
+        htmlInputAnimation.value = "";
+    }
+
+    var sceneLoaded = function(sceneFile, babylonScene) {
+        anyLoaded(sceneFile, babylonScene);
+
         // Fix for IE, otherwise it will change the default filter for files selection after first use
         htmlInput.value = "";
 
@@ -289,9 +305,36 @@ if (BABYLON.Engine.isSupported()) {
             }
             filesInput.loadFiles(event);
         }, false);
+
+
+        var reload = function (sceneFile) {
+            // If a scene file has been provided
+            if (sceneFile) {
+                var onSuccess = function (scene) {
+                    assetContainerLoaded(sceneFile, scene);
+                };
+                BABYLON.SceneLoader.ImportAnimations("file:", sceneFile, currentScene, null, onSuccess);
+            }
+            else {
+                Logger.Error("Please provide a valid .babylon file.");
+            }
+        };
+        filesInputAnimation = new BABYLON.FilesInput(engine, null, null, null, null, null, startProcessingFiles, reload, sceneError);
+
+        htmlInputAnimation.addEventListener('change', function (event) {
+            // Handling data transfer via drag'n'drop
+            if (event && event.dataTransfer && event.dataTransfer.files) {
+                filesToLoad = event.dataTransfer.files;
+            }
+            // Handling files from input files
+            if (event && event.target && event.target.files) {
+                filesToLoad = event.target.files;
+            }
+            filesInputAnimation.loadFiles(event);
+        }, false);
     }
 
-    window.addEventListener("keydown", function(event) {
+    window.addEventListener("keydown", function (event) {
         // Press R to reload
         if (event.keyCode === 82 && event.target.nodeName !== "INPUT" && currentScene) {
             if (assetUrl) {
