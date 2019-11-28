@@ -56,6 +56,12 @@
                 </a>
                 <a href="javascript:void(null);" id="btnInspector" class="hidden"><img src="./Assets/Icon_EditModel.svg"
                         alt="Display inspector" title="Display inspector" /></a>
+                <a href="javascript:void(null);">
+                    <div class="custom-upload"
+                        title="Open your animation scene from your hard drive (.babylon, .gltf, .glb, .obj)">
+                        <input type="file" id="animationFiles" multiple />
+                    </div>
+                </a>
                 <div id="dropdownContent-env" class="hidden">
                 </div>
             </div>
@@ -67,7 +73,7 @@
     </div>
     <script>
         // prevent drag and drop of file until local scripts are loaded
-        document.ondragover = function(e) {
+        document.ondragover = function (e) {
             e.dataTransfer.dropEffect = "none";
             e.dataTransfer.effectAllowed = "none";
             e.preventDefault();
@@ -77,7 +83,7 @@
             .require('environment.js')
             .require('animation.js')
             .require('index.js')
-            .load(function() {
+            .load(function () {
                 BABYLON.DracoCompression.Configuration.decoder = {
                     wasmUrl: "../dist/preview%20release/draco_wasm_wrapper_gltf.js",
                     wasmBinaryUrl: "../dist/preview%20release/draco_decoder_gltf.wasm",

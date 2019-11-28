@@ -5,6 +5,7 @@ import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
+import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { AnimationGroup } from "../Animations/animationGroup";
 import { _TimeToken } from "../Instrumentation/timeToken";
@@ -17,6 +18,7 @@ import { SceneLoaderFlags } from "./sceneLoaderFlags";
 import { IFileRequest } from "../Misc/fileRequest";
 import { WebRequest } from "../Misc/webRequest";
 import { RequestFileError, ReadFileError } from '../Misc/fileTools';
+import { Animatable } from '../Animations';
 
 /**
  * Class used to represent data loading progression
@@ -974,6 +976,129 @@ export class SceneLoader {
             }, onProgress, (scene, message, exception) => {
                 reject(exception || new Error(message));
             }, pluginExtension);
+        });
+    }
+
+    /**
+     * Import animations from a file into a scene
+     * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+     * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+     * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+     * @param targetConverter defines a function used to convert animation targets from loaded scene to current scene (default: search node by name)
+     * @param onSuccess a callback with the scene when import succeeds
+     * @param onProgress a callback with a progress event for each file being loaded
+     * @param onError a callback with the scene, a message, and possibly an exception when import fails
+     */
+    public static ImportAnimations(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, targetConverter: Nullable<(target: any) => Nullable<Node>> = null, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null): void {
+        if (!scene) {
+            Logger.Error("No scene available to load animations to");
+            return;
+        }
+
+        // Default target converter is searching node by name
+        let _targetConverter = targetConverter ? targetConverter : (target: any) => {
+            return scene.getNodeByName(target.name);
+        };
+
+        let onAssetContainerLoaded = (container: AssetContainer) => {
+            SceneLoader.MergeAnimations(scene, container, _targetConverter);
+
+            if (onSuccess) {
+                onSuccess(scene);
+            }
+        };
+
+        // Reset, stop and dispose all animations before loading new ones
+        for (let animatable of scene.animatables) {
+            animatable.reset();
+        }
+        scene.stopAllAnimations();
+        scene.animationGroups.forEach(animationGroup => {
+            animationGroup.dispose();
+        });
+
+        this.LoadAssetContainer(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError);
+    }
+
+    /**
+     * Import animations from a file into a scene
+     * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+     * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+     * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+     * @param targetConverter defines a function used to convert animation targets from loaded scene to current scene (default: search node by name)
+     * @param onSuccess a callback with the scene when import succeeds
+     * @param onProgress a callback with a progress event for each file being loaded
+     * @param onError a callback with the scene, a message, and possibly an exception when import fails
+     */
+    public static ImportAnimationsAsync(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, targetConverter: Nullable<(target: any) => Nullable<Node>> = null, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null): Promise<Scene> {
+        return new Promise((resolve, reject) => {
+            SceneLoader.ImportAnimations(rootUrl, sceneFilename, scene, targetConverter, (_scene: Scene) => {
+                resolve(_scene);
+            }, onProgress, (_scene: Scene, message: string, exception: any) => {
+                reject(exception || new Error(message));
+            });
+        });
+    }
+
+    /**
+     * Merge animations from an asset container into a scene
+     * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+     * @param animationAssetContainer is the instance of BABYLON.AssetContainer containing animations
+     * @param targetConverter defines a function used to convert animation targets from the asset container to the scene (default: search node by name)
+     */
+    public static MergeAnimations(scene: Scene, animationAssetContainer: AssetContainer, targetConverter: Nullable<(target: any) => any> = null): void {
+        // Default target converter is searching node by name
+        let _targetConverter = targetConverter ? targetConverter : (target: any) => {
+            return scene.getNodeByName(target.name);
+        };
+
+        // Concat nodes of all types from animation container
+        let animatedNodes = new Array<Node>();
+        animatedNodes = animatedNodes.concat(animationAssetContainer.meshes);
+        animatedNodes = animatedNodes.concat(animationAssetContainer.lights);
+        animatedNodes = animatedNodes.concat(animationAssetContainer.cameras);
+        animatedNodes = animatedNodes.concat(animationAssetContainer.transformNodes); // dummies
+
+        // Copy node animations
+        animatedNodes.forEach(animatedNode => {
+            if (animatedNode.animations && animatedNode.animations.length > 0) {
+                let geometryNode: Node = _targetConverter(animatedNode);
+                if (geometryNode != null) {
+                    geometryNode.animations = animatedNode.animations;
+                }
+            }
+        });
+
+        // Copy animation groups
+        animationAssetContainer.animationGroups.forEach(animationGroupInAC => {
+            // Dispose animation groups with same name as one being loaded
+            scene.animationGroups.forEach(animationGroup => {
+                if (animationGroup.name == animationGroupInAC.name) {
+                    animationGroup.dispose();
+                }
+            })
+
+            // Clone the animation group and all its animatables
+            animationGroupInAC.clone(animationGroupInAC.name, _targetConverter);
+
+            // Remove animatables related to the animation asset container
+            animationGroupInAC.animatables.forEach(animatable => {
+                animatable.stop();
+            })
+        });
+
+        // Copy animatables
+        scene.animatables.forEach(animatable => {
+            let target = _targetConverter(animatable.target);
+
+            // If the animatable has just been loaded
+            if (target && target != animatable.target) {
+                // Clone the animatable and retarget it
+                scene.beginAnimation(target, animatable.fromFrame, animatable.toFrame, animatable.loopAnimation, animatable.speedRatio, animatable.onAnimationEnd ? animatable.onAnimationEnd : undefined, undefined, true, undefined, animatable.onAnimationLoop ? animatable.onAnimationLoop : undefined);
+
+                // Stop animation for the target in the animation asset container
+                scene.stopAnimation(animatable.target);
+            }
         });
     }
 }
