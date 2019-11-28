@@ -54,10 +54,21 @@ class MonacoCreator {
      */
     async loadMonaco(typings) {
         let response = await fetch(typings || "https://preview.babylonjs.com/babylon.d.ts");
-        if (!response.ok)
+        if (!response.ok) {
             return;
+        }
 
-        const libContent = await response.text();
+        let libContent = await response.text();
+
+        if (!typings) {
+            response = await fetch(typings || "https://preview.babylonjs.com/gui/babylon.gui.d.ts");
+            if (!response.ok) {
+                return;
+            }
+
+            libContent += await response.text();
+        }
+
         this.setupDefinitionWorker(libContent);
 
         require.config({ paths: { 'vs': 'node_modules/monaco-editor/dev/vs' } });
@@ -290,11 +301,13 @@ class MonacoCreator {
         };
         editorOptions.minimap.enabled = document.getElementById("minimapToggle1280").classList.contains('checked');
         this.jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
-
         this.jsEditor.setValue(oldCode);
+
+        const analyzeCodeDebounced = this.parent.utils.debounceAsync((async) => this.analyzeCode(), 500);
+
         this.jsEditor.onDidChangeModelContent(function () {
             this.parent.utils.markDirty();
-            this.analyzeCode();
+            analyzeCodeDebounced();
         }.bind(this));
     };
 

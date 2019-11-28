@@ -1,6 +1,5 @@
 import { SpotLight } from "babylonjs/Lights/spotLight";
 import { Vector3, Color3, Quaternion } from "babylonjs/Maths/math";
-import { Nullable } from "babylonjs/types";
 import { Light } from "babylonjs/Lights/light";
 import { Node } from "babylonjs/node";
 import { ShadowLight } from "babylonjs/Lights/shadowLight";
@@ -97,7 +96,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
      * @param babylonNode BabylonJS node
      * @returns nullable INode promise
      */
-    public postExportNodeAsync(context: string, node: INode, babylonNode: Node): Nullable<Promise<INode>> {
+    public postExportNodeAsync(context: string, node: INode, babylonNode: Node): Promise<INode> {
         return new Promise((resolve, reject) => {
             if (babylonNode instanceof ShadowLight) {
                 const babylonLight: ShadowLight = babylonNode;
