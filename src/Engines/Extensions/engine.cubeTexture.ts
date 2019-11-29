@@ -131,7 +131,7 @@ ThinEngine.prototype._createDepthStencilCubeTexture = function(size: number, opt
 };
 
 ThinEngine.prototype._partialLoadFile = function(url: string, index: number, loadedFiles: (string | ArrayBuffer)[],
-        onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null): void {
+    onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null): void {
     var onload = (data: string | ArrayBuffer) => {
         loadedFiles[index] = data;
         (<any>loadedFiles)._internalCount++;
@@ -233,10 +233,11 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
 
     var lastDot = rootUrl.lastIndexOf('.');
     var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
+    const filteredFormat: Nullable<string> = ThinEngine.ExcludedCompressedTextureFormats(rootUrl, this._textureFormatInUse);
 
     let loader: Nullable<IInternalTextureLoader> = null;
     for (let availableLoader of ThinEngine._TextureLoaders) {
-        if (excludeLoaders.indexOf(availableLoader) === -1 && availableLoader.canLoad(extension, this._textureFormatInUse, fallback, false, false)) {
+        if (excludeLoaders.indexOf(availableLoader) === -1 && availableLoader.canLoad(extension, filteredFormat, fallback, false, false)) {
             loader = availableLoader;
             break;
         }
@@ -259,7 +260,7 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
     };
 
     if (loader) {
-        rootUrl = loader.transformUrl(rootUrl, this._textureFormatInUse);
+        rootUrl = loader.transformUrl(rootUrl, filteredFormat);
 
         const onloaddata = (data: any) => {
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
