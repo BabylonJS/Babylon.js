@@ -882,7 +882,10 @@ napi_status napi_strict_equals(napi_env env,
                  napi_value lhs,
                  napi_value rhs,
                  bool* result) {
-  assert(0);
+  auto context = env->m_globalContext;
+  JSValueRef left = reinterpret_cast<JSValueRef>(lhs);
+  JSValueRef right = reinterpret_cast<JSValueRef>(rhs);
+  *result = JSValueIsEqual(context, left, right, nullptr);
   return napi_ok;
 }
 
