@@ -1268,11 +1268,11 @@ export class Engine extends ThinEngine {
         return this._gl.getShaderSource(shaders[0]);
     }
 
-   /**
-    * Gets the source code of the fragment shader associated with a specific webGL program
-    * @param program defines the program to use
-    * @returns a string containing the source code of the fragment shader associated with the program
-    */
+    /**
+     * Gets the source code of the fragment shader associated with a specific webGL program
+     * @param program defines the program to use
+     * @returns a string containing the source code of the fragment shader associated with the program
+     */
     public getFragmentShaderSource(program: WebGLProgram): Nullable<string> {
         var shaders = this._gl.getAttachedShaders(program);
 
@@ -1544,6 +1544,16 @@ export class Engine extends ThinEngine {
     }
 
     /**
+     * Set the compressed texture extensions or file names to skip.
+     *
+     * @param skippedFiles defines the list of those texture files you want to skip
+     * Example: [".dds", ".env", "myfile.png"]
+     */
+    public setCompressedTextureExclusions(skippedFiles: Array<string>): void {
+        ThinEngine.ExcludedCompressedTextures = skippedFiles;
+    }
+
+    /**
      * Force a specific size of the canvas
      * @param width defines the new canvas' width
      * @param height defines the new canvas' height
@@ -1710,12 +1720,12 @@ export class Engine extends ThinEngine {
             width: destination.width,
             height: destination.height,
         }, {
-                generateMipMaps: false,
-                type: Constants.TEXTURETYPE_UNSIGNED_INT,
-                samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-                generateDepthBuffer: false,
-                generateStencilBuffer: false
-            }
+            generateMipMaps: false,
+            type: Constants.TEXTURETYPE_UNSIGNED_INT,
+            samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+            generateDepthBuffer: false,
+            generateStencilBuffer: false
+        }
         );
 
         if (!this._rescalePostProcess && Engine._RescalePostProcessFactory) {
