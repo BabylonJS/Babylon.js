@@ -174,7 +174,7 @@ export class ThinEngine {
     /**
     * Gets or sets the textures that the engine should not attempt to load as compressed
     */
-    protected excludedCompressedTextures: string[] = [];
+    protected _excludedCompressedTextures: string[] = [];
 
     /**
      * Filters the compressed texture formats to only include
@@ -186,7 +186,7 @@ export class ThinEngine {
      */
     public excludedCompressedTextureFormats(url: Nullable<string>, textureFormatInUse: Nullable<string>): Nullable<string> {
         const skipCompression = (): boolean => {
-            return this.excludedCompressedTextures.some((entry) => {
+            return this._excludedCompressedTextures.some((entry) => {
                 const strRegExPattern: string = '\\b' + entry + '\\b';
                 return (url && (url === entry || url.match(new RegExp(strRegExPattern, 'g'))));
             });
