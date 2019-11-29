@@ -188,7 +188,7 @@ export class ThinEngine {
         const skipCompression = (): boolean => {
             return ThinEngine.ExcludedCompressedTextures.some((entry) => {
                 const strRegExPattern: string = '\\b' + entry + '\\b';
-                return (url && url === entry) || (url && url.match(new RegExp(strRegExPattern, 'g')));
+                return (url && (url === entry || url.match(new RegExp(strRegExPattern, 'g'))));
             });
         };
         return skipCompression() ? null : textureFormatInUse;
