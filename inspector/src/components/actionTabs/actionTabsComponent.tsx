@@ -24,7 +24,8 @@ interface IActionTabsComponentProps {
     popupMode?: boolean,
     onPopup?: () => void,
     onClose?: () => void,
-    globalState?: GlobalState
+    globalState?: GlobalState,
+    initialTabIndex?: number,
 }
 
 export class ActionTabsComponent extends React.Component<IActionTabsComponentProps, { selectedEntity: any, selectedIndex: number }> {
@@ -35,7 +36,12 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
     constructor(props: IActionTabsComponentProps) {
         super(props);
 
-        let initialIndex = 0;
+        const TAB_COUNT = 5; // no. of tabs 
+        let initialIndex = !props.initialTabIndex // not set 
+            || props.initialTabIndex < 0 // out of lower bound 
+            || props.initialTabIndex >= TAB_COUNT // out of upper bound
+            ? 0
+            : props.initialTabIndex | 0; // to integer
 
         if (this.props.globalState) {
             const validationResutls = this.props.globalState.validationResults;

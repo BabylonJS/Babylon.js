@@ -1822,6 +1822,7 @@ declare module "babylonjs-inspector/components/actionTabs/actionTabsComponent" {
         onPopup?: () => void;
         onClose?: () => void;
         globalState?: GlobalState;
+        initialTabIndex?: number;
     }
     export class ActionTabsComponent extends React.Component<IActionTabsComponentProps, {
         selectedEntity: any;
@@ -3743,6 +3744,7 @@ declare module INSPECTOR {
         onPopup?: () => void;
         onClose?: () => void;
         globalState?: GlobalState;
+        initialTabIndex?: number;
     }
     export class ActionTabsComponent extends React.Component<IActionTabsComponentProps, {
         selectedEntity: any;

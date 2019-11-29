@@ -14,6 +14,7 @@ import { EmbedHostComponent } from "./components/embedHost/embedHostComponent";
 import { PropertyChangedEvent } from "./components/propertyChangedEvent";
 import { GlobalState } from "./components/globalState";
 import { GLTFFileLoader } from "babylonjs-loaders/glTF/index";
+// import { TabsComponent } from './components/actionTabs/tabsComponent';
 
 interface IInternalInspectorOptions extends IInspectorOptions {
     popup: boolean;
@@ -194,7 +195,8 @@ export class Inspector {
                         this._ActionTabsWindow.close();
                     }
 
-                }
+                }, 
+                initialTabIndex: options.initialTabIndex
             });
             ReactDOM.render(actionTabsElement, this._ActionTabsHost);
         }
