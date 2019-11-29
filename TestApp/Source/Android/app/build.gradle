@@ -13,7 +13,7 @@ android {
                 abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'
                 arguments '-DANDROID_STL=c++_static',
                         '-DHTTP_ONLY=OFF',
-                        '-DCMAKE_USE_OPENSSL=OFF',
+                        '-DCMAKE_USE_OPENSSL=ON',
                         '-DBUILD_CURL_EXE=OFF',
                         '-DBUILD_CURL_TESTS=OFF',
                         '-DCURL_STATICLIB=ON',

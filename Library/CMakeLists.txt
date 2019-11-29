@@ -12,7 +12,11 @@ if(ANDROID)
     set(OPENSSL_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/openssl/openssl")
     set(OPENSSL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/openssl/openssl/include")
     set(OPENSSL_CRYPTO_LIBRARY crypto.a)
+    set(OPENSSL_SSL_LIBRARY ssl.a)
+    set(OPENSSL_USE_STATIC_LIBS TRUE)
     add_subdirectory(Dependencies/openssl EXCLUDE_FROM_ALL)
+    set_property(TARGET ssl PROPERTY FOLDER Dependencies/openssl)
+	set_property(TARGET crypto PROPERTY FOLDER Dependencies/openssl)
 endif()
 
 set(SKIP_GLSLANG_INSTALL OFF CACHE BOOL "Skip installation")
@@ -178,8 +182,8 @@ target_link_libraries(Library
     PRIVATE glslang
     PRIVATE SPIRV
     PRIVATE spirv-cross-hlsl
-	PRIVATE crypto
-	PRIVATE ssl)
+    PRIVATE crypto
+    PRIVATE ssl)
 
 if(WIN32 OR WINDOWS_STORE)
     target_link_libraries(Library PRIVATE xr)
