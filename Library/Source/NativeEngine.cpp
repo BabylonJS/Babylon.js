@@ -434,7 +434,7 @@ namespace Babylon
         for (uint8_t index = 0; index < vertexBuffers.size(); ++index)
         {
             const auto& vertexBuffer = vertexBuffers[index];
-            bgfx::setVertexBuffer(index, vertexBuffer.handle, vertexBuffer.startVertex, UINT32_MAX, vertexBuffer.declHandle);
+            bgfx::setVertexBuffer(index, vertexBuffer.handle, vertexBuffer.startVertex, UINT32_MAX, vertexBuffer.vertexLayoutHandle);
         }
     }
 
@@ -465,13 +465,13 @@ namespace Babylon
         const Napi::Uint8Array data = info[0].As<Napi::Uint8Array>();
 
         // HACK: Create an empty valid vertex decl which will never be used. Consider fixing in bgfx.
-        bgfx::VertexDecl decl;
-        decl.begin();
-        decl.m_stride = 1;
-        decl.end();
+        bgfx::VertexLayout vertexLayout;
+        vertexLayout.begin();
+        vertexLayout.m_stride = 1;
+        vertexLayout.end();
 
         const bgfx::Memory* ref = bgfx::copy(data.Data(), static_cast<uint32_t>(data.ByteLength()));
-        const bgfx::VertexBufferHandle handle = bgfx::createVertexBuffer(ref, decl);
+        const bgfx::VertexBufferHandle handle = bgfx::createVertexBuffer(ref, vertexLayout);
         return Napi::Value::From(info.Env(), static_cast<uint32_t>(handle.idx));
     }
 
@@ -492,15 +492,15 @@ namespace Babylon
         const uint32_t type = info[6].As<Napi::Number>().Uint32Value();
         const bool normalized = info[7].As<Napi::Boolean>().Value();
 
-        bgfx::VertexDecl decl;
-        decl.begin();
+        bgfx::VertexLayout vertexLayout;
+        vertexLayout.begin();
         const bgfx::Attrib::Enum attrib = static_cast<bgfx::Attrib::Enum>(location);
         const bgfx::AttribType::Enum attribType = ConvertAttribType(static_cast<WebGLAttribType>(type));
-        decl.add(attrib, numElements, attribType, normalized);
-        decl.m_stride = static_cast<uint16_t>(byteStride);
-        decl.end();
+        vertexLayout.add(attrib, numElements, attribType, normalized);
+        vertexLayout.m_stride = static_cast<uint16_t>(byteStride);
+        vertexLayout.end();
 
-        vertexArray.vertexBuffers.push_back({ std::move(handle), byteOffset / byteStride, bgfx::createVertexDecl(decl) });
+        vertexArray.vertexBuffers.push_back({ std::move(handle), byteOffset / byteStride, bgfx::createVertexLayout(vertexLayout) });
     }
 
     Napi::Value NativeEngine::CreateProgram(const Napi::CallbackInfo& info)

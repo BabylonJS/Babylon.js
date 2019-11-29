@@ -285,7 +285,7 @@ namespace Babylon
         {
             bgfx::VertexBufferHandle handle;
             uint32_t startVertex;
-            bgfx::VertexDeclHandle declHandle;
+            bgfx::VertexLayoutHandle vertexLayoutHandle;
         };
 
         std::vector<VertexBuffer> vertexBuffers;
