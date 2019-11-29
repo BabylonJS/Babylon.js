@@ -233,7 +233,7 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
 
     var lastDot = rootUrl.lastIndexOf('.');
     var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
-    const filteredFormat: Nullable<string> = ThinEngine.ExcludedCompressedTextureFormats(rootUrl, this._textureFormatInUse);
+    const filteredFormat: Nullable<string> = this.excludedCompressedTextureFormats(rootUrl, this._textureFormatInUse);
 
     let loader: Nullable<IInternalTextureLoader> = null;
     for (let availableLoader of ThinEngine._TextureLoaders) {
