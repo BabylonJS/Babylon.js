@@ -171,9 +171,9 @@ export class ThinEngine {
         Effect.ShadersRepository = value;
     }
 
-     /**
-     * Gets or sets the textures that the engine should not attempt to load as compressed
-     */
+    /**
+    * Gets or sets the textures that the engine should not attempt to load as compressed
+    */
     public static ExcludedCompressedTextures: string[] = [];
 
     /**
@@ -188,7 +188,7 @@ export class ThinEngine {
         const skipCompression = (): boolean => {
             return ThinEngine.ExcludedCompressedTextures.some((entry) => {
                 const strRegExPattern: string = '\\b' + entry + '\\b';
-                return (url && url) === entry || (url && url.match(new RegExp(strRegExPattern, 'g')));
+                return (url && url === entry) || (url && url.match(new RegExp(strRegExPattern, 'g')));
             });
         };
         return skipCompression() ? null : textureFormatInUse;
@@ -1475,8 +1475,7 @@ export class ThinEngine {
         return dataBuffer;
     }
 
-    protected _normalizeIndexData(indices: IndicesArray): Uint16Array | Uint32Array
-    {
+    protected _normalizeIndexData(indices: IndicesArray): Uint16Array | Uint32Array {
         if (indices instanceof Uint16Array) {
             return indices;
         }
