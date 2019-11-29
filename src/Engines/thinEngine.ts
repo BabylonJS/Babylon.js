@@ -174,7 +174,7 @@ export class ThinEngine {
     /**
     * Gets or sets the textures that the engine should not attempt to load as compressed
     */
-    public static ExcludedCompressedTextures: string[] = [];
+    protected excludedCompressedTextures: string[] = [];
 
     /**
      * Filters the compressed texture formats to only include
@@ -184,9 +184,9 @@ export class ThinEngine {
      * @param textureFormatInUse the current compressed texture format
      * @returns "format" string
      */
-    public static ExcludedCompressedTextureFormats(url: Nullable<string>, textureFormatInUse: Nullable<string>): Nullable<string> {
+    public excludedCompressedTextureFormats(url: Nullable<string>, textureFormatInUse: Nullable<string>): Nullable<string> {
         const skipCompression = (): boolean => {
-            return ThinEngine.ExcludedCompressedTextures.some((entry) => {
+            return this.excludedCompressedTextures.some((entry) => {
                 const strRegExPattern: string = '\\b' + entry + '\\b';
                 return (url && (url === entry || url.match(new RegExp(strRegExPattern, 'g'))));
             });
@@ -2681,7 +2681,7 @@ export class ThinEngine {
         // establish the file extension, if possible
         var lastDot = url.lastIndexOf('.');
         var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
-        const filteredFormat: Nullable<string> = ThinEngine.ExcludedCompressedTextureFormats(url, this._textureFormatInUse);
+        const filteredFormat: Nullable<string> = this.excludedCompressedTextureFormats(url, this._textureFormatInUse);
         let loader: Nullable<IInternalTextureLoader> = null;
 
         for (let availableLoader of ThinEngine._TextureLoaders) {
