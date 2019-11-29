@@ -1475,7 +1475,7 @@ export class ThinEngine {
         return dataBuffer;
     }
 
-    protected _normalizeIndexData(indices: IndicesArray): Uint16Array | Uint32Array 
+    protected _normalizeIndexData(indices: IndicesArray): Uint16Array | Uint32Array
     {
         if (indices instanceof Uint16Array) {
             return indices;
