@@ -74,6 +74,7 @@
 - Added support for inspectable strings ([Deltakosh](https://github.com/deltakosh/))
 - Added support for CreateScreenshotUsingRenderTarget ([13djwright](https://github.com/13djwright/))
 - Added support for `Material.depthFunction` property ([Popov72](https://github.com/Popov72))
+- Added support for `initialTabIndex` option ([ycw](https://github.com/ycw))
 
 ### Tools
 

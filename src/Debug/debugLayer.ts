@@ -80,6 +80,10 @@ export interface IInspectorOptions {
      * Optional URL to get the inspector script from (by default it uses the babylonjs CDN).
      */
     inspectorURL?: string;
+    /**
+     * Optional initial tab index 0(properties) to 5(settings) default to 0
+     */
+    initialTabIndex?: number;
 }
 
 declare module "../scene" {
