@@ -14,6 +14,8 @@ if(ANDROID)
     set(OPENSSL_CRYPTO_LIBRARY crypto.a)
     set(OPENSSL_SSL_LIBRARY ssl.a)
     set(OPENSSL_USE_STATIC_LIBS TRUE)
+    set(cryptoLib crypto)
+    set(sslLib ssl)
     add_subdirectory(Dependencies/openssl EXCLUDE_FROM_ALL)
     set_property(TARGET ssl PROPERTY FOLDER Dependencies/openssl)
 	set_property(TARGET crypto PROPERTY FOLDER Dependencies/openssl)
@@ -182,8 +184,8 @@ target_link_libraries(Library
     PRIVATE glslang
     PRIVATE SPIRV
     PRIVATE spirv-cross-hlsl
-    PRIVATE crypto
-    PRIVATE ssl)
+    PRIVATE ${cryptoLib}
+    PRIVATE ${sslLib})
 
 if(WIN32 OR WINDOWS_STORE)
     target_link_libraries(Library PRIVATE xr)
