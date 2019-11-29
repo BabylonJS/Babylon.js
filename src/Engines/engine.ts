@@ -1550,7 +1550,7 @@ export class Engine extends ThinEngine {
      * Example: [".dds", ".env", "myfile.png"]
      */
     public setCompressedTextureExclusions(skippedFiles: Array<string>): void {
-        ThinEngine.ExcludedCompressedTextures = skippedFiles;
+        this.excludedCompressedTextures = skippedFiles;
     }
 
     /**
