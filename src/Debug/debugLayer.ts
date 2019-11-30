@@ -80,6 +80,10 @@ export interface IInspectorOptions {
      * Optional URL to get the inspector script from (by default it uses the babylonjs CDN).
      */
     inspectorURL?: string;
+    /**
+     * Optional initial tab (default to DebugLayer.ACTION_TAB.PROPERTIES)
+     */
+    initialTab?: string;
 }
 
 declare module "../scene" {
@@ -120,6 +124,17 @@ export class DebugLayer {
      * @ignoreNaming
      */
     public static InspectorURL = `https://unpkg.com/babylonjs-inspector@${Engine.Version}/babylon.inspector.bundle.js`;
+
+    /**
+     * Action tab kinds
+     */
+    public static ACTION_TAB = {
+        PROPERTIES: "properties",
+        DEBUG: "debug",
+        STATISTICS: "statistics",
+        TOOLS: "tools",
+        SETTINGS: "settings"
+    };
 
     private _scene: Scene;
 
