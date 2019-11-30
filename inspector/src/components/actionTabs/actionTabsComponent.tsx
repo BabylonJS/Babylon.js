@@ -24,8 +24,19 @@ interface IActionTabsComponentProps {
     popupMode?: boolean,
     onPopup?: () => void,
     onClose?: () => void,
-    globalState?: GlobalState
+    globalState?: GlobalState,
+    initialTab?: string
 }
+
+const ACTION_TAB_INDEX: {
+    [k: string]: number
+} = {
+    PROPERTIES: 0,
+    DEBUG: 1,
+    STATISTICS: 2,
+    TOOLS: 3,
+    SETTINGS: 4
+};
 
 export class ActionTabsComponent extends React.Component<IActionTabsComponentProps, { selectedEntity: any, selectedIndex: number }> {
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
@@ -35,13 +46,19 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
     constructor(props: IActionTabsComponentProps) {
         super(props);
 
-        let initialIndex = 0;
+        let initialIndex = ACTION_TAB_INDEX.PROPERTIES;
+        if (props.initialTab !== undefined) {
+            let index = ACTION_TAB_INDEX[props.initialTab.toUpperCase()];
+            if (index !== undefined) {
+                initialIndex = index;
+            }
+        }
 
         if (this.props.globalState) {
             const validationResutls = this.props.globalState.validationResults;
             if (validationResutls) {
                 if (validationResutls.issues.numErrors || validationResutls.issues.numWarnings) {
-                    initialIndex = 3;
+                    initialIndex = ACTION_TAB_INDEX.TOOLS;
                 }
             }
         }
@@ -53,7 +70,7 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
     componentDidMount() {
         if (this.props.globalState) {
             this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add((entity) => {
-                this.setState({ selectedEntity: entity, selectedIndex: 0 });
+                this.setState({ selectedEntity: entity, selectedIndex: ACTION_TAB_INDEX.PROPERTIES });
             });
 
             this._onTabChangedObserver = this.props.globalState.onTabChangedObservable.add(index => {
