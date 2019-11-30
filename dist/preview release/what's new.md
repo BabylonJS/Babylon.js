@@ -133,6 +133,7 @@
 - Added `pbrBRDFConfiguration.useSpecularGlossinessInputEnergyConservation` to allow Specular-Workflow energy conservation to be turned off ([ColorDigital-PS](https://github.com/ColorDigital-PS)).
 - Added support for the `freeze` / `unfreeze` functions in `ShaderMaterial` ([Popov72](https://github.com/Popov72))
 - Added `depthFunction` new property to `Material` base class ([Popov72](https://github.com/Popov72))
+- Added `setCompressedTextureExclusions` method to `Engine` to allow for skipping compressed textures on certain files ([abogartz](https://github.com/abogartz))
 
 ### ScreenshotTools
 

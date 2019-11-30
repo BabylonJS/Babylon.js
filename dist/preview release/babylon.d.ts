@@ -30436,6 +30436,19 @@ declare module BABYLON {
          * Gets or sets the relative url used to load shaders if using the engine in non-minified mode
          */
         static ShadersRepository: string;
+        /**
+        * Gets or sets the textures that the engine should not attempt to load as compressed
+        */
+        protected _excludedCompressedTextures: string[];
+        /**
+         * Filters the compressed texture formats to only include
+         * files that are not included in the skippable list
+         *
+         * @param url the current extension
+         * @param textureFormatInUse the current compressed texture format
+         * @returns "format" string
+         */
+        excludedCompressedTextureFormats(url: Nullable<string>, textureFormatInUse: Nullable<string>): Nullable<string>;
         /** @hidden */
         _shaderProcessor: IShaderProcessor;
         /**
@@ -33133,6 +33146,13 @@ declare module BABYLON {
          * @returns The extension selected.
          */
         setTextureFormatToUse(formatsAvailable: Array<string>): Nullable<string>;
+        /**
+         * Set the compressed texture extensions or file names to skip.
+         *
+         * @param skippedFiles defines the list of those texture files you want to skip
+         * Example: [".dds", ".env", "myfile.png"]
+         */
+        setCompressedTextureExclusions(skippedFiles: Array<string>): void;
         /**
          * Force a specific size of the canvas
          * @param width defines the new canvas' width

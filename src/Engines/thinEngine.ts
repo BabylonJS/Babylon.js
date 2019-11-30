@@ -171,6 +171,29 @@ export class ThinEngine {
         Effect.ShadersRepository = value;
     }
 
+    /**
+    * Gets or sets the textures that the engine should not attempt to load as compressed
+    */
+    protected _excludedCompressedTextures: string[] = [];
+
+    /**
+     * Filters the compressed texture formats to only include
+     * files that are not included in the skippable list
+     *
+     * @param url the current extension
+     * @param textureFormatInUse the current compressed texture format
+     * @returns "format" string
+     */
+    public excludedCompressedTextureFormats(url: Nullable<string>, textureFormatInUse: Nullable<string>): Nullable<string> {
+        const skipCompression = (): boolean => {
+            return this._excludedCompressedTextures.some((entry) => {
+                const strRegExPattern: string = '\\b' + entry + '\\b';
+                return (url && (url === entry || url.match(new RegExp(strRegExPattern, 'g'))));
+            });
+        };
+        return skipCompression() ? null : textureFormatInUse;
+    }
+
     // Public members
 
     /** @hidden */
@@ -1050,7 +1073,7 @@ export class ThinEngine {
         }
 
         if (this._activeRenderLoops.length > 0) {
-           this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
+            this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
         } else {
             this._renderingQueueLaunched = false;
         }
@@ -1452,8 +1475,7 @@ export class ThinEngine {
         return dataBuffer;
     }
 
-    protected _normalizeIndexData(indices: IndicesArray): Uint16Array | Uint32Array
-    {
+    protected _normalizeIndexData(indices: IndicesArray): Uint16Array | Uint32Array {
         if (indices instanceof Uint16Array) {
             return indices;
         }
@@ -2659,17 +2681,18 @@ export class ThinEngine {
         // establish the file extension, if possible
         var lastDot = url.lastIndexOf('.');
         var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
-
+        const filteredFormat: Nullable<string> = this.excludedCompressedTextureFormats(url, this._textureFormatInUse);
         let loader: Nullable<IInternalTextureLoader> = null;
+
         for (let availableLoader of ThinEngine._TextureLoaders) {
-            if (excludeLoaders.indexOf(availableLoader) === -1 && availableLoader.canLoad(extension, this._textureFormatInUse, fallback, isBase64, buffer ? true : false)) {
+            if (excludeLoaders.indexOf(availableLoader) === -1 && availableLoader.canLoad(extension, filteredFormat, fallback, isBase64, buffer ? true : false)) {
                 loader = availableLoader;
                 break;
             }
         }
 
         if (loader) {
-            url = loader.transformUrl(url, this._textureFormatInUse);
+            url = loader.transformUrl(url, filteredFormat);
         }
 
         if (scene) {
@@ -3987,7 +4010,7 @@ export class ThinEngine {
 
     /** @hidden */
     public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void,
-    offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: IWebRequest, exception?: any) => void): IFileRequest {
+        offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: IWebRequest, exception?: any) => void): IFileRequest {
         let request = FileTools.LoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
