@@ -20,12 +20,6 @@ uniform sampler2D animationMap;
 
 uniform vec3 colorMul;
 
-
-#ifdef EDITABLE
-    uniform vec2 mousePosition;
-    uniform float curTile;
-#endif
-
 float mt;
 
 float fdStep = 1. / 4.;
@@ -95,33 +89,7 @@ void main(){
         }	
     }
 
-    color.xyz*=colorMul;
-
-    #ifdef EDITABLE
-    if(tileID == floor(mousePosition*stageSize)){
-        vec2 eUV = fract(tUV);
-        #ifdef FLIPU
-            eUV.y = 1.0 - eUV.y;
-        #endif
-        
-        mat4 eframeData = getFrameData(curTile + 0.5);	
-        vec2 eframeSize = (eframeData[0].wz) / spriteMapSize;    
-        vec2 eoffset = eframeData[0].xy * sheetUnits;	
-        vec2 eratio = eframeData[2].xy / eframeData[0].wz;	
-        
-        //rotated
-        if(eframeData[2].z == 1.){
-            eUV.xy = eUV.yx;
-        }
-
-        vec4 nt = texture(spriteSheet, eUV*eframeSize + eoffset);			
-        color.a = max(max(color.a , 0.5), nt.a*0.5);
-        color.rgb = mix(color.rgb, nt.rgb, 0.85);			
-        color.r *= 2.5;
-        color.g *= 2.5;
-        color.b *= 0.5;			
-    }		
-    #endif
+    color.xyz*=colorMul;   
     
     gl_FragColor =  color;
 }

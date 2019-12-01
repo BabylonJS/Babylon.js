@@ -7,8 +7,11 @@ import { RawTexture } from "../Materials/Textures/rawTexture";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
 import { Mesh } from "../Meshes/mesh";
 import { PickingInfo } from "../Collisions/pickingInfo";
+import { ISpriteJSONSprite, ISpriteJSONAtlas } from "./ISprites";
 
 import "../Meshes/Builders/planeBuilder";
+import "../Shaders/spriteMap.fragment";
+import "../Shaders/spriteMap.vertex";
 
 /**
  * Defines the basic options interface of a SpriteMap
@@ -59,97 +62,7 @@ export interface ISpriteMapOptions{
 
 }
 
-/**
- * Defines the basic options interface of a Sprite Frame Source Size.
- */
-export interface ISpriteJSONSpriteSourceSize{
-    /**
-	 * number of the original width of the Frame
-	 */
-    w : number;
 
-    /**
-     * number of the original height of the Frame
-     */
-    h : number;
-}
-
-/**
- * Defines the basic options interface of a Sprite Frame Data.
- */
-export interface ISpriteJSONSpriteFrameData{
-    /**
-	 * number of the x offset of the Frame
-	 */
-    x : number;
-
-    /**
-	 * number of the y offset of the Frame
-	 */
-    y : number;
-
-    /**
-	 * number of the width of the Frame
-	 */
-    w : number;
-
-    /**
-     * number of the height of the Frame
-     */
-    h : number;
-}
-
-/**
- * Defines the basic options interface of a JSON Sprite.
- */
-export interface ISpriteJSONSprite{
-    /**
-	 * string name of the Frame
-	 */
-    filename : string;
-
-    /**
-	 * ISpriteJSONSpriteFrame basic object of the frame data
-	 */
-    frame : ISpriteJSONSpriteFrameData;
-
-    /**
-    * boolean to flag is the frame was rotated.
-    */
-    rotated : boolean;
-
-    /**
-    * boolean to flag is the frame was trimmed.
-    */
-    trimmed : boolean;
-
-    /**
-	 * ISpriteJSONSpriteFrame basic object of the source data
-	 */
-    spriteSourceSize : ISpriteJSONSpriteFrameData;
-
-    /**
-	 * ISpriteJSONSpriteFrame basic object of the source data
-	 */
-    sourceSize : ISpriteJSONSpriteSourceSize;
-}
-
-/**
- * Defines the basic options interface of a JSON atlas.
- */
-export interface ISpriteJSONAtlas{
-
-    /**
-	 * Array of objects that contain the frame data.
-	 */
-    frames: Array<ISpriteJSONSprite>;
-
-    /**
-	 * object basic object containing the sprite meta data.
-	 */
-    meta?: object;
-
-}
 
 /**
  * Defines the IDisposable interface in order to be cleanable from resources.
@@ -221,7 +134,7 @@ export class SpriteMap implements ISpriteMap {
     /** Sets the AnimationMap*/
     public set animationMap(v: RawTexture) {
         let buffer = v!._texture!._bufferView;
-        let am = this.createTileAnimationBuffer(buffer);
+        let am = this._createTileAnimationBuffer(buffer);
         this._animationMap.dispose();
         this._animationMap = am;
         this._material.setTexture('animationMap', this._animationMap);
@@ -279,14 +192,14 @@ export class SpriteMap implements ISpriteMap {
 
     this._scene = scene;
 
-    this._frameMap = this.createFrameBuffer();
+    this._frameMap = this._createFrameBuffer();
 
     this._tileMaps = new Array();
     for (let i = 0; i < this.options.layerCount; i++) {
-        this._tileMaps.push(this.createTileBuffer(null, i));
+        this._tileMaps.push(this._createTileBuffer(null, i));
     }
 
-    this._animationMap = this.createTileAnimationBuffer(null);
+    this._animationMap = this._createTileAnimationBuffer(null);
 
     let defines = [];
     defines.push("#define LAYERS " + this.options.layerCount);
@@ -416,7 +329,7 @@ export class SpriteMap implements ISpriteMap {
     * "sourceSize": {"w":32,"h":32}
     * @returns RawTexture of the frameMap
     */
-    private createFrameBuffer(): RawTexture {
+    private _createFrameBuffer(): RawTexture {
         let data = new Array();
         //Do two Passes
         for (let i = 0; i < this.spriteCount; i++) {
@@ -441,7 +354,6 @@ export class SpriteMap implements ISpriteMap {
             //spriteSourceSize
             data[i * 4 + (this.spriteCount * 4)] = sss.x;
             data[i * 4 + 1 + (this.spriteCount * 4)] = sss.y;
-            data[i * 4 + 2 + (this.spriteCount * 4)] = sss.w;
             data[i * 4 + 3 + (this.spriteCount * 4)] = sss.h;
             //sourceSize, rotated, trimmed
             data[i * 4 + (this.spriteCount * 8)] = ss.w;
@@ -472,7 +384,7 @@ export class SpriteMap implements ISpriteMap {
     * @param _layer indicates what layer for a logic trigger dealing with the baseTile.  The system uses this
     * @returns RawTexture of the tileMap
     */
-    private createTileBuffer(buffer: any, _layer: number = 0): RawTexture {
+    private _createTileBuffer(buffer: any, _layer: number = 0): RawTexture {
 
         let data = new Array();
         let _ty = (this.options.stageSize!.y) || 0;
@@ -514,11 +426,11 @@ export class SpriteMap implements ISpriteMap {
     * @param pos is the iVector2 Coordinates of the Tile
     * @param tile The SpriteIndex of the new Tile
     */
-    public changeTiles(_layer: number = 0, pos: any , tile: number = 0): void {
-
-        let buffer: any = [];
-        buffer = this._tileMaps[_layer]!._texture!._bufferView;
-        if (!buffer) {
+    public changeTiles(_layer: number = 0, pos: Vector2 | Vector2[] , tile: number = 0): void {
+        
+        let buffer: Nullable<ArrayBufferView>;        
+        buffer = this._tileMaps[_layer]!._texture!._bufferView;        
+        if (buffer === null) {
             return;
         }
 
@@ -528,6 +440,7 @@ export class SpriteMap implements ISpriteMap {
         } else {
             p = pos;
         }
+   
 
         let _tx = (this.options.stageSize!.x) || 0;
 
@@ -535,11 +448,11 @@ export class SpriteMap implements ISpriteMap {
             let _p = p[i];
             _p.x = Math.floor(_p.x);
             _p.y = Math.floor(_p.y);
-            let id = (_p.x * 4) + (_p.y * (_tx * 4));
-            buffer[id] = tile;
+            let id:number = (_p.x * 4) + (_p.y * (_tx * 4));
+            (buffer as any)[id] = tile;
         }
 
-        let t = this.createTileBuffer(buffer);
+        let t = this._createTileBuffer(buffer);
         this._tileMaps[_layer].dispose();
         this._tileMaps[_layer] = t;
         this._material.setTextureArray("tileMap", this._tileMaps);
@@ -550,7 +463,7 @@ export class SpriteMap implements ISpriteMap {
     * @param buffer normally and array of numbers, or a false to generate from scratch
     * @returns RawTexture of the animationMap
     */
-    private createTileAnimationBuffer(buffer: any): RawTexture {
+    private _createTileAnimationBuffer(buffer: Nullable<ArrayBufferView>): RawTexture {
         let data = new Array();
         if (!buffer) {
             for (let i = 0; i < this.spriteCount; i++) {
@@ -562,7 +475,7 @@ export class SpriteMap implements ISpriteMap {
                 }
             }
         } else {
-            data = buffer;
+            data = new Array(buffer);
         }
 
         let floatArray = new Float32Array(data);
@@ -596,7 +509,7 @@ export class SpriteMap implements ISpriteMap {
         buffer[id || 0] = toCell;
         buffer[id + 1 || 0] = time;
         buffer[id + 2 || 0] = speed;
-        let t = this.createTileAnimationBuffer(buffer);
+        let t = this._createTileAnimationBuffer(buffer);
         this._animationMap.dispose();
         this._animationMap = t;
         this._material.setTexture("animationMap", this._animationMap);
@@ -635,7 +548,7 @@ export class SpriteMap implements ISpriteMap {
             let data = xhr.response.split('\n\r');
             for (let i = 0; i < _lc; i++) {
                 let d = (data[i].split(',')).map(Number);
-                let t = this.createTileBuffer(d);
+                let t = this._createTileBuffer(d);
                 this._tileMaps[i].dispose();
                 this._tileMaps[i] = t;
             }
