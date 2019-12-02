@@ -146,7 +146,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
             if (typeof (<any>DeviceOrientationEvent).requestPermission === 'function') {
                 (<any>DeviceOrientationEvent).requestPermission()
                     .then((response: string) => {
-                        if (response == 'granted') {
+                        if (response === 'granted') {
                             eventHandler();
                         } else {
                             Tools.Warn("Permission not granted.");
