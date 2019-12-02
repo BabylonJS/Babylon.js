@@ -1545,6 +1545,8 @@ declare module "babylonjs-gui/2D/controls/image" {
         autoScale: boolean;
         /** Gets or sets the streching mode used by the image */
         stretch: number;
+        /** @hidden */
+        _rotate90(n: number): Image;
         /**
          * Gets or sets the internal DOM image used to render the control
          */
@@ -2837,7 +2839,7 @@ declare module "babylonjs-gui/2D/controls/sliders/scrollBar" {
         name?: string | undefined;
         private _background;
         private _borderColor;
-        private _thumbMeasure;
+        private _tempMeasure;
         /** Gets or sets border color */
         borderColor: string;
         /** Gets or sets background color */
@@ -2858,14 +2860,70 @@ declare module "babylonjs-gui/2D/controls/sliders/scrollBar" {
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
     }
 }
+declare module "babylonjs-gui/2D/controls/sliders/imageScrollBar" {
+    import { Vector2 } from "babylonjs/Maths/math";
+    import { BaseSlider } from "babylonjs-gui/2D/controls/sliders/baseSlider";
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { Image } from "babylonjs-gui/2D/controls/image";
+    /**
+     * Class used to create slider controls
+     */
+    export class ImageScrollBar extends BaseSlider {
+        name?: string | undefined;
+        private _backgroundBaseImage;
+        private _backgroundImage;
+        private _thumbImage;
+        private _thumbBaseImage;
+        private _thumbLength;
+        private _thumbHeight;
+        private _barImageHeight;
+        private _tempMeasure;
+        /**
+         * Gets or sets the image used to render the background for horizontal bar
+         */
+        backgroundImage: Image;
+        /**
+         * Gets or sets the image used to render the thumb
+         */
+        thumbImage: Image;
+        /**
+         * Gets or sets the length of the thumb
+         */
+        thumbLength: number;
+        /**
+         * Gets or sets the height of the thumb
+         */
+        thumbHeight: number;
+        /**
+         * Gets or sets the height of the bar image
+         */
+        barImageHeight: number;
+        /**
+         * Creates a new ImageScrollBar
+         * @param name defines the control name
+         */
+        constructor(name?: string | undefined);
+        protected _getTypeName(): string;
+        protected _getThumbThickness(): number;
+        _draw(context: CanvasRenderingContext2D): void;
+        private _first;
+        private _originX;
+        private _originY;
+        /** @hidden */
+        protected _updateValueFromPointer(x: number, y: number): void;
+        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
+    }
+}
 declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewer" {
     import { Nullable } from "babylonjs/types";
     import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
+    import { Image } from "babylonjs-gui/2D/controls/image";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Container } from "babylonjs-gui/2D/controls/container";
     import { Measure } from "babylonjs-gui/2D/measure";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     import { ScrollBar } from "babylonjs-gui/2D/controls/sliders/scrollBar";
+    import { ImageScrollBar } from "babylonjs-gui/2D/controls/sliders/imageScrollBar";
     /**
      * Class used to hold a viewer window and sliders in a grid
     */
@@ -2878,6 +2936,8 @@ declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewer" {
         private _verticalBar;
         private _barColor;
         private _barBackground;
+        private _barImage;
+        private _barBackgroundImage;
         private _barSize;
         private _endLeft;
         private _endTop;
@@ -2887,14 +2947,18 @@ declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewer" {
         private _onPointerObserver;
         private _clientWidth;
         private _clientHeight;
+        private _useImageBar;
+        private _thumbLength;
+        private _thumbHeight;
+        private _barImageHeight;
         /**
          * Gets the horizontal scrollbar
          */
-        readonly horizontalBar: ScrollBar;
+        readonly horizontalBar: ScrollBar | ImageScrollBar;
         /**
          * Gets the vertical scrollbar
          */
-        readonly verticalBar: ScrollBar;
+        readonly verticalBar: ScrollBar | ImageScrollBar;
         /**
          * Adds a new control to the current container
          * @param control defines the control to add
@@ -2914,7 +2978,7 @@ declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewer" {
         * Creates a new ScrollViewer
         * @param name of ScrollViewer
         */
-        constructor(name?: string);
+        constructor(name?: string, isImageBased?: boolean);
         /** Reset the scroll viewer window to initial size */
         resetWindow(): void;
         protected _getTypeName(): string;
@@ -2926,15 +2990,29 @@ declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewer" {
          * from 0 to 1 with a default value of 0.05
          * */
         wheelPrecision: number;
+        /** Gets or sets the scroll bar container background color */
+        scrollBackground: string;
         /** Gets or sets the bar color */
         barColor: string;
+        /** Gets or sets the bar image */
+        thumbImage: Image;
         /** Gets or sets the size of the bar */
         barSize: number;
+        /** Gets or sets the length of the thumb */
+        thumbLength: number;
+        /** Gets or sets the height of the thumb */
+        thumbHeight: number;
+        /** Gets or sets the height of the bar image */
+        barImageHeight: number;
         /** Gets or sets the bar background */
         barBackground: string;
+        /** Gets or sets the bar background image */
+        barImage: Image;
         /** @hidden */
         private _updateScroller;
         _link(host: AdvancedDynamicTexture): void;
+        /** @hidden */
+        private _addBar;
         /** @hidden */
         private _attachWheel;
         _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
@@ -3057,6 +3135,7 @@ declare module "babylonjs-gui/2D/controls/index" {
     export * from "babylonjs-gui/2D/controls/sliders/slider";
     export * from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
     export * from "babylonjs-gui/2D/controls/sliders/scrollBar";
+    export * from "babylonjs-gui/2D/controls/sliders/imageScrollBar";
     export * from "babylonjs-gui/2D/controls/statics";
 }
 declare module "babylonjs-gui/2D/adtInstrumentation" {
@@ -3776,6 +3855,10 @@ declare module "babylonjs-gui/3D/controls/holographicButton" {
         private _tooltipHoverObserver;
         private _tooltipOutObserver;
         private _disposeTooltip;
+        /**
+         * Rendering ground id of all the mesh in the button
+         */
+        renderingGroupId: number;
         /**
          * Text to be displayed on the tooltip shown when hovering on the button. When set to null tooltip is disabled. (Default: null)
          */
@@ -5453,6 +5536,8 @@ declare module BABYLON.GUI {
         autoScale: boolean;
         /** Gets or sets the streching mode used by the image */
         stretch: number;
+        /** @hidden */
+        _rotate90(n: number): Image;
         /**
          * Gets or sets the internal DOM image used to render the control
          */
@@ -6675,13 +6760,63 @@ declare module BABYLON.GUI {
         name?: string | undefined;
         private _background;
         private _borderColor;
-        private _thumbMeasure;
+        private _tempMeasure;
         /** Gets or sets border color */
         borderColor: string;
         /** Gets or sets background color */
         background: string;
         /**
          * Creates a new Slider
+         * @param name defines the control name
+         */
+        constructor(name?: string | undefined);
+        protected _getTypeName(): string;
+        protected _getThumbThickness(): number;
+        _draw(context: CanvasRenderingContext2D): void;
+        private _first;
+        private _originX;
+        private _originY;
+        /** @hidden */
+        protected _updateValueFromPointer(x: number, y: number): void;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create slider controls
+     */
+    export class ImageScrollBar extends BaseSlider {
+        name?: string | undefined;
+        private _backgroundBaseImage;
+        private _backgroundImage;
+        private _thumbImage;
+        private _thumbBaseImage;
+        private _thumbLength;
+        private _thumbHeight;
+        private _barImageHeight;
+        private _tempMeasure;
+        /**
+         * Gets or sets the image used to render the background for horizontal bar
+         */
+        backgroundImage: Image;
+        /**
+         * Gets or sets the image used to render the thumb
+         */
+        thumbImage: Image;
+        /**
+         * Gets or sets the length of the thumb
+         */
+        thumbLength: number;
+        /**
+         * Gets or sets the height of the thumb
+         */
+        thumbHeight: number;
+        /**
+         * Gets or sets the height of the bar image
+         */
+        barImageHeight: number;
+        /**
+         * Creates a new ImageScrollBar
          * @param name defines the control name
          */
         constructor(name?: string | undefined);
@@ -6709,6 +6844,8 @@ declare module BABYLON.GUI {
         private _verticalBar;
         private _barColor;
         private _barBackground;
+        private _barImage;
+        private _barBackgroundImage;
         private _barSize;
         private _endLeft;
         private _endTop;
@@ -6718,14 +6855,18 @@ declare module BABYLON.GUI {
         private _onPointerObserver;
         private _clientWidth;
         private _clientHeight;
+        private _useImageBar;
+        private _thumbLength;
+        private _thumbHeight;
+        private _barImageHeight;
         /**
          * Gets the horizontal scrollbar
          */
-        readonly horizontalBar: ScrollBar;
+        readonly horizontalBar: ScrollBar | ImageScrollBar;
         /**
          * Gets the vertical scrollbar
          */
-        readonly verticalBar: ScrollBar;
+        readonly verticalBar: ScrollBar | ImageScrollBar;
         /**
          * Adds a new control to the current container
          * @param control defines the control to add
@@ -6745,7 +6886,7 @@ declare module BABYLON.GUI {
         * Creates a new ScrollViewer
         * @param name of ScrollViewer
         */
-        constructor(name?: string);
+        constructor(name?: string, isImageBased?: boolean);
         /** Reset the scroll viewer window to initial size */
         resetWindow(): void;
         protected _getTypeName(): string;
@@ -6757,15 +6898,29 @@ declare module BABYLON.GUI {
          * from 0 to 1 with a default value of 0.05
          * */
         wheelPrecision: number;
+        /** Gets or sets the scroll bar container background color */
+        scrollBackground: string;
         /** Gets or sets the bar color */
         barColor: string;
+        /** Gets or sets the bar image */
+        thumbImage: Image;
         /** Gets or sets the size of the bar */
         barSize: number;
+        /** Gets or sets the length of the thumb */
+        thumbLength: number;
+        /** Gets or sets the height of the thumb */
+        thumbHeight: number;
+        /** Gets or sets the height of the bar image */
+        barImageHeight: number;
         /** Gets or sets the bar background */
         barBackground: string;
+        /** Gets or sets the bar background image */
+        barImage: Image;
         /** @hidden */
         private _updateScroller;
         _link(host: AdvancedDynamicTexture): void;
+        /** @hidden */
+        private _addBar;
         /** @hidden */
         private _attachWheel;
         _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
@@ -7497,6 +7652,10 @@ declare module BABYLON.GUI {
         private _tooltipHoverObserver;
         private _tooltipOutObserver;
         private _disposeTooltip;
+        /**
+         * Rendering ground id of all the mesh in the button
+         */
+        renderingGroupId: number;
         /**
          * Text to be displayed on the tooltip shown when hovering on the button. When set to null tooltip is disabled. (Default: null)
          */
