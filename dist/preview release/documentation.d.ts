@@ -39855,7 +39855,7 @@ declare module BABYLON {
         private _beta;
         private _gamma;
         /**
-         * Can be used to detect if a device orientation sensor is availible on a device
+         * Can be used to detect if a device orientation sensor is available on a device
          * @param timeout amount of time in milliseconds to wait for a response from the sensor (default: infinite)
          * @returns a promise that will resolve on orientation change
          */

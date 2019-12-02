@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -6694,6 +6694,17 @@ var Image = /** @class */ (function (_super) {
             // check if object alr exist in document
             var svgExist = document.body.querySelector('object[data="' + svgsrc + '"]');
             if (svgExist) {
+                var svgDoc = svgExist.contentDocument;
+                // get viewbox width and height, get svg document width and height in px
+                if (svgDoc && svgDoc.documentElement) {
+                    var vb = svgDoc.documentElement.getAttribute("viewBox");
+                    var docwidth = Number(svgDoc.documentElement.getAttribute("width"));
+                    var docheight = Number(svgDoc.documentElement.getAttribute("height"));
+                    if (vb && docwidth && docheight) {
+                        this._getSVGAttribs(svgExist, elemid);
+                        return value;
+                    }
+                }
                 // wait for object to load
                 svgExist.addEventListener("load", function () {
                     _this._getSVGAttribs(svgExist, elemid);

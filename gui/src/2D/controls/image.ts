@@ -406,6 +406,18 @@ export class Image extends Control {
             // check if object alr exist in document
             var svgExist = <HTMLObjectElement> document.body.querySelector('object[data="' + svgsrc + '"]');
             if (svgExist) {
+                var svgDoc = svgExist.contentDocument;
+                // get viewbox width and height, get svg document width and height in px
+                if (svgDoc && svgDoc.documentElement) {
+                    var vb = svgDoc.documentElement.getAttribute("viewBox");
+                    var docwidth = Number(svgDoc.documentElement.getAttribute("width"));
+                    var docheight = Number(svgDoc.documentElement.getAttribute("height"));
+                    if (vb && docwidth && docheight) {
+                        this._getSVGAttribs(svgExist, elemid);
+                        return value;
+                    }
+                }
+
                 // wait for object to load
                 svgExist.addEventListener("load", () => {
                     this._getSVGAttribs(svgExist, elemid);
