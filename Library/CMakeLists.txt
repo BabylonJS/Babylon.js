@@ -15,9 +15,10 @@ if(ANDROID)
     set(OPENSSL_SSL_LIBRARY ssl.a)
     set(OPENSSL_USE_STATIC_LIBS TRUE)
     add_subdirectory(Dependencies/openssl EXCLUDE_FROM_ALL)
-    set_property(TARGET SSL PROPERTY FOLDER Dependencies/openssl)
-    set_property(TARGET Crypto PROPERTY FOLDER Dependencies/openssl)
-    set(OpenSSLStatic_DIR ${CMAKE_BINARY_DIR})
+
+    set_property(TARGET SSL PROPERTY FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/openssl")
+    set_property(TARGET Crypto PROPERTY FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/openssl")
+    set(OpenSSLStatic_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/openssl")
     find_package(OpenSSLStatic)
 endif()
 
