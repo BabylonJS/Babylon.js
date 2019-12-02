@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project( openssl )
+project(OpenSSL)
 
 add_definitions( -DOPENSSL_NO_ASM )
 add_definitions( -DOPENSSL_NO_STATIC_ENGINE )
@@ -99,6 +99,8 @@ set(providerSRC "${PROVIDERS_DIR}/common/provider_err.c"
   "${PROVIDERS_DIR}/common/ciphers/cipher_common_hw.c"
   "${PROVIDERS_DIR}/common/ciphers/cipher_ccm_hw.c"
   "${PROVIDERS_DIR}/common/ciphers/block.c"
+  #"${PROVIDERS_DIR}/fips/fipsprov.c"
+  "${PROVIDERS_DIR}/fips/selftest.c"
   "${PROVIDERS_DIR}/defltprov.c"
   "${PROVIDERS_DIR}/implementations/digests/md5_sha1_prov.c"
   "${PROVIDERS_DIR}/implementations/digests/sha2_prov.c"
@@ -275,7 +277,7 @@ else()
   set(THREADSRC "${CRYPTO_DIR}/threads_pthread.c" )
 endif()
 
-add_library( crypto ${cryptoSRC} 
+add_library(Crypto ${cryptoSRC} 
   ${THREADSRC} 
   ${aesSRC}
   ${ariaSRC}
@@ -340,25 +342,25 @@ add_library( crypto ${cryptoSRC}
   ${txt_dbSRC}
   ${uiSRC}
   ${whrlpoolSRC}
-  ${x509SRC})
+  ${x509SRC}
+  ${providerSRC})
 
-set(OPENSSL_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/openssl/include" 
-  "${CMAKE_CURRENT_LIST_DIR}/openssl" 
-  "${CMAKE_CURRENT_LIST_DIR}" 
-  "${CMAKE_CURRENT_LIST_DIR}/.." 
+set(OPENSSL_INCLUDE_DIRS 
+  "${CMAKE_CURRENT_LIST_DIR}/openssl/include" 
   "${CMAKE_CURRENT_LIST_DIR}/openssl/providers/implementations/include"
   "${CMAKE_CURRENT_LIST_DIR}/openssl/providers/common/include"
   "${CMAKE_CURRENT_LIST_DIR}/openssl/crypto/ec/curve448/arch_32"
   "${CMAKE_CURRENT_LIST_DIR}/openssl/crypto/ec/curve448"
   "${CMAKE_CURRENT_LIST_DIR}/openssl/crypto")
 
-target_include_directories(crypto PRIVATE "${OPENSSL_INCLUDE_DIRS}")
+target_include_directories(Crypto PRIVATE "${OPENSSL_INCLUDE_DIRS}" "${CMAKE_CURRENT_LIST_DIR}/openssl")
+target_include_directories(Crypto INTERFACE "${OPENSSL_INCLUDE_DIRS}")
 
 ## SSL
 
 file(GLOB_RECURSE sslSRC "${SSL_DIR}/*.c")
 
-add_library(ssl ${sslSRC} 
+add_library(SSL ${sslSRC} 
   ${compSRC} 
   ${x509SRC} 
   ${cryptoSRC} 
@@ -378,8 +380,17 @@ add_library(ssl ${sslSRC}
   ${md5SRC} 
   ${cmacSRC} 
   ${siphashSRC})
-target_include_directories(ssl PRIVATE "${OPENSSL_INCLUDE_DIRS}")
+
+target_include_directories(SSL PRIVATE "${OPENSSL_INCLUDE_DIRS}" "${CMAKE_CURRENT_LIST_DIR}/openssl")
+target_include_directories(SSL INTERFACE "${OPENSSL_INCLUDE_DIRS}")
 
 set(SSLCONF_DESTINATION "${CMAKE_CURRENT_LIST_DIR}/openssl/include/openssl")
+set(CRYPTOCONF_DESTINATION "${CMAKE_CURRENT_LIST_DIR}/openssl/include/crypto")
+set(BUILDINF_DESTINATION "${CMAKE_CURRENT_LIST_DIR}/openssl/include")
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/opensslconf.h" DESTINATION "${SSLCONF_DESTINATION}")
 file(COPY "${CMAKE_CURRENT_LIST_DIR}/opensslv.h" DESTINATION "${SSLCONF_DESTINATION}")
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/buildinf.h" DESTINATION "${BUILDINF_DESTINATION}")
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/bn_conf.h" DESTINATION "${CRYPTOCONF_DESTINATION}")
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/dso_conf.h" DESTINATION "${CRYPTOCONF_DESTINATION}")
+
+export(TARGETS SSL Crypto NAMESPACE OpenSSL:: FILE "${CMAKE_BINARY_DIR}/OpenSSLStaticConfig.cmake")
