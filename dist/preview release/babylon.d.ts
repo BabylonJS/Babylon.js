@@ -32780,8 +32780,9 @@ declare module BABYLON {
         /**
          * Force the mipmap generation for the given render target texture
          * @param texture defines the render target texture to use
+         * @param unbind defines whether or not to unbind the texture after generation. Defaults to true.
          */
-        generateMipMapsForCubemap(texture: InternalTexture): void;
+        generateMipMapsForCubemap(texture: InternalTexture, unbind?: boolean): void;
         /** States */
         /**
          * Set various states to the webGL context
@@ -51293,7 +51294,7 @@ declare module BABYLON {
         private _vertexBuffers;
         private _indexBuffer;
         private _effect;
-        private _alphaTestEffect;
+        private _previousDefines;
         /**
          * An event triggered when the layer is disposed.
          */
