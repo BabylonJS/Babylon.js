@@ -668,13 +668,16 @@ export class Engine extends ThinEngine {
     /**
      * Force the mipmap generation for the given render target texture
      * @param texture defines the render target texture to use
+     * @param unbind defines whether or not to unbind the texture after generation. Defaults to true.
      */
-    public generateMipMapsForCubemap(texture: InternalTexture) {
+    public generateMipMapsForCubemap(texture: InternalTexture, unbind = true) {
         if (texture.generateMipMaps) {
             var gl = this._gl;
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
             gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
+            if (unbind) {
+                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
+            }
         }
     }
 
