@@ -62,8 +62,6 @@ export interface ISpriteMapOptions{
 
 }
 
-
-
 /**
  * Defines the IDisposable interface in order to be cleanable from resources.
  */
@@ -427,9 +425,9 @@ export class SpriteMap implements ISpriteMap {
     * @param tile The SpriteIndex of the new Tile
     */
     public changeTiles(_layer: number = 0, pos: Vector2 | Vector2[] , tile: number = 0): void {
-        
-        let buffer: Nullable<ArrayBufferView>;        
-        buffer = this._tileMaps[_layer]!._texture!._bufferView;        
+
+        let buffer: Nullable<ArrayBufferView>;
+        buffer = this._tileMaps[_layer]!._texture!._bufferView;
         if (buffer === null) {
             return;
         }
@@ -440,7 +438,6 @@ export class SpriteMap implements ISpriteMap {
         } else {
             p = pos;
         }
-   
 
         let _tx = (this.options.stageSize!.x) || 0;
 
@@ -448,7 +445,7 @@ export class SpriteMap implements ISpriteMap {
             let _p = p[i];
             _p.x = Math.floor(_p.x);
             _p.y = Math.floor(_p.y);
-            let id:number = (_p.x * 4) + (_p.y * (_tx * 4));
+            let id: number = (_p.x * 4) + (_p.y * (_tx * 4));
             (buffer as any)[id] = tile;
         }
 
