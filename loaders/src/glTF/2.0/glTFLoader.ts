@@ -440,8 +440,8 @@ export class GLTFLoader implements IGLTFLoader {
     private _checkExtensions(): void {
         if (this._gltf.extensionsRequired) {
             for (const name of this._gltf.extensionsRequired) {
-                const extension = this._extensions.find((extension) => extension.name === name);
-                if (!extension || !extension.enabled) {
+                const available = this._extensions.some((extension) => extension.name === name && extension.enabled);
+                if (available) {
                     throw new Error(`Require extension ${name} is not available`);
                 }
             }
