@@ -40,12 +40,6 @@ unset(_targetsDefined)
 unset(_targetsNotDefined)
 unset(_expectedTargets)
 
-message("hohohohohohohohohohoohohohohohohohohohohohohohohohooh")
-message(${CMAKE_CURRENT_SOURCE_DIR})
-message(${CMAKE_BINARY_DIR})
-message(${PROJECT_SOURCE_DIR})
-
-
 # Create imported target OpenSSL::SSL
 add_library(OpenSSL::SSL STATIC IMPORTED)
 
@@ -71,7 +65,7 @@ set_target_properties(OpenSSL::SSL PROPERTIES
 set_property(TARGET OpenSSL::Crypto APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
 set_target_properties(OpenSSL::Crypto PROPERTIES
   IMPORTED_LINK_INTERFACE_LANGUAGES_DEBUG "C"
-  IMPORTED_LOCATION_DEBUG "C:/Users/cedri/Dev/Babylon/temp3/BabylonNative/build/Android_arm64-v8a/Dependencies/openssl/libCrypto.a"
+  IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/../build/Android_${ANDROID_ABI}/Dependencies/openssl/libCrypto.a"
   )
 
 # This file does not depend on other imported targets which have
