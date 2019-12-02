@@ -2,7 +2,7 @@ import { Nullable } from "../../types";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { ArcRotateCameraInputsManager } from "../../Cameras/arcRotateCameraInputsManager";
-import { Tools } from '../../Misc';
+import { Tools } from '../../Misc/tools';
 
 // Module augmentation to abstract orientation inputs from camera.
 declare module "../../Cameras/arcRotateCameraInputsManager" {
