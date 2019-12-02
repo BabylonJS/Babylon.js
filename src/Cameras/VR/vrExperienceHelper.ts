@@ -65,6 +65,10 @@ export interface VRTeleportationOptions {
      * The speed of the animation in distance/sec, apply when animationMode is TELEPORTATIONMODE_CONSTANTSPEED. (default 20 units / sec)
      */
     teleportationSpeed?: number;
+    /**
+     * The easing function used in the animation or null for Linear. (default CircleEase)
+     */
+    easingFunction?: EasingFunction;
 }
 
 /**
@@ -408,6 +412,7 @@ export class VRExperienceHelper {
     private _teleportationMode: number = VRExperienceHelper.TELEPORTATIONMODE_CONSTANTTIME;
     private _teleportationTime: number = 122;
     private _teleportationSpeed: number = 20;
+    private _teleportationEasing: EasingFunction;
     private _rotationAllowed: boolean = true;
     private _teleportBackwardsVector = new Vector3(0, -1, -1);
     private _teleportationTarget: Mesh;
@@ -983,6 +988,7 @@ export class VRExperienceHelper {
         //create easing functions
         this._circleEase = new CircleEase();
         this._circleEase.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
+        this._teleportationEasing = this._circleEase;
 
         // Allow clicking in the vrDeviceOrientationCamera
         scene.onPointerObservable.add((e) => {
@@ -1491,6 +1497,9 @@ export class VRExperienceHelper {
             }
             if (vrTeleportationOptions.teleportationSpeed && vrTeleportationOptions.teleportationSpeed > 0) {
                 this._teleportationSpeed = vrTeleportationOptions.teleportationSpeed;
+            }
+            if (vrTeleportationOptions.easingFunction !== undefined) {
+                this._teleportationEasing = vrTeleportationOptions.easingFunction;
             }
 
             if (this._leftController != null) {
@@ -2017,7 +2026,7 @@ export class VRExperienceHelper {
         ];
 
         animationCameraTeleportation.setKeys(animationCameraTeleportationKeys);
-        animationCameraTeleportation.setEasingFunction(this._circleEase);
+        animationCameraTeleportation.setEasingFunction(this._teleportationEasing);
         this.currentVRCamera.animations.push(animationCameraTeleportation);
 
         this._postProcessMove.animations = [];

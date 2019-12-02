@@ -644,7 +644,7 @@ export class Vector2 {
 }
 
 /**
- * Classed used to store (x,y,z) vector representation
+ * Class used to store (x,y,z) vector representation
  * A Vector3 is the main object used in 3D geometry
  * It can represent etiher the coordinates of a point the space, either a direction
  * Reminder: js uses a left handed forward facing system
@@ -1308,10 +1308,10 @@ export class Vector3 {
 
     /**
      * Returns a new Vector3 set from the index "offset" of the given Float32Array
-     * This function is deprecated. Use FromArray instead
      * @param array defines the source array
      * @param offset defines the offset in the source array
      * @returns the new Vector3
+     * @deprecated Please use FromArray instead.
      */
     public static FromFloatArray(array: DeepImmutable<Float32Array>, offset?: number): Vector3 {
         return Vector3.FromArray(array, offset);
@@ -1331,10 +1331,10 @@ export class Vector3 {
 
     /**
      * Sets the given vector "result" with the element values from the index "offset" of the given Float32Array
-     * This function is deprecated.  Use FromArrayToRef instead.
      * @param array defines the source array
      * @param offset defines the offset in the source array
      * @param result defines the Vector3 where to store the result
+     * @deprecated Please use FromArrayToRef instead.
      */
     public static FromFloatArrayToRef(array: DeepImmutable<Float32Array>, offset: number, result: Vector3): void {
         return Vector3.FromArrayToRef(array, offset, result);

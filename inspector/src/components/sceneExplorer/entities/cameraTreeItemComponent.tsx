@@ -69,7 +69,7 @@ export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComp
                 <TreeItemLabelComponent label={this.props.camera.name} onClick={() => this.props.onClick()} icon={faCamera} color="green" />
                 {
                     (!scene.activeCameras || scene.activeCameras.length === 0) &&
-                    <div className="activeCamera icon" onClick={() => this.setActive()} title="Set as main camera">
+                    <div className="activeCamera icon" onClick={() => this.setActive()} title="Set as main camera and attach to controls">
                         {isActiveElement}
                     </div>
                 }
