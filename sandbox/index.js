@@ -48,6 +48,7 @@ if (BABYLON.Engine.isSupported()) {
     var htmlInputAnimation = document.getElementById("animationFiles");
     var btnInspector = document.getElementById("btnInspector");
     var errorZone = document.getElementById("errorZone");
+    var btnAnimationFiles = document.getElementById("animationFilesButton");
     var filesInput;
     var filesInputAnimation;
     var currentScene;
@@ -60,7 +61,7 @@ if (BABYLON.Engine.isSupported()) {
 
     btnInspector.classList.add("hidden");
     btnEnvironment.classList.add("hidden");
-    // htmlInputAnimation.classList.add("hidden");
+    btnAnimationFiles.classList.add("hidden");
 
     canvas.addEventListener("contextmenu", function(evt) {
         evt.preventDefault();
@@ -89,9 +90,7 @@ if (BABYLON.Engine.isSupported()) {
         engine.resize();
     });
 
-    var anyLoaded = function(sceneFile, babylonScene) {
-        engine.clearInternalTexturesCache();
-
+    var anyLoaded = function(babylonScene) {
         // Clear dropdown that contains animation names
         dropdownContent.innerHTML = "";
         animationBar.style.display = "none";
@@ -103,8 +102,8 @@ if (BABYLON.Engine.isSupported()) {
                 var group = babylonScene.animationGroups[index];
                 createDropdownLink(group, index);
             }
-            currentGroup = babylonScene.animationGroups[0];
-            currentGroupIndex = 0;
+            currentGroupIndex = babylonScene.animationGroups.length - 1;
+            currentGroup = babylonScene.animationGroups[currentGroupIndex];
             currentGroup.play(true);
         }
 
@@ -123,27 +122,30 @@ if (BABYLON.Engine.isSupported()) {
 
         // Clear the error
         errorZone.style.display = 'none';
-
-        btnInspector.classList.remove("hidden");
-        btnEnvironment.classList.remove("hidden");
-
-        currentScene = babylonScene;
-        document.title = "Babylon.js - " + sceneFile.name;
-        htmlInputAnimation.value = "";
     }
 
-    var assetContainerLoaded = function(sceneFile, babylonScene) {
-        anyLoaded(sceneFile, babylonScene);
+    var assetContainerLoaded = function (sceneFile, babylonScene) {
+        anyLoaded(babylonScene);
 
         // Fix for IE, otherwise it will change the default filter for files selection after first use
         htmlInputAnimation.value = "";
     }
 
-    var sceneLoaded = function(sceneFile, babylonScene) {
-        anyLoaded(sceneFile, babylonScene);
+    var sceneLoaded = function (sceneFile, babylonScene) {
+        engine.clearInternalTexturesCache();
+
+        anyLoaded(babylonScene);
 
         // Fix for IE, otherwise it will change the default filter for files selection after first use
         htmlInput.value = "";
+
+        currentScene = babylonScene;
+
+        document.title = "Babylon.js - " + sceneFile.name;
+
+        btnInspector.classList.remove("hidden");
+        btnEnvironment.classList.remove("hidden");
+        btnAnimationFiles.classList.remove("hidden");
 
         // Attach camera to canvas inputs
         if (!currentScene.activeCamera || currentScene.lights.length === 0) {

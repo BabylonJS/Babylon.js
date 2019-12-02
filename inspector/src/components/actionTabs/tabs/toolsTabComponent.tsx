@@ -23,6 +23,8 @@ import { IScreenshotSize } from 'babylonjs/Misc/interfaces/screenshotSize';
 import { NumericInputComponent } from '../lines/numericInputComponent';
 import { CheckBoxLineComponent } from '../lines/checkBoxLineComponent';
 import { TextLineComponent } from '../lines/textLineComponent';
+import { Scene } from 'babylonjs/scene';
+import { FileMultipleButtonLineComponent } from '../lines/fileMultipleButtonLineComponent';
 
 export class ToolsTabComponent extends PaneComponent {
     private _videoRecorder: Nullable<VideoRecorder>;
@@ -91,6 +93,27 @@ export class ToolsTabComponent extends PaneComponent {
             this.setState({ tag: "Record video" });
         });
         this.setState({ tag: "Stop recording" });
+    }
+
+    importAnimations(event: any) {
+
+        const scene = this.props.scene;
+
+        var reload = function (sceneFile: File) {
+            // If a scene file has been provided
+            if (sceneFile) {
+                var onSuccess = function (scene: Scene) {
+                    if (scene.animationGroups.length > 0) {
+                        let currentGroup = scene.animationGroups[0];
+                        currentGroup.play(true);
+                    }
+                };
+                (BABYLON.SceneLoader as any).ImportAnimationsAsync("file:", sceneFile, scene, null, onSuccess);
+            }
+        };
+        let filesInputAnimation = new BABYLON.FilesInput(scene.getEngine() as any, scene as any, () => { }, () => { }, () => { }, (remaining: number) => { }, () => { }, reload, () => { });
+
+        filesInputAnimation.loadFiles(event);
     }
 
     shouldExport(node: Node): boolean {
@@ -191,6 +214,9 @@ export class ToolsTabComponent extends PaneComponent {
                 <LineContainerComponent globalState={this.props.globalState} title="REPLAY">
                     <ButtonLineComponent label="Generate replay code" onClick={() => this.exportReplay()} />
                     <ButtonLineComponent label="Reset" onClick={() => this.resetReplay()} />
+                </LineContainerComponent>
+                <LineContainerComponent globalState={this.props.globalState} title="SCENE IMPORT">
+                    <FileMultipleButtonLineComponent label="Import Animations" accept="gltf" onClick={(evt: any) => this.importAnimations(evt)} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="SCENE EXPORT">
                     {

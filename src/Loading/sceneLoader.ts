@@ -5,7 +5,6 @@ import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
-import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { AnimationGroup } from "../Animations/animationGroup";
 import { _TimeToken } from "../Instrumentation/timeToken";
@@ -18,7 +17,8 @@ import { SceneLoaderFlags } from "./sceneLoaderFlags";
 import { IFileRequest } from "../Misc/fileRequest";
 import { WebRequest } from "../Misc/webRequest";
 import { RequestFileError, ReadFileError } from '../Misc/fileTools';
-import { Animatable } from '../Animations';
+import { Animation } from '../Animations';
+import { AbstractScene } from '..';
 
 /**
  * Class used to represent data loading progression
@@ -989,19 +989,18 @@ export class SceneLoader {
      * @param onProgress a callback with a progress event for each file being loaded
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      */
-    public static ImportAnimations(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, targetConverter: Nullable<(target: any) => Nullable<Node>> = null, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null): void {
+    public static ImportAnimations(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, targetConverter: Nullable<(target: any) => any> = null, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null): void {
         if (!scene) {
             Logger.Error("No scene available to load animations to");
             return;
         }
 
-        // Default target converter is searching node by name
-        let _targetConverter = targetConverter ? targetConverter : (target: any) => {
-            return scene.getNodeByName(target.name);
-        };
+        let _targetConverter = targetConverter ? targetConverter : this._defaultTargetConverter(scene);
 
         let onAssetContainerLoaded = (container: AssetContainer) => {
             SceneLoader.MergeAnimations(scene, container, _targetConverter);
+
+            container.dispose();
 
             if (onSuccess) {
                 onSuccess(scene);
@@ -1013,8 +1012,12 @@ export class SceneLoader {
             animatable.reset();
         }
         scene.stopAllAnimations();
-        scene.animationGroups.forEach(animationGroup => {
-            animationGroup.dispose();
+        scene.animationGroups.slice().forEach(animationGroup => {
+            // animationGroup.dispose();
+        });
+        let animatableObjects = this._getAllAnimatableObjects(scene);
+        animatableObjects.forEach(animatableObject => {
+            animatableObject.animations = new Array<Animation>();
         });
 
         this.LoadAssetContainer(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError);
@@ -1030,7 +1033,7 @@ export class SceneLoader {
      * @param onProgress a callback with a progress event for each file being loaded
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      */
-    public static ImportAnimationsAsync(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, targetConverter: Nullable<(target: any) => Nullable<Node>> = null, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null): Promise<Scene> {
+    public static ImportAnimationsAsync(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, targetConverter: Nullable<(target: any) => any> = null, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null): Promise<Scene> {
         return new Promise((resolve, reject) => {
             SceneLoader.ImportAnimations(rootUrl, sceneFilename, scene, targetConverter, (_scene: Scene) => {
                 resolve(_scene);
@@ -1047,25 +1050,15 @@ export class SceneLoader {
      * @param targetConverter defines a function used to convert animation targets from the asset container to the scene (default: search node by name)
      */
     public static MergeAnimations(scene: Scene, animationAssetContainer: AssetContainer, targetConverter: Nullable<(target: any) => any> = null): void {
-        // Default target converter is searching node by name
-        let _targetConverter = targetConverter ? targetConverter : (target: any) => {
-            return scene.getNodeByName(target.name);
-        };
 
-        // Concat nodes of all types from animation container
-        let animatedNodes = new Array<Node>();
-        animatedNodes = animatedNodes.concat(animationAssetContainer.meshes);
-        animatedNodes = animatedNodes.concat(animationAssetContainer.lights);
-        animatedNodes = animatedNodes.concat(animationAssetContainer.cameras);
-        animatedNodes = animatedNodes.concat(animationAssetContainer.transformNodes); // dummies
+        let _targetConverter = targetConverter ? targetConverter : this._defaultTargetConverter(scene);
 
-        // Copy node animations
-        animatedNodes.forEach(animatedNode => {
-            if (animatedNode.animations && animatedNode.animations.length > 0) {
-                let geometryNode: Node = _targetConverter(animatedNode);
-                if (geometryNode != null) {
-                    geometryNode.animations = animatedNode.animations;
-                }
+        // Copy node and bone animations
+        let animatableObjectsInAC = this._getAllAnimatableObjects(animationAssetContainer);
+        animatableObjectsInAC.forEach(animatableObjectInAC => {
+            let objectInScene = _targetConverter(animatableObjectInAC);
+            if (objectInScene != null) {
+                objectInScene.animations = animatableObjectInAC.animations;
             }
         });
 
@@ -1100,5 +1093,28 @@ export class SceneLoader {
                 scene.stopAnimation(animatable.target);
             }
         });
+    }
+
+    /**
+     * Default target converter is searching bones and nodes by name
+     * @param scene 
+     */
+    private static _defaultTargetConverter(scene: Scene): (target: any) => any {
+        return (target: any) => { return scene.getBoneByName(target.name) || scene.getNodeByName(target.name) };
+    };
+
+    /**
+     * Return all objects that can hold an animations array
+     * @param abstractScene 
+     */
+    private static _getAllAnimatableObjects(abstractScene: AbstractScene) {
+        let animatableObjects = new Array<any>();
+        animatableObjects = animatableObjects.concat(abstractScene.meshes);
+        animatableObjects = animatableObjects.concat(abstractScene.lights);
+        animatableObjects = animatableObjects.concat(abstractScene.cameras);
+        animatableObjects = animatableObjects.concat(abstractScene.transformNodes); // dummies
+        abstractScene.skeletons.forEach(skeleton => animatableObjects = animatableObjects.concat(skeleton.bones));
+        animatableObjects = animatableObjects.filter(animatableObject => animatableObject.animations);
+        return animatableObjects;
     }
 }
