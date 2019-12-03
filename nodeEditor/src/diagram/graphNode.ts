@@ -201,6 +201,11 @@ export class GraphNode {
             this._header.innerHTML = this._displayManager.getHeaderText(this.block);
             this._displayManager.updatePreviewContent(this.block, this._content);
             this._visual.style.background = this._displayManager.getBackgroundColor(this.block);
+            let additionalClass = this._displayManager.getHeaderClass(this.block);
+            if (additionalClass) {
+                this._header.classList.value = "header";
+                this._header.classList.add(additionalClass);
+            }
         } else {
             this._header.innerHTML = this.block.name;
         }
@@ -215,6 +220,7 @@ export class GraphNode {
 
         this._comments.innerHTML = this.block.comments || "";
         this._comments.title = this.block.comments || "";
+
     }
 
     private _appendConnection(connectionPoint: NodeMaterialConnectionPoint, root: HTMLDivElement, displayManager: Nullable<IDisplayManager>) {
@@ -325,13 +331,6 @@ export class GraphNode {
         this._header.classList.add("header");
 
         this._visual.appendChild(this._header);      
-
-        if (this._displayManager) {
-            let additionalClass = this._displayManager.getHeaderClass(this.block);
-            if (additionalClass) {
-                this._header.classList.add(additionalClass);
-            }
-        }
 
         this._connections = root.ownerDocument!.createElement("div");
         this._connections.classList.add("connections");
