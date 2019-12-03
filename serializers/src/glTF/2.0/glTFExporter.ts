@@ -220,9 +220,11 @@ export class _Exporter {
                 if (this._glTF.extensionsUsed == null) {
                     this._glTF.extensionsUsed = [];
                 }
+                
                 if (this._glTF.extensionsUsed.indexOf(extension.name) === -1) {
                     this._glTF.extensionsUsed.push(extension.name);
                 }
+
                 if (extension.required) {
                     if (this._glTF.extensionsRequired == null) {
                         this._glTF.extensionsRequired = [];
@@ -231,6 +233,7 @@ export class _Exporter {
                         this._glTF.extensionsRequired.push(extension.name);
                     }
                 }
+
                 if (this._glTF.extensions == null) {
                     this._glTF.extensions = {};
                 }

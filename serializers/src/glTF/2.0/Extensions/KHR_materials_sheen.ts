@@ -29,18 +29,16 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
     public required = false;
 
     /** Reference to the glTF exporter */
-    private _exporter: _Exporter;
     private _textureInfo: ITextureInfo;
     private _exportedTexture: Nullable<BaseTexture> = null;
 
     private _wasUsed = false;
 
     constructor(exporter: _Exporter) {
-        this._exporter = exporter;
     }
 
     public dispose() {
-        delete this._exporter;
+        // Do nothing
     }
 
     /** @hidden */
