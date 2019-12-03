@@ -81,9 +81,9 @@ export interface IInspectorOptions {
      */
     inspectorURL?: string;
     /**
-     * Optional initial tab (default to DebugLayer.ACTION_TAB.PROPERTIES)
+     * Optional initial tab (default to DebugLayerTab.PROPERTIES)
      */
-    initialTab?: string;
+    initialTab?: DebugLayerTab.PROPERTIES;
 }
 
 declare module "../scene" {
@@ -113,6 +113,32 @@ Object.defineProperty(Scene.prototype, "debugLayer", {
 });
 
 /**
+ * Enum of inspector action tab
+ */
+export enum DebugLayerTab {
+    /**
+     * Properties tag (default)
+     */
+    PROPERTIES = 0,
+    /**
+     * Debug tab
+     */
+    DEBUG = 1,
+    /**
+     * Statistics tab
+     */
+    STATISTICS = 2,
+    /**
+     * Tools tab
+     */
+    TOOLS = 3,
+    /**
+     * Settings tab
+     */
+    SETTINGS = 4
+}
+
+/**
  * The debug layer (aka Inspector) is the go to tool in order to better understand
  * what is happening in your scene
  * @see http://doc.babylonjs.com/features/playground_debuglayer
@@ -124,17 +150,6 @@ export class DebugLayer {
      * @ignoreNaming
      */
     public static InspectorURL = `https://unpkg.com/babylonjs-inspector@${Engine.Version}/babylon.inspector.bundle.js`;
-
-    /**
-     * Action tab kinds
-     */
-    public static ACTION_TAB = {
-        PROPERTIES: "properties",
-        DEBUG: "debug",
-        STATISTICS: "statistics",
-        TOOLS: "tools",
-        SETTINGS: "settings"
-    };
 
     private _scene: Scene;
 

@@ -2,6 +2,7 @@ import * as React from "react";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
 import { Scene } from "babylonjs/scene";
+import { DebugLayerTab } from "babylonjs/Debug/debugLayer";
 import { TabsComponent } from "./tabsComponent";
 import { faFileAlt, faWrench, faBug, faChartBar, faCog } from '@fortawesome/free-solid-svg-icons';
 import { StatisticsTabComponent } from "./tabs/statisticsTabComponent";
@@ -25,18 +26,8 @@ interface IActionTabsComponentProps {
     onPopup?: () => void,
     onClose?: () => void,
     globalState?: GlobalState,
-    initialTab?: string
+    initialTab?: DebugLayerTab
 }
-
-const ACTION_TAB_INDEX: {
-    [k: string]: number
-} = {
-    PROPERTIES: 0,
-    DEBUG: 1,
-    STATISTICS: 2,
-    TOOLS: 3,
-    SETTINGS: 4
-};
 
 export class ActionTabsComponent extends React.Component<IActionTabsComponentProps, { selectedEntity: any, selectedIndex: number }> {
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
@@ -46,19 +37,15 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
     constructor(props: IActionTabsComponentProps) {
         super(props);
 
-        let initialIndex = ACTION_TAB_INDEX.PROPERTIES;
-        if (props.initialTab !== undefined) {
-            let index = ACTION_TAB_INDEX[props.initialTab.toUpperCase()];
-            if (index !== undefined) {
-                initialIndex = index;
-            }
-        }
+        let initialIndex = props.initialTab === undefined 
+            ? DebugLayerTab.PROPERTIES
+            : props.initialTab
 
         if (this.props.globalState) {
             const validationResutls = this.props.globalState.validationResults;
             if (validationResutls) {
                 if (validationResutls.issues.numErrors || validationResutls.issues.numWarnings) {
-                    initialIndex = ACTION_TAB_INDEX.TOOLS;
+                    initialIndex = DebugLayerTab.TOOLS;
                 }
             }
         }
@@ -70,7 +57,7 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
     componentDidMount() {
         if (this.props.globalState) {
             this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add((entity) => {
-                this.setState({ selectedEntity: entity, selectedIndex: ACTION_TAB_INDEX.PROPERTIES });
+                this.setState({ selectedEntity: entity, selectedIndex: DebugLayerTab.PROPERTIES });
             });
 
             this._onTabChangedObserver = this.props.globalState.onTabChangedObservable.add(index => {
