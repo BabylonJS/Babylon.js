@@ -71990,12 +71990,16 @@ declare module BABYLON.GLTF2.Exporter {
          */
         postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;
         /**
-         * Defint this method to return additional textures to export from a material
+         * Define this method to return additional textures to export from a material
          * @param material glTF material
          * @param babylonMaterial BabylonJS material
          * @returns List of textures
          */
         postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[];
+        /** Gets a boolean indicating that this extension was used */
+        wasUsed: boolean;
+        /** Gets a boolean indicating that this extension is required for the file to work */
+        required: boolean;
         /**
          * Called after the exporter state changes to EXPORTING
          */
@@ -72939,9 +72943,12 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
         /** Defines whether this extension is required */
         required: boolean;
         /** Reference to the glTF exporter */
-        private _exporter;
+        private _isUsed;
         constructor(exporter: _Exporter);
         dispose(): void;
+        /** @hidden */
+        readonly wasUsed: boolean;
+        postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void;
         preExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Texture>;
         /**
          * Transform the babylon texture by the offset, rotation and scale parameters using a procedural texture
@@ -72973,6 +72980,8 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
         /** @hidden */
         dispose(): void;
         /** @hidden */
+        readonly wasUsed: boolean;
+        /** @hidden */
         onExporting(): void;
         /**
          * Define this method to modify the default behavior when exporting a node
@@ -72996,14 +73005,13 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
         /** Defines whether this extension is required */
         required: boolean;
         /** Reference to the glTF exporter */
-        private _exporter;
         private _textureInfo;
         private _exportedTexture;
         private _wasUsed;
         constructor(exporter: _Exporter);
         dispose(): void;
         /** @hidden */
-        onExporting(): void;
+        readonly wasUsed: boolean;
         postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void;
         postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[];
         postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;
