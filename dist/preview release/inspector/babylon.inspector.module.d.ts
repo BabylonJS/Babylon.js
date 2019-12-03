@@ -1811,6 +1811,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/settingsTabCompon
 declare module "babylonjs-inspector/components/actionTabs/actionTabsComponent" {
     import * as React from "react";
     import { Scene } from "babylonjs/scene";
+    import { DebugLayerTab } from "babylonjs/Debug/debugLayer";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     interface IActionTabsComponentProps {
         scene?: Scene;
@@ -1822,6 +1823,7 @@ declare module "babylonjs-inspector/components/actionTabs/actionTabsComponent" {
         onPopup?: () => void;
         onClose?: () => void;
         globalState?: GlobalState;
+        initialTab?: DebugLayerTab;
     }
     export class ActionTabsComponent extends React.Component<IActionTabsComponentProps, {
         selectedEntity: any;
@@ -3743,6 +3745,7 @@ declare module INSPECTOR {
         onPopup?: () => void;
         onClose?: () => void;
         globalState?: GlobalState;
+        initialTab?: BABYLON.DebugLayerTab;
     }
     export class ActionTabsComponent extends React.Component<IActionTabsComponentProps, {
         selectedEntity: any;

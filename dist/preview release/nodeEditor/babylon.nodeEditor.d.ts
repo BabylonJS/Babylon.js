@@ -106,6 +106,7 @@ declare module NODEEDITOR {
         width: number;
         height: number;
         constructor(candidate: BABYLON.Nullable<HTMLDivElement>, canvas: GraphCanvasComponent);
+        syncNode(node: GraphNode): void;
         cleanAccumulation(): void;
         private _onDown;
         private _onUp;
@@ -143,7 +144,7 @@ declare module NODEEDITOR {
         private _hostCanvas;
         private _graphCanvas;
         private _selectionContainer;
-        private _groupContainer;
+        private _frameContainer;
         private _svgCanvas;
         private _rootContainer;
         private _nodes;
@@ -183,7 +184,7 @@ declare module NODEEDITOR {
         readonly canvasContainer: HTMLDivElement;
         readonly svgCanvas: HTMLElement;
         readonly selectionContainer: HTMLDivElement;
-        readonly groupContainer: HTMLDivElement;
+        readonly frameContainer: HTMLDivElement;
         constructor(props: IGraphCanvasComponentProps);
         getGridPosition(position: number): number;
         getGridPositionCeil(position: number): number;
@@ -902,7 +903,7 @@ declare module NODEEDITOR {
         private _globalState;
         private _onSelectionChangedObserver;
         private _onSelectionBoxMovedObserver;
-        private _onGroupAboutToMoveObserver;
+        private _onFrameCreatedObserver;
         private _onUpdateRequiredObserver;
         private _ownerCanvas;
         private _isSelected;
@@ -918,8 +919,10 @@ declare module NODEEDITOR {
         readonly name: string;
         isSelected: boolean;
         constructor(block: BABYLON.NodeMaterialBlock, globalState: GlobalState);
+        isOverlappingFrame(frame: GraphFrame): boolean;
         getPortForConnectionPoint(point: BABYLON.NodeMaterialConnectionPoint): BABYLON.Nullable<NodePort>;
         getLinksForConnectionPoint(point: BABYLON.NodeMaterialConnectionPoint): NodeLink[];
+        private _refreshFrames;
         private _refreshLinks;
         refresh(): void;
         private _appendConnection;
@@ -954,7 +957,7 @@ declare module NODEEDITOR {
         onAnimationCommandActivated: BABYLON.Observable<void>;
         onCandidateLinkMoved: BABYLON.Observable<BABYLON.Nullable<BABYLON.Vector2>>;
         onSelectionBoxMoved: BABYLON.Observable<ClientRect | DOMRect>;
-        onGroupAboutToMove: BABYLON.Observable<GraphFrame>;
+        onFrameCreated: BABYLON.Observable<GraphFrame>;
         onCandidatePortSelected: BABYLON.Observable<BABYLON.Nullable<NodePort>>;
         onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => GraphNode;
         onGridSizeChanged: BABYLON.Observable<void>;

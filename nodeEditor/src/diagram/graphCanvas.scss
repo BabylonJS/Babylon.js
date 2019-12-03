@@ -32,7 +32,7 @@
         grid-template-rows: 100%;          
         grid-template-columns: 100%;          
 
-        #group-container {
+        #frame-container {
             overflow: visible;   
             grid-row: 1;
             grid-column: 1;
@@ -41,7 +41,7 @@
             height: 100%;             
         }
 
-        .group-box {
+        .frame-box {
             position: absolute;
             background: rgba(72, 72, 72, 0.7);
             display: grid;
@@ -50,7 +50,7 @@
             border: transparent solid 4px;
             box-sizing: border-box;
 
-            .group-box-header {
+            .frame-box-header {
                 grid-row: 1;
                 grid-column: 1;
                 background: rgba(72, 72, 72, 1);    
@@ -67,8 +67,9 @@
 
             &.selected {
                 border-color: white;
+                z-index: 1;
 
-                .group-box-header {
+                .frame-box-header {
                     border-color: white !important;
                 }
             }
@@ -82,6 +83,7 @@
             height: 100%;  
             overflow: visible; 
             pointer-events: none;
+            z-index: 1;
             
             .link {
                 stroke-width: 4px;    
@@ -113,7 +115,7 @@
             height: 100%;                  
 
             .visual {
-                z-index: 2;
+                z-index: 3;
                 width: 200px;
                 position: absolute;
                 left: 0;
@@ -146,7 +148,7 @@
 
                     transition: border-color 100ms;
 
-                    border: 4px solid transparent;
+                    border: 4px solid black;
                     border-radius: 12px;
                 }
 

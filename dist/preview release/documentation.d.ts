@@ -44171,6 +44171,10 @@ declare module BABYLON {
          * Optional URL to get the inspector script from (by default it uses the babylonjs CDN).
          */
         inspectorURL?: string;
+        /**
+         * Optional initial tab (default to DebugLayerTab.Properties)
+         */
+        initialTab?: DebugLayerTab.Properties;
     }
         interface Scene {
             /**
@@ -44184,6 +44188,31 @@ declare module BABYLON {
              */
             debugLayer: DebugLayer;
         }
+    /**
+     * Enum of inspector action tab
+     */
+    export enum DebugLayerTab {
+        /**
+         * Properties tag (default)
+         */
+        Properties = 0,
+        /**
+         * Debug tab
+         */
+        Debug = 1,
+        /**
+         * Statistics tab
+         */
+        Statistics = 2,
+        /**
+         * Tools tab
+         */
+        Tools = 3,
+        /**
+         * Settings tab
+         */
+        Settings = 4
+    }
     /**
      * The debug layer (aka Inspector) is the go to tool in order to better understand
      * what is happening in your scene
@@ -72943,7 +72972,7 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
         /** Defines whether this extension is required */
         required: boolean;
         /** Reference to the glTF exporter */
-        private _isUsed;
+        private _wasUsed;
         constructor(exporter: _Exporter);
         dispose(): void;
         /** @hidden */

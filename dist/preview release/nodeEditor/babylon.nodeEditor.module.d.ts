@@ -178,6 +178,7 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         width: number;
         height: number;
         constructor(candidate: Nullable<HTMLDivElement>, canvas: GraphCanvasComponent);
+        syncNode(node: GraphNode): void;
         cleanAccumulation(): void;
         private _onDown;
         private _onUp;
@@ -227,7 +228,7 @@ declare module "babylonjs-node-editor/diagram/graphCanvas" {
         private _hostCanvas;
         private _graphCanvas;
         private _selectionContainer;
-        private _groupContainer;
+        private _frameContainer;
         private _svgCanvas;
         private _rootContainer;
         private _nodes;
@@ -267,7 +268,7 @@ declare module "babylonjs-node-editor/diagram/graphCanvas" {
         readonly canvasContainer: HTMLDivElement;
         readonly svgCanvas: HTMLElement;
         readonly selectionContainer: HTMLDivElement;
-        readonly groupContainer: HTMLDivElement;
+        readonly frameContainer: HTMLDivElement;
         constructor(props: IGraphCanvasComponentProps);
         getGridPosition(position: number): number;
         getGridPositionCeil(position: number): number;
@@ -1084,6 +1085,7 @@ declare module "babylonjs-node-editor/diagram/graphNode" {
     import { GraphCanvasComponent } from "babylonjs-node-editor/diagram/graphCanvas";
     import { NodeLink } from "babylonjs-node-editor/diagram/nodeLink";
     import { NodePort } from "babylonjs-node-editor/diagram/nodePort";
+    import { GraphFrame } from "babylonjs-node-editor/diagram/graphFrame";
     export class GraphNode {
         block: NodeMaterialBlock;
         private _visual;
@@ -1105,7 +1107,7 @@ declare module "babylonjs-node-editor/diagram/graphNode" {
         private _globalState;
         private _onSelectionChangedObserver;
         private _onSelectionBoxMovedObserver;
-        private _onGroupAboutToMoveObserver;
+        private _onFrameCreatedObserver;
         private _onUpdateRequiredObserver;
         private _ownerCanvas;
         private _isSelected;
@@ -1121,8 +1123,10 @@ declare module "babylonjs-node-editor/diagram/graphNode" {
         readonly name: string;
         isSelected: boolean;
         constructor(block: NodeMaterialBlock, globalState: GlobalState);
+        isOverlappingFrame(frame: GraphFrame): boolean;
         getPortForConnectionPoint(point: NodeMaterialConnectionPoint): Nullable<NodePort>;
         getLinksForConnectionPoint(point: NodeMaterialConnectionPoint): NodeLink[];
+        private _refreshFrames;
         private _refreshLinks;
         refresh(): void;
         private _appendConnection;
@@ -1169,7 +1173,7 @@ declare module "babylonjs-node-editor/globalState" {
         onAnimationCommandActivated: Observable<void>;
         onCandidateLinkMoved: Observable<Nullable<Vector2>>;
         onSelectionBoxMoved: Observable<ClientRect | DOMRect>;
-        onGroupAboutToMove: Observable<GraphFrame>;
+        onFrameCreated: Observable<GraphFrame>;
         onCandidatePortSelected: Observable<Nullable<NodePort>>;
         onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
         onGridSizeChanged: Observable<void>;
@@ -1527,6 +1531,7 @@ declare module NODEEDITOR {
         width: number;
         height: number;
         constructor(candidate: BABYLON.Nullable<HTMLDivElement>, canvas: GraphCanvasComponent);
+        syncNode(node: GraphNode): void;
         cleanAccumulation(): void;
         private _onDown;
         private _onUp;
@@ -1564,7 +1569,7 @@ declare module NODEEDITOR {
         private _hostCanvas;
         private _graphCanvas;
         private _selectionContainer;
-        private _groupContainer;
+        private _frameContainer;
         private _svgCanvas;
         private _rootContainer;
         private _nodes;
@@ -1604,7 +1609,7 @@ declare module NODEEDITOR {
         readonly canvasContainer: HTMLDivElement;
         readonly svgCanvas: HTMLElement;
         readonly selectionContainer: HTMLDivElement;
-        readonly groupContainer: HTMLDivElement;
+        readonly frameContainer: HTMLDivElement;
         constructor(props: IGraphCanvasComponentProps);
         getGridPosition(position: number): number;
         getGridPositionCeil(position: number): number;
@@ -2323,7 +2328,7 @@ declare module NODEEDITOR {
         private _globalState;
         private _onSelectionChangedObserver;
         private _onSelectionBoxMovedObserver;
-        private _onGroupAboutToMoveObserver;
+        private _onFrameCreatedObserver;
         private _onUpdateRequiredObserver;
         private _ownerCanvas;
         private _isSelected;
@@ -2339,8 +2344,10 @@ declare module NODEEDITOR {
         readonly name: string;
         isSelected: boolean;
         constructor(block: BABYLON.NodeMaterialBlock, globalState: GlobalState);
+        isOverlappingFrame(frame: GraphFrame): boolean;
         getPortForConnectionPoint(point: BABYLON.NodeMaterialConnectionPoint): BABYLON.Nullable<NodePort>;
         getLinksForConnectionPoint(point: BABYLON.NodeMaterialConnectionPoint): NodeLink[];
+        private _refreshFrames;
         private _refreshLinks;
         refresh(): void;
         private _appendConnection;
@@ -2375,7 +2382,7 @@ declare module NODEEDITOR {
         onAnimationCommandActivated: BABYLON.Observable<void>;
         onCandidateLinkMoved: BABYLON.Observable<BABYLON.Nullable<BABYLON.Vector2>>;
         onSelectionBoxMoved: BABYLON.Observable<ClientRect | DOMRect>;
-        onGroupAboutToMove: BABYLON.Observable<GraphFrame>;
+        onFrameCreated: BABYLON.Observable<GraphFrame>;
         onCandidatePortSelected: BABYLON.Observable<BABYLON.Nullable<NodePort>>;
         onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => GraphNode;
         onGridSizeChanged: BABYLON.Observable<void>;
