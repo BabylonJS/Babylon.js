@@ -1063,7 +1063,7 @@ export class SceneLoader {
         });
 
         // Copy animation groups
-        animationAssetContainer.animationGroups.forEach(animationGroupInAC => {
+        animationAssetContainer.animationGroups.slice().forEach(animationGroupInAC => {
             // Dispose animation groups with same name as one being loaded
             scene.animationGroups.forEach(animationGroup => {
                 if (animationGroup.name == animationGroupInAC.name) {
@@ -1081,7 +1081,7 @@ export class SceneLoader {
         });
 
         // Copy animatables
-        scene.animatables.forEach(animatable => {
+        scene.animatables.slice().forEach(animatable => {
             let target = _targetConverter(animatable.target);
 
             // If the animatable has just been loaded
