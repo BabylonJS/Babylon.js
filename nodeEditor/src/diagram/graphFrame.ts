@@ -108,13 +108,13 @@ export class GraphFrame {
 
     public constructor(candidate: Nullable<HTMLDivElement>, canvas: GraphCanvasComponent) {
         this._ownerCanvas = canvas;
-        const root = canvas.groupContainer;
+        const root = canvas.frameContainer;
         this.element = root.ownerDocument!.createElement("div");        
-        this.element.classList.add("group-box");
+        this.element.classList.add("frame-box");
         root.appendChild(this.element);
 
         this._headerElement = root.ownerDocument!.createElement("div");  
-        this._headerElement.classList.add("group-box-header");
+        this._headerElement.classList.add("frame-box-header");
         this.element.appendChild(this._headerElement);
 
         this.name = "Frame";
@@ -139,7 +139,27 @@ export class GraphFrame {
             } else {
                 this.element.classList.remove("selected");
             }
-        });        
+        });  
+                
+        // Get nodes
+        this._nodes = [];
+        this._ownerCanvas.globalState.onFrameCreated.notifyObservers(this);
+    }
+
+    public syncNode(node: GraphNode) {
+        if (node.isOverlappingFrame(this)) {
+            let index = this.nodes.indexOf(node);
+
+            if (index === -1) {
+                this.nodes.push(node);
+            }
+        } else {
+            let index = this.nodes.indexOf(node);
+
+            if (index > -1) {
+                this.nodes.splice(index, 1);
+            }
+        }
     }
 
     public cleanAccumulation() {
@@ -155,10 +175,6 @@ export class GraphFrame {
         
         this._headerElement.setPointerCapture(evt.pointerId);
         this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
-
-        // Get nodes
-        this._nodes = [];
-        this._ownerCanvas.globalState.onGroupAboutToMove.notifyObservers(this);
     }    
 
     private _onUp(evt: PointerEvent) {
