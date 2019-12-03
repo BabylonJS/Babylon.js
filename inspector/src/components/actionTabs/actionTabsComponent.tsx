@@ -38,14 +38,14 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
         super(props);
 
         let initialIndex = props.initialTab === undefined 
-            ? DebugLayerTab.PROPERTIES
+            ? DebugLayerTab.Properties
             : props.initialTab
 
         if (this.props.globalState) {
             const validationResutls = this.props.globalState.validationResults;
             if (validationResutls) {
                 if (validationResutls.issues.numErrors || validationResutls.issues.numWarnings) {
-                    initialIndex = DebugLayerTab.TOOLS;
+                    initialIndex = DebugLayerTab.Tools;
                 }
             }
         }
@@ -57,7 +57,7 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
     componentDidMount() {
         if (this.props.globalState) {
             this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add((entity) => {
-                this.setState({ selectedEntity: entity, selectedIndex: DebugLayerTab.PROPERTIES });
+                this.setState({ selectedEntity: entity, selectedIndex: DebugLayerTab.Properties });
             });
 
             this._onTabChangedObserver = this.props.globalState.onTabChangedObservable.add(index => {
