@@ -81,9 +81,9 @@ export interface IInspectorOptions {
      */
     inspectorURL?: string;
     /**
-     * Optional initial tab (default to DebugLayerTab.PROPERTIES)
+     * Optional initial tab (default to DebugLayerTab.Properties)
      */
-    initialTab?: DebugLayerTab.PROPERTIES;
+    initialTab?: DebugLayerTab.Properties;
 }
 
 declare module "../scene" {
@@ -119,23 +119,23 @@ export enum DebugLayerTab {
     /**
      * Properties tag (default)
      */
-    PROPERTIES = 0,
+    Properties = 0,
     /**
      * Debug tab
      */
-    DEBUG = 1,
+    Debug = 1,
     /**
      * Statistics tab
      */
-    STATISTICS = 2,
+    Statistics = 2,
     /**
      * Tools tab
      */
-    TOOLS = 3,
+    Tools = 3,
     /**
      * Settings tab
      */
-    SETTINGS = 4
+    Settings = 4
 }
 
 /**
