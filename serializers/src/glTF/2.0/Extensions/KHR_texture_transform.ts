@@ -38,7 +38,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
     public required = false;
 
     /** Reference to the glTF exporter */
-    private _isUsed = true;
+    private _isUsed = false;
 
     constructor(exporter: _Exporter) {
     }
