@@ -63,12 +63,18 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
     postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;
 
     /**
-     * Defint this method to return additional textures to export from a material
+     * Define this method to return additional textures to export from a material
      * @param material glTF material
      * @param babylonMaterial BabylonJS material
      * @returns List of textures
      */
     postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[];
+
+    /** Gets a boolean indicating that this extension was used */
+    wasUsed: boolean;
+
+    /** Gets a boolean indicating that this extension is required for the file to work */
+    required: boolean;
 
     /**
      * Called after the exporter state changes to EXPORTING
