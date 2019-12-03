@@ -98,7 +98,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -712,11 +712,14 @@ var KHR_materials_sheen = /** @class */ (function () {
         this.enabled = true;
         /** Defines whether this extension is required */
         this.required = false;
-        this._exportedTexture = null;
+        /** Reference to the glTF exporter */
+        this._textureInfos = [];
+        this._exportedTextures = [];
         this._wasUsed = false;
     }
     KHR_materials_sheen.prototype.dispose = function () {
-        // Do nothing
+        this._textureInfos = [];
+        this._exportedTextures = [];
     };
     Object.defineProperty(KHR_materials_sheen.prototype, "wasUsed", {
         /** @hidden */
@@ -726,15 +729,23 @@ var KHR_materials_sheen = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    KHR_materials_sheen.prototype._getTextureIndex = function (babylonTexture) {
+        var textureIndex = this._exportedTextures.indexOf(babylonTexture);
+        if (textureIndex === -1 && babylonTexture.reservedDataStore) {
+            textureIndex = this._exportedTextures.indexOf(babylonTexture.reservedDataStore.source);
+        }
+        return textureIndex;
+    };
     KHR_materials_sheen.prototype.postExportTexture = function (context, textureInfo, babylonTexture) {
-        if (babylonTexture === this._exportedTexture || babylonTexture.reservedDataStore && babylonTexture.reservedDataStore.source === this._exportedTexture) {
-            this._textureInfo = textureInfo;
+        var textureIndex = this._getTextureIndex(babylonTexture);
+        if (textureIndex > -1) {
+            this._textureInfos[textureIndex] = textureInfo;
         }
     };
     KHR_materials_sheen.prototype.postExportMaterialAdditionalTextures = function (context, node, babylonMaterial) {
         if (babylonMaterial instanceof babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["PBRMaterial"]) {
             if (babylonMaterial.sheen.isEnabled && babylonMaterial.sheen.texture) {
-                this._exportedTexture = babylonMaterial.sheen.texture;
+                this._exportedTextures.push(babylonMaterial.sheen.texture);
                 return [babylonMaterial.sheen.texture];
             }
         }
@@ -756,8 +767,11 @@ var KHR_materials_sheen = /** @class */ (function () {
                     colorFactor: babylonMaterial.sheen.color.asArray(),
                     intensityFactor: babylonMaterial.sheen.intensity
                 };
-                if (_this._textureInfo) {
-                    sheenInfo.colorIntensityTexture = _this._textureInfo;
+                if (babylonMaterial.sheen.texture) {
+                    var textureIndex = _this._getTextureIndex(babylonMaterial.sheen.texture);
+                    if (textureIndex > -1) {
+                        sheenInfo.colorIntensityTexture = _this._textureInfos[textureIndex];
+                    }
                 }
                 node.extensions[NAME] = sheenInfo;
             }
@@ -804,7 +818,7 @@ var KHR_texture_transform = /** @class */ (function () {
         /** Defines whether this extension is required */
         this.required = false;
         /** Reference to the glTF exporter */
-        this._isUsed = true;
+        this._isUsed = false;
     }
     KHR_texture_transform.prototype.dispose = function () {
         for (var _i = 0, _a = this._recordedTextures; _i < _a.length; _i++) {
