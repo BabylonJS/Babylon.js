@@ -75,7 +75,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
                 }, timeout);
             }
 
-            if (typeof (<any>DeviceOrientationEvent).requestPermission === 'function') {
+            if (typeof(DeviceOrientationEvent) !== "undefined" && typeof (<any>DeviceOrientationEvent).requestPermission === 'function') {
                 (<any>DeviceOrientationEvent).requestPermission()
                     .then((response: string) => {
                         if (response == 'granted') {
@@ -143,7 +143,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
                 //So this is needed.
                 this._orientationChanged();
             };
-            if (typeof (<any>DeviceOrientationEvent).requestPermission === 'function') {
+            if (typeof(DeviceOrientationEvent) !== "undefined" && typeof (<any>DeviceOrientationEvent).requestPermission === 'function') {
                 (<any>DeviceOrientationEvent).requestPermission()
                     .then((response: string) => {
                         if (response === 'granted') {
