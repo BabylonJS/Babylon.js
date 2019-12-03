@@ -29,8 +29,8 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
     public required = false;
 
     /** Reference to the glTF exporter */
-    private _textureInfo: ITextureInfo;
-    private _exportedTexture: Nullable<BaseTexture> = null;
+    private _textureInfos: ITextureInfo[] = [];
+    private _exportedTextures: Nullable<BaseTexture>[] = [];
 
     private _wasUsed = false;
 
@@ -38,7 +38,8 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
     }
 
     public dispose() {
-        // Do nothing
+       this._textureInfos = [];
+       this._exportedTextures = [];
     }
 
     /** @hidden */
@@ -46,16 +47,28 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
         return this._wasUsed;
     }
 
+    private _getTextureIndex(babylonTexture: BaseTexture) {
+        let textureIndex = this._exportedTextures.indexOf(babylonTexture);
+
+        if (textureIndex === -1 && babylonTexture.reservedDataStore) {
+            textureIndex = this._exportedTextures.indexOf(babylonTexture.reservedDataStore.source);
+        }
+
+        return textureIndex;
+    }
+
     public postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void {
-        if (babylonTexture === this._exportedTexture || babylonTexture.reservedDataStore && babylonTexture.reservedDataStore.source === this._exportedTexture) {
-            this._textureInfo = textureInfo;
+        let textureIndex = this._getTextureIndex(babylonTexture);
+
+        if (textureIndex > -1) {
+            this._textureInfos[textureIndex] = textureInfo;
         }
     }
 
     public postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[] {
         if (babylonMaterial instanceof PBRMaterial) {
             if (babylonMaterial.sheen.isEnabled && babylonMaterial.sheen.texture) {
-                this._exportedTexture = babylonMaterial.sheen.texture;
+                this._exportedTextures.push(babylonMaterial.sheen.texture);
                 return [babylonMaterial.sheen.texture];
             }
         }
@@ -81,8 +94,12 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
                     intensityFactor: babylonMaterial.sheen.intensity
                 };
 
-                if (this._textureInfo) {
-                    sheenInfo.colorIntensityTexture = this._textureInfo;
+                if (babylonMaterial.sheen.texture) {
+                    let textureIndex = this._getTextureIndex(babylonMaterial.sheen.texture);
+
+                    if (textureIndex > -1) {
+                        sheenInfo.colorIntensityTexture = this._textureInfos[textureIndex] ;
+                    }
                 }
 
                 node.extensions[NAME] = sheenInfo;
