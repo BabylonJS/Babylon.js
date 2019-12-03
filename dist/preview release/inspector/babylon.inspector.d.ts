@@ -1414,6 +1414,7 @@ declare module INSPECTOR {
         onPopup?: () => void;
         onClose?: () => void;
         globalState?: GlobalState;
+        initialTab?: BABYLON.DebugLayerTab;
     }
     export class ActionTabsComponent extends React.Component<IActionTabsComponentProps, {
         selectedEntity: any;

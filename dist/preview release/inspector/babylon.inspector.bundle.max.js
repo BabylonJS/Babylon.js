@@ -40546,16 +40546,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _tabsComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./tabsComponent */ "./components/actionTabs/tabsComponent.tsx");
-/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
-/* harmony import */ var _tabs_statisticsTabComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./tabs/statisticsTabComponent */ "./components/actionTabs/tabs/statisticsTabComponent.tsx");
-/* harmony import */ var _tabs_debugTabComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./tabs/debugTabComponent */ "./components/actionTabs/tabs/debugTabComponent.tsx");
-/* harmony import */ var re_resizable__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! re-resizable */ "../../node_modules/re-resizable/lib/index.es5.js");
-/* harmony import */ var re_resizable__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(re_resizable__WEBPACK_IMPORTED_MODULE_6__);
-/* harmony import */ var _tabs_propertyGridTabComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./tabs/propertyGridTabComponent */ "./components/actionTabs/tabs/propertyGridTabComponent.tsx");
-/* harmony import */ var _headerComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../headerComponent */ "./components/headerComponent.tsx");
-/* harmony import */ var _tabs_toolsTabComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./tabs/toolsTabComponent */ "./components/actionTabs/tabs/toolsTabComponent.tsx");
-/* harmony import */ var _tabs_settingsTabComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./tabs/settingsTabComponent */ "./components/actionTabs/tabs/settingsTabComponent.tsx");
+/* harmony import */ var babylonjs_Debug_debugLayer__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Debug/debugLayer */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Debug_debugLayer__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Debug_debugLayer__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _tabsComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./tabsComponent */ "./components/actionTabs/tabsComponent.tsx");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+/* harmony import */ var _tabs_statisticsTabComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./tabs/statisticsTabComponent */ "./components/actionTabs/tabs/statisticsTabComponent.tsx");
+/* harmony import */ var _tabs_debugTabComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./tabs/debugTabComponent */ "./components/actionTabs/tabs/debugTabComponent.tsx");
+/* harmony import */ var re_resizable__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! re-resizable */ "../../node_modules/re-resizable/lib/index.es5.js");
+/* harmony import */ var re_resizable__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(re_resizable__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var _tabs_propertyGridTabComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./tabs/propertyGridTabComponent */ "./components/actionTabs/tabs/propertyGridTabComponent.tsx");
+/* harmony import */ var _headerComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../headerComponent */ "./components/headerComponent.tsx");
+/* harmony import */ var _tabs_toolsTabComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./tabs/toolsTabComponent */ "./components/actionTabs/tabs/toolsTabComponent.tsx");
+/* harmony import */ var _tabs_settingsTabComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./tabs/settingsTabComponent */ "./components/actionTabs/tabs/settingsTabComponent.tsx");
+
 
 
 
@@ -40573,12 +40576,14 @@ var ActionTabsComponent = /** @class */ (function (_super) {
     function ActionTabsComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._once = true;
-        var initialIndex = 0;
+        var initialIndex = props.initialTab === undefined
+            ? babylonjs_Debug_debugLayer__WEBPACK_IMPORTED_MODULE_2__["DebugLayerTab"].Properties
+            : props.initialTab;
         if (_this.props.globalState) {
             var validationResutls = _this.props.globalState.validationResults;
             if (validationResutls) {
                 if (validationResutls.issues.numErrors || validationResutls.issues.numWarnings) {
-                    initialIndex = 3;
+                    initialIndex = babylonjs_Debug_debugLayer__WEBPACK_IMPORTED_MODULE_2__["DebugLayerTab"].Tools;
                 }
             }
         }
@@ -40589,7 +40594,7 @@ var ActionTabsComponent = /** @class */ (function (_super) {
         var _this = this;
         if (this.props.globalState) {
             this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add(function (entity) {
-                _this.setState({ selectedEntity: entity, selectedIndex: 0 });
+                _this.setState({ selectedEntity: entity, selectedIndex: babylonjs_Debug_debugLayer__WEBPACK_IMPORTED_MODULE_2__["DebugLayerTab"].Properties });
             });
             this._onTabChangedObserver = this.props.globalState.onTabChangedObservable.add(function (index) {
                 _this.setState({ selectedIndex: index });
@@ -40614,12 +40619,12 @@ var ActionTabsComponent = /** @class */ (function (_super) {
     ActionTabsComponent.prototype.renderContent = function () {
         var _this = this;
         if (this.props.globalState && this.props.scene) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabsComponent__WEBPACK_IMPORTED_MODULE_2__["TabsComponent"], { selectedIndex: this.state.selectedIndex, onSelectedIndexChange: function (value) { return _this.changeSelectedTab(value); } },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_propertyGridTabComponent__WEBPACK_IMPORTED_MODULE_7__["PropertyGridTabComponent"], { title: "Properties", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faFileAlt"], scene: this.props.scene, selectedEntity: this.state.selectedEntity, globalState: this.props.globalState, onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_debugTabComponent__WEBPACK_IMPORTED_MODULE_5__["DebugTabComponent"], { title: "Debug", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faBug"], scene: this.props.scene, globalState: this.props.globalState }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_statisticsTabComponent__WEBPACK_IMPORTED_MODULE_4__["StatisticsTabComponent"], { title: "Statistics", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faChartBar"], scene: this.props.scene, globalState: this.props.globalState }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_toolsTabComponent__WEBPACK_IMPORTED_MODULE_9__["ToolsTabComponent"], { title: "Tools", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faWrench"], scene: this.props.scene, globalState: this.props.globalState }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_settingsTabComponent__WEBPACK_IMPORTED_MODULE_10__["SettingsTabComponent"], { title: "Settings", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faCog"], scene: this.props.scene, globalState: this.props.globalState })));
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabsComponent__WEBPACK_IMPORTED_MODULE_3__["TabsComponent"], { selectedIndex: this.state.selectedIndex, onSelectedIndexChange: function (value) { return _this.changeSelectedTab(value); } },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_propertyGridTabComponent__WEBPACK_IMPORTED_MODULE_8__["PropertyGridTabComponent"], { title: "Properties", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faFileAlt"], scene: this.props.scene, selectedEntity: this.state.selectedEntity, globalState: this.props.globalState, onSelectionChangedObservable: this.props.globalState.onSelectionChangedObservable, onPropertyChangedObservable: this.props.globalState.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_debugTabComponent__WEBPACK_IMPORTED_MODULE_6__["DebugTabComponent"], { title: "Debug", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faBug"], scene: this.props.scene, globalState: this.props.globalState }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_statisticsTabComponent__WEBPACK_IMPORTED_MODULE_5__["StatisticsTabComponent"], { title: "Statistics", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faChartBar"], scene: this.props.scene, globalState: this.props.globalState }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_toolsTabComponent__WEBPACK_IMPORTED_MODULE_10__["ToolsTabComponent"], { title: "Tools", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faWrench"], scene: this.props.scene, globalState: this.props.globalState }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tabs_settingsTabComponent__WEBPACK_IMPORTED_MODULE_11__["SettingsTabComponent"], { title: "Settings", icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_4__["faCog"], scene: this.props.scene, globalState: this.props.globalState })));
         }
         else {
             return null;
@@ -40642,7 +40647,7 @@ var ActionTabsComponent = /** @class */ (function (_super) {
         if (this.props.popupMode) {
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "actionTabs" },
                 !this.props.noHeader &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_8__["HeaderComponent"], { title: "INSPECTOR", handleBack: true, noClose: this.props.noClose, noExpand: this.props.noExpand, noCommands: this.props.noCommands, onClose: function () { return _this.onClose(); }, onPopup: function () { return _this.onPopup(); }, onSelectionChangedObservable: this.props.globalState ? this.props.globalState.onSelectionChangedObservable : undefined }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_9__["HeaderComponent"], { title: "INSPECTOR", handleBack: true, noClose: this.props.noClose, noExpand: this.props.noExpand, noCommands: this.props.noCommands, onClose: function () { return _this.onClose(); }, onPopup: function () { return _this.onPopup(); }, onSelectionChangedObservable: this.props.globalState ? this.props.globalState.onSelectionChangedObservable : undefined }),
                 this.renderContent()));
         }
         if (this._once) {
@@ -40656,9 +40661,9 @@ var ActionTabsComponent = /** @class */ (function (_super) {
                 element.style.width = "300px";
             }, 150);
         }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](re_resizable__WEBPACK_IMPORTED_MODULE_6___default.a, { id: "actionTabs", minWidth: 300, maxWidth: 600, size: { height: "100%" }, minHeight: "100%", enable: { top: false, right: false, bottom: false, left: true, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false } },
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](re_resizable__WEBPACK_IMPORTED_MODULE_7___default.a, { id: "actionTabs", minWidth: 300, maxWidth: 600, size: { height: "100%" }, minHeight: "100%", enable: { top: false, right: false, bottom: false, left: true, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false } },
             !this.props.noHeader &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_8__["HeaderComponent"], { title: "INSPECTOR", handleBack: true, noClose: this.props.noClose, noExpand: this.props.noExpand, noCommands: this.props.noCommands, onClose: function () { return _this.onClose(); }, onPopup: function () { return _this.onPopup(); }, onSelectionChangedObservable: this.props.globalState ? this.props.globalState.onSelectionChangedObservable : undefined }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_headerComponent__WEBPACK_IMPORTED_MODULE_9__["HeaderComponent"], { title: "INSPECTOR", handleBack: true, noClose: this.props.noClose, noExpand: this.props.noExpand, noCommands: this.props.noCommands, onClose: function () { return _this.onClose(); }, onPopup: function () { return _this.onPopup(); }, onSelectionChangedObservable: this.props.globalState ? this.props.globalState.onSelectionChangedObservable : undefined }),
             this.renderContent()));
     };
     return ActionTabsComponent;
@@ -50189,7 +50194,8 @@ var Inspector = /** @class */ (function () {
                     if (options.popup) {
                         _this._ActionTabsWindow.close();
                     }
-                }
+                },
+                initialTab: options.initialTab
             });
             react_dom__WEBPACK_IMPORTED_MODULE_2__["render"](actionTabsElement, this._ActionTabsHost);
         }
