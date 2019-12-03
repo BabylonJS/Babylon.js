@@ -283,9 +283,8 @@ napi_status napi_call_function(napi_env env,
   for (size_t i = 0; i < argc; i++) {
     args[i + 1] = reinterpret_cast<JSValueRef>(argv[i]);
   }
-  
-  JSObjectRef globalObject = JSContextGetGlobalObject(context);
-  JSValueRef jsResult = JSObjectCallAsFunction(context, reinterpret_cast<JSObjectRef>(func), globalObject, argc + 1, args.data(), nullptr);
+  JSObjectRef obj = JSValueToObject(context, reinterpret_cast<JSValueRef>(func), nullptr);
+  JSValueRef jsResult = JSObjectCallAsFunction(context, obj, nullptr, argc + 1, args.data(), nullptr);
   
   if (result != nullptr) {
     *result = reinterpret_cast<napi_value>(const_cast<OpaqueJSValue*>(jsResult));
