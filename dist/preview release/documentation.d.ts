@@ -72943,7 +72943,7 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
         /** Defines whether this extension is required */
         required: boolean;
         /** Reference to the glTF exporter */
-        private _isUsed;
+        private _wasUsed;
         constructor(exporter: _Exporter);
         dispose(): void;
         /** @hidden */
