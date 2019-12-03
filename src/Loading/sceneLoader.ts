@@ -1013,7 +1013,7 @@ export class SceneLoader {
         }
         scene.stopAllAnimations();
         scene.animationGroups.slice().forEach(animationGroup => {
-            // animationGroup.dispose();
+            animationGroup.dispose();
         });
         let animatableObjects = this._getAllAnimatableObjects(scene);
         animatableObjects.forEach(animatableObject => {
@@ -1064,13 +1064,6 @@ export class SceneLoader {
 
         // Copy animation groups
         animationAssetContainer.animationGroups.slice().forEach(animationGroupInAC => {
-            // Dispose animation groups with same name as one being loaded
-            scene.animationGroups.forEach(animationGroup => {
-                if (animationGroup.name == animationGroupInAC.name) {
-                    animationGroup.dispose();
-                }
-            })
-
             // Clone the animation group and all its animatables
             animationGroupInAC.clone(animationGroupInAC.name, _targetConverter);
 
@@ -1085,7 +1078,7 @@ export class SceneLoader {
             let target = _targetConverter(animatable.target);
 
             // If the animatable has just been loaded
-            if (target && target != animatable.target) {
+            if (target && target !== animatable.target) {
                 // Clone the animatable and retarget it
                 scene.beginAnimation(target, animatable.fromFrame, animatable.toFrame, animatable.loopAnimation, animatable.speedRatio, animatable.onAnimationEnd ? animatable.onAnimationEnd : undefined, undefined, true, undefined, animatable.onAnimationLoop ? animatable.onAnimationLoop : undefined);
 
