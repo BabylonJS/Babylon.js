@@ -81,17 +81,6 @@ export class KHR_lights implements IGLTFLoaderExtension {
         }
     }
 
-    private _assignExtras(
-        babylonObject: ObjectWithMetadata,
-        gltfProp: IProperty
-    ): void {
-        if (gltfProp.extras && Object.keys(gltfProp.extras).length > 0) {
-            const metadata = (babylonObject.metadata = babylonObject.metadata || {});
-            const gltf = (metadata.gltf = metadata.gltf || {});
-            gltf.extras = gltfProp.extras;
-        }
-    }
-
     /** @hidden */
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
         return GLTFLoader.LoadExtensionAsync<ILightReference, TransformNode>(context, node, this.name, (extensionContext, extension) => {
@@ -129,8 +118,6 @@ export class KHR_lights implements IGLTFLoaderExtension {
                 babylonLight.parent = babylonMesh;
 
                 GLTFLoader.AddPointerMetadata(babylonLight, extensionContext);
-
-                this._assignExtras(babylonLight, node);
 
                 assign(babylonMesh);
             });
