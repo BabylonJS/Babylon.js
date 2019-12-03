@@ -414,7 +414,8 @@ export class GLTFLoader implements IGLTFLoader {
                 }
             }
 
-            const rootNode = this._createRootNode();
+            const rootNode = this._createRootNode(this._gltf.nodes);
+
             for (const node of this._gltf.nodes) {
                 const parentIndex = nodeParents[node.index];
                 node.parent = parentIndex === undefined ? rootNode : this._gltf.nodes[parentIndex];
@@ -453,21 +454,76 @@ export class GLTFLoader implements IGLTFLoader {
         this.log(GLTFLoaderState[this._state]);
     }
 
-    private _createRootNode(): INode {
-        this._rootBabylonMesh = new Mesh("__root__", this._babylonScene);
-        this._rootBabylonMesh.setEnabled(false);
+    private _checkForRootNode(): Nullable<INode>{
+        if (this._gltf.scenes == null) {
+            return null;
+        }
 
-        const rootNode: INode = {
-            _babylonTransformNode: this._rootBabylonMesh,
-            index: -1
-        };
+        var indexScene = this._gltf.scene || 0;
+        var scene = this._gltf.scenes[indexScene];
+
+        // Root node must be unique
+        if (scene.nodes.length != 1) {
+            return null;
+        }
+        else if(this._gltf.nodes != null) {
+            var indexRoot = scene.nodes[0];
+            var root = this._gltf.nodes[indexRoot];
+
+            // Check rotation and scale
+            if(root.rotation != undefined && root.scale != undefined){
+                if (root.rotation.join(',') != "0,0,0,1" || root.scale.join(',') != "1,1,-1") {
+                    return null;
+                }
+            }
+
+            // Check name
+            if (root.name != "__root__") {
+                return null;
+            }
+        }else{
+            return null;
+        }
+
+        return root;
+    }
+
+    private _createRootNode(nodes : INode[]): INode {
+
+        var ExistingRootNode = this._checkForRootNode();
+        var RootAlreadyImplemented = false;
+        var INodeToReturn;
+
+        //Check if the root node already exists
+        if (ExistingRootNode != null && nodes != null) {
+            RootAlreadyImplemented = true;
+
+            this._forEachPrimitive(ExistingRootNode, (babylonMesh) => {
+                this._rootBabylonMesh = babylonMesh as Mesh;
+            });
+
+            INodeToReturn = ExistingRootNode;
+        }
+        else
+        {
+            this._rootBabylonMesh = new Mesh("__root__", this._babylonScene);
+
+            this._rootBabylonMesh.setEnabled(false);
+
+            const rootNode: INode = {
+                _babylonTransformNode: this._rootBabylonMesh,
+                index: -1
+            };
+
+            INodeToReturn = rootNode;
+        }
 
         switch (this._parent.coordinateSystemMode) {
             case GLTFLoaderCoordinateSystemMode.AUTO: {
-                if (!this._babylonScene.useRightHandedSystem) {
-                    rootNode.rotation = [0, 1, 0, 0];
-                    rootNode.scale = [1, 1, -1];
-                    GLTFLoader._LoadTransform(rootNode, this._rootBabylonMesh);
+                if (!this._babylonScene.useRightHandedSystem && !RootAlreadyImplemented) {
+                    INodeToReturn.rotation = [0, 1, 0, 0];
+                    INodeToReturn.scale = [1, 1, -1];
+                    GLTFLoader._LoadTransform(INodeToReturn, this._rootBabylonMesh);
                 }
                 break;
             }
@@ -481,9 +537,10 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         this._parent.onMeshLoadedObservable.notifyObservers(this._rootBabylonMesh);
-        return rootNode;
-    }
 
+        return INodeToReturn;
+    }
+    
     /**
      * Loads a glTF scene.
      * @param context The context when loading the asset
