@@ -220,7 +220,7 @@ export class _Exporter {
                 if (this._glTF.extensionsUsed == null) {
                     this._glTF.extensionsUsed = [];
                 }
-                
+
                 if (this._glTF.extensionsUsed.indexOf(extension.name) === -1) {
                     this._glTF.extensionsUsed.push(extension.name);
                 }
