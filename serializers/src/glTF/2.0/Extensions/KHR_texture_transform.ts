@@ -38,7 +38,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
     public required = false;
 
     /** Reference to the glTF exporter */
-    private _isUsed = false;
+    private _wasUsed = false;
 
     constructor(exporter: _Exporter) {
     }
@@ -51,7 +51,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
 
     /** @hidden */
     public get wasUsed() {
-        return this._isUsed;
+        return this._wasUsed;
     }
 
     public postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void {
@@ -83,7 +83,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
                 return;
             }
 
-            this._isUsed = true;
+            this._wasUsed = true;
             if (!textureInfo.extensions) {
                 textureInfo.extensions = {};
             }
