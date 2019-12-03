@@ -33,7 +33,7 @@ export class GraphNode {
     private _globalState: GlobalState;
     private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame>>>;   
     private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;  
-    private _onGroupAboutToMoveObserver: Nullable<Observer<GraphFrame>>;  
+    private _onFrameCreatedObserver: Nullable<Observer<GraphFrame>>;  
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;  
     private _ownerCanvas: GraphCanvasComponent; 
     private _isSelected: boolean;
@@ -65,6 +65,7 @@ export class GraphNode {
         this._visual.style.left = `${this._gridAlignedX}px`;
 
         this._refreshLinks();
+        this._refreshFrames();
     }
 
     public get y() {
@@ -82,6 +83,7 @@ export class GraphNode {
         this._visual.style.top = `${this._gridAlignedY}px`;
 
         this._refreshLinks();
+        this._refreshFrames();
     }
 
     public get width() {
@@ -152,18 +154,20 @@ export class GraphNode {
             this.isSelected = overlap;
         });
 
-        this._onGroupAboutToMoveObserver = this._globalState.onGroupAboutToMove.add(group => {
-            const rect2 = this._visual.getBoundingClientRect();
-            const rect1 = group.element.getBoundingClientRect();
-            var overlap = !(rect1.right < rect2.left || 
-                rect1.left > rect2.right || 
-                rect1.bottom < rect2.top || 
-                rect1.top > rect2.bottom);
-            
-            if (overlap) {
-                group.nodes.push(this);
+        this._onFrameCreatedObserver = this._globalState.onFrameCreated.add(frame => {            
+            if (this.isOverlappingFrame(frame)) {
+                frame.nodes.push(this);
             }
         });
+    }
+
+    public isOverlappingFrame(frame: GraphFrame) {
+        const rect2 = this._visual.getBoundingClientRect();
+        const rect1 = frame.element.getBoundingClientRect();
+        return !(rect1.right < rect2.left || 
+            rect1.left > rect2.right || 
+            rect1.bottom < rect2.top || 
+            rect1.top > rect2.bottom);
     }
 
     public getPortForConnectionPoint(point: NodeMaterialConnectionPoint) {
@@ -189,7 +193,13 @@ export class GraphNode {
     public getLinksForConnectionPoint(point: NodeMaterialConnectionPoint) {
         return this._links.filter(link => link.portA.connectionPoint === point || link.portB!.connectionPoint === point);
     }
-
+    
+    private _refreshFrames() {       
+        // Frames
+        for (var frame of this._ownerCanvas.frames) {
+            frame.syncNode(this);
+        }
+    }
     private _refreshLinks() {
         for (var link of this._links) {
             link.update();
@@ -389,8 +399,8 @@ export class GraphNode {
             this._visual.parentElement.removeChild(this._visual);
         }
 
-        if (this._onGroupAboutToMoveObserver) {
-            this._globalState.onGroupAboutToMove.remove(this._onGroupAboutToMoveObserver);
+        if (this._onFrameCreatedObserver) {
+            this._globalState.onFrameCreated.remove(this._onFrameCreatedObserver);
         }
 
         for (var port of this._inputPorts) {
