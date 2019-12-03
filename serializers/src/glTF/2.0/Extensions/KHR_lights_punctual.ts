@@ -67,27 +67,13 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
     }
 
     /** @hidden */
+    public get wasUsed() {
+        return !!this._lights;
+    }
+
+    /** @hidden */
     public onExporting(): void {
-        if (this._lights) {
-            if (this._exporter._glTF.extensionsUsed == null) {
-                this._exporter._glTF.extensionsUsed = [];
-            }
-            if (this._exporter._glTF.extensionsUsed.indexOf(NAME) === -1) {
-                this._exporter._glTF.extensionsUsed.push(NAME);
-            }
-            if (this.required) {
-                if (this._exporter._glTF.extensionsRequired == null) {
-                    this._exporter._glTF.extensionsRequired = [];
-                }
-                if (this._exporter._glTF.extensionsRequired.indexOf(NAME) === -1) {
-                    this._exporter._glTF.extensionsRequired.push(NAME);
-                }
-            }
-            if (this._exporter._glTF.extensions == null) {
-                this._exporter._glTF.extensions = {};
-            }
-            this._exporter._glTF.extensions[NAME] = this._lights;
-        }
+        this._exporter!._glTF.extensions![NAME] = this._lights;
     }
     /**
      * Define this method to modify the default behavior when exporting a node

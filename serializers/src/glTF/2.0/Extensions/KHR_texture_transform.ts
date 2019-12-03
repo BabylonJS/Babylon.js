@@ -1,4 +1,4 @@
-import { ImageMimeType } from "babylonjs-gltf2interface";
+import { ImageMimeType, ITextureInfo } from "babylonjs-gltf2interface";
 import { Tools } from "babylonjs/Misc/tools";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
@@ -39,6 +39,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
 
     /** Reference to the glTF exporter */
     private _exporter: _Exporter;
+    private _isUsed = true;
 
     constructor(exporter: _Exporter) {
         this._exporter = exporter;
@@ -52,6 +53,48 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
         delete this._exporter;
     }
 
+    /** @hidden */
+    public get wasUsed() {
+        return this._isUsed;
+    }
+
+    public postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void {
+        if (babylonTexture && babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0) {
+            let textureTransform: IKHRTextureTransform = {};
+            let transformIsRequired = false;
+
+            if (babylonTexture.uOffset !== 0 || babylonTexture.vOffset !== 0) {
+                textureTransform.offset = [babylonTexture.uOffset, babylonTexture.vOffset];
+                transformIsRequired = true;
+            }
+
+            if (babylonTexture.uScale !== 1 || babylonTexture.vScale !== 1) {
+                textureTransform.scale = [babylonTexture.uScale, babylonTexture.vScale];
+                transformIsRequired = true;
+            }
+
+            if (babylonTexture.wAng !== 0) {
+                textureTransform.rotation = babylonTexture.wAng;
+                transformIsRequired = true;
+            }
+
+            if (babylonTexture.coordinatesIndex !== 0) {
+                textureTransform.texCoord = babylonTexture.coordinatesIndex;
+                transformIsRequired = true;
+            }
+
+            if (!transformIsRequired) {
+                return;
+            }
+
+            this._isUsed = true;
+            if (!textureInfo.extensions) {
+                textureInfo.extensions = {};
+            }
+            textureInfo.extensions[NAME] = textureTransform;
+        }
+    }
+
     public preExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Texture> {
         return new Promise((resolve, reject) => {
             const scene = babylonTexture.getScene();
@@ -60,27 +103,27 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
                 return;
             }
 
-            // TODO: this doesn't take into account rotation center values
-
-            const texture_transform_extension: IKHRTextureTransform = {};
+            let transformIsRequired = false;
 
             if (babylonTexture.uOffset !== 0 || babylonTexture.vOffset !== 0) {
-                texture_transform_extension.offset = [babylonTexture.uOffset, babylonTexture.vOffset];
+                transformIsRequired = true;
             }
 
             if (babylonTexture.uScale !== 1 || babylonTexture.vScale !== 1) {
-                texture_transform_extension.scale = [babylonTexture.uScale, babylonTexture.vScale];
+                transformIsRequired = true;
             }
 
             if (babylonTexture.wAng !== 0) {
-                texture_transform_extension.rotation = babylonTexture.wAng;
+                transformIsRequired = true;
             }
 
-            if (babylonTexture.coordinatesIndex !== 0) {
-                texture_transform_extension.texCoord = babylonTexture.coordinatesIndex;
+            if (!transformIsRequired) {
+                resolve(babylonTexture);
+                return;
             }
 
-            if (!Object.keys(texture_transform_extension).length) {
+            // Do we need to flatten the transform?
+            if (babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0) {
                 resolve(babylonTexture);
                 return;
             }

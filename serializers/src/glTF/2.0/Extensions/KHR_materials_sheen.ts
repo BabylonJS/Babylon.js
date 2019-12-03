@@ -44,26 +44,8 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
     }
 
     /** @hidden */
-    public onExporting(): void {
-        if (this._wasUsed) {
-            if (this._exporter._glTF.extensionsUsed == null) {
-                this._exporter._glTF.extensionsUsed = [];
-            }
-            if (this._exporter._glTF.extensionsUsed.indexOf(NAME) === -1) {
-                this._exporter._glTF.extensionsUsed.push(NAME);
-            }
-            if (this.required) {
-                if (this._exporter._glTF.extensionsRequired == null) {
-                    this._exporter._glTF.extensionsRequired = [];
-                }
-                if (this._exporter._glTF.extensionsRequired.indexOf(NAME) === -1) {
-                    this._exporter._glTF.extensionsRequired.push(NAME);
-                }
-            }
-            if (this._exporter._glTF.extensions == null) {
-                this._exporter._glTF.extensions = {};
-            }
-        }
+    public get wasUsed() {
+        return this._wasUsed;
     }
 
     public postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void {
