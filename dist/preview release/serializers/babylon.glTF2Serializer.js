@@ -98,7 +98,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -640,7 +640,7 @@ var KHR_texture_transform = /** @class */ (function () {
         /** Defines whether this extension is required */
         this.required = false;
         /** Reference to the glTF exporter */
-        this._isUsed = false;
+        this._wasUsed = false;
     }
     KHR_texture_transform.prototype.dispose = function () {
         for (var _i = 0, _a = this._recordedTextures; _i < _a.length; _i++) {
@@ -651,7 +651,7 @@ var KHR_texture_transform = /** @class */ (function () {
     Object.defineProperty(KHR_texture_transform.prototype, "wasUsed", {
         /** @hidden */
         get: function () {
-            return this._isUsed;
+            return this._wasUsed;
         },
         enumerable: true,
         configurable: true
@@ -679,7 +679,7 @@ var KHR_texture_transform = /** @class */ (function () {
             if (!transformIsRequired) {
                 return;
             }
-            this._isUsed = true;
+            this._wasUsed = true;
             if (!textureInfo.extensions) {
                 textureInfo.extensions = {};
             }

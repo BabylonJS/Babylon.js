@@ -193,8 +193,8 @@ export class Inspector {
                     if (options.popup) {
                         this._ActionTabsWindow.close();
                     }
-
-                }
+                },
+                initialTab: options.initialTab
             });
             ReactDOM.render(actionTabsElement, this._ActionTabsHost);
         }

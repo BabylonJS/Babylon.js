@@ -67,14 +67,16 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
                 state.compilationString += `gl_FragColor = ${rgba.associatedVariableName};\r\n`;
             }
         } else if (rgb.connectedPoint) {
+            let aValue = "1.0";
+
             if (a.connectedPoint) {
-                state.compilationString += `gl_FragColor = vec4(${rgb.associatedVariableName}, ${a.associatedVariableName});\r\n`;
+                aValue = a.associatedVariableName;
+            }
+
+            if (rgb.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Float) {
+                state.compilationString += `gl_FragColor = vec4(${rgb.associatedVariableName}, ${rgb.associatedVariableName}, ${rgb.associatedVariableName}, ${aValue});\r\n`;
             } else {
-                if (rgb.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Float) {
-                    state.compilationString += `gl_FragColor = vec4(${rgb.associatedVariableName}, ${rgb.associatedVariableName}, ${rgb.associatedVariableName}, 1.0);\r\n`;
-                } else {
-                    state.compilationString += `gl_FragColor = vec4(${rgb.associatedVariableName}, 1.0);\r\n`;
-                }
+                state.compilationString += `gl_FragColor = vec4(${rgb.associatedVariableName}, ${aValue});\r\n`;
             }
         } else {
             state.sharedData.checks.notConnectedNonOptionalInputs.push(rgba);
