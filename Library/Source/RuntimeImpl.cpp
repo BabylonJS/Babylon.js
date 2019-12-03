@@ -41,12 +41,16 @@ namespace Babylon
 
     RuntimeImpl::RuntimeImpl(void* nativeWindowPtr, const std::string& rootUrl, LogCallback&& logCallback)
         : m_nativeWindowPtr{ nativeWindowPtr }
-        //, m_thread{ [this] { ThreadInit(); ThreadRun();} }
+#ifndef APPLE
+        , m_thread{ [this] { ThreadInit(); ThreadRun();} }
+#endif
         , m_rootUrl{ rootUrl }
         , m_logCallback{ logCallback }
     {
+#ifdef APPLE
         ThreadInit();
         m_thread = std::thread([this] { ThreadRun(); });
+#endif
     }
 
     RuntimeImpl::~RuntimeImpl()

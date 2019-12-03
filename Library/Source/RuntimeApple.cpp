@@ -24,5 +24,4 @@ namespace Babylon
     {
         RuntimeImpl::BaseThreadRun();
     }
-
 }
