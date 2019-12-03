@@ -399,31 +399,19 @@ var KHR_lights_punctual = /** @class */ (function () {
     }
     /** @hidden */
     KHR_lights_punctual.prototype.dispose = function () {
-        delete this._exporter;
         delete this._lights;
     };
+    Object.defineProperty(KHR_lights_punctual.prototype, "wasUsed", {
+        /** @hidden */
+        get: function () {
+            return !!this._lights;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /** @hidden */
     KHR_lights_punctual.prototype.onExporting = function () {
-        if (this._lights) {
-            if (this._exporter._glTF.extensionsUsed == null) {
-                this._exporter._glTF.extensionsUsed = [];
-            }
-            if (this._exporter._glTF.extensionsUsed.indexOf(NAME) === -1) {
-                this._exporter._glTF.extensionsUsed.push(NAME);
-            }
-            if (this.required) {
-                if (this._exporter._glTF.extensionsRequired == null) {
-                    this._exporter._glTF.extensionsRequired = [];
-                }
-                if (this._exporter._glTF.extensionsRequired.indexOf(NAME) === -1) {
-                    this._exporter._glTF.extensionsRequired.push(NAME);
-                }
-            }
-            if (this._exporter._glTF.extensions == null) {
-                this._exporter._glTF.extensions = {};
-            }
-            this._exporter._glTF.extensions[NAME] = this._lights;
-        }
+        this._exporter._glTF.extensions[NAME] = this._lights;
     };
     /**
      * Define this method to modify the default behavior when exporting a node
@@ -548,33 +536,18 @@ var KHR_materials_sheen = /** @class */ (function () {
         this.required = false;
         this._exportedTexture = null;
         this._wasUsed = false;
-        this._exporter = exporter;
     }
     KHR_materials_sheen.prototype.dispose = function () {
-        delete this._exporter;
+        // Do nothing
     };
-    /** @hidden */
-    KHR_materials_sheen.prototype.onExporting = function () {
-        if (this._wasUsed) {
-            if (this._exporter._glTF.extensionsUsed == null) {
-                this._exporter._glTF.extensionsUsed = [];
-            }
-            if (this._exporter._glTF.extensionsUsed.indexOf(NAME) === -1) {
-                this._exporter._glTF.extensionsUsed.push(NAME);
-            }
-            if (this.required) {
-                if (this._exporter._glTF.extensionsRequired == null) {
-                    this._exporter._glTF.extensionsRequired = [];
-                }
-                if (this._exporter._glTF.extensionsRequired.indexOf(NAME) === -1) {
-                    this._exporter._glTF.extensionsRequired.push(NAME);
-                }
-            }
-            if (this._exporter._glTF.extensions == null) {
-                this._exporter._glTF.extensions = {};
-            }
-        }
-    };
+    Object.defineProperty(KHR_materials_sheen.prototype, "wasUsed", {
+        /** @hidden */
+        get: function () {
+            return this._wasUsed;
+        },
+        enumerable: true,
+        configurable: true
+    });
     KHR_materials_sheen.prototype.postExportTexture = function (context, textureInfo, babylonTexture) {
         if (babylonTexture === this._exportedTexture || babylonTexture.reservedDataStore && babylonTexture.reservedDataStore.source === this._exportedTexture) {
             this._textureInfo = textureInfo;
@@ -652,14 +625,52 @@ var KHR_texture_transform = /** @class */ (function () {
         this.enabled = true;
         /** Defines whether this extension is required */
         this.required = false;
-        this._exporter = exporter;
+        /** Reference to the glTF exporter */
+        this._isUsed = true;
     }
     KHR_texture_transform.prototype.dispose = function () {
         for (var _i = 0, _a = this._recordedTextures; _i < _a.length; _i++) {
             var texture = _a[_i];
             texture.dispose();
         }
-        delete this._exporter;
+    };
+    Object.defineProperty(KHR_texture_transform.prototype, "wasUsed", {
+        /** @hidden */
+        get: function () {
+            return this._isUsed;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    KHR_texture_transform.prototype.postExportTexture = function (context, textureInfo, babylonTexture) {
+        if (babylonTexture && babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0) {
+            var textureTransform = {};
+            var transformIsRequired = false;
+            if (babylonTexture.uOffset !== 0 || babylonTexture.vOffset !== 0) {
+                textureTransform.offset = [babylonTexture.uOffset, babylonTexture.vOffset];
+                transformIsRequired = true;
+            }
+            if (babylonTexture.uScale !== 1 || babylonTexture.vScale !== 1) {
+                textureTransform.scale = [babylonTexture.uScale, babylonTexture.vScale];
+                transformIsRequired = true;
+            }
+            if (babylonTexture.wAng !== 0) {
+                textureTransform.rotation = babylonTexture.wAng;
+                transformIsRequired = true;
+            }
+            if (babylonTexture.coordinatesIndex !== 0) {
+                textureTransform.texCoord = babylonTexture.coordinatesIndex;
+                transformIsRequired = true;
+            }
+            if (!transformIsRequired) {
+                return;
+            }
+            this._isUsed = true;
+            if (!textureInfo.extensions) {
+                textureInfo.extensions = {};
+            }
+            textureInfo.extensions[NAME] = textureTransform;
+        }
     };
     KHR_texture_transform.prototype.preExportTextureAsync = function (context, babylonTexture, mimeType) {
         var _this = this;
@@ -669,21 +680,22 @@ var KHR_texture_transform = /** @class */ (function () {
                 reject(context + ": \"scene\" is not defined for Babylon texture " + babylonTexture.name + "!");
                 return;
             }
-            // TODO: this doesn't take into account rotation center values
-            var texture_transform_extension = {};
+            var transformIsRequired = false;
             if (babylonTexture.uOffset !== 0 || babylonTexture.vOffset !== 0) {
-                texture_transform_extension.offset = [babylonTexture.uOffset, babylonTexture.vOffset];
+                transformIsRequired = true;
             }
             if (babylonTexture.uScale !== 1 || babylonTexture.vScale !== 1) {
-                texture_transform_extension.scale = [babylonTexture.uScale, babylonTexture.vScale];
+                transformIsRequired = true;
             }
             if (babylonTexture.wAng !== 0) {
-                texture_transform_extension.rotation = babylonTexture.wAng;
+                transformIsRequired = true;
             }
-            if (babylonTexture.coordinatesIndex !== 0) {
-                texture_transform_extension.texCoord = babylonTexture.coordinatesIndex;
+            if (!transformIsRequired) {
+                resolve(babylonTexture);
+                return;
             }
-            if (!Object.keys(texture_transform_extension).length) {
+            // Do we need to flatten the transform?
+            if (babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0) {
                 resolve(babylonTexture);
                 return;
             }
@@ -1633,7 +1645,31 @@ var _Exporter = /** @class */ (function () {
         }
     };
     _Exporter.prototype._extensionsOnExporting = function () {
-        this._forEachExtensions(function (extension) { return extension.onExporting && extension.onExporting(); });
+        var _this = this;
+        this._forEachExtensions(function (extension) {
+            if (extension.wasUsed) {
+                if (_this._glTF.extensionsUsed == null) {
+                    _this._glTF.extensionsUsed = [];
+                }
+                if (_this._glTF.extensionsUsed.indexOf(extension.name) === -1) {
+                    _this._glTF.extensionsUsed.push(extension.name);
+                }
+                if (extension.required) {
+                    if (_this._glTF.extensionsRequired == null) {
+                        _this._glTF.extensionsRequired = [];
+                    }
+                    if (_this._glTF.extensionsRequired.indexOf(extension.name) === -1) {
+                        _this._glTF.extensionsRequired.push(extension.name);
+                    }
+                }
+                if (_this._glTF.extensions == null) {
+                    _this._glTF.extensions = {};
+                }
+                if (extension.onExporting) {
+                    extension.onExporting();
+                }
+            }
+        });
     };
     /**
      * Load glTF serializer extensions

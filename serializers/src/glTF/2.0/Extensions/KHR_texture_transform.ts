@@ -38,19 +38,15 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
     public required = false;
 
     /** Reference to the glTF exporter */
-    private _exporter: _Exporter;
     private _isUsed = true;
 
     constructor(exporter: _Exporter) {
-        this._exporter = exporter;
     }
 
     public dispose() {
         for (var texture of this._recordedTextures) {
             texture.dispose();
         }
-
-        delete this._exporter;
     }
 
     /** @hidden */

@@ -62,7 +62,6 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
 
     /** @hidden */
     public dispose() {
-        delete this._exporter;
         delete this._lights;
     }
 
