@@ -69,7 +69,7 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
 
         if (hostWindow) {
             // check iOS 13+ support
-            if (typeof (<any>DeviceOrientationEvent).requestPermission === 'function') {
+            if (typeof(DeviceMotionEvent) !== "undefined" && typeof (<any>DeviceOrientationEvent).requestPermission === 'function') {
                 (<any>DeviceOrientationEvent).requestPermission()
                     .then((response: string) => {
                         if (response === 'granted') {
