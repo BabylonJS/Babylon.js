@@ -98,7 +98,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -6046,8 +6046,8 @@ var GLTFLoader = /** @class */ (function () {
     GLTFLoader.prototype._checkExtensions = function () {
         if (this._gltf.extensionsRequired) {
             var _loop_1 = function (name_3) {
-                var extension = this_1._extensions.find(function (extension) { return extension.name === name_3; });
-                if (!extension || !extension.enabled) {
+                var available = this_1._extensions.some(function (extension) { return extension.name === name_3 && extension.enabled; });
+                if (!available) {
                     throw new Error("Require extension " + name_3 + " is not available");
                 }
             };

@@ -215,7 +215,34 @@ export class _Exporter {
     }
 
     private _extensionsOnExporting(): void {
-        this._forEachExtensions((extension) => extension.onExporting && extension.onExporting());
+        this._forEachExtensions((extension) => {
+            if (extension.wasUsed) {
+                if (this._glTF.extensionsUsed == null) {
+                    this._glTF.extensionsUsed = [];
+                }
+
+                if (this._glTF.extensionsUsed.indexOf(extension.name) === -1) {
+                    this._glTF.extensionsUsed.push(extension.name);
+                }
+
+                if (extension.required) {
+                    if (this._glTF.extensionsRequired == null) {
+                        this._glTF.extensionsRequired = [];
+                    }
+                    if (this._glTF.extensionsRequired.indexOf(extension.name) === -1) {
+                        this._glTF.extensionsRequired.push(extension.name);
+                    }
+                }
+
+                if (this._glTF.extensions == null) {
+                    this._glTF.extensions = {};
+                }
+
+                if (extension.onExporting) {
+                    extension.onExporting();
+                }
+            }
+        });
     }
 
     /**
