@@ -36,6 +36,10 @@ export class WebXRSessionManager implements IDisposable {
      * Fires when the xr session is ended either by the device or manually done
      */
     public onXRSessionEnded: Observable<any> = new Observable<any>();
+    /**
+     * Fires when the xr session is ended either by the device or manually done
+     */
+    public onXRSessionInit: Observable<XRSession> = new Observable<XRSession>();
 
     /**
      * Underlying xr session
@@ -62,7 +66,7 @@ export class WebXRSessionManager implements IDisposable {
      * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
      * @param scene The scene which the session should be created for
      */
-    constructor(private scene: Scene) {
+    constructor(public readonly scene: Scene) {
 
     }
 
@@ -90,6 +94,7 @@ export class WebXRSessionManager implements IDisposable {
     public initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures: any = {}): Promise<XRSession> {
         return this._xrNavigator.xr.requestSession(xrSessionMode, optionalFeatures).then((session: XRSession) => {
             this.session = session;
+            this.onXRSessionInit.notifyObservers(session);
             this._sessionEnded = false;
 
             // handle when the session is ended (By calling session.end or device ends its own session eg. pressing home button on phone)
