@@ -11660,7 +11660,7 @@ declare module BABYLON {
          */
         constructor(
         /** defines the manager's name */
-        name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number, fromPacked?: boolean, spriteJSON?: string | null);
+        name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number, fromPacked?: boolean, spriteJSON?: any | null);
         private _makePacked;
         private _appendSpriteVertex;
         /**
@@ -41789,15 +41789,20 @@ declare module BABYLON {
      * @see https://doc.babylonjs.com/how_to/webxr
      */
     export class WebXRSessionManager implements IDisposable {
-        private scene;
+        /** The scene which the session should be created for */
+        scene: Scene;
         /**
          * Fires every time a new xrFrame arrives which can be used to update the camera
          */
-        onXRFrameObservable: Observable<any>;
+        onXRFrameObservable: Observable<XRFrame>;
         /**
          * Fires when the xr session is ended either by the device or manually done
          */
         onXRSessionEnded: Observable<any>;
+        /**
+         * Fires when the xr session is ended either by the device or manually done
+         */
+        onXRSessionInit: Observable<XRSession>;
         /**
          * Underlying xr session
          */
@@ -41818,7 +41823,9 @@ declare module BABYLON {
          * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
          * @param scene The scene which the session should be created for
          */
-        constructor(scene: Scene);
+        constructor(
+        /** The scene which the session should be created for */
+        scene: Scene);
         /**
          * Initializes the manager
          * After initialization enterXR can be called to start an XR session
@@ -41878,6 +41885,7 @@ declare module BABYLON {
          * Converts the render layer of xrSession to a render target
          * @param session session to create render target for
          * @param scene scene the new render target should be created for
+         * @param baseLayer the webgl layer to create the render target for
          */
         static _CreateRenderTargetTextureFromSession(session: XRSession, scene: Scene, baseLayer: XRWebGLLayer): RenderTargetTexture;
         /**
@@ -42925,6 +42933,8 @@ declare module BABYLON {
      */
     export class WebXREnterExitUI implements IDisposable {
         private scene;
+        /** version of the options passed to this UI */
+        options: WebXREnterExitUIOptions;
         private _overlay;
         private _buttons;
         private _activeButton;
@@ -42944,6 +42954,11 @@ declare module BABYLON {
          * @returns the created ui
          */
         static CreateAsync(scene: Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions): Promise<WebXREnterExitUI>;
+        /**
+         *
+         * @param scene babylon scene object to use
+         * @param options (read-only) version of the options passed to this UI
+         */
         private constructor();
         private _updateButtons;
         /**
@@ -42969,6 +42984,10 @@ declare module BABYLON {
          * optional configuration for the output canvas
          */
         outputCanvasOptions?: WebXRManagedOutputCanvasOptions;
+        /**
+         * optional UI options. This can be used among other to change session mode and reference space type
+         */
+        uiOptions?: WebXREnterExitUIOptions;
     }
     /**
      * Default experience which provides a similar setup to the previous webVRExperience
@@ -42995,7 +43014,7 @@ declare module BABYLON {
          */
         teleportation: WebXRControllerTeleportation;
         /**
-         * Enables ui for enetering/exiting xr
+         * Enables ui for entering/exiting xr
          */
         enterExitUI: WebXREnterExitUI;
         /**
@@ -63528,6 +63547,269 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Defines the basic options interface of a Sprite Frame Source Size.
+     */
+    export interface ISpriteJSONSpriteSourceSize {
+        /**
+         * number of the original width of the Frame
+         */
+        w: number;
+        /**
+         * number of the original height of the Frame
+         */
+        h: number;
+    }
+    /**
+     * Defines the basic options interface of a Sprite Frame Data.
+     */
+    export interface ISpriteJSONSpriteFrameData {
+        /**
+         * number of the x offset of the Frame
+         */
+        x: number;
+        /**
+         * number of the y offset of the Frame
+         */
+        y: number;
+        /**
+         * number of the width of the Frame
+         */
+        w: number;
+        /**
+         * number of the height of the Frame
+         */
+        h: number;
+    }
+    /**
+     * Defines the basic options interface of a JSON Sprite.
+     */
+    export interface ISpriteJSONSprite {
+        /**
+         * string name of the Frame
+         */
+        filename: string;
+        /**
+         * ISpriteJSONSpriteFrame basic object of the frame data
+         */
+        frame: ISpriteJSONSpriteFrameData;
+        /**
+        * boolean to flag is the frame was rotated.
+        */
+        rotated: boolean;
+        /**
+        * boolean to flag is the frame was trimmed.
+        */
+        trimmed: boolean;
+        /**
+         * ISpriteJSONSpriteFrame basic object of the source data
+         */
+        spriteSourceSize: ISpriteJSONSpriteFrameData;
+        /**
+         * ISpriteJSONSpriteFrame basic object of the source data
+         */
+        sourceSize: ISpriteJSONSpriteSourceSize;
+    }
+    /**
+     * Defines the basic options interface of a JSON atlas.
+     */
+    export interface ISpriteJSONAtlas {
+        /**
+         * Array of objects that contain the frame data.
+         */
+        frames: Array<ISpriteJSONSprite>;
+        /**
+         * object basic object containing the sprite meta data.
+         */
+        meta?: object;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var spriteMapPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var spriteMapVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * Defines the basic options interface of a SpriteMap
+     */
+    export interface ISpriteMapOptions {
+        /**
+         * Vector2 of the number of cells in the grid.
+         */
+        stageSize?: Vector2;
+        /**
+         * Vector2 of the size of the output plane in World Units.
+         */
+        outputSize?: Vector2;
+        /**
+         * Vector3 of the position of the output plane in World Units.
+         */
+        outputPosition?: Vector3;
+        /**
+         * number of layers that the system will reserve in resources.
+         */
+        layerCount?: number;
+        /**
+         * number of max animation frames a single cell will reserve in resources.
+         */
+        maxAnimationFrames?: number;
+        /**
+         * number cell index of the base tile when the system compiles.
+         */
+        baseTile?: number;
+        /**
+        * boolean flip the sprite after its been repositioned by the framing data.
+        */
+        flipU?: boolean;
+        /**
+         * Vector3 scalar of the global RGB values of the SpriteMap.
+         */
+        colorMultiply?: Vector3;
+    }
+    /**
+     * Defines the IDisposable interface in order to be cleanable from resources.
+     */
+    export interface ISpriteMap extends IDisposable {
+        /**
+         * String name of the SpriteMap.
+         */
+        name: string;
+        /**
+         * The JSON Array file from a https://www.codeandweb.com/texturepacker export.  Or similar structure.
+         */
+        atlasJSON: ISpriteJSONAtlas;
+        /**
+         * Texture of the SpriteMap.
+         */
+        spriteSheet: Texture;
+        /**
+         * The parameters to initialize the SpriteMap with.
+         */
+        options: ISpriteMapOptions;
+    }
+    /**
+     * Class used to manage a grid restricted sprite deployment on an Output plane.
+     */
+    export class SpriteMap implements ISpriteMap {
+        /** The Name of the spriteMap */
+        name: string;
+        /** The JSON file with the frame and meta data */
+        atlasJSON: ISpriteJSONAtlas;
+        /** The systems Sprite Sheet Texture */
+        spriteSheet: Texture;
+        /** Arguments passed with the Constructor */
+        options: ISpriteMapOptions;
+        /** Public Sprite Storage array, parsed from atlasJSON */
+        sprites: Array<ISpriteJSONSprite>;
+        /** Returns the Number of Sprites in the System */
+        readonly spriteCount: number;
+        /** Returns the Position of Output Plane*/
+        /** Returns the Position of Output Plane*/
+        position: Vector3;
+        /** Sets the AnimationMap*/
+        /** Sets the AnimationMap*/
+        animationMap: RawTexture;
+        /** Scene that the SpriteMap was created in */
+        private _scene;
+        /** Texture Buffer of Float32 that holds tile frame data*/
+        private _frameMap;
+        /** Texture Buffers of Float32 that holds tileMap data*/
+        private _tileMaps;
+        /** Texture Buffer of Float32 that holds Animation Data*/
+        private _animationMap;
+        /** Custom ShaderMaterial Central to the System*/
+        private _material;
+        /** Custom ShaderMaterial Central to the System*/
+        private _output;
+        /** Systems Time Ticker*/
+        private _time;
+        /**
+         * Creates a new SpriteMap
+         * @param name defines the SpriteMaps Name
+         * @param atlasJSON is the JSON file that controls the Sprites Frames and Meta
+         * @param spriteSheet is the Texture that the Sprites are on.
+         * @param options a basic deployment configuration
+         * @param scene The Scene that the map is deployed on
+         */
+        constructor(name: string, atlasJSON: ISpriteJSONAtlas, spriteSheet: Texture, options: ISpriteMapOptions, scene: Scene);
+        /**
+        * Returns tileID location
+        * @returns Vector2 the cell position ID
+        */
+        getTileID(): Vector2;
+        /**
+        * Gets the UV location of the mouse over the SpriteMap.
+        * @returns Vector2 the UV position of the mouse interaction
+        */
+        getMousePosition(): Vector2;
+        /**
+        * Creates the "frame" texture Buffer
+        * -------------------------------------
+        * Structure of frames
+        *  "filename": "Falling-Water-2.png",
+        * "frame": {"x":69,"y":103,"w":24,"h":32},
+        * "rotated": true,
+        * "trimmed": true,
+        * "spriteSourceSize": {"x":4,"y":0,"w":24,"h":32},
+        * "sourceSize": {"w":32,"h":32}
+        * @returns RawTexture of the frameMap
+        */
+        private _createFrameBuffer;
+        /**
+        * Creates the tileMap texture Buffer
+        * @param buffer normally and array of numbers, or a false to generate from scratch
+        * @param _layer indicates what layer for a logic trigger dealing with the baseTile.  The system uses this
+        * @returns RawTexture of the tileMap
+        */
+        private _createTileBuffer;
+        /**
+        * Modifies the data of the tileMaps
+        * @param _layer is the ID of the layer you want to edit on the SpriteMap
+        * @param pos is the iVector2 Coordinates of the Tile
+        * @param tile The SpriteIndex of the new Tile
+        */
+        changeTiles(_layer: number | undefined, pos: Vector2 | Vector2[], tile?: number): void;
+        /**
+        * Creates the animationMap texture Buffer
+        * @param buffer normally and array of numbers, or a false to generate from scratch
+        * @returns RawTexture of the animationMap
+        */
+        private _createTileAnimationBuffer;
+        /**
+        * Modifies the data of the animationMap
+        * @param cellID is the Index of the Sprite
+        * @param _frame is the target Animation frame
+        * @param toCell is the Target Index of the next frame of the animation
+        * @param time is a value between 0-1 that is the trigger for when the frame should change tiles
+        * @param speed is a global scalar of the time variable on the map.
+        */
+        addAnimationToTile(cellID?: number, _frame?: number, toCell?: number, time?: number, speed?: number): void;
+        /**
+        * Exports the .tilemaps file
+        */
+        saveTileMaps(): void;
+        /**
+        * Imports the .tilemaps file
+        * @param url of the .tilemaps file
+        */
+        loadTileMaps(url: string): void;
+        /**
+         * Release associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Class used to manage multiple sprites of different sizes on the same spritesheet
      * @see http://doc.babylonjs.com/babylon101/sprites
      */
@@ -65896,6 +66178,11 @@ interface XRInputSourceChangeEvent {
     session: XRSession;
     removed: Array<XRInputSource>;
     added: Array<XRInputSource>;
+}
+
+interface XRInputSourceEvent extends Event {
+    readonly frame: XRFrame;
+    readonly inputSource: XRInputSource;
 }
 
 /**
