@@ -31,7 +31,7 @@ export class WebXRSessionManager implements IDisposable {
     /**
      * Fires every time a new xrFrame arrives which can be used to update the camera
      */
-    public onXRFrameObservable: Observable<any> = new Observable<any>();
+    public onXRFrameObservable: Observable<XRFrame> = new Observable<XRFrame>();
     /**
      * Fires when the xr session is ended either by the device or manually done
      */
@@ -64,7 +64,7 @@ export class WebXRSessionManager implements IDisposable {
 
     /**
      * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
-     * @param readonly scene The scene which the session should be created for
+     * @param scene The scene which the session should be created for
      */
     constructor(public scene: Scene) {
 
@@ -163,7 +163,9 @@ export class WebXRSessionManager implements IDisposable {
                 }
                 // Store the XR frame in the manager to be consumed by the XR camera to update pose
                 this.currentFrame = xrFrame;
-                this.onXRFrameObservable.notifyObservers(null);
+                if (xrFrame) {
+                    this.onXRFrameObservable.notifyObservers(xrFrame);
+                }
                 this.scene.getEngine()._renderLoop();
             }
         };
