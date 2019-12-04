@@ -124,3 +124,8 @@ interface XRInputSourceChangeEvent {
     removed: Array<XRInputSource>;
     added: Array<XRInputSource>;
 }
+
+interface XRInputSourceEvent extends Event {
+    readonly frame: XRFrame;
+    readonly inputSource: XRInputSource;
+}

@@ -175,6 +175,8 @@ export class GraphFrame {
         
         this._headerElement.setPointerCapture(evt.pointerId);
         this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
+
+        this._ownerCanvas._frameIsMoving = true;
     }    
 
     private _onUp(evt: PointerEvent) {
@@ -188,6 +190,8 @@ export class GraphFrame {
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
         this._headerElement.releasePointerCapture(evt.pointerId);
+
+        this._ownerCanvas._frameIsMoving = false;
     }
 
     private _onMove(evt: PointerEvent) {
