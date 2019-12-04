@@ -464,7 +464,7 @@ export class AssetContainer extends AbstractScene {
      * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
      * @param targetConverter defines a function used to convert animation targets from the asset container to the scene (default: search node by name)
      */
-    public MergeAnimationsTo(scene: Nullable<Scene> = EngineStore.LastCreatedScene, targetConverter: Nullable<(target: any) => Nullable<Node>> = null): void {
+    public mergeAnimationsTo(scene: Nullable<Scene> = EngineStore.LastCreatedScene, targetConverter: Nullable<(target: any) => Nullable<Node>> = null): void {
         if (!scene) {
             Logger.Error("No scene available to merge animations to");
             return;

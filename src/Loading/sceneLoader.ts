@@ -1022,7 +1022,7 @@ export class SceneLoader {
         }
 
         let onAssetContainerLoaded = (container: AssetContainer) => {
-            container.MergeAnimationsTo(scene, targetConverter);
+            container.mergeAnimationsTo(scene, targetConverter);
 
             container.dispose();
 
