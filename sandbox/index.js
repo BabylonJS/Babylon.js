@@ -47,7 +47,6 @@ if (BABYLON.Engine.isSupported()) {
     var htmlInput = document.getElementById("files");
     var btnInspector = document.getElementById("btnInspector");
     var errorZone = document.getElementById("errorZone");
-    var btnAnimationFiles = document.getElementById("animationFilesButton");
     var filesInput;
     var filesInputAnimation;
     var currentScene;
@@ -60,7 +59,6 @@ if (BABYLON.Engine.isSupported()) {
 
     btnInspector.classList.add("hidden");
     btnEnvironment.classList.add("hidden");
-    btnAnimationFiles.classList.add("hidden");
 
     canvas.addEventListener("contextmenu", function(evt) {
         evt.preventDefault();
@@ -141,7 +139,6 @@ if (BABYLON.Engine.isSupported()) {
 
         btnInspector.classList.remove("hidden");
         btnEnvironment.classList.remove("hidden");
-        btnAnimationFiles.classList.remove("hidden");
 
         // Attach camera to canvas inputs
         if (!currentScene.activeCamera || currentScene.lights.length === 0) {
