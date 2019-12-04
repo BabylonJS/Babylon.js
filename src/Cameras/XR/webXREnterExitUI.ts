@@ -120,9 +120,9 @@ export class WebXREnterExitUI implements IDisposable {
     /**
      *
      * @param scene babylon scene object to use
-     * @param options read-only version of the options passed to this UI
+     * @param options (read-only) version of the options passed to this UI
      */
-    private constructor(private scene: Scene, public readonly options: WebXREnterExitUIOptions) {
+    private constructor(private scene: Scene, public options: WebXREnterExitUIOptions) {
         this._overlay = document.createElement("div");
         this._overlay.style.cssText = "z-index:11;position: absolute; right: 20px;bottom: 50px;";
 
