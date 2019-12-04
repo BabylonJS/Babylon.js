@@ -144,6 +144,8 @@
 
 - SpritePackedManager extends SpriteManager so that a sprite sheet with different size sprites can be used ([JohnK](https://github.com/BabylonJSGuide))
 - MultiPickSprite and multiPickSpriteWithRay added to sprites ([JohnK](https://github.com/BabylonJSGuide))
+- SpritePackedManager support for JSON Objects that where not stringified, of with the frames parameter accepting Objects and Arrays ([Pryme8](https://github.com/Pryme8))
+- Added `SpriteMap` for creation of grid-based dynamically animated sprite atlas rendering (Beta) ([Pryme8](https://github.com/Pryme8))
 
 ### WebXR / WebVR
 
