@@ -25,6 +25,7 @@ import { CheckBoxLineComponent } from '../lines/checkBoxLineComponent';
 import { TextLineComponent } from '../lines/textLineComponent';
 import { Scene } from 'babylonjs/scene';
 import { FileMultipleButtonLineComponent } from '../lines/fileMultipleButtonLineComponent';
+import { OptionsLineComponent } from '../lines/optionsLineComponent';
 
 export class ToolsTabComponent extends PaneComponent {
     private _videoRecorder: Nullable<VideoRecorder>;
@@ -36,6 +37,14 @@ export class ToolsTabComponent extends PaneComponent {
         super(props);
 
         this.state = { tag: "Record video" };
+
+        const sceneImportDefaults = this.props.globalState.sceneImportDefaults;
+        if (sceneImportDefaults["overwriteAnimations"] === undefined) {
+            sceneImportDefaults["overwriteAnimations"] = true;
+        }
+        if (sceneImportDefaults["animationGroupLoadingMode"] === undefined) {
+            sceneImportDefaults["animationGroupLoadingMode"] = 0; // TODO - import SceneLoaderAnimationGroupLoadingMode
+        }
     }
 
     componentDidMount() {
@@ -99,6 +108,9 @@ export class ToolsTabComponent extends PaneComponent {
 
         const scene = this.props.scene;
 
+        const overwriteAnimations = this.props.globalState.sceneImportDefaults["overwriteAnimations"];
+        const animationGroupLoadingMode = this.props.globalState.sceneImportDefaults["animationGroupLoadingMode"];
+
         var reload = function (sceneFile: File) {
             // If a scene file has been provided
             if (sceneFile) {
@@ -108,7 +120,7 @@ export class ToolsTabComponent extends PaneComponent {
                         currentGroup.play(true);
                     }
                 };
-                (BABYLON.SceneLoader as any).ImportAnimationsAsync("file:", sceneFile, scene, null, onSuccess);
+                (BABYLON.SceneLoader as any).ImportAnimationsAsync("file:", sceneFile, scene, overwriteAnimations, animationGroupLoadingMode, null, onSuccess);
             }
         };
         let filesInputAnimation = new BABYLON.FilesInput(scene.getEngine() as any, scene as any, () => { }, () => { }, () => { }, (remaining: number) => { }, () => { }, reload, () => { });
@@ -143,7 +155,7 @@ export class ToolsTabComponent extends PaneComponent {
             glb.downloadFiles();
             this._isExporting = false;
             this.forceUpdate();
-        }).catch(reason => {      
+        }).catch(reason => {
             this._isExporting = false;
             this.forceUpdate();
         });
@@ -186,6 +198,15 @@ export class ToolsTabComponent extends PaneComponent {
             return null;
         }
 
+        const sceneImportDefaults = this.props.globalState.sceneImportDefaults;
+
+        var animationGroupLoadingModes = [
+            { label: "Clean", value: 0 }, // TODO - import SceneLoaderAnimationGroupLoadingMode
+            { label: "Stop", value: 1 },
+            { label: "Sync", value: 2 },
+            { label: "NoSync", value: 3 },
+        ];
+
         return (
             <div className="pane">
                 <LineContainerComponent globalState={this.props.globalState} title="CAPTURE">
@@ -196,19 +217,19 @@ export class ToolsTabComponent extends PaneComponent {
                     <ButtonLineComponent label="Capture" onClick={() => this.captureRender()} />
                     <div className="vector3Line">
                         <FloatLineComponent label="Precision" target={this._screenShotSize} propertyName='precision' onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                        <CheckBoxLineComponent label="Use Width/Height" onSelect={ value => {
+                        <CheckBoxLineComponent label="Use Width/Height" onSelect={value => {
                             this._useWidthHeight = value;
                             this.forceUpdate();
                         }
                         } isSelected={() => this._useWidthHeight} />
                         {
-                        this._useWidthHeight &&
-                        <div className="secondLine">
-                            <NumericInputComponent label="Width" precision={0} step={1} value={this._screenShotSize.width ? this._screenShotSize.width : 512} onChange={value => this._screenShotSize.width = value} />
-                            <NumericInputComponent label="Height" precision={0} step={1} value={this._screenShotSize.height ? this._screenShotSize.height : 512} onChange={value => this._screenShotSize.height = value} />
-                        </div>
+                            this._useWidthHeight &&
+                            <div className="secondLine">
+                                <NumericInputComponent label="Width" precision={0} step={1} value={this._screenShotSize.width ? this._screenShotSize.width : 512} onChange={value => this._screenShotSize.width = value} />
+                                <NumericInputComponent label="Height" precision={0} step={1} value={this._screenShotSize.height ? this._screenShotSize.height : 512} onChange={value => this._screenShotSize.height = value} />
+                            </div>
                         }
-                        
+
                     </div>
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="REPLAY">
@@ -216,16 +237,24 @@ export class ToolsTabComponent extends PaneComponent {
                     <ButtonLineComponent label="Reset" onClick={() => this.resetReplay()} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="SCENE IMPORT">
-                    <FileMultipleButtonLineComponent label="Import Animations" accept="gltf" onClick={(evt: any) => this.importAnimations(evt)} />
+                    <FileMultipleButtonLineComponent label="Import animations" accept="gltf" onClick={(evt: any) => this.importAnimations(evt)} />
+                    <CheckBoxLineComponent label="Overwrite animations" target={sceneImportDefaults} propertyName="overwriteAnimations" onSelect={value => {
+                        sceneImportDefaults["overwriteAnimations"] = value;
+                        this.forceUpdate();
+                    }} />
+                    {
+                        sceneImportDefaults["overwriteAnimations"] === false &&
+                        <OptionsLineComponent label="Old animation groups loading mode" options={animationGroupLoadingModes} target={sceneImportDefaults} propertyName="animationGroupLoadingMode" />
+                    }
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="SCENE EXPORT">
                     {
-                        this._isExporting && 
+                        this._isExporting &&
                         <TextLineComponent label="Please wait..exporting" ignoreValue={true} />
                     }
                     {
-                        !this._isExporting && 
-                        <>  
+                        !this._isExporting &&
+                        <>
                             <ButtonLineComponent label="Export to GLB" onClick={() => this.exportGLTF()} />
                             <ButtonLineComponent label="Export to Babylon" onClick={() => this.exportBabylon()} />
                             {
