@@ -70,8 +70,8 @@ export class AssetContainer extends AbstractScene {
      * @returns a list of rootNodes, skeletons and aniamtion groups that were duplicated
      */
     public instantiateModelsToScene(nameFunction?: (sourceName: string) => string, cloneMaterials = false): InstantiatedEntries {
-        let convertionMap: { [key: number]: number } = {};
-        let storeMap: { [key: number]: any } = {};
+        let convertionMap: {[key: number]: number} = {};
+        let storeMap: {[key: number]: any} = {};
         let result = new InstantiatedEntries();
         let alreadySwappedSkeletons: Skeleton[] = [];
         let alreadySwappedMaterials: Material[] = [];
@@ -175,7 +175,7 @@ export class AssetContainer extends AbstractScene {
         });
 
         this.skeletons.forEach((s) => {
-            let clone = s.clone(nameFunction ? nameFunction(s.name) : "Clone of " + s.name);
+            let clone =  s.clone(nameFunction ? nameFunction(s.name) : "Clone of " + s.name);
 
             if (s.overrideMesh) {
                 clone.overrideMesh = storeMap[convertionMap[s.overrideMesh.uniqueId]];

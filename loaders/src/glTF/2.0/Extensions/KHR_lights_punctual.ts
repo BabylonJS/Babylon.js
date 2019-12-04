@@ -6,7 +6,6 @@ import { SpotLight } from "babylonjs/Lights/spotLight";
 import { Light } from "babylonjs/Lights/light";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 
-import { IProperty } from "babylonjs-gltf2interface";
 import { IChildRootProperty } from "babylonjs-gltf2interface";
 import { INode } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
