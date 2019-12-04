@@ -53411,6 +53411,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         _this._altKeyIsPressed = false;
         _this._ctrlKeyIsPressed = false;
         _this._oldY = -1;
+        _this._frameIsMoving = false;
         props.globalState.onSelectionChangedObservable.add(function (selection) {
             if (!selection) {
                 _this._selectedNodes = [];
@@ -54193,6 +54194,7 @@ var GraphFrame = /** @class */ (function () {
         this._mouseStartPointY = evt.clientY;
         this._headerElement.setPointerCapture(evt.pointerId);
         this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
+        this._ownerCanvas._frameIsMoving = true;
     };
     GraphFrame.prototype._onUp = function (evt) {
         evt.stopPropagation();
@@ -54204,6 +54206,7 @@ var GraphFrame = /** @class */ (function () {
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
         this._headerElement.releasePointerCapture(evt.pointerId);
+        this._ownerCanvas._frameIsMoving = false;
     };
     GraphFrame.prototype._onMove = function (evt) {
         if (this._mouseStartPointX === null || this._mouseStartPointY === null || evt.ctrlKey) {
@@ -54456,6 +54459,9 @@ var GraphNode = /** @class */ (function () {
         return this._links.filter(function (link) { return link.portA.connectionPoint === point || link.portB.connectionPoint === point; });
     };
     GraphNode.prototype._refreshFrames = function () {
+        if (this._ownerCanvas._frameIsMoving) {
+            return;
+        }
         // Frames
         for (var _i = 0, _a = this._ownerCanvas.frames; _i < _a.length; _i++) {
             var frame = _a[_i];

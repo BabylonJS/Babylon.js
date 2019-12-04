@@ -31,11 +31,15 @@ export class WebXRSessionManager implements IDisposable {
     /**
      * Fires every time a new xrFrame arrives which can be used to update the camera
      */
-    public onXRFrameObservable: Observable<any> = new Observable<any>();
+    public onXRFrameObservable: Observable<XRFrame> = new Observable<XRFrame>();
     /**
      * Fires when the xr session is ended either by the device or manually done
      */
     public onXRSessionEnded: Observable<any> = new Observable<any>();
+    /**
+     * Fires when the xr session is ended either by the device or manually done
+     */
+    public onXRSessionInit: Observable<XRSession> = new Observable<XRSession>();
 
     /**
      * Underlying xr session
@@ -62,7 +66,10 @@ export class WebXRSessionManager implements IDisposable {
      * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
      * @param scene The scene which the session should be created for
      */
-    constructor(private scene: Scene) {
+    constructor(
+        /** The scene which the session should be created for */
+        public scene: Scene
+    ) {
 
     }
 
@@ -90,6 +97,7 @@ export class WebXRSessionManager implements IDisposable {
     public initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures: any = {}): Promise<XRSession> {
         return this._xrNavigator.xr.requestSession(xrSessionMode, optionalFeatures).then((session: XRSession) => {
             this.session = session;
+            this.onXRSessionInit.notifyObservers(session);
             this._sessionEnded = false;
 
             // handle when the session is ended (By calling session.end or device ends its own session eg. pressing home button on phone)
@@ -158,7 +166,9 @@ export class WebXRSessionManager implements IDisposable {
                 }
                 // Store the XR frame in the manager to be consumed by the XR camera to update pose
                 this.currentFrame = xrFrame;
-                this.onXRFrameObservable.notifyObservers(null);
+                if (xrFrame) {
+                    this.onXRFrameObservable.notifyObservers(xrFrame);
+                }
                 this.scene.getEngine()._renderLoop();
             }
         };
@@ -231,6 +241,7 @@ export class WebXRSessionManager implements IDisposable {
      * Converts the render layer of xrSession to a render target
      * @param session session to create render target for
      * @param scene scene the new render target should be created for
+     * @param baseLayer the webgl layer to create the render target for
      */
     public static _CreateRenderTargetTextureFromSession(session: XRSession, scene: Scene, baseLayer: XRWebGLLayer) {
         if (!baseLayer) {
