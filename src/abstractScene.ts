@@ -200,7 +200,7 @@ export abstract class AbstractScene {
     public environmentTexture: Nullable<BaseTexture> = null;
 
     /**
-     * Return all meshes, lights, cameras, transformNodes and bones
+     * @returns all meshes, lights, cameras, transformNodes and bones
      */
     public getNodes(): Array<Node> {
         let nodes = new Array<Node>();
