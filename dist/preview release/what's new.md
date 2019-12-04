@@ -168,6 +168,8 @@
 - VRExperienceHelper has now an XR fallback to force XR usage (Beta) ([RaananW](https://github.com/RaananW/))
 - Added option to change the teleportation easing function in the VRExperienceHelper class ([https://github.com/LeoRodz](https://github.com/LeoRodz))
 - Windows motion controller mapping corrected to XR ([RaananW](https://github.com/RaananW/))
+- Pointer-Event simulation for screen target ray mode ([RaananW](https://github.com/RaananW/))
+- New observable that triggers when a session was initialized ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
