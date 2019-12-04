@@ -56,6 +56,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _ctrlKeyIsPressed = false;
     private _oldY = -1;
 
+    public _frameIsMoving = false;
+
     public get gridSize() {
         return this._gridSize;
     }
