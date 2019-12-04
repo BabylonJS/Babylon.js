@@ -48,7 +48,6 @@ if (BABYLON.Engine.isSupported()) {
     var btnInspector = document.getElementById("btnInspector");
     var errorZone = document.getElementById("errorZone");
     var filesInput;
-    var filesInputAnimation;
     var currentScene;
     var currentSkybox;
     var currentPluginName;

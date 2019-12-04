@@ -17,7 +17,6 @@ import { SceneLoaderFlags } from "./sceneLoaderFlags";
 import { IFileRequest } from "../Misc/fileRequest";
 import { WebRequest } from "../Misc/webRequest";
 import { RequestFileError, ReadFileError } from '../Misc/fileTools';
-import { Animation } from '../Animations/animation';
 
 /**
  * Class used to represent data loading progression
@@ -230,22 +229,22 @@ export enum SceneLoaderAnimationGroupLoadingMode {
     /**
      * Reset all old animations to initial state then dispose them.
      */
-    CLEAN = 0,
+    Clean = 0,
 
     /**
      * Stop all old animations.
      */
-    STOP = 1,
+    Stop = 1,
 
     /**
      * Restart old animations from first frame.
      */
-    SYNC = 2,
+    Sync = 2,
 
     /**
      * Old animations remains untouched.
      */
-    NOSYNC = 3
+    NoSync = 3
 }
 
 /**
@@ -1015,14 +1014,59 @@ export class SceneLoader {
      * @param onProgress a callback with a progress event for each file being loaded
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      */
-    public static ImportAnimations(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, overwriteAnimations = true, animationGroupLoadingMode = SceneLoaderAnimationGroupLoadingMode.CLEAN, targetConverter: Nullable<(target: any) => any> = null, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null): void {
+    public static ImportAnimations(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, overwriteAnimations = true, animationGroupLoadingMode = SceneLoaderAnimationGroupLoadingMode.Clean, targetConverter: Nullable<(target: any) => any> = null, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null): void {
         if (!scene) {
             Logger.Error("No scene available to load animations to");
             return;
         }
 
+        if (overwriteAnimations) {
+            // Reset, stop and dispose all animations before loading new ones
+            for (let animatable of scene.animatables) {
+                animatable.reset();
+            }
+            scene.stopAllAnimations();
+            scene.animationGroups.slice().forEach((animationGroup) => {
+                animationGroup.dispose();
+            });
+            let nodes = scene.getNodes();
+            nodes.forEach((node) => {
+                if (node.animations) {
+                    node.animations = [];
+                }
+            });
+        }
+        else {
+            switch (animationGroupLoadingMode) {
+                case SceneLoaderAnimationGroupLoadingMode.Clean:
+                    scene.animationGroups.slice().forEach((animationGroup) => {
+                        animationGroup.dispose();
+                    });
+                    break;
+                case SceneLoaderAnimationGroupLoadingMode.Stop:
+                    scene.animationGroups.forEach((animationGroup) => {
+                        animationGroup.stop();
+                    });
+                    break;
+                case SceneLoaderAnimationGroupLoadingMode.Sync:
+                    scene.animationGroups.forEach((animationGroup) => {
+                        animationGroup.reset();
+                        animationGroup.restart();
+                    });
+                    break;
+                case SceneLoaderAnimationGroupLoadingMode.NoSync:
+                    // nothing to do
+                    break;
+                default:
+                    Logger.Error("Unknown animation group loading mode value '" + animationGroupLoadingMode + "'");
+                    return;
+            }
+        }
+
+        let startingIndexForNewAnimatables = scene.animatables.length;
+
         let onAssetContainerLoaded = (container: AssetContainer) => {
-            container.mergeAnimationsTo(scene, targetConverter);
+            container.mergeAnimationsTo(scene, scene.animatables.slice(startingIndexForNewAnimatables), targetConverter);
 
             container.dispose();
 
@@ -1032,47 +1076,6 @@ export class SceneLoader {
                 onSuccess(scene);
             }
         };
-
-        if (overwriteAnimations) {
-            // Reset, stop and dispose all animations before loading new ones
-            for (let animatable of scene.animatables) {
-                animatable.reset();
-            }
-            scene.stopAllAnimations();
-            scene.animationGroups.slice().forEach(animationGroup => {
-                animationGroup.dispose();
-            });
-            let nodes = scene.getNodes();
-            nodes.forEach(node => {
-                node.animations = new Array<Animation>();
-            });
-        }
-        else {
-            switch (animationGroupLoadingMode) {
-                case SceneLoaderAnimationGroupLoadingMode.CLEAN:
-                    scene.animationGroups.slice().forEach(animationGroup => {
-                        animationGroup.dispose();
-                    });
-                    break;
-                case SceneLoaderAnimationGroupLoadingMode.STOP:
-                    scene.animationGroups.forEach(animationGroup => {
-                        animationGroup.stop();
-                    });
-                    break;
-                case SceneLoaderAnimationGroupLoadingMode.SYNC:
-                    scene.animationGroups.forEach(animationGroup => {
-                        animationGroup.reset();
-                        animationGroup.restart();
-                    });
-                    break;
-                case SceneLoaderAnimationGroupLoadingMode.NOSYNC:
-                    // nothing to do
-                    break;
-                default:
-                    Logger.Error("Unknown animation group loading mode value '" + animationGroupLoadingMode + "'");
-                    return;
-            }
-        }
 
         this.LoadAssetContainer(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError);
     }
@@ -1089,7 +1092,7 @@ export class SceneLoader {
      * @param onProgress a callback with a progress event for each file being loaded
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      */
-    public static ImportAnimationsAsync(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, overwriteAnimations = true, animationGroupLoadingMode = SceneLoaderAnimationGroupLoadingMode.CLEAN, targetConverter: Nullable<(target: any) => any> = null, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null): Promise<Scene> {
+    public static ImportAnimationsAsync(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, overwriteAnimations = true, animationGroupLoadingMode = SceneLoaderAnimationGroupLoadingMode.Clean, targetConverter: Nullable<(target: any) => any> = null, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null): Promise<Scene> {
         return new Promise((resolve, reject) => {
             SceneLoader.ImportAnimations(rootUrl, sceneFilename, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, (_scene: Scene) => {
                 resolve(_scene);

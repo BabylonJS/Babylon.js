@@ -4,6 +4,7 @@ import { Mesh } from "./Meshes/mesh";
 import { TransformNode } from './Meshes/transformNode';
 import { Skeleton } from './Bones/skeleton';
 import { AnimationGroup } from './Animations/animationGroup';
+import { Animatable } from './Animations/animatable';
 import { AbstractMesh } from './Meshes/abstractMesh';
 import { MultiMaterial } from './Materials/multiMaterial';
 import { Material } from './Materials/material';
@@ -462,26 +463,27 @@ export class AssetContainer extends AbstractScene {
     /**
      * Merge animations from this asset container into a scene
      * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+     * @param animatables set of animatables to retarget to a node from the scene
      * @param targetConverter defines a function used to convert animation targets from the asset container to the scene (default: search node by name)
      */
-    public mergeAnimationsTo(scene: Nullable<Scene> = EngineStore.LastCreatedScene, targetConverter: Nullable<(target: any) => Nullable<Node>> = null): void {
+    public mergeAnimationsTo(scene: Nullable<Scene> = EngineStore.LastCreatedScene, animatables: Animatable[], targetConverter: Nullable<(target: any) => Nullable<Node>> = null): void {
         if (!scene) {
             Logger.Error("No scene available to merge animations to");
             return;
         }
 
-        let _targetConverter = targetConverter ? targetConverter : (target: any) => { return scene.getBoneByName(target.name) || scene.getNodeByName(target.name) };
+        let _targetConverter = targetConverter ? targetConverter : (target: any) => { return scene.getBoneByName(target.name) || scene.getNodeByName(target.name); };
 
-        // Copy node animations
+        // Copy new node animations
         let nodesInAC = this.getNodes();
-        nodesInAC.forEach(nodeInAC => {
+        nodesInAC.forEach((nodeInAC) => {
             let nodeInScene = _targetConverter(nodeInAC);
-            if (nodeInScene != null) {
+            if (nodeInScene !== null) {
                 // Remove old animations with same target property as a new one
                 for (let animationInAC of nodeInAC.animations) {
                     // Doing treatment on an array for safety measure
-                    let animationsWithSameProperty = nodeInScene.animations.filter(animationInScene => {
-                        return animationInScene.targetProperty === animationInAC.targetProperty
+                    let animationsWithSameProperty = nodeInScene.animations.filter((animationInScene) => {
+                        return animationInScene.targetProperty === animationInAC.targetProperty;
                     });
                     for (let animationWithSameProperty of animationsWithSameProperty) {
                         const index = nodeInScene.animations.indexOf(animationWithSameProperty, 0);
@@ -496,23 +498,22 @@ export class AssetContainer extends AbstractScene {
             }
         });
 
-        // Copy animation groups
-        this.animationGroups.slice().forEach(animationGroupInAC => {
+        // Copy new animation groups
+        this.animationGroups.slice().forEach((animationGroupInAC) => {
             // Clone the animation group and all its animatables
             animationGroupInAC.clone(animationGroupInAC.name, _targetConverter);
 
             // Remove animatables related to the asset container
-            animationGroupInAC.animatables.forEach(animatable => {
+            animationGroupInAC.animatables.forEach((animatable) => {
                 animatable.stop();
-            })
+            });
         });
 
-        // Copy animatables
-        scene.animatables.slice().forEach(animatable => {
+        // Retarget animatables
+        animatables.forEach((animatable) => {
             let target = _targetConverter(animatable.target);
 
-            // If the animatable has just been loaded
-            if (target && target !== animatable.target) {
+            if (target) {
                 // Clone the animatable and retarget it
                 scene.beginAnimation(target, animatable.fromFrame, animatable.toFrame, animatable.loopAnimation, animatable.speedRatio, animatable.onAnimationEnd ? animatable.onAnimationEnd : undefined, undefined, true, undefined, animatable.onAnimationLoop ? animatable.onAnimationLoop : undefined);
 
