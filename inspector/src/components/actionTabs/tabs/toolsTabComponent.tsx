@@ -15,6 +15,7 @@ import { Texture } from "babylonjs/Materials/Textures/texture";
 import { SceneSerializer } from "babylonjs/Misc/sceneSerializer";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { FilesInput } from 'babylonjs/Misc/filesInput';
+import { Scene } from 'babylonjs/scene';
 
 import { GLTFComponent } from "./tools/gltfComponent";
 
@@ -24,7 +25,6 @@ import { IScreenshotSize } from 'babylonjs/Misc/interfaces/screenshotSize';
 import { NumericInputComponent } from '../lines/numericInputComponent';
 import { CheckBoxLineComponent } from '../lines/checkBoxLineComponent';
 import { TextLineComponent } from '../lines/textLineComponent';
-import { Scene } from 'babylonjs/scene';
 import { FileMultipleButtonLineComponent } from '../lines/fileMultipleButtonLineComponent';
 import { OptionsLineComponent } from '../lines/optionsLineComponent';
 
@@ -156,7 +156,7 @@ export class ToolsTabComponent extends PaneComponent {
             glb.downloadFiles();
             this._isExporting = false;
             this.forceUpdate();
-        }).catch(reason => {    
+        }).catch(reason => {      
             this._isExporting = false;
             this.forceUpdate();
         });
@@ -228,9 +228,9 @@ export class ToolsTabComponent extends PaneComponent {
                         <div className="secondLine">
                             <NumericInputComponent label="Width" precision={0} step={1} value={this._screenShotSize.width ? this._screenShotSize.width : 512} onChange={value => this._screenShotSize.width = value} />
                             <NumericInputComponent label="Height" precision={0} step={1} value={this._screenShotSize.height ? this._screenShotSize.height : 512} onChange={value => this._screenShotSize.height = value} />
-                            </div>
+                        </div>
                         }
-
+                        
                     </div>
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="REPLAY">
@@ -250,12 +250,12 @@ export class ToolsTabComponent extends PaneComponent {
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="SCENE EXPORT">
                     {
-                        this._isExporting &&
+                        this._isExporting && 
                         <TextLineComponent label="Please wait..exporting" ignoreValue={true} />
                     }
                     {
                         !this._isExporting && 
-                        <> 
+                        <>  
                             <ButtonLineComponent label="Export to GLB" onClick={() => this.exportGLTF()} />
                             <ButtonLineComponent label="Export to Babylon" onClick={() => this.exportBabylon()} />
                             {
