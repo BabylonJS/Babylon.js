@@ -305,7 +305,7 @@ if (BABYLON.Engine.isSupported()) {
         }, false);
     }
 
-    window.addEventListener("keydown", function (event) {
+    window.addEventListener("keydown", function(event) {
         // Press R to reload
         if (event.keyCode === 82 && event.target.nodeName !== "INPUT" && currentScene) {
             if (assetUrl) {
