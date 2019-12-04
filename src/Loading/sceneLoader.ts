@@ -17,7 +17,7 @@ import { SceneLoaderFlags } from "./sceneLoaderFlags";
 import { IFileRequest } from "../Misc/fileRequest";
 import { WebRequest } from "../Misc/webRequest";
 import { RequestFileError, ReadFileError } from '../Misc/fileTools';
-import { Animation } from '../Animations';
+import { Animation } from '../Animations/animation';
 
 /**
  * Class used to represent data loading progression
