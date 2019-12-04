@@ -66,7 +66,10 @@ export class WebXRSessionManager implements IDisposable {
      * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
      * @param scene The scene which the session should be created for
      */
-    constructor(public scene: Scene) {
+    constructor(
+        /** The scene which the session should be created for */
+        public scene: Scene
+    ) {
 
     }
 
