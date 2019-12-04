@@ -17,6 +17,7 @@ import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/a
 import { IPropertyComponentProps } from './propertyComponentProps';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { GenericPropertyTabComponent } from './genericNodePropertyComponent';
+import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -198,7 +199,16 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                                 this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                             }} />                        
-                    }           
+                    }      
+                    {
+                        inputBlock.visibleInInspector &&
+                        <TextInputLineComponent globalState={this.props.globalState} label="Group" propertyName="groupInInspector" target={this.props.block} 
+                            onChange={() => {
+                                this.forceUpdate();
+                                this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                                this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                            }} />
+                    }     
                     <OptionsLineComponent label="Mode" options={modeOptions} target={inputBlock} 
                         noDirectUpdate={true}
                         getSelection={(block) => {

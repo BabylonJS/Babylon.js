@@ -45181,6 +45181,27 @@ var NodeMaterialPropertyGridComponent = /** @class */ (function (_super) {
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextureLinkLineComponent"], { label: textureBlock.name, key: i, texture: textureBlock.texture, material: material, onTextureCreated: function (texture) { return textureBlock.texture = texture; }, onSelectionChangedObservable: _this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }));
         })));
     };
+    NodeMaterialPropertyGridComponent.prototype.renderInputBlock = function (block) {
+        switch (block.type) {
+            case babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Float:
+                var cantDisplaySlider = (isNaN(block.min) || isNaN(block.max) || block.min === block.max);
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    cantDisplaySlider &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { key: block.name, lockObject: this.props.lockObject, label: block.name, target: block, propertyName: "value", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    !cantDisplaySlider &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_13__["SliderLineComponent"], { key: block.name, label: block.name, target: block, propertyName: "value", step: (block.max - block.min) / 100.0, minimum: block.min, maximum: block.max, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            case babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Color3:
+            case babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Color4:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__["Color3LineComponent"], { key: block.name, label: block.name, target: block, propertyName: "value", onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            case babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector2:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_11__["Vector2LineComponent"], { key: block.name, label: block.name, target: block, propertyName: "value", onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            case babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector3:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_9__["Vector3LineComponent"], { key: block.name, label: block.name, target: block, propertyName: "value", onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            case babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector4:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector4LineComponent__WEBPACK_IMPORTED_MODULE_10__["Vector4LineComponent"], { key: block.name, label: block.name, target: block, propertyName: "value", onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+        }
+        return null;
+    };
     NodeMaterialPropertyGridComponent.prototype.renderInputValues = function () {
         var _this = this;
         var configurableInputBlocks = this.props.material.getInputBlocks().filter(function (block) {
@@ -45191,27 +45212,25 @@ var NodeMaterialPropertyGridComponent = /** @class */ (function (_super) {
         if (configurableInputBlocks.length === 0) {
             return null;
         }
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "INPUTS" }, configurableInputBlocks.map(function (block) {
-            switch (block.type) {
-                case babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Float:
-                    var cantDisplaySlider = (isNaN(block.min) || isNaN(block.max) || block.min === block.max);
-                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                        cantDisplaySlider &&
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { key: block.name, lockObject: _this.props.lockObject, label: block.name, target: block, propertyName: "value", onPropertyChangedObservable: _this.props.onPropertyChangedObservable }),
-                        !cantDisplaySlider &&
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_13__["SliderLineComponent"], { key: block.name, label: block.name, target: block, propertyName: "value", step: (block.max - block.min) / 100.0, minimum: block.min, maximum: block.max, onPropertyChangedObservable: _this.props.onPropertyChangedObservable })));
-                case babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Color3:
-                case babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Color4:
-                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_8__["Color3LineComponent"], { key: block.name, label: block.name, target: block, propertyName: "value", onPropertyChangedObservable: _this.props.onPropertyChangedObservable }));
-                case babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector2:
-                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector2LineComponent__WEBPACK_IMPORTED_MODULE_11__["Vector2LineComponent"], { key: block.name, label: block.name, target: block, propertyName: "value", onPropertyChangedObservable: _this.props.onPropertyChangedObservable }));
-                case babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector3:
-                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_9__["Vector3LineComponent"], { key: block.name, label: block.name, target: block, propertyName: "value", onPropertyChangedObservable: _this.props.onPropertyChangedObservable }));
-                case babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].Vector4:
-                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector4LineComponent__WEBPACK_IMPORTED_MODULE_10__["Vector4LineComponent"], { key: block.name, label: block.name, target: block, propertyName: "value", onPropertyChangedObservable: _this.props.onPropertyChangedObservable }));
+        var namedGroups = [];
+        configurableInputBlocks.forEach(function (block) {
+            if (!block.groupInInspector) {
+                return;
             }
-            return null;
-        })));
+            if (namedGroups.indexOf(block.groupInInspector) === -1) {
+                namedGroups.push(block.groupInInspector);
+            }
+        });
+        namedGroups.sort();
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "INPUTS" }, configurableInputBlocks.filter(function (block) { return !block.groupInInspector; }).map(function (block) {
+                return _this.renderInputBlock(block);
+            })),
+            namedGroups.map(function (name) {
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: _this.props.globalState, title: name.toUpperCase() }, configurableInputBlocks.filter(function (block) { return block.groupInInspector === name; }).map(function (block) {
+                    return _this.renderInputBlock(block);
+                })));
+            })));
     };
     NodeMaterialPropertyGridComponent.prototype.render = function () {
         var _this = this;
@@ -45220,7 +45239,7 @@ var NodeMaterialPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_4__["CommonMaterialPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, material: material, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CONFIGURATION" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Ignore alpha", target: material, propertyName: "ignoreAlpha", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Edit", onClick: function () { return _this.edit(); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Node Material Editor", onClick: function () { return _this.edit(); } })),
             this.renderInputValues(),
             this.renderTextures()));
     };
