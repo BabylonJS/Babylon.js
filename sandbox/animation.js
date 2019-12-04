@@ -45,8 +45,8 @@ dropdownBtn.addEventListener("click", function() {
 });
 
 function selectCurrentGroup(group, index, animation) {
-    for (var i = 0; i < dropdownContent.children.length; i++) {
-        dropdownContent.children[i].classList.remove("active");
+    if (currentGroupIndex !== undefined) {
+        document.getElementById(formatId(currentGroup.name + "-" + currentGroupIndex)).classList.remove("active");
     }
     playBtn.classList.remove("play");
     playBtn.classList.add("pause");

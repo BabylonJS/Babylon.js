@@ -244,7 +244,7 @@ export class ToolsTabComponent extends PaneComponent {
                     }} />
                     {
                         sceneImportDefaults["overwriteAnimations"] === false &&
-                        <OptionsLineComponent label="Old animation groups loading mode" options={animationGroupLoadingModes} target={sceneImportDefaults} propertyName="animationGroupLoadingMode" />
+                        <OptionsLineComponent label="Animation merge mode" options={animationGroupLoadingModes} target={sceneImportDefaults} propertyName="animationGroupLoadingMode" />
                     }
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="SCENE EXPORT">

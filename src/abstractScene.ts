@@ -208,7 +208,7 @@ export abstract class AbstractScene {
         nodes = nodes.concat(this.lights);
         nodes = nodes.concat(this.cameras);
         nodes = nodes.concat(this.transformNodes); // dummies
-        this.skeletons.forEach(skeleton => nodes = nodes.concat(skeleton.bones));
+        this.skeletons.forEach((skeleton) => nodes = nodes.concat(skeleton.bones));
         return nodes;
     }
 }

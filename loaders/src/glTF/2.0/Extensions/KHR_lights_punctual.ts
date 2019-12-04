@@ -39,10 +39,6 @@ interface ILights {
     lights: ILight[];
 }
 
-interface ObjectWithMetadata {
-    metadata: any;
-}
-
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md)
  */

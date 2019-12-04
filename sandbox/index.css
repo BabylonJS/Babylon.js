@@ -129,10 +129,6 @@ a:visited {
     height: var(--footer-height);
 }
 
-.custom-upload-animation {
-    background:url(./Assets/Icon_OpenAnimFile.png) center right no-repeat;
-}
-
 .custom-upload input[type=file]
 {
     outline:none;
