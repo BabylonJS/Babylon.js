@@ -1117,6 +1117,21 @@ export class SceneLoader {
         animatableObjectsInAC.forEach(animatableObjectInAC => {
             let objectInScene = _targetConverter(animatableObjectInAC);
             if (objectInScene != null) {
+                // Remove old animations with same target property as a new one
+                animatableObjectInAC.animations.forEach((animationInAC: Animation) => {
+                    // Doing treatment on an array for safety measure
+                    let animationsWithSameProperty = objectInScene.animations.filter((animationInScene: Animation) => {
+                        return animationInScene.targetProperty === animationInAC.targetProperty
+                    })
+                    animationsWithSameProperty.forEach((animationWithSameProperty: Animation) => {
+                        const index = objectInScene.animations.indexOf(animationWithSameProperty, 0);
+                        if (index > -1) {
+                            objectInScene.animations.splice(index, 1);
+                        }
+                    })
+                });
+
+                // Append new animations
                 objectInScene.animations = objectInScene.animations.concat(animatableObjectInAC.animations);
             }
         });
