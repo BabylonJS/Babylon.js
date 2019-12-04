@@ -254,6 +254,7 @@ declare module "babylonjs-node-editor/diagram/graphCanvas" {
         private _altKeyIsPressed;
         private _ctrlKeyIsPressed;
         private _oldY;
+        _frameIsMoving: boolean;
         gridSize: number;
         readonly globalState: GlobalState;
         readonly nodes: GraphNode[];
@@ -1595,6 +1596,7 @@ declare module NODEEDITOR {
         private _altKeyIsPressed;
         private _ctrlKeyIsPressed;
         private _oldY;
+        _frameIsMoving: boolean;
         gridSize: number;
         readonly globalState: GlobalState;
         readonly nodes: GraphNode[];

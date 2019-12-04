@@ -48317,21 +48317,21 @@ var CameraTreeItemComponent = /** @class */ (function (_super) {
     };
     CameraTreeItemComponent.prototype.componentDidMount = function () {
         var _this = this;
-        var camera = this.props.camera;
-        var scene = camera.getScene();
-        this._onActiveCameraObserver = scene.onActiveCameraChanged.add(function () {
+        var scene = this.props.camera.getScene();
+        this._onBeforeRenderObserver = scene.onBeforeRenderObservable.add(function () {
+            var camera = _this.props.camera;
             // This will deactivate the previous camera when the camera is changed. Multiple camera's cycle frequently so only do this for single cameras
-            if (_this.state.isActive && scene.activeCameras.length <= 1) {
+            if (_this.state.isActive && scene.activeCameras.length <= 1 && scene.activeCamera !== camera) {
                 camera.detachControl(scene.getEngine().getRenderingCanvas());
             }
             _this.setState({ isActive: scene.activeCamera === camera });
         });
     };
     CameraTreeItemComponent.prototype.componentWillUnmount = function () {
-        if (this._onActiveCameraObserver) {
+        if (this._onBeforeRenderObserver) {
             var camera = this.props.camera;
             var scene = camera.getScene();
-            scene.onActiveCameraChanged.remove(this._onActiveCameraObserver);
+            scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
         }
     };
     CameraTreeItemComponent.prototype.render = function () {
