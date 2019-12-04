@@ -33,7 +33,10 @@ export interface ISpriteMapOptions{
 	 */
     outputPosition?: Vector3;
 
-    //TODO ROTATION
+    /**
+	 * Vector3 of the rotation of the output plane.
+	 */
+    outputRotation?: Vector3;
 
     /**
 	 * number of layers that the system will reserve in resources.
@@ -123,6 +126,16 @@ export class SpriteMap implements ISpriteMap {
     public set position(v: Vector3) {
         this._output.position = v;
     }
+    
+    /** Returns the Rotation of Output Plane*/
+    public get rotation(): Vector3 {
+        return this._output.rotation;
+    }
+
+    /** Returns the Rotation of Output Plane*/
+    public set rotation(v: Vector3) {
+        this._output.rotation = v;
+    }
 
     /** Sets the AnimationMap*/
     public get animationMap() {
@@ -182,6 +195,7 @@ export class SpriteMap implements ISpriteMap {
     this.options.stageSize = this.options.stageSize || new Vector2(1, 1);
     this.options.outputSize = this.options.outputSize || this.options.stageSize;
     this.options.outputPosition = this.options.outputPosition || Vector3.Zero();
+    this.options.outputRotation = this.options.outputRotation || Vector3.Zero();
     this.options.layerCount = this.options.layerCount || 1;
     this.options.maxAnimationFrames = this.options.maxAnimationFrames || 0;
     this.options.baseTile = this.options.baseTile || 0;
@@ -462,6 +476,7 @@ export class SpriteMap implements ISpriteMap {
     */
     private _createTileAnimationBuffer(buffer: Nullable<ArrayBufferView>): RawTexture {
         let data = new Array();
+        let floatArray
         if (!buffer) {
             for (let i = 0; i < this.spriteCount; i++) {
                 data.push(0, 0, 0, 0);
@@ -470,12 +485,12 @@ export class SpriteMap implements ISpriteMap {
                     data.push(0, 0, 0, 0);
                     count++;
                 }
-            }
-        } else {
-            data = new Array(buffer);
+            }            
+            floatArray = new Float32Array(data);        
+        } else {            
+            floatArray = buffer;
         }
-
-        let floatArray = new Float32Array(data);
+        
         let t = RawTexture.CreateRGBATexture(
         floatArray,
         this.spriteCount,
@@ -486,9 +501,10 @@ export class SpriteMap implements ISpriteMap {
         Texture.NEAREST_NEAREST,
         Engine.TEXTURETYPE_FLOAT
         );
-
+        
         return t;
     }
+    
     /**
     * Modifies the data of the animationMap
     * @param cellID is the Index of the Sprite
@@ -503,9 +519,9 @@ export class SpriteMap implements ISpriteMap {
         if (!buffer) {
             return;
         }
-        buffer[id || 0] = toCell;
-        buffer[id + 1 || 0] = time;
-        buffer[id + 2 || 0] = speed;
+        buffer[id] = toCell;
+        buffer[id + 1 ] = time;
+        buffer[id + 2 ] = speed;
         let t = this._createTileAnimationBuffer(buffer);
         this._animationMap.dispose();
         this._animationMap = t;
