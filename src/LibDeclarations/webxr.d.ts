@@ -57,6 +57,7 @@ interface XRInputSource {
 
 interface XRSession {
     addEventListener: Function;
+    removeEventListener: Function;
     requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
     updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
     requestAnimationFrame: Function;
@@ -64,6 +65,8 @@ interface XRSession {
     renderState: XRRenderState;
     inputSources: Array<XRInputSource>;
 
+    // AR hit test
+    requestHitTest(ray: XRRay, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
 }
 
 interface XRReferenceSpace extends XRSpace {
@@ -128,4 +131,16 @@ interface XRInputSourceChangeEvent {
 interface XRInputSourceEvent extends Event {
     readonly frame: XRFrame;
     readonly inputSource: XRInputSource;
+}
+
+// Experimental(er) features
+class XRRay {
+    constructor (transformOrOrigin: XRRigidTransform | DOMPointReadOnly, direction?: DOMPointReadOnly): XRRay;
+    origin: DOMPointReadOnly;
+    direction: DOMPointReadOnly;
+    matrix: Float32Array;
+}
+
+interface XRHitResult {
+    hitMatrix: Float32Array;
 }
