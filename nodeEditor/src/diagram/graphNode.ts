@@ -195,6 +195,10 @@ export class GraphNode {
     }
     
     private _refreshFrames() {       
+        if (this._ownerCanvas._frameIsMoving) {
+            return;
+        }
+        
         // Frames
         for (var frame of this._ownerCanvas.frames) {
             frame.syncNode(this);
