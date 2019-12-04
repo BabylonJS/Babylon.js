@@ -7,7 +7,10 @@ import { AnimationGroup } from './Animations/animationGroup';
 import { AbstractMesh } from './Meshes/abstractMesh';
 import { MultiMaterial } from './Materials/multiMaterial';
 import { Material } from './Materials/material';
-import { Node, Nullable, Logger, EngineStore } from '.';
+import { Logger } from './Misc/logger';
+import { EngineStore } from './Engines/engineStore';
+import { Nullable } from './types';
+import { Node } from './node';
 
 /**
  * Set of assets to keep when moving a scene into an asset container.
