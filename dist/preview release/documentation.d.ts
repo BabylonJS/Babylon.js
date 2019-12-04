@@ -54856,6 +54856,8 @@ declare module BABYLON {
         visibleInInspector: boolean;
         /** Gets or sets a boolean indicating that the value of this input will not change after a build */
         isConstant: boolean;
+        /** Gets or sets the group to use to display this block in the Inspector */
+        groupInInspector: string;
         /**
          * Gets or sets the connection point type (default is float)
          */
