@@ -135,6 +135,10 @@ if (BABYLON.Engine.isSupported()) {
 
         currentScene = babylonScene;
 
+        babylonScene.onAnimationFileImportedObservable.add((scene) => {
+            anyLoaded(scene);
+        });
+
         document.title = "Babylon.js - " + sceneFile.name;
 
         btnInspector.classList.remove("hidden");
