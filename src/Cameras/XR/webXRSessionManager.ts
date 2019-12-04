@@ -236,6 +236,7 @@ export class WebXRSessionManager implements IDisposable {
      * Converts the render layer of xrSession to a render target
      * @param session session to create render target for
      * @param scene scene the new render target should be created for
+     * @param baseLayer the webgl layer to create the render target for
      */
     public static _CreateRenderTargetTextureFromSession(session: XRSession, scene: Scene, baseLayer: XRWebGLLayer) {
         if (!baseLayer) {
