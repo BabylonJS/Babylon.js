@@ -198,4 +198,17 @@ export abstract class AbstractScene {
      * Environment texture for the scene
      */
     public environmentTexture: Nullable<BaseTexture> = null;
+
+    /**
+     * Return all meshes, lights, cameras, transformNodes and bones
+     */
+    public getNodes(): Array<Node> {
+        let nodes = new Array<Node>();
+        nodes = nodes.concat(this.meshes);
+        nodes = nodes.concat(this.lights);
+        nodes = nodes.concat(this.cameras);
+        nodes = nodes.concat(this.transformNodes); // dummies
+        this.skeletons.forEach(skeleton => nodes = nodes.concat(skeleton.bones));
+        return nodes;
+    }
 }

@@ -18,7 +18,6 @@ import { IFileRequest } from "../Misc/fileRequest";
 import { WebRequest } from "../Misc/webRequest";
 import { RequestFileError, ReadFileError } from '../Misc/fileTools';
 import { Animation } from '../Animations';
-import { AbstractScene } from '..';
 
 /**
  * Class used to represent data loading progression
@@ -1022,10 +1021,8 @@ export class SceneLoader {
             return;
         }
 
-        let _targetConverter = targetConverter ? targetConverter : this._defaultTargetConverter(scene);
-
         let onAssetContainerLoaded = (container: AssetContainer) => {
-            SceneLoader.MergeAnimations(scene, container, _targetConverter);
+            container.MergeAnimationsTo(scene, targetConverter);
 
             container.dispose();
 
@@ -1045,9 +1042,9 @@ export class SceneLoader {
             scene.animationGroups.slice().forEach(animationGroup => {
                 animationGroup.dispose();
             });
-            let animatableObjects = this._getAllAnimatableObjects(scene);
-            animatableObjects.forEach(animatableObject => {
-                animatableObject.animations = new Array<Animation>();
+            let nodes = scene.getNodes();
+            nodes.forEach(node => {
+                node.animations = new Array<Animation>();
             });
         }
         else {
@@ -1069,7 +1066,7 @@ export class SceneLoader {
                     });
                     break;
                 case SceneLoaderAnimationGroupLoadingMode.NOSYNC:
-                    // nothing
+                    // nothing to do
                     break;
                 default:
                     Logger.Error("Unknown animation group loading mode value '" + animationGroupLoadingMode + "'");
@@ -1100,88 +1097,5 @@ export class SceneLoader {
                 reject(exception || new Error(message));
             });
         });
-    }
-
-    /**
-     * Merge animations from an asset container into a scene
-     * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
-     * @param animationAssetContainer is the instance of BABYLON.AssetContainer containing animations
-     * @param targetConverter defines a function used to convert animation targets from the asset container to the scene (default: search node by name)
-     */
-    public static MergeAnimations(scene: Scene, animationAssetContainer: AssetContainer, targetConverter: Nullable<(target: any) => any> = null): void {
-
-        let _targetConverter = targetConverter ? targetConverter : this._defaultTargetConverter(scene);
-
-        // Copy node and bone animations
-        let animatableObjectsInAC = this._getAllAnimatableObjects(animationAssetContainer);
-        animatableObjectsInAC.forEach(animatableObjectInAC => {
-            let objectInScene = _targetConverter(animatableObjectInAC);
-            if (objectInScene != null) {
-                // Remove old animations with same target property as a new one
-                animatableObjectInAC.animations.forEach((animationInAC: Animation) => {
-                    // Doing treatment on an array for safety measure
-                    let animationsWithSameProperty = objectInScene.animations.filter((animationInScene: Animation) => {
-                        return animationInScene.targetProperty === animationInAC.targetProperty
-                    })
-                    animationsWithSameProperty.forEach((animationWithSameProperty: Animation) => {
-                        const index = objectInScene.animations.indexOf(animationWithSameProperty, 0);
-                        if (index > -1) {
-                            objectInScene.animations.splice(index, 1);
-                        }
-                    })
-                });
-
-                // Append new animations
-                objectInScene.animations = objectInScene.animations.concat(animatableObjectInAC.animations);
-            }
-        });
-
-        // Copy animation groups
-        animationAssetContainer.animationGroups.slice().forEach(animationGroupInAC => {
-            // Clone the animation group and all its animatables
-            animationGroupInAC.clone(animationGroupInAC.name, _targetConverter);
-
-            // Remove animatables related to the animation asset container
-            animationGroupInAC.animatables.forEach(animatable => {
-                animatable.stop();
-            })
-        });
-
-        // Copy animatables
-        scene.animatables.slice().forEach(animatable => {
-            let target = _targetConverter(animatable.target);
-
-            // If the animatable has just been loaded
-            if (target && target !== animatable.target) {
-                // Clone the animatable and retarget it
-                scene.beginAnimation(target, animatable.fromFrame, animatable.toFrame, animatable.loopAnimation, animatable.speedRatio, animatable.onAnimationEnd ? animatable.onAnimationEnd : undefined, undefined, true, undefined, animatable.onAnimationLoop ? animatable.onAnimationLoop : undefined);
-
-                // Stop animation for the target in the animation asset container
-                scene.stopAnimation(animatable.target);
-            }
-        });
-    }
-
-    /**
-     * Default target converter is searching bones and nodes by name
-     * @param scene 
-     */
-    private static _defaultTargetConverter(scene: Scene): (target: any) => any {
-        return (target: any) => { return scene.getBoneByName(target.name) || scene.getNodeByName(target.name) };
-    };
-
-    /**
-     * Return all objects that can hold an animations array
-     * @param abstractScene 
-     */
-    private static _getAllAnimatableObjects(abstractScene: AbstractScene) {
-        let animatableObjects = new Array<any>();
-        animatableObjects = animatableObjects.concat(abstractScene.meshes);
-        animatableObjects = animatableObjects.concat(abstractScene.lights);
-        animatableObjects = animatableObjects.concat(abstractScene.cameras);
-        animatableObjects = animatableObjects.concat(abstractScene.transformNodes); // dummies
-        abstractScene.skeletons.forEach(skeleton => animatableObjects = animatableObjects.concat(skeleton.bones));
-        animatableObjects = animatableObjects.filter(animatableObject => animatableObject.animations);
-        return animatableObjects;
     }
 }
