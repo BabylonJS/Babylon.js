@@ -14,6 +14,7 @@ import { CubeTexture } from "babylonjs/Materials/Textures/cubeTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { SceneSerializer } from "babylonjs/Misc/sceneSerializer";
 import { Mesh } from "babylonjs/Meshes/mesh";
+import { FilesInput } from 'babylonjs/Misc/filesInput';
 
 import { GLTFComponent } from "./tools/gltfComponent";
 
@@ -120,10 +121,10 @@ export class ToolsTabComponent extends PaneComponent {
                         currentGroup.play(true);
                     }
                 };
-                (BABYLON.SceneLoader as any).ImportAnimationsAsync("file:", sceneFile, scene, overwriteAnimations, animationGroupLoadingMode, null, onSuccess);
+                (BABYLON as any).SceneLoader.ImportAnimationsAsync("file:", sceneFile, scene, overwriteAnimations, animationGroupLoadingMode, null, onSuccess);
             }
         };
-        let filesInputAnimation = new BABYLON.FilesInput(scene.getEngine() as any, scene as any, () => { }, () => { }, () => { }, (remaining: number) => { }, () => { }, reload, () => { });
+        let filesInputAnimation = new FilesInput(scene.getEngine() as any, scene as any, () => { }, () => { }, () => { }, (remaining: number) => { }, () => { }, reload, () => { });
 
         filesInputAnimation.loadFiles(event);
     }
@@ -227,7 +228,7 @@ export class ToolsTabComponent extends PaneComponent {
                         <div className="secondLine">
                             <NumericInputComponent label="Width" precision={0} step={1} value={this._screenShotSize.width ? this._screenShotSize.width : 512} onChange={value => this._screenShotSize.width = value} />
                             <NumericInputComponent label="Height" precision={0} step={1} value={this._screenShotSize.height ? this._screenShotSize.height : 512} onChange={value => this._screenShotSize.height = value} />
-                        </div>
+                            </div>
                         }
 
                     </div>
