@@ -155,7 +155,7 @@ export class ToolsTabComponent extends PaneComponent {
             glb.downloadFiles();
             this._isExporting = false;
             this.forceUpdate();
-        }).catch(reason => {
+        }).catch(reason => {    
             this._isExporting = false;
             this.forceUpdate();
         });
@@ -217,17 +217,17 @@ export class ToolsTabComponent extends PaneComponent {
                     <ButtonLineComponent label="Capture" onClick={() => this.captureRender()} />
                     <div className="vector3Line">
                         <FloatLineComponent label="Precision" target={this._screenShotSize} propertyName='precision' onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                        <CheckBoxLineComponent label="Use Width/Height" onSelect={value => {
+                        <CheckBoxLineComponent label="Use Width/Height" onSelect={ value => {
                             this._useWidthHeight = value;
                             this.forceUpdate();
                         }
                         } isSelected={() => this._useWidthHeight} />
                         {
-                            this._useWidthHeight &&
-                            <div className="secondLine">
-                                <NumericInputComponent label="Width" precision={0} step={1} value={this._screenShotSize.width ? this._screenShotSize.width : 512} onChange={value => this._screenShotSize.width = value} />
-                                <NumericInputComponent label="Height" precision={0} step={1} value={this._screenShotSize.height ? this._screenShotSize.height : 512} onChange={value => this._screenShotSize.height = value} />
-                            </div>
+                        this._useWidthHeight &&
+                        <div className="secondLine">
+                            <NumericInputComponent label="Width" precision={0} step={1} value={this._screenShotSize.width ? this._screenShotSize.width : 512} onChange={value => this._screenShotSize.width = value} />
+                            <NumericInputComponent label="Height" precision={0} step={1} value={this._screenShotSize.height ? this._screenShotSize.height : 512} onChange={value => this._screenShotSize.height = value} />
+                        </div>
                         }
 
                     </div>
@@ -253,8 +253,8 @@ export class ToolsTabComponent extends PaneComponent {
                         <TextLineComponent label="Please wait..exporting" ignoreValue={true} />
                     }
                     {
-                        !this._isExporting &&
-                        <>
+                        !this._isExporting && 
+                        <> 
                             <ButtonLineComponent label="Export to GLB" onClick={() => this.exportGLTF()} />
                             <ButtonLineComponent label="Export to Babylon" onClick={() => this.exportBabylon()} />
                             {
