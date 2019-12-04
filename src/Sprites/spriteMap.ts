@@ -126,7 +126,7 @@ export class SpriteMap implements ISpriteMap {
     public set position(v: Vector3) {
         this._output.position = v;
     }
-    
+
     /** Returns the Rotation of Output Plane*/
     public get rotation(): Vector3 {
         return this._output.rotation;
@@ -476,7 +476,7 @@ export class SpriteMap implements ISpriteMap {
     */
     private _createTileAnimationBuffer(buffer: Nullable<ArrayBufferView>): RawTexture {
         let data = new Array();
-        let floatArray
+        let floatArray;
         if (!buffer) {
             for (let i = 0; i < this.spriteCount; i++) {
                 data.push(0, 0, 0, 0);
@@ -485,12 +485,12 @@ export class SpriteMap implements ISpriteMap {
                     data.push(0, 0, 0, 0);
                     count++;
                 }
-            }            
-            floatArray = new Float32Array(data);        
-        } else {            
+            }
+            floatArray = new Float32Array(data);
+        } else {
             floatArray = buffer;
         }
-        
+
         let t = RawTexture.CreateRGBATexture(
         floatArray,
         this.spriteCount,
@@ -501,10 +501,10 @@ export class SpriteMap implements ISpriteMap {
         Texture.NEAREST_NEAREST,
         Engine.TEXTURETYPE_FLOAT
         );
-        
+
         return t;
     }
-    
+
     /**
     * Modifies the data of the animationMap
     * @param cellID is the Index of the Sprite
