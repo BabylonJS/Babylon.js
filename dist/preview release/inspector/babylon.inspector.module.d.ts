@@ -1675,6 +1675,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
     interface INodeMaterialPropertyGridComponentProps {
         globalState: GlobalState;
         material: NodeMaterial;
@@ -1687,6 +1688,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         constructor(props: INodeMaterialPropertyGridComponentProps);
         edit(): void;
         renderTextures(): JSX.Element | null;
+        renderInputBlock(block: InputBlock): JSX.Element | null;
         renderInputValues(): JSX.Element | null;
         render(): JSX.Element;
     }
@@ -3630,6 +3632,7 @@ declare module INSPECTOR {
         constructor(props: INodeMaterialPropertyGridComponentProps);
         edit(): void;
         renderTextures(): JSX.Element | null;
+        renderInputBlock(block: BABYLON.InputBlock): JSX.Element | null;
         renderInputValues(): JSX.Element | null;
         render(): JSX.Element;
     }
