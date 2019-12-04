@@ -44174,7 +44174,7 @@ declare module BABYLON {
         /**
          * Optional initial tab (default to DebugLayerTab.Properties)
          */
-        initialTab?: DebugLayerTab.Properties;
+        initialTab?: DebugLayerTab;
     }
         interface Scene {
             /**

@@ -2267,7 +2267,7 @@ declare module "babylonjs-inspector/components/embedHost/embedHostComponent" {
     import * as React from "react";
     import { Scene } from "babylonjs/scene";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { IExplorerExtensibilityGroup } from 'babylonjs/Debug/debugLayer';
+    import { IExplorerExtensibilityGroup, DebugLayerTab } from 'babylonjs/Debug/debugLayer';
     interface IEmbedHostComponentProps {
         scene: Scene;
         globalState: GlobalState;
@@ -2277,6 +2277,7 @@ declare module "babylonjs-inspector/components/embedHost/embedHostComponent" {
         onClose: () => void;
         onPopup: () => void;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
+        initialTab?: DebugLayerTab;
     }
     export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps> {
         private _once;
@@ -4130,6 +4131,7 @@ declare module INSPECTOR {
         onClose: () => void;
         onPopup: () => void;
         extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        initialTab?: BABYLON.DebugLayerTab;
     }
     export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps> {
         private _once;
