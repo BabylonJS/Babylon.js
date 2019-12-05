@@ -16,6 +16,7 @@ import { SceneSerializer } from "babylonjs/Misc/sceneSerializer";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { FilesInput } from 'babylonjs/Misc/filesInput';
 import { Scene } from 'babylonjs/scene';
+import { SceneLoaderAnimationGroupLoadingMode } from 'babylonjs/Loading/sceneLoader';
 
 import { GLTFComponent } from "./tools/gltfComponent";
 
@@ -44,7 +45,7 @@ export class ToolsTabComponent extends PaneComponent {
             sceneImportDefaults["overwriteAnimations"] = true;
         }
         if (sceneImportDefaults["animationGroupLoadingMode"] === undefined) {
-            sceneImportDefaults["animationGroupLoadingMode"] = 0; // TODO - import SceneLoaderAnimationGroupLoadingMode
+            sceneImportDefaults["animationGroupLoadingMode"] = SceneLoaderAnimationGroupLoadingMode.Clean;
         }
     }
 
@@ -202,10 +203,10 @@ export class ToolsTabComponent extends PaneComponent {
         const sceneImportDefaults = this.props.globalState.sceneImportDefaults;
 
         var animationGroupLoadingModes = [
-            { label: "Clean", value: 0 }, // TODO - import SceneLoaderAnimationGroupLoadingMode
-            { label: "Stop", value: 1 },
-            { label: "Sync", value: 2 },
-            { label: "NoSync", value: 3 },
+            { label: "Clean", value: SceneLoaderAnimationGroupLoadingMode.Clean },
+            { label: "Stop", value: SceneLoaderAnimationGroupLoadingMode.Stop },
+            { label: "Sync", value: SceneLoaderAnimationGroupLoadingMode.Sync },
+            { label: "NoSync", value: SceneLoaderAnimationGroupLoadingMode.NoSync },
         ];
 
         return (
