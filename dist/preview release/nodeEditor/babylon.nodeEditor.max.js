@@ -54145,6 +54145,12 @@ var GraphFrame = /** @class */ (function () {
                                 }
                             }
                         }
+                        else {
+                            var localPort = _nodePort__WEBPACK_IMPORTED_MODULE_1__["NodePort"].CreatePortElement(port.connectionPoint, node, this._outputPortContainer, null, this._ownerCanvas.globalState);
+                            this._ports.push(localPort);
+                            port.delegatedPort = localPort;
+                            this._controlledPorts.push(port);
+                        }
                     }
                     for (var _f = 0, _g = node.inputPorts; _f < _g.length; _f++) { // Input
                         var port = _g[_f];
@@ -54152,13 +54158,13 @@ var GraphFrame = /** @class */ (function () {
                             for (var _h = 0, _j = node.links; _h < _j.length; _h++) {
                                 var link = _j[_h];
                                 if (link.portB === port && this.nodes.indexOf(link.nodeA) === -1) {
-                                    var localPort = _nodePort__WEBPACK_IMPORTED_MODULE_1__["NodePort"].CreatePortElement(port.connectionPoint, link.nodeA, this._inputPortContainer, null, this._ownerCanvas.globalState);
-                                    this._ports.push(localPort);
-                                    port.delegatedPort = localPort;
-                                    this._controlledPorts.push(port);
+                                    this._createInputPort(port, node);
                                     link.isVisible = true;
                                 }
                             }
+                        }
+                        else {
+                            this._createInputPort(port, node);
                         }
                     }
                 }
@@ -54185,6 +54191,12 @@ var GraphFrame = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    GraphFrame.prototype._createInputPort = function (port, node) {
+        var localPort = _nodePort__WEBPACK_IMPORTED_MODULE_1__["NodePort"].CreatePortElement(port.connectionPoint, node, this._inputPortContainer, null, this._ownerCanvas.globalState);
+        this._ports.push(localPort);
+        port.delegatedPort = localPort;
+        this._controlledPorts.push(port);
+    };
     Object.defineProperty(GraphFrame.prototype, "nodes", {
         get: function () {
             return this._nodes;

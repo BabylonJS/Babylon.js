@@ -117,6 +117,7 @@ declare module NODEEDITOR {
         private _ports;
         private _controlledPorts;
         isCollapsed: boolean;
+        private _createInputPort;
         readonly nodes: GraphNode[];
         name: string;
         color: BABYLON.Color3;
