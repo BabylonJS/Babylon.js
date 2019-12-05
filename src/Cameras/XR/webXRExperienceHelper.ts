@@ -7,6 +7,7 @@ import { Camera } from "../../Cameras/camera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { WebXRCamera } from "./webXRCamera";
 import { WebXRState, WebXRRenderTarget } from './webXRTypes';
+import { WebXRFeaturesManager } from './webXRFeaturesManager';
 
 /**
  * Base set of functionality needed to create an XR experince (WebXRSessionManager, Camera, StateManagement, etc.)
@@ -42,6 +43,8 @@ export class WebXRExperienceHelper implements IDisposable {
     /** Session manager used to keep track of xr session */
     public sessionManager: WebXRSessionManager;
 
+    public featuresManager: WebXRFeaturesManager;
+
     private _nonVRCamera: Nullable<Camera> = null;
     private _originalSceneAutoClear = true;
 
@@ -69,6 +72,7 @@ export class WebXRExperienceHelper implements IDisposable {
     private constructor(private scene: Scene) {
         this.camera = new WebXRCamera("", scene);
         this.sessionManager = new WebXRSessionManager(scene);
+        this.featuresManager = new WebXRFeaturesManager(this.sessionManager);
         this.container = new AbstractMesh("WebXR Container", scene);
         this.camera.parent = this.container;
 
