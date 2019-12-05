@@ -193,8 +193,8 @@ export class Inspector {
                     if (options.popup) {
                         this._ActionTabsWindow.close();
                     }
-
-                }
+                },
+                initialTab: options.initialTab
             });
             ReactDOM.render(actionTabsElement, this._ActionTabsHost);
         }
@@ -221,7 +221,8 @@ export class Inspector {
         if (this._EmbedHost) {
             this._OpenedPane++;
             const embedHostElement = React.createElement(EmbedHostComponent, {
-                globalState: this._GlobalState, scene: scene,
+                globalState: this._GlobalState, scene: scene,                
+                extensibilityGroups: options.explorerExtensibility,
                 noExpand: !options.enablePopup,
                 noClose: !options.enableClose,
                 popupMode: options.popup, onPopup: () => {
@@ -250,7 +251,8 @@ export class Inspector {
                     if (options.popup) {
                         this._EmbedHostWindow.close();
                     }
-                }
+                },
+                initialTab: options.initialTab
             });
             ReactDOM.render(embedHostElement, this._EmbedHost);
         }

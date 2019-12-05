@@ -1,7 +1,7 @@
 import { Nullable } from "../../types";
 import { Observable } from "../../Misc/observable";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Matrix, Quaternion, Vector3 } from '../../Maths/math.vector';
+import { Quaternion, Vector3 } from '../../Maths/math.vector';
 import { Ray } from '../../Culling/ray';
 import { Scene } from '../../scene';
 import { WebVRController } from '../../Gamepads/Controllers/webVRController';
@@ -31,7 +31,6 @@ export class WebXRController {
      */
     public onDisposeObservable = new Observable<{}>();
 
-    private _tmpMatrix = new Matrix();
     private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3();
 
@@ -48,12 +47,14 @@ export class WebXRController {
         public inputSource: XRInputSource,
         private parentContainer: Nullable<AbstractMesh> = null) {
         this.pointer = new AbstractMesh("controllerPointer", scene);
+        this.pointer.rotationQuaternion = new Quaternion();
         if (parentContainer) {
             parentContainer.addChild(this.pointer);
         }
 
         if (this.inputSource.gripSpace) {
             this.grip = new AbstractMesh("controllerGrip", this.scene);
+            this.grip.rotationQuaternion = new Quaternion();
             if (this.parentContainer) {
                 this.parentContainer.addChild(this.grip);
             }
@@ -72,28 +73,26 @@ export class WebXRController {
 
         // Update the pointer mesh
         if (pose) {
-            Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, this._tmpMatrix);
-            if (!this.pointer.getScene().useRightHandedSystem) {
-                this._tmpMatrix.toggleModelMatrixHandInPlace();
+            this.pointer.position.copyFrom(<any>(pose.transform.position));
+            this.pointer.rotationQuaternion!.copyFrom(<any>(pose.transform.orientation));
+            if (!this.scene.useRightHandedSystem) {
+                this.pointer.position.z *= -1;
+                this.pointer.rotationQuaternion!.z *= -1;
+                this.pointer.rotationQuaternion!.w *= -1;
             }
-            if (!this.pointer.rotationQuaternion) {
-                this.pointer.rotationQuaternion = new Quaternion();
-            }
-            this._tmpMatrix.decompose(this.pointer.scaling, this.pointer.rotationQuaternion!, this.pointer.position);
         }
 
         // Update the grip mesh if it exists
         if (this.inputSource.gripSpace && this.grip) {
             let pose = xrFrame.getPose(this.inputSource.gripSpace, referenceSpace);
             if (pose) {
-                Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, this._tmpMatrix);
-                if (!this.grip.getScene().useRightHandedSystem) {
-                    this._tmpMatrix.toggleModelMatrixHandInPlace();
+                this.grip.position.copyFrom(<any>(pose.transform.position));
+                this.grip.rotationQuaternion!.copyFrom(<any>(pose.transform.orientation));
+                if (!this.scene.useRightHandedSystem) {
+                    this.grip.position.z *= -1;
+                    this.grip.rotationQuaternion!.z *= -1;
+                    this.grip.rotationQuaternion!.w *= -1;
                 }
-                if (!this.grip.rotationQuaternion) {
-                    this.grip.rotationQuaternion = new Quaternion();
-                }
-                this._tmpMatrix.decompose(this.grip.scaling, this.grip.rotationQuaternion!, this.grip.position);
             }
         }
         if (this.gamepadController) {

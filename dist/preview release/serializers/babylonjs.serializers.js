@@ -577,31 +577,19 @@ var KHR_lights_punctual = /** @class */ (function () {
     }
     /** @hidden */
     KHR_lights_punctual.prototype.dispose = function () {
-        delete this._exporter;
         delete this._lights;
     };
+    Object.defineProperty(KHR_lights_punctual.prototype, "wasUsed", {
+        /** @hidden */
+        get: function () {
+            return !!this._lights;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /** @hidden */
     KHR_lights_punctual.prototype.onExporting = function () {
-        if (this._lights) {
-            if (this._exporter._glTF.extensionsUsed == null) {
-                this._exporter._glTF.extensionsUsed = [];
-            }
-            if (this._exporter._glTF.extensionsUsed.indexOf(NAME) === -1) {
-                this._exporter._glTF.extensionsUsed.push(NAME);
-            }
-            if (this.required) {
-                if (this._exporter._glTF.extensionsRequired == null) {
-                    this._exporter._glTF.extensionsRequired = [];
-                }
-                if (this._exporter._glTF.extensionsRequired.indexOf(NAME) === -1) {
-                    this._exporter._glTF.extensionsRequired.push(NAME);
-                }
-            }
-            if (this._exporter._glTF.extensions == null) {
-                this._exporter._glTF.extensions = {};
-            }
-            this._exporter._glTF.extensions[NAME] = this._lights;
-        }
+        this._exporter._glTF.extensions[NAME] = this._lights;
     };
     /**
      * Define this method to modify the default behavior when exporting a node
@@ -697,6 +685,107 @@ _glTFExporter__WEBPACK_IMPORTED_MODULE_1__["_Exporter"].RegisterExtension(NAME, 
 
 /***/ }),
 
+/***/ "./glTF/2.0/Extensions/KHR_materials_sheen.ts":
+/*!****************************************************!*\
+  !*** ./glTF/2.0/Extensions/KHR_materials_sheen.ts ***!
+  \****************************************************/
+/*! exports provided: KHR_materials_sheen */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_sheen", function() { return KHR_materials_sheen; });
+/* harmony import */ var _glTFExporter__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../glTFExporter */ "./glTF/2.0/glTFExporter.ts");
+/* harmony import */ var babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Materials/PBR/pbrMaterial */ "babylonjs/Maths/math");
+/* harmony import */ var babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var NAME = "KHR_materials_sheen";
+/**
+ * @hidden
+ */
+var KHR_materials_sheen = /** @class */ (function () {
+    function KHR_materials_sheen(exporter) {
+        /** Name of this extension */
+        this.name = NAME;
+        /** Defines whether this extension is enabled */
+        this.enabled = true;
+        /** Defines whether this extension is required */
+        this.required = false;
+        /** Reference to the glTF exporter */
+        this._textureInfos = [];
+        this._exportedTextures = [];
+        this._wasUsed = false;
+    }
+    KHR_materials_sheen.prototype.dispose = function () {
+        this._textureInfos = [];
+        this._exportedTextures = [];
+    };
+    Object.defineProperty(KHR_materials_sheen.prototype, "wasUsed", {
+        /** @hidden */
+        get: function () {
+            return this._wasUsed;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    KHR_materials_sheen.prototype._getTextureIndex = function (babylonTexture) {
+        var textureIndex = this._exportedTextures.indexOf(babylonTexture);
+        if (textureIndex === -1 && babylonTexture.reservedDataStore) {
+            textureIndex = this._exportedTextures.indexOf(babylonTexture.reservedDataStore.source);
+        }
+        return textureIndex;
+    };
+    KHR_materials_sheen.prototype.postExportTexture = function (context, textureInfo, babylonTexture) {
+        var textureIndex = this._getTextureIndex(babylonTexture);
+        if (textureIndex > -1) {
+            this._textureInfos[textureIndex] = textureInfo;
+        }
+    };
+    KHR_materials_sheen.prototype.postExportMaterialAdditionalTextures = function (context, node, babylonMaterial) {
+        if (babylonMaterial instanceof babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["PBRMaterial"]) {
+            if (babylonMaterial.sheen.isEnabled && babylonMaterial.sheen.texture) {
+                this._exportedTextures.push(babylonMaterial.sheen.texture);
+                return [babylonMaterial.sheen.texture];
+            }
+        }
+        return [];
+    };
+    KHR_materials_sheen.prototype.postExportMaterialAsync = function (context, node, babylonMaterial) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            if (babylonMaterial instanceof babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["PBRMaterial"]) {
+                if (!babylonMaterial.sheen.isEnabled) {
+                    resolve(node);
+                    return;
+                }
+                _this._wasUsed = true;
+                if (node.extensions == null) {
+                    node.extensions = {};
+                }
+                var sheenInfo = {
+                    colorFactor: babylonMaterial.sheen.color.asArray(),
+                    intensityFactor: babylonMaterial.sheen.intensity
+                };
+                if (babylonMaterial.sheen.texture) {
+                    var textureIndex = _this._getTextureIndex(babylonMaterial.sheen.texture);
+                    if (textureIndex > -1) {
+                        sheenInfo.colorIntensityTexture = _this._textureInfos[textureIndex];
+                    }
+                }
+                node.extensions[NAME] = sheenInfo;
+            }
+            resolve(node);
+        });
+    };
+    return KHR_materials_sheen;
+}());
+
+_glTFExporter__WEBPACK_IMPORTED_MODULE_0__["_Exporter"].RegisterExtension(NAME, function (exporter) { return new KHR_materials_sheen(exporter); });
+
+
+/***/ }),
+
 /***/ "./glTF/2.0/Extensions/KHR_texture_transform.ts":
 /*!******************************************************!*\
   !*** ./glTF/2.0/Extensions/KHR_texture_transform.ts ***!
@@ -721,16 +810,59 @@ var NAME = "KHR_texture_transform";
  */
 var KHR_texture_transform = /** @class */ (function () {
     function KHR_texture_transform(exporter) {
+        this._recordedTextures = [];
         /** Name of this extension */
         this.name = NAME;
         /** Defines whether this extension is enabled */
         this.enabled = true;
         /** Defines whether this extension is required */
         this.required = false;
-        this._exporter = exporter;
+        /** Reference to the glTF exporter */
+        this._wasUsed = false;
     }
     KHR_texture_transform.prototype.dispose = function () {
-        delete this._exporter;
+        for (var _i = 0, _a = this._recordedTextures; _i < _a.length; _i++) {
+            var texture = _a[_i];
+            texture.dispose();
+        }
+    };
+    Object.defineProperty(KHR_texture_transform.prototype, "wasUsed", {
+        /** @hidden */
+        get: function () {
+            return this._wasUsed;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    KHR_texture_transform.prototype.postExportTexture = function (context, textureInfo, babylonTexture) {
+        if (babylonTexture && babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0) {
+            var textureTransform = {};
+            var transformIsRequired = false;
+            if (babylonTexture.uOffset !== 0 || babylonTexture.vOffset !== 0) {
+                textureTransform.offset = [babylonTexture.uOffset, babylonTexture.vOffset];
+                transformIsRequired = true;
+            }
+            if (babylonTexture.uScale !== 1 || babylonTexture.vScale !== 1) {
+                textureTransform.scale = [babylonTexture.uScale, babylonTexture.vScale];
+                transformIsRequired = true;
+            }
+            if (babylonTexture.wAng !== 0) {
+                textureTransform.rotation = babylonTexture.wAng;
+                transformIsRequired = true;
+            }
+            if (babylonTexture.coordinatesIndex !== 0) {
+                textureTransform.texCoord = babylonTexture.coordinatesIndex;
+                transformIsRequired = true;
+            }
+            if (!transformIsRequired) {
+                return;
+            }
+            this._wasUsed = true;
+            if (!textureInfo.extensions) {
+                textureInfo.extensions = {};
+            }
+            textureInfo.extensions[NAME] = textureTransform;
+        }
     };
     KHR_texture_transform.prototype.preExportTextureAsync = function (context, babylonTexture, mimeType) {
         var _this = this;
@@ -740,18 +872,22 @@ var KHR_texture_transform = /** @class */ (function () {
                 reject(context + ": \"scene\" is not defined for Babylon texture " + babylonTexture.name + "!");
                 return;
             }
-            // TODO: this doesn't take into account rotation center values
-            var texture_transform_extension = {};
+            var transformIsRequired = false;
             if (babylonTexture.uOffset !== 0 || babylonTexture.vOffset !== 0) {
-                texture_transform_extension.offset = [babylonTexture.uOffset, babylonTexture.vOffset];
+                transformIsRequired = true;
             }
             if (babylonTexture.uScale !== 1 || babylonTexture.vScale !== 1) {
-                texture_transform_extension.scale = [babylonTexture.uScale, babylonTexture.vScale];
+                transformIsRequired = true;
             }
             if (babylonTexture.wAng !== 0) {
-                texture_transform_extension.rotation = babylonTexture.wAng;
+                transformIsRequired = true;
             }
-            if (!Object.keys(texture_transform_extension).length) {
+            if (!transformIsRequired) {
+                resolve(babylonTexture);
+                return;
+            }
+            // Do we need to flatten the transform?
+            if (babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0) {
                 resolve(babylonTexture);
                 return;
             }
@@ -773,12 +909,19 @@ var KHR_texture_transform = /** @class */ (function () {
      * @param scene
      */
     KHR_texture_transform.prototype._textureTransformTextureAsync = function (babylonTexture, scene) {
+        var _this = this;
         return new Promise(function (resolve) {
             var proceduralTexture = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["ProceduralTexture"]("" + babylonTexture.name, babylonTexture.getSize(), "textureTransform", scene);
             if (!proceduralTexture) {
                 babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["Tools"].Log("Cannot create procedural texture for " + babylonTexture.name + "!");
                 resolve(babylonTexture);
             }
+            proceduralTexture.reservedDataStore = {
+                hidden: true,
+                source: babylonTexture
+            };
+            _this._recordedTextures.push(proceduralTexture);
+            proceduralTexture.coordinatesIndex = babylonTexture.coordinatesIndex;
             proceduralTexture.setTexture("textureSampler", babylonTexture);
             proceduralTexture.setMatrix("textureTransformMat", babylonTexture.getTextureMatrix());
             // isReady trigger creation of effect if it doesnt exist yet
@@ -806,7 +949,7 @@ _glTFExporter__WEBPACK_IMPORTED_MODULE_1__["_Exporter"].RegisterExtension(NAME, 
 /*!**************************************!*\
   !*** ./glTF/2.0/Extensions/index.ts ***!
   \**************************************/
-/*! exports provided: KHR_texture_transform, KHR_lights_punctual */
+/*! exports provided: KHR_texture_transform, KHR_lights_punctual, KHR_materials_sheen */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -816,6 +959,10 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony import */ var _KHR_lights_punctual__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./KHR_lights_punctual */ "./glTF/2.0/Extensions/KHR_lights_punctual.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_lights_punctual", function() { return _KHR_lights_punctual__WEBPACK_IMPORTED_MODULE_1__["KHR_lights_punctual"]; });
+
+/* harmony import */ var _KHR_materials_sheen__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./KHR_materials_sheen */ "./glTF/2.0/Extensions/KHR_materials_sheen.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_sheen", function() { return _KHR_materials_sheen__WEBPACK_IMPORTED_MODULE_2__["KHR_materials_sheen"]; });
+
 
 
 
@@ -1595,7 +1742,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 /**
  * Converts Babylon Scene into glTF 2.0.
  * @hidden
@@ -1630,60 +1776,107 @@ var _Exporter = /** @class */ (function () {
         this._glTFMaterialExporter = new _glTFMaterialExporter__WEBPACK_IMPORTED_MODULE_2__["_GLTFMaterialExporter"](this);
         this._loadExtensions();
     }
-    _Exporter.prototype._applyExtensions = function (property, actionAsync) {
+    _Exporter.prototype._applyExtension = function (node, extensions, index, actionAsync) {
+        var _this = this;
+        if (index >= extensions.length) {
+            return Promise.resolve(node);
+        }
+        var currentPromise = actionAsync(extensions[index], node);
+        if (!currentPromise) {
+            return this._applyExtension(node, extensions, index + 1, actionAsync);
+        }
+        return currentPromise.then(function (newNode) { return _this._applyExtension(newNode || node, extensions, index + 1, actionAsync); });
+    };
+    _Exporter.prototype._applyExtensions = function (node, actionAsync) {
+        var extensions = [];
         for (var _i = 0, _a = _Exporter._ExtensionNames; _i < _a.length; _i++) {
             var name_1 = _a[_i];
-            var extension = this._extensions[name_1];
-            if (extension.enabled) {
-                var exporterProperty = property;
-                exporterProperty._activeLoaderExtensions = exporterProperty._activeLoaderExtensions || {};
-                var activeLoaderExtensions = exporterProperty._activeLoaderExtensions;
-                if (!activeLoaderExtensions[name_1]) {
-                    activeLoaderExtensions[name_1] = true;
-                    try {
-                        var result = actionAsync(extension);
-                        if (result) {
-                            return result;
-                        }
-                    }
-                    finally {
-                        delete activeLoaderExtensions[name_1];
-                        delete exporterProperty._activeLoaderExtensions;
-                    }
-                }
-            }
+            extensions.push(this._extensions[name_1]);
         }
-        return null;
+        return this._applyExtension(node, extensions, 0, actionAsync);
     };
     _Exporter.prototype._extensionsPreExportTextureAsync = function (context, babylonTexture, mimeType) {
-        return this._applyExtensions(babylonTexture, function (extension) { return extension.preExportTextureAsync && extension.preExportTextureAsync(context, babylonTexture, mimeType); });
+        return this._applyExtensions(babylonTexture, function (extension, node) { return extension.preExportTextureAsync && extension.preExportTextureAsync(context, node, mimeType); });
     };
     _Exporter.prototype._extensionsPostExportMeshPrimitiveAsync = function (context, meshPrimitive, babylonSubMesh, binaryWriter) {
-        return this._applyExtensions(meshPrimitive, function (extension) { return extension.postExportMeshPrimitiveAsync && extension.postExportMeshPrimitiveAsync(context, meshPrimitive, babylonSubMesh, binaryWriter); });
+        return this._applyExtensions(meshPrimitive, function (extension, node) { return extension.postExportMeshPrimitiveAsync && extension.postExportMeshPrimitiveAsync(context, node, babylonSubMesh, binaryWriter); });
     };
     _Exporter.prototype._extensionsPostExportNodeAsync = function (context, node, babylonNode) {
-        return this._applyExtensions(node, function (extension) { return extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode); });
+        return this._applyExtensions(node, function (extension, node) { return extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode); });
     };
-    _Exporter.prototype._forEachExtensions = function (action) {
+    _Exporter.prototype._extensionsPostExportMaterialAsync = function (context, material, babylonMaterial) {
+        return this._applyExtensions(material, function (extension, node) { return extension.postExportMaterialAsync && extension.postExportMaterialAsync(context, node, babylonMaterial); });
+    };
+    _Exporter.prototype._extensionsPostExportMaterialAdditionalTextures = function (context, material, babylonMaterial) {
+        var output = [];
         for (var _i = 0, _a = _Exporter._ExtensionNames; _i < _a.length; _i++) {
             var name_2 = _a[_i];
             var extension = this._extensions[name_2];
+            if (extension.postExportMaterialAdditionalTextures) {
+                output.push.apply(output, extension.postExportMaterialAdditionalTextures(context, material, babylonMaterial));
+            }
+        }
+        return output;
+    };
+    _Exporter.prototype._extensionsPostExportTextures = function (context, textureInfo, babylonTexture) {
+        for (var _i = 0, _a = _Exporter._ExtensionNames; _i < _a.length; _i++) {
+            var name_3 = _a[_i];
+            var extension = this._extensions[name_3];
+            if (extension.postExportTexture) {
+                extension.postExportTexture(context, textureInfo, babylonTexture);
+            }
+        }
+    };
+    _Exporter.prototype._forEachExtensions = function (action) {
+        for (var _i = 0, _a = _Exporter._ExtensionNames; _i < _a.length; _i++) {
+            var name_4 = _a[_i];
+            var extension = this._extensions[name_4];
             if (extension.enabled) {
                 action(extension);
             }
         }
     };
     _Exporter.prototype._extensionsOnExporting = function () {
-        this._forEachExtensions(function (extension) { return extension.onExporting && extension.onExporting(); });
+        var _this = this;
+        this._forEachExtensions(function (extension) {
+            if (extension.wasUsed) {
+                if (_this._glTF.extensionsUsed == null) {
+                    _this._glTF.extensionsUsed = [];
+                }
+                if (_this._glTF.extensionsUsed.indexOf(extension.name) === -1) {
+                    _this._glTF.extensionsUsed.push(extension.name);
+                }
+                if (extension.required) {
+                    if (_this._glTF.extensionsRequired == null) {
+                        _this._glTF.extensionsRequired = [];
+                    }
+                    if (_this._glTF.extensionsRequired.indexOf(extension.name) === -1) {
+                        _this._glTF.extensionsRequired.push(extension.name);
+                    }
+                }
+                if (_this._glTF.extensions == null) {
+                    _this._glTF.extensions = {};
+                }
+                if (extension.onExporting) {
+                    extension.onExporting();
+                }
+            }
+        });
     };
     /**
      * Load glTF serializer extensions
      */
     _Exporter.prototype._loadExtensions = function () {
         for (var _i = 0, _a = _Exporter._ExtensionNames; _i < _a.length; _i++) {
-            var name_3 = _a[_i];
-            var extension = _Exporter._ExtensionFactories[name_3](this);
-            this._extensions[name_3] = extension;
+            var name_5 = _a[_i];
+            var extension = _Exporter._ExtensionFactories[name_5](this);
+            this._extensions[name_5] = extension;
+        }
+    };
+    _Exporter.prototype.dispose = function () {
+        for (var extensionKey in this._extensions) {
+            var extension = this._extensions[extensionKey];
+            extension.dispose();
         }
     };
     /**
@@ -2182,10 +2375,12 @@ var _Exporter = /** @class */ (function () {
     /**
      * Generates data for .gltf and .bin files based on the glTF prefix string
      * @param glTFPrefix Text to use when prefixing a glTF file
+     * @param dispose Dispose the exporter
      * @returns GLTFData with glTF file data
      */
-    _Exporter.prototype._generateGLTFAsync = function (glTFPrefix) {
+    _Exporter.prototype._generateGLTFAsync = function (glTFPrefix, dispose) {
         var _this = this;
+        if (dispose === void 0) { dispose = true; }
         return this._generateBinaryAsync().then(function (binaryBuffer) {
             _this._extensionsOnExporting();
             var jsonText = _this.generateJSON(false, glTFPrefix, true);
@@ -2199,6 +2394,9 @@ var _Exporter = /** @class */ (function () {
                 for (var image in _this._imageData) {
                     container.glTFFiles[image] = new Blob([_this._imageData[image].data], { type: _this._imageData[image].mimeType });
                 }
+            }
+            if (dispose) {
+                _this.dispose();
             }
             return container;
         });
@@ -2228,13 +2426,11 @@ var _Exporter = /** @class */ (function () {
         return padding;
     };
     /**
-     * Generates a glb file from the json and binary data
-     * Returns an object with the glb file name as the key and data as the value
-     * @param glTFPrefix
-     * @returns object with glb filename as key and data as value
+     * @hidden
      */
-    _Exporter.prototype._generateGLBAsync = function (glTFPrefix) {
+    _Exporter.prototype._generateGLBAsync = function (glTFPrefix, dispose) {
         var _this = this;
+        if (dispose === void 0) { dispose = true; }
         return this._generateBinaryAsync().then(function (binaryBuffer) {
             _this._extensionsOnExporting();
             var jsonText = _this.generateJSON(true);
@@ -2299,6 +2495,9 @@ var _Exporter = /** @class */ (function () {
             container.glTFFiles[glbFileName] = glbFile;
             if (_this._localEngine != null) {
                 _this._localEngine.dispose();
+            }
+            if (dispose) {
+                _this.dispose();
             }
             return container;
         });
@@ -2709,12 +2908,12 @@ var _Exporter = /** @class */ (function () {
                         }
                         else {
                             return promise.then(function (node) {
-                                var directDescendents = babylonNode.getDescendants(true, function (node) { return (node instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Node"]); });
-                                if (directDescendents.length || node.mesh != null || (node.extensions)) {
-                                    _this._nodes.push(node);
-                                    nodeIndex = _this._nodes.length - 1;
-                                    nodeMap[babylonNode.uniqueId] = nodeIndex;
+                                if (!node) {
+                                    return;
                                 }
+                                _this._nodes.push(node);
+                                nodeIndex = _this._nodes.length - 1;
+                                nodeMap[babylonNode.uniqueId] = nodeIndex;
                                 if (!babylonScene.animationGroups.length && babylonNode.animations.length) {
                                     _glTFAnimation__WEBPACK_IMPORTED_MODULE_5__["_GLTFAnimation"]._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, _this._nodes, binaryWriter, _this._bufferViews, _this._accessors, _this._convertToRightHandedSystem, _this._animationSampleRate);
                                 }
@@ -3251,7 +3450,31 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         _GLTFMaterialExporter._SetAlphaMode(glTFMaterial, babylonStandardMaterial);
         materials.push(glTFMaterial);
         materialMap[babylonStandardMaterial.uniqueId] = materials.length - 1;
-        return Promise.all(promises).then(function () { });
+        return this._finishMaterial(promises, glTFMaterial, babylonStandardMaterial, mimeType);
+    };
+    _GLTFMaterialExporter.prototype._finishMaterial = function (promises, glTFMaterial, babylonMaterial, mimeType) {
+        var _this = this;
+        return Promise.all(promises).then(function () {
+            var textures = _this._exporter._extensionsPostExportMaterialAdditionalTextures("exportMaterial", glTFMaterial, babylonMaterial);
+            var tasks = null;
+            for (var _i = 0, textures_1 = textures; _i < textures_1.length; _i++) {
+                var texture = textures_1[_i];
+                if (!tasks) {
+                    tasks = [];
+                }
+                tasks.push(_this._exportTextureAsync(texture, mimeType));
+            }
+            if (!tasks) {
+                tasks = [Promise.resolve(null)];
+            }
+            return Promise.all(tasks).then(function () {
+                var extensionWork = _this._exporter._extensionsPostExportMaterialAsync("exportMaterial", glTFMaterial, babylonMaterial);
+                if (!extensionWork) {
+                    return glTFMaterial;
+                }
+                return extensionWork.then(function () { return glTFMaterial; });
+            });
+        });
     };
     /**
      * Converts a Babylon PBR Metallic Roughness Material to a glTF Material
@@ -3331,7 +3554,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
         glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
         materials.push(glTFMaterial);
         materialMap[babylonPBRMetalRoughMaterial.uniqueId] = materials.length - 1;
-        return Promise.all(promises).then(function () { });
+        return this._finishMaterial(promises, glTFMaterial, babylonPBRMetalRoughMaterial, mimeType);
     };
     /**
      * Converts an image typed array buffer to a base64 image
@@ -3892,7 +4115,8 @@ var _GLTFMaterialExporter = /** @class */ (function () {
                     var promise = this._exportTextureAsync(babylonPBRMaterial.ambientTexture, mimeType).then(function (glTFTexture) {
                         if (glTFTexture) {
                             var occlusionTexture = {
-                                index: glTFTexture.index
+                                index: glTFTexture.index,
+                                texCoord: glTFTexture.texCoord
                             };
                             glTFMaterial.occlusionTexture = occlusionTexture;
                             if (babylonPBRMaterial.ambientTextureStrength) {
@@ -3918,7 +4142,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
             materials.push(glTFMaterial);
             materialMap[babylonPBRMaterial.uniqueId] = materials.length - 1;
         }
-        return Promise.all(promises).then(function (result) { });
+        return this._finishMaterial(promises, glTFMaterial, babylonPBRMaterial, mimeType);
     };
     _GLTFMaterialExporter.prototype.getPixelsFromTexture = function (babylonTexture) {
         var pixels = babylonTexture.textureType === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTURETYPE_UNSIGNED_INT ? babylonTexture.readPixels() : babylonTexture.readPixels();
@@ -3977,6 +4201,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
                     var textureInfo = _this._getTextureInfoFromBase64(base64Data, babylonTexture.name.replace(/\.\/|\/|\.\\|\\/g, "_"), mimeType, babylonTexture.coordinatesIndex, samplerIndex_1);
                     if (textureInfo) {
                         _this._textureMap[textureUid] = textureInfo;
+                        _this._exporter._extensionsPostExportTextures("linkTextureInfo", textureInfo, babylonTexture);
                     }
                     return textureInfo;
                 });
@@ -4344,7 +4569,7 @@ var _GLTFUtilities = /** @class */ (function () {
 /*!***************************!*\
   !*** ./glTF/2.0/index.ts ***!
   \***************************/
-/*! exports provided: GLTFData, GLTF2Export, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, KHR_texture_transform, KHR_lights_punctual */
+/*! exports provided: GLTFData, GLTF2Export, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, KHR_texture_transform, KHR_lights_punctual, KHR_materials_sheen */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4376,6 +4601,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_transform", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_7__["KHR_texture_transform"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_lights_punctual", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_7__["KHR_lights_punctual"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_sheen", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_7__["KHR_materials_sheen"]; });
 
 
 
@@ -4431,7 +4658,7 @@ var __IGLTFExporterExtension = 0; // I am here to allow dts to be created
 /*!***********************!*\
   !*** ./glTF/index.ts ***!
   \***********************/
-/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, KHR_texture_transform, KHR_lights_punctual */
+/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, KHR_texture_transform, KHR_lights_punctual, KHR_materials_sheen */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4460,6 +4687,8 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_lights_punctual", function() { return _2_0__WEBPACK_IMPORTED_MODULE_1__["KHR_lights_punctual"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_sheen", function() { return _2_0__WEBPACK_IMPORTED_MODULE_1__["KHR_materials_sheen"]; });
+
 
 
 
@@ -4470,7 +4699,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!******************!*\
   !*** ./index.ts ***!
   \******************/
-/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, OBJExport, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, STLExport, KHR_texture_transform, KHR_lights_punctual */
+/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, OBJExport, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, STLExport, KHR_texture_transform, KHR_lights_punctual, KHR_materials_sheen */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4501,6 +4730,8 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_lights_punctual", function() { return _glTF__WEBPACK_IMPORTED_MODULE_1__["KHR_lights_punctual"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_sheen", function() { return _glTF__WEBPACK_IMPORTED_MODULE_1__["KHR_materials_sheen"]; });
+
 /* harmony import */ var _stl__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./stl */ "./stl/index.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "STLExport", function() { return _stl__WEBPACK_IMPORTED_MODULE_2__["STLExport"]; });
 
@@ -4515,7 +4746,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!******************************************!*\
   !*** ./legacy/legacy-glTF2Serializer.ts ***!
   \******************************************/
-/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, KHR_texture_transform, KHR_lights_punctual */
+/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, KHR_texture_transform, KHR_lights_punctual, KHR_materials_sheen */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4546,6 +4777,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_transform", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__["KHR_texture_transform"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_lights_punctual", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__["KHR_lights_punctual"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_sheen", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__["KHR_materials_sheen"]; });
 
 
 
@@ -4657,7 +4890,7 @@ if (typeof globalObject !== "undefined") {
 /*!**************************!*\
   !*** ./legacy/legacy.ts ***!
   \**************************/
-/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, OBJExport, STLExport, KHR_texture_transform, KHR_lights_punctual */
+/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, OBJExport, STLExport, KHR_texture_transform, KHR_lights_punctual, KHR_materials_sheen */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4685,6 +4918,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_transform", function() { return _legacy_glTF2Serializer__WEBPACK_IMPORTED_MODULE_1__["KHR_texture_transform"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_lights_punctual", function() { return _legacy_glTF2Serializer__WEBPACK_IMPORTED_MODULE_1__["KHR_lights_punctual"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_sheen", function() { return _legacy_glTF2Serializer__WEBPACK_IMPORTED_MODULE_1__["KHR_materials_sheen"]; });
 
 /* harmony import */ var _legacy_objSerializer__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./legacy-objSerializer */ "./legacy/legacy-objSerializer.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "OBJExport", function() { return _legacy_objSerializer__WEBPACK_IMPORTED_MODULE_2__["OBJExport"]; });

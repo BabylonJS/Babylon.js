@@ -135,6 +135,12 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Gets or sets data used by visual editor
+     * @see https://nme.babylonjs.com
+     */
+    public editorData: any = null;
+
+    /**
      * Gets or sets a boolean indicating that alpha value must be ignored (This will turn alpha blending off even if an alpha value is produced by the material)
      */
     public ignoreAlpha = false;
@@ -512,6 +518,21 @@ export class NodeMaterial extends PushMaterial {
                     this._resetDualBlocks(block, id);
                 }
             }
+        }
+    }
+
+    /**
+     * Remove a block from the current node material
+     * @param block defines the block to remove
+     */
+    public removeBlock(block: NodeMaterialBlock) {
+        let attachedBlockIndex = this.attachedBlocks.indexOf(block);
+        if (attachedBlockIndex > -1) {
+            this.attachedBlocks.splice(attachedBlockIndex, 1);
+        }
+
+        if (block.isFinalMerger) {
+            this.removeOutputNode(block);
         }
     }
 
@@ -982,6 +1003,8 @@ export class NodeMaterial extends PushMaterial {
     public setToDefault() {
         this.clear();
 
+        this.editorData = null;
+
         var positionInput = new InputBlock("position");
         positionInput.setAsAttribute("position");
 
@@ -1112,6 +1135,7 @@ export class NodeMaterial extends PushMaterial {
         serializationObject.customType = "BABYLON.NodeMaterial";
 
         serializationObject.outputNodes = [];
+        serializationObject.editorData = JSON.parse(JSON.stringify(this.editorData)); // Copy
 
         let blocks: NodeMaterialBlock[] = [];
 
@@ -1207,11 +1231,29 @@ export class NodeMaterial extends PushMaterial {
             this.addOutputNode(map[outputNodeId]);
         }
 
-        // Store map for external uses
-        source.map = {};
+        // UI related info
+        if (source.locations || source.editorData && source.editorData.locations) {
+            let locations: {
+                blockId: number;
+                x: number;
+                y: number;
+            }[] = source.locations || source.editorData.locations;
 
-        for (var key in map) {
-            source.map[key] = map[key].uniqueId;
+            for (var location of locations) {
+                if (map[location.blockId]) {
+                    location.blockId = map[location.blockId].uniqueId;
+                }
+            }
+
+            if (source.locations) {
+                this.editorData = {
+                    locations: locations
+                };
+            } else {
+                this.editorData = source.editorData;
+                this.editorData.locations = locations;
+            }
+
         }
     }
 

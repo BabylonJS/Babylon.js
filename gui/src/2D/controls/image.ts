@@ -260,6 +260,28 @@ export class Image extends Control {
         this._markAsDirty();
     }
 
+    /** @hidden */
+    public _rotate90(n: number): Image {
+        let canvas = document.createElement('canvas');
+
+        const context = canvas.getContext('2d')!;
+        const width = this._domImage.width;
+        const height = this._domImage.height;
+
+        canvas.width = height;
+        canvas.height = width;
+
+        context.translate(canvas.width / 2, canvas.height / 2);
+        context.rotate(n * Math.PI / 2);
+
+        context.drawImage(this._domImage, 0, 0, width, height, -width / 2, -height / 2, width, height);
+
+        const dataUrl: string = canvas.toDataURL("image/jpg");
+        const rotatedImage = new Image(this.name + "rotated", dataUrl);
+
+        return rotatedImage;
+    }
+
     /**
      * Gets or sets the internal DOM image used to render the control
      */
@@ -378,12 +400,24 @@ export class Image extends Control {
      * Checks for svg document with icon id present
      */
     private _svgCheck(value: string): string {
-        if ((value.search(/.svg#/gi) !== -1) && (value.indexOf("#") === value.lastIndexOf("#"))) {
+        if (window.SVGSVGElement && (value.search(/.svg#/gi) !== -1) && (value.indexOf("#") === value.lastIndexOf("#"))) {
             var svgsrc = value.split('#')[0];
             var elemid = value.split('#')[1];
             // check if object alr exist in document
             var svgExist = <HTMLObjectElement> document.body.querySelector('object[data="' + svgsrc + '"]');
             if (svgExist) {
+                var svgDoc = svgExist.contentDocument;
+                // get viewbox width and height, get svg document width and height in px
+                if (svgDoc && svgDoc.documentElement) {
+                    var vb = svgDoc.documentElement.getAttribute("viewBox");
+                    var docwidth = Number(svgDoc.documentElement.getAttribute("width"));
+                    var docheight = Number(svgDoc.documentElement.getAttribute("height"));
+                    if (vb && docwidth && docheight) {
+                        this._getSVGAttribs(svgExist, elemid);
+                        return value;
+                    }
+                }
+
                 // wait for object to load
                 svgExist.addEventListener("load", () => {
                     this._getSVGAttribs(svgExist, elemid);

@@ -427,6 +427,7 @@ export class Engine extends ThinEngine {
     // Deterministic lockstepMaxSteps
     private _deterministicLockstep: boolean = false;
     private _lockstepMaxSteps: number = 4;
+    private _timeStep: number = 1 / 60;
 
     protected get _supportsHardwareTextureRescaling() {
         return !!Engine._RescalePostProcessFactory;
@@ -586,6 +587,8 @@ export class Engine extends ThinEngine {
 
             this._deterministicLockstep = !!options.deterministicLockstep;
             this._lockstepMaxSteps = options.lockstepMaxSteps || 0;
+            this._timeStep = options.timeStep || 1 / 60;
+
         }
 
         // Load WebVR Devices
@@ -612,18 +615,6 @@ export class Engine extends ThinEngine {
      */
     public getScreenAspectRatio(): number {
         return (this.getRenderWidth(true)) / (this.getRenderHeight(true));
-    }
-
-    /**
-     * Gets host document
-     * @returns the host document object
-     */
-    public getHostDocument(): Document {
-        if (this._renderingCanvas && this._renderingCanvas.ownerDocument) {
-            return this._renderingCanvas.ownerDocument;
-        }
-
-        return document;
     }
 
     /**
@@ -667,15 +658,26 @@ export class Engine extends ThinEngine {
     }
 
     /**
+     * Returns the time in ms between steps when using deterministic lock step.
+     * @returns time step in (ms)
+     */
+    public getTimeStep(): number {
+        return this._timeStep * 1000;
+    }
+
+    /**
      * Force the mipmap generation for the given render target texture
      * @param texture defines the render target texture to use
+     * @param unbind defines whether or not to unbind the texture after generation. Defaults to true.
      */
-    public generateMipMapsForCubemap(texture: InternalTexture) {
+    public generateMipMapsForCubemap(texture: InternalTexture, unbind = true) {
         if (texture.generateMipMaps) {
             var gl = this._gl;
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
             gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
+            if (unbind) {
+                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
+            }
         }
     }
 
@@ -1269,11 +1271,11 @@ export class Engine extends ThinEngine {
         return this._gl.getShaderSource(shaders[0]);
     }
 
-   /**
-    * Gets the source code of the fragment shader associated with a specific webGL program
-    * @param program defines the program to use
-    * @returns a string containing the source code of the fragment shader associated with the program
-    */
+    /**
+     * Gets the source code of the fragment shader associated with a specific webGL program
+     * @param program defines the program to use
+     * @returns a string containing the source code of the fragment shader associated with the program
+     */
     public getFragmentShaderSource(program: WebGLProgram): Nullable<string> {
         var shaders = this._gl.getAttachedShaders(program);
 
@@ -1545,6 +1547,16 @@ export class Engine extends ThinEngine {
     }
 
     /**
+     * Set the compressed texture extensions or file names to skip.
+     *
+     * @param skippedFiles defines the list of those texture files you want to skip
+     * Example: [".dds", ".env", "myfile.png"]
+     */
+    public setCompressedTextureExclusions(skippedFiles: Array<string>): void {
+        this._excludedCompressedTextures = skippedFiles;
+    }
+
+    /**
      * Force a specific size of the canvas
      * @param width defines the new canvas' width
      * @param height defines the new canvas' height
@@ -1711,12 +1723,12 @@ export class Engine extends ThinEngine {
             width: destination.width,
             height: destination.height,
         }, {
-                generateMipMaps: false,
-                type: Constants.TEXTURETYPE_UNSIGNED_INT,
-                samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-                generateDepthBuffer: false,
-                generateStencilBuffer: false
-            }
+            generateMipMaps: false,
+            type: Constants.TEXTURETYPE_UNSIGNED_INT,
+            samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+            generateDepthBuffer: false,
+            generateStencilBuffer: false
+        }
         );
 
         if (!this._rescalePostProcess && Engine._RescalePostProcessFactory) {

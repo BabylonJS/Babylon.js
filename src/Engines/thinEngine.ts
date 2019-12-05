@@ -88,10 +88,13 @@ export interface EngineOptions extends WebGLContextAttributes {
     deterministicLockstep?: boolean;
     /** Defines the maximum steps to use with deterministic lock step mode */
     lockstepMaxSteps?: number;
+    /** Defines the seconds between each deterministic lock step */
+    timeStep?: number;
     /**
      * Defines that engine should ignore context lost events
      * If this event happens when this parameter is true, you will have to reload the page to restore rendering
      */
+
     doNotHandleContextLost?: boolean;
     /**
      * Defines that engine should ignore modifying touch action attribute and style
@@ -128,14 +131,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-alpha.26";
+        return "babylonjs@4.1.0-beta.5";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-alpha.26";
+        return "4.1.0-beta.5";
     }
 
     /**
@@ -166,6 +169,29 @@ export class ThinEngine {
     }
     public static set ShadersRepository(value: string) {
         Effect.ShadersRepository = value;
+    }
+
+    /**
+    * Gets or sets the textures that the engine should not attempt to load as compressed
+    */
+    protected _excludedCompressedTextures: string[] = [];
+
+    /**
+     * Filters the compressed texture formats to only include
+     * files that are not included in the skippable list
+     *
+     * @param url the current extension
+     * @param textureFormatInUse the current compressed texture format
+     * @returns "format" string
+     */
+    public excludedCompressedTextureFormats(url: Nullable<string>, textureFormatInUse: Nullable<string>): Nullable<string> {
+        const skipCompression = (): boolean => {
+            return this._excludedCompressedTextures.some((entry) => {
+                const strRegExPattern: string = '\\b' + entry + '\\b';
+                return (url && (url === entry || url.match(new RegExp(strRegExPattern, 'g'))));
+            });
+        };
+        return skipCompression() ? null : textureFormatInUse;
     }
 
     // Public members
@@ -201,6 +227,11 @@ export class ThinEngine {
     /** Gets or sets a boolean indicating if the engine should validate programs after compilation */
     public validateShaderPrograms = false;
 
+    /**
+     * Gets or sets a boolean indicating if depth buffer should be reverse, going from far to near.
+     * This can provide greater z depth for distant objects.
+     */
+    public useReverseDepthBuffer = false;
     // Uniform buffers list
 
     /**
@@ -483,6 +514,10 @@ export class ThinEngine {
                 options.lockstepMaxSteps = 4;
             }
 
+            if (options.timeStep === undefined) {
+                options.timeStep = 1 / 60;
+            }
+
             if (options.preserveDrawingBuffer === undefined) {
                 options.preserveDrawingBuffer = false;
             }
@@ -705,6 +740,7 @@ export class ThinEngine {
             maxCombinedTexturesImageUnits: this._gl.getParameter(this._gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS),
             maxVertexTextureImageUnits: this._gl.getParameter(this._gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS),
             maxTextureSize: this._gl.getParameter(this._gl.MAX_TEXTURE_SIZE),
+            maxSamples: this._webGLVersion > 1 ? this._gl.getParameter(this._gl.MAX_SAMPLES) : 1,
             maxCubemapTextureSize: this._gl.getParameter(this._gl.MAX_CUBE_MAP_TEXTURE_SIZE),
             maxRenderTextureSize: this._gl.getParameter(this._gl.MAX_RENDERBUFFER_SIZE),
             maxVertexAttribs: this._gl.getParameter(this._gl.MAX_VERTEX_ATTRIBS),
@@ -740,6 +776,7 @@ export class ThinEngine {
             textureLOD: (this._webGLVersion > 1 || this._gl.getExtension('EXT_shader_texture_lod')) ? true : false,
             blendMinMax: false,
             multiview: this._gl.getExtension('OVR_multiview2'),
+            oculusMultiview: this._gl.getExtension('OCULUS_multiview'),
             depthTextureExtension: false
         };
 
@@ -1036,7 +1073,7 @@ export class ThinEngine {
         }
 
         if (this._activeRenderLoops.length > 0) {
-           this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
+            this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
         } else {
             this._renderingQueueLaunched = false;
         }
@@ -1134,7 +1171,12 @@ export class ThinEngine {
             mode |= this._gl.COLOR_BUFFER_BIT;
         }
         if (depth) {
-            this._gl.clearDepth(1.0);
+            if (this.useReverseDepthBuffer) {
+                this._depthCullingState.depthFunc = this._gl.GREATER;
+                this._gl.clearDepth(0.0);
+            } else {
+                this._gl.clearDepth(1.0);
+            }
             mode |= this._gl.DEPTH_BUFFER_BIT;
         }
         if (stencil) {
@@ -1433,8 +1475,7 @@ export class ThinEngine {
         return dataBuffer;
     }
 
-    protected _normalizeIndexData(indices: IndicesArray): Uint16Array | Uint32Array
-    {
+    protected _normalizeIndexData(indices: IndicesArray): Uint16Array | Uint32Array {
         if (indices instanceof Uint16Array) {
             return indices;
         }
@@ -2640,17 +2681,18 @@ export class ThinEngine {
         // establish the file extension, if possible
         var lastDot = url.lastIndexOf('.');
         var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
-
+        const filteredFormat: Nullable<string> = this.excludedCompressedTextureFormats(url, this._textureFormatInUse);
         let loader: Nullable<IInternalTextureLoader> = null;
+
         for (let availableLoader of ThinEngine._TextureLoaders) {
-            if (excludeLoaders.indexOf(availableLoader) === -1 && availableLoader.canLoad(extension, this._textureFormatInUse, fallback, isBase64, buffer ? true : false)) {
+            if (excludeLoaders.indexOf(availableLoader) === -1 && availableLoader.canLoad(extension, filteredFormat, fallback, isBase64, buffer ? true : false)) {
                 loader = availableLoader;
                 break;
             }
         }
 
         if (loader) {
-            url = loader.transformUrl(url, this._textureFormatInUse);
+            url = loader.transformUrl(url, filteredFormat);
         }
 
         if (scene) {
@@ -3968,7 +4010,7 @@ export class ThinEngine {
 
     /** @hidden */
     public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void,
-    offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: IWebRequest, exception?: any) => void): IFileRequest {
+        offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: IWebRequest, exception?: any) => void): IFileRequest {
         let request = FileTools.LoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
@@ -4099,5 +4141,17 @@ export class ThinEngine {
         else {
             return window.setTimeout(func, 16);
         }
+    }
+
+    /**
+     * Gets host document
+     * @returns the host document object
+     */
+    public getHostDocument(): Document {
+        if (this._renderingCanvas && this._renderingCanvas.ownerDocument) {
+            return this._renderingCanvas.ownerDocument;
+        }
+
+        return document;
     }
 }

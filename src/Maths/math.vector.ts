@@ -644,7 +644,7 @@ export class Vector2 {
 }
 
 /**
- * Classed used to store (x,y,z) vector representation
+ * Class used to store (x,y,z) vector representation
  * A Vector3 is the main object used in 3D geometry
  * It can represent etiher the coordinates of a point the space, either a direction
  * Reminder: js uses a left handed forward facing system
@@ -1308,10 +1308,10 @@ export class Vector3 {
 
     /**
      * Returns a new Vector3 set from the index "offset" of the given Float32Array
-     * This function is deprecated. Use FromArray instead
      * @param array defines the source array
      * @param offset defines the offset in the source array
      * @returns the new Vector3
+     * @deprecated Please use FromArray instead.
      */
     public static FromFloatArray(array: DeepImmutable<Float32Array>, offset?: number): Vector3 {
         return Vector3.FromArray(array, offset);
@@ -1331,10 +1331,10 @@ export class Vector3 {
 
     /**
      * Sets the given vector "result" with the element values from the index "offset" of the given Float32Array
-     * This function is deprecated.  Use FromArrayToRef instead.
      * @param array defines the source array
      * @param offset defines the offset in the source array
      * @param result defines the Vector3 where to store the result
+     * @deprecated Please use FromArrayToRef instead.
      */
     public static FromFloatArrayToRef(array: DeepImmutable<Float32Array>, offset: number, result: Vector3): void {
         return Vector3.FromArrayToRef(array, offset, result);
@@ -4997,6 +4997,29 @@ export class Matrix {
     }
 
     /**
+     * Stores a left-handed perspective projection into a given matrix with depth reversed
+     * @param fov defines the horizontal field of view
+     * @param aspect defines the aspect ratio
+     * @param znear defines the near clip plane
+     * @param zfar not used as infinity is used as far clip
+     * @param result defines the target matrix
+     * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+     */
+    public static PerspectiveFovReverseLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
+        let t = 1.0 / (Math.tan(fov * 0.5));
+        let a = isVerticalFovFixed ? (t / aspect) : t;
+        let b = isVerticalFovFixed ? t : (t * aspect);
+        Matrix.FromValuesToRef(
+            a, 0.0, 0.0, 0.0,
+            0.0, b, 0.0, 0.0,
+            0.0, 0.0, -znear, 1.0,
+            0.0, 0.0, 1.0, 0.0,
+            result
+        );
+        result._updateIdentityStatus(false);
+    }
+
+    /**
      * Creates a right-handed perspective projection matrix
      * @param fov defines the horizontal field of view
      * @param aspect defines the aspect ratio
@@ -5039,6 +5062,36 @@ export class Matrix {
             0.0, b, 0.0, 0.0,
             0.0, 0.0, c, -1.0,
             0.0, 0.0, d, 0.0,
+            result
+        );
+
+        result._updateIdentityStatus(false);
+    }
+
+    /**
+     * Stores a right-handed perspective projection into a given matrix
+     * @param fov defines the horizontal field of view
+     * @param aspect defines the aspect ratio
+     * @param znear defines the near clip plane
+     * @param zfar not used as infinity is used as far clip
+     * @param result defines the target matrix
+     * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
+     */
+    public static PerspectiveFovReverseRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
+        //alternatively this could be expressed as:
+        //    m = PerspectiveFovLHToRef
+        //    m[10] *= -1.0;
+        //    m[11] *= -1.0;
+
+        let t = 1.0 / (Math.tan(fov * 0.5));
+        let a = isVerticalFovFixed ? (t / aspect) : t;
+        let b = isVerticalFovFixed ? t : (t * aspect);
+
+        Matrix.FromValuesToRef(
+            a, 0.0, 0.0, 0.0,
+            0.0, b, 0.0, 0.0,
+            0.0, 0.0, -znear, -1.0,
+            0.0, 0.0, -1.0, 0.0,
             result
         );
 

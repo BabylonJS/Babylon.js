@@ -689,6 +689,8 @@ declare module BABYLON.GUI {
         /** @hidden */
         _isClipped: boolean;
         /** @hidden */
+        _automaticSize: boolean;
+        /** @hidden */
         _tag: any;
         /**
          * Gets or sets the unique id of the node. Please note that this number will be updated when the control is added to a container
@@ -1013,8 +1015,13 @@ declare module BABYLON.GUI {
          * @param scene defines the hosting scene
          */
         moveToVector3(position: BABYLON.Vector3, scene: BABYLON.Scene): void;
-        /** @hidden */
-        _getDescendants(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
+        /**
+         * Will store all controls that have this control as ascendant in a given array
+         * @param results defines the array where to store the descendants
+         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+         * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+         */
+        getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /**
          * Will return all controls that have this control as ascendant
          * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
@@ -1244,8 +1251,7 @@ declare module BABYLON.GUI {
         protected _postMeasure(): void;
         /** @hidden */
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
-        /** @hidden */
-        _getDescendants(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
+        getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /** @hidden */
         _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
         /** @hidden */
@@ -1393,7 +1399,7 @@ declare module BABYLON.GUI {
         protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         private _drawText;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         protected _applyStates(context: CanvasRenderingContext2D): void;
         protected _breakLines(refWidth: number, context: CanvasRenderingContext2D): object[];
         protected _parseLine(line: string | undefined, context: CanvasRenderingContext2D): object;
@@ -1495,6 +1501,8 @@ declare module BABYLON.GUI {
         autoScale: boolean;
         /** Gets or sets the streching mode used by the image */
         stretch: number;
+        /** @hidden */
+        _rotate90(n: number): Image;
         /**
          * Gets or sets the internal DOM image used to render the control
          */
@@ -1715,7 +1723,7 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         /** @hidden */
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
         /**
@@ -1957,7 +1965,7 @@ declare module BABYLON.GUI {
         private _onCutText;
         /** @hidden */
         private _onPasteText;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
         _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
@@ -2351,7 +2359,7 @@ declare module BABYLON.GUI {
         horizontalAlignment: number;
         verticalAlignment: number;
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         _measure(): void;
         protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -2488,7 +2496,7 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
     }
 }
 declare module BABYLON.GUI {
@@ -2717,13 +2725,63 @@ declare module BABYLON.GUI {
         name?: string | undefined;
         private _background;
         private _borderColor;
-        private _thumbMeasure;
+        private _tempMeasure;
         /** Gets or sets border color */
         borderColor: string;
         /** Gets or sets background color */
         background: string;
         /**
          * Creates a new Slider
+         * @param name defines the control name
+         */
+        constructor(name?: string | undefined);
+        protected _getTypeName(): string;
+        protected _getThumbThickness(): number;
+        _draw(context: CanvasRenderingContext2D): void;
+        private _first;
+        private _originX;
+        private _originY;
+        /** @hidden */
+        protected _updateValueFromPointer(x: number, y: number): void;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create slider controls
+     */
+    export class ImageScrollBar extends BaseSlider {
+        name?: string | undefined;
+        private _backgroundBaseImage;
+        private _backgroundImage;
+        private _thumbImage;
+        private _thumbBaseImage;
+        private _thumbLength;
+        private _thumbHeight;
+        private _barImageHeight;
+        private _tempMeasure;
+        /**
+         * Gets or sets the image used to render the background for horizontal bar
+         */
+        backgroundImage: Image;
+        /**
+         * Gets or sets the image used to render the thumb
+         */
+        thumbImage: Image;
+        /**
+         * Gets or sets the length of the thumb
+         */
+        thumbLength: number;
+        /**
+         * Gets or sets the height of the thumb
+         */
+        thumbHeight: number;
+        /**
+         * Gets or sets the height of the bar image
+         */
+        barImageHeight: number;
+        /**
+         * Creates a new ImageScrollBar
          * @param name defines the control name
          */
         constructor(name?: string | undefined);
@@ -2751,6 +2809,8 @@ declare module BABYLON.GUI {
         private _verticalBar;
         private _barColor;
         private _barBackground;
+        private _barImage;
+        private _barBackgroundImage;
         private _barSize;
         private _endLeft;
         private _endTop;
@@ -2760,14 +2820,18 @@ declare module BABYLON.GUI {
         private _onPointerObserver;
         private _clientWidth;
         private _clientHeight;
+        private _useImageBar;
+        private _thumbLength;
+        private _thumbHeight;
+        private _barImageHeight;
         /**
          * Gets the horizontal scrollbar
          */
-        readonly horizontalBar: ScrollBar;
+        readonly horizontalBar: ScrollBar | ImageScrollBar;
         /**
          * Gets the vertical scrollbar
          */
-        readonly verticalBar: ScrollBar;
+        readonly verticalBar: ScrollBar | ImageScrollBar;
         /**
          * Adds a new control to the current container
          * @param control defines the control to add
@@ -2787,7 +2851,7 @@ declare module BABYLON.GUI {
         * Creates a new ScrollViewer
         * @param name of ScrollViewer
         */
-        constructor(name?: string);
+        constructor(name?: string, isImageBased?: boolean);
         /** Reset the scroll viewer window to initial size */
         resetWindow(): void;
         protected _getTypeName(): string;
@@ -2799,15 +2863,29 @@ declare module BABYLON.GUI {
          * from 0 to 1 with a default value of 0.05
          * */
         wheelPrecision: number;
+        /** Gets or sets the scroll bar container background color */
+        scrollBackground: string;
         /** Gets or sets the bar color */
         barColor: string;
+        /** Gets or sets the bar image */
+        thumbImage: Image;
         /** Gets or sets the size of the bar */
         barSize: number;
+        /** Gets or sets the length of the thumb */
+        thumbLength: number;
+        /** Gets or sets the height of the thumb */
+        thumbHeight: number;
+        /** Gets or sets the height of the bar image */
+        barImageHeight: number;
         /** Gets or sets the bar background */
         barBackground: string;
+        /** Gets or sets the bar background image */
+        barImage: Image;
         /** @hidden */
         private _updateScroller;
         _link(host: AdvancedDynamicTexture): void;
+        /** @hidden */
+        private _addBar;
         /** @hidden */
         private _attachWheel;
         _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
@@ -2854,7 +2932,7 @@ declare module BABYLON.GUI {
          * @param name defines the control name
          */
         constructor(name?: string | undefined);
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         protected _getTypeName(): string;
     }
 }
@@ -2887,7 +2965,7 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
     }
 }
 declare module BABYLON.GUI {
@@ -3539,6 +3617,10 @@ declare module BABYLON.GUI {
         private _tooltipHoverObserver;
         private _tooltipOutObserver;
         private _disposeTooltip;
+        /**
+         * Rendering ground id of all the mesh in the button
+         */
+        renderingGroupId: number;
         /**
          * Text to be displayed on the tooltip shown when hovering on the button. When set to null tooltip is disabled. (Default: null)
          */

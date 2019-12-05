@@ -124,7 +124,14 @@ export class CubeTexture extends BaseTexture {
      * @return the prefiltered texture
      */
     public static CreateFromPrefilteredData(url: string, scene: Scene, forcedExtension: any = null, createPolynomials: boolean = true) {
-        return new CubeTexture(url, scene, null, false, null, null, null, undefined, true, forcedExtension, createPolynomials);
+        const oldValue = scene.useDelayedTextureLoading;
+        scene.useDelayedTextureLoading = false;
+
+        const result = new CubeTexture(url, scene, null, false, null, null, null, undefined, true, forcedExtension, createPolynomials);
+
+        scene.useDelayedTextureLoading = oldValue;
+
+        return result;
     }
 
     /**
@@ -176,12 +183,14 @@ export class CubeTexture extends BaseTexture {
         if (isEnv) {
             this.gammaSpace = false;
             this._prefiltered = false;
+            this.anisotropicFilteringLevel = 1;
         }
         else {
             this._prefiltered = prefiltered;
 
             if (prefiltered) {
                 this.gammaSpace = false;
+                this.anisotropicFilteringLevel = 1;
             }
         }
 

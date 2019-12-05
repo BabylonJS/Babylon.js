@@ -440,8 +440,8 @@ export class GLTFLoader implements IGLTFLoader {
     private _checkExtensions(): void {
         if (this._gltf.extensionsRequired) {
             for (const name of this._gltf.extensionsRequired) {
-                const extension = this._extensions.find((extension) => extension.name === name);
-                if (!extension || !extension.enabled) {
+                const available = this._extensions.some((extension) => extension.name === name && extension.enabled);
+                if (!available) {
                     throw new Error(`Require extension ${name} is not available`);
                 }
             }
@@ -844,6 +844,10 @@ export class GLTFLoader implements IGLTFLoader {
                 babylonGeometry.setVerticesBuffer(babylonVertexBuffer, accessor.count);
             }));
 
+            if (kind == VertexBuffer.MatricesIndicesExtraKind) {
+                babylonMesh.numBoneInfluencers = 8;
+            }
+
             if (callback) {
                 callback(accessor);
             }
@@ -856,6 +860,8 @@ export class GLTFLoader implements IGLTFLoader {
         loadAttribute("TEXCOORD_1", VertexBuffer.UV2Kind);
         loadAttribute("JOINTS_0", VertexBuffer.MatricesIndicesKind);
         loadAttribute("WEIGHTS_0", VertexBuffer.MatricesWeightsKind);
+        loadAttribute("JOINTS_1", VertexBuffer.MatricesIndicesExtraKind);
+        loadAttribute("WEIGHTS_1", VertexBuffer.MatricesWeightsExtraKind);
         loadAttribute("COLOR_0", VertexBuffer.ColorKind, (accessor) => {
             if (accessor.type === AccessorType.VEC4) {
                 babylonMesh.hasVertexAlpha = true;
@@ -1577,7 +1583,7 @@ export class GLTFLoader implements IGLTFLoader {
         }
         // Load joint indices as a float array since the shaders expect float data but glTF uses unsigned byte/short.
         // This prevents certain platforms (e.g. D3D) from having to convert the data to float on the fly.
-        else if (kind === VertexBuffer.MatricesIndicesKind) {
+        else if (kind === VertexBuffer.MatricesIndicesKind || kind === VertexBuffer.MatricesIndicesExtraKind) {
             accessor._babylonVertexBuffer = this._loadFloatAccessorAsync(`/accessors/${accessor.index}`, accessor).then((data) => {
                 return new VertexBuffer(this._babylonScene.getEngine(), data, kind, false);
             });

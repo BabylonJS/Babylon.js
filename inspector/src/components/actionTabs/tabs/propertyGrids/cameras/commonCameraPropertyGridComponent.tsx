@@ -10,6 +10,7 @@ import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
+import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 
 interface ICommonCameraPropertyGridComponentProps {
     globalState: GlobalState;
@@ -66,6 +67,10 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
                         camera.mode === Camera.ORTHOGRAPHIC_CAMERA &&
                         <FloatLineComponent lockObject={this.props.lockObject} label="Bottom" target={camera} propertyName="orthoBottom" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
+                    <ButtonLineComponent label="Dispose" onClick={() => {
+                        camera.dispose();
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+                    }} />                       
                 </LineContainerComponent>
             </div>
         );
