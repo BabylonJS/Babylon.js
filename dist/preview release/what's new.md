@@ -93,7 +93,6 @@
 - Added diff navigator in the playground ([sailro](http://www.github.com/sailro))
 - Added custom filter to remove internals from the completion in the playground ([sailro](http://www.github.com/sailro))
 - Added support for tagging deprecated members (both in editor and for completion) in the playground ([sailro](http://www.github.com/sailro))
-- Updated the sandbox to autoplay the last animation group loaded instead of the first one ([noalak](https://github.com/noalak/))
 
 ### Meshes
 

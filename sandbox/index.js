@@ -86,7 +86,7 @@ if (BABYLON.Engine.isSupported()) {
         engine.resize();
     });
 
-    var anyLoaded = function(babylonScene) {
+    var anyLoaded = function(babylonScene, playFirstAnimationGroup) {
         // Clear dropdown that contains animation names
         dropdownContent.innerHTML = "";
         animationBar.style.display = "none";
@@ -98,7 +98,7 @@ if (BABYLON.Engine.isSupported()) {
                 var group = babylonScene.animationGroups[index];
                 createDropdownLink(group, index);
             }
-            currentGroupIndex = babylonScene.animationGroups.length - 1;
+            currentGroupIndex = playFirstAnimationGroup ? 0 : babylonScene.animationGroups.length - 1;
             currentGroup = babylonScene.animationGroups[currentGroupIndex];
             currentGroup.play(true);
         }
@@ -127,7 +127,7 @@ if (BABYLON.Engine.isSupported()) {
     var sceneLoaded = function (sceneFile, babylonScene) {
         engine.clearInternalTexturesCache();
 
-        anyLoaded(babylonScene);
+        anyLoaded(babylonScene, true);
 
         // Fix for IE, otherwise it will change the default filter for files selection after first use
         htmlInput.value = "";
@@ -135,7 +135,7 @@ if (BABYLON.Engine.isSupported()) {
         currentScene = babylonScene;
 
         babylonScene.onAnimationFileImportedObservable.add((scene) => {
-            anyLoaded(scene);
+            anyLoaded(scene, false);
         });
 
         document.title = "Babylon.js - " + sceneFile.name;
