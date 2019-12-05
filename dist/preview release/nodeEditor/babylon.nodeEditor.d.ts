@@ -46,6 +46,15 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface IDisplayManager {
+        getHeaderClass(block: BABYLON.NodeMaterialBlock): string;
+        shouldDisplayPortLabels(block: BABYLON.NodeMaterialBlock): boolean;
+        updatePreviewContent(block: BABYLON.NodeMaterialBlock, contentArea: HTMLDivElement): void;
+        getBackgroundColor(block: BABYLON.NodeMaterialBlock): string;
+        getHeaderText(block: BABYLON.NodeMaterialBlock): string;
+    }
+}
+declare module NODEEDITOR {
     export class NodePort {
         connectionPoint: BABYLON.NodeMaterialConnectionPoint;
         node: GraphNode;
@@ -53,10 +62,12 @@ declare module NODEEDITOR {
         private _img;
         private _globalState;
         private _onCandidateLinkMovedObserver;
+        delegatedPort: BABYLON.Nullable<NodePort>;
         readonly element: HTMLDivElement;
         refresh(): void;
         constructor(portContainer: HTMLElement, connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState);
         dispose(): void;
+        static CreatePortElement(connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, displayManager: BABYLON.Nullable<IDisplayManager>, globalState: GlobalState): NodePort;
     }
 }
 declare module NODEEDITOR {
@@ -72,6 +83,7 @@ declare module NODEEDITOR {
         height: number;
         color: number[];
         name: string;
+        isCollapsed: boolean;
     }
     export interface IEditorData {
         locations: INodeLocationInfo[];
@@ -93,11 +105,18 @@ declare module NODEEDITOR {
         private _height;
         element: HTMLDivElement;
         private _headerElement;
+        private _portContainer;
+        private _outputPortContainer;
+        private _inputPortContainer;
         private _nodes;
         private _ownerCanvas;
         private _mouseStartPointX;
         private _mouseStartPointY;
         private _onSelectionChangedObserver;
+        private _isCollapsed;
+        private _ports;
+        private _controlledPorts;
+        isCollapsed: boolean;
         readonly nodes: GraphNode[];
         name: string;
         color: BABYLON.Color3;
@@ -105,7 +124,10 @@ declare module NODEEDITOR {
         y: number;
         width: number;
         height: number;
-        constructor(candidate: BABYLON.Nullable<HTMLDivElement>, canvas: GraphCanvasComponent);
+        constructor(candidate: BABYLON.Nullable<HTMLDivElement>, canvas: GraphCanvasComponent, doNotCaptureNodes?: boolean);
+        refresh(): void;
+        addNode(node: GraphNode): void;
+        removeNode(node: GraphNode): void;
         syncNode(node: GraphNode): void;
         cleanAccumulation(): void;
         private _onDown;
@@ -126,8 +148,13 @@ declare module NODEEDITOR {
         private _path;
         private _selectionPath;
         private _onSelectionChangedObserver;
+        private _isVisible;
+        onDisposedObservable: BABYLON.Observable<NodeLink>;
+        isVisible: boolean;
         readonly portA: NodePort;
         readonly portB: NodePort | undefined;
+        readonly nodeA: GraphNode;
+        readonly nodeB: GraphNode | undefined;
         update(endX?: number, endY?: number, straight?: boolean): void;
         constructor(graphCanvas: GraphCanvasComponent, portA: NodePort, nodeA: GraphNode, portB?: NodePort, nodeB?: GraphNode);
         onClick(): void;
@@ -754,15 +781,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export interface IDisplayManager {
-        getHeaderClass(block: BABYLON.NodeMaterialBlock): string;
-        shouldDisplayPortLabels(block: BABYLON.NodeMaterialBlock): boolean;
-        updatePreviewContent(block: BABYLON.NodeMaterialBlock, contentArea: HTMLDivElement): void;
-        getBackgroundColor(block: BABYLON.NodeMaterialBlock): string;
-        getHeaderText(block: BABYLON.NodeMaterialBlock): string;
-    }
-}
-declare module NODEEDITOR {
     export class StringTools {
         private static _SaveAs;
         private static _Click;
@@ -909,6 +927,10 @@ declare module NODEEDITOR {
         private _ownerCanvas;
         private _isSelected;
         private _displayManager;
+        private _isVisible;
+        isVisible: boolean;
+        readonly outputPorts: NodePort[];
+        readonly inputPorts: NodePort[];
         readonly links: NodeLink[];
         readonly gridAlignedX: number;
         readonly gridAlignedY: number;
@@ -926,7 +948,6 @@ declare module NODEEDITOR {
         private _refreshFrames;
         private _refreshLinks;
         refresh(): void;
-        private _appendConnection;
         private _onDown;
         cleanAccumulation(): void;
         private _onUp;
