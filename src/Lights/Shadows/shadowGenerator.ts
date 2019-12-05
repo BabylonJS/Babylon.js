@@ -756,7 +756,7 @@ export class ShadowGenerator implements IShadowGenerator {
      * @returns The render target texture if present otherwise, null
      */
     public getCSM(index: number): Nullable<RenderTargetTexture> {
-        if (index && this.useCSM && this._cascadeShadowMaps && this._cascadeShadowMaps.length !== 0) {
+        if (this.useCSM && this._cascadeShadowMaps && this._cascadeShadowMaps.length !== 0) {
             return this._cascadeShadowMaps[index];
         } else {
             return null;
@@ -1957,9 +1957,6 @@ export class ShadowGenerator implements IShadowGenerator {
      * @returns The transform matrix used to create the CSM shadow map
      */
     public getCSMTransformMatrix(mapIndex: number): Matrix {
-        if (!mapIndex) {
-            return this._CSMtransformMatrices[mapIndex];
-        }
         var scene = this._scene;
         if (this._currentRenderID === scene.getRenderId() && this._currentFaceIndexCache === this._currentFaceIndex) {
             return this._CSMtransformMatrices[mapIndex];
