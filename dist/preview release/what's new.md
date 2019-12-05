@@ -76,6 +76,7 @@
 - Added support for CreateScreenshotUsingRenderTarget ([13djwright](https://github.com/13djwright/))
 - Added support for `Material.depthFunction` property ([Popov72](https://github.com/Popov72))
 - Added an optional config option `initialTab` ([ycw](https://github.com/ycw/)) 
+- Added support for ImportAnimations ([noalak](https://github.com/noalak/))
 
 ### Tools
 
@@ -124,6 +125,7 @@
 - Added support for GLTF sheen extension [Sebavan](https://github.com/sebavan/)
 - Added support for GLTF mesh quantization extension ([zeux](https://github.com/zeux))
 - Added support for 8 bone influences to glTF loader ([zeux](https://github.com/zeux))
+- Added support for animations import from separate files ([noalak](https://github.com/noalak/))
 
 ### Materials
 
@@ -252,6 +254,7 @@
 - WebXR UI BUtton will only change to "In XR" after XR Session started ([RaananW](https://github.com/RaananW/))
 - Fix bug when we call `Mesh.render` twice and the material is still not ready on the second call ([barroij](https://github.com/barroij/))
 - Fixed an issue with pose input in webxr ([RaananW](https://github.com/RaananW/))
+- Fixed bug when parsing animation group without 'to' value ([noalak](https://github.com/noalak/))
 
 ## Breaking changes
 
