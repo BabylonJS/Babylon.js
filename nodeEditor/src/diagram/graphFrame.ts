@@ -34,6 +34,14 @@ export class GraphFrame {
         return this._isCollapsed;
     }
 
+    private _createInputPort(port: NodePort, node: GraphNode) {
+        let localPort = NodePort.CreatePortElement(port.connectionPoint, node, this._inputPortContainer, null, this._ownerCanvas.globalState)
+        this._ports.push(localPort);
+
+        port.delegatedPort = localPort;
+        this._controlledPorts.push(port);
+    }
+   
     public set isCollapsed(value: boolean) {
         if (this._isCollapsed === value) {
             return;
@@ -57,7 +65,7 @@ export class GraphFrame {
 
                                 if (!portAdded) {
                                     portAdded = true;
-                                    localPort = NodePort.CreatePortElement(port.connectionPoint, link.nodeB!, this._outputPortContainer, null, this._ownerCanvas.globalState)
+                                    localPort = NodePort.CreatePortElement(port.connectionPoint, link.nodeB!, this._outputPortContainer, null, this._ownerCanvas.globalState);
                                     this._ports.push(localPort);
                                 } else {
                                     localPort = this._ports.filter(p => p.connectionPoint === port.connectionPoint)[0];
@@ -68,6 +76,11 @@ export class GraphFrame {
                                 link.isVisible = true;
                             }
                         }
+                    } else {
+                        let localPort = NodePort.CreatePortElement(port.connectionPoint, node, this._outputPortContainer, null, this._ownerCanvas.globalState)
+                        this._ports.push(localPort);
+                        port.delegatedPort = localPort;
+                        this._controlledPorts.push(port);
                     }
                 }
 
@@ -75,14 +88,12 @@ export class GraphFrame {
                     if (port.connectionPoint.isConnected) {
                         for (var link of node.links) {
                             if (link.portB === port && this.nodes.indexOf(link.nodeA) === -1) {
-                                let localPort = NodePort.CreatePortElement(port.connectionPoint, link.nodeA, this._inputPortContainer, null, this._ownerCanvas.globalState)
-                                this._ports.push(localPort);
-
-                                port.delegatedPort = localPort;
-                                this._controlledPorts.push(port);
+                                this._createInputPort(port, node);
                                 link.isVisible = true;
                             }
                         }
+                    } else {
+                        this._createInputPort(port, node);
                     }
                 }
             }
