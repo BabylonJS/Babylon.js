@@ -16,7 +16,7 @@ export interface XRSession {
 
 export interface WebXRHitTestOptions {
     testOnlyOnSelect?: boolean;
-    parentObject?: TransformNode;
+    nonXrSpaceNode?: TransformNode;
 }
 
 export interface WebXRHitResult {
@@ -80,8 +80,8 @@ export class WebXRHitTest implements WebXRFeature {
                 if (!this.xrSessionManager.scene.useRightHandedSystem) {
                     mat.toggleModelMatrixHandInPlace();
                 }
-                if (this.options.parentObject) {
-                    const node = this.options.parentObject;
+                if (this.options.nonXrSpaceNode) {
+                    const node = this.options.nonXrSpaceNode;
                     Matrix.ComposeToRef(node.scaling, node.rotationQuaternion || new Quaternion(), node.position, this._tmpMatrix);
                     mat.multiplyToRef(this._tmpMatrix, mat);
                 }
