@@ -1,8 +1,9 @@
 import { WebXRFeature, WebXRFeaturesManager } from '../webXRFeaturesManager';
 import { WebXRSessionManager } from '../webXRSessionManager';
-import { Observable } from '../../../Misc/observable';
+import { Observable, Observer } from '../../../Misc/observable';
 import { Vector3, Matrix, Quaternion } from '../../../Maths/math';
 import { TransformNode } from '../../../Meshes/transformNode';
+import { Nullable } from '../../../types';
 
 const Name = "xr-hit-test";
 //register the plugin
@@ -19,10 +20,6 @@ export interface WebXRHitTestOptions {
     nonXrSpaceNode?: TransformNode;
 }
 
-export interface WebXRHitResult {
-
-}
-
 export class WebXRHitTest implements WebXRFeature {
 
     public static readonly Name = Name;
@@ -36,6 +33,7 @@ export class WebXRHitTest implements WebXRFeature {
     readonly name: string = "ar-hit-test";
 
     private _onSelectEnabled = false;
+    private _xrFrameObserver: Nullable<Observer<XRFrame>>;
 
     private _tmpMatrix = new Matrix();
 
@@ -48,7 +46,7 @@ export class WebXRHitTest implements WebXRFeature {
             // in XR space z-forward is negative
             const direction = new Vector3(0, 0, -1);
             const mat = new Matrix();
-            this.xrSessionManager.onXRFrameObservable.add((frame) => {
+            this._xrFrameObserver = this.xrSessionManager.onXRFrameObservable.add((frame) => {
                 let pose = frame.getViewerPose(this.xrSessionManager.referenceSpace);
                 if (!pose) {
                     return;
@@ -69,6 +67,11 @@ export class WebXRHitTest implements WebXRFeature {
     detachAsync(): Promise<boolean> {
         // disable select
         this._onSelectEnabled = false;
+        this.xrSessionManager.session.removeEventListener('select', this.onSelect);
+        if (this._xrFrameObserver) {
+            this.xrSessionManager.onXRFrameObservable.remove(this._xrFrameObserver);
+            this._xrFrameObserver = null;
+        }
         return Promise.resolve(true);
     }
 
@@ -105,7 +108,7 @@ export class WebXRHitTest implements WebXRFeature {
     }
 
     dispose(): void {
-        this.xrSessionManager.session.removeEventListener('select', this.onSelect);
+        this.detachAsync();
         this.onHitTestResultObservable.clear();
     }
 
