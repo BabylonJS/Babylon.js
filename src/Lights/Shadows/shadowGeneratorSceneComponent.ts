@@ -105,10 +105,20 @@ export class ShadowGeneratorSceneComponent implements ISceneSerializableComponen
                 var shadowGenerator = light.getShadowGenerator();
 
                 if (light.isEnabled() && light.shadowEnabled && shadowGenerator) {
-                    var shadowMap = <RenderTargetTexture>(shadowGenerator.getShadowMap());
-                    if (scene.textures.indexOf(shadowMap) !== -1) {
-                        renderTargets.push(shadowMap);
+                    if (shadowGenerator.useCSM) {
+                        var shadowMaps = shadowGenerator.getAllCSMs();
+                        for (let i = 0; i < shadowMaps.length; i++) {
+                            if (scene.textures.indexOf(shadowMaps[i]) !== -1) {
+                                renderTargets.push(shadowMaps[i]);
+                            }
+                        }
+                    } else {
+                        var shadowMap = <RenderTargetTexture>(shadowGenerator.getShadowMap());
+                        if (scene.textures.indexOf(shadowMap) !== -1) {
+                            renderTargets.push(shadowMap);
+                        }
                     }
+
                 }
             }
         }
