@@ -1,7 +1,8 @@
 import { WebXRFeature, WebXRFeaturesManager } from '../webXRFeaturesManager';
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { Observable } from '../../../Misc/observable';
-import { Vector3, Matrix } from '../../../Maths/math';
+import { Vector3, Matrix, Quaternion } from '../../../Maths/math';
+import { TransformNode } from '../../../Meshes/transformNode';
 
 const Name = "xr-hit-test";
 //register the plugin
@@ -14,8 +15,8 @@ export interface XRSession {
 }
 
 export interface WebXRHitTestOptions {
-    testOnSelect?: boolean;
-    parentObject?: Node;
+    testOnlyOnSelect?: boolean;
+    parentObject?: TransformNode;
 }
 
 export interface WebXRHitResult {
@@ -36,12 +37,15 @@ export class WebXRHitTest implements WebXRFeature {
 
     private _onSelectEnabled = false;
 
+    private _tmpMatrix = new Matrix();
+
     attachAsync(): Promise<boolean> {
-        if (this.options.testOnSelect) {
+        if (this.options.testOnlyOnSelect) {
             this.xrSessionManager.session.addEventListener('select', this.onSelect, false);
         } else {
             // we are in XR space!
             const origin = new Vector3(0, 0, 0);
+            // in XR space z-forward is negative
             const direction = new Vector3(0, 0, -1);
             const mat = new Matrix();
             this.xrSessionManager.onXRFrameObservable.add((frame) => {
@@ -76,12 +80,18 @@ export class WebXRHitTest implements WebXRFeature {
                 if (!this.xrSessionManager.scene.useRightHandedSystem) {
                     mat.toggleModelMatrixHandInPlace();
                 }
+                if (this.options.parentObject) {
+                    const node = this.options.parentObject;
+                    Matrix.ComposeToRef(node.scaling, node.rotationQuaternion || new Quaternion(), node.position, this._tmpMatrix);
+                    mat.multiplyToRef(this._tmpMatrix, mat);
+                }
                 return mat;
             });
             this.onHitTestResultObservable.notifyObservers(mats);
         });
     }
 
+    // can be done using pointerdown event, and onXRFrame...addOnce
     private onSelect = (event: XRInputSourceEvent) => {
         if (!this._onSelectEnabled) {
             return;
