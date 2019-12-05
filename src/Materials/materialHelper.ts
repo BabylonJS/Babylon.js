@@ -329,6 +329,7 @@ export class MaterialHelper {
 
         // Shadows
         defines["SHADOW" + lightIndex] = false;
+        defines["SHADOWCSM" + lightIndex] = false;
         defines["SHADOWPCF" + lightIndex] = false;
         defines["SHADOWPCSS" + lightIndex] = false;
         defines["SHADOWPOISSON" + lightIndex] = false;
@@ -340,11 +341,21 @@ export class MaterialHelper {
         if (mesh && mesh.receiveShadows && scene.shadowsEnabled && light.shadowEnabled) {
             var shadowGenerator = light.getShadowGenerator();
             if (shadowGenerator) {
-                const shadowMap = shadowGenerator.getShadowMap();
-                if (shadowMap) {
-                    if (shadowMap.renderList && shadowMap.renderList.length > 0) {
-                        state.shadowEnabled = true;
-                        shadowGenerator.prepareDefines(defines, lightIndex);
+                if (shadowGenerator.useCSM) {
+                    const shadowMaps = shadowGenerator.getAllCSMs();
+                    if (shadowMaps.length !== 0) {
+                        if (shadowMaps[0].renderList && shadowMaps[0].renderList.length > 0) {
+                            state.shadowEnabled = true;
+                            shadowGenerator.prepareDefines(defines, lightIndex);
+                        }
+                    }
+                } else {
+                    const shadowMap = shadowGenerator.getShadowMap();
+                    if (shadowMap) {
+                        if (shadowMap.renderList && shadowMap.renderList.length > 0) {
+                            state.shadowEnabled = true;
+                            shadowGenerator.prepareDefines(defines, lightIndex);
+                        }
                     }
                 }
             }
@@ -407,6 +418,7 @@ export class MaterialHelper {
                 defines["DIRLIGHT" + index] = false;
                 defines["SPOTLIGHT" + index] = false;
                 defines["SHADOW" + index] = false;
+                defines["SHADOWCSM" + index] = false;
                 defines["SHADOWPCF" + index] = false;
                 defines["SHADOWPCSS" + index] = false;
                 defines["SHADOWPOISSON" + index] = false;
@@ -454,6 +466,10 @@ export class MaterialHelper {
             "lightMatrix" + lightIndex,
             "shadowsInfo" + lightIndex,
             "depthValues" + lightIndex,
+            "num_cascades" + lightIndex,
+            "lightMatrixCSM" + lightIndex,
+            "camViewMatCSM" + lightIndex,
+            "ViewFrustumZCSM" + lightIndex,
         );
 
         if (uniformBuffersList) {
@@ -461,6 +477,7 @@ export class MaterialHelper {
         }
 
         samplersList.push("shadowSampler" + lightIndex);
+        samplersList.push("shadowSamplerArrayCSM" + lightIndex);
         samplersList.push("depthSampler" + lightIndex);
 
         if (projectedLightTexture) {
@@ -531,6 +548,9 @@ export class MaterialHelper {
             if (!defines["SHADOWS"]) {
                 if (defines["SHADOW" + lightIndex]) {
                     fallbacks.addFallback(rank, "SHADOW" + lightIndex);
+                }
+                if (defines["SHADOWCSM" + lightIndex]) {
+                    fallbacks.addFallback(rank, "SHADOWCSM" + lightIndex);
                 }
 
                 if (defines["SHADOWPCF" + lightIndex]) {
