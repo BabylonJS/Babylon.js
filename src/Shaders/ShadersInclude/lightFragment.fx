@@ -162,6 +162,29 @@
         #else
             #if defined(SHADOWCUBE{X})
                 shadow = computeShadowCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.depthValues);
+			#elif defined(SHADOWCSM{X})
+				int index = -1;
+				for (int i = 0; i < num_cascades{X}; i++) {
+					if (vPositionFromCameraCSM{X}.z <= ViewFrustumZCSM{X}[i]){
+						index = i;
+						break;
+					}
+				}
+				if (index == 0){
+					shadow = computeShadow(vPositionFromLightCSM{X}[0], vDepthMetricCSM{X}[0], shadowSamplerArrayCSM{X}[0], light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+				}
+				if (index == 1){
+					shadow = computeShadow(vPositionFromLightCSM{X}[1], vDepthMetricCSM{X}[1], shadowSamplerArrayCSM{X}[1], light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+				}
+				if (index == 2){
+					shadow = computeShadow(vPositionFromLightCSM{X}[2], vDepthMetricCSM{X}[2], shadowSamplerArrayCSM{X}[2], light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+				}
+				if (index == 3){
+					shadow = computeShadow(vPositionFromLightCSM{X}[3], vDepthMetricCSM{X}[3], shadowSamplerArrayCSM{X}[3], light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+				}
+				if (index == -1){
+					shadow = 1.;
+				}
             #else
                 shadow = computeShadow(vPositionFromLight{X}, vDepthMetric{X}, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
             #endif
