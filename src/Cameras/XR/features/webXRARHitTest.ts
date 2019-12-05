@@ -15,6 +15,7 @@ export interface XRSession {
 
 export interface WebXRHitTestOptions {
     testOnSelect?: boolean;
+    parentObject?: Node;
 }
 
 export interface WebXRHitResult {
@@ -25,7 +26,7 @@ export class WebXRHitTest implements WebXRFeature {
 
     public static readonly Name = Name;
 
-    public onHitTestResultObservable: Observable<WebXRHitResult> = new Observable();
+    public onHitTestResultObservable: Observable<Matrix[]> = new Observable();
 
     constructor(private xrSessionManager: WebXRSessionManager, private options: WebXRHitTestOptions = {}) {
 
@@ -55,10 +56,7 @@ export class WebXRHitTest implements WebXRFeature {
                 direction.normalize();
                 let ray = new XRRay((<DOMPointReadOnly>{ x: origin.x, y: origin.y, z: origin.z, w: 0 }),
                     (<DOMPointReadOnly>{ x: direction.x, y: direction.y, z: direction.z, w: 0 }));
-                this.xrSessionManager.session.requestHitTest(ray, this.xrSessionManager.referenceSpace).then((results) => {
-                    // convert to babylon world space and notify the matrices results
-                    this.onHitTestResultObservable.notifyObservers(results);
-                });
+                this.requestHitTest(ray);
             });
         }
 
@@ -70,6 +68,20 @@ export class WebXRHitTest implements WebXRFeature {
         return Promise.resolve(true);
     }
 
+    private requestHitTest(ray: XRRay) {
+        this.xrSessionManager.session.requestHitTest(ray, this.xrSessionManager.referenceSpace).then((results) => {
+            // convert to babylon world space and notify the matrices results
+            const mats = results.map((result) => {
+                let mat = Matrix.FromArray(result.hitMatrix);
+                if (!this.xrSessionManager.scene.useRightHandedSystem) {
+                    mat.toggleModelMatrixHandInPlace();
+                }
+                return mat;
+            });
+            this.onHitTestResultObservable.notifyObservers(mats);
+        });
+    }
+
     private onSelect = (event: XRInputSourceEvent) => {
         if (!this._onSelectEnabled) {
             return;
@@ -79,9 +91,7 @@ export class WebXRHitTest implements WebXRFeature {
             return;
         }
         let targetRay = new XRRay(targetRayPose.transform);
-        event.frame.session.requestHitTest(targetRay, this.xrSessionManager.referenceSpace).then((results) => {
-            this.onHitTestResultObservable.notifyObservers(results);
-        });
+        this.requestHitTest(targetRay);
     }
 
     dispose(): void {
