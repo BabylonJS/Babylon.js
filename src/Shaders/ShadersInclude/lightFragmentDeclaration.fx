@@ -10,6 +10,16 @@
 	#ifdef SHADOW{X}
 		#if defined(SHADOWCUBE{X})
 			uniform samplerCube shadowSampler{X};
+		#elif defined(SHADOWCSM{X})
+			const int MAX_CASCADES = 4;
+			uniform highp int num_cascades{X};
+			uniform mat4 lightMatrixCSM{X}[MAX_CASCADES];
+			uniform mat4 camViewMatCSM{X};
+			uniform sampler2D shadowSamplerArrayCSM{X}[MAX_CASCADES];
+			uniform float ViewFrustumZCSM{X}[MAX_CASCADES];
+			varying vec4 vPositionFromLightCSM{X}[MAX_CASCADES];
+			varying float vDepthMetricCSM{X}[MAX_CASCADES];
+			varying vec4 vPositionFromCameraCSM{X};
 		#else
 			varying vec4 vPositionFromLight{X};
 			varying float vDepthMetric{X};
