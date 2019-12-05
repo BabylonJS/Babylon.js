@@ -34818,6 +34818,10 @@ declare module BABYLON {
          */
         onMeshImportedObservable: Observable<AbstractMesh>;
         /**
+         * This Observable will when an animation file has been imported into the scene.
+         */
+        onAnimationFileImportedObservable: Observable<Scene>;
+        /**
          * Gets or sets a user defined funtion to select LOD from a mesh and a camera.
          * By default this function is undefined and Babylon.js will select LOD based on distance to camera
          */
@@ -36342,6 +36346,13 @@ declare module BABYLON {
          * @returns the root mesh
          */
         createRootMesh(): Mesh;
+        /**
+         * Merge animations from this asset container into a scene
+         * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+         * @param animatables set of animatables to retarget to a node from the scene
+         * @param targetConverter defines a function used to convert animation targets from the asset container to the scene (default: search node by name)
+         */
+        mergeAnimationsTo(scene: Scene | null | undefined, animatables: Animatable[], targetConverter?: Nullable<(target: any) => Nullable<Node>>): void;
     }
 }
 declare module BABYLON {
@@ -36479,6 +36490,10 @@ declare module BABYLON {
          * Environment texture for the scene
          */
         environmentTexture: Nullable<BaseTexture>;
+        /**
+         * @returns all meshes, lights, cameras, transformNodes and bones
+         */
+        getNodes(): Array<Node>;
     }
 }
 declare module BABYLON {
@@ -42296,6 +42311,27 @@ declare module BABYLON {
         loadAssetContainerAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
     }
     /**
+     * Mode that determines how to handle old animation groups before loading new ones.
+     */
+    export enum SceneLoaderAnimationGroupLoadingMode {
+        /**
+         * Reset all old animations to initial state then dispose them.
+         */
+        Clean = 0,
+        /**
+         * Stop all old animations.
+         */
+        Stop = 1,
+        /**
+         * Restart old animations from first frame.
+         */
+        Sync = 2,
+        /**
+         * Old animations remains untouched.
+         */
+        NoSync = 3
+    }
+    /**
      * Class used to load scene from various file formats using registered plugins
      * @see http://doc.babylonjs.com/how_to/load_from_any_file_type
      */
@@ -42457,6 +42493,33 @@ declare module BABYLON {
          * @returns The loaded asset container
          */
         static LoadAssetContainerAsync(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
+        /**
+         * Import animations from a file into a scene
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+         * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+         * @param overwriteAnimations when true, animations are cleaned before importing new ones. Animations are appended otherwise
+         * @param animationGroupLoadingMode defines how to handle old animations groups before importing new ones
+         * @param targetConverter defines a function used to convert animation targets from loaded scene to current scene (default: search node by name)
+         * @param onSuccess a callback with the scene when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         */
+        static ImportAnimations(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, overwriteAnimations?: boolean, animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode, targetConverter?: Nullable<(target: any) => any>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>): void;
+        /**
+         * Import animations from a file into a scene
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+         * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+         * @param overwriteAnimations when true, animations are cleaned before importing new ones. Animations are appended otherwise
+         * @param animationGroupLoadingMode defines how to handle old animations groups before importing new ones
+         * @param targetConverter defines a function used to convert animation targets from loaded scene to current scene (default: search node by name)
+         * @param onSuccess a callback with the scene when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @returns the updated scene with imported animations
+         */
+        static ImportAnimationsAsync(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, overwriteAnimations?: boolean, animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode, targetConverter?: Nullable<(target: any) => any>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>): Promise<Scene>;
     }
 }
 declare module BABYLON {
@@ -63655,6 +63718,10 @@ declare module BABYLON {
          */
         outputPosition?: Vector3;
         /**
+         * Vector3 of the rotation of the output plane.
+         */
+        outputRotation?: Vector3;
+        /**
          * number of layers that the system will reserve in resources.
          */
         layerCount?: number;
@@ -63715,6 +63782,9 @@ declare module BABYLON {
         /** Returns the Position of Output Plane*/
         /** Returns the Position of Output Plane*/
         position: Vector3;
+        /** Returns the Rotation of Output Plane*/
+        /** Returns the Rotation of Output Plane*/
+        rotation: Vector3;
         /** Sets the AnimationMap*/
         /** Sets the AnimationMap*/
         animationMap: RawTexture;
