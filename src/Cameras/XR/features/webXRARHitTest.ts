@@ -17,7 +17,7 @@ export interface XRSession {
 
 export interface WebXRHitTestOptions {
     testOnlyOnSelect?: boolean;
-    nonXrSpaceNode?: TransformNode;
+    worldParentNode?: TransformNode;
 }
 
 export class WebXRHitTest implements WebXRFeature {
@@ -83,8 +83,8 @@ export class WebXRHitTest implements WebXRFeature {
                 if (!this.xrSessionManager.scene.useRightHandedSystem) {
                     mat.toggleModelMatrixHandInPlace();
                 }
-                if (this.options.nonXrSpaceNode) {
-                    const node = this.options.nonXrSpaceNode;
+                if (this.options.worldParentNode) {
+                    const node = this.options.worldParentNode;
                     Matrix.ComposeToRef(node.scaling, node.rotationQuaternion || new Quaternion(), node.position, this._tmpMatrix);
                     mat.multiplyToRef(this._tmpMatrix, mat);
                 }
@@ -94,7 +94,7 @@ export class WebXRHitTest implements WebXRFeature {
         });
     }
 
-    // can be done using pointerdown event, and onXRFrame...addOnce
+    // can be done using pointerdown event, and xrSessionManager.currentFrame
     private onSelect = (event: XRInputSourceEvent) => {
         if (!this._onSelectEnabled) {
             return;
