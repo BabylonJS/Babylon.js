@@ -291,14 +291,6 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
             var width = this.needPOTTextures ? ThinEngine.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
             var height = width;
 
-            this._prepareWorkingCanvas();
-
-            if (!this._workingCanvas || !this._workingContext) {
-                return;
-            }
-            this._workingCanvas.width = width;
-            this._workingCanvas.height = height;
-
             var faces = [
                 gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
                 gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
@@ -310,6 +302,16 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
             let internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
             for (var index = 0; index < faces.length; index++) {
                 if (imgs[index].width !== width || imgs[index].height !== height) {
+                    
+                    this._prepareWorkingCanvas();
+
+                    if (!this._workingCanvas || !this._workingContext) {
+                        Logger.Warn("Cannot create canvas to resize texture.");
+                        return;
+                    }
+                    this._workingCanvas.width = width;
+                    this._workingCanvas.height = height;
+                    
                     this._workingContext.drawImage(imgs[index], 0, 0, imgs[index].width, imgs[index].height, 0, 0, width, height);
                     gl.texImage2D(faces[index], 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, this._workingCanvas);
                 } else {
