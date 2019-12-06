@@ -133,6 +133,7 @@ declare module NODEEDITOR {
         cleanAccumulation(): void;
         private _onDown;
         private _onUp;
+        private _moveFrame;
         private _onMove;
         dispose(): void;
         serialize(): IFrameData;

@@ -54117,9 +54117,11 @@ var GraphFrame = /** @class */ (function () {
                 return;
             }
             this._isCollapsed = value;
+            this._ownerCanvas._frameIsMoving = true;
             // Need to delegate the outside ports to the frame
             if (value) {
                 this.element.classList.add("collapsed");
+                this._moveFrame((this.width - 200) / 2, 0);
                 for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
                     var node = _a[_i];
                     node.isVisible = false;
@@ -54186,7 +54188,10 @@ var GraphFrame = /** @class */ (function () {
                     var node = _l[_k];
                     node.isVisible = true;
                 }
+                this._moveFrame(-(this.width - 200) / 2, 0);
             }
+            this.cleanAccumulation();
+            this._ownerCanvas._frameIsMoving = false;
         },
         enumerable: true,
         configurable: true
@@ -54318,6 +54323,10 @@ var GraphFrame = /** @class */ (function () {
     GraphFrame.prototype.cleanAccumulation = function () {
         this.x = this._gridAlignedX;
         this.y = this._gridAlignedY;
+        for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
+            var selectedNode = _a[_i];
+            selectedNode.cleanAccumulation();
+        }
     };
     GraphFrame.prototype._onDown = function (evt) {
         evt.stopPropagation();
@@ -54329,15 +54338,20 @@ var GraphFrame = /** @class */ (function () {
     };
     GraphFrame.prototype._onUp = function (evt) {
         evt.stopPropagation();
-        for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
-            var selectedNode = _a[_i];
-            selectedNode.cleanAccumulation();
-        }
         this.cleanAccumulation();
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
         this._headerElement.releasePointerCapture(evt.pointerId);
         this._ownerCanvas._frameIsMoving = false;
+    };
+    GraphFrame.prototype._moveFrame = function (offsetX, offsetY) {
+        for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
+            var selectedNode = _a[_i];
+            selectedNode.x += offsetX;
+            selectedNode.y += offsetY;
+        }
+        this.x += offsetX;
+        this.y += offsetY;
     };
     GraphFrame.prototype._onMove = function (evt) {
         if (this._mouseStartPointX === null || this._mouseStartPointY === null || evt.ctrlKey) {
@@ -54345,13 +54359,7 @@ var GraphFrame = /** @class */ (function () {
         }
         var newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
         var newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
-        for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
-            var selectedNode = _a[_i];
-            selectedNode.x += newX;
-            selectedNode.y += newY;
-        }
-        this.x += newX;
-        this.y += newY;
+        this._moveFrame(newX, newY);
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
         evt.stopPropagation();
