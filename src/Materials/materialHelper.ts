@@ -341,21 +341,16 @@ export class MaterialHelper {
         if (mesh && mesh.receiveShadows && scene.shadowsEnabled && light.shadowEnabled) {
             var shadowGenerator = light.getShadowGenerator();
             if (shadowGenerator) {
+                var shadowMap;
                 if (shadowGenerator.useCSM) {
-                    const shadowMaps = shadowGenerator.getAllCSMs();
-                    if (shadowMaps.length !== 0) {
-                        if (shadowMaps[0].renderList && shadowMaps[0].renderList.length > 0) {
-                            state.shadowEnabled = true;
-                            shadowGenerator.prepareDefines(defines, lightIndex);
-                        }
-                    }
+                    shadowMap = shadowGenerator.getAllCSMs()[0];
                 } else {
-                    const shadowMap = shadowGenerator.getShadowMap();
-                    if (shadowMap) {
-                        if (shadowMap.renderList && shadowMap.renderList.length > 0) {
-                            state.shadowEnabled = true;
-                            shadowGenerator.prepareDefines(defines, lightIndex);
-                        }
+                    shadowMap = shadowGenerator.getShadowMap();
+                }
+                if (shadowMap) {
+                    if (shadowMap.renderList && shadowMap.renderList.length > 0) {
+                        state.shadowEnabled = true;
+                        shadowGenerator.prepareDefines(defines, lightIndex);
                     }
                 }
             }
