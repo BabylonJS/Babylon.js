@@ -16,7 +16,7 @@ export interface XRSession {
 }
 
 export interface WebXRHitTestOptions {
-    testOnlyOnSelect?: boolean;
+    testOnPointerDownOnly?: boolean;
     worldParentNode?: TransformNode;
 }
 
@@ -38,7 +38,7 @@ export class WebXRHitTest implements WebXRFeature {
     private _tmpMatrix = new Matrix();
 
     attachAsync(): Promise<boolean> {
-        if (this.options.testOnlyOnSelect) {
+        if (this.options.testOnPointerDownOnly) {
             this.xrSessionManager.session.addEventListener('select', this.onSelect, false);
         } else {
             // we are in XR space!
