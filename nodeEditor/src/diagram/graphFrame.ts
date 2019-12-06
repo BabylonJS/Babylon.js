@@ -34,16 +34,27 @@ export class GraphFrame {
         return this._isCollapsed;
     }
 
+    private _createInputPort(port: NodePort, node: GraphNode) {
+        let localPort = NodePort.CreatePortElement(port.connectionPoint, node, this._inputPortContainer, null, this._ownerCanvas.globalState)
+        this._ports.push(localPort);
+
+        port.delegatedPort = localPort;
+        this._controlledPorts.push(port);
+    }
+   
     public set isCollapsed(value: boolean) {
         if (this._isCollapsed === value) {
             return;
         }
 
         this._isCollapsed = value;
+        this._ownerCanvas._frameIsMoving = true;
 
         // Need to delegate the outside ports to the frame
         if (value) {
             this.element.classList.add("collapsed");
+                        
+            this._moveFrame((this.width - 200) / 2, 0);
 
             for (var node of this._nodes) {
                 node.isVisible = false;
@@ -57,7 +68,7 @@ export class GraphFrame {
 
                                 if (!portAdded) {
                                     portAdded = true;
-                                    localPort = NodePort.CreatePortElement(port.connectionPoint, link.nodeB!, this._outputPortContainer, null, this._ownerCanvas.globalState)
+                                    localPort = NodePort.CreatePortElement(port.connectionPoint, link.nodeB!, this._outputPortContainer, null, this._ownerCanvas.globalState);
                                     this._ports.push(localPort);
                                 } else {
                                     localPort = this._ports.filter(p => p.connectionPoint === port.connectionPoint)[0];
@@ -68,6 +79,11 @@ export class GraphFrame {
                                 link.isVisible = true;
                             }
                         }
+                    } else {
+                        let localPort = NodePort.CreatePortElement(port.connectionPoint, node, this._outputPortContainer, null, this._ownerCanvas.globalState)
+                        this._ports.push(localPort);
+                        port.delegatedPort = localPort;
+                        this._controlledPorts.push(port);
                     }
                 }
 
@@ -75,16 +91,14 @@ export class GraphFrame {
                     if (port.connectionPoint.isConnected) {
                         for (var link of node.links) {
                             if (link.portB === port && this.nodes.indexOf(link.nodeA) === -1) {
-                                let localPort = NodePort.CreatePortElement(port.connectionPoint, link.nodeA, this._inputPortContainer, null, this._ownerCanvas.globalState)
-                                this._ports.push(localPort);
-
-                                port.delegatedPort = localPort;
-                                this._controlledPorts.push(port);
+                                this._createInputPort(port, node);
                                 link.isVisible = true;
                             }
                         }
+                    } else {
+                        this._createInputPort(port, node);
                     }
-                }
+                }               
             }
         } else {
             this.element.classList.remove("collapsed");
@@ -106,7 +120,12 @@ export class GraphFrame {
             for (var node of this._nodes) {
                 node.isVisible = true;
             }
+                        
+            this._moveFrame(-(this.width - 200) / 2, 0);
         }
+
+        this.cleanAccumulation();
+        this._ownerCanvas._frameIsMoving = false;
     }
 
     public get nodes() {
@@ -284,6 +303,10 @@ export class GraphFrame {
     public cleanAccumulation() {
         this.x = this._gridAlignedX;
         this.y = this._gridAlignedY;
+
+        for (var selectedNode of this._nodes) {
+            selectedNode.cleanAccumulation();
+        }        
     }
 
     private _onDown(evt: PointerEvent) {
@@ -301,16 +324,22 @@ export class GraphFrame {
     private _onUp(evt: PointerEvent) {
         evt.stopPropagation();
 
-        for (var selectedNode of this._nodes) {
-            selectedNode.cleanAccumulation();
-        }
-
         this.cleanAccumulation();
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
         this._headerElement.releasePointerCapture(evt.pointerId);
 
         this._ownerCanvas._frameIsMoving = false;
+    }
+
+    private _moveFrame(offsetX: number, offsetY: number) {
+        for (var selectedNode of this._nodes) {
+            selectedNode.x += offsetX;
+            selectedNode.y += offsetY;
+        }
+
+        this.x += offsetX;
+        this.y += offsetY;
     }
 
     private _onMove(evt: PointerEvent) {
@@ -321,16 +350,10 @@ export class GraphFrame {
         let newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
         let newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
 
-        for (var selectedNode of this._nodes) {
-            selectedNode.x += newX;
-            selectedNode.y += newY;
-        }
-
-        this.x += newX;
-        this.y += newY;
+        this._moveFrame(newX, newY);
 
         this._mouseStartPointX = evt.clientX;
-        this._mouseStartPointY = evt.clientY;   
+        this._mouseStartPointY = evt.clientY; 
 
         evt.stopPropagation();
     }
