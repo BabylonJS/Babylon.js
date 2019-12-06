@@ -117,6 +117,7 @@ declare module NODEEDITOR {
         private _ports;
         private _controlledPorts;
         isCollapsed: boolean;
+        private _createInputPort;
         readonly nodes: GraphNode[];
         name: string;
         color: BABYLON.Color3;
@@ -132,6 +133,7 @@ declare module NODEEDITOR {
         cleanAccumulation(): void;
         private _onDown;
         private _onUp;
+        private _moveFrame;
         private _onMove;
         dispose(): void;
         serialize(): IFrameData;

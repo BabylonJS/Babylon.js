@@ -54117,9 +54117,11 @@ var GraphFrame = /** @class */ (function () {
                 return;
             }
             this._isCollapsed = value;
+            this._ownerCanvas._frameIsMoving = true;
             // Need to delegate the outside ports to the frame
             if (value) {
                 this.element.classList.add("collapsed");
+                this._moveFrame((this.width - 200) / 2, 0);
                 for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
                     var node = _a[_i];
                     node.isVisible = false;
@@ -54145,6 +54147,12 @@ var GraphFrame = /** @class */ (function () {
                                 }
                             }
                         }
+                        else {
+                            var localPort = _nodePort__WEBPACK_IMPORTED_MODULE_1__["NodePort"].CreatePortElement(port.connectionPoint, node, this._outputPortContainer, null, this._ownerCanvas.globalState);
+                            this._ports.push(localPort);
+                            port.delegatedPort = localPort;
+                            this._controlledPorts.push(port);
+                        }
                     }
                     for (var _f = 0, _g = node.inputPorts; _f < _g.length; _f++) { // Input
                         var port = _g[_f];
@@ -54152,13 +54160,13 @@ var GraphFrame = /** @class */ (function () {
                             for (var _h = 0, _j = node.links; _h < _j.length; _h++) {
                                 var link = _j[_h];
                                 if (link.portB === port && this.nodes.indexOf(link.nodeA) === -1) {
-                                    var localPort = _nodePort__WEBPACK_IMPORTED_MODULE_1__["NodePort"].CreatePortElement(port.connectionPoint, link.nodeA, this._inputPortContainer, null, this._ownerCanvas.globalState);
-                                    this._ports.push(localPort);
-                                    port.delegatedPort = localPort;
-                                    this._controlledPorts.push(port);
+                                    this._createInputPort(port, node);
                                     link.isVisible = true;
                                 }
                             }
+                        }
+                        else {
+                            this._createInputPort(port, node);
                         }
                     }
                 }
@@ -54180,11 +54188,20 @@ var GraphFrame = /** @class */ (function () {
                     var node = _l[_k];
                     node.isVisible = true;
                 }
+                this._moveFrame(-(this.width - 200) / 2, 0);
             }
+            this.cleanAccumulation();
+            this._ownerCanvas._frameIsMoving = false;
         },
         enumerable: true,
         configurable: true
     });
+    GraphFrame.prototype._createInputPort = function (port, node) {
+        var localPort = _nodePort__WEBPACK_IMPORTED_MODULE_1__["NodePort"].CreatePortElement(port.connectionPoint, node, this._inputPortContainer, null, this._ownerCanvas.globalState);
+        this._ports.push(localPort);
+        port.delegatedPort = localPort;
+        this._controlledPorts.push(port);
+    };
     Object.defineProperty(GraphFrame.prototype, "nodes", {
         get: function () {
             return this._nodes;
@@ -54306,6 +54323,10 @@ var GraphFrame = /** @class */ (function () {
     GraphFrame.prototype.cleanAccumulation = function () {
         this.x = this._gridAlignedX;
         this.y = this._gridAlignedY;
+        for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
+            var selectedNode = _a[_i];
+            selectedNode.cleanAccumulation();
+        }
     };
     GraphFrame.prototype._onDown = function (evt) {
         evt.stopPropagation();
@@ -54317,15 +54338,20 @@ var GraphFrame = /** @class */ (function () {
     };
     GraphFrame.prototype._onUp = function (evt) {
         evt.stopPropagation();
-        for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
-            var selectedNode = _a[_i];
-            selectedNode.cleanAccumulation();
-        }
         this.cleanAccumulation();
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
         this._headerElement.releasePointerCapture(evt.pointerId);
         this._ownerCanvas._frameIsMoving = false;
+    };
+    GraphFrame.prototype._moveFrame = function (offsetX, offsetY) {
+        for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
+            var selectedNode = _a[_i];
+            selectedNode.x += offsetX;
+            selectedNode.y += offsetY;
+        }
+        this.x += offsetX;
+        this.y += offsetY;
     };
     GraphFrame.prototype._onMove = function (evt) {
         if (this._mouseStartPointX === null || this._mouseStartPointY === null || evt.ctrlKey) {
@@ -54333,13 +54359,7 @@ var GraphFrame = /** @class */ (function () {
         }
         var newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
         var newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
-        for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
-            var selectedNode = _a[_i];
-            selectedNode.x += newX;
-            selectedNode.y += newY;
-        }
-        this.x += newX;
-        this.y += newY;
+        this._moveFrame(newX, newY);
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
         evt.stopPropagation();
