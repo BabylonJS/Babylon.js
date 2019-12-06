@@ -44,6 +44,9 @@ declare module "babylonjs-inspector/components/globalState" {
         onInspectorClosedObservable: Observable<Scene>;
         onTabChangedObservable: Observable<number>;
         onPluginActivatedObserver: Nullable<Observer<ISceneLoaderPlugin | ISceneLoaderPluginAsync>>;
+        sceneImportDefaults: {
+            [key: string]: any;
+        };
         validationResults: IGLTFValidationResults;
         onValidationResultsUpdatedObservable: Observable<IGLTFValidationResults>;
         onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
@@ -1780,6 +1783,21 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/tools/gltfCompone
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/lines/fileMultipleButtonLineComponent" {
+    import * as React from "react";
+    interface IFileMultipleButtonLineComponentProps {
+        label: string;
+        onClick: (event: any) => void;
+        accept: string;
+    }
+    export class FileMultipleButtonLineComponent extends React.Component<IFileMultipleButtonLineComponentProps> {
+        private static _IDGenerator;
+        private _id;
+        constructor(props: IFileMultipleButtonLineComponentProps);
+        onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/toolsTabComponent" {
     import { PaneComponent, IPaneComponentProps } from "babylonjs-inspector/components/actionTabs/paneComponent";
     import { Node } from "babylonjs/node";
@@ -1794,6 +1812,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/toolsTabComponent
         captureScreenshot(): void;
         captureRender(): void;
         recordVideo(): void;
+        importAnimations(event: any): void;
         shouldExport(node: Node): boolean;
         exportGLTF(): void;
         exportBabylon(): void;
@@ -2367,6 +2386,9 @@ declare module INSPECTOR {
         onInspectorClosedObservable: BABYLON.Observable<BABYLON.Scene>;
         onTabChangedObservable: BABYLON.Observable<number>;
         onPluginActivatedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync>>;
+        sceneImportDefaults: {
+            [key: string]: any;
+        };
         validationResults: BABYLON.GLTF2.IGLTFValidationResults;
         onValidationResultsUpdatedObservable: BABYLON.Observable<BABYLON.GLTF2.IGLTFValidationResults>;
         onExtensionLoadedObservable: BABYLON.Observable<BABYLON.IGLTFLoaderExtension>;
@@ -3712,6 +3734,20 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IFileMultipleButtonLineComponentProps {
+        label: string;
+        onClick: (event: any) => void;
+        accept: string;
+    }
+    export class FileMultipleButtonLineComponent extends React.Component<IFileMultipleButtonLineComponentProps> {
+        private static _IDGenerator;
+        private _id;
+        constructor(props: IFileMultipleButtonLineComponentProps);
+        onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export class ToolsTabComponent extends PaneComponent {
         private _videoRecorder;
         private _screenShotSize;
@@ -3723,6 +3759,7 @@ declare module INSPECTOR {
         captureScreenshot(): void;
         captureRender(): void;
         recordVideo(): void;
+        importAnimations(event: any): void;
         shouldExport(node: BABYLON.Node): boolean;
         exportGLTF(): void;
         exportBabylon(): void;

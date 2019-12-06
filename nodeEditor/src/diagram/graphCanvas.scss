@@ -22,6 +22,72 @@
         }
     }
 
+    .port {
+        border-radius: 20px;
+        width: 20px;
+        height: 20px;                                                    
+        align-self: center;   
+        
+        .img {
+            width: 100%;
+        }     
+        
+        &:hover, &.selected {
+            filter: brightness(2);
+        }
+    }
+
+    .portLine {
+        height: 24px;
+        display: grid;                
+        grid-template-rows: 100%;
+    }
+
+    .port-label {                   
+        align-items: center;
+    }
+
+    .inputsContainer {                        
+        grid-row: 1;
+        grid-column: 1;
+
+        .portLine {
+            grid-template-columns: 12px calc(100% - 15px);
+
+            .port-label {                    
+                grid-row: 1;
+                grid-column: 2;
+            }
+
+            .port {                              
+                grid-row: 1;
+                grid-column: 1;
+                transform: translateX(-12px);     
+            }
+        }
+    }
+
+    .outputsContainer {                  
+        grid-row: 1;
+        grid-column: 2;
+
+        .portLine {
+            grid-template-columns: calc(100% - 10px) 12px;
+
+            .port-label {                    
+                grid-row: 1;
+                grid-column: 1;
+                text-align: right;
+            }
+
+            .port {                              
+                grid-row: 1;
+                grid-column: 2;
+                transform: translateX(2px);                        
+            }        
+        }
+    }
+
     #graph-container {
         width: 100%;
         height: 100%;
@@ -50,6 +116,17 @@
             border: transparent solid 4px;
             box-sizing: border-box;
 
+            &.collapsed {
+                height: auto !important;
+                width: 200px !important;
+                border-radius: 12px;
+
+                .frame-box-header {
+                    font-size: 16px;
+                    border-radius: 12px 12px 0 0;
+                }
+            }
+
             .frame-box-header {
                 grid-row: 1;
                 grid-column: 1;
@@ -65,9 +142,20 @@
                 border-bottom: 0;
             }
 
+            .port-container {
+                margin-top: 10px;      
+                margin-bottom: 10px;      
+                color: white;
+                grid-row: 2;
+                grid-column: 1;
+                display: grid;
+                grid-template-rows: 100%;
+                grid-template-columns: 50% 50%; 
+                z-index: 2;
+            }
+
             &.selected {
                 border-color: white;
-                z-index: 1;
 
                 .frame-box-header {
                     border-color: white !important;
@@ -91,19 +179,28 @@
                     stroke: white !important;
                     stroke-dasharray: 10, 2;
                 }       
+
+                &.hidden {
+                    display: none;
+                }
             }
 
             .selection-link {
                 pointer-events: all;
                 stroke-width: 16px;
                 opacity: 0;
+                transition: opacity 75ms;
+                stroke: transparent;                        
+                cursor: pointer;
+
+                &.hidden {
+                    display: none;
+                }
+
                 &:hover, &.selected {
                     stroke: white !important;
                     opacity: 0.4;
                 }
-                transition: opacity 75ms;
-                stroke: transparent;                        
-                cursor: pointer;
             }
         }
 
@@ -127,6 +224,10 @@
                 grid-template-rows: 30px auto;
                 grid-template-columns: 100%;
                 color: white;
+
+                &.hidden {
+                    display: none;
+                }
 
                 .comments {
                     position: absolute;
@@ -191,74 +292,7 @@
                     grid-column: 1;
 
                     display: grid;
-                    grid-template-columns: 50% 50%;
-
-                    .port {
-                        border-radius: 20px;
-                        width: 20px;
-                        height: 20px;                                                    
-                        align-self: center;   
-                        
-                        .img {
-                            width: 100%;
-                        }     
-                        
-                        &:hover, &.selected {
-                            filter: brightness(2);
-                        }
-                    }
-
-                    .portLine {
-                        height: 24px;
-                        display: grid;                
-                        grid-template-rows: 100%;
-                    }
-
-                    .label {                   
-                        align-items: center;
-                    }
-
-                    .inputsContainer {                        
-                        grid-row: 1;
-                        grid-column: 1;
-
-                        .portLine {
-                            grid-template-columns: 12px calc(100% - 15px);
-
-                            .label {                    
-                                grid-row: 1;
-                                grid-column: 2;
-                            }
-
-                            .port {                              
-                                grid-row: 1;
-                                grid-column: 1;
-                                transform: translateX(-12px);     
-                            }
-                        }
-                    }
-
-                    .outputsContainer {                        
-                        grid-row: 1;
-                        grid-column: 2;
-
-                        .portLine {
-                            grid-template-columns: calc(100% - 10px) 12px;
-
-                            .label {                    
-                                grid-row: 1;
-                                grid-column: 1;
-                                text-align: right;
-                            }
-
-                            .port {                              
-                                grid-row: 1;
-                                grid-column: 2;
-                                transform: translateX(2px);                        
-                            }
-                        
-                        }
-                    }
+                    grid-template-columns: 50% 50%;                  
                 }
 
                 .content {
