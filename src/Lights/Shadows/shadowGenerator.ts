@@ -748,32 +748,17 @@ export class ShadowGenerator implements IShadowGenerator {
         this._csmFrustumLength = value;
     }
 
-    private _cascadeShadowMaps: Nullable<Array<RenderTargetTexture>>;
-
-    /**
-     * Gets the RTT containing the cascaded shadow map (usually storing depth from the light point of view).
-	 * @param index index number of the cascaded shadow map
-     * @returns The render target texture if present otherwise, null
-     */
-    public getCSM(index: number): Nullable<RenderTargetTexture> {
-        if (this.useCSM && this._cascadeShadowMaps && this._cascadeShadowMaps.length !== 0) {
-            return this._cascadeShadowMaps[index];
-        } else {
-            return null;
-        }
-    }
+    private _cascadeShadowMaps: Array<RenderTargetTexture>;
 
     /**
      * Gets the array containing all the shadow maps (usually storing depth from the light point of view).
      * @returns The array containing the cascaded shadow maps if present otherwise, empty array
      */
     public getAllCSMs(): Array<RenderTargetTexture> {
-        if (this.useCSM && this._cascadeShadowMaps && this._cascadeShadowMaps.length !== 0) {
-            return this._cascadeShadowMaps;
-        } else {
-            return [];
-        }
+        return this._cascadeShadowMaps;
     }
+
+    private _csmLambda = 0.5;
 
     /**
      * Gets the class name of that object
@@ -791,9 +776,6 @@ export class ShadowGenerator implements IShadowGenerator {
      */
     public addShadowCaster(mesh: AbstractMesh, includeDescendants = true): ShadowGenerator {
         if (this.useCSM && this._cascadeShadowMaps) {
-            if (this._cascadeShadowMaps.length === 0) {
-                return this;
-            }
             for (let i = 0; i < this._cascadeShadowMaps.length; i++) {
                 if (!this._cascadeShadowMaps[i].renderList) {
                     this._cascadeShadowMaps[i].renderList = [];
@@ -995,7 +977,7 @@ export class ShadowGenerator implements IShadowGenerator {
         let fary = 0;
 
         // get all internal camera cascaded frustum points
-        let breaks = this._frustumSplit(this.cascades, camera.minZ, this._csmFrustumLength, 0.5);
+        let breaks = this._frustumSplit(this.cascades, camera.minZ, this._csmFrustumLength, this._csmLambda);
         if (camera.fovMode === 0) {
             nearx = camera.minZ * Math.tan(camera.fov / 2) * engine.getAspectRatio(camera);
             neary = camera.minZ * Math.tan(camera.fov / 2);
@@ -1010,12 +992,11 @@ export class ShadowGenerator implements IShadowGenerator {
 
         // populate the viewSpaceFrustums array
         for (let i = 0; i < this.cascades + 1; i++) {
-            let temp = [];
-            temp.push(Vector3.Lerp(new Vector3(nearx, neary, camera.minZ), new Vector3(farx, fary, this._csmFrustumLength), breaks[i]));
-            temp.push(Vector3.Lerp(new Vector3(nearx, -neary, camera.minZ), new Vector3(farx, -fary, this._csmFrustumLength), breaks[i]));
-            temp.push(Vector3.Lerp(new Vector3(-nearx, -neary, camera.minZ), new Vector3(-farx, -fary, this._csmFrustumLength), breaks[i]));
-            temp.push(Vector3.Lerp(new Vector3(-nearx, neary, camera.minZ), new Vector3(-farx, fary, this._csmFrustumLength), breaks[i]));
-            this._viewSpaceFrustums.push(temp);
+            this._viewSpaceFrustums[i] = [];
+            this._viewSpaceFrustums[i].push(Vector3.Lerp(new Vector3(nearx, neary, camera.minZ), new Vector3(farx, fary, this._csmFrustumLength), breaks[i]));
+            this._viewSpaceFrustums[i].push(Vector3.Lerp(new Vector3(nearx, -neary, camera.minZ), new Vector3(farx, -fary, this._csmFrustumLength), breaks[i]));
+            this._viewSpaceFrustums[i].push(Vector3.Lerp(new Vector3(-nearx, -neary, camera.minZ), new Vector3(-farx, -fary, this._csmFrustumLength), breaks[i]));
+            this._viewSpaceFrustums[i].push(Vector3.Lerp(new Vector3(-nearx, neary, camera.minZ), new Vector3(-farx, fary, this._csmFrustumLength), breaks[i]));
         }
 
         // populate the viewSpaceBoundingSpheres array
@@ -1864,7 +1845,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
         if (this.useCSM) {
             // get the first CSM
-            var shadowMap = this.getCSM(0);
+            var shadowMap = this._cascadeShadowMaps[0];
         } else {
             var shadowMap = this.getShadowMap();
         }
@@ -2091,7 +2072,9 @@ export class ShadowGenerator implements IShadowGenerator {
             this._shadowMap = null;
         }
         if (this.useCSM) {
-            this._cascadeShadowMaps = [];
+            for (let i = 0; i < this._cascadeShadowMaps.length; i++) {
+                this._cascadeShadowMaps[i].dispose();
+            }
             this._viewSpaceFrustums = [];
             this._viewSpaceBoundingSpheres = [];
             this._CSMtransformMatrices = [];
