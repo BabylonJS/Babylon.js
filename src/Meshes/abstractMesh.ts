@@ -24,6 +24,7 @@ import { AbstractActionManager } from '../Actions/abstractActionManager';
 import { _MeshCollisionData } from '../Collisions/meshCollisionData';
 import { _DevTools } from '../Misc/devTools';
 import { RawTexture } from '../Materials/Textures/rawTexture';
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { extractMinAndMax } from '../Maths/math.functions';
 import { Color3, Color4 } from '../Maths/math.color';
 import { Epsilon } from '../Maths/math.constants';
@@ -1626,25 +1627,15 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             if (generator) {
                 if (generator.useCSM) {
                     var shadowMaps = generator.getAllCSMs();
-                    if (shadowMaps !== null) {
-                        for (let i = 0; i < shadowMaps.length; i++) {
-                            if (shadowMaps[i] && shadowMaps[i].renderList) {
-                                meshIndex = shadowMaps[i].renderList!.indexOf(this);
-
-                                if (meshIndex !== -1) {
-                                    shadowMaps[i].renderList!.splice(meshIndex, 1);
-                                }
-                            }
+                    for (let i = 0; i < shadowMaps.length; i++) {
+                        if (shadowMaps[i] && shadowMaps[i].renderList) {
+                            this.removeMesh(shadowMaps[i]);
                         }
                     }
                 } else {
                     var shadowMap = generator.getShadowMap();
                     if (shadowMap && shadowMap.renderList) {
-                        meshIndex = shadowMap.renderList.indexOf(this);
-
-                        if (meshIndex !== -1) {
-                            shadowMap.renderList.splice(meshIndex, 1);
-                        }
+                       this.removeMesh(shadowMap);
                     }
                 }
             }
@@ -1700,6 +1691,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this.onRebuildObservable.clear();
 
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
+    }
+
+    private removeMesh(shadowMap: RenderTargetTexture): void {
+
+        let meshIndex = shadowMap.renderList!.indexOf(this);
+        if (meshIndex !== -1) {
+            shadowMap.renderList!.splice(meshIndex, 1);
+        }
     }
 
     /**
