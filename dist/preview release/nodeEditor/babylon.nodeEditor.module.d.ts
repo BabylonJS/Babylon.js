@@ -1158,7 +1158,7 @@ declare module "babylonjs-node-editor/diagram/graphNode" {
         private _refreshLinks;
         refresh(): void;
         private _onDown;
-        cleanAccumulation(): void;
+        cleanAccumulation(reset?: boolean): void;
         private _onUp;
         private _onMove;
         renderProperties(): Nullable<JSX.Element>;
@@ -2403,7 +2403,7 @@ declare module NODEEDITOR {
         private _refreshLinks;
         refresh(): void;
         private _onDown;
-        cleanAccumulation(): void;
+        cleanAccumulation(reset?: boolean): void;
         private _onUp;
         private _onMove;
         renderProperties(): BABYLON.Nullable<JSX.Element>;

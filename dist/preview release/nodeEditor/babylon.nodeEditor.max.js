@@ -54529,9 +54529,9 @@ var GraphNode = /** @class */ (function () {
             return this._x;
         },
         set: function (value) {
-            if (this._x === value) {
-                return;
-            }
+            // if (this._x === value) {
+            //     return;
+            // }
             this._x = value;
             this._gridAlignedX = this._ownerCanvas.getGridPosition(value);
             this._visual.style.left = this._gridAlignedX + "px";
@@ -54546,9 +54546,9 @@ var GraphNode = /** @class */ (function () {
             return this._y;
         },
         set: function (value) {
-            if (this._y === value) {
-                return;
-            }
+            // if (this._y === value) {
+            //     return;
+            // }
             this._y = value;
             this._gridAlignedY = this._ownerCanvas.getGridPosition(value);
             this._visual.style.top = this._gridAlignedY + "px";
@@ -54691,11 +54691,20 @@ var GraphNode = /** @class */ (function () {
             this.isSelected = false;
         }
         evt.stopPropagation();
+        for (var _i = 0, _a = this._ownerCanvas.selectedNodes; _i < _a.length; _i++) {
+            var selectedNode = _a[_i];
+            selectedNode.cleanAccumulation(true);
+        }
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
         this._visual.setPointerCapture(evt.pointerId);
     };
-    GraphNode.prototype.cleanAccumulation = function () {
+    GraphNode.prototype.cleanAccumulation = function (reset) {
+        if (reset === void 0) { reset = false; }
+        if (reset) {
+            this._x = Number.MIN_VALUE;
+            this._y = Number.MIN_VALUE;
+        }
         this.x = this.gridAlignedX;
         this.y = this.gridAlignedY;
     };
