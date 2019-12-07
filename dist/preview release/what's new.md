@@ -50,7 +50,7 @@
 - Allow setting of `BABYLON.Basis.JSModuleURL` and `BABYLON.Basis.WasmModuleURL`, for hosting the Basis transcoder locally ([JasonAyre])(https://github.com/jasonyre))
 - PNG support for browsers not supporting SVG ([RaananW](https://github.com/RaananW/))
 - Device orientation event permissions for iOS 13+ ([RaananW](https://github.com/RaananW/))
-- Added first pass implementation of Cascaded Shadow Maps ([lockphase](https://github.com/lockphase/))
+- Added first pass implementation of Cascaded Shadow Maps  ([lockphase](https://github.com/lockphase/))
 
 ### Engine
 
