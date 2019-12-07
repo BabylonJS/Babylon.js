@@ -704,7 +704,7 @@ export class ShadowGenerator implements IShadowGenerator {
         }
         this._cascades = value;
         if (this._cascades >= ShadowGenerator.MIN_CASCADES && this._cascades <= ShadowGenerator.MAX_CASCADES) {
-            this.useCSM = true;
+            this._useCSM = true;
         }
     }
 
@@ -716,13 +716,24 @@ export class ShadowGenerator implements IShadowGenerator {
         return this._useCSM;
     }
     /**
-     * Sets the CSM mode.
+     * Sets the CSM mode. Default of 2 cascades with csmFrustumLength at 100.
      */
     public set useCSM(value: boolean) {
         if (this._useCSM === value) {
             return;
         }
         this._useCSM = value;
+        if (this._useCSM && this._cascadeShadowMaps.length === 0) {
+            if (this.cascades === 1) {
+                this.cascades = 2;
+            }
+            if (this._checkAndInitCascades(this.cascades, this._csmFrustumLength)) {
+                this._light._markMeshesAsLightDirty();
+                this._initializeCascadedShadowMaps();
+            }
+        } else if (!this._useCSM && this._cascadeShadowMaps.length !== 0) {
+            this._disposeCSM();
+        }
     }
 
     private _csmFrustumLength: number;
@@ -748,7 +759,7 @@ export class ShadowGenerator implements IShadowGenerator {
         this._csmFrustumLength = value;
     }
 
-    private _cascadeShadowMaps: Array<RenderTargetTexture>;
+    private _cascadeShadowMaps: Array<RenderTargetTexture> = [];
 
     /**
      * Gets the array containing all the shadow maps (usually storing depth from the light point of view).
@@ -758,7 +769,33 @@ export class ShadowGenerator implements IShadowGenerator {
         return this._cascadeShadowMaps;
     }
 
+    private _cascadeShadowMaps2: Array<RenderTargetTexture>;
+
+    /**
+     * Gets the RTT used during rendering (can be a blurred version of the shadow map or the shadow map itself).
+     * @returns The render target texture if the CSM is present otherwise
+     */
+    public getCSMForRendering(index: number): RenderTargetTexture {
+        if (this._cascadeShadowMaps2[index]) {
+            return this._cascadeShadowMaps2[index];
+        }
+        return this._cascadeShadowMaps[index];
+    }
+
     private _csmLambda = 0.5;
+
+    /**
+     * Gets csmLambda: parameter used for calculating the frustum in CSM.
+     */
+    public get csmLambda(): number {
+        return this._csmLambda;
+    }
+    /**
+     * Sets csmLambda: parameter used for calculating the frustum in CSM.
+     */
+    public set csmLambda(value: number) {
+        this._csmLambda = value;
+    }
 
     /**
      * Gets the class name of that object
@@ -919,18 +956,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
         ShadowGenerator._SceneComponentInitialization(this._scene);
 
-        // sets cascade value and the csmFrustumLength if any, valid only for directional lights
-        if (cascades && this.getLight().getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
-            this.cascades = cascades;
-            if (csmFrustumLength) {
-                this.csmFrustumLength = csmFrustumLength;
-            } else if (this._scene && this._scene.activeCamera) {
-                this.csmFrustumLength = this._scene.activeCamera.maxZ;
-            } else {
-                this.csmFrustumLength = 1000;
-            }
-            this._initCascades();
-        }
+        this._checkAndInitCascades(cascades, csmFrustumLength);
 
         // Texture type fallback from float to int if not supported.
         var caps = this._scene.getEngine().getCaps();
@@ -961,6 +987,25 @@ export class ShadowGenerator implements IShadowGenerator {
         this._applyFilterValues();
     }
 
+    private _checkAndInitCascades(cascades: number | undefined, csmFrustumLength: number | undefined): boolean {
+        if (!cascades) {
+            return false;
+        }
+        if (this.getLight().getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
+            this.cascades = cascades;
+            if (csmFrustumLength) {
+                this.csmFrustumLength = csmFrustumLength;
+            } else if (this._scene && this._scene.activeCamera) {
+                this.csmFrustumLength = this._scene.activeCamera.maxZ;
+            } else {
+                this.csmFrustumLength = 100;
+            }
+            this._initCascades();
+            return true;
+        }
+        return false;
+    }
+
     private _initCascades(): void {
         let camera = this._scene.activeCamera;
         if (!camera) {
@@ -977,7 +1022,7 @@ export class ShadowGenerator implements IShadowGenerator {
         let fary = 0;
 
         // get all internal camera cascaded frustum points
-        let breaks = this._frustumSplit(this.cascades, camera.minZ, this._csmFrustumLength, this._csmLambda);
+        let breaks = this._frustumSplit(this.cascades, camera.minZ, this._csmFrustumLength, this.csmLambda);
         if (camera.fovMode === 0) {
             nearx = camera.minZ * Math.tan(camera.fov / 2) * engine.getAspectRatio(camera);
             neary = camera.minZ * Math.tan(camera.fov / 2);
@@ -1076,12 +1121,7 @@ export class ShadowGenerator implements IShadowGenerator {
         else {
             this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", this._mapSize, this._scene, false, true, this._textureType, this._light.needCube());
         }
-        this._shadowMap.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this._shadowMap.wrapV = Texture.CLAMP_ADDRESSMODE;
-        this._shadowMap.anisotropicFilteringLevel = 1;
-        this._shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
-        this._shadowMap.renderParticles = false;
-        this._shadowMap.ignoreCameraViewport = true;
+        this._initializeRTTProperties(this._shadowMap);
         if (this._storedUniqueId) {
             this._shadowMap.uniqueId = this._storedUniqueId;
         }
@@ -1138,7 +1178,6 @@ export class ShadowGenerator implements IShadowGenerator {
     private _initializeCascadedShadowMaps(): void {
         // Render target
         let engine = this._scene.getEngine();
-        this._cascadeShadowMaps = [];
         this._CSMtransformMatrices = [];
         // for each cascade, create and set a light and shadowmap to said cascade
         for (let index = 0; index < this.cascades; index++) {
@@ -1148,12 +1187,7 @@ export class ShadowGenerator implements IShadowGenerator {
             } else {
                 this._cascadeShadowMaps[index] = new RenderTargetTexture(this._light.name + "_cascadeShadowMap" + index, this._mapSize, this._scene, false, true, this._textureType, this._light.needCube());
             }
-            this._cascadeShadowMaps[index].wrapU = Texture.CLAMP_ADDRESSMODE;
-            this._cascadeShadowMaps[index].wrapV = Texture.CLAMP_ADDRESSMODE;
-            this._cascadeShadowMaps[index].anisotropicFilteringLevel = 1;
-            this._cascadeShadowMaps[index].updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
-            this._cascadeShadowMaps[index].renderParticles = false;
-            this._cascadeShadowMaps[index].ignoreCameraViewport = true;
+            this._initializeRTTProperties(this._cascadeShadowMaps[index]);
 
             // initialize the CSM transformMatrices
             this._CSMtransformMatrices[index] = Matrix.Zero();
@@ -1184,7 +1218,7 @@ export class ShadowGenerator implements IShadowGenerator {
                     return;
                 }
                 if (this._cascadeShadowMaps) {
-                    let shadowMap = this._cascadeShadowMaps[index];
+                    let shadowMap = this.getCSMForRendering(index);
                     if (shadowMap) {
                         this._scene.postProcessManager.directRender(this._blurPostProcesses, shadowMap.getInternalTexture(), true);
                     }
@@ -1215,6 +1249,15 @@ export class ShadowGenerator implements IShadowGenerator {
                 }
             });
         }
+    }
+
+    private _initializeRTTProperties(shadowMap: RenderTargetTexture): void {
+        shadowMap.wrapU = Texture.CLAMP_ADDRESSMODE;
+        shadowMap.wrapV = Texture.CLAMP_ADDRESSMODE;
+        shadowMap.anisotropicFilteringLevel = 1;
+        shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
+        shadowMap.renderParticles = false;
+        shadowMap.ignoreCameraViewport = true;
     }
 
     private _initializeBlurRTTAndPostProcesses(): void {
@@ -2072,15 +2115,20 @@ export class ShadowGenerator implements IShadowGenerator {
             this._shadowMap = null;
         }
         if (this.useCSM) {
-            for (let i = 0; i < this._cascadeShadowMaps.length; i++) {
-                this._cascadeShadowMaps[i].dispose();
-            }
-            this._viewSpaceFrustums = [];
-            this._viewSpaceBoundingSpheres = [];
-            this._CSMtransformMatrices = [];
+            this._disposeCSM();
+            this.useCSM = false;
         }
 
         this._disposeBlurPostProcesses();
+    }
+
+    private _disposeCSM(): void {
+        for (let i = 0; i < this._cascadeShadowMaps.length; i++) {
+        this._cascadeShadowMaps[i].dispose();
+        }
+        this._viewSpaceFrustums = [];
+        this._viewSpaceBoundingSpheres = [];
+        this._CSMtransformMatrices = [];
     }
 
     /**
