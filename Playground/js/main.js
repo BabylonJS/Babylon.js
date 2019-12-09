@@ -1,5 +1,5 @@
 var engine = null;
-var canas = null;
+var canvas = null;
 var scene = null;
 var globalParent = null;
 
