@@ -773,7 +773,8 @@ export class ShadowGenerator implements IShadowGenerator {
 
     /**
      * Gets the RTT used during rendering (can be a blurred version of the shadow map or the shadow map itself).
-     * @returns The render target texture if the CSM is present otherwise
+	 * @param index index number of the CSM to return.
+     * @returns The render target texture if the CSM is present otherwise, empty array
      */
     public getCSMForRendering(index: number): RenderTargetTexture {
         if (this._cascadeShadowMaps2[index]) {
@@ -2124,7 +2125,10 @@ export class ShadowGenerator implements IShadowGenerator {
 
     private _disposeCSM(): void {
         for (let i = 0; i < this._cascadeShadowMaps.length; i++) {
-        this._cascadeShadowMaps[i].dispose();
+            this._cascadeShadowMaps[i].dispose();
+            if (this._cascadeShadowMaps2[i]) {
+                this._cascadeShadowMaps2[i].dispose();
+            }
         }
         this._viewSpaceFrustums = [];
         this._viewSpaceBoundingSpheres = [];
