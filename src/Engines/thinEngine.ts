@@ -1820,7 +1820,7 @@ export class ThinEngine {
     /**
      * Bind the content of a webGL buffer used with instanciation
      * @param instancesBuffer defines the webGL buffer to bind
-     * @param offsetLocations defines the offsets or attributes information used to determine where data must be stored in the buffer
+     * @param attributesInfo defines the offsets or attributes information used to determine where data must be stored in the buffer
      * @param computeStride defines Wether to compute the strides from the info or use the default 0
      */
     public bindInstancesBuffer(instancesBuffer: DataBuffer, attributesInfo: InstancingAttributeInfo[], computeStride = true): void {
