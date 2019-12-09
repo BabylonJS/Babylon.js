@@ -3071,7 +3071,7 @@ export class ThinEngine {
      * Update the sampling mode of a given texture
      * @param samplingMode defines the required sampling mode
      * @param texture defines the texture to update
-     * @param generateMipMap defines whether to generate mipmaps for the texture
+     * @param generateMipMaps defines whether to generate mipmaps for the texture
      */
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture, generateMipMaps: boolean = false): void {
         const target = this._getTextureTarget(texture);
