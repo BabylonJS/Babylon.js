@@ -18,6 +18,8 @@ export class WebXRControllerTeleportation {
     private _tmpRay = new Ray(new Vector3(), new Vector3());
     private _tmpVector = new Vector3();
 
+    public enabled: boolean = true;
+
     /**
      * Creates a WebXRControllerTeleportation
      * @param input input manager to add teleportation to
@@ -81,7 +83,10 @@ export class WebXRControllerTeleportation {
 
             // Handle user input on every frame
             let renderObserver = scene.onBeforeRenderObservable.add(() => {
-                // Move the teleportationTarget to where the user is targetting to teleport to
+                if (!this.enabled) {
+                    return;
+                }
+                // Move the teleportationTarget to where the user is targeting to teleport to
                 if (forwardReadyToTeleport) {
                     c.getWorldPointerRayToRef(this._tmpRay);
                     let pick = scene.pickWithRay(this._tmpRay, (o) => {
@@ -135,7 +140,7 @@ export class WebXRControllerTeleportation {
                                 });
 
                                 if (pick && pick.pickedPoint) {
-                                    // Teleport the users feet to where they targetted
+                                    // Teleport the users feet to where they targeted
                                     this._tmpVector.copyFrom(pick.pickedPoint);
                                     this._tmpVector.y += input.baseExperience.camera.position.y;
                                     input.baseExperience.setPositionOfCameraUsingContainer(this._tmpVector);
