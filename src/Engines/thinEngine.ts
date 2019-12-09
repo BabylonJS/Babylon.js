@@ -3047,27 +3047,64 @@ export class ThinEngine {
         return this._gl.getParameter(this._gl.UNPACK_ALIGNMENT);
     }
 
+    private _getTextureTarget(texture: InternalTexture): number {
+        if (texture.isCube) {
+            return this._gl.TEXTURE_CUBE_MAP;
+        } else if (texture.is3D) {
+            return this._gl.TEXTURE_3D;
+        } else if (texture.is2DArray) {
+            return this._gl.TEXTURE_2D_ARRAY;
+        }
+        return this._gl.TEXTURE_2D;
+    }
+
     /**
      * Update the sampling mode of a given texture
      * @param samplingMode defines the required sampling mode
      * @param texture defines the texture to update
+     * @param generateMipMap defines whether to generate mipmaps for the texture
      */
-    public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
-        var filters = this._getSamplingParameters(samplingMode, texture.generateMipMaps);
-        var target = this._gl.TEXTURE_2D;
-        if (texture.isCube) {
-            target = this._gl.TEXTURE_CUBE_MAP;
-        } else if (texture.is3D) {
-            target = this._gl.TEXTURE_3D;
-        } else if (texture.is2DArray) {
-            target = this._gl.TEXTURE_2D_ARRAY;
-        }
+    public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture, generateMipMaps: boolean = false): void {
+        const target = this._getTextureTarget(texture);
+        var filters = this._getSamplingParameters(samplingMode, texture.generateMipMaps || generateMipMaps);
 
         this._setTextureParameterInteger(target, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
         this._setTextureParameterInteger(target, this._gl.TEXTURE_MIN_FILTER, filters.min);
+
+        if (generateMipMaps) {
+            texture.generateMipMaps = true;
+            this._gl.generateMipmap(target);
+        }
+
         this._bindTextureDirectly(target, null);
 
         texture.samplingMode = samplingMode;
+    }
+
+    /**
+     * Update the sampling mode of a given texture
+     * @param texture defines the texture to update
+     * @param wrapU defines the texture wrap mode of the u coordinates
+     * @param wrapV defines the texture wrap mode of the v coordinates
+     * @param wrapR defines the texture wrap mode of the r coordinates
+     */
+    public updateTextureWrappingMode(texture: InternalTexture, wrapU: Nullable<number>, wrapV: Nullable<number> = null, wrapR: Nullable<number> = null): void {
+        const target = this._getTextureTarget(texture);
+
+        if (wrapU) {
+            this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_S, this._getTextureWrapMode(wrapU));
+            texture._cachedWrapU = wrapU;
+        }
+        if (wrapV) {
+            this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_T, this._getTextureWrapMode(wrapV));
+            texture._cachedWrapV = wrapV;
+        }
+        if (wrapR) {
+            this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_R, this._getTextureWrapMode(wrapR));
+            texture._cachedWrapR = wrapR;
+        }
+
+        this._bindTextureDirectly(target, null);
     }
 
     /** @hidden */
@@ -4109,6 +4146,23 @@ export class ThinEngine {
             this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
         });
         return request;
+    }
+
+    /**
+     * Reads pixels from the current frame buffer. Please note that this function can be slow
+     * @param x defines the x coordinate of the rectangle where pixels must be read
+     * @param y defines the y coordinate of the rectangle where pixels must be read
+     * @param width defines the width of the rectangle where pixels must be read
+     * @param height defines the height of the rectangle where pixels must be read
+     * @param hasAlpha defines wether the output should have alpha or not (defaults to true)
+     * @returns a Uint8Array containing RGBA colors
+     */
+    public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true): Uint8Array {
+        const numChannels = hasAlpha ? 4 : 3;
+        const format = hasAlpha ? this._gl.RGBA : this._gl.RGB;
+        const data = new Uint8Array(height * width * numChannels);
+        this._gl.readPixels(x, y, width, height, format, this._gl.UNSIGNED_BYTE, data);
+        return data;
     }
 
     // Statics

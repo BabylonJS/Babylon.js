@@ -668,7 +668,7 @@ export class Effect implements IDisposable {
      * @param texture Texture to bind.
      * @hidden
      */
-    public _bindTexture(channel: string, texture: InternalTexture): void {
+    public _bindTexture(channel: string, texture: Nullable<InternalTexture>): void {
         this._engine._bindTexture(this._samplers[channel], texture);
     }
 
