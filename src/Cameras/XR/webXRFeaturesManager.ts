@@ -59,16 +59,17 @@ export class WebXRFeaturesManager implements IDisposable {
         });
     }
 
-    public enableFeature(featureName: string, options: any = {}, attachIfPossible: boolean = true): WebXRFeature {
-        const feature = this.features[featureName];
+    public enableFeature(featureName: string | { Name: string }, options: any = {}, attachIfPossible: boolean = true): WebXRFeature {
+        const name = typeof featureName === 'string' ? featureName : featureName.Name;
+        const feature = this.features[name];
         if (!feature || !feature.featureImplementation) {
-            const constructFunction = WebXRFeaturesManager.ConstructFeature(featureName, this.xrSessionManager, options);
+            const constructFunction = WebXRFeaturesManager.ConstructFeature(name, this.xrSessionManager, options);
             if (!constructFunction) {
                 // report error?
-                throw new Error(`feature not found - ${featureName}`);
+                throw new Error(`feature not found - ${name}`);
             }
 
-            this.features[featureName] = {
+            this.features[name] = {
                 featureImplementation: constructFunction(),
                 attached: false,
                 enabled: true
@@ -81,17 +82,18 @@ export class WebXRFeaturesManager implements IDisposable {
         // if session started already, request and enable
         if (this.xrSessionManager.session && !feature.attached && attachIfPossible) {
             // enable feature
-            this.attachFeature(featureName);
+            this.attachFeature(name);
         }
 
-        return this.features[featureName].featureImplementation;
+        return this.features[name].featureImplementation;
     }
 
-    public disableFeature(featureName: string) {
-        const feature = this.features[featureName];
+    public disableFeature(featureName: string | { Name: string }) {
+        const name = typeof featureName === 'string' ? featureName : featureName.Name;
+        const feature = this.features[name];
         if (feature && feature.enabled) {
             feature.enabled = false;
-            this.detachFeature(featureName);
+            this.detachFeature(name);
         }
     }
 
@@ -99,13 +101,15 @@ export class WebXRFeaturesManager implements IDisposable {
         const feature = this.features[featureName];
         if (feature && feature.enabled && !feature.attached) {
             feature.featureImplementation.attach();
+            feature.attached = true;
         }
     }
 
     public detachFeature(featureName: string) {
         const feature = this.features[featureName];
-        if (feature && !feature.attached) {
+        if (feature && feature.attached) {
             feature.featureImplementation.detach();
+            feature.attached = false;
         }
     }
 
