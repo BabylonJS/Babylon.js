@@ -21,7 +21,7 @@ export class WebXRControllerTeleportation {
     /**
      * when set to true (default) teleportation will wait for thumbstick changes.
      * When set to false teleportation will be disabled.
-     * 
+     *
      * If set to false while teleporting results can be unexpected.
      */
     public enabled: boolean = true;
