@@ -1125,20 +1125,6 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Reads pixels from the current frame buffer. Please note that this function can be slow
-     * @param x defines the x coordinate of the rectangle where pixels must be read
-     * @param y defines the y coordinate of the rectangle where pixels must be read
-     * @param width defines the width of the rectangle where pixels must be read
-     * @param height defines the height of the rectangle where pixels must be read
-     * @returns a Uint8Array containing RGBA colors
-     */
-    public readPixels(x: number, y: number, width: number, height: number): Uint8Array {
-        var data = new Uint8Array(height * width * 4);
-        this._gl.readPixels(x, y, width, height, this._gl.RGBA, this._gl.UNSIGNED_BYTE, data);
-        return data;
-    }
-
-    /**
      * Sets a depth stencil texture from a render target to the according uniform.
      * @param channel The texture channel
      * @param uniform The uniform to set
