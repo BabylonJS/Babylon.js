@@ -45,6 +45,7 @@ private:
     Windows::ApplicationModel::Activation::FileActivatedEventArgs^ m_fileActivatedArgs;
     bool m_windowClosed;
     bool m_windowVisible;
+    float m_displayScale{ 1.f };
 };
 
 ref class Direct3DApplicationSource sealed : Windows::ApplicationModel::Core::IFrameworkViewSource
