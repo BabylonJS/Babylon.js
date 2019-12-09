@@ -175,6 +175,7 @@
 - Windows motion controller mapping corrected to XR ([RaananW](https://github.com/RaananW/))
 - Pointer-Event simulation for screen target ray mode ([RaananW](https://github.com/RaananW/))
 - New observable that triggers when a session was initialized ([RaananW](https://github.com/RaananW/))
+- WebXR teleportation can now be disabled after initialized ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
@@ -255,6 +256,7 @@
 - Fix bug when we call `Mesh.render` twice and the material is still not ready on the second call ([barroij](https://github.com/barroij/))
 - Fixed an issue with pose input in webxr ([RaananW](https://github.com/RaananW/))
 - Fixed bug when parsing animation group without 'to' value ([noalak](https://github.com/noalak/))
+- isRightCamer and isLeftCamera were not set in WebXR ([RaananW](https://github.com/RaananW/))
 
 ## Breaking changes
 
