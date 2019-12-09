@@ -34,8 +34,8 @@ ThinEngine.prototype.createRenderTargetTexture = function(this: ThinEngine, size
 
     if (options !== undefined && typeof options === "object") {
         fullOptions.generateMipMaps = options.generateMipMaps;
-        fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
-        fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
+        fullOptions.generateDepthBuffer = !!options.generateDepthBuffer;
+        fullOptions.generateStencilBuffer = !!options.generateStencilBuffer;
         fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
         fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
         fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;

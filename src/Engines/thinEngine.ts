@@ -3219,35 +3219,35 @@ export class ThinEngine {
 
     /** @hidden */
     public _setupFramebufferDepthAttachments(generateStencilBuffer: boolean, generateDepthBuffer: boolean, width: number, height: number, samples = 1): Nullable<WebGLRenderbuffer> {
-        var depthStencilBuffer: Nullable<WebGLRenderbuffer> = null;
         var gl = this._gl;
 
         // Create the depth/stencil buffer
+        if (generateStencilBuffer && generateDepthBuffer) {
+            return this._getDepthStencilBuffer(width, height, samples, gl.DEPTH_STENCIL, gl.DEPTH24_STENCIL8, gl.DEPTH_STENCIL_ATTACHMENT);
+        }
+        if (generateDepthBuffer) {
+            return this._getDepthStencilBuffer(width, height, samples, gl.DEPTH_COMPONENT16, gl.DEPTH_COMPONENT16, gl.DEPTH_ATTACHMENT);
+        }
         if (generateStencilBuffer) {
-            depthStencilBuffer = gl.createRenderbuffer();
-            gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-
-            if (samples > 1) {
-                gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH24_STENCIL8, width, height);
-            } else {
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, width, height);
-            }
-
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
-        }
-        else if (generateDepthBuffer) {
-            depthStencilBuffer = gl.createRenderbuffer();
-            gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-
-            if (samples > 1) {
-                gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH_COMPONENT16, width, height);
-            } else {
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
-            }
-
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+            return this._getDepthStencilBuffer(width, height, samples, gl.STENCIL_INDEX8, gl.STENCIL_INDEX8, gl.STENCIL_ATTACHMENT);
         }
 
+        return null;
+    }
+
+    private _getDepthStencilBuffer = (width: number, height: number, samples: number, internalFormat: number, msInternalFormat: number, attachment: number) => {
+        var gl = this._gl;
+        const depthStencilBuffer = gl.createRenderbuffer();
+
+        gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+
+        if (samples > 1) {
+            gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, internalFormat, width, height);
+        } else {
+            gl.renderbufferStorage(gl.RENDERBUFFER, msInternalFormat, width, height);
+        }
+
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, depthStencilBuffer);
         return depthStencilBuffer;
     }
 
