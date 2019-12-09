@@ -1891,10 +1891,6 @@ export class ThinEngine {
      * @param attributeLocation defines the attribute location of the attribute to disable
      */
     public disableAttributeByIndex(attributeLocation: number) {
-        if (!this._vertexAttribArraysEnabled[attributeLocation]) {
-            return;
-        }
-
         this._gl.disableVertexAttribArray(attributeLocation);
         this._vertexAttribArraysEnabled[attributeLocation] = false;
         this._currentBufferPointers[attributeLocation].active = false;
