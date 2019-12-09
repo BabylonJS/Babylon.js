@@ -22,6 +22,8 @@ import { PerfCounter } from '../Misc/perfCounter';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
 import { Logger } from '../Misc/logger';
 
+import "./Extensions/engine.alpha";
+
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 
@@ -419,11 +421,6 @@ export class Engine extends ThinEngine {
     private _dummyFramebuffer: WebGLFramebuffer;
     private _rescalePostProcess: PostProcess;
 
-    /** @hidden */
-    protected _alphaMode = Constants.ALPHA_ADD;
-    /** @hidden */
-    protected _alphaEquation = Constants.ALPHA_DISABLE;
-
     // Deterministic lockstepMaxSteps
     private _deterministicLockstep: boolean = false;
     private _lockstepMaxSteps: number = 4;
@@ -750,165 +747,6 @@ export class Engine extends ThinEngine {
      */
     public setDepthWrite(enable: boolean): void {
         this._depthCullingState.depthMask = enable;
-    }
-
-    /**
-     * Enable or disable color writing
-     * @param enable defines the state to set
-     */
-    public setColorWrite(enable: boolean): void {
-        this._gl.colorMask(enable, enable, enable, enable);
-        this._colorWrite = enable;
-    }
-
-    /**
-     * Gets a boolean indicating if color writing is enabled
-     * @returns the current color writing state
-     */
-    public getColorWrite(): boolean {
-        return this._colorWrite;
-    }
-
-    /**
-     * Sets alpha constants used by some alpha blending modes
-     * @param r defines the red component
-     * @param g defines the green component
-     * @param b defines the blue component
-     * @param a defines the alpha component
-     */
-    public setAlphaConstants(r: number, g: number, b: number, a: number) {
-        this._alphaState.setAlphaBlendConstants(r, g, b, a);
-    }
-
-    /**
-     * Sets the current alpha mode
-     * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
-     * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
-     * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
-     */
-    public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
-        if (this._alphaMode === mode) {
-            return;
-        }
-
-        switch (mode) {
-            case Constants.ALPHA_DISABLE:
-                this._alphaState.alphaBlend = false;
-                break;
-            case Constants.ALPHA_PREMULTIPLIED:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_PREMULTIPLIED_PORTERDUFF:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_COMBINE:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_ONEONE:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_ADD:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_SUBTRACT:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ZERO, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_MULTIPLY:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.DST_COLOR, this._gl.ZERO, this._gl.ONE, this._gl.ONE);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_MAXIMIZED:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_INTERPOLATE:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.CONSTANT_COLOR, this._gl.ONE_MINUS_CONSTANT_COLOR, this._gl.CONSTANT_ALPHA, this._gl.ONE_MINUS_CONSTANT_ALPHA);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_SCREENMODE:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_ONEONE_ONEONE:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ONE, this._gl.ONE);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_ALPHATOCOLOR:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.DST_ALPHA, this._gl.ONE, this._gl.ZERO, this._gl.ZERO);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_REVERSEONEMINUS:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE_MINUS_DST_COLOR, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE_MINUS_DST_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_SRC_DSTONEMINUSSRCALPHA:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
-                this._alphaState.alphaBlend = true;
-                break;
-            case Constants.ALPHA_ONEONE_ONEZERO:
-                this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ONE, this._gl.ZERO);
-                this._alphaState.alphaBlend = true;
-                break;
-        }
-        if (!noDepthWriteChange) {
-            this.setDepthWrite(mode === Constants.ALPHA_DISABLE);
-        }
-        this._alphaMode = mode;
-    }
-
-    /**
-     * Gets the current alpha mode
-     * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
-     * @returns the current alpha mode
-     */
-    public getAlphaMode(): number {
-        return this._alphaMode;
-    }
-
-    /**
-     * Sets the current alpha equation
-     * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
-     */
-    public setAlphaEquation(equation: number): void {
-        if (this._alphaEquation === equation) {
-            return;
-        }
-
-        switch (equation) {
-            case Constants.ALPHA_EQUATION_ADD:
-                this._alphaState.setAlphaEquationParameters(this._gl.FUNC_ADD, this._gl.FUNC_ADD);
-                break;
-            case Constants.ALPHA_EQUATION_SUBSTRACT:
-                this._alphaState.setAlphaEquationParameters(this._gl.FUNC_SUBTRACT, this._gl.FUNC_SUBTRACT);
-                break;
-            case Constants.ALPHA_EQUATION_REVERSE_SUBTRACT:
-                this._alphaState.setAlphaEquationParameters(this._gl.FUNC_REVERSE_SUBTRACT, this._gl.FUNC_REVERSE_SUBTRACT);
-                break;
-            case Constants.ALPHA_EQUATION_MAX:
-                this._alphaState.setAlphaEquationParameters(this._gl.MAX, this._gl.MAX);
-                break;
-            case Constants.ALPHA_EQUATION_MIN:
-                this._alphaState.setAlphaEquationParameters(this._gl.MIN, this._gl.MIN);
-                break;
-            case Constants.ALPHA_EQUATION_DARKEN:
-                this._alphaState.setAlphaEquationParameters(this._gl.MIN, this._gl.FUNC_ADD);
-                break;
-        }
-        this._alphaEquation = equation;
-    }
-
-    /**
-     * Gets the current alpha equation.
-     * @returns the current alpha equation
-     */
-    public getAlphaEquation(): number {
-        return this._alphaEquation;
     }
 
     /**
