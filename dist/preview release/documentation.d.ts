@@ -592,56 +592,61 @@ declare module BABYLON {
     export class Constants {
         /** Defines that alpha blending is disabled */
         static readonly ALPHA_DISABLE: number;
-        /** Defines that alpha blending to SRC ALPHA * SRC + DEST */
+        /** Defines that alpha blending is SRC ALPHA * SRC + DEST */
         static readonly ALPHA_ADD: number;
-        /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
+        /** Defines that alpha blending is SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
         static readonly ALPHA_COMBINE: number;
-        /** Defines that alpha blending to DEST - SRC * DEST */
+        /** Defines that alpha blending is DEST - SRC * DEST */
         static readonly ALPHA_SUBTRACT: number;
-        /** Defines that alpha blending to SRC * DEST */
+        /** Defines that alpha blending is SRC * DEST */
         static readonly ALPHA_MULTIPLY: number;
-        /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC) * DEST */
+        /** Defines that alpha blending is SRC ALPHA * SRC + (1 - SRC) * DEST */
         static readonly ALPHA_MAXIMIZED: number;
-        /** Defines that alpha blending to SRC + DEST */
+        /** Defines that alpha blending is SRC + DEST */
         static readonly ALPHA_ONEONE: number;
-        /** Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST */
+        /** Defines that alpha blending is SRC + (1 - SRC ALPHA) * DEST */
         static readonly ALPHA_PREMULTIPLIED: number;
         /**
-         * Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST
+         * Defines that alpha blending is SRC + (1 - SRC ALPHA) * DEST
          * Alpha will be set to (1 - SRC ALPHA) * DEST ALPHA
          */
         static readonly ALPHA_PREMULTIPLIED_PORTERDUFF: number;
-        /** Defines that alpha blending to CST * SRC + (1 - CST) * DEST */
+        /** Defines that alpha blending is CST * SRC + (1 - CST) * DEST */
         static readonly ALPHA_INTERPOLATE: number;
         /**
-         * Defines that alpha blending to SRC + (1 - SRC) * DEST
+         * Defines that alpha blending is SRC + (1 - SRC) * DEST
          * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
          */
         static readonly ALPHA_SCREENMODE: number;
         /**
-         * Defines that alpha blending to SRC + DST
+         * Defines that alpha blending is SRC + DST
          * Alpha will be set to SRC ALPHA + DST ALPHA
          */
         static readonly ALPHA_ONEONE_ONEONE: number;
         /**
-         * Defines that alpha blending to SRC * DST ALPHA + DST
+         * Defines that alpha blending is SRC * DST ALPHA + DST
          * Alpha will be set to 0
          */
         static readonly ALPHA_ALPHATOCOLOR: number;
         /**
-         * Defines that alpha blending to SRC * (1 - DST) + DST * (1 - SRC)
+         * Defines that alpha blending is SRC * (1 - DST) + DST * (1 - SRC)
          */
         static readonly ALPHA_REVERSEONEMINUS: number;
         /**
-         * Defines that alpha blending to SRC + DST * (1 - SRC ALPHA)
+         * Defines that alpha blending is SRC + DST * (1 - SRC ALPHA)
          * Alpha will be set to SRC ALPHA + DST ALPHA * (1 - SRC ALPHA)
          */
         static readonly ALPHA_SRC_DSTONEMINUSSRCALPHA: number;
         /**
-         * Defines that alpha blending to SRC + DST
+         * Defines that alpha blending is SRC + DST
          * Alpha will be set to SRC ALPHA
          */
         static readonly ALPHA_ONEONE_ONEZERO: number;
+        /**
+         * Defines that alpha blending is SRC * (1 - DST) + DST * (1 - SRC)
+         * Alpha will be set to DST ALPHA
+         */
+        static readonly ALPHA_EXCLUSION: number;
         /** Defines that alpha blending equation a SUM */
         static readonly ALPHA_EQUATION_ADD: number;
         /** Defines that alpha blending equation a SUBSTRACTION */
@@ -29556,6 +29561,7 @@ declare module BABYLON {
         private _allFallbacksProcessed;
         private _attributesNames;
         private _attributes;
+        private _attributeLocationByName;
         private _uniforms;
         /**
          * Key for the effect.
@@ -30178,30 +30184,37 @@ declare module BABYLON {
      */
     export interface InstancingAttributeInfo {
         /**
-         * Index/offset of the attribute in the vertex shader
+         * Name of the GLSL attribute
+         * if attribute index is not specified, this is used to retrieve the index from the effect
          */
-        index: number;
+        attributeName: string;
+        /**
+         * Index/offset of the attribute in the vertex shader
+         * if not specified, this will be computes from the name.
+         */
+        index?: number;
         /**
          * size of the attribute, 1, 2, 3 or 4
          */
         attributeSize: number;
         /**
-         * type of the attribute, gl.BYTE, gl.UNSIGNED_BYTE, gl.SHORT, gl.UNSIGNED_SHORT, gl.FIXED, gl.FLOAT.
-         * default is FLOAT
-         */
-        attributeType: number;
-        /**
-         * normalization of fixed-point data. behavior unclear, use FALSE, default is FALSE
-         */
-        normalized: boolean;
-        /**
          * Offset of the data in the Vertex Buffer acting as the instancing buffer
          */
         offset: number;
         /**
-         * Name of the GLSL attribute, for debugging purpose only
+         * Modifies the rate at which generic vertex attributes advance when rendering multiple instances
+         * default to 1
          */
-        attributeName: string;
+        divisor?: number;
+        /**
+         * type of the attribute, gl.BYTE, gl.UNSIGNED_BYTE, gl.SHORT, gl.UNSIGNED_SHORT, gl.FIXED, gl.FLOAT.
+         * default is FLOAT
+         */
+        attributeType?: number;
+        /**
+         * normalization of fixed-point data. behavior unclear, use FALSE, default is FALSE
+         */
+        normalized?: boolean;
     }
 }
 declare module BABYLON {
@@ -30511,7 +30524,6 @@ declare module BABYLON {
         /** @hidden */
         _caps: EngineCapabilities;
         private _isStencilEnable;
-        protected _colorWrite: boolean;
         private _glVersion;
         private _glRenderer;
         private _glVendor;
@@ -30542,11 +30554,19 @@ declare module BABYLON {
          */
         disableVertexArrayObjects: boolean;
         /** @hidden */
+        protected _colorWrite: boolean;
+        /** @hidden */
+        protected _colorWriteChanged: boolean;
+        /** @hidden */
         protected _depthCullingState: DepthCullingState;
         /** @hidden */
         protected _stencilState: StencilState;
         /** @hidden */
-        protected _alphaState: AlphaState;
+        _alphaState: AlphaState;
+        /** @hidden */
+        _alphaMode: number;
+        /** @hidden */
+        _alphaEquation: number;
         /** @hidden */
         _internalTexturesCache: InternalTexture[];
         /** @hidden */
@@ -30906,9 +30926,27 @@ declare module BABYLON {
          */
         updateAndBindInstancesBuffer(instancesBuffer: DataBuffer, data: Float32Array, offsetLocations: number[] | InstancingAttributeInfo[]): void;
         /**
-         * Apply all cached states (depth, culling, stencil and alpha)
+         * Bind the content of a webGL buffer used with instanciation
+         * @param instancesBuffer defines the webGL buffer to bind
+         * @param attributesInfo defines the offsets or attributes information used to determine where data must be stored in the buffer
+         * @param computeStride defines Wether to compute the strides from the info or use the default 0
          */
-        applyStates(): void;
+        bindInstancesBuffer(instancesBuffer: DataBuffer, attributesInfo: InstancingAttributeInfo[], computeStride?: boolean): void;
+        /**
+         * Disable the instance attribute corresponding to the name in parameter
+         * @param name defines the name of the attribute to disable
+         */
+        disableInstanceAttributeByName(name: string): void;
+        /**
+         * Disable the instance attribute corresponding to the location in parameter
+         * @param attributeLocation defines the attribute location of the attribute to disable
+         */
+        disableInstanceAttribute(attributeLocation: number): void;
+        /**
+         * Disable the attribute corresponding to the location in parameter
+         * @param attributeLocation defines the attribute location of the attribute to disable
+         */
+        disableAttributeByIndex(attributeLocation: number): void;
         /**
          * Send a draw order
          * @param useTriangles defines if triangles must be used to draw (else wireframe will be used)
@@ -31128,6 +31166,20 @@ declare module BABYLON {
          */
         setFloat4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): void;
         /**
+         * Apply all cached states (depth, culling, stencil and alpha)
+         */
+        applyStates(): void;
+        /**
+         * Enable or disable color writing
+         * @param enable defines the state to set
+         */
+        setColorWrite(enable: boolean): void;
+        /**
+         * Gets a boolean indicating if color writing is enabled
+         * @returns the current color writing state
+         */
+        getColorWrite(): boolean;
+        /**
          * Gets the depth culling state manager
          */
         readonly depthCullingState: DepthCullingState;
@@ -31272,6 +31324,7 @@ declare module BABYLON {
         private _prepareWebGLTexture;
         /** @hidden */
         _setupFramebufferDepthAttachments(generateStencilBuffer: boolean, generateDepthBuffer: boolean, width: number, height: number, samples?: number): Nullable<WebGLRenderbuffer>;
+        private _getDepthStencilBuffer;
         /** @hidden */
         _releaseFramebufferObjects(texture: InternalTexture): void;
         /** @hidden */
@@ -32371,6 +32424,41 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+        interface ThinEngine {
+            /**
+             * Sets alpha constants used by some alpha blending modes
+             * @param r defines the red component
+             * @param g defines the green component
+             * @param b defines the blue component
+             * @param a defines the alpha component
+             */
+            setAlphaConstants(r: number, g: number, b: number, a: number): void;
+            /**
+             * Sets the current alpha mode
+             * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
+             * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
+             * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+             */
+            setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
+            /**
+             * Gets the current alpha mode
+             * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+             * @returns the current alpha mode
+             */
+            getAlphaMode(): number;
+            /**
+             * Sets the current alpha equation
+             * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
+             */
+            setAlphaEquation(equation: number): void;
+            /**
+             * Gets the current alpha equation.
+             * @returns the current alpha equation
+             */
+            getAlphaEquation(): number;
+        }
+}
+declare module BABYLON {
     /**
      * Defines the interface used by display changed events
      */
@@ -32696,10 +32784,6 @@ declare module BABYLON {
         private _pointerLockRequested;
         private _dummyFramebuffer;
         private _rescalePostProcess;
-        /** @hidden */
-        protected _alphaMode: number;
-        /** @hidden */
-        protected _alphaEquation: number;
         private _deterministicLockstep;
         private _lockstepMaxSteps;
         private _timeStep;
@@ -32817,47 +32901,6 @@ declare module BABYLON {
          * @param enable defines the state to set
          */
         setDepthWrite(enable: boolean): void;
-        /**
-         * Enable or disable color writing
-         * @param enable defines the state to set
-         */
-        setColorWrite(enable: boolean): void;
-        /**
-         * Gets a boolean indicating if color writing is enabled
-         * @returns the current color writing state
-         */
-        getColorWrite(): boolean;
-        /**
-         * Sets alpha constants used by some alpha blending modes
-         * @param r defines the red component
-         * @param g defines the green component
-         * @param b defines the blue component
-         * @param a defines the alpha component
-         */
-        setAlphaConstants(r: number, g: number, b: number, a: number): void;
-        /**
-         * Sets the current alpha mode
-         * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
-         * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
-         * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
-         */
-        setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
-        /**
-         * Gets the current alpha mode
-         * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
-         * @returns the current alpha mode
-         */
-        getAlphaMode(): number;
-        /**
-         * Sets the current alpha equation
-         * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
-         */
-        setAlphaEquation(equation: number): void;
-        /**
-         * Gets the current alpha equation.
-         * @returns the current alpha equation
-         */
-        getAlphaEquation(): number;
         /**
          * Gets a boolean indicating if stencil buffer is enabled
          * @returns the current stencil buffer state

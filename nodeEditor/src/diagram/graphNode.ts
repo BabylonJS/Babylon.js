@@ -281,13 +281,22 @@ export class GraphNode {
 
         evt.stopPropagation();
 
+        for (var selectedNode of this._ownerCanvas.selectedNodes) {
+            selectedNode.cleanAccumulation(true);
+        }
+
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;        
         
         this._visual.setPointerCapture(evt.pointerId);
     }
 
-    public cleanAccumulation() {
+    public cleanAccumulation(reset = false) {
+        if (reset) {
+            this._x = Number.MIN_VALUE;
+            this._y = Number.MIN_VALUE;
+        }
+
         this.x = this.gridAlignedX;
         this.y = this.gridAlignedY;
     }

@@ -2,56 +2,61 @@
 export class Constants {
     /** Defines that alpha blending is disabled */
     public static readonly ALPHA_DISABLE = 0;
-    /** Defines that alpha blending to SRC ALPHA * SRC + DEST */
+    /** Defines that alpha blending is SRC ALPHA * SRC + DEST */
     public static readonly ALPHA_ADD = 1;
-    /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
+    /** Defines that alpha blending is SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
     public static readonly ALPHA_COMBINE = 2;
-    /** Defines that alpha blending to DEST - SRC * DEST */
+    /** Defines that alpha blending is DEST - SRC * DEST */
     public static readonly ALPHA_SUBTRACT = 3;
-    /** Defines that alpha blending to SRC * DEST */
+    /** Defines that alpha blending is SRC * DEST */
     public static readonly ALPHA_MULTIPLY = 4;
-    /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC) * DEST */
+    /** Defines that alpha blending is SRC ALPHA * SRC + (1 - SRC) * DEST */
     public static readonly ALPHA_MAXIMIZED = 5;
-    /** Defines that alpha blending to SRC + DEST */
+    /** Defines that alpha blending is SRC + DEST */
     public static readonly ALPHA_ONEONE = 6;
-    /** Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST */
+    /** Defines that alpha blending is SRC + (1 - SRC ALPHA) * DEST */
     public static readonly ALPHA_PREMULTIPLIED = 7;
     /**
-     * Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST
+     * Defines that alpha blending is SRC + (1 - SRC ALPHA) * DEST
      * Alpha will be set to (1 - SRC ALPHA) * DEST ALPHA
      */
     public static readonly ALPHA_PREMULTIPLIED_PORTERDUFF = 8;
-    /** Defines that alpha blending to CST * SRC + (1 - CST) * DEST */
+    /** Defines that alpha blending is CST * SRC + (1 - CST) * DEST */
     public static readonly ALPHA_INTERPOLATE = 9;
     /**
-     * Defines that alpha blending to SRC + (1 - SRC) * DEST
+     * Defines that alpha blending is SRC + (1 - SRC) * DEST
      * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
      */
     public static readonly ALPHA_SCREENMODE = 10;
     /**
-     * Defines that alpha blending to SRC + DST
+     * Defines that alpha blending is SRC + DST
      * Alpha will be set to SRC ALPHA + DST ALPHA
      */
     public static readonly ALPHA_ONEONE_ONEONE = 11;
     /**
-     * Defines that alpha blending to SRC * DST ALPHA + DST
+     * Defines that alpha blending is SRC * DST ALPHA + DST
      * Alpha will be set to 0
      */
     public static readonly ALPHA_ALPHATOCOLOR = 12;
     /**
-     * Defines that alpha blending to SRC * (1 - DST) + DST * (1 - SRC)
+     * Defines that alpha blending is SRC * (1 - DST) + DST * (1 - SRC)
      */
     public static readonly ALPHA_REVERSEONEMINUS = 13;
     /**
-     * Defines that alpha blending to SRC + DST * (1 - SRC ALPHA)
+     * Defines that alpha blending is SRC + DST * (1 - SRC ALPHA)
      * Alpha will be set to SRC ALPHA + DST ALPHA * (1 - SRC ALPHA)
      */
     public static readonly ALPHA_SRC_DSTONEMINUSSRCALPHA = 14;
     /**
-     * Defines that alpha blending to SRC + DST
+     * Defines that alpha blending is SRC + DST
      * Alpha will be set to SRC ALPHA
      */
     public static readonly ALPHA_ONEONE_ONEZERO = 15;
+    /**
+     * Defines that alpha blending is SRC * (1 - DST) + DST * (1 - SRC)
+     * Alpha will be set to DST ALPHA
+     */
+    public static readonly ALPHA_EXCLUSION = 16;
 
     /** Defines that alpha blending equation a SUM */
     public static readonly ALPHA_EQUATION_ADD = 0;
