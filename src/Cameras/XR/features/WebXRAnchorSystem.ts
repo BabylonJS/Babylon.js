@@ -130,7 +130,8 @@ export class WebXRAnchorSystem implements WebXRFeature {
             if (results.length) {
                 const hitResult = results[0];
                 const transform = new XRRigidTransform(hitResult.hitMatrix);
-                this.addAnchorAtRigidTransformation(transform, hitResult.plane);
+                // find the plane on which to add.
+                this.addAnchorAtRigidTransformation(transform);
             }
         };
 
@@ -139,6 +140,9 @@ export class WebXRAnchorSystem implements WebXRFeature {
             onResults(this._hitTestModule.lastNativeXRHitResults);
         }
         WebXRHitTest.XRHitTestWithSelectEvent(event, this.xrSessionManager.referenceSpace).then(onResults);
+
+        // API will soon change, will need to use the plane
+        this._planeDetector;
     }
 
     public addAnchorAtRigidTransformation(xrRigidTransformation: XRRigidTransform, anchorCreator?: XRAnchorCreator) {
