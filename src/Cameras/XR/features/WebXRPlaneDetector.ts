@@ -124,13 +124,9 @@ export class WebXRPlaneDetector implements WebXRFeature {
                 mat.toggleModelMatrixHandInPlace();
             }
             plane.transformationMatrix = mat;
-            //if (this.options.coordinatesSpace === Space.WORLD) {
-            if (!this.options.worldParentNode) {
-                // Logger.Warn("Please provide a world parent node to apply world transformation");
-            } else {
+            if (this.options.worldParentNode) {
                 mat.multiplyToRef(this.options.worldParentNode.getWorldMatrix(), mat);
             }
-            //}
         }
         /*if (!this.options.dontCreatePolygon) {
             let mat;
