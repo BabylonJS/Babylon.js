@@ -1,10 +1,33 @@
 ﻿
-(function() {
+var engine = null;
+var canvas = null;
+var scene = null;
+
+fastEval = function(code) {
+    var head = document.getElementsByTagName('head')[0];
+    var script = document.createElement('script');
+    script.setAttribute('type', 'text/javascript');
+
+    script.innerHTML = `try {${code};}
+    catch(e) {
+        handleException(e);
+    }`;
+
+    head.appendChild(script);
+}
+
+handleException = function(e) {
+    console.error(e);
+}
+
+run = function() {
     var snippetUrl = "https://snippet.babylonjs.com";
-    var engine;
     var fpsLabel = document.getElementById("fpsLabel");
     var refreshAnchor = document.getElementById("refresh");
     var editAnchor = document.getElementById("edit");
+
+    var createEngineFunction = "createDefaultEngine";
+    var createSceneFunction;
 
     if (location.href.toLowerCase().indexOf("noui") > -1) {
         fpsLabel.style.visibility = "hidden";
@@ -16,10 +39,6 @@
     }
 
     BABYLON.Engine.ShadersRepository = "/src/Shaders/";
-
-    var showError = function(error) {
-        utils.showError(error, null);
-    };
 
     compileAndRun = function(code) {
         try {
@@ -34,22 +53,18 @@
                 engine = null;
             }
 
-            var canvas = document.getElementById("renderCanvas");
+            canvas = document.getElementById("renderCanvas");
 
-            var createEngineFunction = "createDefaultEngine";
-            var createSceneFunction;
-
-            var createDefaultEngine = function() {
-                return new BABYLON.Engine(canvas, true, { stencil: true });
+            createDefaultEngine = function () {
+                return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
             }
-
-            var scene;
 
             if (code.indexOf("createEngine") !== -1) {
                 createEngineFunction = "createEngine";
             }
 
-            if (code.indexOf("delayCreateScene") !== -1) { // createScene
+            // Check for different typos
+            if (code.indexOf("delayCreateScene") !== -1) { // delayCreateScene
                 createSceneFunction = "delayCreateScene";
                 checkCamera = false;
             } else if (code.indexOf("createScene") !== -1) { // createScene
@@ -61,37 +76,33 @@
             }
 
             if (!createSceneFunction) {
-                // just pasted code.
+                // Just pasted code.
                 engine = createDefaultEngine();
                 scene = new BABYLON.Scene(engine);
-                eval("runScript = function(scene, canvas) {" + code + "}");
+                var runScript = null;
+                fastEval("runScript = function(scene, canvas) {" + code + "}");
                 runScript(scene, canvas);
-
-                zipCode = "var scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
             } else {
-                //execute the code
-                eval(code);
-                //create engine
-                eval("engine = " + createEngineFunction + "()");
+                code += "\n engine = " + createEngineFunction + "();";
+                code += "\n if (!engine) throw 'engine should not be null.';";
+                code += "\n" + "scene = " + createSceneFunction + "();";
+
+                // Execute the code
+                fastEval(code);
+
                 if (!engine) {
-                    showError("createEngine function must return an engine.", null);
+                    console.error("createEngine function must return an engine.");
                     return;
                 }
-
-                //create scene
-                eval("scene = " + createSceneFunction + "()");
 
                 if (!scene) {
-                    showError(createSceneFunction + " function must return a scene.", null);
+                    console.error(createSceneFunction + " function must return a scene.");
                     return;
                 }
-
-                // update the scene code for the zip file
-                zipCode = code + "\r\n\r\nvar scene = " + createSceneFunction + "()";
             }
 
-            BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault = true;
-            engine.runRenderLoop(function() {
+            engine = engine;
+            engine.runRenderLoop(function () {
                 if (engine.scenes.length === 0) {
                     return;
                 }
@@ -106,10 +117,8 @@
                     scene.render();
                 }
 
-                if (fpsLabel) {
-                    fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
-                }
-            });
+                fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+            }.bind(this));         
 
         } catch (e) {
             // showError(e.message);
@@ -175,4 +184,6 @@
 
     checkHash();
 
-})();
+}
+
+run();
