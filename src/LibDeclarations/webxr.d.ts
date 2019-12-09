@@ -158,7 +158,6 @@ class XRRay {
 
 interface XRHitResult {
     hitMatrix: Float32Array;
-    plane?: XRPlane;
 }
 
 interface XRAnchor {
