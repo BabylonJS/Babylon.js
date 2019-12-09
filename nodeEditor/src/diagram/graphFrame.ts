@@ -18,6 +18,9 @@ export class GraphFrame {
     private _height: number;
     public element: HTMLDivElement;   
     private _headerElement: HTMLDivElement;    
+    private _headerTextElement: HTMLDivElement;        
+    private _headerCollapseElement: HTMLImageElement;    
+    private _headerCloseElement: HTMLImageElement;    
     private _portContainer: HTMLDivElement;    
     private _outputPortContainer: HTMLDivElement;    
     private _inputPortContainer: HTMLDivElement;    
@@ -138,7 +141,7 @@ export class GraphFrame {
 
     public set name(value: string) {
         this._name = value;
-        this._headerElement.innerHTML = value;
+        this._headerTextElement.innerHTML = value;
     }
 
     public get color() {
@@ -225,6 +228,40 @@ export class GraphFrame {
         });
         this.element.appendChild(this._headerElement);
 
+        this._headerTextElement = root.ownerDocument!.createElement("div"); 
+        this._headerTextElement.classList.add("frame-box-header-title");
+        this._headerElement.appendChild(this._headerTextElement);
+
+        this._headerCollapseElement = root.ownerDocument!.createElement("img"); 
+        this._headerCollapseElement.classList.add("frame-box-header-collapse");   
+        this._headerCollapseElement.classList.add("frame-box-header-button");     
+        this._headerCollapseElement.ondragstart= () => false;
+        this._headerCollapseElement.addEventListener("pointerdown", (evt) => {
+            this._headerCollapseElement.classList.add("down");
+            evt.stopPropagation();
+        });
+        this._headerCollapseElement.addEventListener("pointerup", (evt) => {            
+            evt.stopPropagation();
+            this._headerCollapseElement.classList.remove("down");
+            this.isCollapsed = !this.isCollapsed;
+        });
+        this._headerCollapseElement.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5NYXRyaXg8L3RpdGxlPjxnIGlkPSJMYXllcl81IiBkYXRhLW5hbWU9IkxheWVyIDUiPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsNi4xMVY5LjVoMy4zOUE0LjUxLDQuNTEsMCwwLDAsMTEuNSw2LjExWiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsMTQuODlhNC41MSw0LjUxLDAsMCwwLDMuMzktMy4zOUgxMS41WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsMy4wN3YyQTUuNTQsNS41NCwwLDAsMSwxNS45Miw5LjVoMkE3LjUxLDcuNTEsMCwwLDAsMTEuNSwzLjA3WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTE1LjkyLDExLjVhNS41NCw1LjU0LDAsMCwxLTQuNDIsNC40MnYyYTcuNTEsNy41MSwwLDAsMCw2LjQzLTYuNDNaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNNS4wOCwxMS41aC0yQTcuNTEsNy41MSwwLDAsMCw5LjUsMTcuOTN2LTJBNS41NCw1LjU0LDAsMCwxLDUuMDgsMTEuNVoiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik05LjUsMy4wN0E3LjUxLDcuNTEsMCwwLDAsMy4wNyw5LjVoMkE1LjU0LDUuNTQsMCwwLDEsOS41LDUuMDhaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNOS41LDExLjVINi4xMUE0LjUxLDQuNTEsMCwwLDAsOS41LDE0Ljg5WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTkuNSw2LjExQTQuNTEsNC41MSwwLDAsMCw2LjExLDkuNUg5LjVaIi8+PC9nPjwvc3ZnPg==";
+        this._headerElement.appendChild(this._headerCollapseElement);
+
+        this._headerCloseElement = root.ownerDocument!.createElement("img"); 
+        this._headerCloseElement.classList.add("frame-box-header-close");
+        this._headerCloseElement.classList.add("frame-box-header-button");
+        this._headerCloseElement.ondragstart= () => false;
+        this._headerCloseElement.addEventListener("pointerdown", (evt) => {
+            evt.stopPropagation();
+        });
+        this._headerCloseElement.addEventListener("pointerup", (evt) => {
+            evt.stopPropagation();
+            this.dispose();
+        });
+        this._headerCloseElement.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5NYXRyaXg8L3RpdGxlPjxnIGlkPSJMYXllcl81IiBkYXRhLW5hbWU9IkxheWVyIDUiPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsNi4xMVY5LjVoMy4zOUE0LjUxLDQuNTEsMCwwLDAsMTEuNSw2LjExWiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsMTQuODlhNC41MSw0LjUxLDAsMCwwLDMuMzktMy4zOUgxMS41WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsMy4wN3YyQTUuNTQsNS41NCwwLDAsMSwxNS45Miw5LjVoMkE3LjUxLDcuNTEsMCwwLDAsMTEuNSwzLjA3WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTE1LjkyLDExLjVhNS41NCw1LjU0LDAsMCwxLTQuNDIsNC40MnYyYTcuNTEsNy41MSwwLDAsMCw2LjQzLTYuNDNaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNNS4wOCwxMS41aC0yQTcuNTEsNy41MSwwLDAsMCw5LjUsMTcuOTN2LTJBNS41NCw1LjU0LDAsMCwxLDUuMDgsMTEuNVoiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik05LjUsMy4wN0E3LjUxLDcuNTEsMCwwLDAsMy4wNyw5LjVoMkE1LjU0LDUuNTQsMCwwLDEsOS41LDUuMDhaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNOS41LDExLjVINi4xMUE0LjUxLDQuNTEsMCwwLDAsOS41LDE0Ljg5WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTkuNSw2LjExQTQuNTEsNC41MSwwLDAsMCw2LjExLDkuNUg5LjVaIi8+PC9nPjwvc3ZnPg==";
+        this._headerElement.appendChild(this._headerCloseElement);
+
         this._portContainer = root.ownerDocument!.createElement("div");  
         this._portContainer.classList.add("port-container");
         this.element.appendChild(this._portContainer);
@@ -249,9 +286,9 @@ export class GraphFrame {
             this.cleanAccumulation();        
         }
         
-        this._headerElement.addEventListener("pointerdown", evt => this._onDown(evt));
-        this._headerElement.addEventListener("pointerup", evt => this._onUp(evt));
-        this._headerElement.addEventListener("pointermove", evt => this._onMove(evt));
+        this._headerTextElement.addEventListener("pointerdown", evt => this._onDown(evt));
+        this._headerTextElement.addEventListener("pointerup", evt => this._onUp(evt));
+        this._headerTextElement.addEventListener("pointermove", evt => this._onMove(evt));
 
         this._onSelectionChangedObserver = canvas.globalState.onSelectionChangedObservable.add(node => {
             if (node === this) {
@@ -315,7 +352,7 @@ export class GraphFrame {
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;        
         
-        this._headerElement.setPointerCapture(evt.pointerId);
+        this._headerTextElement.setPointerCapture(evt.pointerId);
         this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
 
         this._ownerCanvas._frameIsMoving = true;
@@ -327,7 +364,7 @@ export class GraphFrame {
         this.cleanAccumulation();
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
-        this._headerElement.releasePointerCapture(evt.pointerId);
+        this._headerTextElement.releasePointerCapture(evt.pointerId);
 
         this._ownerCanvas._frameIsMoving = false;
     }
