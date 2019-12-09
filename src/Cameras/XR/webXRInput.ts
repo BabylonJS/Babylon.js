@@ -47,7 +47,7 @@ export class WebXRInput implements IDisposable {
             }
 
             // Start listing to input add/remove event
-            if (this.controllers.length == 0 && baseExperience.sessionManager.session.inputSources) {
+            if (this.controllers.length == 0 && baseExperience.sessionManager.session.inputSources && baseExperience.sessionManager.session.inputSources.length > 0) {
                 this._addAndRemoveControllers(baseExperience.sessionManager.session.inputSources, []);
                 baseExperience.sessionManager.session.addEventListener("inputsourceschange", this._onInputSourcesChange);
             }

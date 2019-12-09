@@ -42974,6 +42974,13 @@ declare module BABYLON {
         private _tmpRay;
         private _tmpVector;
         /**
+         * when set to true (default) teleportation will wait for thumbstick changes.
+         * When set to false teleportation will be disabled.
+         *
+         * If set to false while teleporting results can be unexpected.
+         */
+        enabled: boolean;
+        /**
          * Creates a WebXRControllerTeleportation
          * @param input input manager to add teleportation to
          * @param floorMeshes floormeshes which can be teleported to
