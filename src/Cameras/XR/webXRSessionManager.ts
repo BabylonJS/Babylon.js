@@ -56,6 +56,8 @@ export class WebXRSessionManager implements IDisposable {
      */
     public currentFrame: Nullable<XRFrame>;
 
+    public currentTimestamp: number = -1;
+
     private _xrNavigator: any;
     private baseLayer: Nullable<XRWebGLLayer> = null;
     private _rttProvider: Nullable<IRenderTargetProvider>;
@@ -166,6 +168,7 @@ export class WebXRSessionManager implements IDisposable {
                 }
                 // Store the XR frame in the manager to be consumed by the XR camera to update pose
                 this.currentFrame = xrFrame;
+                this.currentTimestamp = timestamp;
                 if (xrFrame) {
                     this.onXRFrameObservable.notifyObservers(xrFrame);
                 }
@@ -203,11 +206,9 @@ export class WebXRSessionManager implements IDisposable {
      */
     public exitXRAsync() {
         if (this.session && !this._sessionEnded) {
-            try {
-                return this.session.end();
-            } catch (e) {
+            return this.session.end().catch((e) => {
                 Logger.Warn("could not end XR session. It has ended already.");
-            }
+            });
         }
         return Promise.resolve();
     }
