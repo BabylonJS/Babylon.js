@@ -2253,7 +2253,16 @@ export class ThinEngine {
             return;
         }
 
-        webGLPipelineContext.onCompiled = action;
+        let oldHandler = webGLPipelineContext.onCompiled;
+
+        if (oldHandler) {
+            webGLPipelineContext.onCompiled = () => {
+                oldHandler!();
+                action();
+            };
+        } else {
+            webGLPipelineContext.onCompiled = action;
+        }
     }
 
     /**
