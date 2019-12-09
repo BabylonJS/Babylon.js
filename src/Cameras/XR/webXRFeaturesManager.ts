@@ -1,11 +1,9 @@
 import { WebXRSessionManager } from './webXRSessionManager';
 import { IDisposable } from '../../scene';
-import { Observable } from '../../Misc/observable';
 
 export interface WebXRFeature extends IDisposable {
-    readonly name: string;
-    attachAsync(): Promise<boolean>;
-    detachAsync(): Promise<boolean>;
+    attach(): boolean;
+    detach(): boolean;
 }
 
 export type WebXRFeatureConstructor = (xrSessionManager: WebXRSessionManager, options?: any) => (() => WebXRFeature);
@@ -39,9 +37,6 @@ export class WebXRFeaturesManager implements IDisposable {
             attached: boolean
         }
     } = {};
-
-    public onFeatureAttachedObservable: Observable<WebXRFeature> = new Observable();
-    public onFeatureDetachedObservable: Observable<WebXRFeature> = new Observable();
 
     constructor(private xrSessionManager: WebXRSessionManager) {
         this.xrSessionManager.onXRSessionInit.add(() => {
@@ -103,18 +98,14 @@ export class WebXRFeaturesManager implements IDisposable {
     public attachFeature(featureName: string) {
         const feature = this.features[featureName];
         if (feature && feature.enabled && !feature.attached) {
-            feature.featureImplementation.attachAsync().then(() => {
-                this.onFeatureAttachedObservable.notifyObservers(feature.featureImplementation);
-            });
+            feature.featureImplementation.attach();
         }
     }
 
     public detachFeature(featureName: string) {
         const feature = this.features[featureName];
         if (feature && !feature.attached) {
-            feature.featureImplementation.detachAsync().then(() => {
-                this.onFeatureDetachedObservable.notifyObservers(feature.featureImplementation);
-            });
+            feature.featureImplementation.detach();
         }
     }
 

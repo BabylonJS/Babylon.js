@@ -1,7 +1,7 @@
 import { WebXRFeature, WebXRFeaturesManager } from '../webXRFeaturesManager';
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { Observable, Observer } from '../../../Misc/observable';
-import { Vector3, Matrix, Quaternion } from '../../../Maths/math';
+import { Vector3, Matrix } from '../../../Maths/math.vector';
 import { TransformNode } from '../../../Meshes/transformNode';
 import { Nullable } from '../../../types';
 
@@ -11,33 +11,49 @@ WebXRFeaturesManager.AddWebXRFeature(Name, (xrSessionManager, options) => {
     return () => new WebXRHitTest(xrSessionManager, options);
 });
 
-export interface XRSession {
-
-}
-
 export interface WebXRHitTestOptions {
     testOnPointerDownOnly?: boolean;
     worldParentNode?: TransformNode;
+    // coordinatesSpace?: Space;
 }
+
+export interface WebXRHitResult {
+    xrHitResult: XRHitResult;
+    transformationMatrix: Matrix;
+}
+
+export type WebXRHitResults = WebXRHitResult[];
 
 export class WebXRHitTest implements WebXRFeature {
 
     public static readonly Name = Name;
 
-    public onHitTestResultObservable: Observable<Matrix[]> = new Observable();
+    public static XRHitTestWithSelectEvent(event: XRInputSourceEvent, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]> {
+        let targetRayPose = event.frame.getPose(event.inputSource.targetRaySpace, referenceSpace);
+        if (!targetRayPose) {
+            return Promise.resolve([]);
+        }
+        let targetRay = new XRRay(targetRayPose.transform);
 
-    constructor(private xrSessionManager: WebXRSessionManager, private options: WebXRHitTestOptions = {}) {
-
+        return this.XRHitTestWithRay(event.frame.session, targetRay, referenceSpace);
     }
 
-    readonly name: string = "ar-hit-test";
+    public static XRHitTestWithRay(xrSession: XRSession, xrRay: XRRay, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]> {
+        return xrSession.requestHitTest(xrRay, referenceSpace);
+    }
+
+    public onHitTestResultObservable: Observable<WebXRHitResults> = new Observable();
+
+    constructor(private xrSessionManager: WebXRSessionManager, public readonly options: WebXRHitTestOptions = {}) {
+
+    }
 
     private _onSelectEnabled = false;
     private _xrFrameObserver: Nullable<Observer<XRFrame>>;
 
-    private _tmpMatrix = new Matrix();
+    public lastNativeXRHitResults: XRHitResult[] = [];
 
-    attachAsync(): Promise<boolean> {
+    attach(): boolean {
         if (this.options.testOnPointerDownOnly) {
             this.xrSessionManager.session.addEventListener('select', this.onSelect, false);
         } else {
@@ -58,13 +74,13 @@ export class WebXRHitTest implements WebXRFeature {
                 direction.normalize();
                 let ray = new XRRay((<DOMPointReadOnly>{ x: origin.x, y: origin.y, z: origin.z, w: 0 }),
                     (<DOMPointReadOnly>{ x: direction.x, y: direction.y, z: direction.z, w: 0 }));
-                this.requestHitTest(ray);
+                WebXRHitTest.XRHitTestWithRay(this.xrSessionManager.session, ray, this.xrSessionManager.referenceSpace).then(this.onHitTestResults);
             });
         }
 
-        return Promise.resolve(true);
+        return true;
     }
-    detachAsync(): Promise<boolean> {
+    detach(): boolean {
         // disable select
         this._onSelectEnabled = false;
         this.xrSessionManager.session.removeEventListener('select', this.onSelect);
@@ -72,26 +88,31 @@ export class WebXRHitTest implements WebXRFeature {
             this.xrSessionManager.onXRFrameObservable.remove(this._xrFrameObserver);
             this._xrFrameObserver = null;
         }
-        return Promise.resolve(true);
+        return true;
     }
 
-    private requestHitTest(ray: XRRay) {
-        this.xrSessionManager.session.requestHitTest(ray, this.xrSessionManager.referenceSpace).then((results) => {
-            // convert to babylon world space and notify the matrices results
-            const mats = results.map((result) => {
-                let mat = Matrix.FromArray(result.hitMatrix);
-                if (!this.xrSessionManager.scene.useRightHandedSystem) {
-                    mat.toggleModelMatrixHandInPlace();
-                }
-                if (this.options.worldParentNode) {
-                    const node = this.options.worldParentNode;
-                    Matrix.ComposeToRef(node.scaling, node.rotationQuaternion || new Quaternion(), node.position, this._tmpMatrix);
-                    mat.multiplyToRef(this._tmpMatrix, mat);
-                }
-                return mat;
-            });
-            this.onHitTestResultObservable.notifyObservers(mats);
+    private onHitTestResults = (xrResults: XRHitResult[]) => {
+        const mats = xrResults.map((result) => {
+            let mat = Matrix.FromArray(result.hitMatrix);
+            if (!this.xrSessionManager.scene.useRightHandedSystem) {
+                mat.toggleModelMatrixHandInPlace();
+            }
+            // if (this.options.coordinatesSpace === Space.WORLD) {
+            if (!this.options.worldParentNode) {
+                // Logger.Warn("Please provide a world parent node to apply world transformation");
+            } else {
+                mat.multiplyToRef(this.options.worldParentNode.getWorldMatrix(), mat);
+            }
+            // }
+            //return mat;
+            return {
+                xrHitResult: result,
+                transformationMatrix: mat
+            };
         });
+
+        this.lastNativeXRHitResults = xrResults;
+        this.onHitTestResultObservable.notifyObservers(mats);
     }
 
     // can be done using pointerdown event, and xrSessionManager.currentFrame
@@ -99,17 +120,11 @@ export class WebXRHitTest implements WebXRFeature {
         if (!this._onSelectEnabled) {
             return;
         }
-        let targetRayPose = event.frame.getPose(event.inputSource.targetRaySpace, this.xrSessionManager.referenceSpace);
-        if (!targetRayPose) {
-            return;
-        }
-        let targetRay = new XRRay(targetRayPose.transform);
-        this.requestHitTest(targetRay);
+        WebXRHitTest.XRHitTestWithSelectEvent(event, this.xrSessionManager.referenceSpace);
     }
 
     dispose(): void {
-        this.detachAsync();
+        this.detach();
         this.onHitTestResultObservable.clear();
     }
-
 }
