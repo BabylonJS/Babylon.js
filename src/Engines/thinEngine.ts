@@ -131,14 +131,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-beta.6";
+        return "babylonjs@4.1.0-beta.7";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-beta.6";
+        return "4.1.0-beta.7";
     }
 
     /**
@@ -283,7 +283,6 @@ export class ThinEngine {
     /** @hidden */
     public _caps: EngineCapabilities;
     private _isStencilEnable: boolean;
-    protected _colorWrite = true;
 
     private _glVersion: string;
     private _glRenderer: string;
@@ -330,11 +329,19 @@ export class ThinEngine {
 
     // States
     /** @hidden */
+    protected _colorWrite = true;
+    /** @hidden */
+    protected _colorWriteChanged = true;
+    /** @hidden */
     protected _depthCullingState = new DepthCullingState();
     /** @hidden */
     protected _stencilState = new StencilState();
     /** @hidden */
-    protected _alphaState = new AlphaState();
+    public _alphaState = new AlphaState();
+    /** @hidden */
+    public _alphaMode = Constants.ALPHA_ADD;
+    /** @hidden */
+    public _alphaEquation = Constants.ALPHA_DISABLE;
 
     // Cache
     /** @hidden */
@@ -1792,24 +1799,7 @@ export class ThinEngine {
         }
 
         if ((<any>offsetLocations[0]).index !== undefined) {
-            let stride = 0;
-            for (let i = 0; i < offsetLocations.length; i++) {
-                let ai = <InstancingAttributeInfo>offsetLocations[i];
-                stride += ai.attributeSize * 4;
-            }
-            for (let i = 0; i < offsetLocations.length; i++) {
-                let ai = <InstancingAttributeInfo>offsetLocations[i];
-
-                if (!this._vertexAttribArraysEnabled[ai.index]) {
-                    this._gl.enableVertexAttribArray(ai.index);
-                    this._vertexAttribArraysEnabled[ai.index] = true;
-                }
-
-                this._vertexAttribPointer(instancesBuffer, ai.index, ai.attributeSize, ai.attributeType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
-                this._gl.vertexAttribDivisor(ai.index, 1);
-                this._currentInstanceLocations.push(ai.index);
-                this._currentInstanceBuffers.push(instancesBuffer);
-            }
+            this.bindInstancesBuffer(instancesBuffer, offsetLocations as any, true);
         } else {
             for (let index = 0; index < 4; index++) {
                 let offsetLocation = <number>offsetLocations[index];
@@ -1828,12 +1818,82 @@ export class ThinEngine {
     }
 
     /**
-     * Apply all cached states (depth, culling, stencil and alpha)
+     * Bind the content of a webGL buffer used with instanciation
+     * @param instancesBuffer defines the webGL buffer to bind
+     * @param attributesInfo defines the offsets or attributes information used to determine where data must be stored in the buffer
+     * @param computeStride defines Wether to compute the strides from the info or use the default 0
      */
-    public applyStates() {
-        this._depthCullingState.apply(this._gl);
-        this._stencilState.apply(this._gl);
-        this._alphaState.apply(this._gl);
+    public bindInstancesBuffer(instancesBuffer: DataBuffer, attributesInfo: InstancingAttributeInfo[], computeStride = true): void {
+        this.bindArrayBuffer(instancesBuffer);
+
+        let stride = 0;
+        if (computeStride) {
+            for (let i = 0; i < attributesInfo.length; i++) {
+                let ai = attributesInfo[i];
+                stride += ai.attributeSize * 4;
+            }
+        }
+
+        for (let i = 0; i < attributesInfo.length; i++) {
+            let ai = attributesInfo[i];
+            if (ai.index === undefined) {
+                ai.index = this._currentEffect!.getAttributeLocationByName(ai.attributeName);
+            }
+
+            if (!this._vertexAttribArraysEnabled[ai.index]) {
+                this._gl.enableVertexAttribArray(ai.index);
+                this._vertexAttribArraysEnabled[ai.index] = true;
+            }
+
+            this._vertexAttribPointer(instancesBuffer, ai.index, ai.attributeSize, ai.attributeType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
+            this._gl.vertexAttribDivisor(ai.index, ai.divisor === undefined ? 1 : ai.divisor);
+            this._currentInstanceLocations.push(ai.index);
+            this._currentInstanceBuffers.push(instancesBuffer);
+        }
+    }
+
+    /**
+     * Disable the instance attribute corresponding to the name in parameter
+     * @param name defines the name of the attribute to disable
+     */
+    public disableInstanceAttributeByName(name: string) {
+        if (!this._currentEffect) {
+            return;
+        }
+
+        const attributeLocation = this._currentEffect.getAttributeLocationByName(name);
+        this.disableInstanceAttribute(attributeLocation);
+    }
+
+    /**
+     * Disable the instance attribute corresponding to the location in parameter
+     * @param attributeLocation defines the attribute location of the attribute to disable
+     */
+    public disableInstanceAttribute(attributeLocation: number) {
+        let shouldClean = false;
+        let index: number;
+        while ((index = this._currentInstanceLocations.indexOf(attributeLocation)) !== -1) {
+            this._currentInstanceLocations.splice(index, 1);
+            this._currentInstanceBuffers.splice(index, 1);
+
+            shouldClean = true;
+            index = this._currentInstanceLocations.indexOf(attributeLocation);
+        }
+
+        if (shouldClean) {
+            this._gl.vertexAttribDivisor(attributeLocation, 0);
+            this.disableAttributeByIndex(attributeLocation);
+        }
+    }
+
+    /**
+     * Disable the attribute corresponding to the location in parameter
+     * @param attributeLocation defines the attribute location of the attribute to disable
+     */
+    public disableAttributeByIndex(attributeLocation: number) {
+        this._gl.disableVertexAttribArray(attributeLocation);
+        this._vertexAttribArraysEnabled[attributeLocation] = false;
+        this._currentBufferPointers[attributeLocation].active = false;
     }
 
     /**
@@ -2193,7 +2253,16 @@ export class ThinEngine {
             return;
         }
 
-        webGLPipelineContext.onCompiled = action;
+        let oldHandler = webGLPipelineContext.onCompiled;
+
+        if (oldHandler) {
+            webGLPipelineContext.onCompiled = () => {
+                oldHandler!();
+                action();
+            };
+        } else {
+            webGLPipelineContext.onCompiled = action;
+        }
     }
 
     /**
@@ -2473,6 +2542,40 @@ export class ThinEngine {
     // States
 
     /**
+     * Apply all cached states (depth, culling, stencil and alpha)
+     */
+    public applyStates() {
+        this._depthCullingState.apply(this._gl);
+        this._stencilState.apply(this._gl);
+        this._alphaState.apply(this._gl);
+
+        if (this._colorWriteChanged) {
+            this._colorWriteChanged = false;
+            const enable = this._colorWrite;
+            this._gl.colorMask(enable, enable, enable, enable);
+        }
+    }
+
+    /**
+     * Enable or disable color writing
+     * @param enable defines the state to set
+     */
+    public setColorWrite(enable: boolean): void {
+        if (enable !== this._colorWrite) {
+            this._colorWriteChanged = true;
+            this._colorWrite = enable;
+        }
+    }
+
+    /**
+     * Gets a boolean indicating if color writing is enabled
+     * @returns the current color writing state
+     */
+    public getColorWrite(): boolean {
+        return this._colorWrite;
+    }
+
+    /**
      * Gets the depth culling state manager
      */
     public get depthCullingState(): DepthCullingState {
@@ -2526,6 +2629,8 @@ export class ThinEngine {
             this._depthCullingState.reset();
             this._depthCullingState.depthFunc = this._gl.LEQUAL;
             this._alphaState.reset();
+            this._colorWrite = true;
+            this._colorWriteChanged = true;
 
             this._unpackFlipYCached = null;
 
@@ -3123,35 +3228,35 @@ export class ThinEngine {
 
     /** @hidden */
     public _setupFramebufferDepthAttachments(generateStencilBuffer: boolean, generateDepthBuffer: boolean, width: number, height: number, samples = 1): Nullable<WebGLRenderbuffer> {
-        var depthStencilBuffer: Nullable<WebGLRenderbuffer> = null;
         var gl = this._gl;
 
         // Create the depth/stencil buffer
+        if (generateStencilBuffer && generateDepthBuffer) {
+            return this._getDepthStencilBuffer(width, height, samples, gl.DEPTH_STENCIL, gl.DEPTH24_STENCIL8, gl.DEPTH_STENCIL_ATTACHMENT);
+        }
+        if (generateDepthBuffer) {
+            return this._getDepthStencilBuffer(width, height, samples, gl.DEPTH_COMPONENT16, gl.DEPTH_COMPONENT16, gl.DEPTH_ATTACHMENT);
+        }
         if (generateStencilBuffer) {
-            depthStencilBuffer = gl.createRenderbuffer();
-            gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-
-            if (samples > 1) {
-                gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH24_STENCIL8, width, height);
-            } else {
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, width, height);
-            }
-
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
-        }
-        else if (generateDepthBuffer) {
-            depthStencilBuffer = gl.createRenderbuffer();
-            gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-
-            if (samples > 1) {
-                gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH_COMPONENT16, width, height);
-            } else {
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
-            }
-
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+            return this._getDepthStencilBuffer(width, height, samples, gl.STENCIL_INDEX8, gl.STENCIL_INDEX8, gl.STENCIL_ATTACHMENT);
         }
 
+        return null;
+    }
+
+    private _getDepthStencilBuffer = (width: number, height: number, samples: number, internalFormat: number, msInternalFormat: number, attachment: number) => {
+        var gl = this._gl;
+        const depthStencilBuffer = gl.createRenderbuffer();
+
+        gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+
+        if (samples > 1) {
+            gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, msInternalFormat, width, height);
+        } else {
+            gl.renderbufferStorage(gl.RENDERBUFFER, internalFormat, width, height);
+        }
+
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, depthStencilBuffer);
         return depthStencilBuffer;
     }
 
@@ -3548,9 +3653,7 @@ export class ThinEngine {
             this._mustWipeVertexAttributes = false;
 
             for (var i = 0; i < this._caps.maxVertexAttribs; i++) {
-                this._gl.disableVertexAttribArray(i);
-                this._vertexAttribArraysEnabled[i] = false;
-                this._currentBufferPointers[i].active = false;
+                this.disableAttributeByIndex(i);
             }
             return;
         }
@@ -3560,9 +3663,7 @@ export class ThinEngine {
                 continue;
             }
 
-            this._gl.disableVertexAttribArray(i);
-            this._vertexAttribArraysEnabled[i] = false;
-            this._currentBufferPointers[i].active = false;
+            this.disableAttributeByIndex(i);
         }
     }
 
