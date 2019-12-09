@@ -1,1 +1,3 @@
-export * from "./webXRARHitTest";
+export * from "./WebXRHitTest";
+export * from "./WebXRAnchorSystem";
+export * from "./WebXRPlaneDetector";
