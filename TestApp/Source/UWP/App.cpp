@@ -191,7 +191,7 @@ void App::OnResuming(Platform::Object^ sender, Platform::Object^ args)
     // and state are persisted when resuming from suspend. Note that this event
     // does not occur if the app was previously terminated.
 
-    // Insert your code here.
+    m_runtime->Resume();
 }
 
 // Window event handlers.
