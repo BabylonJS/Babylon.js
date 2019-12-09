@@ -92,6 +92,14 @@ export class WebXRCamera extends FreeCamera {
         this._updateNumberOfRigCameras(pose.views.length);
         pose.views.forEach((view: any, i: number) => {
             const currentRig = <TargetCamera>this.rigCameras[i];
+            // update right and left, where applicable
+            if (!currentRig.isLeftCamera && !currentRig.isRightCamera) {
+                if (view.eye === 'right') {
+                    currentRig._isRightCamera = true;
+                } else if (view.eye === 'left') {
+                    currentRig._isLeftCamera = true;
+                }
+            }
             // Update view/projection matrix
             if (view.transform.position && view.transform.orientation) {
                 currentRig.position.copyFrom(view.transform.position);
