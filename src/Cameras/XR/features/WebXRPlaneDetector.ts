@@ -13,7 +13,6 @@ WebXRFeaturesManager.AddWebXRFeature(Name, (xrSessionManager, options) => {
 
 export interface WebXRPlaneDetectorOptions {
     worldParentNode?: TransformNode;
-    // coordinatesSpace?: Space;
 }
 
 export interface WebXRPlane {

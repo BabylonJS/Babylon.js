@@ -38,8 +38,11 @@ export class WebXRHitTest implements WebXRFeature {
         return this.XRHitTestWithRay(event.frame.session, targetRay, referenceSpace);
     }
 
-    public static XRHitTestWithRay(xrSession: XRSession, xrRay: XRRay, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]> {
-        return xrSession.requestHitTest(xrRay, referenceSpace);
+    public static XRHitTestWithRay(xrSession: XRSession, xrRay: XRRay, referenceSpace: XRReferenceSpace, filter?: (result: XRHitResult) => boolean): Promise<XRHitResult[]> {
+        return xrSession.requestHitTest(xrRay, referenceSpace).then((results) => {
+            const filterFunction = filter || ((result) => !!result.hitMatrix);
+            return results.filter(filterFunction);
+        });
     }
 
     public onHitTestResultObservable: Observable<WebXRHitResults> = new Observable();
