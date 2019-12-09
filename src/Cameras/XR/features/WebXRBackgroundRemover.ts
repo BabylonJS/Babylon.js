@@ -20,6 +20,8 @@ export interface WebXRBackgroundRemoverOptions {
 
 export class WebXRBackgroundRemover implements WebXRFeature {
 
+    public static Name = Name;
+
     public onBackgroundStateChanged: Observable<boolean> = new Observable();
 
     constructor(private xrSessionManager: WebXRSessionManager, public readonly options: WebXRBackgroundRemoverOptions = {}) {
