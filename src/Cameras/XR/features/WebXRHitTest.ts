@@ -14,7 +14,6 @@ WebXRFeaturesManager.AddWebXRFeature(Name, (xrSessionManager, options) => {
 export interface WebXRHitTestOptions {
     testOnPointerDownOnly?: boolean;
     worldParentNode?: TransformNode;
-    // coordinatesSpace?: Space;
 }
 
 export interface WebXRHitResult {
@@ -53,6 +52,7 @@ export class WebXRHitTest implements WebXRFeature {
 
     private _onSelectEnabled = false;
     private _xrFrameObserver: Nullable<Observer<XRFrame>>;
+    private _attached: boolean = false;
 
     public lastNativeXRHitResults: XRHitResult[] = [];
 
@@ -66,6 +66,10 @@ export class WebXRHitTest implements WebXRFeature {
             const direction = new Vector3(0, 0, -1);
             const mat = new Matrix();
             this._xrFrameObserver = this.xrSessionManager.onXRFrameObservable.add((frame) => {
+                // make sure we do nothing if (async) not attached
+                if (!this._attached) {
+                    return;
+                }
                 let pose = frame.getViewerPose(this.xrSessionManager.referenceSpace);
                 if (!pose) {
                     return;
@@ -80,6 +84,7 @@ export class WebXRHitTest implements WebXRFeature {
                 WebXRHitTest.XRHitTestWithRay(this.xrSessionManager.session, ray, this.xrSessionManager.referenceSpace).then(this.onHitTestResults);
             });
         }
+        this._attached = true;
 
         return true;
     }
@@ -91,6 +96,7 @@ export class WebXRHitTest implements WebXRFeature {
             this.xrSessionManager.onXRFrameObservable.remove(this._xrFrameObserver);
             this._xrFrameObserver = null;
         }
+        this._attached = false;
         return true;
     }
 
