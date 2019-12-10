@@ -38,7 +38,10 @@ vec2 sheetUnits=1./spriteMapSize;
 float spriteUnits=1./spriteCount;
 vec2 stageUnits=1./stageSize;
 for(int i=0; i<LAYERS; i++){
-float frameID=texture(tileMaps[i],(tileID+0.5)/stageSize,0.).x;
+float frameID;
+switch(i){
+#define LAYER_ID_SWITCH
+}
 vec4 animationData=texture(animationMap,vec2((frameID+0.5)/spriteCount,0.),0.);
 if(animationData.y>0.){
 mt=mod(time*animationData.z,1.0);
