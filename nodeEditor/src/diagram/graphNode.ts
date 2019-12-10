@@ -85,9 +85,9 @@ export class GraphNode {
     }
 
     public set x(value: number) {
-        if (this._x === value) {
-            return;
-        }
+        // if (this._x === value) {
+        //     return;
+        // }
         this._x = value;
         
         this._gridAlignedX = this._ownerCanvas.getGridPosition(value);
@@ -102,9 +102,9 @@ export class GraphNode {
     }
 
     public set y(value: number) {
-        if (this._y === value) {
-            return;
-        }
+        // if (this._y === value) {
+        //     return;
+        // }
 
         this._y = value;
 
@@ -282,7 +282,7 @@ export class GraphNode {
         evt.stopPropagation();
 
         for (var selectedNode of this._ownerCanvas.selectedNodes) {
-            selectedNode.cleanAccumulation(true);
+            selectedNode.cleanAccumulation();
         }
 
         this._mouseStartPointX = evt.clientX;
@@ -291,14 +291,9 @@ export class GraphNode {
         this._visual.setPointerCapture(evt.pointerId);
     }
 
-    public cleanAccumulation(reset = false) {
-        if (reset) {
-            this._x = Number.MIN_VALUE;
-            this._y = Number.MIN_VALUE;
-        }
-
-        this.x = this.gridAlignedX;
-        this.y = this.gridAlignedY;
+    public cleanAccumulation() {
+        this.x = this._ownerCanvas.getGridPosition(this.x);
+        this.y = this._ownerCanvas.getGridPosition(this.y);
     }
 
     private _onUp(evt: PointerEvent) {
