@@ -2,7 +2,6 @@
 
 #include <Shared/InputManager.h>
 #include <Babylon/RuntimeUWP.h>
-
 #include <ppltasks.h>
 
 // Main entry point for our app. Connects the app with the Windows shell and handles application lifecycle events.
@@ -45,6 +44,7 @@ private:
     Windows::ApplicationModel::Activation::FileActivatedEventArgs^ m_fileActivatedArgs;
     bool m_windowClosed;
     bool m_windowVisible;
+    float m_displayScale{ 1.f };
 };
 
 ref class Direct3DApplicationSource sealed : Windows::ApplicationModel::Core::IFrameworkViewSource

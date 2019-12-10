@@ -1,6 +1,5 @@
 #include <Babylon/Runtime.h>
 #include "RuntimeImpl.h"
-#include "Console.h"
 
 namespace Babylon
 {

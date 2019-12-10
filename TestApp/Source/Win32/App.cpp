@@ -8,11 +8,13 @@
 #include <filesystem>
 
 #include <Shared/InputManager.h>
+
+#include <Babylon/Console.h>
 #include <Babylon/RuntimeWin32.h>
 
 #define MAX_LOADSTRING 100
 
-// Global Variables:
+    // Global Variables:
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
@@ -68,15 +70,18 @@ namespace
         return arguments;
     }
 
-    static void DebugString(const char* message, Babylon::LogLevel)
-    {
-        OutputDebugStringA(message);
-    }
-
     void RefreshBabylon(HWND hWnd)
     {
         std::string rootUrl{ GetUrlFromPath(GetModulePath().parent_path().parent_path()) };
-        runtime = std::make_unique<Babylon::RuntimeWin32>(hWnd, rootUrl, DebugString);
+        runtime = std::make_unique<Babylon::RuntimeWin32>(hWnd, rootUrl);
+
+        runtime->Dispatch([](Babylon::Env& env)
+        {
+            Babylon::Console::CreateInstance(env, [](const char* message, auto)
+            {
+                OutputDebugStringA(message);
+            });
+        });
 
         inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);
         InputManager::Initialize(*runtime, *inputBuffer);

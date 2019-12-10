@@ -1,4 +1,5 @@
 #include "LibNativeBridge.h"
+#import <Babylon/Console.h>
 #import <Babylon/RuntimeApple.h>
 #import <Shared/InputManager.h>
 
@@ -23,12 +24,15 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
     NSBundle* main = [NSBundle mainBundle];
     NSURL* resourceUrl = [main resourceURL];
     runtime = std::make_unique<Babylon::RuntimeApple>(
-        CALayerPtr, 
-        [[NSString stringWithFormat:@"file://%s", [resourceUrl fileSystemRepresentation]] UTF8String],
-        [](const char* message, Babylon::LogLevel level)
+        CALayerPtr, [[NSString stringWithFormat:@"file://%s", [resourceUrl fileSystemRepresentation]] UTF8String]);
+    
+    runtime->Dispatch([](Babylon::Env& env)
+    {
+        Babylon::Console::CreateInstance(env, [](const char* message, auto)
         {
             NSLog(@"%s", message);
         });
+    });
     
     inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);
     InputManager::Initialize(*runtime, *inputBuffer);

@@ -1,5 +1,7 @@
 #include "App.h"
 
+#include <Babylon/Console.h>
+
 #include <pplawait.h>
 #include <winrt/Windows.ApplicationModel.h>
 
@@ -83,7 +85,6 @@ void App::SetWindow(CoreWindow^ window)
 
     window->KeyDown +=
         ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &App::OnKeyPressed);
-
 }
 
 // Initializes scene resources, or loads a previously saved app state.
@@ -143,9 +144,16 @@ concurrency::task<void> App::RestartRuntimeAsync(Windows::Foundation::Rect bound
     }
 
     m_runtime = std::make_unique<Babylon::RuntimeUWP>(
-        reinterpret_cast<ABI::Windows::UI::Core::ICoreWindow*>(CoreWindow::GetForCurrentThread()), 
-        rootUrl,
-        [](const char* message, Babylon::LogLevel) { OutputDebugStringA(message); });
+        reinterpret_cast<ABI::Windows::UI::Core::ICoreWindow*>(CoreWindow::GetForCurrentThread()), rootUrl);
+
+    m_runtime->Dispatch([](Babylon::Env& env)
+    {
+        Babylon::Console::CreateInstance(env, [](const char* message, auto)
+        {
+            OutputDebugStringA(message);
+        });
+    });
+
     m_inputBuffer = std::make_unique<InputManager::InputBuffer>(*m_runtime);
     InputManager::Initialize(*m_runtime, *m_inputBuffer);
 
@@ -169,7 +177,10 @@ concurrency::task<void> App::RestartRuntimeAsync(Windows::Foundation::Rect bound
         m_runtime->LoadScript(appUrl + "/Scripts/playground_runner.js");
     }
 
-    m_runtime->UpdateSize(bounds.Width, bounds.Height);
+    DisplayInformation^ displayInformation = DisplayInformation::GetForCurrentView();
+    m_displayScale = static_cast<float>(displayInformation->RawPixelsPerViewPixel);
+
+    m_runtime->UpdateSize(bounds.Width * m_displayScale, bounds.Height * m_displayScale);
 }
 
 void App::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ args)
@@ -189,14 +200,14 @@ void App::OnResuming(Platform::Object^ sender, Platform::Object^ args)
     // and state are persisted when resuming from suspend. Note that this event
     // does not occur if the app was previously terminated.
 
-    // Insert your code here.
+    m_runtime->Resume();
 }
 
 // Window event handlers.
 
 void App::OnWindowSizeChanged(CoreWindow^ /*sender*/, WindowSizeChangedEventArgs^ args)
 {
-    m_runtime->UpdateSize(args->Size.Width, args->Size.Height);
+    m_runtime->UpdateSize(args->Size.Width * m_displayScale, args->Size.Height * m_displayScale);
 }
 
 void App::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
@@ -237,8 +248,9 @@ void App::OnKeyPressed(CoreWindow^ window, KeyEventArgs^ args)
 
 void App::OnDpiChanged(DisplayInformation^ /*sender*/, Object^ /*args*/)
 {
-    // TODO: Implement.
-    //m_runtime->UpdateRenderTarget();
+    DisplayInformation^ displayInformation = DisplayInformation::GetForCurrentView();
+    m_displayScale = static_cast<float>(displayInformation->RawPixelsPerViewPixel);
+    // resize event happens after. No need to force resize here.
 }
 
 void App::OnOrientationChanged(DisplayInformation^ sender, Object^ args)
