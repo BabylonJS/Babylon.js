@@ -160,9 +160,9 @@ export class GraphFrame {
     }
 
     public set x(value: number) {
-        if (this._x === value) {
-            return;
-        }
+        // if (this._x === value) {
+        //     return;
+        // }
         this._x = value;
         
         this._gridAlignedX = this._ownerCanvas.getGridPosition(value);
@@ -174,9 +174,9 @@ export class GraphFrame {
     }
 
     public set y(value: number) {
-        if (this._y === value) {
-            return;
-        }
+        // if (this._y === value) {
+        //     return;
+        // }
 
         this._y = value;
 
@@ -337,13 +337,13 @@ export class GraphFrame {
         }
     }
 
-    public cleanAccumulation() {
-        this.x = this._gridAlignedX;
-        this.y = this._gridAlignedY;
-
+    public cleanAccumulation() {    
         for (var selectedNode of this._nodes) {
             selectedNode.cleanAccumulation();
-        }        
+        }   
+
+        this.x = this._ownerCanvas.getGridPosition(this.x);
+        this.y = this._ownerCanvas.getGridPosition(this.y);   
     }
 
     private _onDown(evt: PointerEvent) {
@@ -356,6 +356,8 @@ export class GraphFrame {
         this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
 
         this._ownerCanvas._frameIsMoving = true;
+
+        this.cleanAccumulation();
     }    
 
     private _onUp(evt: PointerEvent) {
