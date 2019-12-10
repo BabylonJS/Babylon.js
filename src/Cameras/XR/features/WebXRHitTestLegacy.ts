@@ -5,25 +5,64 @@ import { Vector3, Matrix } from '../../../Maths/math.vector';
 import { TransformNode } from '../../../Meshes/transformNode';
 import { Nullable } from '../../../types';
 
-const Name = "xr-hit-test";
+/**
+ * exported name of module (can be reused with other versions)
+ */
+export const WebXRHitTestModuleName = "xr-hit-test";
 
+// the plugin is registered at the end of the file
+
+/**
+ * Options used for hit testing
+ */
 export interface WebXRHitTestOptions {
+    /**
+     * Only test when user interacted with the scene. Default - hit test every frame
+     */
     testOnPointerDownOnly?: boolean;
+    /**
+     * The node to use to transform the local results to world coordinates
+     */
     worldParentNode?: TransformNode;
 }
 
+/**
+ * Interface defining the babylon result of raycasting/hit-test
+ */
 export interface WebXRHitResult {
+    /**
+     * The native hit test result
+     */
     xrHitResult: XRHitResult;
+    /**
+     * Transformation matrix that can be applied to a node that will put it in the hit point location
+     */
     transformationMatrix: Matrix;
 }
 
-export type WebXRHitResults = WebXRHitResult[];
-
+/**
+ * The currently-working hit-test module.
+ * Hit test (or raycasting) is used to interact with the real world.
+ * For further information read here - https://github.com/immersive-web/hit-test
+ */
 export class WebXRHitTestLegacy implements WebXRFeature {
 
-    public static readonly Name = Name;
+    /**
+     * The module's name
+     */
+    public static readonly Name = WebXRHitTestModuleName;
+    /**
+     * The (Babylon) version of this module.
+     * This is an integer representing the implementation version.
+     * This number does not correspond to the webxr specs version
+     */
     public static readonly Version = 1;
 
+    /**
+     * Execute a hit test on the current running session using a select event returned from a transient input (such as touch)
+     * @param event the (select) event to use to select with
+     * @param referenceSpace the reference space to use for this hit test
+     */
     public static XRHitTestWithSelectEvent(event: XRInputSourceEvent, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]> {
         let targetRayPose = event.frame.getPose(event.inputSource.targetRaySpace, referenceSpace);
         if (!targetRayPose) {
@@ -34,6 +73,14 @@ export class WebXRHitTestLegacy implements WebXRFeature {
         return this.XRHitTestWithRay(event.frame.session, targetRay, referenceSpace);
     }
 
+    /**
+     *
+     * @param xrSession a native xrSession that will execute this hit test
+     * @param xrRay the ray (position and direction) to use for raycasting
+     * @param referenceSpace native XR reference space to use for the hit-test
+     * @param filter filter function that will filter the results
+     * @returns a promise that resolves with an array of native XR hit result in xr coordinates system
+     */
     public static XRHitTestWithRay(xrSession: XRSession, xrRay: XRRay, referenceSpace: XRReferenceSpace, filter?: (result: XRHitResult) => boolean): Promise<XRHitResult[]> {
         return xrSession.requestHitTest(xrRay, referenceSpace).then((results) => {
             const filterFunction = filter || ((result) => !!result.hitMatrix);
@@ -41,16 +88,35 @@ export class WebXRHitTestLegacy implements WebXRFeature {
         });
     }
 
-    public onHitTestResultObservable: Observable<WebXRHitResults> = new Observable();
+    /**
+     * Triggered when new babylon (transformed) hit test results are available
+     */
+    public onHitTestResultObservable: Observable<WebXRHitResult[]> = new Observable();
 
-    constructor(private xrSessionManager: WebXRSessionManager, public readonly options: WebXRHitTestOptions = {}) { }
+    /**
+     * Creates a new instance of the (legacy version) hit test feature
+     * @param xrSessionManager an instance of WebXRSessionManager
+     * @param options options to use when constructing this feature
+     */
+    constructor(private xrSessionManager: WebXRSessionManager,
+        /**
+         * options to use when constructing this feature
+         */
+        public readonly options: WebXRHitTestOptions = {}) { }
 
     private _onSelectEnabled = false;
     private _xrFrameObserver: Nullable<Observer<XRFrame>>;
     private _attached: boolean = false;
 
+    /**
+     * Populated with the last native XR Hit Results
+     */
     public lastNativeXRHitResults: XRHitResult[] = [];
 
+    /**
+     * attach this feature
+     * Will usually be called by the features manager
+     */
     attach(): boolean {
         if (this.options.testOnPointerDownOnly) {
             this.xrSessionManager.session.addEventListener('select', this.onSelect, false);
@@ -84,6 +150,10 @@ export class WebXRHitTestLegacy implements WebXRFeature {
         return true;
     }
 
+    /**
+     * detach this feature.
+     * Will usually be called by the features manager
+     */
     detach(): boolean {
         // disable select
         this._onSelectEnabled = false;
@@ -124,6 +194,9 @@ export class WebXRHitTestLegacy implements WebXRFeature {
         WebXRHitTestLegacy.XRHitTestWithSelectEvent(event, this.xrSessionManager.referenceSpace);
     }
 
+    /**
+     * Dispose this feature and all of the resources attached
+     */
     dispose(): void {
         this.detach();
         this.onHitTestResultObservable.clear();
@@ -133,4 +206,4 @@ export class WebXRHitTestLegacy implements WebXRFeature {
 //register the plugin versions
 WebXRFeaturesManager.AddWebXRFeature(WebXRHitTestLegacy.Name, (xrSessionManager, options) => {
     return () => new WebXRHitTestLegacy(xrSessionManager, options);
-}, WebXRHitTestLegacy.Version);
+}, WebXRHitTestLegacy.Version, true);
