@@ -2168,27 +2168,28 @@ export class ThinEngine {
         const program = pipelineContext.program!;
 
         var linked = context.getProgramParameter(program, context.LINK_STATUS);
-
         if (!linked) { // Get more info
-
             // Vertex
             if (!this._gl.getShaderParameter(vertexShader, this._gl.COMPILE_STATUS)) {
-                let log = this._gl.getShaderInfoLog(vertexShader);
+                const log = this._gl.getShaderInfoLog(vertexShader);
                 if (log) {
+                    pipelineContext.vertexCompilationError = log;
                     throw new Error("VERTEX SHADER " + log);
                 }
             }
 
             // Fragment
             if (!this._gl.getShaderParameter(fragmentShader, this._gl.COMPILE_STATUS)) {
-                let log = this._gl.getShaderInfoLog(fragmentShader);
+                const log = this._gl.getShaderInfoLog(fragmentShader);
                 if (log) {
+                    pipelineContext.fragmentCompilationError = log;
                     throw new Error("FRAGMENT SHADER " + log);
                 }
             }
 
             var error = context.getProgramInfoLog(program);
             if (error) {
+                pipelineContext.programLinkError = error;
                 throw new Error(error);
             }
         }
@@ -2200,6 +2201,7 @@ export class ThinEngine {
             if (!validated) {
                 var error = context.getProgramInfoLog(program);
                 if (error) {
+                    pipelineContext.programValidationError = error;
                     throw new Error(error);
                 }
             }
