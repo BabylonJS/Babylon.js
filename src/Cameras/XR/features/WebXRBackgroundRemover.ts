@@ -4,36 +4,83 @@ import { AbstractMesh } from '../../../Meshes/abstractMesh';
 import { Observable } from '../../../Misc/observable';
 
 const Name = "xr-background-remover";
-//register the plugin
-WebXRFeaturesManager.AddWebXRFeature(Name, (xrSessionManager, options) => {
-    return () => new WebXRBackgroundRemover(xrSessionManager, options);
-});
 
+/**
+ * Options interface for the background remover plugin
+ */
 export interface WebXRBackgroundRemoverOptions {
+    /**
+     * don't disable the environment helper
+     */
     ignoreEnvironmentHelper?: boolean;
+    /**
+     * flags to configure the removal of the environment helper.
+     * If not set, the entire background will be removed. If set, flags should be set as well.
+     */
     environmentHelperRemovalFlags?: {
+        /**
+         * Should the skybox be removed (default false)
+         */
         skyBox?: boolean;
+        /**
+         * Should the ground be removed (default false)
+         */
         ground?: boolean;
     };
+    /**
+     * Further background meshes to disable when entering AR
+     */
     backgroundMeshes?: AbstractMesh[];
 }
 
+/**
+ * A module that will automatically disable background meshes when entering AR and will enable them when leaving AR.
+ */
 export class WebXRBackgroundRemover implements WebXRFeature {
 
-    public static Name = Name;
+    /**
+     * The module's name
+     */
+    public static readonly Name = Name;
+    /**
+     * The (Babylon) version of this module.
+     * This is an integer representing the implementation version.
+     * This number does not correspond to the webxr specs version
+     */
+    public static readonly Version = 1;
 
-    public onBackgroundStateChanged: Observable<boolean> = new Observable();
+    /**
+     * registered observers will be triggered when the background state changes
+     */
+    public onBackgroundStateChangedObservable: Observable<boolean> = new Observable();
 
-    constructor(private xrSessionManager: WebXRSessionManager, public readonly options: WebXRBackgroundRemoverOptions = {}) {
+    /**
+     * constructs a new background remover module
+     * @param xrSessionManager the session manager for this module
+     * @param options read-only options to be used in this module
+     */
+    constructor(private xrSessionManager: WebXRSessionManager,
+        /**
+         * read-only options to be used in this module
+         */
+        public readonly options: WebXRBackgroundRemoverOptions = {}) {
 
     }
 
+    /**
+     * attach this feature
+     * Will usually be called by the features manager
+     */
     attach(): boolean {
         this.setBackgroundState(false);
 
         return true;
     }
 
+    /**
+     * detach this feature.
+     * Will usually be called by the features manager
+     */
     detach(): boolean {
         this.setBackgroundState(true);
 
@@ -68,9 +115,18 @@ export class WebXRBackgroundRemover implements WebXRFeature {
             this.options.backgroundMeshes.forEach((mesh) => mesh.setEnabled(newState));
         }
 
-        this.onBackgroundStateChanged.notifyObservers(newState);
+        this.onBackgroundStateChangedObservable.notifyObservers(newState);
     }
+
+    /**
+     * Dispose this feature and all of the resources attached
+     */
     dispose(): void {
-        this.onBackgroundStateChanged.clear();
+        this.onBackgroundStateChangedObservable.clear();
     }
 }
+
+//register the plugin
+WebXRFeaturesManager.AddWebXRFeature(WebXRBackgroundRemover.Name, (xrSessionManager, options) => {
+    return () => new WebXRBackgroundRemover(xrSessionManager, options);
+}, WebXRBackgroundRemover.Version, true);
