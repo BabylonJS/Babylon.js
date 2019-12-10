@@ -2,7 +2,6 @@
 
 #include <Shared/InputManager.h>
 #include <Babylon/RuntimeUWP.h>
-
 #include <ppltasks.h>
 
 // Main entry point for our app. Connects the app with the Windows shell and handles application lifecycle events.

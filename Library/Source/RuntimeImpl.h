@@ -21,7 +21,7 @@ namespace Babylon
         static RuntimeImpl& GetRuntimeImplFromJavaScript(Napi::Env);
         static NativeWindow& GetNativeWindowFromJavaScript(Napi::Env);
 
-        RuntimeImpl(void* nativeWindowPtr, const std::string& rootUrl, LogCallback&& logCallback);
+        RuntimeImpl(void* nativeWindowPtr, const std::string& rootUrl);
         virtual ~RuntimeImpl();
 
         void UpdateSize(float width, float height);
@@ -73,7 +73,6 @@ namespace Babylon
         // is destroyed.
         Babylon::Env* m_env{};
         const std::string m_rootUrl{};
-        LogCallback m_logCallback{};
     };
 }
     

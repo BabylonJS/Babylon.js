@@ -1,5 +1,7 @@
 #include "App.h"
 
+#include <Babylon/Console.h>
+
 #include <pplawait.h>
 #include <winrt/Windows.ApplicationModel.h>
 
@@ -142,9 +144,16 @@ concurrency::task<void> App::RestartRuntimeAsync(Windows::Foundation::Rect bound
     }
 
     m_runtime = std::make_unique<Babylon::RuntimeUWP>(
-        reinterpret_cast<ABI::Windows::UI::Core::ICoreWindow*>(CoreWindow::GetForCurrentThread()), 
-        rootUrl,
-        [](const char* message, Babylon::LogLevel) { OutputDebugStringA(message); });
+        reinterpret_cast<ABI::Windows::UI::Core::ICoreWindow*>(CoreWindow::GetForCurrentThread()), rootUrl);
+
+    m_runtime->Dispatch([](Babylon::Env& env)
+    {
+        Babylon::Console::CreateInstance(env, [](const char* message, auto)
+        {
+            OutputDebugStringA(message);
+        });
+    });
+
     m_inputBuffer = std::make_unique<InputManager::InputBuffer>(*m_runtime);
     InputManager::Initialize(*m_runtime, *m_inputBuffer);
 
