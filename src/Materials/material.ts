@@ -624,6 +624,7 @@ export class Material implements IAnimatable {
      * Locks updates for the material
      */
     public freeze(): void {
+        this._wasPreviouslyReady = false;
         this.checkReadyOnlyOnce = true;
     }
 
@@ -631,6 +632,7 @@ export class Material implements IAnimatable {
      * Unlocks updates for the material
      */
     public unfreeze(): void {
+        this._wasPreviouslyReady = false;
         this.checkReadyOnlyOnce = false;
     }
 
