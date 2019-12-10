@@ -69,8 +69,8 @@ interface XRSession extends XRAnchorCreator {
     requestHitTest(ray: XRRay, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
 
     updateWorldTrackingState(options: {
-        planeDetectionState?: { enabled: boolean }
-    })
+        planeDetectionState?: { enabled: boolean; }
+    }): void;
 }
 
 interface XRReferenceSpace extends XRSpace {
@@ -91,7 +91,7 @@ interface XRFrame {
     // Planes
     worldInformation: {
         detectedPlanes?: XRPlaneSet;
-    }
+    };
 }
 
 interface XRViewerPose extends XRPose {
@@ -123,8 +123,8 @@ interface XRWebGLLayer {
     getViewport: Function;
 }
 
-class XRRigidTransform {
-    constructor(matrix: Float32Array): XRRigidTransform;
+declare class XRRigidTransform {
+    constructor(matrix: Float32Array);
     position: DOMPointReadOnly;
     orientation: DOMPointReadOnly;
     matrix: Float32Array;
@@ -149,8 +149,8 @@ interface XRInputSourceEvent extends Event {
 }
 
 // Experimental(er) features
-class XRRay {
-    constructor(transformOrOrigin: XRRigidTransform | DOMPointReadOnly, direction?: DOMPointReadOnly): XRRay;
+declare class XRRay {
+    constructor(transformOrOrigin: XRRigidTransform | DOMPointReadOnly, direction?: DOMPointReadOnly);
     origin: DOMPointReadOnly;
     direction: DOMPointReadOnly;
     matrix: Float32Array;

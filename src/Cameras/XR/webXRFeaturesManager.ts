@@ -8,11 +8,15 @@ export interface WebXRFeature extends IDisposable {
     /**
      * Attach the feature to the session
      * Will usually be called by the features manager
+     *
+     * @returns true if successful.
      */
     attach(): boolean;
     /**
      * Detach the feature from the session
      * Will usually be called by the features manager
+     *
+     * @returns true if successful.
      */
     detach(): boolean;
 }
@@ -81,7 +85,6 @@ export class WebXRFeaturesManager implements IDisposable {
      * Return the latest unstable version of this feature
      * @param featureName the name of the feature to search
      * @returns the version number. if not found will return -1
-     * @static
      */
     public static GetLatestVersionOfFeature(featureName: string): number {
         return (this._AvailableFeatures[featureName] && this._AvailableFeatures[featureName].latest) || -1;
@@ -91,7 +94,6 @@ export class WebXRFeaturesManager implements IDisposable {
      * Return the latest stable version of this feature
      * @param featureName the name of the feature to search
      * @returns the version number. if not found will return -1
-     * @static
      */
     public static GetStableVersionOfFeature(featureName: string): number {
         return (this._AvailableFeatures[featureName] && this._AvailableFeatures[featureName].stable) || -1;
@@ -100,7 +102,6 @@ export class WebXRFeaturesManager implements IDisposable {
     /**
      * Can be used to return the list of features currently registered
      *
-     * @static
      * @returns an Array of available features
      */
     public static GetAvailableFeatures() {
@@ -213,6 +214,7 @@ export class WebXRFeaturesManager implements IDisposable {
     /**
      * Used to disable an already-enabled feature
      * @param featureName the feature to disable
+     * @returns true if disable was successful
      */
     public disableFeature(featureName: string | { Name: string }): boolean {
         const name = typeof featureName === 'string' ? featureName : featureName.Name;
@@ -261,8 +263,9 @@ export class WebXRFeaturesManager implements IDisposable {
     /**
      * get the implementation of an enabled feature.
      * @param featureName the name of the feature to load
+     * @returns the feature class, if found
      */
-    public getEnabledFeature(featureName: string) {
+    public getEnabledFeature(featureName: string): WebXRFeature {
         return this._features[featureName] && this._features[featureName].featureImplementation;
     }
 

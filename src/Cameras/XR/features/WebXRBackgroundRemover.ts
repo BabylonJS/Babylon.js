@@ -70,6 +70,8 @@ export class WebXRBackgroundRemover implements WebXRFeature {
     /**
      * attach this feature
      * Will usually be called by the features manager
+     *
+     * @returns true if successful.
      */
     attach(): boolean {
         this.setBackgroundState(false);
@@ -80,6 +82,8 @@ export class WebXRBackgroundRemover implements WebXRFeature {
     /**
      * detach this feature.
      * Will usually be called by the features manager
+     *
+     * @returns true if successful.
      */
     detach(): boolean {
         this.setBackgroundState(true);

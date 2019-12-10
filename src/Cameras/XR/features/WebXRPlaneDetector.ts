@@ -11,6 +11,9 @@ const Name = "xr-plane-detector";
  * Options used in the plane detector module
  */
 export interface WebXRPlaneDetectorOptions {
+    /**
+     * The node to use to transform the local results to world coordinates
+     */
     worldParentNode?: TransformNode;
 }
 
@@ -78,7 +81,7 @@ export class WebXRPlaneDetector implements WebXRFeature {
     private _observerTracked: Nullable<Observer<XRFrame>>;
 
     /**
-     *
+     * construct a new Plane Detector
      * @param xrSessionManager an instance of xr Session manager
      * @param options configuration to use when constructing this feature
      */
@@ -97,6 +100,8 @@ export class WebXRPlaneDetector implements WebXRFeature {
     /**
      * attach this feature
      * Will usually be called by the features manager
+     *
+     * @returns true if successful.
      */
     attach(): boolean {
 
@@ -144,6 +149,8 @@ export class WebXRPlaneDetector implements WebXRFeature {
     /**
      * detach this feature.
      * Will usually be called by the features manager
+     *
+     * @returns true if successful.
      */
     detach(): boolean {
         this._attached = false;
