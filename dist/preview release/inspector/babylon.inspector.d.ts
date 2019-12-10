@@ -33,6 +33,9 @@ declare module INSPECTOR {
         onInspectorClosedObservable: BABYLON.Observable<BABYLON.Scene>;
         onTabChangedObservable: BABYLON.Observable<number>;
         onPluginActivatedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync>>;
+        sceneImportDefaults: {
+            [key: string]: any;
+        };
         validationResults: BABYLON.GLTF2.IGLTFValidationResults;
         onValidationResultsUpdatedObservable: BABYLON.Observable<BABYLON.GLTF2.IGLTFValidationResults>;
         onExtensionLoadedObservable: BABYLON.Observable<BABYLON.IGLTFLoaderExtension>;
@@ -1299,6 +1302,7 @@ declare module INSPECTOR {
         constructor(props: INodeMaterialPropertyGridComponentProps);
         edit(): void;
         renderTextures(): JSX.Element | null;
+        renderInputBlock(block: BABYLON.InputBlock): JSX.Element | null;
         renderInputValues(): JSX.Element | null;
         render(): JSX.Element;
     }
@@ -1377,6 +1381,20 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IFileMultipleButtonLineComponentProps {
+        label: string;
+        onClick: (event: any) => void;
+        accept: string;
+    }
+    export class FileMultipleButtonLineComponent extends React.Component<IFileMultipleButtonLineComponentProps> {
+        private static _IDGenerator;
+        private _id;
+        constructor(props: IFileMultipleButtonLineComponentProps);
+        onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export class ToolsTabComponent extends PaneComponent {
         private _videoRecorder;
         private _screenShotSize;
@@ -1388,6 +1406,7 @@ declare module INSPECTOR {
         captureScreenshot(): void;
         captureRender(): void;
         recordVideo(): void;
+        importAnimations(event: any): void;
         shouldExport(node: BABYLON.Node): boolean;
         exportGLTF(): void;
         exportBabylon(): void;
@@ -1414,6 +1433,7 @@ declare module INSPECTOR {
         onPopup?: () => void;
         onClose?: () => void;
         globalState?: GlobalState;
+        initialTab?: BABYLON.DebugLayerTab;
     }
     export class ActionTabsComponent extends React.Component<IActionTabsComponentProps, {
         selectedEntity: any;
@@ -1486,7 +1506,7 @@ declare module INSPECTOR {
     export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComponentProps, {
         isActive: boolean;
     }> {
-        private _onActiveCameraObserver;
+        private _onBeforeRenderObserver;
         constructor(props: ICameraTreeItemComponentProps);
         setActive(): void;
         componentDidMount(): void;
@@ -1795,6 +1815,7 @@ declare module INSPECTOR {
         onClose: () => void;
         onPopup: () => void;
         extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        initialTab?: BABYLON.DebugLayerTab;
     }
     export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps> {
         private _once;

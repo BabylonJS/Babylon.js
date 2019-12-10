@@ -44,6 +44,9 @@ declare module "babylonjs-inspector/components/globalState" {
         onInspectorClosedObservable: Observable<Scene>;
         onTabChangedObservable: Observable<number>;
         onPluginActivatedObserver: Nullable<Observer<ISceneLoaderPlugin | ISceneLoaderPluginAsync>>;
+        sceneImportDefaults: {
+            [key: string]: any;
+        };
         validationResults: IGLTFValidationResults;
         onValidationResultsUpdatedObservable: Observable<IGLTFValidationResults>;
         onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
@@ -1675,6 +1678,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
     interface INodeMaterialPropertyGridComponentProps {
         globalState: GlobalState;
         material: NodeMaterial;
@@ -1687,6 +1691,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         constructor(props: INodeMaterialPropertyGridComponentProps);
         edit(): void;
         renderTextures(): JSX.Element | null;
+        renderInputBlock(block: InputBlock): JSX.Element | null;
         renderInputValues(): JSX.Element | null;
         render(): JSX.Element;
     }
@@ -1778,6 +1783,21 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/tools/gltfCompone
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/lines/fileMultipleButtonLineComponent" {
+    import * as React from "react";
+    interface IFileMultipleButtonLineComponentProps {
+        label: string;
+        onClick: (event: any) => void;
+        accept: string;
+    }
+    export class FileMultipleButtonLineComponent extends React.Component<IFileMultipleButtonLineComponentProps> {
+        private static _IDGenerator;
+        private _id;
+        constructor(props: IFileMultipleButtonLineComponentProps);
+        onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/toolsTabComponent" {
     import { PaneComponent, IPaneComponentProps } from "babylonjs-inspector/components/actionTabs/paneComponent";
     import { Node } from "babylonjs/node";
@@ -1792,6 +1812,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/toolsTabComponent
         captureScreenshot(): void;
         captureRender(): void;
         recordVideo(): void;
+        importAnimations(event: any): void;
         shouldExport(node: Node): boolean;
         exportGLTF(): void;
         exportBabylon(): void;
@@ -1811,6 +1832,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/settingsTabCompon
 declare module "babylonjs-inspector/components/actionTabs/actionTabsComponent" {
     import * as React from "react";
     import { Scene } from "babylonjs/scene";
+    import { DebugLayerTab } from "babylonjs/Debug/debugLayer";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     interface IActionTabsComponentProps {
         scene?: Scene;
@@ -1822,6 +1844,7 @@ declare module "babylonjs-inspector/components/actionTabs/actionTabsComponent" {
         onPopup?: () => void;
         onClose?: () => void;
         globalState?: GlobalState;
+        initialTab?: DebugLayerTab;
     }
     export class ActionTabsComponent extends React.Component<IActionTabsComponentProps, {
         selectedEntity: any;
@@ -1904,7 +1927,7 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/cameraTree
     export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComponentProps, {
         isActive: boolean;
     }> {
-        private _onActiveCameraObserver;
+        private _onBeforeRenderObserver;
         constructor(props: ICameraTreeItemComponentProps);
         setActive(): void;
         componentDidMount(): void;
@@ -2263,7 +2286,7 @@ declare module "babylonjs-inspector/components/embedHost/embedHostComponent" {
     import * as React from "react";
     import { Scene } from "babylonjs/scene";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { IExplorerExtensibilityGroup } from 'babylonjs/Debug/debugLayer';
+    import { IExplorerExtensibilityGroup, DebugLayerTab } from 'babylonjs/Debug/debugLayer';
     interface IEmbedHostComponentProps {
         scene: Scene;
         globalState: GlobalState;
@@ -2273,6 +2296,7 @@ declare module "babylonjs-inspector/components/embedHost/embedHostComponent" {
         onClose: () => void;
         onPopup: () => void;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
+        initialTab?: DebugLayerTab;
     }
     export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps> {
         private _once;
@@ -2362,6 +2386,9 @@ declare module INSPECTOR {
         onInspectorClosedObservable: BABYLON.Observable<BABYLON.Scene>;
         onTabChangedObservable: BABYLON.Observable<number>;
         onPluginActivatedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync>>;
+        sceneImportDefaults: {
+            [key: string]: any;
+        };
         validationResults: BABYLON.GLTF2.IGLTFValidationResults;
         onValidationResultsUpdatedObservable: BABYLON.Observable<BABYLON.GLTF2.IGLTFValidationResults>;
         onExtensionLoadedObservable: BABYLON.Observable<BABYLON.IGLTFLoaderExtension>;
@@ -3628,6 +3655,7 @@ declare module INSPECTOR {
         constructor(props: INodeMaterialPropertyGridComponentProps);
         edit(): void;
         renderTextures(): JSX.Element | null;
+        renderInputBlock(block: BABYLON.InputBlock): JSX.Element | null;
         renderInputValues(): JSX.Element | null;
         render(): JSX.Element;
     }
@@ -3706,6 +3734,20 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IFileMultipleButtonLineComponentProps {
+        label: string;
+        onClick: (event: any) => void;
+        accept: string;
+    }
+    export class FileMultipleButtonLineComponent extends React.Component<IFileMultipleButtonLineComponentProps> {
+        private static _IDGenerator;
+        private _id;
+        constructor(props: IFileMultipleButtonLineComponentProps);
+        onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export class ToolsTabComponent extends PaneComponent {
         private _videoRecorder;
         private _screenShotSize;
@@ -3717,6 +3759,7 @@ declare module INSPECTOR {
         captureScreenshot(): void;
         captureRender(): void;
         recordVideo(): void;
+        importAnimations(event: any): void;
         shouldExport(node: BABYLON.Node): boolean;
         exportGLTF(): void;
         exportBabylon(): void;
@@ -3743,6 +3786,7 @@ declare module INSPECTOR {
         onPopup?: () => void;
         onClose?: () => void;
         globalState?: GlobalState;
+        initialTab?: BABYLON.DebugLayerTab;
     }
     export class ActionTabsComponent extends React.Component<IActionTabsComponentProps, {
         selectedEntity: any;
@@ -3815,7 +3859,7 @@ declare module INSPECTOR {
     export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComponentProps, {
         isActive: boolean;
     }> {
-        private _onActiveCameraObserver;
+        private _onBeforeRenderObserver;
         constructor(props: ICameraTreeItemComponentProps);
         setActive(): void;
         componentDidMount(): void;
@@ -4124,6 +4168,7 @@ declare module INSPECTOR {
         onClose: () => void;
         onPopup: () => void;
         extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        initialTab?: BABYLON.DebugLayerTab;
     }
     export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps> {
         private _once;

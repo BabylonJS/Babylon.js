@@ -93,6 +93,20 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <LineContainerComponent title="GENERAL">
                             <TextInputLineComponent globalState={this.props.globalState} label="Name" propertyName="name" target={this.state.currentFrame} />
                             <Color3LineComponent label="Color" target={this.state.currentFrame} propertyName="color"></Color3LineComponent>
+                            {
+                                !this.state.currentFrame.isCollapsed &&
+                                <ButtonLineComponent label="Collapse" onClick={() => {
+                                        this.state.currentFrame!.isCollapsed = true;
+                                        this.forceUpdate();
+                                    }} />
+                            }
+                            {
+                                this.state.currentFrame.isCollapsed &&
+                                <ButtonLineComponent label="Expand" onClick={() => {
+                                        this.state.currentFrame!.isCollapsed = false;
+                                        this.forceUpdate();
+                                    }} />
+                            }
                         </LineContainerComponent>
                     </div>
                 </div>

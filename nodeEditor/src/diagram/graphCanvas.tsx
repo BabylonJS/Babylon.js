@@ -27,7 +27,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _hostCanvas: HTMLDivElement;
     private _graphCanvas: HTMLDivElement;
     private _selectionContainer: HTMLDivElement;
-    private _groupContainer: HTMLDivElement;
+    private _frameContainer: HTMLDivElement;
     private _svgCanvas: HTMLElement;
     private _rootContainer: HTMLDivElement;
     private _nodes: GraphNode[] = [];
@@ -55,6 +55,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _altKeyIsPressed = false;
     private _ctrlKeyIsPressed = false;
     private _oldY = -1;
+
+    public _frameIsMoving = false;
 
     public get gridSize() {
         return this._gridSize;
@@ -139,8 +141,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         return this._selectionContainer;
     }
 
-    public get groupContainer() {
-        return this._groupContainer;
+    public get frameContainer() {
+        return this._frameContainer;
     }
     
 
@@ -364,7 +366,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this._graphCanvas = this.props.globalState.hostDocument.getElementById("graph-canvas-container") as HTMLDivElement;
         this._svgCanvas = this.props.globalState.hostDocument.getElementById("graph-svg-container") as HTMLElement;        
         this._selectionContainer = this.props.globalState.hostDocument.getElementById("selection-container") as HTMLDivElement;   
-        this._groupContainer = this.props.globalState.hostDocument.getElementById("group-container") as HTMLDivElement;        
+        this._frameContainer = this.props.globalState.hostDocument.getElementById("frame-container") as HTMLDivElement;        
         
         this.gridSize = DataStorage.ReadNumber("GridSize", 20);
         this.updateTransform();
@@ -399,7 +401,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             return;
         }
 
-        // Candidate group box
+        // Candidate frame box
         if (this._frameCandidate) {
             const rootRect = this.canvasContainer.getBoundingClientRect();      
 
@@ -495,11 +497,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             return;
         }
 
-        // Group?
+        // Frame?
         if (evt.currentTarget === this._hostCanvas && evt.shiftKey) {
             this._frameCandidate = this.props.globalState.hostDocument.createElement("div");
-            this._frameCandidate.classList.add("group-box");
-            this._groupContainer.appendChild(this._frameCandidate);
+            this._frameCandidate.classList.add("frame-box");
+            this._frameContainer.appendChild(this._frameCandidate);
 
             const rootRect = this.canvasContainer.getBoundingClientRect();      
             this._selectionStartX = (evt.pageX - rootRect.left);
@@ -545,8 +547,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
 
         if (this._frameCandidate) {            
-            let newGroup = new GraphFrame(this._frameCandidate, this);
-            this._frames.push(newGroup);
+            let newFrame = new GraphFrame(this._frameCandidate, this);
+            this._frames.push(newFrame);
 
             this._frameCandidate.parentElement!.removeChild(this._frameCandidate);
             this._frameCandidate = null;
@@ -712,7 +714,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 <div id="graph-container">
                     <div id="graph-canvas-container">
                     </div>     
-                    <div id="group-container">                        
+                    <div id="frame-container">                        
                     </div>
                     <svg id="graph-svg-container">
                     </svg>                    

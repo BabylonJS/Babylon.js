@@ -174,7 +174,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                 return;
             }
 
-            if (!evt.ctrlKey) {
+            if (!evt.ctrlKey || this.props.globalState.blockKeyboardEvents) {
                 return;
             }
 
@@ -303,8 +303,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         if (!editorData || !editorData.locations) {
             this._graphCanvas.distributeGraph();
         } else {
-            this._graphCanvas.processEditorData(editorData);
-
             // Locations
             for (var location of editorData.locations) {
                 for (var node of this._graphCanvas.nodes) {
@@ -316,6 +314,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     }
                 }
             }
+
+            this._graphCanvas.processEditorData(editorData);
         }
     }
 
@@ -388,6 +388,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         newNode.y = y / this._graphCanvas.zoom;
         newNode.cleanAccumulation();
 
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         this.props.globalState.onSelectionChangedObservable.notifyObservers(newNode);
 
         let block = newNode.block;

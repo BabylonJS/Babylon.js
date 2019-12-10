@@ -5,6 +5,7 @@ import { Observer } from 'babylonjs/Misc/observable';
 import { NodeLink } from './nodeLink';
 import { IFrameData } from '../nodeLocationInfo';
 import { Color3 } from 'babylonjs/Maths/math.color';
+import { NodePort } from './nodePort';
 
 export class GraphFrame {
     private _name: string;
@@ -17,11 +18,115 @@ export class GraphFrame {
     private _height: number;
     public element: HTMLDivElement;   
     private _headerElement: HTMLDivElement;    
+    private _portContainer: HTMLDivElement;    
+    private _outputPortContainer: HTMLDivElement;    
+    private _inputPortContainer: HTMLDivElement;    
     private _nodes: GraphNode[] = [];
     private _ownerCanvas: GraphCanvasComponent;
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null;
     private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame>>>;   
+    private _isCollapsed = false;
+    private _ports: NodePort[] = [];
+    private _controlledPorts: NodePort[] = [];
+
+    public get isCollapsed() {
+        return this._isCollapsed;
+    }
+
+    private _createInputPort(port: NodePort, node: GraphNode) {
+        let localPort = NodePort.CreatePortElement(port.connectionPoint, node, this._inputPortContainer, null, this._ownerCanvas.globalState)
+        this._ports.push(localPort);
+
+        port.delegatedPort = localPort;
+        this._controlledPorts.push(port);
+    }
+   
+    public set isCollapsed(value: boolean) {
+        if (this._isCollapsed === value) {
+            return;
+        }
+
+        this._isCollapsed = value;
+        this._ownerCanvas._frameIsMoving = true;
+
+        // Need to delegate the outside ports to the frame
+        if (value) {
+            this.element.classList.add("collapsed");
+                        
+            this._moveFrame((this.width - 200) / 2, 0);
+
+            for (var node of this._nodes) {
+                node.isVisible = false;
+                for (var port of node.outputPorts) { // Output
+                    if (port.connectionPoint.hasEndpoints) {
+                        let portAdded = false;
+
+                        for (var link of node.links) {
+                            if (link.portA === port && this.nodes.indexOf(link.nodeB!) === -1) {
+                                let localPort: NodePort;
+
+                                if (!portAdded) {
+                                    portAdded = true;
+                                    localPort = NodePort.CreatePortElement(port.connectionPoint, link.nodeB!, this._outputPortContainer, null, this._ownerCanvas.globalState);
+                                    this._ports.push(localPort);
+                                } else {
+                                    localPort = this._ports.filter(p => p.connectionPoint === port.connectionPoint)[0];
+                                }
+
+                                port.delegatedPort = localPort;
+                                this._controlledPorts.push(port);
+                                link.isVisible = true;
+                            }
+                        }
+                    } else {
+                        let localPort = NodePort.CreatePortElement(port.connectionPoint, node, this._outputPortContainer, null, this._ownerCanvas.globalState)
+                        this._ports.push(localPort);
+                        port.delegatedPort = localPort;
+                        this._controlledPorts.push(port);
+                    }
+                }
+
+                for (var port of node.inputPorts) { // Input
+                    if (port.connectionPoint.isConnected) {
+                        for (var link of node.links) {
+                            if (link.portB === port && this.nodes.indexOf(link.nodeA) === -1) {
+                                this._createInputPort(port, node);
+                                link.isVisible = true;
+                            }
+                        }
+                    } else {
+                        this._createInputPort(port, node);
+                    }
+                }               
+            }
+        } else {
+            this.element.classList.remove("collapsed");
+            this._outputPortContainer.innerHTML = "";
+            this._inputPortContainer.innerHTML = "";
+
+            this._ports.forEach(p => {
+                p.dispose();
+            });
+
+            this._controlledPorts.forEach(port => {
+                port.delegatedPort = null;
+                port.refresh();
+            })
+
+            this._ports = [];
+            this._controlledPorts = [];
+
+            for (var node of this._nodes) {
+                node.isVisible = true;
+            }
+                        
+            this._moveFrame(-(this.width - 200) / 2, 0);
+        }
+
+        this.cleanAccumulation();
+        this._ownerCanvas._frameIsMoving = false;
+    }
 
     public get nodes() {
         return this._nodes;
@@ -106,16 +211,31 @@ export class GraphFrame {
         this.element.style.height = `${gridAlignedBottom - this._gridAlignedY}px`;
     }
 
-    public constructor(candidate: Nullable<HTMLDivElement>, canvas: GraphCanvasComponent) {
+    public constructor(candidate: Nullable<HTMLDivElement>, canvas: GraphCanvasComponent, doNotCaptureNodes = false) {
         this._ownerCanvas = canvas;
-        const root = canvas.groupContainer;
+        const root = canvas.frameContainer;
         this.element = root.ownerDocument!.createElement("div");        
-        this.element.classList.add("group-box");
+        this.element.classList.add("frame-box");
         root.appendChild(this.element);
 
         this._headerElement = root.ownerDocument!.createElement("div");  
-        this._headerElement.classList.add("group-box-header");
+        this._headerElement.classList.add("frame-box-header");
+        this._headerElement.addEventListener("dblclick", () => {
+            this.isCollapsed = !this.isCollapsed;
+        });
         this.element.appendChild(this._headerElement);
+
+        this._portContainer = root.ownerDocument!.createElement("div");  
+        this._portContainer.classList.add("port-container");
+        this.element.appendChild(this._portContainer);
+
+        this._outputPortContainer = root.ownerDocument!.createElement("div");  
+        this._outputPortContainer.classList.add("outputsContainer");
+        this._portContainer.appendChild(this._outputPortContainer);
+
+        this._inputPortContainer = root.ownerDocument!.createElement("div");  
+        this._inputPortContainer.classList.add("inputsContainer");
+        this._portContainer.appendChild(this._inputPortContainer);
 
         this.name = "Frame";
         this.color = Color3.FromInts(72, 72, 72);
@@ -139,12 +259,54 @@ export class GraphFrame {
             } else {
                 this.element.classList.remove("selected");
             }
-        });        
+        });  
+                
+        // Get nodes
+        if (!doNotCaptureNodes) {
+            this.refresh();
+        }
+    }
+
+    public refresh() {
+        this._nodes = [];
+        this._ownerCanvas.globalState.onFrameCreated.notifyObservers(this);
+    }
+
+    public addNode(node: GraphNode) {
+        let index = this.nodes.indexOf(node);
+
+        if (index === -1) {
+            this.nodes.push(node);
+        }
+    }
+
+    public removeNode(node: GraphNode) {
+        let index = this.nodes.indexOf(node);
+
+        if (index > -1) {
+            this.nodes.splice(index, 1);
+        }
+    }
+
+    public syncNode(node: GraphNode) {
+        if (this.isCollapsed) {
+            return;
+        }
+
+        if (node.isOverlappingFrame(this)) {
+            this.addNode(node);
+        } else {
+            this.removeNode(node);
+        }
     }
 
     public cleanAccumulation() {
         this.x = this._gridAlignedX;
         this.y = this._gridAlignedY;
+
+        for (var selectedNode of this._nodes) {
+            selectedNode.cleanAccumulation();
+        }        
     }
 
     private _onDown(evt: PointerEvent) {
@@ -156,22 +318,28 @@ export class GraphFrame {
         this._headerElement.setPointerCapture(evt.pointerId);
         this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
 
-        // Get nodes
-        this._nodes = [];
-        this._ownerCanvas.globalState.onGroupAboutToMove.notifyObservers(this);
+        this._ownerCanvas._frameIsMoving = true;
     }    
 
     private _onUp(evt: PointerEvent) {
         evt.stopPropagation();
 
-        for (var selectedNode of this._nodes) {
-            selectedNode.cleanAccumulation();
-        }
-
         this.cleanAccumulation();
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
         this._headerElement.releasePointerCapture(evt.pointerId);
+
+        this._ownerCanvas._frameIsMoving = false;
+    }
+
+    private _moveFrame(offsetX: number, offsetY: number) {
+        for (var selectedNode of this._nodes) {
+            selectedNode.x += offsetX;
+            selectedNode.y += offsetY;
+        }
+
+        this.x += offsetX;
+        this.y += offsetY;
     }
 
     private _onMove(evt: PointerEvent) {
@@ -182,21 +350,17 @@ export class GraphFrame {
         let newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
         let newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
 
-        for (var selectedNode of this._nodes) {
-            selectedNode.x += newX;
-            selectedNode.y += newY;
-        }
-
-        this.x += newX;
-        this.y += newY;
+        this._moveFrame(newX, newY);
 
         this._mouseStartPointX = evt.clientX;
-        this._mouseStartPointY = evt.clientY;   
+        this._mouseStartPointY = evt.clientY; 
 
         evt.stopPropagation();
     }
 
     public dispose() {
+        this.isCollapsed = false;
+
         if (this._onSelectionChangedObserver) {
             this._ownerCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
         }
@@ -214,12 +378,13 @@ export class GraphFrame {
             width: this._width,
             height: this._height,
             color: this._color.asArray(),
-            name: this.name
+            name: this.name,
+            isCollapsed: this.isCollapsed
         }
     }
 
     public static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent) {
-        let newFrame = new GraphFrame(null, canvas);
+        let newFrame = new GraphFrame(null, canvas, true);
 
         newFrame.x = serializationData.x;
         newFrame.y = serializationData.y;
@@ -227,6 +392,10 @@ export class GraphFrame {
         newFrame.height = serializationData.height;
         newFrame.name = serializationData.name;
         newFrame.color = Color3.FromArray(serializationData.color);
+
+        newFrame.refresh();
+
+        newFrame.isCollapsed = !!serializationData.isCollapsed;
 
         return newFrame;
     }

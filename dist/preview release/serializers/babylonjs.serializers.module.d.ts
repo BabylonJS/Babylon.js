@@ -1096,7 +1096,7 @@ declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_texture_transform"
         /** Defines whether this extension is required */
         required: boolean;
         /** Reference to the glTF exporter */
-        private _isUsed;
+        private _wasUsed;
         constructor(exporter: _Exporter);
         dispose(): void;
         /** @hidden */
@@ -2290,7 +2290,7 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
         /** Defines whether this extension is required */
         required: boolean;
         /** Reference to the glTF exporter */
-        private _isUsed;
+        private _wasUsed;
         constructor(exporter: _Exporter);
         dispose(): void;
         /** @hidden */

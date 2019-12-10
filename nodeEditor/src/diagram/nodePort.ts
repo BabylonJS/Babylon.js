@@ -1,11 +1,12 @@
 import { BlockTools } from '../blockTools';
-import { GraphNode } from './graphNode';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
 import { GlobalState } from '../globalState';
 import { Nullable } from 'babylonjs/types';
 import { Observer } from 'babylonjs/Misc/observable';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
+import { IDisplayManager } from './display/displayManager';
+import { GraphNode } from './graphNode';
 
 
 export class NodePort {
@@ -14,7 +15,13 @@ export class NodePort {
     private _globalState: GlobalState;
     private _onCandidateLinkMovedObserver: Nullable<Observer<Nullable<Vector2>>>;
 
-    public get element() {
+    public delegatedPort: Nullable<NodePort> = null;
+
+    public get element(): HTMLDivElement {
+        if (this.delegatedPort) {
+            return this.delegatedPort.element;
+        }
+
         return this._element;
     }
 
@@ -73,5 +80,23 @@ export class NodePort {
 
     public dispose() {
         this._globalState.onCandidateLinkMoved.remove(this._onCandidateLinkMovedObserver);
+    }
+
+    public static CreatePortElement(connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, 
+            displayManager: Nullable<IDisplayManager>, globalState: GlobalState) {
+        let portContainer = root.ownerDocument!.createElement("div");
+        let block = connectionPoint.ownerBlock;
+
+        portContainer.classList.add("portLine");
+        root.appendChild(portContainer);
+
+        if (!displayManager || displayManager.shouldDisplayPortLabels(block)) {
+            let portLabel = root.ownerDocument!.createElement("div");
+            portLabel.classList.add("port-label");
+            portLabel.innerHTML = connectionPoint.name;        
+            portContainer.appendChild(portLabel);
+        }
+    
+        return new NodePort(portContainer, connectionPoint, node, globalState);
     }
 }
