@@ -6,9 +6,9 @@ import { TransformNode } from '../../../Meshes/transformNode';
 import { Nullable } from '../../../types';
 
 /**
- * exported name of module (can be reused with other versions)
+ * name of module (can be reused with other versions)
  */
-export const WebXRHitTestModuleName = "xr-hit-test";
+const WebXRHitTestModuleName = "xr-hit-test";
 
 // the plugin is registered at the end of the file
 
@@ -62,6 +62,7 @@ export class WebXRHitTestLegacy implements WebXRFeature {
      * Execute a hit test on the current running session using a select event returned from a transient input (such as touch)
      * @param event the (select) event to use to select with
      * @param referenceSpace the reference space to use for this hit test
+     * @returns a promise that resolves with an array of native XR hit result in xr coordinates system
      */
     public static XRHitTestWithSelectEvent(event: XRInputSourceEvent, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]> {
         let targetRayPose = event.frame.getPose(event.inputSource.targetRaySpace, referenceSpace);
@@ -74,6 +75,7 @@ export class WebXRHitTestLegacy implements WebXRFeature {
     }
 
     /**
+     * execute a hit test with an XR Ray
      *
      * @param xrSession a native xrSession that will execute this hit test
      * @param xrRay the ray (position and direction) to use for raycasting
@@ -116,6 +118,8 @@ export class WebXRHitTestLegacy implements WebXRFeature {
     /**
      * attach this feature
      * Will usually be called by the features manager
+     *
+     * @returns true if successful.
      */
     attach(): boolean {
         if (this.options.testOnPointerDownOnly) {
@@ -153,6 +157,8 @@ export class WebXRHitTestLegacy implements WebXRFeature {
     /**
      * detach this feature.
      * Will usually be called by the features manager
+     *
+     * @returns true if successful.
      */
     detach(): boolean {
         // disable select

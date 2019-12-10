@@ -56,6 +56,7 @@ export class WebXRSessionManager implements IDisposable {
      */
     public currentFrame: Nullable<XRFrame>;
 
+    /** WebXR timestamp updated every frame */
     public currentTimestamp: number = -1;
 
     private _xrNavigator: any;

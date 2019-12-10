@@ -119,6 +119,8 @@ export class WebXRAnchorSystem implements WebXRFeature {
     /**
      * attach this feature
      * Will usually be called by the features manager
+     *
+     * @returns true if successful.
      */
     attach(): boolean {
         this._observerTracked = this.xrSessionManager.onXRFrameObservable.add(() => {
@@ -168,6 +170,8 @@ export class WebXRAnchorSystem implements WebXRFeature {
     /**
      * detach this feature.
      * Will usually be called by the features manager
+     *
+     * @returns true if successful.
      */
     detach(): boolean {
         this._attached = false;
@@ -215,11 +219,13 @@ export class WebXRAnchorSystem implements WebXRFeature {
     }
 
     /**
+     * Add anchor at a specific XR point.
      *
      * @param xrRigidTransformation xr-coordinates where a new anchor should be added
      * @param anchorCreator the object o use to create an anchor with. either a session or a plane
+     * @returns a promise the fulfills when the anchor was created
      */
-    public addAnchorAtRigidTransformation(xrRigidTransformation: XRRigidTransform, anchorCreator?: XRAnchorCreator) {
+    public addAnchorAtRigidTransformation(xrRigidTransformation: XRRigidTransform, anchorCreator?: XRAnchorCreator): Promise<XRAnchor> {
         const creator = anchorCreator || this.xrSessionManager.session;
         return creator.createAnchor(xrRigidTransformation, this.xrSessionManager.referenceSpace);
     }

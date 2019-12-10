@@ -43,6 +43,7 @@ export class WebXRExperienceHelper implements IDisposable {
     /** Session manager used to keep track of xr session */
     public sessionManager: WebXRSessionManager;
 
+    /** A features manager for this xr session */
     public featuresManager: WebXRFeaturesManager;
 
     private _nonVRCamera: Nullable<Camera> = null;
