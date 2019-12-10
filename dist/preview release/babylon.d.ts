@@ -29699,7 +29699,7 @@ declare module BABYLON {
          * @param texture Texture to bind.
          * @hidden
          */
-        _bindTexture(channel: string, texture: InternalTexture): void;
+        _bindTexture(channel: string, texture: Nullable<InternalTexture>): void;
         /**
          * Sets a texture on the engine to be used in the shader.
          * @param channel Name of the sampler variable.
@@ -30665,7 +30665,7 @@ declare module BABYLON {
          * @param options defines further options to be sent to the getContext() function
          * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
          */
-        constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean);
+        constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean);
         private _rebuildInternalTextures;
         private _rebuildEffects;
         /**
@@ -31303,12 +31303,22 @@ declare module BABYLON {
         _unpackFlipY(value: boolean): void;
         /** @hidden */
         _getUnpackAlignement(): number;
+        private _getTextureTarget;
         /**
          * Update the sampling mode of a given texture
          * @param samplingMode defines the required sampling mode
          * @param texture defines the texture to update
+         * @param generateMipMaps defines whether to generate mipmaps for the texture
          */
-        updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void;
+        updateTextureSamplingMode(samplingMode: number, texture: InternalTexture, generateMipMaps?: boolean): void;
+        /**
+         * Update the sampling mode of a given texture
+         * @param texture defines the texture to update
+         * @param wrapU defines the texture wrap mode of the u coordinates
+         * @param wrapV defines the texture wrap mode of the v coordinates
+         * @param wrapR defines the texture wrap mode of the r coordinates
+         */
+        updateTextureWrappingMode(texture: InternalTexture, wrapU: Nullable<number>, wrapV?: Nullable<number>, wrapR?: Nullable<number>): void;
         /** @hidden */
         _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | {
             width: number;
@@ -31410,6 +31420,16 @@ declare module BABYLON {
         _getRGBAMultiSampleBufferFormat(type: number): number;
         /** @hidden */
         _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: IWebRequest, exception?: any) => void): IFileRequest;
+        /**
+         * Reads pixels from the current frame buffer. Please note that this function can be slow
+         * @param x defines the x coordinate of the rectangle where pixels must be read
+         * @param y defines the y coordinate of the rectangle where pixels must be read
+         * @param width defines the width of the rectangle where pixels must be read
+         * @param height defines the height of the rectangle where pixels must be read
+         * @param hasAlpha defines wether the output should have alpha or not (defaults to true)
+         * @returns a Uint8Array containing RGBA colors
+         */
+        readPixels(x: number, y: number, width: number, height: number, hasAlpha?: boolean): Uint8Array;
         /**
          * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
          * @returns true if the engine can be created
@@ -33102,15 +33122,6 @@ declare module BABYLON {
          * @returns a string containing the source code of the fragment shader associated with the program
          */
         getFragmentShaderSource(program: WebGLProgram): Nullable<string>;
-        /**
-         * Reads pixels from the current frame buffer. Please note that this function can be slow
-         * @param x defines the x coordinate of the rectangle where pixels must be read
-         * @param y defines the y coordinate of the rectangle where pixels must be read
-         * @param width defines the width of the rectangle where pixels must be read
-         * @param height defines the height of the rectangle where pixels must be read
-         * @returns a Uint8Array containing RGBA colors
-         */
-        readPixels(x: number, y: number, width: number, height: number): Uint8Array;
         /**
          * Sets a depth stencil texture from a render target to the according uniform.
          * @param channel The texture channel
