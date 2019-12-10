@@ -154,6 +154,7 @@ export class WebXRFeaturesManager implements IDisposable {
     }
 
     /**
+     * Enable a feature using its name and a version. This will enable it in the scene, and will be responsible to attach it when the session starts.
      *
      * @param featureName the name of the feature to load or the class of the feature
      * @param version optional version to load. if not provided the latest version will be enabled
