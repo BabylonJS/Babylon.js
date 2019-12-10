@@ -2,18 +2,39 @@ import { GraphCanvasComponent } from './graphCanvas';
 import { GraphNode } from './graphNode';
 import { NodePort } from './nodePort';
 import { Nullable } from 'babylonjs/types';
-import { Observer } from 'babylonjs/Misc/observable';
+import { Observer, Observable } from 'babylonjs/Misc/observable';
 import { GraphFrame } from './graphFrame';
 
 export class NodeLink {   
     private _graphCanvas: GraphCanvasComponent;
     private _portA: NodePort;
-    private _portB?: NodePort;
+    private _portB?: NodePort;    
     private _nodeA: GraphNode;
     private _nodeB?: GraphNode;
     private _path: SVGPathElement;
     private _selectionPath: SVGPathElement;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame>>>;
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame>>>;    
+    private _isVisible = true;
+
+    public onDisposedObservable = new Observable<NodeLink>();
+
+    public get isVisible() {
+        return this._isVisible;
+    }
+
+    public set isVisible(value: boolean) {
+        this._isVisible = value;
+
+        if (!value) {
+            this._path.classList.add("hidden");
+            this._selectionPath.classList.add("hidden");
+        } else {
+            this._path.classList.remove("hidden");
+            this._selectionPath.classList.remove("hidden");
+        }
+
+        this.update();
+    }
 
     public get portA() {
         return this._portA;
@@ -21,6 +42,14 @@ export class NodeLink {
 
     public get portB() {
         return this._portB;
+    }
+
+    public get nodeA() {
+        return this._nodeA;
+    }
+
+    public get nodeB() {
+        return this._nodeB;
     }
 
     public update(endX = 0, endY = 0, straight = false) {   
@@ -109,9 +138,12 @@ export class NodeLink {
         if (this._nodeB) {
             this._nodeA.links.splice(this._nodeA.links.indexOf(this), 1);
             this._nodeB.links.splice(this._nodeB.links.indexOf(this), 1);
+            this._nodeB.links.splice(this._nodeB.links.indexOf(this), 1);
             this._graphCanvas.links.splice(this._graphCanvas.links.indexOf(this), 1);
 
             this._portA.connectionPoint.disconnectFrom(this._portB!.connectionPoint);
         }
+
+        this.onDisposedObservable.notifyObservers(this);
     }   
 }

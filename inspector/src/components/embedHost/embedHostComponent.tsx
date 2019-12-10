@@ -5,7 +5,7 @@ import { SceneExplorerComponent } from "../sceneExplorer/sceneExplorerComponent"
 import { ActionTabsComponent } from "../actionTabs/actionTabsComponent";
 import { Scene } from "babylonjs/scene";
 import { GlobalState } from "../../components/globalState";
-import { IExplorerExtensibilityGroup } from 'babylonjs/Debug/debugLayer';
+import { IExplorerExtensibilityGroup, DebugLayerTab } from 'babylonjs/Debug/debugLayer';
 
 const Split = require('split.js').default;
 
@@ -19,7 +19,8 @@ interface IEmbedHostComponentProps {
     noExpand?: boolean,
     onClose: () => void,
     onPopup: () => void,
-    extensibilityGroups?: IExplorerExtensibilityGroup[]
+    extensibilityGroups?: IExplorerExtensibilityGroup[],
+    initialTab?: DebugLayerTab
 }
 
 export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps> {
@@ -57,7 +58,8 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
                     <div id="bottomPart" style={{ marginTop: "4px", overflow: "hidden" }}>
                         <ActionTabsComponent scene={this.props.scene}
                             popupMode={true}
-                            globalState={this.props.globalState} noHeader={true} />
+                            globalState={this.props.globalState} noHeader={true} 
+                            initialTab={this.props.initialTab} />
                     </div>
                 </div>
             )
@@ -76,7 +78,8 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
                     <ActionTabsComponent scene={this.props.scene}
                         globalState={this.props.globalState}
                         popupMode={true}
-                        noHeader={true} />
+                        noHeader={true}
+                        initialTab={this.props.initialTab} />
                 </div>
             </div>
         )
