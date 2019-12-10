@@ -4,7 +4,7 @@ import { IDisposable } from '../../scene';
 /**
  * Defining the interface required for a (webxr) feature
  */
-export interface WebXRFeature extends IDisposable {
+export interface IWebXRFeature extends IDisposable {
     /**
      * Attach the feature to the session
      * Will usually be called by the features manager
@@ -24,7 +24,7 @@ export interface WebXRFeature extends IDisposable {
 /**
  * Defining the constructor of a feature. Used to register the modules.
  */
-export type WebXRFeatureConstructor = (xrSessionManager: WebXRSessionManager, options?: any) => (() => WebXRFeature);
+export type WebXRFeatureConstructor = (xrSessionManager: WebXRSessionManager, options?: any) => (() => IWebXRFeature);
 
 /**
  * The WebXR features manager is responsible of enabling or disabling features required for the current XR session.
@@ -71,7 +71,7 @@ export class WebXRFeaturesManager implements IDisposable {
      * @param options optional options provided to the module.
      * @returns a function that, when called, will return a new instance of this feature
      */
-    public static ConstructFeature(featureName: string, version: number = 1, xrSessionManager: WebXRSessionManager, options?: any): (() => WebXRFeature) {
+    public static ConstructFeature(featureName: string, version: number = 1, xrSessionManager: WebXRSessionManager, options?: any): (() => IWebXRFeature) {
         const constructorFunction = this._AvailableFeatures[featureName][version];
         if (!constructorFunction) {
             // throw an error? return nothing?
@@ -119,7 +119,7 @@ export class WebXRFeaturesManager implements IDisposable {
 
     private _features: {
         [name: string]: {
-            featureImplementation: WebXRFeature,
+            featureImplementation: IWebXRFeature,
             version: number,
             enabled: boolean,
             attached: boolean
@@ -129,11 +129,11 @@ export class WebXRFeaturesManager implements IDisposable {
     /**
      * constructs a new features manages.
      *
-     * @param xrSessionManager an instance of WebXRSessionManager
+     * @param _xrSessionManager an instance of WebXRSessionManager
      */
-    constructor(private xrSessionManager: WebXRSessionManager) {
+    constructor(private _xrSessionManager: WebXRSessionManager) {
         // when session starts / initialized - attach
-        this.xrSessionManager.onXRSessionInit.add(() => {
+        this._xrSessionManager.onXRSessionInit.add(() => {
             this.getEnabledFeatures().forEach((featureName) => {
                 const feature = this._features[featureName];
                 if (feature.enabled && !feature.attached) {
@@ -143,7 +143,7 @@ export class WebXRFeaturesManager implements IDisposable {
         });
 
         // when session ends - detach
-        this.xrSessionManager.onXRSessionEnded.add(() => {
+        this._xrSessionManager.onXRSessionEnded.add(() => {
             this.getEnabledFeatures().forEach((featureName) => {
                 const feature = this._features[featureName];
                 if (feature.enabled && feature.attached) {
@@ -163,7 +163,7 @@ export class WebXRFeaturesManager implements IDisposable {
      * @param attachIfPossible if set to true (default) the feature will be automatically attached, if it is currently possible
      * @returns a new constructed feature or throws an error if feature not found.
      */
-    public enableFeature(featureName: string | { Name: string }, version: number | string = 'latest', moduleOptions: any = {}, attachIfPossible: boolean = true): WebXRFeature {
+    public enableFeature(featureName: string | { Name: string }, version: number | string = 'latest', moduleOptions: any = {}, attachIfPossible: boolean = true): IWebXRFeature {
         const name = typeof featureName === 'string' ? featureName : featureName.Name;
         let versionToLoad = 0;
         if (typeof version === 'string') {
@@ -181,7 +181,7 @@ export class WebXRFeaturesManager implements IDisposable {
         // check if already initialized
         const feature = this._features[name];
         if (!feature || !feature.featureImplementation || feature.version !== versionToLoad) {
-            const constructFunction = WebXRFeaturesManager.ConstructFeature(name, versionToLoad, this.xrSessionManager, moduleOptions);
+            const constructFunction = WebXRFeaturesManager.ConstructFeature(name, versionToLoad, this._xrSessionManager, moduleOptions);
             if (!constructFunction) {
                 // report error?
                 throw new Error(`feature not found - ${name}`);
@@ -203,7 +203,7 @@ export class WebXRFeaturesManager implements IDisposable {
         }
 
         // if session started already, request and enable
-        if (this.xrSessionManager.session && !feature.attached && attachIfPossible) {
+        if (this._xrSessionManager.session && !feature.attached && attachIfPossible) {
             // enable feature
             this.attachFeature(name);
         }
@@ -265,7 +265,7 @@ export class WebXRFeaturesManager implements IDisposable {
      * @param featureName the name of the feature to load
      * @returns the feature class, if found
      */
-    public getEnabledFeature(featureName: string): WebXRFeature {
+    public getEnabledFeature(featureName: string): IWebXRFeature {
         return this._features[featureName] && this._features[featureName].featureImplementation;
     }
 

@@ -1,4 +1,4 @@
-import { WebXRFeaturesManager, WebXRFeature } from '../webXRFeaturesManager';
+import { WebXRFeaturesManager, IWebXRFeature } from '../webXRFeaturesManager';
 import { TransformNode } from '../../../Meshes/transformNode';
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { Observable, Observer } from '../../../Misc/observable';
@@ -10,7 +10,7 @@ const Name = "xr-plane-detector";
 /**
  * Options used in the plane detector module
  */
-export interface WebXRPlaneDetectorOptions {
+export interface IWebXRPlaneDetectorOptions {
     /**
      * The node to use to transform the local results to world coordinates
      */
@@ -21,7 +21,7 @@ export interface WebXRPlaneDetectorOptions {
  * A babylon interface for a webxr plane.
  * A Plane is actually a polygon, built from N points in space
  */
-export interface WebXRPlane {
+export interface IWebXRPlane {
     /**
      * a babylon-assigned ID for this polygon
      */
@@ -47,7 +47,7 @@ let planeIdProvider = 0;
  * The plane detector is used to detect planes in the real world when in AR
  * For more information see https://github.com/immersive-web/real-world-geometry/
  */
-export class WebXRPlaneDetector implements WebXRFeature {
+export class WebXRPlaneDetector implements IWebXRFeature {
 
     /**
      * The module's name
@@ -63,35 +63,35 @@ export class WebXRPlaneDetector implements WebXRFeature {
     /**
      * Observers registered here will be executed when a new plane was added to the session
      */
-    public onPlaneAddedObservable: Observable<WebXRPlane> = new Observable();
+    public onPlaneAddedObservable: Observable<IWebXRPlane> = new Observable();
     /**
      * Observers registered here will be executed when a plane is no longer detected in the session
      */
-    public onPlaneRemovedObservable: Observable<WebXRPlane> = new Observable();
+    public onPlaneRemovedObservable: Observable<IWebXRPlane> = new Observable();
     /**
      * Observers registered here will be executed when an existing plane updates (for example - expanded)
      * This can execute N times every frame
      */
-    public onPlaneUpdatedObservable: Observable<WebXRPlane> = new Observable();
+    public onPlaneUpdatedObservable: Observable<IWebXRPlane> = new Observable();
 
     private _enabled: boolean = false;
     private _attached: boolean = false;
-    private _detectedPlanes: Array<WebXRPlane> = [];
+    private _detectedPlanes: Array<IWebXRPlane> = [];
     private _lastFrameDetected: XRPlaneSet = new Set();
     private _observerTracked: Nullable<Observer<XRFrame>>;
 
     /**
      * construct a new Plane Detector
-     * @param xrSessionManager an instance of xr Session manager
-     * @param options configuration to use when constructing this feature
+     * @param _xrSessionManager an instance of xr Session manager
+     * @param _options configuration to use when constructing this feature
      */
-    constructor(private xrSessionManager: WebXRSessionManager, private options: WebXRPlaneDetectorOptions = {}) {
-        if (this.xrSessionManager.session) {
-            this.xrSessionManager.session.updateWorldTrackingState({ planeDetectionState: { enabled: true } });
+    constructor(private _xrSessionManager: WebXRSessionManager, private _options: IWebXRPlaneDetectorOptions = {}) {
+        if (this._xrSessionManager.session) {
+            this._xrSessionManager.session.updateWorldTrackingState({ planeDetectionState: { enabled: true } });
             this._enabled = true;
         } else {
-            this.xrSessionManager.onXRSessionInit.addOnce(() => {
-                this.xrSessionManager.session.updateWorldTrackingState({ planeDetectionState: { enabled: true } });
+            this._xrSessionManager.onXRSessionInit.addOnce(() => {
+                this._xrSessionManager.session.updateWorldTrackingState({ planeDetectionState: { enabled: true } });
                 this._enabled = true;
             });
         }
@@ -105,8 +105,8 @@ export class WebXRPlaneDetector implements WebXRFeature {
      */
     attach(): boolean {
 
-        this._observerTracked = this.xrSessionManager.onXRFrameObservable.add(() => {
-            const frame = this.xrSessionManager.currentFrame;
+        this._observerTracked = this._xrSessionManager.onXRFrameObservable.add(() => {
+            const frame = this._xrSessionManager.currentFrame;
             if (!this._attached || !this._enabled || !frame) { return; }
             // const timestamp = this.xrSessionManager.currentTimestamp;
 
@@ -120,20 +120,20 @@ export class WebXRPlaneDetector implements WebXRFeature {
                 // now check for new ones
                 detectedPlanes.forEach((xrPlane) => {
                     if (!this._lastFrameDetected.has(xrPlane)) {
-                        const newPlane: Partial<WebXRPlane> = {
+                        const newPlane: Partial<IWebXRPlane> = {
                             id: planeIdProvider++,
                             xrPlane: xrPlane,
                             polygonDefinition: []
                         };
-                        const plane = this.updatePlaneWithXRPlane(xrPlane, newPlane, frame);
+                        const plane = this._updatePlaneWithXRPlane(xrPlane, newPlane, frame);
                         this._detectedPlanes.push(plane);
                         this.onPlaneAddedObservable.notifyObservers(plane);
                     } else {
                         // updated?
-                        if (xrPlane.lastChangedTime === this.xrSessionManager.currentTimestamp) {
+                        if (xrPlane.lastChangedTime === this._xrSessionManager.currentTimestamp) {
                             let index = this.findIndexInPlaneArray(xrPlane);
                             const plane = this._detectedPlanes[index];
-                            this.updatePlaneWithXRPlane(xrPlane, plane, frame);
+                            this._updatePlaneWithXRPlane(xrPlane, plane, frame);
                             this.onPlaneUpdatedObservable.notifyObservers(plane);
                         }
                     }
@@ -156,7 +156,7 @@ export class WebXRPlaneDetector implements WebXRFeature {
         this._attached = false;
 
         if (this._observerTracked) {
-            this.xrSessionManager.onXRFrameObservable.remove(this._observerTracked);
+            this._xrSessionManager.onXRFrameObservable.remove(this._observerTracked);
         }
 
         return true;
@@ -172,25 +172,25 @@ export class WebXRPlaneDetector implements WebXRFeature {
         this.onPlaneUpdatedObservable.clear();
     }
 
-    private updatePlaneWithXRPlane(xrPlane: XRPlane, plane: Partial<WebXRPlane>, xrFrame: XRFrame): WebXRPlane {
+    private _updatePlaneWithXRPlane(xrPlane: XRPlane, plane: Partial<IWebXRPlane>, xrFrame: XRFrame): IWebXRPlane {
         plane.polygonDefinition = xrPlane.polygon.map((xrPoint) => {
-            const rightHandedSystem = this.xrSessionManager.scene.useRightHandedSystem ? 1 : -1;
+            const rightHandedSystem = this._xrSessionManager.scene.useRightHandedSystem ? 1 : -1;
             return new Vector3(xrPoint.x, xrPoint.y, xrPoint.z * rightHandedSystem);
         });
         // matrix
-        const pose = xrFrame.getPose(xrPlane.planeSpace, this.xrSessionManager.referenceSpace);
+        const pose = xrFrame.getPose(xrPlane.planeSpace, this._xrSessionManager.referenceSpace);
         if (pose) {
             const mat = plane.transformationMatrix || new Matrix();
             Matrix.FromArrayToRef(pose.transform.matrix, 0, mat);
-            if (!this.xrSessionManager.scene.useRightHandedSystem) {
+            if (!this._xrSessionManager.scene.useRightHandedSystem) {
                 mat.toggleModelMatrixHandInPlace();
             }
             plane.transformationMatrix = mat;
-            if (this.options.worldParentNode) {
-                mat.multiplyToRef(this.options.worldParentNode.getWorldMatrix(), mat);
+            if (this._options.worldParentNode) {
+                mat.multiplyToRef(this._options.worldParentNode.getWorldMatrix(), mat);
             }
         }
-        return <WebXRPlane>plane;
+        return <IWebXRPlane>plane;
     }
 
     /**
