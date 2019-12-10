@@ -323,6 +323,29 @@ export class SpotLight extends ShadowLight {
     }
 
     /**
+     * Sets the passed Effect "effect" with the Light textures.
+     * @param effect The effect to update
+     * @param lightIndex The index of the light in the effect to update
+     * @returns The light
+     */
+    public transferTexturesToEffect(effect: Effect, lightIndex: string): Light {
+        if (this.projectionTexture && this.projectionTexture.isReady()) {
+            if (this._projectionTextureViewLightDirty) {
+                this._computeProjectionTextureViewLightMatrix();
+            }
+            if (this._projectionTextureProjectionLightDirty) {
+                this._computeProjectionTextureProjectionLightMatrix();
+            }
+            if (this._projectionTextureDirty) {
+                this._computeProjectionTextureMatrix();
+            }
+            effect.setMatrix("textureProjectionMatrix" + lightIndex, this._projectionTextureMatrix);
+            effect.setTexture("projectionLightSampler" + lightIndex, this.projectionTexture);
+        }
+        return this;
+    }
+
+    /**
      * Sets the passed Effect object with the SpotLight transfomed position (or position if not parented) and normalized direction.
      * @param effect The effect to update
      * @param lightIndex The index of the light in the effect to update
@@ -374,20 +397,6 @@ export class SpotLight extends ShadowLight {
             this._lightAngleOffset,
             lightIndex
         );
-
-        if (this.projectionTexture && this.projectionTexture.isReady()) {
-            if (this._projectionTextureViewLightDirty) {
-                this._computeProjectionTextureViewLightMatrix();
-            }
-            if (this._projectionTextureProjectionLightDirty) {
-                this._computeProjectionTextureProjectionLightMatrix();
-            }
-            if (this._projectionTextureDirty) {
-                this._computeProjectionTextureMatrix();
-            }
-            effect.setMatrix("textureProjectionMatrix" + lightIndex, this._projectionTextureMatrix);
-            effect.setTexture("projectionLightSampler" + lightIndex, this.projectionTexture);
-        }
         return this;
     }
 

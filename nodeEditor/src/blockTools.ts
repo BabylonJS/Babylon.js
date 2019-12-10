@@ -61,10 +61,13 @@ import { Rotate2dBlock } from 'babylonjs/Materials/Node/Blocks/rotate2dBlock';
 import { DerivativeBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/derivativeBlock';
 import { RefractBlock } from 'babylonjs/Materials/Node/Blocks/refractBlock';
 import { ReflectBlock } from 'babylonjs/Materials/Node/Blocks/reflectBlock';
+import { DesaturateBlock } from 'babylonjs/Materials/Node/Blocks/desaturateBlock';
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
+            case "DesaturateBlock":
+                return new DesaturateBlock("Desaturate");                  
             case "RefractBlock":
                 return new RefractBlock("Refract");               
             case "ReflectBlock":
@@ -415,7 +418,7 @@ export class BlockTools {
     }
 
     public static GetColorFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes) {
-        let color = "Red";
+        let color = "#880000";
         switch (type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
 				color = "#cb9e27";

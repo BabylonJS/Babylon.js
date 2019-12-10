@@ -5,6 +5,7 @@ import { SceneExplorerComponent } from "../sceneExplorer/sceneExplorerComponent"
 import { ActionTabsComponent } from "../actionTabs/actionTabsComponent";
 import { Scene } from "babylonjs/scene";
 import { GlobalState } from "../../components/globalState";
+import { IExplorerExtensibilityGroup, DebugLayerTab } from 'babylonjs/Debug/debugLayer';
 
 const Split = require('split.js').default;
 
@@ -17,7 +18,9 @@ interface IEmbedHostComponentProps {
     noClose?: boolean,
     noExpand?: boolean,
     onClose: () => void,
-    onPopup: () => void
+    onPopup: () => void,
+    extensibilityGroups?: IExplorerExtensibilityGroup[],
+    initialTab?: DebugLayerTab
 }
 
 export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps> {
@@ -47,6 +50,7 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
                 <div id="split" className="splitPopup">
                     <div id="topPart">
                         <SceneExplorerComponent scene={this.props.scene}
+                            extensibilityGroups={this.props.extensibilityGroups}
                             popupMode={true}
                             globalState={this.props.globalState} noHeader={true} />
                     </div>
@@ -54,7 +58,8 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
                     <div id="bottomPart" style={{ marginTop: "4px", overflow: "hidden" }}>
                         <ActionTabsComponent scene={this.props.scene}
                             popupMode={true}
-                            globalState={this.props.globalState} noHeader={true} />
+                            globalState={this.props.globalState} noHeader={true} 
+                            initialTab={this.props.initialTab} />
                     </div>
                 </div>
             )
@@ -64,6 +69,7 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
             <div ref="split" id="split" className="noPopup">
                 <div id="topPart" ref="topPart">
                     <SceneExplorerComponent scene={this.props.scene}
+                        extensibilityGroups={this.props.extensibilityGroups}
                         globalState={this.props.globalState}
                         popupMode={true}
                         noHeader={true} />
@@ -72,7 +78,8 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
                     <ActionTabsComponent scene={this.props.scene}
                         globalState={this.props.globalState}
                         popupMode={true}
-                        noHeader={true} />
+                        noHeader={true}
+                        initialTab={this.props.initialTab} />
                 </div>
             </div>
         )

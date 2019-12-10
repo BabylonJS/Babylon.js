@@ -522,6 +522,21 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Remove a block from the current node material
+     * @param block defines the block to remove
+     */
+    public removeBlock(block: NodeMaterialBlock) {
+        let attachedBlockIndex = this.attachedBlocks.indexOf(block);
+        if (attachedBlockIndex > -1) {
+            this.attachedBlocks.splice(attachedBlockIndex, 1);
+        }
+
+        if (block.isFinalMerger) {
+            this.removeOutputNode(block);
+        }
+    }
+
+    /**
      * Build the material and generates the inner effect
      * @param verbose defines if the build should log activity
      */
@@ -1120,6 +1135,7 @@ export class NodeMaterial extends PushMaterial {
         serializationObject.customType = "BABYLON.NodeMaterial";
 
         serializationObject.outputNodes = [];
+        serializationObject.editorData = JSON.parse(JSON.stringify(this.editorData)); // Copy
 
         let blocks: NodeMaterialBlock[] = [];
 
@@ -1216,18 +1232,28 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // UI related info
-        if (source.locations) {
+        if (source.locations || source.editorData && source.editorData.locations) {
             let locations: {
                 blockId: number;
                 x: number;
                 y: number;
-            }[] = source.locations;
+            }[] = source.locations || source.editorData.locations;
 
             for (var location of locations) {
-                location.blockId = map[location.blockId].uniqueId;
+                if (map[location.blockId]) {
+                    location.blockId = map[location.blockId].uniqueId;
+                }
             }
 
-            this.editorData = locations;
+            if (source.locations) {
+                this.editorData = {
+                    locations: locations
+                };
+            } else {
+                this.editorData = source.editorData;
+                this.editorData.locations = locations;
+            }
+
         }
     }
 

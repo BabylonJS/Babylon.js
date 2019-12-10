@@ -2,7 +2,7 @@ import { serialize, SerializationHelper, serializeAsColor3, expandToProperty } f
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
-import { Color3 } from "../Maths/math.color";
+import { Color3, TmpColors } from "../Maths/math.color";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Effect } from "../Materials/effect";
@@ -365,6 +365,69 @@ export abstract class Light extends Node {
     public abstract transferToEffect(effect: Effect, lightIndex: string): Light;
 
     /**
+     * Sets the passed Effect "effect" with the Light textures.
+     * @param effect The effect to update
+     * @param lightIndex The index of the light in the effect to update
+     * @returns The light
+     */
+    public transferTexturesToEffect(effect: Effect, lightIndex: string): Light {
+        // Do nothing by default.
+        return this;
+    }
+
+    /**
+     * Binds the lights information from the scene to the effect for the given mesh.
+     * @param lightIndex Light index
+     * @param scene The scene where the light belongs to
+     * @param effect The effect we are binding the data to
+     * @param useSpecular Defines if specular is supported
+     * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
+     * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
+     */
+    public bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff = false, rebuildInParallel = false): void {
+        let iAsString = lightIndex.toString();
+        let needUpdate = false;
+
+        if (rebuildInParallel && this._uniformBuffer._alreadyBound) {
+            return;
+        }
+
+        this._uniformBuffer.bindToEffect(effect, "Light" + iAsString);
+
+        if (this._renderId !== scene.getRenderId() || !this._uniformBuffer.useUbo) {
+            this._renderId = scene.getRenderId();
+
+            let scaledIntensity = this.getScaledIntensity();
+
+            this.transferToEffect(effect, iAsString);
+
+            this.diffuse.scaleToRef(scaledIntensity, TmpColors.Color3[0]);
+            this._uniformBuffer.updateColor4("vLightDiffuse", TmpColors.Color3[0], usePhysicalLightFalloff ? this.radius : this.range, iAsString);
+            if (useSpecular) {
+                this.specular.scaleToRef(scaledIntensity, TmpColors.Color3[1]);
+                this._uniformBuffer.updateColor3("vLightSpecular", TmpColors.Color3[1], iAsString);
+            }
+            needUpdate = true;
+        }
+
+        // Textures might still need to be rebound.
+        this.transferTexturesToEffect(effect, iAsString);
+
+        // Shadows
+        if (scene.shadowsEnabled && this.shadowEnabled) {
+            var shadowGenerator = this.getShadowGenerator();
+            if (shadowGenerator) {
+                shadowGenerator.bindShadowLight(iAsString, effect);
+                needUpdate = true;
+            }
+        }
+
+        if (needUpdate) {
+            this._uniformBuffer.update();
+        }
+    }
+
+    /**
      * Sets the passed Effect "effect" with the Light information.
      * @param effect The effect to update
      * @param lightDataUniformName The uniform used to store light data (position or direction)
@@ -655,7 +718,7 @@ export abstract class Light extends Node {
             var result = oldPush.apply(array, items);
 
             for (var item of items) {
-                item._resyncLighSource(this);
+                item._resyncLightSource(this);
             }
 
             return result;
@@ -666,14 +729,14 @@ export abstract class Light extends Node {
             var deleted = oldSplice.apply(array, [index, deleteCount]);
 
             for (var item of deleted) {
-                item._resyncLighSource(this);
+                item._resyncLightSource(this);
             }
 
             return deleted;
         };
 
         for (var item of array) {
-            item._resyncLighSource(this);
+            item._resyncLightSource(this);
         }
     }
 
@@ -701,7 +764,7 @@ export abstract class Light extends Node {
 
     private _resyncMeshes() {
         for (var mesh of this.getScene().meshes) {
-            mesh._resyncLighSource(this);
+            mesh._resyncLightSource(this);
         }
     }
 
