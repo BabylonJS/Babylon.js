@@ -18,6 +18,9 @@ export class GraphFrame {
     private _height: number;
     public element: HTMLDivElement;   
     private _headerElement: HTMLDivElement;    
+    private _headerTextElement: HTMLDivElement;        
+    private _headerCollapseElement: HTMLDivElement;    
+    private _headerCloseElement: HTMLDivElement;    
     private _portContainer: HTMLDivElement;    
     private _outputPortContainer: HTMLDivElement;    
     private _inputPortContainer: HTMLDivElement;    
@@ -29,6 +32,10 @@ export class GraphFrame {
     private _isCollapsed = false;
     private _ports: NodePort[] = [];
     private _controlledPorts: NodePort[] = [];
+
+    private readonly CloseSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><g id="Layer_2" data-name="Layer 2"><path d="M16,15l5.85,5.84-1,1L15,15.93,9.15,21.78l-1-1L14,15,8.19,9.12l1-1L15,14l5.84-5.84,1,1Z"/></g></svg>`;
+    private readonly ExpandSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><g id="Layer_2" data-name="Layer 2"><path d="M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-6.75,6.75H11.06V14.44h3.38V11.06h1.12v3.38h3.38v1.12H15.56v3.38H14.44Z"/></g></svg>`;
+    private readonly CollapseSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><g id="Layer_2" data-name="Layer 2"><path d="M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-2.25,6.75H11.06V14.44h7.88Z"/></g></svg>`;
 
     public get isCollapsed() {
         return this._isCollapsed;
@@ -138,7 +145,7 @@ export class GraphFrame {
 
     public set name(value: string) {
         this._name = value;
-        this._headerElement.innerHTML = value;
+        this._headerTextElement.innerHTML = value;
     }
 
     public get color() {
@@ -157,9 +164,9 @@ export class GraphFrame {
     }
 
     public set x(value: number) {
-        if (this._x === value) {
-            return;
-        }
+        // if (this._x === value) {
+        //     return;
+        // }
         this._x = value;
         
         this._gridAlignedX = this._ownerCanvas.getGridPosition(value);
@@ -171,9 +178,9 @@ export class GraphFrame {
     }
 
     public set y(value: number) {
-        if (this._y === value) {
-            return;
-        }
+        // if (this._y === value) {
+        //     return;
+        // }
 
         this._y = value;
 
@@ -225,6 +232,50 @@ export class GraphFrame {
         });
         this.element.appendChild(this._headerElement);
 
+        this._headerTextElement = root.ownerDocument!.createElement("div"); 
+        this._headerTextElement.classList.add("frame-box-header-title");
+        this._headerElement.appendChild(this._headerTextElement);
+
+        this._headerCollapseElement = root.ownerDocument!.createElement("div"); 
+        this._headerCollapseElement.classList.add("frame-box-header-collapse");   
+        this._headerCollapseElement.classList.add("frame-box-header-button");  
+        this._headerCollapseElement.title = "Collapse";   
+        this._headerCollapseElement.ondragstart= () => false;
+        this._headerCollapseElement.addEventListener("pointerdown", (evt) => {
+            this._headerCollapseElement.classList.add("down");
+            evt.stopPropagation();
+        });
+        this._headerCollapseElement.addEventListener("pointerup", (evt) => {            
+            evt.stopPropagation();
+            this._headerCollapseElement.classList.remove("down");
+            this.isCollapsed = !this.isCollapsed;
+
+            if (this.isCollapsed) {                
+                this._headerCollapseElement.innerHTML = this.ExpandSVG;
+                this._headerCollapseElement.title = "Expand";   
+            } else {
+                this._headerCollapseElement.innerHTML = this.CollapseSVG;
+                this._headerCollapseElement.title = "Collapse";   
+            }
+        });
+        this._headerCollapseElement.innerHTML = this.CollapseSVG;
+        this._headerElement.appendChild(this._headerCollapseElement);
+
+        this._headerCloseElement = root.ownerDocument!.createElement("div"); 
+        this._headerCloseElement.classList.add("frame-box-header-close");
+        this._headerCloseElement.classList.add("frame-box-header-button");
+        this._headerCloseElement.title = "Close";
+        this._headerCloseElement.ondragstart= () => false;
+        this._headerCloseElement.addEventListener("pointerdown", (evt) => {
+            evt.stopPropagation();
+        });
+        this._headerCloseElement.addEventListener("pointerup", (evt) => {
+            evt.stopPropagation();
+            this.dispose();
+        });
+        this._headerCloseElement.innerHTML = this.CloseSVG;
+        this._headerElement.appendChild(this._headerCloseElement);
+
         this._portContainer = root.ownerDocument!.createElement("div");  
         this._portContainer.classList.add("port-container");
         this.element.appendChild(this._portContainer);
@@ -249,9 +300,9 @@ export class GraphFrame {
             this.cleanAccumulation();        
         }
         
-        this._headerElement.addEventListener("pointerdown", evt => this._onDown(evt));
-        this._headerElement.addEventListener("pointerup", evt => this._onUp(evt));
-        this._headerElement.addEventListener("pointermove", evt => this._onMove(evt));
+        this._headerTextElement.addEventListener("pointerdown", evt => this._onDown(evt));
+        this._headerTextElement.addEventListener("pointerup", evt => this._onUp(evt));
+        this._headerTextElement.addEventListener("pointermove", evt => this._onMove(evt));
 
         this._onSelectionChangedObserver = canvas.globalState.onSelectionChangedObservable.add(node => {
             if (node === this) {
@@ -300,13 +351,13 @@ export class GraphFrame {
         }
     }
 
-    public cleanAccumulation() {
-        this.x = this._gridAlignedX;
-        this.y = this._gridAlignedY;
-
+    public cleanAccumulation() {    
         for (var selectedNode of this._nodes) {
             selectedNode.cleanAccumulation();
-        }        
+        }   
+
+        this.x = this._ownerCanvas.getGridPosition(this.x);
+        this.y = this._ownerCanvas.getGridPosition(this.y);   
     }
 
     private _onDown(evt: PointerEvent) {
@@ -315,10 +366,22 @@ export class GraphFrame {
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;        
         
-        this._headerElement.setPointerCapture(evt.pointerId);
+        this._headerTextElement.setPointerCapture(evt.pointerId);
         this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
 
         this._ownerCanvas._frameIsMoving = true;
+
+        let oldX = this.x;
+        let oldY = this.y;
+
+        this.x = this._ownerCanvas.getGridPosition(this.x);
+        this.y = this._ownerCanvas.getGridPosition(this.y); 
+
+        for (var selectedNode of this._nodes) {
+            selectedNode.x += this.x - oldX;
+            selectedNode.y += this.y - oldY;
+            selectedNode.cleanAccumulation(true);
+        }
     }    
 
     private _onUp(evt: PointerEvent) {
@@ -327,7 +390,7 @@ export class GraphFrame {
         this.cleanAccumulation();
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
-        this._headerElement.releasePointerCapture(evt.pointerId);
+        this._headerTextElement.releasePointerCapture(evt.pointerId);
 
         this._ownerCanvas._frameIsMoving = false;
     }

@@ -293,6 +293,14 @@ export class NativeEngine extends Engine {
         }
     }
 
+    /**
+     * Gets host document
+     * @returns the host document object
+     */
+    public getHostDocument(): Nullable<Document> {
+        return null;
+    }
+
     public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
         var mode = 0;
         if (backBuffer && color) {
