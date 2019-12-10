@@ -6,30 +6,69 @@ import { Vector3, Matrix } from '../../../Maths/math.vector';
 import { Nullable } from '../../../types';
 
 const Name = "xr-plane-detector";
-//register the plugin
-WebXRFeaturesManager.AddWebXRFeature(Name, (xrSessionManager, options) => {
-    return () => new WebXRPlaneDetector(xrSessionManager, options);
-});
 
+/**
+ * Options used in the plane detector module
+ */
 export interface WebXRPlaneDetectorOptions {
     worldParentNode?: TransformNode;
 }
 
+/**
+ * A babylon interface for a webxr plane.
+ * A Plane is actually a polygon, built from N points in space
+ */
 export interface WebXRPlane {
+    /**
+     * a babylon-assigned ID for this polygon
+     */
     id: number;
+    /**
+     * the native xr-plane object
+     */
     xrPlane: XRPlane;
+    /**
+     * an array of vector3 points in babylon space. right/left hand system is taken into account.
+     */
     polygonDefinition: Array<Vector3>;
+    /**
+     * A transformation matrix to apply on the mesh that will be built using the polygonDefinition
+     * Local vs. World are decided if worldParentNode was provided or not in the options when constructing the module
+     */
     transformationMatrix: Matrix;
 }
 
 let planeIdProvider = 0;
 
+/**
+ * The plane detector is used to detect planes in the real world when in AR
+ * For more information see https://github.com/immersive-web/real-world-geometry/
+ */
 export class WebXRPlaneDetector implements WebXRFeature {
 
-    public static Name = Name;
+    /**
+     * The module's name
+     */
+    public static readonly Name = Name;
+    /**
+     * The (Babylon) version of this module.
+     * This is an integer representing the implementation version.
+     * This number does not correspond to the webxr specs version
+     */
+    public static readonly Version = 1;
 
+    /**
+     * Observers registered here will be executed when a new plane was added to the session
+     */
     public onPlaneAddedObservable: Observable<WebXRPlane> = new Observable();
+    /**
+     * Observers registered here will be executed when a plane is no longer detected in the session
+     */
     public onPlaneRemovedObservable: Observable<WebXRPlane> = new Observable();
+    /**
+     * Observers registered here will be executed when an existing plane updates (for example - expanded)
+     * This can execute N times every frame
+     */
     public onPlaneUpdatedObservable: Observable<WebXRPlane> = new Observable();
 
     private _enabled: boolean = false;
@@ -38,6 +77,11 @@ export class WebXRPlaneDetector implements WebXRFeature {
     private _lastFrameDetected: XRPlaneSet = new Set();
     private _observerTracked: Nullable<Observer<XRFrame>>;
 
+    /**
+     *
+     * @param xrSessionManager an instance of xr Session manager
+     * @param options configuration to use when constructing this feature
+     */
     constructor(private xrSessionManager: WebXRSessionManager, private options: WebXRPlaneDetectorOptions = {}) {
         if (this.xrSessionManager.session) {
             this.xrSessionManager.session.updateWorldTrackingState({ planeDetectionState: { enabled: true } });
@@ -50,6 +94,10 @@ export class WebXRPlaneDetector implements WebXRFeature {
         }
     }
 
+    /**
+     * attach this feature
+     * Will usually be called by the features manager
+     */
     attach(): boolean {
 
         this._observerTracked = this.xrSessionManager.onXRFrameObservable.add(() => {
@@ -92,6 +140,11 @@ export class WebXRPlaneDetector implements WebXRFeature {
         this._attached = true;
         return true;
     }
+
+    /**
+     * detach this feature.
+     * Will usually be called by the features manager
+     */
     detach(): boolean {
         this._attached = false;
 
@@ -102,6 +155,9 @@ export class WebXRPlaneDetector implements WebXRFeature {
         return true;
     }
 
+    /**
+     * Dispose this feature and all of the resources attached
+     */
     dispose(): void {
         this.detach();
         this.onPlaneAddedObservable.clear();
@@ -127,28 +183,6 @@ export class WebXRPlaneDetector implements WebXRFeature {
                 mat.multiplyToRef(this.options.worldParentNode.getWorldMatrix(), mat);
             }
         }
-        /*if (!this.options.dontCreatePolygon) {
-            let mat;
-            if (plane.mesh) {
-                mat = plane.mesh.material;
-                plane.mesh.dispose(false, false);
-            } //else {
-            plane.polygonDefinition.push(plane.polygonDefinition[0]);
-            plane.mesh = TubeBuilder.CreateTube("tube", { path: plane.polygonDefinition, radius: 0.01, sideOrientation: Mesh.FRONTSIDE, updatable: true }, this.xrSessionManager.scene);
-            //}
-            if (!mat) {
-                mat = new StandardMaterial("mat", this.xrSessionManager.scene);
-                mat.alpha = 0.5;
-                (<StandardMaterial>mat).diffuseColor = Color3.Random();
-            }
-            plane.mesh.material = mat;
-
-            plane.mesh.rotationQuaternion = new Quaternion();
-            plane.transformMatrix!.decompose(plane.mesh.scaling, plane.mesh.rotationQuaternion, plane.mesh.position);
-            if (this.options.worldParentNode) {
-                plane.mesh.parent = this.options.worldParentNode;
-            }
-        }*/
         return <WebXRPlane>plane;
     }
 
@@ -165,3 +199,8 @@ export class WebXRPlaneDetector implements WebXRFeature {
         return -1;
     }
 }
+
+//register the plugin
+WebXRFeaturesManager.AddWebXRFeature(WebXRPlaneDetector.Name, (xrSessionManager, options) => {
+    return () => new WebXRPlaneDetector(xrSessionManager, options);
+}, WebXRPlaneDetector.Version);
