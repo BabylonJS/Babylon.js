@@ -2622,13 +2622,18 @@ export class ThinEngine {
         this._viewportCached.w = 0;
 
         if (bruteForce) {
-            this.resetTextureCache();
             this._currentProgram = null;
+            this.resetTextureCache();
 
             this._stencilState.reset();
+
             this._depthCullingState.reset();
             this._depthCullingState.depthFunc = this._gl.LEQUAL;
+
             this._alphaState.reset();
+            this._alphaMode = Constants.ALPHA_ADD;
+            this._alphaEquation = Constants.ALPHA_DISABLE;
+
             this._colorWrite = true;
             this._colorWriteChanged = true;
 
@@ -2636,6 +2641,9 @@ export class ThinEngine {
 
             this._gl.pixelStorei(this._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, this._gl.NONE);
             this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+
+            this._mustWipeVertexAttributes = true;
+            this.unbindAllAttributes();
         }
 
         this._resetVertexBufferBinding();
