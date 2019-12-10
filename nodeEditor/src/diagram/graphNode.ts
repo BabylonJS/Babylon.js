@@ -291,9 +291,9 @@ export class GraphNode {
         this._visual.setPointerCapture(evt.pointerId);
     }
 
-    public cleanAccumulation() {
-        this.x = this._ownerCanvas.getGridPosition(this.x);
-        this.y = this._ownerCanvas.getGridPosition(this.y);
+    public cleanAccumulation(useCeil = false) {
+        this.x = this._ownerCanvas.getGridPosition(this.x, useCeil);
+        this.y = this._ownerCanvas.getGridPosition(this.y, useCeil);
     }
 
     private _onUp(evt: PointerEvent) {

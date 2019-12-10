@@ -131,14 +131,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-beta.8";
+        return "babylonjs@4.1.0-beta.10";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-beta.8";
+        return "4.1.0-beta.10";
     }
 
     /**
@@ -2168,27 +2168,28 @@ export class ThinEngine {
         const program = pipelineContext.program!;
 
         var linked = context.getProgramParameter(program, context.LINK_STATUS);
-
         if (!linked) { // Get more info
-
             // Vertex
             if (!this._gl.getShaderParameter(vertexShader, this._gl.COMPILE_STATUS)) {
-                let log = this._gl.getShaderInfoLog(vertexShader);
+                const log = this._gl.getShaderInfoLog(vertexShader);
                 if (log) {
+                    pipelineContext.vertexCompilationError = log;
                     throw new Error("VERTEX SHADER " + log);
                 }
             }
 
             // Fragment
             if (!this._gl.getShaderParameter(fragmentShader, this._gl.COMPILE_STATUS)) {
-                let log = this._gl.getShaderInfoLog(fragmentShader);
+                const log = this._gl.getShaderInfoLog(fragmentShader);
                 if (log) {
+                    pipelineContext.fragmentCompilationError = log;
                     throw new Error("FRAGMENT SHADER " + log);
                 }
             }
 
             var error = context.getProgramInfoLog(program);
             if (error) {
+                pipelineContext.programLinkError = error;
                 throw new Error(error);
             }
         }
@@ -2200,6 +2201,7 @@ export class ThinEngine {
             if (!validated) {
                 var error = context.getProgramInfoLog(program);
                 if (error) {
+                    pipelineContext.programValidationError = error;
                     throw new Error(error);
                 }
             }
@@ -2622,13 +2624,18 @@ export class ThinEngine {
         this._viewportCached.w = 0;
 
         if (bruteForce) {
-            this.resetTextureCache();
             this._currentProgram = null;
+            this.resetTextureCache();
 
             this._stencilState.reset();
+
             this._depthCullingState.reset();
             this._depthCullingState.depthFunc = this._gl.LEQUAL;
+
             this._alphaState.reset();
+            this._alphaMode = Constants.ALPHA_ADD;
+            this._alphaEquation = Constants.ALPHA_DISABLE;
+
             this._colorWrite = true;
             this._colorWriteChanged = true;
 
@@ -2636,6 +2643,9 @@ export class ThinEngine {
 
             this._gl.pixelStorei(this._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, this._gl.NONE);
             this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+
+            this._mustWipeVertexAttributes = true;
+            this.unbindAllAttributes();
         }
 
         this._resetVertexBufferBinding();
@@ -4302,7 +4312,7 @@ export class ThinEngine {
      * Gets host document
      * @returns the host document object
      */
-    public getHostDocument(): Document {
+    public getHostDocument(): Nullable<Document> {
         if (this._renderingCanvas && this._renderingCanvas.ownerDocument) {
             return this._renderingCanvas.ownerDocument;
         }
