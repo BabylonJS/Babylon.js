@@ -176,6 +176,8 @@
 - Pointer-Event simulation for screen target ray mode ([RaananW](https://github.com/RaananW/))
 - New observable that triggers when a session was initialized ([RaananW](https://github.com/RaananW/))
 - WebXR teleportation can now be disabled after initialized ([RaananW](https://github.com/RaananW/))
+- New Features Manager for WebXR features ([RaananW](https://github.com/RaananW/))
+- New features - Plane detection, Hit Test, Background remover ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
