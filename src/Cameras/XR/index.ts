@@ -10,3 +10,5 @@ export * from "./webXRManagedOutputCanvas";
 export * from "./webXRTypes";
 export * from "./webXRSessionManager";
 export * from "./webXRDefaultExperience";
+export * from "./webXRFeaturesManager";
+export * from "./features/index";

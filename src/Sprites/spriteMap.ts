@@ -8,6 +8,7 @@ import { ShaderMaterial } from "../Materials/shaderMaterial";
 import { Mesh } from "../Meshes/mesh";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { ISpriteJSONSprite, ISpriteJSONAtlas } from "./ISprites";
+import { Effect } from "../Materials/effect";
 
 import "../Meshes/Builders/planeBuilder";
 import "../Shaders/spriteMap.fragment";
@@ -220,9 +221,19 @@ export class SpriteMap implements ISpriteMap {
         defines.push("#define FLIPU");
     }
 
+    let shaderString: string = Effect.ShadersStore['spriteMapPixelShader'];
+    let layerSampleString: string = '';
+
+    for (let i = 0; i < this.options.layerCount; i++) {
+        layerSampleString += 'case ' + i + ' : frameID = texture(tileMaps[' + i + '], (tileID + 0.5) / stageSize, 0.).x;';
+        layerSampleString += 'break;';
+    }
+
+    Effect.ShadersStore['spriteMap' + this.name + 'PixelShader'] = shaderString.replace('#define LAYER_ID_SWITCH',  layerSampleString);
+
     this._material = new ShaderMaterial("spriteMap:" + this.name, this._scene, {
         vertex: "spriteMap",
-        fragment: "spriteMap",
+        fragment: "spriteMap" + this.name,
     }, {
         defines,
         attributes: ["position", "normal", "uv"],

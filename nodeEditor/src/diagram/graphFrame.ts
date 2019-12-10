@@ -19,8 +19,8 @@ export class GraphFrame {
     public element: HTMLDivElement;   
     private _headerElement: HTMLDivElement;    
     private _headerTextElement: HTMLDivElement;        
-    private _headerCollapseElement: HTMLImageElement;    
-    private _headerCloseElement: HTMLImageElement;    
+    private _headerCollapseElement: HTMLDivElement;    
+    private _headerCloseElement: HTMLDivElement;    
     private _portContainer: HTMLDivElement;    
     private _outputPortContainer: HTMLDivElement;    
     private _inputPortContainer: HTMLDivElement;    
@@ -32,6 +32,10 @@ export class GraphFrame {
     private _isCollapsed = false;
     private _ports: NodePort[] = [];
     private _controlledPorts: NodePort[] = [];
+
+    private readonly CloseSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><defs><style>.cls-1{fill:none;}</style></defs><title>closeIcon</title><g id="Layer_2" data-name="Layer 2"><path class="cls-1" d="M16,15l5.85,5.84-1,1L15,15.93,9.15,21.78l-1-1L14,15,8.19,9.12l1-1L15,14l5.84-5.84,1,1Z"/></g></svg>`;
+    private readonly ExpandSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><defs><style>.cls-1{fill:none;}</style></defs><title>expandIcon</title><g id="Layer_2" data-name="Layer 2"><path class="cls-1" d="M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-6.75,6.75H11.06V14.44h3.38V11.06h1.12v3.38h3.38v1.12H15.56v3.38H14.44Z"/></g></svg>`;
+    private readonly CollapseSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><defs><style>.cls-1{fill:none;}</style></defs><title>CollapseIcon</title><g id="Layer_2" data-name="Layer 2"><path class="cls-1" d="M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-2.25,6.75H11.06V14.44h7.88Z"/></g></svg>`;
 
     public get isCollapsed() {
         return this._isCollapsed;
@@ -232,7 +236,7 @@ export class GraphFrame {
         this._headerTextElement.classList.add("frame-box-header-title");
         this._headerElement.appendChild(this._headerTextElement);
 
-        this._headerCollapseElement = root.ownerDocument!.createElement("img"); 
+        this._headerCollapseElement = root.ownerDocument!.createElement("div"); 
         this._headerCollapseElement.classList.add("frame-box-header-collapse");   
         this._headerCollapseElement.classList.add("frame-box-header-button");     
         this._headerCollapseElement.ondragstart= () => false;
@@ -244,11 +248,17 @@ export class GraphFrame {
             evt.stopPropagation();
             this._headerCollapseElement.classList.remove("down");
             this.isCollapsed = !this.isCollapsed;
+
+            if (this.isCollapsed) {                
+                this._headerCollapseElement.innerHTML = this.ExpandSVG;
+            } else {
+                this._headerCollapseElement.innerHTML = this.CollapseSVG;
+            }
         });
-        this._headerCollapseElement.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5NYXRyaXg8L3RpdGxlPjxnIGlkPSJMYXllcl81IiBkYXRhLW5hbWU9IkxheWVyIDUiPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsNi4xMVY5LjVoMy4zOUE0LjUxLDQuNTEsMCwwLDAsMTEuNSw2LjExWiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsMTQuODlhNC41MSw0LjUxLDAsMCwwLDMuMzktMy4zOUgxMS41WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsMy4wN3YyQTUuNTQsNS41NCwwLDAsMSwxNS45Miw5LjVoMkE3LjUxLDcuNTEsMCwwLDAsMTEuNSwzLjA3WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTE1LjkyLDExLjVhNS41NCw1LjU0LDAsMCwxLTQuNDIsNC40MnYyYTcuNTEsNy41MSwwLDAsMCw2LjQzLTYuNDNaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNNS4wOCwxMS41aC0yQTcuNTEsNy41MSwwLDAsMCw5LjUsMTcuOTN2LTJBNS41NCw1LjU0LDAsMCwxLDUuMDgsMTEuNVoiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik05LjUsMy4wN0E3LjUxLDcuNTEsMCwwLDAsMy4wNyw5LjVoMkE1LjU0LDUuNTQsMCwwLDEsOS41LDUuMDhaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNOS41LDExLjVINi4xMUE0LjUxLDQuNTEsMCwwLDAsOS41LDE0Ljg5WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTkuNSw2LjExQTQuNTEsNC41MSwwLDAsMCw2LjExLDkuNUg5LjVaIi8+PC9nPjwvc3ZnPg==";
+        this._headerCollapseElement.innerHTML = this.CollapseSVG;
         this._headerElement.appendChild(this._headerCollapseElement);
 
-        this._headerCloseElement = root.ownerDocument!.createElement("img"); 
+        this._headerCloseElement = root.ownerDocument!.createElement("div"); 
         this._headerCloseElement.classList.add("frame-box-header-close");
         this._headerCloseElement.classList.add("frame-box-header-button");
         this._headerCloseElement.ondragstart= () => false;
@@ -259,7 +269,7 @@ export class GraphFrame {
             evt.stopPropagation();
             this.dispose();
         });
-        this._headerCloseElement.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5NYXRyaXg8L3RpdGxlPjxnIGlkPSJMYXllcl81IiBkYXRhLW5hbWU9IkxheWVyIDUiPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsNi4xMVY5LjVoMy4zOUE0LjUxLDQuNTEsMCwwLDAsMTEuNSw2LjExWiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsMTQuODlhNC41MSw0LjUxLDAsMCwwLDMuMzktMy4zOUgxMS41WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTExLjUsMy4wN3YyQTUuNTQsNS41NCwwLDAsMSwxNS45Miw5LjVoMkE3LjUxLDcuNTEsMCwwLDAsMTEuNSwzLjA3WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTE1LjkyLDExLjVhNS41NCw1LjU0LDAsMCwxLTQuNDIsNC40MnYyYTcuNTEsNy41MSwwLDAsMCw2LjQzLTYuNDNaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNNS4wOCwxMS41aC0yQTcuNTEsNy41MSwwLDAsMCw5LjUsMTcuOTN2LTJBNS41NCw1LjU0LDAsMCwxLDUuMDgsMTEuNVoiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik05LjUsMy4wN0E3LjUxLDcuNTEsMCwwLDAsMy4wNyw5LjVoMkE1LjU0LDUuNTQsMCwwLDEsOS41LDUuMDhaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNOS41LDExLjVINi4xMUE0LjUxLDQuNTEsMCwwLDAsOS41LDE0Ljg5WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTkuNSw2LjExQTQuNTEsNC41MSwwLDAsMCw2LjExLDkuNUg5LjVaIi8+PC9nPjwvc3ZnPg==";
+        this._headerCloseElement.innerHTML = this.CloseSVG;
         this._headerElement.appendChild(this._headerCloseElement);
 
         this._portContainer = root.ownerDocument!.createElement("div");  
@@ -357,7 +367,17 @@ export class GraphFrame {
 
         this._ownerCanvas._frameIsMoving = true;
 
-        this.cleanAccumulation();
+        let oldX = this.x;
+        let oldY = this.y;
+
+        this.x = this._ownerCanvas.getGridPosition(this.x);
+        this.y = this._ownerCanvas.getGridPosition(this.y); 
+
+        for (var selectedNode of this._nodes) {
+            selectedNode.x += this.x - oldX;
+            selectedNode.y += this.y - oldY;
+            selectedNode.cleanAccumulation(true);
+        }
     }    
 
     private _onUp(evt: PointerEvent) {
