@@ -105,6 +105,9 @@ declare module NODEEDITOR {
         private _height;
         element: HTMLDivElement;
         private _headerElement;
+        private _headerTextElement;
+        private _headerCollapseElement;
+        private _headerCloseElement;
         private _portContainer;
         private _outputPortContainer;
         private _inputPortContainer;
@@ -951,7 +954,7 @@ declare module NODEEDITOR {
         private _refreshLinks;
         refresh(): void;
         private _onDown;
-        cleanAccumulation(reset?: boolean): void;
+        cleanAccumulation(): void;
         private _onUp;
         private _onMove;
         renderProperties(): BABYLON.Nullable<JSX.Element>;

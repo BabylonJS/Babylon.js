@@ -131,14 +131,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-beta.6";
+        return "babylonjs@4.1.0-beta.9";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-beta.6";
+        return "4.1.0-beta.9";
     }
 
     /**
@@ -283,7 +283,6 @@ export class ThinEngine {
     /** @hidden */
     public _caps: EngineCapabilities;
     private _isStencilEnable: boolean;
-    protected _colorWrite = true;
 
     private _glVersion: string;
     private _glRenderer: string;
@@ -330,11 +329,19 @@ export class ThinEngine {
 
     // States
     /** @hidden */
+    protected _colorWrite = true;
+    /** @hidden */
+    protected _colorWriteChanged = true;
+    /** @hidden */
     protected _depthCullingState = new DepthCullingState();
     /** @hidden */
     protected _stencilState = new StencilState();
     /** @hidden */
-    protected _alphaState = new AlphaState();
+    public _alphaState = new AlphaState();
+    /** @hidden */
+    public _alphaMode = Constants.ALPHA_ADD;
+    /** @hidden */
+    public _alphaEquation = Constants.ALPHA_DISABLE;
 
     // Cache
     /** @hidden */
@@ -488,7 +495,7 @@ export class ThinEngine {
      * @param options defines further options to be sent to the getContext() function
      * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
      */
-    constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
+    constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
 
         let canvas: Nullable<HTMLCanvasElement> = null;
 
@@ -1792,24 +1799,7 @@ export class ThinEngine {
         }
 
         if ((<any>offsetLocations[0]).index !== undefined) {
-            let stride = 0;
-            for (let i = 0; i < offsetLocations.length; i++) {
-                let ai = <InstancingAttributeInfo>offsetLocations[i];
-                stride += ai.attributeSize * 4;
-            }
-            for (let i = 0; i < offsetLocations.length; i++) {
-                let ai = <InstancingAttributeInfo>offsetLocations[i];
-
-                if (!this._vertexAttribArraysEnabled[ai.index]) {
-                    this._gl.enableVertexAttribArray(ai.index);
-                    this._vertexAttribArraysEnabled[ai.index] = true;
-                }
-
-                this._vertexAttribPointer(instancesBuffer, ai.index, ai.attributeSize, ai.attributeType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
-                this._gl.vertexAttribDivisor(ai.index, 1);
-                this._currentInstanceLocations.push(ai.index);
-                this._currentInstanceBuffers.push(instancesBuffer);
-            }
+            this.bindInstancesBuffer(instancesBuffer, offsetLocations as any, true);
         } else {
             for (let index = 0; index < 4; index++) {
                 let offsetLocation = <number>offsetLocations[index];
@@ -1828,12 +1818,82 @@ export class ThinEngine {
     }
 
     /**
-     * Apply all cached states (depth, culling, stencil and alpha)
+     * Bind the content of a webGL buffer used with instanciation
+     * @param instancesBuffer defines the webGL buffer to bind
+     * @param attributesInfo defines the offsets or attributes information used to determine where data must be stored in the buffer
+     * @param computeStride defines Wether to compute the strides from the info or use the default 0
      */
-    public applyStates() {
-        this._depthCullingState.apply(this._gl);
-        this._stencilState.apply(this._gl);
-        this._alphaState.apply(this._gl);
+    public bindInstancesBuffer(instancesBuffer: DataBuffer, attributesInfo: InstancingAttributeInfo[], computeStride = true): void {
+        this.bindArrayBuffer(instancesBuffer);
+
+        let stride = 0;
+        if (computeStride) {
+            for (let i = 0; i < attributesInfo.length; i++) {
+                let ai = attributesInfo[i];
+                stride += ai.attributeSize * 4;
+            }
+        }
+
+        for (let i = 0; i < attributesInfo.length; i++) {
+            let ai = attributesInfo[i];
+            if (ai.index === undefined) {
+                ai.index = this._currentEffect!.getAttributeLocationByName(ai.attributeName);
+            }
+
+            if (!this._vertexAttribArraysEnabled[ai.index]) {
+                this._gl.enableVertexAttribArray(ai.index);
+                this._vertexAttribArraysEnabled[ai.index] = true;
+            }
+
+            this._vertexAttribPointer(instancesBuffer, ai.index, ai.attributeSize, ai.attributeType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
+            this._gl.vertexAttribDivisor(ai.index, ai.divisor === undefined ? 1 : ai.divisor);
+            this._currentInstanceLocations.push(ai.index);
+            this._currentInstanceBuffers.push(instancesBuffer);
+        }
+    }
+
+    /**
+     * Disable the instance attribute corresponding to the name in parameter
+     * @param name defines the name of the attribute to disable
+     */
+    public disableInstanceAttributeByName(name: string) {
+        if (!this._currentEffect) {
+            return;
+        }
+
+        const attributeLocation = this._currentEffect.getAttributeLocationByName(name);
+        this.disableInstanceAttribute(attributeLocation);
+    }
+
+    /**
+     * Disable the instance attribute corresponding to the location in parameter
+     * @param attributeLocation defines the attribute location of the attribute to disable
+     */
+    public disableInstanceAttribute(attributeLocation: number) {
+        let shouldClean = false;
+        let index: number;
+        while ((index = this._currentInstanceLocations.indexOf(attributeLocation)) !== -1) {
+            this._currentInstanceLocations.splice(index, 1);
+            this._currentInstanceBuffers.splice(index, 1);
+
+            shouldClean = true;
+            index = this._currentInstanceLocations.indexOf(attributeLocation);
+        }
+
+        if (shouldClean) {
+            this._gl.vertexAttribDivisor(attributeLocation, 0);
+            this.disableAttributeByIndex(attributeLocation);
+        }
+    }
+
+    /**
+     * Disable the attribute corresponding to the location in parameter
+     * @param attributeLocation defines the attribute location of the attribute to disable
+     */
+    public disableAttributeByIndex(attributeLocation: number) {
+        this._gl.disableVertexAttribArray(attributeLocation);
+        this._vertexAttribArraysEnabled[attributeLocation] = false;
+        this._currentBufferPointers[attributeLocation].active = false;
     }
 
     /**
@@ -2193,7 +2253,16 @@ export class ThinEngine {
             return;
         }
 
-        webGLPipelineContext.onCompiled = action;
+        let oldHandler = webGLPipelineContext.onCompiled;
+
+        if (oldHandler) {
+            webGLPipelineContext.onCompiled = () => {
+                oldHandler!();
+                action();
+            };
+        } else {
+            webGLPipelineContext.onCompiled = action;
+        }
     }
 
     /**
@@ -2473,6 +2542,40 @@ export class ThinEngine {
     // States
 
     /**
+     * Apply all cached states (depth, culling, stencil and alpha)
+     */
+    public applyStates() {
+        this._depthCullingState.apply(this._gl);
+        this._stencilState.apply(this._gl);
+        this._alphaState.apply(this._gl);
+
+        if (this._colorWriteChanged) {
+            this._colorWriteChanged = false;
+            const enable = this._colorWrite;
+            this._gl.colorMask(enable, enable, enable, enable);
+        }
+    }
+
+    /**
+     * Enable or disable color writing
+     * @param enable defines the state to set
+     */
+    public setColorWrite(enable: boolean): void {
+        if (enable !== this._colorWrite) {
+            this._colorWriteChanged = true;
+            this._colorWrite = enable;
+        }
+    }
+
+    /**
+     * Gets a boolean indicating if color writing is enabled
+     * @returns the current color writing state
+     */
+    public getColorWrite(): boolean {
+        return this._colorWrite;
+    }
+
+    /**
      * Gets the depth culling state manager
      */
     public get depthCullingState(): DepthCullingState {
@@ -2519,18 +2622,28 @@ export class ThinEngine {
         this._viewportCached.w = 0;
 
         if (bruteForce) {
-            this.resetTextureCache();
             this._currentProgram = null;
+            this.resetTextureCache();
 
             this._stencilState.reset();
+
             this._depthCullingState.reset();
             this._depthCullingState.depthFunc = this._gl.LEQUAL;
+
             this._alphaState.reset();
+            this._alphaMode = Constants.ALPHA_ADD;
+            this._alphaEquation = Constants.ALPHA_DISABLE;
+
+            this._colorWrite = true;
+            this._colorWriteChanged = true;
 
             this._unpackFlipYCached = null;
 
             this._gl.pixelStorei(this._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, this._gl.NONE);
             this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+
+            this._mustWipeVertexAttributes = true;
+            this.unbindAllAttributes();
         }
 
         this._resetVertexBufferBinding();
@@ -2951,27 +3064,64 @@ export class ThinEngine {
         return this._gl.getParameter(this._gl.UNPACK_ALIGNMENT);
     }
 
+    private _getTextureTarget(texture: InternalTexture): number {
+        if (texture.isCube) {
+            return this._gl.TEXTURE_CUBE_MAP;
+        } else if (texture.is3D) {
+            return this._gl.TEXTURE_3D;
+        } else if (texture.is2DArray) {
+            return this._gl.TEXTURE_2D_ARRAY;
+        }
+        return this._gl.TEXTURE_2D;
+    }
+
     /**
      * Update the sampling mode of a given texture
      * @param samplingMode defines the required sampling mode
      * @param texture defines the texture to update
+     * @param generateMipMaps defines whether to generate mipmaps for the texture
      */
-    public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
-        var filters = this._getSamplingParameters(samplingMode, texture.generateMipMaps);
-        var target = this._gl.TEXTURE_2D;
-        if (texture.isCube) {
-            target = this._gl.TEXTURE_CUBE_MAP;
-        } else if (texture.is3D) {
-            target = this._gl.TEXTURE_3D;
-        } else if (texture.is2DArray) {
-            target = this._gl.TEXTURE_2D_ARRAY;
-        }
+    public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture, generateMipMaps: boolean = false): void {
+        const target = this._getTextureTarget(texture);
+        var filters = this._getSamplingParameters(samplingMode, texture.generateMipMaps || generateMipMaps);
 
         this._setTextureParameterInteger(target, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
         this._setTextureParameterInteger(target, this._gl.TEXTURE_MIN_FILTER, filters.min);
+
+        if (generateMipMaps) {
+            texture.generateMipMaps = true;
+            this._gl.generateMipmap(target);
+        }
+
         this._bindTextureDirectly(target, null);
 
         texture.samplingMode = samplingMode;
+    }
+
+    /**
+     * Update the sampling mode of a given texture
+     * @param texture defines the texture to update
+     * @param wrapU defines the texture wrap mode of the u coordinates
+     * @param wrapV defines the texture wrap mode of the v coordinates
+     * @param wrapR defines the texture wrap mode of the r coordinates
+     */
+    public updateTextureWrappingMode(texture: InternalTexture, wrapU: Nullable<number>, wrapV: Nullable<number> = null, wrapR: Nullable<number> = null): void {
+        const target = this._getTextureTarget(texture);
+
+        if (wrapU) {
+            this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_S, this._getTextureWrapMode(wrapU));
+            texture._cachedWrapU = wrapU;
+        }
+        if (wrapV) {
+            this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_T, this._getTextureWrapMode(wrapV));
+            texture._cachedWrapV = wrapV;
+        }
+        if (wrapR) {
+            this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_R, this._getTextureWrapMode(wrapR));
+            texture._cachedWrapR = wrapR;
+        }
+
+        this._bindTextureDirectly(target, null);
     }
 
     /** @hidden */
@@ -3123,35 +3273,35 @@ export class ThinEngine {
 
     /** @hidden */
     public _setupFramebufferDepthAttachments(generateStencilBuffer: boolean, generateDepthBuffer: boolean, width: number, height: number, samples = 1): Nullable<WebGLRenderbuffer> {
-        var depthStencilBuffer: Nullable<WebGLRenderbuffer> = null;
         var gl = this._gl;
 
         // Create the depth/stencil buffer
+        if (generateStencilBuffer && generateDepthBuffer) {
+            return this._getDepthStencilBuffer(width, height, samples, gl.DEPTH_STENCIL, gl.DEPTH24_STENCIL8, gl.DEPTH_STENCIL_ATTACHMENT);
+        }
+        if (generateDepthBuffer) {
+            return this._getDepthStencilBuffer(width, height, samples, gl.DEPTH_COMPONENT16, gl.DEPTH_COMPONENT16, gl.DEPTH_ATTACHMENT);
+        }
         if (generateStencilBuffer) {
-            depthStencilBuffer = gl.createRenderbuffer();
-            gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-
-            if (samples > 1) {
-                gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH24_STENCIL8, width, height);
-            } else {
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, width, height);
-            }
-
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
-        }
-        else if (generateDepthBuffer) {
-            depthStencilBuffer = gl.createRenderbuffer();
-            gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
-
-            if (samples > 1) {
-                gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.DEPTH_COMPONENT16, width, height);
-            } else {
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
-            }
-
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthStencilBuffer);
+            return this._getDepthStencilBuffer(width, height, samples, gl.STENCIL_INDEX8, gl.STENCIL_INDEX8, gl.STENCIL_ATTACHMENT);
         }
 
+        return null;
+    }
+
+    private _getDepthStencilBuffer = (width: number, height: number, samples: number, internalFormat: number, msInternalFormat: number, attachment: number) => {
+        var gl = this._gl;
+        const depthStencilBuffer = gl.createRenderbuffer();
+
+        gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
+
+        if (samples > 1) {
+            gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, msInternalFormat, width, height);
+        } else {
+            gl.renderbufferStorage(gl.RENDERBUFFER, internalFormat, width, height);
+        }
+
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, depthStencilBuffer);
         return depthStencilBuffer;
     }
 
@@ -3548,9 +3698,7 @@ export class ThinEngine {
             this._mustWipeVertexAttributes = false;
 
             for (var i = 0; i < this._caps.maxVertexAttribs; i++) {
-                this._gl.disableVertexAttribArray(i);
-                this._vertexAttribArraysEnabled[i] = false;
-                this._currentBufferPointers[i].active = false;
+                this.disableAttributeByIndex(i);
             }
             return;
         }
@@ -3560,9 +3708,7 @@ export class ThinEngine {
                 continue;
             }
 
-            this._gl.disableVertexAttribArray(i);
-            this._vertexAttribArraysEnabled[i] = false;
-            this._currentBufferPointers[i].active = false;
+            this.disableAttributeByIndex(i);
         }
     }
 
@@ -4017,6 +4163,23 @@ export class ThinEngine {
             this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
         });
         return request;
+    }
+
+    /**
+     * Reads pixels from the current frame buffer. Please note that this function can be slow
+     * @param x defines the x coordinate of the rectangle where pixels must be read
+     * @param y defines the y coordinate of the rectangle where pixels must be read
+     * @param width defines the width of the rectangle where pixels must be read
+     * @param height defines the height of the rectangle where pixels must be read
+     * @param hasAlpha defines wether the output should have alpha or not (defaults to true)
+     * @returns a Uint8Array containing RGBA colors
+     */
+    public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true): Uint8Array {
+        const numChannels = hasAlpha ? 4 : 3;
+        const format = hasAlpha ? this._gl.RGBA : this._gl.RGB;
+        const data = new Uint8Array(height * width * numChannels);
+        this._gl.readPixels(x, y, width, height, format, this._gl.UNSIGNED_BYTE, data);
+        return data;
     }
 
     // Statics
