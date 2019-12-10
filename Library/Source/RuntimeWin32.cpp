@@ -7,13 +7,13 @@
 
 namespace Babylon
 {
-    RuntimeWin32::RuntimeWin32(HWND hWnd, LogCallback callback)
-        : RuntimeWin32{ hWnd, GetUrlFromPath(GetModulePath().parent_path()), std::move(callback) }
+    RuntimeWin32::RuntimeWin32(HWND hWnd)
+        : RuntimeWin32{ hWnd, GetUrlFromPath(GetModulePath().parent_path()) }
     {
     }
 
-    RuntimeWin32::RuntimeWin32(HWND hWnd, const std::string& rootUrl, LogCallback callback)
-        : Runtime{ std::make_unique<RuntimeImpl>(hWnd, rootUrl, std::move(callback)) }
+    RuntimeWin32::RuntimeWin32(HWND hWnd, const std::string& rootUrl)
+        : Runtime{ std::make_unique<RuntimeImpl>(hWnd, rootUrl) }
     {
         RECT rect;
         if (GetWindowRect(hWnd, &rect))
@@ -24,11 +24,7 @@ namespace Babylon
         }
     }
 
-    void RuntimeImpl::ThreadInit()
-    {
-    }
-
-    void RuntimeImpl::ThreadRun()
+    void RuntimeImpl::ThreadProcedure()
     {
         HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
         assert(SUCCEEDED(hr));
@@ -39,7 +35,6 @@ namespace Babylon
             InitializeNativeXr(env);
         });
 
-        RuntimeImpl::BaseThreadInit();
-        RuntimeImpl::BaseThreadRun();
+        RuntimeImpl::BaseThreadProcedure();
     }
 }

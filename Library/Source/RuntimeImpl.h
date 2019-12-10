@@ -21,7 +21,7 @@ namespace Babylon
         static RuntimeImpl& GetRuntimeImplFromJavaScript(Napi::Env);
         static NativeWindow& GetNativeWindowFromJavaScript(Napi::Env);
 
-        RuntimeImpl(void* nativeWindowPtr, const std::string& rootUrl, LogCallback&& logCallback);
+        RuntimeImpl(void* nativeWindowPtr, const std::string& rootUrl);
         virtual ~RuntimeImpl();
 
         void UpdateSize(float width, float height);
@@ -51,10 +51,8 @@ namespace Babylon
 
     private:
         void InitializeJavaScriptVariables();
-        void BaseThreadInit();
-        void BaseThreadRun();
-        void ThreadInit();
-        void ThreadRun();
+        void BaseThreadProcedure();
+        void ThreadProcedure();
 
         arcana::manual_dispatcher<babylon_dispatcher::work_size> m_dispatcher{};
         arcana::cancellation_source m_cancelSource{};
@@ -73,9 +71,8 @@ namespace Babylon
         // occasionally need access to the env as well; m_env provides this
         // access when the env is available, reverting to nullptr once the env
         // is destroyed.
-        std::unique_ptr<Babylon::Env> m_env{};
+        Babylon::Env* m_env{};
         const std::string m_rootUrl{};
-        LogCallback m_logCallback{};
     };
 }
     

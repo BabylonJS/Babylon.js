@@ -6,13 +6,13 @@
 
 namespace Babylon
 {
-    RuntimeUWP::RuntimeUWP(ABI::Windows::UI::Core::ICoreWindow* window, LogCallback callback)
-        : RuntimeUWP{ window, {}, std::move(callback) }
+    RuntimeUWP::RuntimeUWP(ABI::Windows::UI::Core::ICoreWindow* window)
+        : RuntimeUWP{ window, {} }
     {
     }
 
-    RuntimeUWP::RuntimeUWP(ABI::Windows::UI::Core::ICoreWindow* window, const std::string& rootUrl, LogCallback callback)
-        : Runtime { std::make_unique<RuntimeImpl>(window, rootUrl, std::move(callback)) }
+    RuntimeUWP::RuntimeUWP(ABI::Windows::UI::Core::ICoreWindow* window, const std::string& rootUrl)
+        : Runtime { std::make_unique<RuntimeImpl>(window, rootUrl) }
         , m_window{ window }
     {
         m_window->AddRef();
@@ -27,18 +27,13 @@ namespace Babylon
         : Runtime{ std::make_unique<RuntimeImpl>(from_abi<winrt::Windows::UI::Xaml::Controls::SwapChainPanel>(panel), rootUrl) }
     {}*/
 
-    void RuntimeImpl::ThreadInit()
-    {
-    }
-
-    void RuntimeImpl::ThreadRun()
+    void RuntimeImpl::ThreadProcedure()
     {
         this->Dispatch([](Env& env)
         {
             InitializeNativeXr(env);
         });
 
-        RuntimeImpl::BaseThreadInit();
-        RuntimeImpl::BaseThreadRun();
+        RuntimeImpl::BaseThreadProcedure();
     }
 }

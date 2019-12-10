@@ -1,6 +1,5 @@
 #include "RuntimeImpl.h"
 
-#include "Console.h"
 #include "NativeEngine.h"
 #include "NativeWindow.h"
 #include "XMLHttpRequest.h"
@@ -17,7 +16,6 @@ namespace Babylon
         static constexpr auto JS_NATIVE_NAME = "_native";
         static constexpr auto JS_RUNTIME_NAME = "runtime";
         static constexpr auto JS_NATIVE_WINDOW_NAME = "window";
-        static constexpr auto JS_CONSOLE_NAME = "console";
 
         static constexpr auto JS_ENGINE_CONSTRUCTOR_NAME = "Engine";
         static constexpr auto JS_XML_HTTP_REQUEST_CONSTRUCTOR_NAME = "XMLHttpRequest";
@@ -39,18 +37,11 @@ namespace Babylon
             .Get(JS_WINDOW_NAME).ToObject());
     }
 
-    RuntimeImpl::RuntimeImpl(void* nativeWindowPtr, const std::string& rootUrl, LogCallback&& logCallback)
+    RuntimeImpl::RuntimeImpl(void* nativeWindowPtr, const std::string& rootUrl)
         : m_nativeWindowPtr{ nativeWindowPtr }
-#ifndef APPLE
-        , m_thread{ [this] { ThreadInit(); ThreadRun();} }
-#endif
+        , m_thread{ [this] { ThreadProcedure(); } }
         , m_rootUrl{ rootUrl }
-        , m_logCallback{ logCallback }
     {
-#ifdef APPLE
-        ThreadInit();
-        m_thread = std::thread([this] { ThreadRun(); });
-#endif
     }
 
     RuntimeImpl::~RuntimeImpl()
@@ -220,10 +211,6 @@ namespace Babylon
         global.Set("setTimeout", NativeWindow::GetSetTimeoutFunction(jsWindow).Value());
         global.Set("atob", NativeWindow::GetAToBFunction(jsWindow).Value());
 
-        auto jsConsole = Console::Create(env, m_logCallback);
-        jsNative.Set(JS_CONSOLE_NAME, jsConsole.Value());
-        global.Set(JS_CONSOLE_NAME, jsConsole.Value());
-
         auto jsNativeEngineConstructor = NativeEngine::InitializeAndCreateConstructor(env);
         jsNative.Set(JS_ENGINE_CONSTRUCTOR_NAME, jsNativeEngineConstructor.Value());
 
@@ -231,8 +218,10 @@ namespace Babylon
         global.Set(JS_XML_HTTP_REQUEST_CONSTRUCTOR_NAME, jsXmlHttpRequestConstructor.Value());
     }
 
-    void RuntimeImpl::BaseThreadInit()
+    void RuntimeImpl::BaseThreadProcedure()
     {
+        m_dispatcher.set_affinity(std::this_thread::get_id());
+
         auto executeOnScriptThread = [this](std::function<void()> action)
         {
             Dispatch([action = std::move(action)](auto&)
@@ -241,16 +230,15 @@ namespace Babylon
             });
         };
 
-        m_env = std::make_unique<Env>(GetModulePath().u8string().data(), std::move(executeOnScriptThread));
+        Env env{ GetModulePath().u8string().data(), std::move(executeOnScriptThread) };
+
+        m_env = &env;
+        auto hostScopeGuard = gsl::finally([this] { m_env = nullptr; });
 
         InitializeJavaScriptVariables();
-    }
-        
-    void RuntimeImpl::BaseThreadRun()
-    {
-        m_dispatcher.set_affinity(std::this_thread::get_id());
-        
+
         // TODO: Handle device lost/restored.
+
         while (!m_cancelSource.cancelled())
         {
             // check if suspended
@@ -260,7 +248,6 @@ namespace Babylon
             }
             m_dispatcher.blocking_tick(m_cancelSource);
         }
-        m_env = nullptr;
     }
 
     template arcana::task<std::string, std::exception_ptr> RuntimeImpl::LoadUrlAsync(const std::string& url);

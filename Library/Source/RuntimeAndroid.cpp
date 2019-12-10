@@ -4,24 +4,20 @@
 
 namespace Babylon
 {
-    RuntimeAndroid::RuntimeAndroid(ANativeWindow* nativeWindowPtr, LogCallback callback)
-        : RuntimeAndroid{ nativeWindowPtr, ".", std::move(callback) } // todo : GetModulePath().parent_path() std::fs experimental not available with ndk
+
+    RuntimeAndroid::RuntimeAndroid(ANativeWindow* nativeWindowPtr)
+        : RuntimeAndroid{ nativeWindowPtr, "." } // todo : GetModulePath().parent_path() std::fs experimental not available with ndk
     {
     }
 
-    RuntimeAndroid::RuntimeAndroid(ANativeWindow* nativeWindowPtr, const std::string& rootUrl, LogCallback callback)
-        : Runtime{ std::make_unique<RuntimeImpl>(nativeWindowPtr, rootUrl, std::move(callback)) }
+    RuntimeAndroid::RuntimeAndroid(ANativeWindow* nativeWindowPtr, const std::string& rootUrl)
+        : Runtime{ std::make_unique<RuntimeImpl>(nativeWindowPtr, rootUrl) }
     {
         // android stub
     }
 
-    void RuntimeImpl::ThreadInit()
+    void RuntimeImpl::ThreadProcedure()
     {
-        RuntimeImpl::BaseThreadInit();
-    }
-
-    void RuntimeImpl::ThreadRun()
-    {
-        RuntimeImpl::BaseThreadRun();
+        RuntimeImpl::BaseThreadProcedure();
     }
 }
