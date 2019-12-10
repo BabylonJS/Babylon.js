@@ -166,11 +166,11 @@ export class WebXRFeaturesManager implements IDisposable {
         let versionToLoad = 0;
         if (typeof version === 'string') {
             if (version === 'stable') {
-                version = WebXRFeaturesManager.GetStableVersionOfFeature(name);
+                versionToLoad = WebXRFeaturesManager.GetStableVersionOfFeature(name);
             } else if (version === 'latest') {
-                version = WebXRFeaturesManager.GetLatestVersionOfFeature(name);
+                versionToLoad = WebXRFeaturesManager.GetLatestVersionOfFeature(name);
             }
-            if (version === -1) {
+            if (versionToLoad === -1) {
                 throw new Error(`feature not found - ${name} (${version})`);
             }
         } else {
