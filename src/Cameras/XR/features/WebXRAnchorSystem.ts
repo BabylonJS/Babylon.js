@@ -6,7 +6,7 @@ import { TransformNode } from '../../../Meshes/transformNode';
 import { Space } from '../../../Maths/math.axis';
 import { WebXRPlaneDetector } from './WebXRPlaneDetector';
 import { Nullable } from '../../../types';
-import { WebXRHitTest } from './WebXRHitTest';
+import { WebXRHitTestLegacy } from './WebXRHitTestLegacy';
 
 const Name = "xr-anchor-system";
 //register the plugin
@@ -38,7 +38,7 @@ export class WebXRAnchorSystem implements WebXRFeature {
     public onAnchorRemovedObservable: Observable<WebXRAnchor> = new Observable();
 
     private _planeDetector: WebXRPlaneDetector;
-    private _hitTestModule: WebXRHitTest;
+    private _hitTestModule: WebXRHitTestLegacy;
 
     private _enabled: boolean = false;
     private _attached: boolean = false;
@@ -54,7 +54,7 @@ export class WebXRAnchorSystem implements WebXRFeature {
         this.options.usePlaneDetection = enable;
     }
 
-    public setHitTestModule(hitTestModule: WebXRHitTest) {
+    public setHitTestModule(hitTestModule: WebXRHitTestLegacy) {
         this._hitTestModule = hitTestModule;
     }
 
@@ -139,7 +139,7 @@ export class WebXRAnchorSystem implements WebXRFeature {
         if (this._hitTestModule && !this._hitTestModule.options.testOnPointerDownOnly) {
             onResults(this._hitTestModule.lastNativeXRHitResults);
         }
-        WebXRHitTest.XRHitTestWithSelectEvent(event, this.xrSessionManager.referenceSpace).then(onResults);
+        WebXRHitTestLegacy.XRHitTestWithSelectEvent(event, this.xrSessionManager.referenceSpace).then(onResults);
 
         // API will soon change, will need to use the plane
         this._planeDetector;

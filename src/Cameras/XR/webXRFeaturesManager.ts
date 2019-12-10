@@ -12,8 +12,8 @@ export class WebXRFeaturesManager implements IDisposable {
 
     private static readonly _AvailableFeatures: { [name: string]: WebXRFeatureConstructor } = {};
 
-    public static AddWebXRFeature(featureName: string, constructorFunction: WebXRFeatureConstructor) {
-        this._AvailableFeatures[featureName] = constructorFunction;
+    public static AddWebXRFeature(featureName: string, constructorFunction: WebXRFeatureConstructor, version: number = 1) {
+        this._AvailableFeatures[`${featureName}-${version}`] = constructorFunction;
     }
 
     public static ConstructFeature(featureName: string, xrSessionManager: WebXRSessionManager, options?: any) {
@@ -59,11 +59,11 @@ export class WebXRFeaturesManager implements IDisposable {
         });
     }
 
-    public enableFeature(featureName: string | { Name: string }, options: any = {}, attachIfPossible: boolean = true): WebXRFeature {
+    public enableFeature(featureName: string | { Name: string }, version: number = 1, moduleOptions: any = {}, attachIfPossible: boolean = true): WebXRFeature {
         const name = typeof featureName === 'string' ? featureName : featureName.Name;
         const feature = this.features[name];
         if (!feature || !feature.featureImplementation) {
-            const constructFunction = WebXRFeaturesManager.ConstructFeature(name, this.xrSessionManager, options);
+            const constructFunction = WebXRFeaturesManager.ConstructFeature(name, this.xrSessionManager, moduleOptions);
             if (!constructFunction) {
                 // report error?
                 throw new Error(`feature not found - ${name}`);
