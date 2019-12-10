@@ -42,6 +42,9 @@ export class InputBlock extends NodeMaterialBlock {
     /** Gets or sets a boolean indicating that the value of this input will not change after a build */
     public isConstant = false;
 
+    /** Gets or sets the group to use to display this block in the Inspector */
+    public groupInInspector = "";
+
     /**
      * Gets or sets the connection point type (default is float)
      */
@@ -593,6 +596,7 @@ export class InputBlock extends NodeMaterialBlock {
         serializationObject.max = this.max;
         serializationObject.matrixMode = this.matrixMode;
         serializationObject.isConstant = this.isConstant;
+        serializationObject.groupInInspector = this.groupInInspector;
 
         if (this._storedValue != null && this._mode === NodeMaterialBlockConnectionPointMode.Uniform) {
             if (this._storedValue.asArray) {
@@ -619,6 +623,7 @@ export class InputBlock extends NodeMaterialBlock {
         this.max = serializationObject.max || 0;
         this.matrixMode = serializationObject.matrixMode || 0;
         this.isConstant = !!serializationObject.isConstant;
+        this.groupInInspector = serializationObject.groupInInspector || "";
 
         if (!serializationObject.valueType) {
             return;

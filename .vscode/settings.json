@@ -53,7 +53,8 @@
         "**/*.fragment.ts": true,
         "**/*.vertex.ts": true,
         "**/ShadersInclude/**/*.ts": true,
-        "assets": true
+        "assets": true,
+        "**/babylonWeb**": true,
     },
     "editor.tabSize": 4,
     "typescript.tsdk": "node_modules\\typescript\\lib",

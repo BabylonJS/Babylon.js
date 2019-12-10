@@ -103,10 +103,10 @@
                 // Apply energy conservation on diffuse and specular term.
                 info.diffuse *= info.clearCoat.w;
                 #ifdef SPECULARTERM
-                    info.specular *= info.clearCoat.w * info.clearCoat.w;
+                    info.specular *= info.clearCoat.w;
                 #endif
                 #ifdef SHEEN
-                    info.sheen *= info.clearCoat.w * info.clearCoat.w;
+                    info.sheen *= info.clearCoat.w;
                 #endif
             #endif
         #else

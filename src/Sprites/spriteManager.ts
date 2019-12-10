@@ -155,7 +155,7 @@ export class SpriteManager implements ISpriteManager {
     constructor(
         /** defines the manager's name */
         public name: string,
-        imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, fromPacked: boolean = false, spriteJSON: string | null = null) {
+        imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, fromPacked: boolean = false, spriteJSON: any | null = null) {
         if (!scene._getComponent(SceneComponentConstants.NAME_SPRITE)) {
             scene._addComponent(new SpriteSceneComponent(scene));
         }
@@ -226,11 +226,35 @@ export class SpriteManager implements ISpriteManager {
         }
     }
 
-    private _makePacked(imgUrl: string, spriteJSON: string | null) {
+    private _makePacked(imgUrl: string, spriteJSON: any) {
         if (spriteJSON !== null) {
             try {
-                let celldata = JSON.parse(spriteJSON);
+                //Get the JSON and Check its stucture.  If its an array parse it if its a JSON sring etc...
+                let celldata: any;
+                if (typeof spriteJSON === "string") {
+                    celldata = JSON.parse(spriteJSON);
+                }else {
+                    celldata = spriteJSON;
+                }
+
+                if (celldata.frames.length) {
+                    let frametemp: any = {};
+                    for (let i = 0; i < celldata.frames.length; i++) {
+                        let _f = celldata.frames[i];
+                        if (typeof (Object.keys(_f))[0] !== "string") {
+                            throw new Error("Invalid JSON Format.  Check the frame values and make sure the name is the first parameter.");
+                        }
+
+                        let name: string = _f[(Object.keys(_f))[0]];
+                        frametemp[name] = _f;
+                    }
+                    celldata.frames = frametemp;
+                }
+
                 let spritemap = (<string[]>(<any>Reflect).ownKeys(celldata.frames));
+
+                console.log(spritemap);
+
                 this._spriteMap = spritemap;
                 this._packedAndReady = true;
                 this._cellData = celldata.frames;

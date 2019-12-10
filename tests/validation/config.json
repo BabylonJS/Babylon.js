@@ -3,8 +3,9 @@
     "tests": [    
         {
             "title": "Node material #1",
-            "playgroundId": "#USQNJ6#4",
-            "referenceImage": "node-material1.png"
+            "playgroundId": "#QJ71C6#0",
+            "referenceImage": "node-material1.png",
+            "renderCount": 20
         },     
         {
             "title": "Node material #2",
@@ -18,7 +19,7 @@
         },     
         {
             "title": "Node material #4",
-            "playgroundId": "#ZYGRII#0",
+            "playgroundId": "#ZYGRII#1",
             "referenceImage": "node-material4.png"
         },        
         {
