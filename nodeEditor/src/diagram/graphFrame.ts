@@ -33,9 +33,9 @@ export class GraphFrame {
     private _ports: NodePort[] = [];
     private _controlledPorts: NodePort[] = [];
 
-    private readonly CloseSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><defs><style>.cls-1{fill:none;}</style></defs><title>closeIcon</title><g id="Layer_2" data-name="Layer 2"><path class="cls-1" d="M16,15l5.85,5.84-1,1L15,15.93,9.15,21.78l-1-1L14,15,8.19,9.12l1-1L15,14l5.84-5.84,1,1Z"/></g></svg>`;
-    private readonly ExpandSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><defs><style>.cls-1{fill:none;}</style></defs><title>expandIcon</title><g id="Layer_2" data-name="Layer 2"><path class="cls-1" d="M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-6.75,6.75H11.06V14.44h3.38V11.06h1.12v3.38h3.38v1.12H15.56v3.38H14.44Z"/></g></svg>`;
-    private readonly CollapseSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><defs><style>.cls-1{fill:none;}</style></defs><title>CollapseIcon</title><g id="Layer_2" data-name="Layer 2"><path class="cls-1" d="M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-2.25,6.75H11.06V14.44h7.88Z"/></g></svg>`;
+    private readonly CloseSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><g id="Layer_2" data-name="Layer 2"><path d="M16,15l5.85,5.84-1,1L15,15.93,9.15,21.78l-1-1L14,15,8.19,9.12l1-1L15,14l5.84-5.84,1,1Z"/></g></svg>`;
+    private readonly ExpandSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><g id="Layer_2" data-name="Layer 2"><path d="M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-6.75,6.75H11.06V14.44h3.38V11.06h1.12v3.38h3.38v1.12H15.56v3.38H14.44Z"/></g></svg>`;
+    private readonly CollapseSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><g id="Layer_2" data-name="Layer 2"><path d="M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-2.25,6.75H11.06V14.44h7.88Z"/></g></svg>`;
 
     public get isCollapsed() {
         return this._isCollapsed;
@@ -238,7 +238,8 @@ export class GraphFrame {
 
         this._headerCollapseElement = root.ownerDocument!.createElement("div"); 
         this._headerCollapseElement.classList.add("frame-box-header-collapse");   
-        this._headerCollapseElement.classList.add("frame-box-header-button");     
+        this._headerCollapseElement.classList.add("frame-box-header-button");  
+        this._headerCollapseElement.title = "Collapse";   
         this._headerCollapseElement.ondragstart= () => false;
         this._headerCollapseElement.addEventListener("pointerdown", (evt) => {
             this._headerCollapseElement.classList.add("down");
@@ -251,8 +252,10 @@ export class GraphFrame {
 
             if (this.isCollapsed) {                
                 this._headerCollapseElement.innerHTML = this.ExpandSVG;
+                this._headerCollapseElement.title = "Expand";   
             } else {
                 this._headerCollapseElement.innerHTML = this.CollapseSVG;
+                this._headerCollapseElement.title = "Collapse";   
             }
         });
         this._headerCollapseElement.innerHTML = this.CollapseSVG;
@@ -261,6 +264,7 @@ export class GraphFrame {
         this._headerCloseElement = root.ownerDocument!.createElement("div"); 
         this._headerCloseElement.classList.add("frame-box-header-close");
         this._headerCloseElement.classList.add("frame-box-header-button");
+        this._headerCloseElement.title = "Close";
         this._headerCloseElement.ondragstart= () => false;
         this._headerCloseElement.addEventListener("pointerdown", (evt) => {
             evt.stopPropagation();
