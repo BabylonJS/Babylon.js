@@ -206,11 +206,14 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
     }
 
-    public getGridPosition(position: number) {
+    public getGridPosition(position: number, useCeil = false) {
         let gridSize = this.gridSize;
 		if (gridSize === 0) {
 			return position;
-		}
+        }
+        if (useCeil) {
+            return gridSize * Math.ceil(position / gridSize);    
+        }
 		return gridSize * Math.floor(position / gridSize);
     }
     

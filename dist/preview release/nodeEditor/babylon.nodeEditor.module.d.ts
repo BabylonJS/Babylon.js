@@ -194,6 +194,9 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _isCollapsed;
         private _ports;
         private _controlledPorts;
+        private readonly CloseSVG;
+        private readonly ExpandSVG;
+        private readonly CollapseSVG;
         isCollapsed: boolean;
         private _createInputPort;
         readonly nodes: GraphNode[];
@@ -307,7 +310,7 @@ declare module "babylonjs-node-editor/diagram/graphCanvas" {
         readonly selectionContainer: HTMLDivElement;
         readonly frameContainer: HTMLDivElement;
         constructor(props: IGraphCanvasComponentProps);
-        getGridPosition(position: number): number;
+        getGridPosition(position: number, useCeil?: boolean): number;
         getGridPositionCeil(position: number): number;
         updateTransform(): void;
         onKeyUp(): void;
@@ -1161,7 +1164,7 @@ declare module "babylonjs-node-editor/diagram/graphNode" {
         private _refreshLinks;
         refresh(): void;
         private _onDown;
-        cleanAccumulation(): void;
+        cleanAccumulation(useCeil?: boolean): void;
         private _onUp;
         private _onMove;
         renderProperties(): Nullable<JSX.Element>;
@@ -1574,6 +1577,9 @@ declare module NODEEDITOR {
         private _isCollapsed;
         private _ports;
         private _controlledPorts;
+        private readonly CloseSVG;
+        private readonly ExpandSVG;
+        private readonly CollapseSVG;
         isCollapsed: boolean;
         private _createInputPort;
         readonly nodes: GraphNode[];
@@ -1674,7 +1680,7 @@ declare module NODEEDITOR {
         readonly selectionContainer: HTMLDivElement;
         readonly frameContainer: HTMLDivElement;
         constructor(props: IGraphCanvasComponentProps);
-        getGridPosition(position: number): number;
+        getGridPosition(position: number, useCeil?: boolean): number;
         getGridPositionCeil(position: number): number;
         updateTransform(): void;
         onKeyUp(): void;
@@ -2409,7 +2415,7 @@ declare module NODEEDITOR {
         private _refreshLinks;
         refresh(): void;
         private _onDown;
-        cleanAccumulation(): void;
+        cleanAccumulation(useCeil?: boolean): void;
         private _onUp;
         private _onMove;
         renderProperties(): BABYLON.Nullable<JSX.Element>;

@@ -4312,7 +4312,7 @@ export class ThinEngine {
      * Gets host document
      * @returns the host document object
      */
-    public getHostDocument(): Document {
+    public getHostDocument(): Nullable<Document> {
         if (this._renderingCanvas && this._renderingCanvas.ownerDocument) {
             return this._renderingCanvas.ownerDocument;
         }

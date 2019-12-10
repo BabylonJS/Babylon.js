@@ -41884,6 +41884,8 @@ declare module BABYLON {
          * Current XR frame
          */
         currentFrame: Nullable<XRFrame>;
+        /** WebXR timestamp updated every frame */
+        currentTimestamp: number;
         private _xrNavigator;
         private baseLayer;
         private _rttProvider;
@@ -41998,6 +42000,138 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Defining the interface required for a (webxr) feature
+     */
+    export interface IWebXRFeature extends IDisposable {
+        /**
+         * Attach the feature to the session
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * Detach the feature from the session
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+    }
+    /**
+     * Defining the constructor of a feature. Used to register the modules.
+     */
+    export type WebXRFeatureConstructor = (xrSessionManager: WebXRSessionManager, options?: any) => (() => IWebXRFeature);
+    /**
+     * The WebXR features manager is responsible of enabling or disabling features required for the current XR session.
+     * It is mainly used in AR sessions.
+     *
+     * A feature can have a version that is defined by Babylon (and does not correspond with the webxr version).
+     */
+    export class WebXRFeaturesManager implements IDisposable {
+        private _xrSessionManager;
+        private static readonly _AvailableFeatures;
+        /**
+         * Used to register a module. After calling this function a developer can use this feature in the scene.
+         * Mainly used internally.
+         *
+         * @param featureName the name of the feature to register
+         * @param constructorFunction the function used to construct the module
+         * @param version the (babylon) version of the module
+         * @param stable is that a stable version of this module
+         */
+        static AddWebXRFeature(featureName: string, constructorFunction: WebXRFeatureConstructor, version?: number, stable?: boolean): void;
+        /**
+         * Returns a constructor of a specific feature.
+         *
+         * @param featureName the name of the feature to construct
+         * @param version the version of the feature to load
+         * @param xrSessionManager the xrSessionManager. Used to construct the module
+         * @param options optional options provided to the module.
+         * @returns a function that, when called, will return a new instance of this feature
+         */
+        static ConstructFeature(featureName: string, version: number | undefined, xrSessionManager: WebXRSessionManager, options?: any): (() => IWebXRFeature);
+        /**
+         * Return the latest unstable version of this feature
+         * @param featureName the name of the feature to search
+         * @returns the version number. if not found will return -1
+         */
+        static GetLatestVersionOfFeature(featureName: string): number;
+        /**
+         * Return the latest stable version of this feature
+         * @param featureName the name of the feature to search
+         * @returns the version number. if not found will return -1
+         */
+        static GetStableVersionOfFeature(featureName: string): number;
+        /**
+         * Can be used to return the list of features currently registered
+         *
+         * @returns an Array of available features
+         */
+        static GetAvailableFeatures(): string[];
+        /**
+         * Gets the versions available for a specific feature
+         * @param featureName the name of the feature
+         * @returns an array with the available versions
+         */
+        static GetAvailableVersions(featureName: string): string[];
+        private _features;
+        /**
+         * constructs a new features manages.
+         *
+         * @param _xrSessionManager an instance of WebXRSessionManager
+         */
+        constructor(_xrSessionManager: WebXRSessionManager);
+        /**
+         * Enable a feature using its name and a version. This will enable it in the scene, and will be responsible to attach it when the session starts.
+         *
+         * @param featureName the name of the feature to load or the class of the feature
+         * @param version optional version to load. if not provided the latest version will be enabled
+         * @param moduleOptions options provided to the module. Ses the module documentation / constructor
+         * @param attachIfPossible if set to true (default) the feature will be automatically attached, if it is currently possible
+         * @returns a new constructed feature or throws an error if feature not found.
+         */
+        enableFeature(featureName: string | {
+            Name: string;
+        }, version?: number | string, moduleOptions?: any, attachIfPossible?: boolean): IWebXRFeature;
+        /**
+         * Used to disable an already-enabled feature
+         * @param featureName the feature to disable
+         * @returns true if disable was successful
+         */
+        disableFeature(featureName: string | {
+            Name: string;
+        }): boolean;
+        /**
+         * Attach a feature to the current session. Mainly used when session started to start the feature effect.
+         * Can be used during a session to start a feature
+         * @param featureName the name of feature to attach
+         */
+        attachFeature(featureName: string): void;
+        /**
+         * Can be used inside a session or when the session ends to detach a specific feature
+         * @param featureName the name of the feature to detach
+         */
+        detachFeature(featureName: string): void;
+        /**
+         * Get the list of enabled features
+         * @returns an array of enabled features
+         */
+        getEnabledFeatures(): string[];
+        /**
+         * get the implementation of an enabled feature.
+         * @param featureName the name of the feature to load
+         * @returns the feature class, if found
+         */
+        getEnabledFeature(featureName: string): IWebXRFeature;
+        /**
+         * dispose this features manager
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Base set of functionality needed to create an XR experince (WebXRSessionManager, Camera, StateManagement, etc.)
      * @see https://doc.babylonjs.com/how_to/webxr
      */
@@ -42023,6 +42157,8 @@ declare module BABYLON {
         onStateChangedObservable: Observable<WebXRState>;
         /** Session manager used to keep track of xr session */
         sessionManager: WebXRSessionManager;
+        /** A features manager for this xr session */
+        featuresManager: WebXRFeaturesManager;
         private _nonVRCamera;
         private _originalSceneAutoClear;
         private _supported;
@@ -43556,6 +43692,423 @@ declare module BABYLON {
          * @returns "VRExperienceHelper"
          */
         getClassName(): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * Options used for hit testing
+     */
+    export interface IWebXRHitTestOptions {
+        /**
+         * Only test when user interacted with the scene. Default - hit test every frame
+         */
+        testOnPointerDownOnly?: boolean;
+        /**
+         * The node to use to transform the local results to world coordinates
+         */
+        worldParentNode?: TransformNode;
+    }
+    /**
+     * Interface defining the babylon result of raycasting/hit-test
+     */
+    export interface IWebXRHitResult {
+        /**
+         * The native hit test result
+         */
+        xrHitResult: XRHitResult;
+        /**
+         * Transformation matrix that can be applied to a node that will put it in the hit point location
+         */
+        transformationMatrix: Matrix;
+    }
+    /**
+     * The currently-working hit-test module.
+     * Hit test (or raycasting) is used to interact with the real world.
+     * For further information read here - https://github.com/immersive-web/hit-test
+     */
+    export class WebXRHitTestLegacy implements IWebXRFeature {
+        private _xrSessionManager;
+        /**
+         * options to use when constructing this feature
+         */
+        readonly options: IWebXRHitTestOptions;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the webxr specs version
+         */
+        static readonly Version: number;
+        /**
+         * Execute a hit test on the current running session using a select event returned from a transient input (such as touch)
+         * @param event the (select) event to use to select with
+         * @param referenceSpace the reference space to use for this hit test
+         * @returns a promise that resolves with an array of native XR hit result in xr coordinates system
+         */
+        static XRHitTestWithSelectEvent(event: XRInputSourceEvent, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
+        /**
+         * execute a hit test with an XR Ray
+         *
+         * @param xrSession a native xrSession that will execute this hit test
+         * @param xrRay the ray (position and direction) to use for raycasting
+         * @param referenceSpace native XR reference space to use for the hit-test
+         * @param filter filter function that will filter the results
+         * @returns a promise that resolves with an array of native XR hit result in xr coordinates system
+         */
+        static XRHitTestWithRay(xrSession: XRSession, xrRay: XRRay, referenceSpace: XRReferenceSpace, filter?: (result: XRHitResult) => boolean): Promise<XRHitResult[]>;
+        /**
+         * Triggered when new babylon (transformed) hit test results are available
+         */
+        onHitTestResultObservable: Observable<IWebXRHitResult[]>;
+        /**
+         * Creates a new instance of the (legacy version) hit test feature
+         * @param _xrSessionManager an instance of WebXRSessionManager
+         * @param options options to use when constructing this feature
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, 
+        /**
+         * options to use when constructing this feature
+         */
+        options?: IWebXRHitTestOptions);
+        private _onSelectEnabled;
+        private _xrFrameObserver;
+        private _attached;
+        /**
+         * Populated with the last native XR Hit Results
+         */
+        lastNativeXRHitResults: XRHitResult[];
+        /**
+         * attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        private _onHitTestResults;
+        private _onSelect;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Options used in the plane detector module
+     */
+    export interface IWebXRPlaneDetectorOptions {
+        /**
+         * The node to use to transform the local results to world coordinates
+         */
+        worldParentNode?: TransformNode;
+    }
+    /**
+     * A babylon interface for a webxr plane.
+     * A Plane is actually a polygon, built from N points in space
+     */
+    export interface IWebXRPlane {
+        /**
+         * a babylon-assigned ID for this polygon
+         */
+        id: number;
+        /**
+         * the native xr-plane object
+         */
+        xrPlane: XRPlane;
+        /**
+         * an array of vector3 points in babylon space. right/left hand system is taken into account.
+         */
+        polygonDefinition: Array<Vector3>;
+        /**
+         * A transformation matrix to apply on the mesh that will be built using the polygonDefinition
+         * Local vs. World are decided if worldParentNode was provided or not in the options when constructing the module
+         */
+        transformationMatrix: Matrix;
+    }
+    /**
+     * The plane detector is used to detect planes in the real world when in AR
+     * For more information see https://github.com/immersive-web/real-world-geometry/
+     */
+    export class WebXRPlaneDetector implements IWebXRFeature {
+        private _xrSessionManager;
+        private _options;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the webxr specs version
+         */
+        static readonly Version: number;
+        /**
+         * Observers registered here will be executed when a new plane was added to the session
+         */
+        onPlaneAddedObservable: Observable<IWebXRPlane>;
+        /**
+         * Observers registered here will be executed when a plane is no longer detected in the session
+         */
+        onPlaneRemovedObservable: Observable<IWebXRPlane>;
+        /**
+         * Observers registered here will be executed when an existing plane updates (for example - expanded)
+         * This can execute N times every frame
+         */
+        onPlaneUpdatedObservable: Observable<IWebXRPlane>;
+        private _enabled;
+        private _attached;
+        private _detectedPlanes;
+        private _lastFrameDetected;
+        private _observerTracked;
+        /**
+         * construct a new Plane Detector
+         * @param _xrSessionManager an instance of xr Session manager
+         * @param _options configuration to use when constructing this feature
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, _options?: IWebXRPlaneDetectorOptions);
+        /**
+         * attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+        private _updatePlaneWithXRPlane;
+        /**
+         * avoiding using Array.find for global support.
+         * @param xrPlane the plane to find in the array
+         */
+        private findIndexInPlaneArray;
+    }
+}
+declare module BABYLON {
+    /**
+     * Configuration options of the anchor system
+     */
+    export interface IWebXRAnchorSystemOptions {
+        /**
+         * a node that will be used to convert local to world coordinates
+         */
+        worldParentNode?: TransformNode;
+        /**
+         * should the anchor system use plane detection.
+         * If set to true, the plane-detection feature should be set using setPlaneDetector
+         */
+        usePlaneDetection?: boolean;
+        /**
+         * Should a new anchor be added every time a select event is triggered
+         */
+        addAnchorOnSelect?: boolean;
+    }
+    /**
+     * A babylon container for an XR Anchor
+     */
+    export interface IWebXRAnchor {
+        /**
+         * A babylon-assigned ID for this anchor
+         */
+        id: number;
+        /**
+         * The native anchor object
+         */
+        xrAnchor: XRAnchor;
+        /**
+         * Transformation matrix to apply to an object attached to this anchor
+         */
+        transformationMatrix: Matrix;
+    }
+    /**
+     * An implementation of the anchor system of WebXR.
+     * Note that the current documented implementation is not available in any browser. Future implementations
+     * will use the frame to create an anchor and not the session or a detected plane
+     * For further information see https://github.com/immersive-web/anchors/
+     */
+    export class WebXRAnchorSystem implements IWebXRFeature {
+        private _xrSessionManager;
+        private _options;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the webxr specs version
+         */
+        static readonly Version: number;
+        /**
+         * Observers registered here will be executed when a new anchor was added to the session
+         */
+        onAnchorAddedObservable: Observable<IWebXRAnchor>;
+        /**
+         * Observers registered here will be executed when an existing anchor updates
+         * This can execute N times every frame
+         */
+        onAnchorUpdatedObservable: Observable<IWebXRAnchor>;
+        /**
+         * Observers registered here will be executed when an anchor was removed from the session
+         */
+        onAnchorRemovedObservable: Observable<IWebXRAnchor>;
+        private _planeDetector;
+        private _hitTestModule;
+        private _enabled;
+        private _attached;
+        private _trackedAnchors;
+        private _lastFrameDetected;
+        private _observerTracked;
+        /**
+         * constructs a new anchor system
+         * @param _xrSessionManager an instance of WebXRSessionManager
+         * @param _options configuration object for this feature
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, _options?: IWebXRAnchorSystemOptions);
+        /**
+         * set the plane detector to use in order to create anchors from frames
+         * @param planeDetector the plane-detector module to use
+         * @param enable enable plane-anchors. default is true
+         */
+        setPlaneDetector(planeDetector: WebXRPlaneDetector, enable?: boolean): void;
+        /**
+         * If set, it will improve performance by using the current hit-test results instead of executing a new hit-test
+         * @param hitTestModule the hit-test module to use.
+         */
+        setHitTestModule(hitTestModule: WebXRHitTestLegacy): void;
+        /**
+         * attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+        private _onSelect;
+        /**
+         * Add anchor at a specific XR point.
+         *
+         * @param xrRigidTransformation xr-coordinates where a new anchor should be added
+         * @param anchorCreator the object o use to create an anchor with. either a session or a plane
+         * @returns a promise the fulfills when the anchor was created
+         */
+        addAnchorAtRigidTransformation(xrRigidTransformation: XRRigidTransform, anchorCreator?: XRAnchorCreator): Promise<XRAnchor>;
+        private _updateAnchorWithXRFrame;
+        /**
+         * avoiding using Array.find for global support.
+         * @param xrAnchor the plane to find in the array
+         */
+        private _findIndexInAnchorArray;
+    }
+}
+declare module BABYLON {
+    /**
+     * Options interface for the background remover plugin
+     */
+    export interface IWebXRBackgroundRemoverOptions {
+        /**
+         * don't disable the environment helper
+         */
+        ignoreEnvironmentHelper?: boolean;
+        /**
+         * flags to configure the removal of the environment helper.
+         * If not set, the entire background will be removed. If set, flags should be set as well.
+         */
+        environmentHelperRemovalFlags?: {
+            /**
+             * Should the skybox be removed (default false)
+             */
+            skyBox?: boolean;
+            /**
+             * Should the ground be removed (default false)
+             */
+            ground?: boolean;
+        };
+        /**
+         * Further background meshes to disable when entering AR
+         */
+        backgroundMeshes?: AbstractMesh[];
+    }
+    /**
+     * A module that will automatically disable background meshes when entering AR and will enable them when leaving AR.
+     */
+    export class WebXRBackgroundRemover implements IWebXRFeature {
+        private _xrSessionManager;
+        /**
+         * read-only options to be used in this module
+         */
+        readonly options: IWebXRBackgroundRemoverOptions;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the webxr specs version
+         */
+        static readonly Version: number;
+        /**
+         * registered observers will be triggered when the background state changes
+         */
+        onBackgroundStateChangedObservable: Observable<boolean>;
+        /**
+         * constructs a new background remover module
+         * @param _xrSessionManager the session manager for this module
+         * @param options read-only options to be used in this module
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, 
+        /**
+         * read-only options to be used in this module
+         */
+        options?: IWebXRBackgroundRemoverOptions);
+        /**
+         * attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        private _setBackgroundState;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -66241,8 +66794,9 @@ interface XRInputSource {
     profiles: Array<string>;
 }
 
-interface XRSession {
+interface XRSession extends XRAnchorCreator {
     addEventListener: Function;
+    removeEventListener: Function;
     requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
     updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
     requestAnimationFrame: Function;
@@ -66250,6 +66804,12 @@ interface XRSession {
     renderState: XRRenderState;
     inputSources: Array<XRInputSource>;
 
+    // AR hit test
+    requestHitTest(ray: XRRay, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
+
+    updateWorldTrackingState(options: {
+        planeDetectionState?: { enabled: boolean; }
+    }): void;
 }
 
 interface XRReferenceSpace extends XRSpace {
@@ -66257,10 +66817,20 @@ interface XRReferenceSpace extends XRSpace {
     onreset: any;
 }
 
+type XRPlaneSet = Set<XRPlane>;
+type XRAnchorSet = Set<XRAnchor>;
+
 interface XRFrame {
     session: XRSession;
     getViewerPose(referenceSpace: XRReferenceSpace): XRViewerPose | undefined;
     getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
+
+    // Anchors
+    trackedAnchors?: XRAnchorSet;
+    // Planes
+    worldInformation: {
+        detectedPlanes?: XRPlaneSet;
+    };
 }
 
 interface XRViewerPose extends XRPose {
@@ -66273,12 +66843,12 @@ interface XRPose {
 }
 
 interface XRWebGLLayerOptions {
-    antialias ?: boolean;
-    depth ?: boolean;
-    stencil ?: boolean;
-    alpha ?: boolean;
-    multiview ?: boolean;
-    framebufferScaleFactor ?: number;
+    antialias?: boolean;
+    depth?: boolean;
+    stencil?: boolean;
+    alpha?: boolean;
+    multiview?: boolean;
+    framebufferScaleFactor?: number;
 }
 
 declare var XRWebGLLayer: {
@@ -66292,7 +66862,8 @@ interface XRWebGLLayer {
     getViewport: Function;
 }
 
-interface XRRigidTransform {
+declare class XRRigidTransform {
+    constructor(matrix: Float32Array);
     position: DOMPointReadOnly;
     orientation: DOMPointReadOnly;
     matrix: Float32Array;
@@ -66314,6 +66885,38 @@ interface XRInputSourceChangeEvent {
 interface XRInputSourceEvent extends Event {
     readonly frame: XRFrame;
     readonly inputSource: XRInputSource;
+}
+
+// Experimental(er) features
+declare class XRRay {
+    constructor(transformOrOrigin: XRRigidTransform | DOMPointReadOnly, direction?: DOMPointReadOnly);
+    origin: DOMPointReadOnly;
+    direction: DOMPointReadOnly;
+    matrix: Float32Array;
+}
+
+interface XRHitResult {
+    hitMatrix: Float32Array;
+}
+
+interface XRAnchor {
+    // remove?
+    id?: string;
+    anchorSpace: XRSpace;
+    lastChangedTime: number;
+    detach(): void;
+}
+
+interface XRPlane extends XRAnchorCreator {
+    orientation: "Horizontal" | "Vertical";
+    planeSpace: XRSpace;
+    polygon: Array<DOMPointReadOnly>;
+    lastChangedTime: number;
+}
+
+interface XRAnchorCreator {
+    // AR Anchors
+    createAnchor(pose: XRPose | XRRigidTransform, referenceSpace: XRReferenceSpace): Promise<XRAnchor>;
 }
 
 /**
