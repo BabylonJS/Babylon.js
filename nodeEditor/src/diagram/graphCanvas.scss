@@ -136,7 +136,7 @@
                 text-align: center;
                 display: grid;
                 grid-template-rows: 100%;  
-                grid-template-columns: calc(100% - 40px) 20px 20px;  
+                grid-template-columns: calc(100% - 60px) 30px 30px;  
                 align-content: center;
                 overflow: hidden;
                 margin: -4px;
@@ -148,6 +148,8 @@
                     align-self: center;
                     transform-origin: 50% 50%;
                     transform: scale(1);
+                    stroke: white;     
+                    display: grid;               
 
                     &.down {
                         transform: scale(0.90);
