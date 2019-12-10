@@ -10,7 +10,6 @@ namespace Babylon
 {
     class RuntimeImpl;
 
-    
     enum class HTTPStatusCode : int32_t
     {
         None = 0,
@@ -118,16 +117,16 @@ namespace Babylon
         void Send(const Napi::CallbackInfo& info);
 
         arcana::task<void, std::exception_ptr> SendAsync();
-        arcana::task<void, std::exception_ptr> SendAsyncImpl(); // TODO: Eliminate this function once the UWP file access bug is fixed. 
+        arcana::task<void, std::exception_ptr> SendAsyncImpl(); // TODO: Eliminate this function once the UWP file access bug is fixed.
         void SetReadyState(ReadyState readyState);
 
         RuntimeImpl& m_runtimeImpl;
 
-        ReadyState m_readyState{ ReadyState::Unsent };
+        ReadyState m_readyState{ReadyState::Unsent};
         Napi::Reference<Napi::ArrayBuffer> m_response;
         std::string m_responseText;
         std::string m_responseType;
-        HTTPStatusCode m_status{ HTTPStatusCode::None };
+        HTTPStatusCode m_status{HTTPStatusCode::None};
         std::string m_responseURL;
         std::unordered_map<std::string, std::vector<Napi::FunctionReference>> m_eventHandlerRefs;
 

@@ -14,6 +14,7 @@ namespace Babylon
 {
     arcana::task<void, std::exception_ptr> XMLHttpRequest::SendAsync()
     {
+        // clang-format off
         return SendAsyncImpl()
             .then(arcana::inline_scheduler, m_runtimeImpl.Cancellation(), [url = m_url, responseType = m_responseType, this](arcana::expected<void, std::exception_ptr> result)
         {
@@ -73,5 +74,6 @@ namespace Babylon
                 return arcana::task_from_result<std::exception_ptr>();
             }
         });
+        // clang-format off
     }
 }

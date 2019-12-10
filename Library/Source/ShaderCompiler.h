@@ -23,7 +23,7 @@ namespace Babylon
             gsl::span<uint8_t> Bytes;
         };
 
-        void Compile(std::string_view vertexSource, std::string_view fragmentSource, std::function<void (ShaderInfo, ShaderInfo)> onCompiled);
+        void Compile(std::string_view vertexSource, std::string_view fragmentSource, std::function<void(ShaderInfo, ShaderInfo)> onCompiled);
 
     protected:
         // Invert dFdy operands similar to bgfx_shader.sh

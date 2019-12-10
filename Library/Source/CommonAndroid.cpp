@@ -4,7 +4,7 @@ namespace Babylon
 {
     Filepath GetModulePath()
     {
-        return Filepath{ "." };
+        return Filepath{"."};
     }
 
     std::string GetUrlFromPath(const Filepath& path)

@@ -8,7 +8,7 @@ namespace Babylon
 {
     class RuntimeImpl;
     class Env;
-    
+
     /**
      * This class represents an instance of Babylon Native. It holds and manages all program
      * state and behavior relevant to Babylon Native's functionality, including the JavaScript

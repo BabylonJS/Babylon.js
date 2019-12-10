@@ -7,7 +7,7 @@ namespace Babylon
     {
         char buffer[1024];
         ::GetModuleFileNameA(nullptr, buffer, ARRAYSIZE(buffer));
-        return std::filesystem::path{ buffer };
+        return std::filesystem::path{buffer};
     }
 
     std::string GetUrlFromPath(const std::filesystem::path& path)

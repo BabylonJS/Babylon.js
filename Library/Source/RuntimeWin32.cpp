@@ -8,12 +8,12 @@
 namespace Babylon
 {
     RuntimeWin32::RuntimeWin32(HWND hWnd)
-        : RuntimeWin32{ hWnd, GetUrlFromPath(GetModulePath().parent_path()) }
+        : RuntimeWin32{hWnd, GetUrlFromPath(GetModulePath().parent_path())}
     {
     }
 
     RuntimeWin32::RuntimeWin32(HWND hWnd, const std::string& rootUrl)
-        : Runtime{ std::make_unique<RuntimeImpl>(hWnd, rootUrl) }
+        : Runtime{std::make_unique<RuntimeImpl>(hWnd, rootUrl)}
     {
         RECT rect;
         if (GetWindowRect(hWnd, &rect))
@@ -30,8 +30,7 @@ namespace Babylon
         assert(SUCCEEDED(hr));
         auto coInitializeScopeGuard = gsl::finally([] { CoUninitialize(); });
 
-        Dispatch([](Env& env)
-        {
+        Dispatch([](Env& env) {
             InitializeNativeXr(env);
         });
 

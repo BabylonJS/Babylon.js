@@ -1,47 +1,21 @@
-# https://releases.llvm.org/7.0.0/tools/clang/docs/ClangFormatStyleOptions.html
-
+# https://releases.llvm.org/8.0.0/tools/clang/docs/ClangFormatStyleOptions.html
+---
+BasedOnStyle: LLVM
 ---
 Language: Cpp
 
-BasedOnStyle: WebKit
-
-AlignAfterOpenBracket: Align
-AlignOperands: true
-AlignTrailingComments: true
-AllowAllParametersOfDeclarationOnNextLine: true
-AllowShortBlocksOnASingleLine: false
-AllowShortCaseLabelsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: false
-AllowShortIfStatementsOnASingleLine: false
-AllowShortLoopsOnASingleLine: false
+AccessModifierOffset: -4
+AlignAfterOpenBracket: DontAlign
+AlignOperands: false
 AlwaysBreakTemplateDeclarations: true
-BinPackArguments: false
-BinPackParameters: false
-BreakBeforeBinaryOperators: None
 BreakBeforeBraces: Allman
-BreakConstructorInitializersBeforeComma: true
-ColumnLimit: 120
-ConstructorInitializerAllOnOneLineOrOnePerLine: true
-Cpp11BracedListStyle: true
-FixNamespaceComments: true
-IncludeBlocks:   Regroup
-IncludeCategories:
-  - Regex:           '^["<](stdafx|pch)\.h[">]$'
-    Priority:        -1
-  - Regex:           '^<Windows\.h>$'
-    Priority:        3
-  - Regex:           '^<(WinIoCtl|winhttp|Shellapi)\.h>$'
-    Priority:        4
-  - Regex:           '.*'
-    Priority:        2
+BreakConstructorInitializers: BeforeComma
+ColumnLimit: 0
+FixNamespaceComments: false
 IndentCaseLabels: true
 IndentWidth: 4
-KeepEmptyLinesAtTheStartOfBlocks: false
-MaxEmptyLinesToKeep: 2
 NamespaceIndentation: All
-PenaltyReturnTypeOnItsOwnLine: 1000
 PointerAlignment: Left
-SpaceAfterTemplateKeyword: false
-Standard: Cpp11
-UseTab: Never
 SortIncludes: false
+SpaceAfterTemplateKeyword: false
+---
