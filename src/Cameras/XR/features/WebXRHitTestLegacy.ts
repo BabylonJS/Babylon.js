@@ -6,10 +6,6 @@ import { TransformNode } from '../../../Meshes/transformNode';
 import { Nullable } from '../../../types';
 
 const Name = "xr-hit-test";
-//register the plugin
-WebXRFeaturesManager.AddWebXRFeature(Name, (xrSessionManager, options) => {
-    return () => new WebXRHitTest(xrSessionManager, options);
-});
 
 export interface WebXRHitTestOptions {
     testOnPointerDownOnly?: boolean;
@@ -23,9 +19,10 @@ export interface WebXRHitResult {
 
 export type WebXRHitResults = WebXRHitResult[];
 
-export class WebXRHitTest implements WebXRFeature {
+export class WebXRHitTestLegacy implements WebXRFeature {
 
     public static readonly Name = Name;
+    public static readonly Version = 1;
 
     public static XRHitTestWithSelectEvent(event: XRInputSourceEvent, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]> {
         let targetRayPose = event.frame.getPose(event.inputSource.targetRaySpace, referenceSpace);
@@ -46,9 +43,7 @@ export class WebXRHitTest implements WebXRFeature {
 
     public onHitTestResultObservable: Observable<WebXRHitResults> = new Observable();
 
-    constructor(private xrSessionManager: WebXRSessionManager, public readonly options: WebXRHitTestOptions = {}) {
-
-    }
+    constructor(private xrSessionManager: WebXRSessionManager, public readonly options: WebXRHitTestOptions = {}) { }
 
     private _onSelectEnabled = false;
     private _xrFrameObserver: Nullable<Observer<XRFrame>>;
@@ -81,13 +76,14 @@ export class WebXRHitTest implements WebXRFeature {
                 direction.normalize();
                 let ray = new XRRay((<DOMPointReadOnly>{ x: origin.x, y: origin.y, z: origin.z, w: 0 }),
                     (<DOMPointReadOnly>{ x: direction.x, y: direction.y, z: direction.z, w: 0 }));
-                WebXRHitTest.XRHitTestWithRay(this.xrSessionManager.session, ray, this.xrSessionManager.referenceSpace).then(this.onHitTestResults);
+                WebXRHitTestLegacy.XRHitTestWithRay(this.xrSessionManager.session, ray, this.xrSessionManager.referenceSpace).then(this.onHitTestResults);
             });
         }
         this._attached = true;
 
         return true;
     }
+
     detach(): boolean {
         // disable select
         this._onSelectEnabled = false;
@@ -125,7 +121,7 @@ export class WebXRHitTest implements WebXRFeature {
         if (!this._onSelectEnabled) {
             return;
         }
-        WebXRHitTest.XRHitTestWithSelectEvent(event, this.xrSessionManager.referenceSpace);
+        WebXRHitTestLegacy.XRHitTestWithSelectEvent(event, this.xrSessionManager.referenceSpace);
     }
 
     dispose(): void {
@@ -133,3 +129,8 @@ export class WebXRHitTest implements WebXRFeature {
         this.onHitTestResultObservable.clear();
     }
 }
+
+//register the plugin versions
+WebXRFeaturesManager.AddWebXRFeature(WebXRHitTestLegacy.Name, (xrSessionManager, options) => {
+    return () => new WebXRHitTestLegacy(xrSessionManager, options);
+}, WebXRHitTestLegacy.Version);
