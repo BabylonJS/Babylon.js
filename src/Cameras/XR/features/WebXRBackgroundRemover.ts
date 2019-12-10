@@ -1,4 +1,4 @@
-import { WebXRFeaturesManager, WebXRFeature } from "../webXRFeaturesManager";
+import { WebXRFeaturesManager, IWebXRFeature } from "../webXRFeaturesManager";
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { AbstractMesh } from '../../../Meshes/abstractMesh';
 import { Observable } from '../../../Misc/observable';
@@ -8,7 +8,7 @@ const Name = "xr-background-remover";
 /**
  * Options interface for the background remover plugin
  */
-export interface WebXRBackgroundRemoverOptions {
+export interface IWebXRBackgroundRemoverOptions {
     /**
      * don't disable the environment helper
      */
@@ -36,7 +36,7 @@ export interface WebXRBackgroundRemoverOptions {
 /**
  * A module that will automatically disable background meshes when entering AR and will enable them when leaving AR.
  */
-export class WebXRBackgroundRemover implements WebXRFeature {
+export class WebXRBackgroundRemover implements IWebXRFeature {
 
     /**
      * The module's name
@@ -56,14 +56,14 @@ export class WebXRBackgroundRemover implements WebXRFeature {
 
     /**
      * constructs a new background remover module
-     * @param xrSessionManager the session manager for this module
+     * @param _xrSessionManager the session manager for this module
      * @param options read-only options to be used in this module
      */
-    constructor(private xrSessionManager: WebXRSessionManager,
+    constructor(private _xrSessionManager: WebXRSessionManager,
         /**
          * read-only options to be used in this module
          */
-        public readonly options: WebXRBackgroundRemoverOptions = {}) {
+        public readonly options: IWebXRBackgroundRemoverOptions = {}) {
 
     }
 
@@ -74,7 +74,7 @@ export class WebXRBackgroundRemover implements WebXRFeature {
      * @returns true if successful.
      */
     attach(): boolean {
-        this.setBackgroundState(false);
+        this._setBackgroundState(false);
 
         return true;
     }
@@ -86,13 +86,13 @@ export class WebXRBackgroundRemover implements WebXRFeature {
      * @returns true if successful.
      */
     detach(): boolean {
-        this.setBackgroundState(true);
+        this._setBackgroundState(true);
 
         return true;
     }
 
-    private setBackgroundState(newState: boolean) {
-        const scene = this.xrSessionManager.scene;
+    private _setBackgroundState(newState: boolean) {
+        const scene = this._xrSessionManager.scene;
         if (!this.options.ignoreEnvironmentHelper) {
             if (this.options.environmentHelperRemovalFlags) {
                 if (this.options.environmentHelperRemovalFlags.skyBox) {

@@ -1,4 +1,4 @@
-import { WebXRFeature, WebXRFeaturesManager } from '../webXRFeaturesManager';
+import { IWebXRFeature, WebXRFeaturesManager } from '../webXRFeaturesManager';
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { Observable, Observer } from '../../../Misc/observable';
 import { Matrix } from '../../../Maths/math.vector';
@@ -12,7 +12,7 @@ const Name = "xr-anchor-system";
 /**
  * Configuration options of the anchor system
  */
-export interface WebXRAnchorSystemOptions {
+export interface IWebXRAnchorSystemOptions {
     /**
      * a node that will be used to convert local to world coordinates
      */
@@ -31,7 +31,7 @@ export interface WebXRAnchorSystemOptions {
 /**
  * A babylon container for an XR Anchor
  */
-export interface WebXRAnchor {
+export interface IWebXRAnchor {
     /**
      * A babylon-assigned ID for this anchor
      */
@@ -54,7 +54,7 @@ let anchorIdProvider = 0;
  * will use the frame to create an anchor and not the session or a detected plane
  * For further information see https://github.com/immersive-web/anchors/
  */
-export class WebXRAnchorSystem implements WebXRFeature {
+export class WebXRAnchorSystem implements IWebXRFeature {
 
     /**
      * The module's name
@@ -70,32 +70,32 @@ export class WebXRAnchorSystem implements WebXRFeature {
     /**
      * Observers registered here will be executed when a new anchor was added to the session
      */
-    public onAnchorAddedObservable: Observable<WebXRAnchor> = new Observable();
+    public onAnchorAddedObservable: Observable<IWebXRAnchor> = new Observable();
     /**
      * Observers registered here will be executed when an existing anchor updates
      * This can execute N times every frame
      */
-    public onAnchorUpdatedObservable: Observable<WebXRAnchor> = new Observable();
+    public onAnchorUpdatedObservable: Observable<IWebXRAnchor> = new Observable();
     /**
      * Observers registered here will be executed when an anchor was removed from the session
      */
-    public onAnchorRemovedObservable: Observable<WebXRAnchor> = new Observable();
+    public onAnchorRemovedObservable: Observable<IWebXRAnchor> = new Observable();
 
     private _planeDetector: WebXRPlaneDetector;
     private _hitTestModule: WebXRHitTestLegacy;
 
     private _enabled: boolean = false;
     private _attached: boolean = false;
-    private _trackedAnchors: Array<WebXRAnchor> = [];
+    private _trackedAnchors: Array<IWebXRAnchor> = [];
     private _lastFrameDetected: XRAnchorSet = new Set();
     private _observerTracked: Nullable<Observer<XRFrame>>;
 
     /**
      * constructs a new anchor system
-     * @param xrSessionManager an instance of WebXRSessionManager
-     * @param options configuration object for this feature
+     * @param _xrSessionManager an instance of WebXRSessionManager
+     * @param _options configuration object for this feature
      */
-    constructor(private xrSessionManager: WebXRSessionManager, private options: WebXRAnchorSystemOptions = {}) {
+    constructor(private _xrSessionManager: WebXRSessionManager, private _options: IWebXRAnchorSystemOptions = {}) {
     }
 
     /**
@@ -105,7 +105,7 @@ export class WebXRAnchorSystem implements WebXRFeature {
      */
     public setPlaneDetector(planeDetector: WebXRPlaneDetector, enable: boolean = true) {
         this._planeDetector = planeDetector;
-        this.options.usePlaneDetection = enable;
+        this._options.usePlaneDetection = enable;
     }
 
     /**
@@ -123,8 +123,8 @@ export class WebXRAnchorSystem implements WebXRFeature {
      * @returns true if successful.
      */
     attach(): boolean {
-        this._observerTracked = this.xrSessionManager.onXRFrameObservable.add(() => {
-            const frame = this.xrSessionManager.currentFrame;
+        this._observerTracked = this._xrSessionManager.onXRFrameObservable.add(() => {
+            const frame = this._xrSessionManager.currentFrame;
             if (!this._attached || !this._enabled || !frame) { return; }
             // const timestamp = this.xrSessionManager.currentTimestamp;
 
@@ -138,19 +138,19 @@ export class WebXRAnchorSystem implements WebXRFeature {
                 // now check for new ones
                 trackedAnchors.forEach((xrAnchor) => {
                     if (!this._lastFrameDetected.has(xrAnchor)) {
-                        const newAnchor: Partial<WebXRAnchor> = {
+                        const newAnchor: Partial<IWebXRAnchor> = {
                             id: anchorIdProvider++,
                             xrAnchor: xrAnchor
                         };
-                        const plane = this.updateAnchorWithXRFrame(xrAnchor, newAnchor, frame);
+                        const plane = this._updateAnchorWithXRFrame(xrAnchor, newAnchor, frame);
                         this._trackedAnchors.push(plane);
                         this.onAnchorAddedObservable.notifyObservers(plane);
                     } else {
                         // updated?
-                        if (xrAnchor.lastChangedTime === this.xrSessionManager.currentTimestamp) {
-                            let index = this.findIndexInAnchorArray(xrAnchor);
+                        if (xrAnchor.lastChangedTime === this._xrSessionManager.currentTimestamp) {
+                            let index = this._findIndexInAnchorArray(xrAnchor);
                             const anchor = this._trackedAnchors[index];
-                            this.updateAnchorWithXRFrame(xrAnchor, anchor, frame);
+                            this._updateAnchorWithXRFrame(xrAnchor, anchor, frame);
                             this.onAnchorUpdatedObservable.notifyObservers(anchor);
                         }
                     }
@@ -159,8 +159,8 @@ export class WebXRAnchorSystem implements WebXRFeature {
             }
         });
 
-        if (this.options.addAnchorOnSelect) {
-            this.xrSessionManager.session.addEventListener('select', this.onSelect, false);
+        if (this._options.addAnchorOnSelect) {
+            this._xrSessionManager.session.addEventListener('select', this._onSelect, false);
         }
 
         this._attached = true;
@@ -176,10 +176,10 @@ export class WebXRAnchorSystem implements WebXRFeature {
     detach(): boolean {
         this._attached = false;
 
-        this.xrSessionManager.session.removeEventListener('select', this.onSelect);
+        this._xrSessionManager.session.removeEventListener('select', this._onSelect);
 
         if (this._observerTracked) {
-            this.xrSessionManager.onXRFrameObservable.remove(this._observerTracked);
+            this._xrSessionManager.onXRFrameObservable.remove(this._observerTracked);
         }
 
         return true;
@@ -195,8 +195,8 @@ export class WebXRAnchorSystem implements WebXRFeature {
         this.onAnchorUpdatedObservable.clear();
     }
 
-    private onSelect = (event: XRInputSourceEvent) => {
-        if (!this.options.addAnchorOnSelect) {
+    private _onSelect = (event: XRInputSourceEvent) => {
+        if (!this._options.addAnchorOnSelect) {
             return;
         }
         const onResults = (results: XRHitResult[]) => {
@@ -212,7 +212,7 @@ export class WebXRAnchorSystem implements WebXRFeature {
         if (this._hitTestModule && !this._hitTestModule.options.testOnPointerDownOnly) {
             onResults(this._hitTestModule.lastNativeXRHitResults);
         }
-        WebXRHitTestLegacy.XRHitTestWithSelectEvent(event, this.xrSessionManager.referenceSpace).then(onResults);
+        WebXRHitTestLegacy.XRHitTestWithSelectEvent(event, this._xrSessionManager.referenceSpace).then(onResults);
 
         // API will soon change, will need to use the plane
         this._planeDetector;
@@ -226,35 +226,35 @@ export class WebXRAnchorSystem implements WebXRFeature {
      * @returns a promise the fulfills when the anchor was created
      */
     public addAnchorAtRigidTransformation(xrRigidTransformation: XRRigidTransform, anchorCreator?: XRAnchorCreator): Promise<XRAnchor> {
-        const creator = anchorCreator || this.xrSessionManager.session;
-        return creator.createAnchor(xrRigidTransformation, this.xrSessionManager.referenceSpace);
+        const creator = anchorCreator || this._xrSessionManager.session;
+        return creator.createAnchor(xrRigidTransformation, this._xrSessionManager.referenceSpace);
     }
 
-    private updateAnchorWithXRFrame(xrAnchor: XRAnchor, anchor: Partial<WebXRAnchor>, xrFrame: XRFrame): WebXRAnchor {
+    private _updateAnchorWithXRFrame(xrAnchor: XRAnchor, anchor: Partial<IWebXRAnchor>, xrFrame: XRFrame): IWebXRAnchor {
         // matrix
-        const pose = xrFrame.getPose(xrAnchor.anchorSpace, this.xrSessionManager.referenceSpace);
+        const pose = xrFrame.getPose(xrAnchor.anchorSpace, this._xrSessionManager.referenceSpace);
         if (pose) {
             const mat = anchor.transformationMatrix || new Matrix();
             Matrix.FromArrayToRef(pose.transform.matrix, 0, mat);
-            if (!this.xrSessionManager.scene.useRightHandedSystem) {
+            if (!this._xrSessionManager.scene.useRightHandedSystem) {
                 mat.toggleModelMatrixHandInPlace();
             }
             anchor.transformationMatrix = mat;
-            if (!this.options.worldParentNode) {
+            if (!this._options.worldParentNode) {
                 // Logger.Warn("Please provide a world parent node to apply world transformation");
             } else {
-                mat.multiplyToRef(this.options.worldParentNode.getWorldMatrix(), mat);
+                mat.multiplyToRef(this._options.worldParentNode.getWorldMatrix(), mat);
             }
         }
 
-        return <WebXRAnchor>anchor;
+        return <IWebXRAnchor>anchor;
     }
 
     /**
      * avoiding using Array.find for global support.
      * @param xrAnchor the plane to find in the array
      */
-    private findIndexInAnchorArray(xrAnchor: XRAnchor) {
+    private _findIndexInAnchorArray(xrAnchor: XRAnchor) {
         for (let i = 0; i < this._trackedAnchors.length; ++i) {
             if (this._trackedAnchors[i].xrAnchor === xrAnchor) {
                 return i;

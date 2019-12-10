@@ -1,4 +1,4 @@
-import { WebXRFeature, WebXRFeaturesManager } from '../webXRFeaturesManager';
+import { IWebXRFeature, WebXRFeaturesManager } from '../webXRFeaturesManager';
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { Observable, Observer } from '../../../Misc/observable';
 import { Vector3, Matrix } from '../../../Maths/math.vector';
@@ -15,7 +15,7 @@ const WebXRHitTestModuleName = "xr-hit-test";
 /**
  * Options used for hit testing
  */
-export interface WebXRHitTestOptions {
+export interface IWebXRHitTestOptions {
     /**
      * Only test when user interacted with the scene. Default - hit test every frame
      */
@@ -29,7 +29,7 @@ export interface WebXRHitTestOptions {
 /**
  * Interface defining the babylon result of raycasting/hit-test
  */
-export interface WebXRHitResult {
+export interface IWebXRHitResult {
     /**
      * The native hit test result
      */
@@ -45,7 +45,7 @@ export interface WebXRHitResult {
  * Hit test (or raycasting) is used to interact with the real world.
  * For further information read here - https://github.com/immersive-web/hit-test
  */
-export class WebXRHitTestLegacy implements WebXRFeature {
+export class WebXRHitTestLegacy implements IWebXRFeature {
 
     /**
      * The module's name
@@ -93,18 +93,18 @@ export class WebXRHitTestLegacy implements WebXRFeature {
     /**
      * Triggered when new babylon (transformed) hit test results are available
      */
-    public onHitTestResultObservable: Observable<WebXRHitResult[]> = new Observable();
+    public onHitTestResultObservable: Observable<IWebXRHitResult[]> = new Observable();
 
     /**
      * Creates a new instance of the (legacy version) hit test feature
-     * @param xrSessionManager an instance of WebXRSessionManager
+     * @param _xrSessionManager an instance of WebXRSessionManager
      * @param options options to use when constructing this feature
      */
-    constructor(private xrSessionManager: WebXRSessionManager,
+    constructor(private _xrSessionManager: WebXRSessionManager,
         /**
          * options to use when constructing this feature
          */
-        public readonly options: WebXRHitTestOptions = {}) { }
+        public readonly options: IWebXRHitTestOptions = {}) { }
 
     private _onSelectEnabled = false;
     private _xrFrameObserver: Nullable<Observer<XRFrame>>;
@@ -123,19 +123,19 @@ export class WebXRHitTestLegacy implements WebXRFeature {
      */
     attach(): boolean {
         if (this.options.testOnPointerDownOnly) {
-            this.xrSessionManager.session.addEventListener('select', this.onSelect, false);
+            this._xrSessionManager.session.addEventListener('select', this._onSelect, false);
         } else {
             // we are in XR space!
             const origin = new Vector3(0, 0, 0);
             // in XR space z-forward is negative
             const direction = new Vector3(0, 0, -1);
             const mat = new Matrix();
-            this._xrFrameObserver = this.xrSessionManager.onXRFrameObservable.add((frame) => {
+            this._xrFrameObserver = this._xrSessionManager.onXRFrameObservable.add((frame) => {
                 // make sure we do nothing if (async) not attached
                 if (!this._attached) {
                     return;
                 }
-                let pose = frame.getViewerPose(this.xrSessionManager.referenceSpace);
+                let pose = frame.getViewerPose(this._xrSessionManager.referenceSpace);
                 if (!pose) {
                     return;
                 }
@@ -146,7 +146,7 @@ export class WebXRHitTestLegacy implements WebXRFeature {
                 direction.normalize();
                 let ray = new XRRay((<DOMPointReadOnly>{ x: origin.x, y: origin.y, z: origin.z, w: 0 }),
                     (<DOMPointReadOnly>{ x: direction.x, y: direction.y, z: direction.z, w: 0 }));
-                WebXRHitTestLegacy.XRHitTestWithRay(this.xrSessionManager.session, ray, this.xrSessionManager.referenceSpace).then(this.onHitTestResults);
+                WebXRHitTestLegacy.XRHitTestWithRay(this._xrSessionManager.session, ray, this._xrSessionManager.referenceSpace).then(this._onHitTestResults);
             });
         }
         this._attached = true;
@@ -163,19 +163,19 @@ export class WebXRHitTestLegacy implements WebXRFeature {
     detach(): boolean {
         // disable select
         this._onSelectEnabled = false;
-        this.xrSessionManager.session.removeEventListener('select', this.onSelect);
+        this._xrSessionManager.session.removeEventListener('select', this._onSelect);
         if (this._xrFrameObserver) {
-            this.xrSessionManager.onXRFrameObservable.remove(this._xrFrameObserver);
+            this._xrSessionManager.onXRFrameObservable.remove(this._xrFrameObserver);
             this._xrFrameObserver = null;
         }
         this._attached = false;
         return true;
     }
 
-    private onHitTestResults = (xrResults: XRHitResult[]) => {
+    private _onHitTestResults = (xrResults: XRHitResult[]) => {
         const mats = xrResults.map((result) => {
             let mat = Matrix.FromArray(result.hitMatrix);
-            if (!this.xrSessionManager.scene.useRightHandedSystem) {
+            if (!this._xrSessionManager.scene.useRightHandedSystem) {
                 mat.toggleModelMatrixHandInPlace();
             }
             // if (this.options.coordinatesSpace === Space.WORLD) {
@@ -193,11 +193,11 @@ export class WebXRHitTestLegacy implements WebXRFeature {
     }
 
     // can be done using pointerdown event, and xrSessionManager.currentFrame
-    private onSelect = (event: XRInputSourceEvent) => {
+    private _onSelect = (event: XRInputSourceEvent) => {
         if (!this._onSelectEnabled) {
             return;
         }
-        WebXRHitTestLegacy.XRHitTestWithSelectEvent(event, this.xrSessionManager.referenceSpace);
+        WebXRHitTestLegacy.XRHitTestWithSelectEvent(event, this._xrSessionManager.referenceSpace);
     }
 
     /**
