@@ -37,7 +37,6 @@ mat4 getFrameData(float frameID){
 void main(){
     vec4 color = vec4(0.);    
     vec2 tileUV = fract(tUV);
-
     #ifdef FLIPU
         tileUV.y = 1.0 - tileUV.y;
     #endif
@@ -45,12 +44,14 @@ void main(){
     vec2 tileID = floor(tUV);	
     vec2 sheetUnits = 1. / spriteMapSize;
     float spriteUnits = 1. / spriteCount;
-    vec2 stageUnits = 1. / stageSize;	
-
-    for(int i = 0; i < LAYERS; i++){	
+    vec2 stageUnits = 1. / stageSize;        
     
-        float frameID = texture(tileMaps[i], (tileID + 0.5) / stageSize, 0.).x;		
-
+    for(int i = 0; i < LAYERS; i++){
+        float frameID;
+            switch(i){
+                #define LAYER_ID_SWITCH      
+            }        
+        
         vec4 animationData = texture(animationMap, vec2((frameID + 0.5) / spriteCount, 0.), 0.); 
         
         if(animationData.y > 0.){
