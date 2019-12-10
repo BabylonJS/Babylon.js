@@ -87,11 +87,7 @@ export class FileTools {
      * Gets or sets a function used to pre-process url before using them to load assets
      */
     public static PreprocessUrl = (url: string) => {
-        let processedURL = url.substring(5).toLowerCase();
-        if (processedURL.indexOf('./') === 0) {
-            processedURL = processedURL.substring(2);
-          }
-        return processedURL;
+       return url;
     }
 
     /**
@@ -154,6 +150,7 @@ export class FileTools {
         }
         else {
             url = this._CleanUrl(input);
+            url = this.PreprocessUrl(input);
         }
 
         if (typeof Image === "undefined") {
@@ -304,8 +301,10 @@ export class FileTools {
     public static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
         // If file and file input are set
         if (url.indexOf("file:") !== -1) {
-            const processedUrl = this.PreprocessUrl(url);
-            const fileName = decodeURIComponent(processedUrl);
+            let fileName = decodeURIComponent(url.substring(5).toLowerCase());
+            if (fileName.indexOf('./') === 0) {
+                fileName = fileName.substring(2);
+            }
             const file = FilesInputStore.FilesToLoad[fileName];
             if (file) {
                 return this.ReadFile(file, onSuccess, onProgress, useArrayBuffer, onError ? (error) => onError(undefined, new LoadFileError(error.message, error.file)) : undefined);
@@ -331,6 +330,7 @@ export class FileTools {
      */
     public static RequestFile(url: string, onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void, onProgress?: (event: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (error: RequestFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest {
         url = this._CleanUrl(url);
+        url = this.PreprocessUrl(url);
 
         const loadUrl = this.BaseUrl + url;
 
