@@ -7120,6 +7120,10 @@ declare module BABYLON {
         isParallelCompiled: boolean;
         onCompiled?: () => void;
         transformFeedback?: WebGLTransformFeedback | null;
+        vertexCompilationError: Nullable<string>;
+        fragmentCompilationError: Nullable<string>;
+        programLinkError: Nullable<string>;
+        programValidationError: Nullable<string>;
         readonly isAsync: boolean;
         readonly isReady: boolean;
         _handlesSpectorRebuildCallback(onCompiled: (program: WebGLProgram) => void): void;
@@ -31473,7 +31477,7 @@ declare module BABYLON {
          * Gets host document
          * @returns the host document object
          */
-        getHostDocument(): Document;
+        getHostDocument(): Nullable<Document>;
     }
 }
 declare module BABYLON {
@@ -46411,6 +46415,11 @@ declare module BABYLON {
          * @param stencil
          */
         _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>): void;
+        /**
+         * Gets host document
+         * @returns the host document object
+         */
+        getHostDocument(): Nullable<Document>;
         clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
         createIndexBuffer(indices: IndicesArray): NativeDataBuffer;
         createVertexBuffer(data: DataArray): NativeDataBuffer;
