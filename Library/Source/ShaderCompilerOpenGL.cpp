@@ -5,7 +5,6 @@
 #include <SPIRV/GlslangToSpv.h>
 #include <spirv_parser.hpp>
 #include <spirv_glsl.hpp>
-#include "Console.h"
 
 namespace Babylon
 {
