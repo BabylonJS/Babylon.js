@@ -113,17 +113,23 @@
             display: grid;
             grid-template-rows: 40px calc(100% - 40px);
             grid-template-columns: 100%;            
-            border: transparent solid 4px;
             box-sizing: border-box;
 
             &.collapsed {
                 height: auto !important;
                 width: 200px !important;
-                border-radius: 12px;
 
                 .frame-box-header {
                     font-size: 16px;
-                    border-radius: 12px 12px 0 0;
+                    grid-template-columns: calc(100% - 37px) 30px 7px;  
+                    
+                    .frame-box-header-collapse {
+                        margin-top: -2px;
+                    }
+                    
+                    .frame-box-header-close {
+                        display: none;
+                    }
                 }
             }
 
@@ -136,19 +142,17 @@
                 text-align: center;
                 display: grid;
                 grid-template-rows: 100%;  
-                grid-template-columns: calc(100% - 60px) 30px 30px;  
+                grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;  
                 align-content: center;
                 overflow: hidden;
-                margin: -4px;
-                border: rgba(72, 72, 72, 1) solid 4px;
-                border-bottom: 0;
 
                 .frame-box-header-button {
                     cursor: pointer;
                     align-self: center;
                     transform-origin: 50% 50%;
                     transform: scale(1);
-                    stroke: white;     
+                    stroke: transparent;
+                    fill: white;
                     display: grid;               
 
                     &.down {
@@ -162,7 +166,7 @@
                 }
 
                 .frame-box-header-close {
-                    grid-column: 3;
+                    grid-column: 4;
                     grid-row: 1;
                 }
 
@@ -179,8 +183,10 @@
             }
 
             .port-container {
-                margin-top: 10px;      
-                margin-bottom: 10px;      
+                margin-top: 6px;      
+                margin-bottom: 6px; 
+                margin-left: 4px;     
+                margin-right: 4px;     
                 color: white;
                 grid-row: 2;
                 grid-column: 1;
@@ -191,10 +197,10 @@
             }
 
             &.selected {
-                border-color: white;
+                outline: white solid 4px;
 
                 .frame-box-header {
-                    border-color: white !important;
+                  //  border-color: white !important;
                 }
             }
         }

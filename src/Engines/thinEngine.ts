@@ -131,14 +131,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-beta.10";
+        return "babylonjs@4.1.0-beta.11";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-beta.10";
+        return "4.1.0-beta.11";
     }
 
     /**
@@ -2623,6 +2623,9 @@ export class ThinEngine {
         this._viewportCached.z = 0;
         this._viewportCached.w = 0;
 
+        // Done before in case we clean the attributes
+        this._unbindVertexArrayObject();
+
         if (bruteForce) {
             this._currentProgram = null;
             this.resetTextureCache();
@@ -2651,7 +2654,6 @@ export class ThinEngine {
         this._resetVertexBufferBinding();
         this._cachedIndexBuffer = null;
         this._cachedEffectForVertexBuffers = null;
-        this._unbindVertexArrayObject();
         this.bindIndexBuffer(null);
     }
 
