@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -989,7 +989,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 /**
  * @hidden
  * Enum for handling in tangent and out tangent.
@@ -1157,11 +1156,11 @@ var _GLTFAnimation = /** @class */ (function () {
                     var targetAnimation = _b[_a];
                     var target = targetAnimation.target;
                     var animation = targetAnimation.animation;
-                    if (target instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Mesh"] || target.length === 1 && target[0] instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Mesh"]) { // TODO: Update to support bones
+                    if (target instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["TransformNode"] || target.length === 1 && target[0] instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["TransformNode"]) {
                         var animationInfo = _GLTFAnimation._DeduceAnimationInfo(targetAnimation.animation);
                         if (animationInfo) {
-                            var babylonMesh = target instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Mesh"] ? target : target[0];
-                            _GLTFAnimation.AddAnimation("" + animation.name, glTFAnimation, babylonMesh, animation, animationInfo.dataAccessorType, animationInfo.animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, animationInfo.useQuaternion, animationSampleRate);
+                            var babylonTransformNode = target instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["TransformNode"] ? target : target[0];
+                            _GLTFAnimation.AddAnimation("" + animation.name, glTFAnimation, babylonTransformNode, animation, animationInfo.dataAccessorType, animationInfo.animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, animationInfo.useQuaternion, animationSampleRate);
                         }
                     }
                 }

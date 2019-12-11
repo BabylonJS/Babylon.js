@@ -19,6 +19,7 @@ import { PreviewAreaComponent } from './components/preview/previewAreaComponent'
 import { SerializationTools } from './serializationTools';
 import { GraphCanvasComponent } from './diagram/graphCanvas';
 import { GraphNode } from './diagram/graphNode';
+import { GraphFrame } from './diagram/graphFrame';
 
 require("./main.scss");
 
@@ -40,6 +41,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
     private _previewManager: PreviewManager;
     private _copiedNodes: GraphNode[] = [];
+    private _copiedFrame: Nullable<GraphFrame> = null;
     private _mouseLocationX = 0;
     private _mouseLocationY = 0;
     private _onWidgetKeyUpPointer: any;
@@ -179,6 +181,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             }
 
             if (evt.key === "c") { // Copy
+                this._copiedNodes = [];
+                this._copiedFrame = null;
+
+                if (this._graphCanvas.selectedFrame) {
+                    this._copiedFrame = this._graphCanvas.selectedFrame;
+                    return;
+                }
+
                 let selectedItems = this._graphCanvas.selectedNodes;
                 if (!selectedItems.length) {
                     return;
@@ -192,49 +202,138 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
                 this._copiedNodes = selectedItems.slice(0);
             } else if (evt.key === "v") { // Paste
+                const rootElement = this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement;
+                const zoomLevel = this._graphCanvas.zoom;
+                let currentY = (this._mouseLocationY - rootElement.offsetTop - this._graphCanvas.y - 20) / zoomLevel;
+
+                if (this._copiedFrame) {                    
+                    // New frame
+                    let newFrame = new GraphFrame(null, this._graphCanvas, true);
+                    this._graphCanvas.frames.push(newFrame);
+
+                    newFrame.width = this._copiedFrame.width;
+                    newFrame.height = this._copiedFrame.height;newFrame.width / 2
+                    newFrame.name = this._copiedFrame.name;
+                    newFrame.color = this._copiedFrame.color;
+
+                    let currentX = (this._mouseLocationX - rootElement.offsetLeft - this._graphCanvas.x) / zoomLevel;
+                    newFrame.x = currentX - newFrame.width / 2;
+                    newFrame.y = currentY;
+
+                    // Paste nodes
+
+                    if (this._copiedFrame.nodes.length) {
+                        currentX = newFrame.x + this._copiedFrame.nodes[0].x - this._copiedFrame.x;
+                        currentY = newFrame.y + this._copiedFrame.nodes[0].y - this._copiedFrame.y;
+                        this.pasteSelection(this._copiedFrame.nodes, currentX, currentY);                  
+                    }
+
+                    if (this._copiedFrame.isCollapsed) {
+                        newFrame.isCollapsed = true;
+                    }
+                    return;
+                }
+
                 if (!this._copiedNodes.length) {
                     return;
                 }
 
-                const rootElement = this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement;
-                const zoomLevel = this._graphCanvas.zoom;
                 let currentX = (this._mouseLocationX - rootElement.offsetLeft - this._graphCanvas.x - this.NodeWidth) / zoomLevel;
-                let currentY = (this._mouseLocationY - rootElement.offsetTop - this._graphCanvas.y - 20) / zoomLevel;
-                let originalNode: Nullable<GraphNode> = null;
-
-                for (var node of this._copiedNodes) {
-                    let block = node.block;
-
-                    if (!block) {
-                        continue;
-                    }
-
-                    let clone = block.clone(this.props.globalState.nodeMaterial.getScene());
-
-                    if (!clone) {
-                        return;
-                    }
-                    
-                    let newNode = this.createNodeFromObject(clone);
-
-                    let x = 0;
-                    let y = 0;
-                    if (originalNode) {
-                        x = currentX + node.x - originalNode.x;
-                        y = currentY + node.y - originalNode.y;
-                    } else {
-                        originalNode = node;
-                        x = currentX;
-                        y = currentY;
-                    }
-
-                    newNode.x = x;
-                    newNode.y = y;
-                    newNode.cleanAccumulation();
-                }
+                this.pasteSelection(this._copiedNodes, currentX, currentY);
             }
 
         }, false);
+    }
+
+    reconnectNewNodes(nodeIndex: number, newNodes:GraphNode[], sourceNodes:GraphNode[], done: boolean[]) {
+        if (done[nodeIndex]) {
+            return;
+        }
+
+        const currentNode = newNodes[nodeIndex];
+        const block = currentNode.block;
+        const sourceNode = sourceNodes[nodeIndex];
+
+        for (var inputIndex = 0; inputIndex < sourceNode.block.inputs.length; inputIndex++) {
+            let sourceInput = sourceNode.block.inputs[inputIndex];
+            const currentInput = block.inputs[inputIndex];
+            if (!sourceInput.isConnected) {
+                continue;
+            }
+            const sourceBlock = sourceInput.connectedPoint!.ownerBlock;
+            const activeNodes = sourceNodes.filter(s => s.block === sourceBlock);
+
+            if (activeNodes.length > 0) {
+                const activeNode = activeNodes[0];
+                let indexInList = sourceNodes.indexOf(activeNode);
+
+                // First make sure to connect the other one
+                this.reconnectNewNodes(indexInList, newNodes, sourceNodes, done);
+
+                // Then reconnect
+                const outputIndex = sourceBlock.outputs.indexOf(sourceInput.connectedPoint!);
+                const newOutput = newNodes[indexInList].block.outputs[outputIndex];
+
+                newOutput.connectTo(currentInput);
+            } else {
+                // Connect with outside blocks
+                sourceInput._connectedPoint!.connectTo(currentInput);
+            }
+
+            this._graphCanvas.connectPorts(currentInput.connectedPoint!, currentInput);
+        }
+
+        currentNode.refresh();
+
+        done[nodeIndex] = true;
+    }
+
+    pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number) {
+
+        let originalNode: Nullable<GraphNode> = null;
+
+        let newNodes:GraphNode[] = [];
+
+        // Create new nodes
+        for (var node of copiedNodes) {
+            let block = node.block;
+
+            if (!block) {
+                continue;
+            }
+
+            let clone = block.clone(this.props.globalState.nodeMaterial.getScene());
+
+            if (!clone) {
+                return;
+            }
+            
+            let newNode = this.createNodeFromObject(clone);
+
+            let x = 0;
+            let y = 0;
+            if (originalNode) {
+                x = currentX + node.x - originalNode.x;
+                y = currentY + node.y - originalNode.y;
+            } else {
+                originalNode = node;
+                x = currentX;
+                y = currentY;
+            }
+
+            newNode.x = x;
+            newNode.y = y;
+            newNode.cleanAccumulation();
+
+            newNodes.push(newNode);
+        }
+
+        // Relink
+        let done = new Array<boolean>(newNodes.length);
+        for (var index = 0; index < newNodes.length; index++) {
+            this.reconnectNewNodes(index, newNodes, copiedNodes, done);
+        }
+
     }
 
     zoomToFit() {
