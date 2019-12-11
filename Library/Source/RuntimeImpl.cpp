@@ -156,6 +156,15 @@ namespace Babylon
                 curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, callback);
                 curl_easy_setopt(curl, CURLOPT_WRITEDATA, &data);
 
+#if (ANDROID)
+                /*
+                 * /!\ warning! this is a security issue
+                 * https://github.com/BabylonJS/BabylonNative/issues/96
+                 */
+                curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
+                curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+#endif
+
                 auto result = curl_easy_perform(curl);
                 if (result != CURLE_OK)
                 {
