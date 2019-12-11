@@ -196,7 +196,11 @@ napi_status napi_get_named_property(napi_env env,
                   napi_value object,
                   const char* utf8name,
                   napi_value* result) {
-  assert(0);
+  auto context = env->m_globalContext;
+  JSStringRef propertyName = JSStringCreateWithUTF8CString(utf8name);
+  const OpaqueJSValue* jsValue = JSObjectGetProperty(context, reinterpret_cast<JSObjectRef>(object), propertyName, nullptr);
+  JSStringRelease(propertyName);
+  *result = reinterpret_cast<napi_value>(const_cast<OpaqueJSValue*>(jsValue));
   return napi_ok;
 }
 
@@ -279,9 +283,8 @@ napi_status napi_call_function(napi_env env,
   for (size_t i = 0; i < argc; i++) {
     args[i + 1] = reinterpret_cast<JSValueRef>(argv[i]);
   }
-  
-  JSObjectRef globalObject = JSContextGetGlobalObject(context);
-  JSValueRef jsResult = JSObjectCallAsFunction(context, reinterpret_cast<JSObjectRef>(func), globalObject, argc + 1, args.data(), nullptr);
+  JSObjectRef obj = JSValueToObject(context, reinterpret_cast<JSValueRef>(func), nullptr);
+  JSValueRef jsResult = JSObjectCallAsFunction(context, obj, nullptr, argc + 1, args.data(), nullptr);
   
   if (result != nullptr) {
     *result = reinterpret_cast<napi_value>(const_cast<OpaqueJSValue*>(jsResult));
@@ -325,7 +328,14 @@ napi_status napi_coerce_to_string(napi_env env,
 }
 
 napi_status napi_create_object(napi_env env, napi_value* result) {
-  assert(0);
+  static JSClassRef classDef = nullptr;
+  if (!classDef) {
+    JSClassDefinition classDefinition = kJSClassDefinitionEmpty;
+    classDefinition.className = "dummyObject";
+    classDef = JSClassCreate(&classDefinition);
+  }
+  JSObjectRef jsObject = JSObjectMake(env->m_globalContext, classDef, nullptr);
+  *result = reinterpret_cast<napi_value>(jsObject);
   return napi_ok;
 }
 
@@ -509,72 +519,83 @@ napi_status napi_define_class(napi_env env,
   
   
   JSStaticFunction *staticFunctions = new JSStaticFunction[methodCount+1];
-  assert(methodCount<60);
+  assert(methodCount<70);
   
   table.env = env;
   table.table.resize(methodCount);
   for (auto i = 0;i<methodCount;i++) {
     JSObjectCallAsFunctionCallback method{ nullptr };
     if (i == 0) method = JSCStaticMethod<0>;
-    if (i == 1) method = JSCStaticMethod<1>;
-    if (i == 2) method = JSCStaticMethod<2>;
-    if (i == 3) method = JSCStaticMethod<3>;
-    if (i == 4) method = JSCStaticMethod<4>;
-    if (i == 5) method = JSCStaticMethod<5>;
-    if (i == 6) method = JSCStaticMethod<6>;
-    if (i == 7) method = JSCStaticMethod<7>;
-    if (i == 8) method = JSCStaticMethod<8>;
-    if (i == 9) method = JSCStaticMethod<9>;
-    if (i == 10) method = JSCStaticMethod<10>;
-    if (i == 11) method = JSCStaticMethod<11>;
-    if (i == 12) method = JSCStaticMethod<12>;
-    if (i == 13) method = JSCStaticMethod<13>;
-    if (i == 14) method = JSCStaticMethod<14>;
-    if (i == 15) method = JSCStaticMethod<15>;
-    if (i == 16) method = JSCStaticMethod<16>;
-    if (i == 17) method = JSCStaticMethod<17>;
-    if (i == 18) method = JSCStaticMethod<18>;
-    if (i == 19) method = JSCStaticMethod<19>;
-    if (i == 20) method = JSCStaticMethod<20>;
-    if (i == 21) method = JSCStaticMethod<21>;
-    if (i == 22) method = JSCStaticMethod<22>;
-    if (i == 23) method = JSCStaticMethod<23>;
-    if (i == 24) method = JSCStaticMethod<24>;
-    if (i == 25) method = JSCStaticMethod<25>;
-    if (i == 26) method = JSCStaticMethod<26>;
-    if (i == 27) method = JSCStaticMethod<27>;
-    if (i == 28) method = JSCStaticMethod<28>;
-    if (i == 29) method = JSCStaticMethod<29>;
-    if (i == 30) method = JSCStaticMethod<30>;
-    if (i == 31) method = JSCStaticMethod<31>;
-    if (i == 32) method = JSCStaticMethod<32>;
-    if (i == 33) method = JSCStaticMethod<33>;
-    if (i == 34) method = JSCStaticMethod<34>;
-    if (i == 35) method = JSCStaticMethod<35>;
-    if (i == 36) method = JSCStaticMethod<36>;
-    if (i == 37) method = JSCStaticMethod<37>;
-    if (i == 38) method = JSCStaticMethod<38>;
-    if (i == 39) method = JSCStaticMethod<39>;
-    if (i == 40) method = JSCStaticMethod<40>;
-    if (i == 41) method = JSCStaticMethod<41>;
-    if (i == 42) method = JSCStaticMethod<42>;
-    if (i == 43) method = JSCStaticMethod<43>;
-    if (i == 44) method = JSCStaticMethod<44>;
-    if (i == 45) method = JSCStaticMethod<45>;
-    if (i == 46) method = JSCStaticMethod<46>;
-    if (i == 47) method = JSCStaticMethod<47>;
-    if (i == 48) method = JSCStaticMethod<48>;
-    if (i == 49) method = JSCStaticMethod<49>;
-    if (i == 50) method = JSCStaticMethod<50>;
-    if (i == 51) method = JSCStaticMethod<51>;
-    if (i == 52) method = JSCStaticMethod<52>;
-    if (i == 53) method = JSCStaticMethod<53>;
-    if (i == 54) method = JSCStaticMethod<54>;
-    if (i == 55) method = JSCStaticMethod<55>;
-    if (i == 56) method = JSCStaticMethod<56>;
-    if (i == 57) method = JSCStaticMethod<57>;
-    if (i == 58) method = JSCStaticMethod<58>;
-    if (i == 59) method = JSCStaticMethod<59>;
+    else if (i == 1) method = JSCStaticMethod<1>;
+    else if (i == 2) method = JSCStaticMethod<2>;
+    else if (i == 3) method = JSCStaticMethod<3>;
+    else if (i == 4) method = JSCStaticMethod<4>;
+    else if (i == 5) method = JSCStaticMethod<5>;
+    else if (i == 6) method = JSCStaticMethod<6>;
+    else if (i == 7) method = JSCStaticMethod<7>;
+    else if (i == 8) method = JSCStaticMethod<8>;
+    else if (i == 9) method = JSCStaticMethod<9>;
+    else if (i == 10) method = JSCStaticMethod<10>;
+    else if (i == 11) method = JSCStaticMethod<11>;
+    else if (i == 12) method = JSCStaticMethod<12>;
+    else if (i == 13) method = JSCStaticMethod<13>;
+    else if (i == 14) method = JSCStaticMethod<14>;
+    else if (i == 15) method = JSCStaticMethod<15>;
+    else if (i == 16) method = JSCStaticMethod<16>;
+    else if (i == 17) method = JSCStaticMethod<17>;
+    else if (i == 18) method = JSCStaticMethod<18>;
+    else if (i == 19) method = JSCStaticMethod<19>;
+    else if (i == 20) method = JSCStaticMethod<20>;
+    else if (i == 21) method = JSCStaticMethod<21>;
+    else if (i == 22) method = JSCStaticMethod<22>;
+    else if (i == 23) method = JSCStaticMethod<23>;
+    else if (i == 24) method = JSCStaticMethod<24>;
+    else if (i == 25) method = JSCStaticMethod<25>;
+    else if (i == 26) method = JSCStaticMethod<26>;
+    else if (i == 27) method = JSCStaticMethod<27>;
+    else if (i == 28) method = JSCStaticMethod<28>;
+    else if (i == 29) method = JSCStaticMethod<29>;
+    else if (i == 30) method = JSCStaticMethod<30>;
+    else if (i == 31) method = JSCStaticMethod<31>;
+    else if (i == 32) method = JSCStaticMethod<32>;
+    else if (i == 33) method = JSCStaticMethod<33>;
+    else if (i == 34) method = JSCStaticMethod<34>;
+    else if (i == 35) method = JSCStaticMethod<35>;
+    else if (i == 36) method = JSCStaticMethod<36>;
+    else if (i == 37) method = JSCStaticMethod<37>;
+    else if (i == 38) method = JSCStaticMethod<38>;
+    else if (i == 39) method = JSCStaticMethod<39>;
+    else if (i == 40) method = JSCStaticMethod<40>;
+    else if (i == 41) method = JSCStaticMethod<41>;
+    else if (i == 42) method = JSCStaticMethod<42>;
+    else if (i == 43) method = JSCStaticMethod<43>;
+    else if (i == 44) method = JSCStaticMethod<44>;
+    else if (i == 45) method = JSCStaticMethod<45>;
+    else if (i == 46) method = JSCStaticMethod<46>;
+    else if (i == 47) method = JSCStaticMethod<47>;
+    else if (i == 48) method = JSCStaticMethod<48>;
+    else if (i == 49) method = JSCStaticMethod<49>;
+    else if (i == 50) method = JSCStaticMethod<50>;
+    else if (i == 51) method = JSCStaticMethod<51>;
+    else if (i == 52) method = JSCStaticMethod<52>;
+    else if (i == 53) method = JSCStaticMethod<53>;
+    else if (i == 54) method = JSCStaticMethod<54>;
+    else if (i == 55) method = JSCStaticMethod<55>;
+    else if (i == 56) method = JSCStaticMethod<56>;
+    else if (i == 57) method = JSCStaticMethod<57>;
+    else if (i == 58) method = JSCStaticMethod<58>;
+    else if (i == 59) method = JSCStaticMethod<59>;
+    else if (i == 60) method = JSCStaticMethod<60>;
+    else if (i == 61) method = JSCStaticMethod<61>;
+    else if (i == 62) method = JSCStaticMethod<62>;
+    else if (i == 63) method = JSCStaticMethod<63>;
+    else if (i == 64) method = JSCStaticMethod<64>;
+    else if (i == 65) method = JSCStaticMethod<65>;
+    else if (i == 66) method = JSCStaticMethod<66>;
+    else if (i == 67) method = JSCStaticMethod<67>;
+    else if (i == 68) method = JSCStaticMethod<68>;
+    else if (i == 69) method = JSCStaticMethod<69>;
+
     staticFunctions[i] = {methodDescriptors[i].utf8name, method, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontDelete};
     table.table[i] = {methodDescriptors[i].method, methodDescriptors[i].data};
   }
@@ -813,7 +834,11 @@ napi_status napi_typeof(napi_env env, napi_value vv, napi_valuetype* result) {
 napi_status napi_coerce_to_object(napi_env env,
                                   napi_value v,
                                   napi_value* result) {
-  assert(0);
+  JSValueRef value = reinterpret_cast<JSValueRef>(v);
+  JSObjectRef object = JSValueToObject(env->m_globalContext, value, nullptr);
+  if (result) {
+    *result = reinterpret_cast<napi_value>(object);
+  }
   return napi_ok;
 }
 
@@ -854,7 +879,10 @@ napi_status napi_strict_equals(napi_env env,
                  napi_value lhs,
                  napi_value rhs,
                  bool* result) {
-  assert(0);
+  auto context = env->m_globalContext;
+  JSValueRef left = reinterpret_cast<JSValueRef>(lhs);
+  JSValueRef right = reinterpret_cast<JSValueRef>(rhs);
+  *result = JSValueIsEqual(context, left, right, nullptr);
   return napi_ok;
 }
 
@@ -863,10 +891,10 @@ napi_status napi_set_named_property(napi_env env,
                   const char* utf8name,
                   napi_value value) {
   auto context = env->m_globalContext;
-  JSObjectRef globalObject = JSContextGetGlobalObject(context);
+  JSObjectRef jsObject = reinterpret_cast<JSObjectRef>(object);
   JSStringRef propertyName = JSStringCreateWithUTF8CString(utf8name);
   JSValueRef jsValue = reinterpret_cast<JSValueRef>(value);
-  JSObjectSetProperty(context, globalObject, propertyName, jsValue, kJSPropertyAttributeNone, nullptr);
+  JSObjectSetProperty(context, jsObject, propertyName, jsValue, kJSPropertyAttributeNone, nullptr);
   JSStringRelease(propertyName);
   return napi_ok;
 }

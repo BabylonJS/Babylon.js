@@ -45,20 +45,35 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
     // Update the view, if already loaded.
 }
 
+- (void)viewDidLayout {
+    [super viewDidLayout];
+    if (runtime)
+    {
+        NSSize size = [self view].frame.size;
+        runtime->UpdateSize(size.width, size.height);
+    }
+}
+
 - (void)mouseDown:(NSEvent *)theEvent {
-    
-    inputBuffer->SetPointerDown(true);
+    if (inputBuffer)
+    {
+        inputBuffer->SetPointerDown(true);
+    }
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent {
-    
-    NSPoint eventLocation = [theEvent locationInWindow];
-    inputBuffer->SetPointerPosition(eventLocation.x, eventLocation.y);
+    if (inputBuffer)
+    {
+        NSPoint eventLocation = [theEvent locationInWindow];
+        inputBuffer->SetPointerPosition(eventLocation.x, eventLocation.y);
+    }
 }
 
 - (void)mouseUp:(NSEvent *)theEvent {
-    
-    inputBuffer->SetPointerDown(false);
+    if (inputBuffer)
+    {
+        inputBuffer->SetPointerDown(false);
+    }
 }
 
 @end

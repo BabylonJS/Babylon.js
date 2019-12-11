@@ -35,54 +35,15 @@ namespace glslang
 
         auto compiler = std::make_unique<spirv_cross::CompilerMSL>(parser.get_parsed_ir());
 
+        auto resources = compiler->get_shader_resources();
+        for (auto& resource : resources.uniform_buffers)
+        {
+            compiler->set_name(resource.id, "_mtl_u");
+        }
+        
+        compiler->rename_entry_point("main", "xlatMtlMain", (stage == EShLangVertex) ? spv::ExecutionModelVertex : spv::ExecutionModelFragment);
+        
         shaderResult = compiler->compile();
-
-        std::string sourceNoStruct(shaderResult.data(), shaderResult.size());
-        const std::string main0 = "main0(";
-        size_t pos = sourceNoStruct.find(main0);
-        if (pos != std::string::npos)
-        {
-            sourceNoStruct.replace(pos, main0.size(), "xlatMtlMain(");
-        }
-
-        // WIP for constant names, Needed by bgfx.
-        {
-            const std::string frame0 = "_22";
-            pos = sourceNoStruct.find(frame0);
-            if (pos != std::string::npos)
-            {
-                sourceNoStruct.replace(pos, frame0.size(), "_mtl_u");
-                while (1)
-                {
-                    pos = sourceNoStruct.find(frame0);
-                    if (pos == std::string::npos)
-                    {
-                        break;
-                    }
-                    sourceNoStruct.replace(pos, frame0.size(), "_mtl_u");
-                }
-            }
-        }
-
-        {
-            const std::string frame0 = "_69";
-            pos = sourceNoStruct.find(frame0);
-            if (pos != std::string::npos)
-            {
-                sourceNoStruct.replace(pos, frame0.size(), "_mtl_u");
-                while (1)
-                {
-                    pos = sourceNoStruct.find(frame0);
-                    if (pos == std::string::npos)
-                    {
-                        break;
-                    }
-                    sourceNoStruct.replace(pos, frame0.size(), "_mtl_u");
-                }
-            }
-        }
-
-        shaderResult = sourceNoStruct;
         return std::move(compiler);
     }
 }
