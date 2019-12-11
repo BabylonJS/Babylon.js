@@ -16559,6 +16559,7 @@ declare module BABYLON {
         };
         private _size;
         private _currentRefreshId;
+        private _frameId;
         private _refreshRate;
         private _vertexBuffers;
         private _indexBuffer;
