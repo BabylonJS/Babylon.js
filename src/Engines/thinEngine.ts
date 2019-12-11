@@ -131,14 +131,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-beta.10";
+        return "babylonjs@4.1.0-beta.12";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-beta.10";
+        return "4.1.0-beta.12";
     }
 
     /**
@@ -2623,6 +2623,9 @@ export class ThinEngine {
         this._viewportCached.z = 0;
         this._viewportCached.w = 0;
 
+        // Done before in case we clean the attributes
+        this._unbindVertexArrayObject();
+
         if (bruteForce) {
             this._currentProgram = null;
             this.resetTextureCache();
@@ -2651,7 +2654,6 @@ export class ThinEngine {
         this._resetVertexBufferBinding();
         this._cachedIndexBuffer = null;
         this._cachedEffectForVertexBuffers = null;
-        this._unbindVertexArrayObject();
         this.bindIndexBuffer(null);
     }
 
@@ -3111,15 +3113,15 @@ export class ThinEngine {
         const target = this._getTextureTarget(texture);
 
         if (wrapU) {
-            this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_S, this._getTextureWrapMode(wrapU));
+            this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_S, this._getTextureWrapMode(wrapU), texture);
             texture._cachedWrapU = wrapU;
         }
         if (wrapV) {
-            this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_T, this._getTextureWrapMode(wrapV));
+            this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_T, this._getTextureWrapMode(wrapV), texture);
             texture._cachedWrapV = wrapV;
         }
         if (wrapR) {
-            this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_R, this._getTextureWrapMode(wrapR));
+            this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_R, this._getTextureWrapMode(wrapR), texture);
             texture._cachedWrapR = wrapR;
         }
 
@@ -3297,7 +3299,7 @@ export class ThinEngine {
 
         gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
 
-        if (samples > 1) {
+        if (samples > 1 && gl.renderbufferStorageMultisample) {
             gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, msInternalFormat, width, height);
         } else {
             gl.renderbufferStorage(gl.RENDERBUFFER, internalFormat, width, height);
@@ -4186,20 +4188,25 @@ export class ThinEngine {
 
     // Statics
 
+    private static _isSupported: Nullable<boolean> = null;
     /**
      * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
      * @returns true if the engine can be created
      * @ignorenaming
      */
     public static isSupported(): boolean {
-        try {
-            var tempcanvas = CanvasGenerator.CreateCanvas(1, 1);
-            var gl = tempcanvas.getContext("webgl") || (tempcanvas as any).getContext("experimental-webgl");
+        if (this._isSupported === null) {
+            try {
+                var tempcanvas = CanvasGenerator.CreateCanvas(1, 1);
+                var gl = tempcanvas.getContext("webgl") || (tempcanvas as any).getContext("experimental-webgl");
 
-            return gl != null && !!window.WebGLRenderingContext;
-        } catch (e) {
-            return false;
+                this._isSupported = gl != null && !!window.WebGLRenderingContext;
+            } catch (e) {
+                this._isSupported = false;
+            }
         }
+
+        return this._isSupported;
     }
 
     /**

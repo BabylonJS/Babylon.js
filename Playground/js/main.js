@@ -68,7 +68,8 @@ compileAndRun = function(parent, fpsLabel) {
                 return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
             }
 
-            var defaultEngineZip = "new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true })";
+            var zipVariables = "var engine = null;\r\nvar scene = null;\r\n";
+            var defaultEngineZip = "var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); }";
 
             if (code.indexOf("createEngine") !== -1) {
                 createEngineFunction = "createEngine";
@@ -94,13 +95,13 @@ compileAndRun = function(parent, fpsLabel) {
                 fastEval("runScript = function(scene, canvas) {" + code + "}");
                 runScript(scene, canvas);
 
-                parent.zipTool.ZipCode = "var engine = " + defaultEngineZip + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
+                parent.zipTool.ZipCode = zipVariables + defaultEngineZip + "var engine = createDefaultEngine();" + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
             } else {
-                code += "\n engine = " + createEngineFunction + "();";
-                code += "\n if (!engine) throw 'engine should not be null.';";
+                code += "\r\n\r\nengine = " + createEngineFunction + "();";
+                code += "\r\nif (!engine) throw 'engine should not be null.';";
 
                 if (parent.settingsPG.ScriptLanguage == "JS") {
-                    code += "\n" + "scene = " + createSceneFunction + "();";
+                    code += "\r\n" + "scene = " + createSceneFunction + "();";
                 }
                 else {
                     var startCar = code.search('var ' + createSceneFunction);
@@ -128,12 +129,12 @@ compileAndRun = function(parent, fpsLabel) {
                 }
 
                 var createEngineZip = (createEngineFunction === "createEngine")
-                    ? "createEngine()"
-                    : defaultEngineZip;
+                    ? zipVariables
+                    : zipVariables + defaultEngineZip;
 
                 parent.zipTool.zipCode =
-                    "var engine = " + createEngineZip + ";\r\n" +
-                    code + "\r\n\r\n";
+                    createEngineZip + ";\r\n" +
+                    code;
             }
 
             engine = engine;
