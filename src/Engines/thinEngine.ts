@@ -3299,7 +3299,7 @@ export class ThinEngine {
 
         gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
 
-        if (samples > 1) {
+        if (samples > 1 && gl.renderbufferStorageMultisample) {
             gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, msInternalFormat, width, height);
         } else {
             gl.renderbufferStorage(gl.RENDERBUFFER, internalFormat, width, height);

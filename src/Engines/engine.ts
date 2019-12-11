@@ -489,7 +489,7 @@ export class Engine extends ThinEngine {
 
         Engine.Instances.push(this);
 
-        if ((<HTMLCanvasElement>canvasOrContext).getContext) {
+        if ((<any>canvasOrContext).getContext) {
             let canvas = <HTMLCanvasElement>canvasOrContext;
 
             this._onCanvasFocus = () => {
@@ -1722,7 +1722,7 @@ export class Engine extends ThinEngine {
             texture._MSAARenderBuffer = null;
         }
 
-        if (samples > 1) {
+        if (samples > 1 && gl.renderbufferStorageMultisample) {
             let framebuffer = gl.createFramebuffer();
 
             if (!framebuffer) {
