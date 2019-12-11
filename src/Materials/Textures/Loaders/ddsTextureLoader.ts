@@ -96,10 +96,10 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
             DDSTools.UploadDDSLevels(engine, texture, data, info, loadMipmap, 6);
 
             if (!info.isFourCC && info.mipmapCount === 1) {
-                engine.generateMipMapsForCubemap(texture);
+                // Do not unbind as we still need to set the parameters.
+                engine.generateMipMapsForCubemap(texture, false);
             }
         }
-
         engine._setCubeMapTextureParams(loadMipmap);
         texture.isReady = true;
         texture.onLoadedObservable.notifyObservers(texture);

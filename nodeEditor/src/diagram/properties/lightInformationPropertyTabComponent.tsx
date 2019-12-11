@@ -1,11 +1,10 @@
 
 import * as React from "react";
-import { TextLineComponent } from '../../sharedComponents/textLineComponent';
 import { LineContainerComponent } from '../../sharedComponents/lineContainerComponent';
-import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { IPropertyComponentProps } from './propertyComponentProps';
 import { LightInformationBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/lightInformationBlock';
+import { GenericPropertyTabComponent } from './genericNodePropertyComponent';
 
 export class LightInformationPropertyTabComponent extends React.Component<IPropertyComponentProps> {
 
@@ -18,12 +17,8 @@ export class LightInformationPropertyTabComponent extends React.Component<IPrope
         let lightInformationBlock = this.props.block as LightInformationBlock;
 
         return (
-            <div>
-                <LineContainerComponent title="GENERAL">
-                    <TextLineComponent label="Type" value="LightInformationBlock" />
-                    <TextInputLineComponent globalState={this.props.globalState} label="Name" propertyName="name" target={lightInformationBlock} onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()} />
-                </LineContainerComponent>
-
+            <div>               
+                <GenericPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
                 <LineContainerComponent title="PROPERTIES">
                     <OptionsLineComponent label="Light" noDirectUpdate={true} valuesAreStrings={true} options={lightOptions} target={lightInformationBlock} propertyName="name" onSelect={(name: any) => {
                         lightInformationBlock.light = scene.getLightByName(name);

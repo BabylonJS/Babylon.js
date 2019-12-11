@@ -1,5 +1,5 @@
 var engine = null;
-var canas = null;
+var canvas = null;
 var scene = null;
 var globalParent = null;
 
@@ -96,6 +96,9 @@ compileAndRun = function(parent, fpsLabel) {
 
                 parent.zipTool.ZipCode = "var engine = " + defaultEngineZip + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
             } else {
+                code += "\n engine = " + createEngineFunction + "();";
+                code += "\n if (!engine) throw 'engine should not be null.';";
+
                 if (parent.settingsPG.ScriptLanguage == "JS") {
                     code += "\n" + "scene = " + createSceneFunction + "();";
                 }
@@ -105,15 +108,13 @@ compileAndRun = function(parent, fpsLabel) {
                     code += "\n" + "scene = " + createSceneFunction + "();";
                 }
 
-                // Create engine
-                fastEval("engine = " + createEngineFunction + "()");
+                // Execute the code
+                fastEval(code);
+
                 if (!engine) {
                     parent.utils.showError("createEngine function must return an engine.", null);
                     return;
-                }                
-
-                // Execute the code
-                fastEval(code);
+                }
 
                 if (!scene) {
                     parent.utils.showError(createSceneFunction + " function must return a scene.", null);

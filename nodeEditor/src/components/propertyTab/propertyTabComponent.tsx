@@ -12,26 +12,33 @@ import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineCompon
 import { DataStorage } from '../../dataStorage';
 import { GraphNode } from '../../diagram/graphNode';
 import { SliderLineComponent } from '../../sharedComponents/sliderLineComponent';
+import { GraphFrame } from '../../diagram/graphFrame';
+import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
+import { Color3LineComponent } from '../../sharedComponents/color3LineComponent';
+import { TextLineComponent } from '../../sharedComponents/textLineComponent';
+import { Engine } from 'babylonjs/Engines/engine';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
 }
 
-export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, { currentNode: Nullable<GraphNode> }> {
+export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, { currentNode: Nullable<GraphNode>, currentFrame: Nullable<GraphFrame> }> {
 
     constructor(props: IPropertyTabComponentProps) {
         super(props)
 
-        this.state = { currentNode: null };
+        this.state = { currentNode: null, currentFrame: null };
     }
 
     componentDidMount() {
         this.props.globalState.onSelectionChangedObservable.add(selection => {
             if (selection instanceof GraphNode) {
-                this.setState({ currentNode: selection });
+                this.setState({ currentNode: selection, currentFrame: null });
+            } else if (selection instanceof GraphFrame) {
+                this.setState({ currentNode: null, currentFrame: selection });
             } else {
-                this.setState({ currentNode: null });
+                this.setState({ currentNode: null, currentFrame: null });
             }
         });
     }
@@ -72,6 +79,41 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 </div>
             );
         }
+
+        if (this.state.currentFrame) {
+            return (
+                <div id="propertyTab">
+                    <div id="header">
+                        <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
+                        <div id="title">
+                            NODE MATERIAL EDITOR
+                        </div>
+                    </div>
+                    <div>
+                        <LineContainerComponent title="GENERAL">
+                            <TextInputLineComponent globalState={this.props.globalState} label="Name" propertyName="name" target={this.state.currentFrame} />
+                            <Color3LineComponent label="Color" target={this.state.currentFrame} propertyName="color"></Color3LineComponent>
+                            {
+                                !this.state.currentFrame.isCollapsed &&
+                                <ButtonLineComponent label="Collapse" onClick={() => {
+                                        this.state.currentFrame!.isCollapsed = true;
+                                        this.forceUpdate();
+                                    }} />
+                            }
+                            {
+                                this.state.currentFrame.isCollapsed &&
+                                <ButtonLineComponent label="Expand" onClick={() => {
+                                        this.state.currentFrame!.isCollapsed = false;
+                                        this.forceUpdate();
+                                    }} />
+                            }
+                        </LineContainerComponent>
+                    </div>
+                </div>
+            );
+        }
+
+
         let gridSize = DataStorage.ReadNumber("GridSize", 20);
 
         return (
@@ -84,6 +126,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 </div>
                 <div>
                     <LineContainerComponent title="GENERAL">
+                        <TextLineComponent label="Version" value={Engine.Version}/>
                         <ButtonLineComponent label="Reset to default" onClick={() => {
                             this.props.globalState.nodeMaterial!.setToDefault();
                             this.props.globalState.onResetRequiredObservable.notifyObservers();
