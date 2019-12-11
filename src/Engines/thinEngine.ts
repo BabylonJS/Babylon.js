@@ -2623,6 +2623,9 @@ export class ThinEngine {
         this._viewportCached.z = 0;
         this._viewportCached.w = 0;
 
+        // Done before in case we clean the attributes
+        this._unbindVertexArrayObject();
+
         if (bruteForce) {
             this._currentProgram = null;
             this.resetTextureCache();
@@ -2651,7 +2654,6 @@ export class ThinEngine {
         this._resetVertexBufferBinding();
         this._cachedIndexBuffer = null;
         this._cachedEffectForVertexBuffers = null;
-        this._unbindVertexArrayObject();
         this.bindIndexBuffer(null);
     }
 
