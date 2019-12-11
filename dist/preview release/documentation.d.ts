@@ -592,56 +592,61 @@ declare module BABYLON {
     export class Constants {
         /** Defines that alpha blending is disabled */
         static readonly ALPHA_DISABLE: number;
-        /** Defines that alpha blending to SRC ALPHA * SRC + DEST */
+        /** Defines that alpha blending is SRC ALPHA * SRC + DEST */
         static readonly ALPHA_ADD: number;
-        /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
+        /** Defines that alpha blending is SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
         static readonly ALPHA_COMBINE: number;
-        /** Defines that alpha blending to DEST - SRC * DEST */
+        /** Defines that alpha blending is DEST - SRC * DEST */
         static readonly ALPHA_SUBTRACT: number;
-        /** Defines that alpha blending to SRC * DEST */
+        /** Defines that alpha blending is SRC * DEST */
         static readonly ALPHA_MULTIPLY: number;
-        /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC) * DEST */
+        /** Defines that alpha blending is SRC ALPHA * SRC + (1 - SRC) * DEST */
         static readonly ALPHA_MAXIMIZED: number;
-        /** Defines that alpha blending to SRC + DEST */
+        /** Defines that alpha blending is SRC + DEST */
         static readonly ALPHA_ONEONE: number;
-        /** Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST */
+        /** Defines that alpha blending is SRC + (1 - SRC ALPHA) * DEST */
         static readonly ALPHA_PREMULTIPLIED: number;
         /**
-         * Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST
+         * Defines that alpha blending is SRC + (1 - SRC ALPHA) * DEST
          * Alpha will be set to (1 - SRC ALPHA) * DEST ALPHA
          */
         static readonly ALPHA_PREMULTIPLIED_PORTERDUFF: number;
-        /** Defines that alpha blending to CST * SRC + (1 - CST) * DEST */
+        /** Defines that alpha blending is CST * SRC + (1 - CST) * DEST */
         static readonly ALPHA_INTERPOLATE: number;
         /**
-         * Defines that alpha blending to SRC + (1 - SRC) * DEST
+         * Defines that alpha blending is SRC + (1 - SRC) * DEST
          * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
          */
         static readonly ALPHA_SCREENMODE: number;
         /**
-         * Defines that alpha blending to SRC + DST
+         * Defines that alpha blending is SRC + DST
          * Alpha will be set to SRC ALPHA + DST ALPHA
          */
         static readonly ALPHA_ONEONE_ONEONE: number;
         /**
-         * Defines that alpha blending to SRC * DST ALPHA + DST
+         * Defines that alpha blending is SRC * DST ALPHA + DST
          * Alpha will be set to 0
          */
         static readonly ALPHA_ALPHATOCOLOR: number;
         /**
-         * Defines that alpha blending to SRC * (1 - DST) + DST * (1 - SRC)
+         * Defines that alpha blending is SRC * (1 - DST) + DST * (1 - SRC)
          */
         static readonly ALPHA_REVERSEONEMINUS: number;
         /**
-         * Defines that alpha blending to SRC + DST * (1 - SRC ALPHA)
+         * Defines that alpha blending is SRC + DST * (1 - SRC ALPHA)
          * Alpha will be set to SRC ALPHA + DST ALPHA * (1 - SRC ALPHA)
          */
         static readonly ALPHA_SRC_DSTONEMINUSSRCALPHA: number;
         /**
-         * Defines that alpha blending to SRC + DST
+         * Defines that alpha blending is SRC + DST
          * Alpha will be set to SRC ALPHA
          */
         static readonly ALPHA_ONEONE_ONEZERO: number;
+        /**
+         * Defines that alpha blending is SRC * (1 - DST) + DST * (1 - SRC)
+         * Alpha will be set to DST ALPHA
+         */
+        static readonly ALPHA_EXCLUSION: number;
         /** Defines that alpha blending equation a SUM */
         static readonly ALPHA_EQUATION_ADD: number;
         /** Defines that alpha blending equation a SUBSTRACTION */
@@ -2265,7 +2270,7 @@ declare module BABYLON {
         static DistanceOfPointFromSegment(p: DeepImmutable<Vector2>, segA: DeepImmutable<Vector2>, segB: DeepImmutable<Vector2>): number;
     }
     /**
-     * Classed used to store (x,y,z) vector representation
+     * Class used to store (x,y,z) vector representation
      * A Vector3 is the main object used in 3D geometry
      * It can represent etiher the coordinates of a point the space, either a direction
      * Reminder: js uses a left handed forward facing system
@@ -7115,6 +7120,10 @@ declare module BABYLON {
         isParallelCompiled: boolean;
         onCompiled?: () => void;
         transformFeedback?: WebGLTransformFeedback | null;
+        vertexCompilationError: Nullable<string>;
+        fragmentCompilationError: Nullable<string>;
+        programLinkError: Nullable<string>;
+        programValidationError: Nullable<string>;
         readonly isAsync: boolean;
         readonly isReady: boolean;
         _handlesSpectorRebuildCallback(onCompiled: (program: WebGLProgram) => void): void;
@@ -10062,6 +10071,23 @@ declare module BABYLON {
          */
         abstract transferToEffect(effect: Effect, lightIndex: string): Light;
         /**
+         * Sets the passed Effect "effect" with the Light textures.
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The light
+         */
+        transferTexturesToEffect(effect: Effect, lightIndex: string): Light;
+        /**
+         * Binds the lights information from the scene to the effect for the given mesh.
+         * @param lightIndex Light index
+         * @param scene The scene where the light belongs to
+         * @param effect The effect we are binding the data to
+         * @param useSpecular Defines if specular is supported
+         * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
+         * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
+         */
+        bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff?: boolean, rebuildInParallel?: boolean): void;
+        /**
          * Sets the passed Effect "effect" with the Light information.
          * @param effect The effect to update
          * @param lightDataUniformName The uniform used to store light data (position or direction)
@@ -11643,7 +11669,7 @@ declare module BABYLON {
          */
         constructor(
         /** defines the manager's name */
-        name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number, fromPacked?: boolean, spriteJSON?: string | null);
+        name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number, fromPacked?: boolean, spriteJSON?: any | null);
         private _makePacked;
         private _appendSpriteVertex;
         /**
@@ -29539,6 +29565,7 @@ declare module BABYLON {
         private _allFallbacksProcessed;
         private _attributesNames;
         private _attributes;
+        private _attributeLocationByName;
         private _uniforms;
         /**
          * Key for the effect.
@@ -29676,7 +29703,7 @@ declare module BABYLON {
          * @param texture Texture to bind.
          * @hidden
          */
-        _bindTexture(channel: string, texture: InternalTexture): void;
+        _bindTexture(channel: string, texture: Nullable<InternalTexture>): void;
         /**
          * Sets a texture on the engine to be used in the shader.
          * @param channel Name of the sampler variable.
@@ -30161,30 +30188,37 @@ declare module BABYLON {
      */
     export interface InstancingAttributeInfo {
         /**
-         * Index/offset of the attribute in the vertex shader
+         * Name of the GLSL attribute
+         * if attribute index is not specified, this is used to retrieve the index from the effect
          */
-        index: number;
+        attributeName: string;
+        /**
+         * Index/offset of the attribute in the vertex shader
+         * if not specified, this will be computes from the name.
+         */
+        index?: number;
         /**
          * size of the attribute, 1, 2, 3 or 4
          */
         attributeSize: number;
         /**
-         * type of the attribute, gl.BYTE, gl.UNSIGNED_BYTE, gl.SHORT, gl.UNSIGNED_SHORT, gl.FIXED, gl.FLOAT.
-         * default is FLOAT
-         */
-        attributeType: number;
-        /**
-         * normalization of fixed-point data. behavior unclear, use FALSE, default is FALSE
-         */
-        normalized: boolean;
-        /**
          * Offset of the data in the Vertex Buffer acting as the instancing buffer
          */
         offset: number;
         /**
-         * Name of the GLSL attribute, for debugging purpose only
+         * Modifies the rate at which generic vertex attributes advance when rendering multiple instances
+         * default to 1
          */
-        attributeName: string;
+        divisor?: number;
+        /**
+         * type of the attribute, gl.BYTE, gl.UNSIGNED_BYTE, gl.SHORT, gl.UNSIGNED_SHORT, gl.FIXED, gl.FLOAT.
+         * default is FLOAT
+         */
+        attributeType?: number;
+        /**
+         * normalization of fixed-point data. behavior unclear, use FALSE, default is FALSE
+         */
+        normalized?: boolean;
     }
 }
 declare module BABYLON {
@@ -30419,6 +30453,19 @@ declare module BABYLON {
          * Gets or sets the relative url used to load shaders if using the engine in non-minified mode
          */
         static ShadersRepository: string;
+        /**
+        * Gets or sets the textures that the engine should not attempt to load as compressed
+        */
+        protected _excludedCompressedTextures: string[];
+        /**
+         * Filters the compressed texture formats to only include
+         * files that are not included in the skippable list
+         *
+         * @param url the current extension
+         * @param textureFormatInUse the current compressed texture format
+         * @returns "format" string
+         */
+        excludedCompressedTextureFormats(url: Nullable<string>, textureFormatInUse: Nullable<string>): Nullable<string>;
         /** @hidden */
         _shaderProcessor: IShaderProcessor;
         /**
@@ -30481,7 +30528,6 @@ declare module BABYLON {
         /** @hidden */
         _caps: EngineCapabilities;
         private _isStencilEnable;
-        protected _colorWrite: boolean;
         private _glVersion;
         private _glRenderer;
         private _glVendor;
@@ -30512,11 +30558,19 @@ declare module BABYLON {
          */
         disableVertexArrayObjects: boolean;
         /** @hidden */
+        protected _colorWrite: boolean;
+        /** @hidden */
+        protected _colorWriteChanged: boolean;
+        /** @hidden */
         protected _depthCullingState: DepthCullingState;
         /** @hidden */
         protected _stencilState: StencilState;
         /** @hidden */
-        protected _alphaState: AlphaState;
+        _alphaState: AlphaState;
+        /** @hidden */
+        _alphaMode: number;
+        /** @hidden */
+        _alphaEquation: number;
         /** @hidden */
         _internalTexturesCache: InternalTexture[];
         /** @hidden */
@@ -30615,7 +30669,7 @@ declare module BABYLON {
          * @param options defines further options to be sent to the getContext() function
          * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
          */
-        constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean);
+        constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean);
         private _rebuildInternalTextures;
         private _rebuildEffects;
         /**
@@ -30876,9 +30930,27 @@ declare module BABYLON {
          */
         updateAndBindInstancesBuffer(instancesBuffer: DataBuffer, data: Float32Array, offsetLocations: number[] | InstancingAttributeInfo[]): void;
         /**
-         * Apply all cached states (depth, culling, stencil and alpha)
+         * Bind the content of a webGL buffer used with instanciation
+         * @param instancesBuffer defines the webGL buffer to bind
+         * @param attributesInfo defines the offsets or attributes information used to determine where data must be stored in the buffer
+         * @param computeStride defines Wether to compute the strides from the info or use the default 0
          */
-        applyStates(): void;
+        bindInstancesBuffer(instancesBuffer: DataBuffer, attributesInfo: InstancingAttributeInfo[], computeStride?: boolean): void;
+        /**
+         * Disable the instance attribute corresponding to the name in parameter
+         * @param name defines the name of the attribute to disable
+         */
+        disableInstanceAttributeByName(name: string): void;
+        /**
+         * Disable the instance attribute corresponding to the location in parameter
+         * @param attributeLocation defines the attribute location of the attribute to disable
+         */
+        disableInstanceAttribute(attributeLocation: number): void;
+        /**
+         * Disable the attribute corresponding to the location in parameter
+         * @param attributeLocation defines the attribute location of the attribute to disable
+         */
+        disableAttributeByIndex(attributeLocation: number): void;
         /**
          * Send a draw order
          * @param useTriangles defines if triangles must be used to draw (else wireframe will be used)
@@ -31098,6 +31170,20 @@ declare module BABYLON {
          */
         setFloat4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): void;
         /**
+         * Apply all cached states (depth, culling, stencil and alpha)
+         */
+        applyStates(): void;
+        /**
+         * Enable or disable color writing
+         * @param enable defines the state to set
+         */
+        setColorWrite(enable: boolean): void;
+        /**
+         * Gets a boolean indicating if color writing is enabled
+         * @returns the current color writing state
+         */
+        getColorWrite(): boolean;
+        /**
          * Gets the depth culling state manager
          */
         readonly depthCullingState: DepthCullingState;
@@ -31221,12 +31307,22 @@ declare module BABYLON {
         _unpackFlipY(value: boolean): void;
         /** @hidden */
         _getUnpackAlignement(): number;
+        private _getTextureTarget;
         /**
          * Update the sampling mode of a given texture
          * @param samplingMode defines the required sampling mode
          * @param texture defines the texture to update
+         * @param generateMipMaps defines whether to generate mipmaps for the texture
          */
-        updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void;
+        updateTextureSamplingMode(samplingMode: number, texture: InternalTexture, generateMipMaps?: boolean): void;
+        /**
+         * Update the sampling mode of a given texture
+         * @param texture defines the texture to update
+         * @param wrapU defines the texture wrap mode of the u coordinates
+         * @param wrapV defines the texture wrap mode of the v coordinates
+         * @param wrapR defines the texture wrap mode of the r coordinates
+         */
+        updateTextureWrappingMode(texture: InternalTexture, wrapU: Nullable<number>, wrapV?: Nullable<number>, wrapR?: Nullable<number>): void;
         /** @hidden */
         _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | {
             width: number;
@@ -31242,6 +31338,7 @@ declare module BABYLON {
         private _prepareWebGLTexture;
         /** @hidden */
         _setupFramebufferDepthAttachments(generateStencilBuffer: boolean, generateDepthBuffer: boolean, width: number, height: number, samples?: number): Nullable<WebGLRenderbuffer>;
+        private _getDepthStencilBuffer;
         /** @hidden */
         _releaseFramebufferObjects(texture: InternalTexture): void;
         /** @hidden */
@@ -31328,6 +31425,16 @@ declare module BABYLON {
         /** @hidden */
         _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: IWebRequest, exception?: any) => void): IFileRequest;
         /**
+         * Reads pixels from the current frame buffer. Please note that this function can be slow
+         * @param x defines the x coordinate of the rectangle where pixels must be read
+         * @param y defines the y coordinate of the rectangle where pixels must be read
+         * @param width defines the width of the rectangle where pixels must be read
+         * @param height defines the height of the rectangle where pixels must be read
+         * @param hasAlpha defines wether the output should have alpha or not (defaults to true)
+         * @returns a Uint8Array containing RGBA colors
+         */
+        readPixels(x: number, y: number, width: number, height: number, hasAlpha?: boolean): Uint8Array;
+        /**
          * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
          * @returns true if the engine can be created
          * @ignorenaming
@@ -31370,7 +31477,7 @@ declare module BABYLON {
          * Gets host document
          * @returns the host document object
          */
-        getHostDocument(): Document;
+        getHostDocument(): Nullable<Document>;
     }
 }
 declare module BABYLON {
@@ -32341,6 +32448,41 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+        interface ThinEngine {
+            /**
+             * Sets alpha constants used by some alpha blending modes
+             * @param r defines the red component
+             * @param g defines the green component
+             * @param b defines the blue component
+             * @param a defines the alpha component
+             */
+            setAlphaConstants(r: number, g: number, b: number, a: number): void;
+            /**
+             * Sets the current alpha mode
+             * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
+             * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
+             * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+             */
+            setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
+            /**
+             * Gets the current alpha mode
+             * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+             * @returns the current alpha mode
+             */
+            getAlphaMode(): number;
+            /**
+             * Sets the current alpha equation
+             * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
+             */
+            setAlphaEquation(equation: number): void;
+            /**
+             * Gets the current alpha equation.
+             * @returns the current alpha equation
+             */
+            getAlphaEquation(): number;
+        }
+}
+declare module BABYLON {
     /**
      * Defines the interface used by display changed events
      */
@@ -32666,10 +32808,6 @@ declare module BABYLON {
         private _pointerLockRequested;
         private _dummyFramebuffer;
         private _rescalePostProcess;
-        /** @hidden */
-        protected _alphaMode: number;
-        /** @hidden */
-        protected _alphaEquation: number;
         private _deterministicLockstep;
         private _lockstepMaxSteps;
         private _timeStep;
@@ -32750,8 +32888,9 @@ declare module BABYLON {
         /**
          * Force the mipmap generation for the given render target texture
          * @param texture defines the render target texture to use
+         * @param unbind defines whether or not to unbind the texture after generation. Defaults to true.
          */
-        generateMipMapsForCubemap(texture: InternalTexture): void;
+        generateMipMapsForCubemap(texture: InternalTexture, unbind?: boolean): void;
         /** States */
         /**
          * Set various states to the webGL context
@@ -32786,47 +32925,6 @@ declare module BABYLON {
          * @param enable defines the state to set
          */
         setDepthWrite(enable: boolean): void;
-        /**
-         * Enable or disable color writing
-         * @param enable defines the state to set
-         */
-        setColorWrite(enable: boolean): void;
-        /**
-         * Gets a boolean indicating if color writing is enabled
-         * @returns the current color writing state
-         */
-        getColorWrite(): boolean;
-        /**
-         * Sets alpha constants used by some alpha blending modes
-         * @param r defines the red component
-         * @param g defines the green component
-         * @param b defines the blue component
-         * @param a defines the alpha component
-         */
-        setAlphaConstants(r: number, g: number, b: number, a: number): void;
-        /**
-         * Sets the current alpha mode
-         * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
-         * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
-         * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
-         */
-        setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
-        /**
-         * Gets the current alpha mode
-         * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
-         * @returns the current alpha mode
-         */
-        getAlphaMode(): number;
-        /**
-         * Sets the current alpha equation
-         * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
-         */
-        setAlphaEquation(equation: number): void;
-        /**
-         * Gets the current alpha equation.
-         * @returns the current alpha equation
-         */
-        getAlphaEquation(): number;
         /**
          * Gets a boolean indicating if stencil buffer is enabled
          * @returns the current stencil buffer state
@@ -33029,15 +33127,6 @@ declare module BABYLON {
          */
         getFragmentShaderSource(program: WebGLProgram): Nullable<string>;
         /**
-         * Reads pixels from the current frame buffer. Please note that this function can be slow
-         * @param x defines the x coordinate of the rectangle where pixels must be read
-         * @param y defines the y coordinate of the rectangle where pixels must be read
-         * @param width defines the width of the rectangle where pixels must be read
-         * @param height defines the height of the rectangle where pixels must be read
-         * @returns a Uint8Array containing RGBA colors
-         */
-        readPixels(x: number, y: number, width: number, height: number): Uint8Array;
-        /**
          * Sets a depth stencil texture from a render target to the according uniform.
          * @param channel The texture channel
          * @param uniform The uniform to set
@@ -33116,6 +33205,13 @@ declare module BABYLON {
          * @returns The extension selected.
          */
         setTextureFormatToUse(formatsAvailable: Array<string>): Nullable<string>;
+        /**
+         * Set the compressed texture extensions or file names to skip.
+         *
+         * @param skippedFiles defines the list of those texture files you want to skip
+         * Example: [".dds", ".env", "myfile.png"]
+         */
+        setCompressedTextureExclusions(skippedFiles: Array<string>): void;
         /**
          * Force a specific size of the canvas
          * @param width defines the new canvas' width
@@ -34780,6 +34876,10 @@ declare module BABYLON {
          */
         onMeshImportedObservable: Observable<AbstractMesh>;
         /**
+         * This Observable will when an animation file has been imported into the scene.
+         */
+        onAnimationFileImportedObservable: Observable<Scene>;
+        /**
          * Gets or sets a user defined funtion to select LOD from a mesh and a camera.
          * By default this function is undefined and Babylon.js will select LOD based on distance to camera
          */
@@ -36304,6 +36404,13 @@ declare module BABYLON {
          * @returns the root mesh
          */
         createRootMesh(): Mesh;
+        /**
+         * Merge animations from this asset container into a scene
+         * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+         * @param animatables set of animatables to retarget to a node from the scene
+         * @param targetConverter defines a function used to convert animation targets from the asset container to the scene (default: search node by name)
+         */
+        mergeAnimationsTo(scene: Scene | null | undefined, animatables: Animatable[], targetConverter?: Nullable<(target: any) => Nullable<Node>>): void;
     }
 }
 declare module BABYLON {
@@ -36441,6 +36548,10 @@ declare module BABYLON {
          * Environment texture for the scene
          */
         environmentTexture: Nullable<BaseTexture>;
+        /**
+         * @returns all meshes, lights, cameras, transformNodes and bones
+         */
+        getNodes(): Array<Node>;
     }
 }
 declare module BABYLON {
@@ -38476,6 +38587,16 @@ declare module BABYLON {
         useObjectOrienationForDragging: boolean;
         private _options;
         /**
+         * Gets the options used by the behavior
+         */
+        /**
+        * Sets the options used by the behavior
+        */
+        options: {
+            dragAxis?: Vector3;
+            dragPlaneNormal?: Vector3;
+        };
+        /**
          * Creates a pointer drag behavior that can be attached to a mesh
          * @param options The drag axis or normal of the plane that will be dragged across. If no options are specified the drag plane will always face the ray's origin (eg. camera)
          */
@@ -39808,7 +39929,7 @@ declare module BABYLON {
         private _beta;
         private _gamma;
         /**
-         * Can be used to detect if a device orientation sensor is availible on a device
+         * Can be used to detect if a device orientation sensor is available on a device
          * @param timeout amount of time in milliseconds to wait for a response from the sensor (default: infinite)
          * @returns a promise that will resolve on orientation change
          */
@@ -41741,15 +41862,20 @@ declare module BABYLON {
      * @see https://doc.babylonjs.com/how_to/webxr
      */
     export class WebXRSessionManager implements IDisposable {
-        private scene;
+        /** The scene which the session should be created for */
+        scene: Scene;
         /**
          * Fires every time a new xrFrame arrives which can be used to update the camera
          */
-        onXRFrameObservable: Observable<any>;
+        onXRFrameObservable: Observable<XRFrame>;
         /**
          * Fires when the xr session is ended either by the device or manually done
          */
         onXRSessionEnded: Observable<any>;
+        /**
+         * Fires when the xr session is ended either by the device or manually done
+         */
+        onXRSessionInit: Observable<XRSession>;
         /**
          * Underlying xr session
          */
@@ -41762,6 +41888,8 @@ declare module BABYLON {
          * Current XR frame
          */
         currentFrame: Nullable<XRFrame>;
+        /** WebXR timestamp updated every frame */
+        currentTimestamp: number;
         private _xrNavigator;
         private baseLayer;
         private _rttProvider;
@@ -41770,7 +41898,9 @@ declare module BABYLON {
          * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
          * @param scene The scene which the session should be created for
          */
-        constructor(scene: Scene);
+        constructor(
+        /** The scene which the session should be created for */
+        scene: Scene);
         /**
          * Initializes the manager
          * After initialization enterXR can be called to start an XR session
@@ -41830,6 +41960,7 @@ declare module BABYLON {
          * Converts the render layer of xrSession to a render target
          * @param session session to create render target for
          * @param scene scene the new render target should be created for
+         * @param baseLayer the webgl layer to create the render target for
          */
         static _CreateRenderTargetTextureFromSession(session: XRSession, scene: Scene, baseLayer: XRWebGLLayer): RenderTargetTexture;
         /**
@@ -41873,6 +42004,138 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Defining the interface required for a (webxr) feature
+     */
+    export interface IWebXRFeature extends IDisposable {
+        /**
+         * Attach the feature to the session
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * Detach the feature from the session
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+    }
+    /**
+     * Defining the constructor of a feature. Used to register the modules.
+     */
+    export type WebXRFeatureConstructor = (xrSessionManager: WebXRSessionManager, options?: any) => (() => IWebXRFeature);
+    /**
+     * The WebXR features manager is responsible of enabling or disabling features required for the current XR session.
+     * It is mainly used in AR sessions.
+     *
+     * A feature can have a version that is defined by Babylon (and does not correspond with the webxr version).
+     */
+    export class WebXRFeaturesManager implements IDisposable {
+        private _xrSessionManager;
+        private static readonly _AvailableFeatures;
+        /**
+         * Used to register a module. After calling this function a developer can use this feature in the scene.
+         * Mainly used internally.
+         *
+         * @param featureName the name of the feature to register
+         * @param constructorFunction the function used to construct the module
+         * @param version the (babylon) version of the module
+         * @param stable is that a stable version of this module
+         */
+        static AddWebXRFeature(featureName: string, constructorFunction: WebXRFeatureConstructor, version?: number, stable?: boolean): void;
+        /**
+         * Returns a constructor of a specific feature.
+         *
+         * @param featureName the name of the feature to construct
+         * @param version the version of the feature to load
+         * @param xrSessionManager the xrSessionManager. Used to construct the module
+         * @param options optional options provided to the module.
+         * @returns a function that, when called, will return a new instance of this feature
+         */
+        static ConstructFeature(featureName: string, version: number | undefined, xrSessionManager: WebXRSessionManager, options?: any): (() => IWebXRFeature);
+        /**
+         * Return the latest unstable version of this feature
+         * @param featureName the name of the feature to search
+         * @returns the version number. if not found will return -1
+         */
+        static GetLatestVersionOfFeature(featureName: string): number;
+        /**
+         * Return the latest stable version of this feature
+         * @param featureName the name of the feature to search
+         * @returns the version number. if not found will return -1
+         */
+        static GetStableVersionOfFeature(featureName: string): number;
+        /**
+         * Can be used to return the list of features currently registered
+         *
+         * @returns an Array of available features
+         */
+        static GetAvailableFeatures(): string[];
+        /**
+         * Gets the versions available for a specific feature
+         * @param featureName the name of the feature
+         * @returns an array with the available versions
+         */
+        static GetAvailableVersions(featureName: string): string[];
+        private _features;
+        /**
+         * constructs a new features manages.
+         *
+         * @param _xrSessionManager an instance of WebXRSessionManager
+         */
+        constructor(_xrSessionManager: WebXRSessionManager);
+        /**
+         * Enable a feature using its name and a version. This will enable it in the scene, and will be responsible to attach it when the session starts.
+         *
+         * @param featureName the name of the feature to load or the class of the feature
+         * @param version optional version to load. if not provided the latest version will be enabled
+         * @param moduleOptions options provided to the module. Ses the module documentation / constructor
+         * @param attachIfPossible if set to true (default) the feature will be automatically attached, if it is currently possible
+         * @returns a new constructed feature or throws an error if feature not found.
+         */
+        enableFeature(featureName: string | {
+            Name: string;
+        }, version?: number | string, moduleOptions?: any, attachIfPossible?: boolean): IWebXRFeature;
+        /**
+         * Used to disable an already-enabled feature
+         * @param featureName the feature to disable
+         * @returns true if disable was successful
+         */
+        disableFeature(featureName: string | {
+            Name: string;
+        }): boolean;
+        /**
+         * Attach a feature to the current session. Mainly used when session started to start the feature effect.
+         * Can be used during a session to start a feature
+         * @param featureName the name of feature to attach
+         */
+        attachFeature(featureName: string): void;
+        /**
+         * Can be used inside a session or when the session ends to detach a specific feature
+         * @param featureName the name of the feature to detach
+         */
+        detachFeature(featureName: string): void;
+        /**
+         * Get the list of enabled features
+         * @returns an array of enabled features
+         */
+        getEnabledFeatures(): string[];
+        /**
+         * get the implementation of an enabled feature.
+         * @param featureName the name of the feature to load
+         * @returns the feature class, if found
+         */
+        getEnabledFeature(featureName: string): IWebXRFeature;
+        /**
+         * dispose this features manager
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Base set of functionality needed to create an XR experince (WebXRSessionManager, Camera, StateManagement, etc.)
      * @see https://doc.babylonjs.com/how_to/webxr
      */
@@ -41898,6 +42161,8 @@ declare module BABYLON {
         onStateChangedObservable: Observable<WebXRState>;
         /** Session manager used to keep track of xr session */
         sessionManager: WebXRSessionManager;
+        /** A features manager for this xr session */
+        featuresManager: WebXRFeaturesManager;
         private _nonVRCamera;
         private _originalSceneAutoClear;
         private _supported;
@@ -42240,6 +42505,27 @@ declare module BABYLON {
         loadAssetContainerAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
     }
     /**
+     * Mode that determines how to handle old animation groups before loading new ones.
+     */
+    export enum SceneLoaderAnimationGroupLoadingMode {
+        /**
+         * Reset all old animations to initial state then dispose them.
+         */
+        Clean = 0,
+        /**
+         * Stop all old animations.
+         */
+        Stop = 1,
+        /**
+         * Restart old animations from first frame.
+         */
+        Sync = 2,
+        /**
+         * Old animations remains untouched.
+         */
+        NoSync = 3
+    }
+    /**
      * Class used to load scene from various file formats using registered plugins
      * @see http://doc.babylonjs.com/how_to/load_from_any_file_type
      */
@@ -42401,6 +42687,33 @@ declare module BABYLON {
          * @returns The loaded asset container
          */
         static LoadAssetContainerAsync(rootUrl: string, sceneFilename?: string, scene?: Nullable<Scene>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
+        /**
+         * Import animations from a file into a scene
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+         * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+         * @param overwriteAnimations when true, animations are cleaned before importing new ones. Animations are appended otherwise
+         * @param animationGroupLoadingMode defines how to handle old animations groups before importing new ones
+         * @param targetConverter defines a function used to convert animation targets from loaded scene to current scene (default: search node by name)
+         * @param onSuccess a callback with the scene when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         */
+        static ImportAnimations(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, overwriteAnimations?: boolean, animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode, targetConverter?: Nullable<(target: any) => any>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>): void;
+        /**
+         * Import animations from a file into a scene
+         * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+         * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+         * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+         * @param overwriteAnimations when true, animations are cleaned before importing new ones. Animations are appended otherwise
+         * @param animationGroupLoadingMode defines how to handle old animations groups before importing new ones
+         * @param targetConverter defines a function used to convert animation targets from loaded scene to current scene (default: search node by name)
+         * @param onSuccess a callback with the scene when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @returns the updated scene with imported animations
+         */
+        static ImportAnimationsAsync(rootUrl: string, sceneFilename?: string | File, scene?: Nullable<Scene>, overwriteAnimations?: boolean, animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode, targetConverter?: Nullable<(target: any) => any>, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>): Promise<Scene>;
     }
 }
 declare module BABYLON {
@@ -42609,7 +42922,7 @@ declare module BABYLON {
         /**
          * holds the thumbstick values (X,Y)
          */
-        readonly thumbstickValues: StickValues;
+        thumbstickValues: StickValues;
         /**
          * Fired when the thumbstick on this controller is clicked
          */
@@ -42812,6 +43125,13 @@ declare module BABYLON {
         private _tmpRay;
         private _tmpVector;
         /**
+         * when set to true (default) teleportation will wait for thumbstick changes.
+         * When set to false teleportation will be disabled.
+         *
+         * If set to false while teleporting results can be unexpected.
+         */
+        enabled: boolean;
+        /**
          * Creates a WebXRControllerTeleportation
          * @param input input manager to add teleportation to
          * @param floorMeshes floormeshes which can be teleported to
@@ -42877,6 +43197,8 @@ declare module BABYLON {
      */
     export class WebXREnterExitUI implements IDisposable {
         private scene;
+        /** version of the options passed to this UI */
+        options: WebXREnterExitUIOptions;
         private _overlay;
         private _buttons;
         private _activeButton;
@@ -42896,6 +43218,11 @@ declare module BABYLON {
          * @returns the created ui
          */
         static CreateAsync(scene: Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions): Promise<WebXREnterExitUI>;
+        /**
+         *
+         * @param scene babylon scene object to use
+         * @param options (read-only) version of the options passed to this UI
+         */
         private constructor();
         private _updateButtons;
         /**
@@ -42921,6 +43248,10 @@ declare module BABYLON {
          * optional configuration for the output canvas
          */
         outputCanvasOptions?: WebXRManagedOutputCanvasOptions;
+        /**
+         * optional UI options. This can be used among other to change session mode and reference space type
+         */
+        uiOptions?: WebXREnterExitUIOptions;
     }
     /**
      * Default experience which provides a similar setup to the previous webVRExperience
@@ -42947,7 +43278,7 @@ declare module BABYLON {
          */
         teleportation: WebXRControllerTeleportation;
         /**
-         * Enables ui for enetering/exiting xr
+         * Enables ui for entering/exiting xr
          */
         enterExitUI: WebXREnterExitUI;
         /**
@@ -43365,6 +43696,423 @@ declare module BABYLON {
          * @returns "VRExperienceHelper"
          */
         getClassName(): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * Options used for hit testing
+     */
+    export interface IWebXRHitTestOptions {
+        /**
+         * Only test when user interacted with the scene. Default - hit test every frame
+         */
+        testOnPointerDownOnly?: boolean;
+        /**
+         * The node to use to transform the local results to world coordinates
+         */
+        worldParentNode?: TransformNode;
+    }
+    /**
+     * Interface defining the babylon result of raycasting/hit-test
+     */
+    export interface IWebXRHitResult {
+        /**
+         * The native hit test result
+         */
+        xrHitResult: XRHitResult;
+        /**
+         * Transformation matrix that can be applied to a node that will put it in the hit point location
+         */
+        transformationMatrix: Matrix;
+    }
+    /**
+     * The currently-working hit-test module.
+     * Hit test (or raycasting) is used to interact with the real world.
+     * For further information read here - https://github.com/immersive-web/hit-test
+     */
+    export class WebXRHitTestLegacy implements IWebXRFeature {
+        private _xrSessionManager;
+        /**
+         * options to use when constructing this feature
+         */
+        readonly options: IWebXRHitTestOptions;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the webxr specs version
+         */
+        static readonly Version: number;
+        /**
+         * Execute a hit test on the current running session using a select event returned from a transient input (such as touch)
+         * @param event the (select) event to use to select with
+         * @param referenceSpace the reference space to use for this hit test
+         * @returns a promise that resolves with an array of native XR hit result in xr coordinates system
+         */
+        static XRHitTestWithSelectEvent(event: XRInputSourceEvent, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
+        /**
+         * execute a hit test with an XR Ray
+         *
+         * @param xrSession a native xrSession that will execute this hit test
+         * @param xrRay the ray (position and direction) to use for raycasting
+         * @param referenceSpace native XR reference space to use for the hit-test
+         * @param filter filter function that will filter the results
+         * @returns a promise that resolves with an array of native XR hit result in xr coordinates system
+         */
+        static XRHitTestWithRay(xrSession: XRSession, xrRay: XRRay, referenceSpace: XRReferenceSpace, filter?: (result: XRHitResult) => boolean): Promise<XRHitResult[]>;
+        /**
+         * Triggered when new babylon (transformed) hit test results are available
+         */
+        onHitTestResultObservable: Observable<IWebXRHitResult[]>;
+        /**
+         * Creates a new instance of the (legacy version) hit test feature
+         * @param _xrSessionManager an instance of WebXRSessionManager
+         * @param options options to use when constructing this feature
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, 
+        /**
+         * options to use when constructing this feature
+         */
+        options?: IWebXRHitTestOptions);
+        private _onSelectEnabled;
+        private _xrFrameObserver;
+        private _attached;
+        /**
+         * Populated with the last native XR Hit Results
+         */
+        lastNativeXRHitResults: XRHitResult[];
+        /**
+         * attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        private _onHitTestResults;
+        private _onSelect;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Options used in the plane detector module
+     */
+    export interface IWebXRPlaneDetectorOptions {
+        /**
+         * The node to use to transform the local results to world coordinates
+         */
+        worldParentNode?: TransformNode;
+    }
+    /**
+     * A babylon interface for a webxr plane.
+     * A Plane is actually a polygon, built from N points in space
+     */
+    export interface IWebXRPlane {
+        /**
+         * a babylon-assigned ID for this polygon
+         */
+        id: number;
+        /**
+         * the native xr-plane object
+         */
+        xrPlane: XRPlane;
+        /**
+         * an array of vector3 points in babylon space. right/left hand system is taken into account.
+         */
+        polygonDefinition: Array<Vector3>;
+        /**
+         * A transformation matrix to apply on the mesh that will be built using the polygonDefinition
+         * Local vs. World are decided if worldParentNode was provided or not in the options when constructing the module
+         */
+        transformationMatrix: Matrix;
+    }
+    /**
+     * The plane detector is used to detect planes in the real world when in AR
+     * For more information see https://github.com/immersive-web/real-world-geometry/
+     */
+    export class WebXRPlaneDetector implements IWebXRFeature {
+        private _xrSessionManager;
+        private _options;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the webxr specs version
+         */
+        static readonly Version: number;
+        /**
+         * Observers registered here will be executed when a new plane was added to the session
+         */
+        onPlaneAddedObservable: Observable<IWebXRPlane>;
+        /**
+         * Observers registered here will be executed when a plane is no longer detected in the session
+         */
+        onPlaneRemovedObservable: Observable<IWebXRPlane>;
+        /**
+         * Observers registered here will be executed when an existing plane updates (for example - expanded)
+         * This can execute N times every frame
+         */
+        onPlaneUpdatedObservable: Observable<IWebXRPlane>;
+        private _enabled;
+        private _attached;
+        private _detectedPlanes;
+        private _lastFrameDetected;
+        private _observerTracked;
+        /**
+         * construct a new Plane Detector
+         * @param _xrSessionManager an instance of xr Session manager
+         * @param _options configuration to use when constructing this feature
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, _options?: IWebXRPlaneDetectorOptions);
+        /**
+         * attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+        private _updatePlaneWithXRPlane;
+        /**
+         * avoiding using Array.find for global support.
+         * @param xrPlane the plane to find in the array
+         */
+        private findIndexInPlaneArray;
+    }
+}
+declare module BABYLON {
+    /**
+     * Configuration options of the anchor system
+     */
+    export interface IWebXRAnchorSystemOptions {
+        /**
+         * a node that will be used to convert local to world coordinates
+         */
+        worldParentNode?: TransformNode;
+        /**
+         * should the anchor system use plane detection.
+         * If set to true, the plane-detection feature should be set using setPlaneDetector
+         */
+        usePlaneDetection?: boolean;
+        /**
+         * Should a new anchor be added every time a select event is triggered
+         */
+        addAnchorOnSelect?: boolean;
+    }
+    /**
+     * A babylon container for an XR Anchor
+     */
+    export interface IWebXRAnchor {
+        /**
+         * A babylon-assigned ID for this anchor
+         */
+        id: number;
+        /**
+         * The native anchor object
+         */
+        xrAnchor: XRAnchor;
+        /**
+         * Transformation matrix to apply to an object attached to this anchor
+         */
+        transformationMatrix: Matrix;
+    }
+    /**
+     * An implementation of the anchor system of WebXR.
+     * Note that the current documented implementation is not available in any browser. Future implementations
+     * will use the frame to create an anchor and not the session or a detected plane
+     * For further information see https://github.com/immersive-web/anchors/
+     */
+    export class WebXRAnchorSystem implements IWebXRFeature {
+        private _xrSessionManager;
+        private _options;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the webxr specs version
+         */
+        static readonly Version: number;
+        /**
+         * Observers registered here will be executed when a new anchor was added to the session
+         */
+        onAnchorAddedObservable: Observable<IWebXRAnchor>;
+        /**
+         * Observers registered here will be executed when an existing anchor updates
+         * This can execute N times every frame
+         */
+        onAnchorUpdatedObservable: Observable<IWebXRAnchor>;
+        /**
+         * Observers registered here will be executed when an anchor was removed from the session
+         */
+        onAnchorRemovedObservable: Observable<IWebXRAnchor>;
+        private _planeDetector;
+        private _hitTestModule;
+        private _enabled;
+        private _attached;
+        private _trackedAnchors;
+        private _lastFrameDetected;
+        private _observerTracked;
+        /**
+         * constructs a new anchor system
+         * @param _xrSessionManager an instance of WebXRSessionManager
+         * @param _options configuration object for this feature
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, _options?: IWebXRAnchorSystemOptions);
+        /**
+         * set the plane detector to use in order to create anchors from frames
+         * @param planeDetector the plane-detector module to use
+         * @param enable enable plane-anchors. default is true
+         */
+        setPlaneDetector(planeDetector: WebXRPlaneDetector, enable?: boolean): void;
+        /**
+         * If set, it will improve performance by using the current hit-test results instead of executing a new hit-test
+         * @param hitTestModule the hit-test module to use.
+         */
+        setHitTestModule(hitTestModule: WebXRHitTestLegacy): void;
+        /**
+         * attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+        private _onSelect;
+        /**
+         * Add anchor at a specific XR point.
+         *
+         * @param xrRigidTransformation xr-coordinates where a new anchor should be added
+         * @param anchorCreator the object o use to create an anchor with. either a session or a plane
+         * @returns a promise the fulfills when the anchor was created
+         */
+        addAnchorAtRigidTransformation(xrRigidTransformation: XRRigidTransform, anchorCreator?: XRAnchorCreator): Promise<XRAnchor>;
+        private _updateAnchorWithXRFrame;
+        /**
+         * avoiding using Array.find for global support.
+         * @param xrAnchor the plane to find in the array
+         */
+        private _findIndexInAnchorArray;
+    }
+}
+declare module BABYLON {
+    /**
+     * Options interface for the background remover plugin
+     */
+    export interface IWebXRBackgroundRemoverOptions {
+        /**
+         * don't disable the environment helper
+         */
+        ignoreEnvironmentHelper?: boolean;
+        /**
+         * flags to configure the removal of the environment helper.
+         * If not set, the entire background will be removed. If set, flags should be set as well.
+         */
+        environmentHelperRemovalFlags?: {
+            /**
+             * Should the skybox be removed (default false)
+             */
+            skyBox?: boolean;
+            /**
+             * Should the ground be removed (default false)
+             */
+            ground?: boolean;
+        };
+        /**
+         * Further background meshes to disable when entering AR
+         */
+        backgroundMeshes?: AbstractMesh[];
+    }
+    /**
+     * A module that will automatically disable background meshes when entering AR and will enable them when leaving AR.
+     */
+    export class WebXRBackgroundRemover implements IWebXRFeature {
+        private _xrSessionManager;
+        /**
+         * read-only options to be used in this module
+         */
+        readonly options: IWebXRBackgroundRemoverOptions;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the webxr specs version
+         */
+        static readonly Version: number;
+        /**
+         * registered observers will be triggered when the background state changes
+         */
+        onBackgroundStateChangedObservable: Observable<boolean>;
+        /**
+         * constructs a new background remover module
+         * @param _xrSessionManager the session manager for this module
+         * @param options read-only options to be used in this module
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, 
+        /**
+         * read-only options to be used in this module
+         */
+        options?: IWebXRBackgroundRemoverOptions);
+        /**
+         * attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        private _setBackgroundState;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -44123,6 +44871,10 @@ declare module BABYLON {
          * Optional URL to get the inspector script from (by default it uses the babylonjs CDN).
          */
         inspectorURL?: string;
+        /**
+         * Optional initial tab (default to DebugLayerTab.Properties)
+         */
+        initialTab?: DebugLayerTab;
     }
         interface Scene {
             /**
@@ -44136,6 +44888,31 @@ declare module BABYLON {
              */
             debugLayer: DebugLayer;
         }
+    /**
+     * Enum of inspector action tab
+     */
+    export enum DebugLayerTab {
+        /**
+         * Properties tag (default)
+         */
+        Properties = 0,
+        /**
+         * Debug tab
+         */
+        Debug = 1,
+        /**
+         * Statistics tab
+         */
+        Statistics = 2,
+        /**
+         * Tools tab
+         */
+        Tools = 3,
+        /**
+         * Settings tab
+         */
+        Settings = 4
+    }
     /**
      * The debug layer (aka Inspector) is the go to tool in order to better understand
      * what is happening in your scene
@@ -45638,6 +46415,11 @@ declare module BABYLON {
          * @param stencil
          */
         _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>): void;
+        /**
+         * Gets host document
+         * @returns the host document object
+         */
+        getHostDocument(): Nullable<Document>;
         clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
         createIndexBuffer(indices: IndicesArray): NativeDataBuffer;
         createVertexBuffer(data: DataArray): NativeDataBuffer;
@@ -46669,6 +47451,13 @@ declare module BABYLON {
         protected _computeProjectionTextureMatrix(): void;
         protected _buildUniformLayout(): void;
         private _computeAngleValues;
+        /**
+         * Sets the passed Effect "effect" with the Light textures.
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The light
+         */
+        transferTexturesToEffect(effect: Effect, lightIndex: string): Light;
         /**
          * Sets the passed Effect object with the SpotLight transfomed position (or position if not parented) and normalized direction.
          * @param effect The effect to update
@@ -51239,7 +52028,7 @@ declare module BABYLON {
         private _vertexBuffers;
         private _indexBuffer;
         private _effect;
-        private _alphaTestEffect;
+        private _previousDefines;
         /**
          * An event triggered when the layer is disposed.
          */
@@ -54534,6 +55323,10 @@ declare module BABYLON {
          */
         uniqueId: number;
         /**
+         * Gets or sets the comments associated with this block
+         */
+        comments: string;
+        /**
          * Gets a boolean indicating that this block can only be used once per NodeMaterial
          */
         readonly isUnique: boolean;
@@ -54768,6 +55561,8 @@ declare module BABYLON {
         visibleInInspector: boolean;
         /** Gets or sets a boolean indicating that the value of this input will not change after a build */
         isConstant: boolean;
+        /** Gets or sets the group to use to display this block in the Inspector */
+        groupInInspector: string;
         /**
          * Gets or sets the connection point type (default is float)
          */
@@ -63438,6 +64233,276 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Defines the basic options interface of a Sprite Frame Source Size.
+     */
+    export interface ISpriteJSONSpriteSourceSize {
+        /**
+         * number of the original width of the Frame
+         */
+        w: number;
+        /**
+         * number of the original height of the Frame
+         */
+        h: number;
+    }
+    /**
+     * Defines the basic options interface of a Sprite Frame Data.
+     */
+    export interface ISpriteJSONSpriteFrameData {
+        /**
+         * number of the x offset of the Frame
+         */
+        x: number;
+        /**
+         * number of the y offset of the Frame
+         */
+        y: number;
+        /**
+         * number of the width of the Frame
+         */
+        w: number;
+        /**
+         * number of the height of the Frame
+         */
+        h: number;
+    }
+    /**
+     * Defines the basic options interface of a JSON Sprite.
+     */
+    export interface ISpriteJSONSprite {
+        /**
+         * string name of the Frame
+         */
+        filename: string;
+        /**
+         * ISpriteJSONSpriteFrame basic object of the frame data
+         */
+        frame: ISpriteJSONSpriteFrameData;
+        /**
+        * boolean to flag is the frame was rotated.
+        */
+        rotated: boolean;
+        /**
+        * boolean to flag is the frame was trimmed.
+        */
+        trimmed: boolean;
+        /**
+         * ISpriteJSONSpriteFrame basic object of the source data
+         */
+        spriteSourceSize: ISpriteJSONSpriteFrameData;
+        /**
+         * ISpriteJSONSpriteFrame basic object of the source data
+         */
+        sourceSize: ISpriteJSONSpriteSourceSize;
+    }
+    /**
+     * Defines the basic options interface of a JSON atlas.
+     */
+    export interface ISpriteJSONAtlas {
+        /**
+         * Array of objects that contain the frame data.
+         */
+        frames: Array<ISpriteJSONSprite>;
+        /**
+         * object basic object containing the sprite meta data.
+         */
+        meta?: object;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var spriteMapPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var spriteMapVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * Defines the basic options interface of a SpriteMap
+     */
+    export interface ISpriteMapOptions {
+        /**
+         * Vector2 of the number of cells in the grid.
+         */
+        stageSize?: Vector2;
+        /**
+         * Vector2 of the size of the output plane in World Units.
+         */
+        outputSize?: Vector2;
+        /**
+         * Vector3 of the position of the output plane in World Units.
+         */
+        outputPosition?: Vector3;
+        /**
+         * Vector3 of the rotation of the output plane.
+         */
+        outputRotation?: Vector3;
+        /**
+         * number of layers that the system will reserve in resources.
+         */
+        layerCount?: number;
+        /**
+         * number of max animation frames a single cell will reserve in resources.
+         */
+        maxAnimationFrames?: number;
+        /**
+         * number cell index of the base tile when the system compiles.
+         */
+        baseTile?: number;
+        /**
+        * boolean flip the sprite after its been repositioned by the framing data.
+        */
+        flipU?: boolean;
+        /**
+         * Vector3 scalar of the global RGB values of the SpriteMap.
+         */
+        colorMultiply?: Vector3;
+    }
+    /**
+     * Defines the IDisposable interface in order to be cleanable from resources.
+     */
+    export interface ISpriteMap extends IDisposable {
+        /**
+         * String name of the SpriteMap.
+         */
+        name: string;
+        /**
+         * The JSON Array file from a https://www.codeandweb.com/texturepacker export.  Or similar structure.
+         */
+        atlasJSON: ISpriteJSONAtlas;
+        /**
+         * Texture of the SpriteMap.
+         */
+        spriteSheet: Texture;
+        /**
+         * The parameters to initialize the SpriteMap with.
+         */
+        options: ISpriteMapOptions;
+    }
+    /**
+     * Class used to manage a grid restricted sprite deployment on an Output plane.
+     */
+    export class SpriteMap implements ISpriteMap {
+        /** The Name of the spriteMap */
+        name: string;
+        /** The JSON file with the frame and meta data */
+        atlasJSON: ISpriteJSONAtlas;
+        /** The systems Sprite Sheet Texture */
+        spriteSheet: Texture;
+        /** Arguments passed with the Constructor */
+        options: ISpriteMapOptions;
+        /** Public Sprite Storage array, parsed from atlasJSON */
+        sprites: Array<ISpriteJSONSprite>;
+        /** Returns the Number of Sprites in the System */
+        readonly spriteCount: number;
+        /** Returns the Position of Output Plane*/
+        /** Returns the Position of Output Plane*/
+        position: Vector3;
+        /** Returns the Rotation of Output Plane*/
+        /** Returns the Rotation of Output Plane*/
+        rotation: Vector3;
+        /** Sets the AnimationMap*/
+        /** Sets the AnimationMap*/
+        animationMap: RawTexture;
+        /** Scene that the SpriteMap was created in */
+        private _scene;
+        /** Texture Buffer of Float32 that holds tile frame data*/
+        private _frameMap;
+        /** Texture Buffers of Float32 that holds tileMap data*/
+        private _tileMaps;
+        /** Texture Buffer of Float32 that holds Animation Data*/
+        private _animationMap;
+        /** Custom ShaderMaterial Central to the System*/
+        private _material;
+        /** Custom ShaderMaterial Central to the System*/
+        private _output;
+        /** Systems Time Ticker*/
+        private _time;
+        /**
+         * Creates a new SpriteMap
+         * @param name defines the SpriteMaps Name
+         * @param atlasJSON is the JSON file that controls the Sprites Frames and Meta
+         * @param spriteSheet is the Texture that the Sprites are on.
+         * @param options a basic deployment configuration
+         * @param scene The Scene that the map is deployed on
+         */
+        constructor(name: string, atlasJSON: ISpriteJSONAtlas, spriteSheet: Texture, options: ISpriteMapOptions, scene: Scene);
+        /**
+        * Returns tileID location
+        * @returns Vector2 the cell position ID
+        */
+        getTileID(): Vector2;
+        /**
+        * Gets the UV location of the mouse over the SpriteMap.
+        * @returns Vector2 the UV position of the mouse interaction
+        */
+        getMousePosition(): Vector2;
+        /**
+        * Creates the "frame" texture Buffer
+        * -------------------------------------
+        * Structure of frames
+        *  "filename": "Falling-Water-2.png",
+        * "frame": {"x":69,"y":103,"w":24,"h":32},
+        * "rotated": true,
+        * "trimmed": true,
+        * "spriteSourceSize": {"x":4,"y":0,"w":24,"h":32},
+        * "sourceSize": {"w":32,"h":32}
+        * @returns RawTexture of the frameMap
+        */
+        private _createFrameBuffer;
+        /**
+        * Creates the tileMap texture Buffer
+        * @param buffer normally and array of numbers, or a false to generate from scratch
+        * @param _layer indicates what layer for a logic trigger dealing with the baseTile.  The system uses this
+        * @returns RawTexture of the tileMap
+        */
+        private _createTileBuffer;
+        /**
+        * Modifies the data of the tileMaps
+        * @param _layer is the ID of the layer you want to edit on the SpriteMap
+        * @param pos is the iVector2 Coordinates of the Tile
+        * @param tile The SpriteIndex of the new Tile
+        */
+        changeTiles(_layer: number | undefined, pos: Vector2 | Vector2[], tile?: number): void;
+        /**
+        * Creates the animationMap texture Buffer
+        * @param buffer normally and array of numbers, or a false to generate from scratch
+        * @returns RawTexture of the animationMap
+        */
+        private _createTileAnimationBuffer;
+        /**
+        * Modifies the data of the animationMap
+        * @param cellID is the Index of the Sprite
+        * @param _frame is the target Animation frame
+        * @param toCell is the Target Index of the next frame of the animation
+        * @param time is a value between 0-1 that is the trigger for when the frame should change tiles
+        * @param speed is a global scalar of the time variable on the map.
+        */
+        addAnimationToTile(cellID?: number, _frame?: number, toCell?: number, time?: number, speed?: number): void;
+        /**
+        * Exports the .tilemaps file
+        */
+        saveTileMaps(): void;
+        /**
+        * Imports the .tilemaps file
+        * @param url of the .tilemaps file
+        */
+        loadTileMaps(url: string): void;
+        /**
+         * Release associated resources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Class used to manage multiple sprites of different sizes on the same spritesheet
      * @see http://doc.babylonjs.com/babylon101/sprites
      */
@@ -65738,8 +66803,9 @@ interface XRInputSource {
     profiles: Array<string>;
 }
 
-interface XRSession {
+interface XRSession extends XRAnchorCreator {
     addEventListener: Function;
+    removeEventListener: Function;
     requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
     updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
     requestAnimationFrame: Function;
@@ -65747,6 +66813,12 @@ interface XRSession {
     renderState: XRRenderState;
     inputSources: Array<XRInputSource>;
 
+    // AR hit test
+    requestHitTest(ray: XRRay, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
+
+    updateWorldTrackingState(options: {
+        planeDetectionState?: { enabled: boolean; }
+    }): void;
 }
 
 interface XRReferenceSpace extends XRSpace {
@@ -65754,10 +66826,20 @@ interface XRReferenceSpace extends XRSpace {
     onreset: any;
 }
 
+type XRPlaneSet = Set<XRPlane>;
+type XRAnchorSet = Set<XRAnchor>;
+
 interface XRFrame {
     session: XRSession;
     getViewerPose(referenceSpace: XRReferenceSpace): XRViewerPose | undefined;
     getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
+
+    // Anchors
+    trackedAnchors?: XRAnchorSet;
+    // Planes
+    worldInformation: {
+        detectedPlanes?: XRPlaneSet;
+    };
 }
 
 interface XRViewerPose extends XRPose {
@@ -65770,12 +66852,12 @@ interface XRPose {
 }
 
 interface XRWebGLLayerOptions {
-    antialias ?: boolean;
-    depth ?: boolean;
-    stencil ?: boolean;
-    alpha ?: boolean;
-    multiview ?: boolean;
-    framebufferScaleFactor ?: number;
+    antialias?: boolean;
+    depth?: boolean;
+    stencil?: boolean;
+    alpha?: boolean;
+    multiview?: boolean;
+    framebufferScaleFactor?: number;
 }
 
 declare var XRWebGLLayer: {
@@ -65789,7 +66871,8 @@ interface XRWebGLLayer {
     getViewport: Function;
 }
 
-interface XRRigidTransform {
+declare class XRRigidTransform {
+    constructor(matrix: Float32Array);
     position: DOMPointReadOnly;
     orientation: DOMPointReadOnly;
     matrix: Float32Array;
@@ -65806,6 +66889,43 @@ interface XRInputSourceChangeEvent {
     session: XRSession;
     removed: Array<XRInputSource>;
     added: Array<XRInputSource>;
+}
+
+interface XRInputSourceEvent extends Event {
+    readonly frame: XRFrame;
+    readonly inputSource: XRInputSource;
+}
+
+// Experimental(er) features
+declare class XRRay {
+    constructor(transformOrOrigin: XRRigidTransform | DOMPointReadOnly, direction?: DOMPointReadOnly);
+    origin: DOMPointReadOnly;
+    direction: DOMPointReadOnly;
+    matrix: Float32Array;
+}
+
+interface XRHitResult {
+    hitMatrix: Float32Array;
+}
+
+interface XRAnchor {
+    // remove?
+    id?: string;
+    anchorSpace: XRSpace;
+    lastChangedTime: number;
+    detach(): void;
+}
+
+interface XRPlane extends XRAnchorCreator {
+    orientation: "Horizontal" | "Vertical";
+    planeSpace: XRSpace;
+    polygon: Array<DOMPointReadOnly>;
+    lastChangedTime: number;
+}
+
+interface XRAnchorCreator {
+    // AR Anchors
+    createAnchor(pose: XRPose | XRRigidTransform, referenceSpace: XRReferenceSpace): Promise<XRAnchor>;
 }
 
 /**
@@ -67322,6 +68442,8 @@ declare module BABYLON.GUI {
         autoScale: boolean;
         /** Gets or sets the streching mode used by the image */
         stretch: number;
+        /** @hidden */
+        _rotate90(n: number): Image;
         /**
          * Gets or sets the internal DOM image used to render the control
          */
@@ -68571,14 +69693,16 @@ declare module BABYLON.GUI {
      */
     export class ImageScrollBar extends BaseSlider {
         name?: string | undefined;
+        private _backgroundBaseImage;
         private _backgroundImage;
         private _thumbImage;
+        private _thumbBaseImage;
         private _thumbLength;
         private _thumbHeight;
         private _barImageHeight;
         private _tempMeasure;
         /**
-         * Gets or sets the image used to render the background
+         * Gets or sets the image used to render the background for horizontal bar
          */
         backgroundImage: Image;
         /**
@@ -69434,6 +70558,10 @@ declare module BABYLON.GUI {
         private _tooltipHoverObserver;
         private _tooltipOutObserver;
         private _disposeTooltip;
+        /**
+         * Rendering ground id of all the mesh in the button
+         */
+        renderingGroupId: number;
         /**
          * Text to be displayed on the tooltip shown when hovering on the button. When set to null tooltip is disabled. (Default: null)
          */
@@ -71886,11 +73014,18 @@ declare module BABYLON.GLTF2.Exporter {
         /**
          * Define this method to modify the default behavior before exporting a texture
          * @param context The context when loading the asset
-         * @param babylonTexture The glTF texture info property
+         * @param babylonTexture The Babylon.js texture
          * @param mimeType The mime-type of the generated image
-         * @returns A promise that resolves with the exported glTF texture info when the export is complete, or null if not handled
+         * @returns A promise that resolves with the exported texture
          */
-        preExportTextureAsync?(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Nullable<Promise<Texture>>;
+        preExportTextureAsync?(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Texture>;
+        /**
+         * Define this method to get notified when a texture info is created
+         * @param context The context when loading the asset
+         * @param textureInfo The glTF texture info
+         * @param babylonTexture The Babylon.js texture
+         */
+        postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: BaseTexture): void;
         /**
          * Define this method to modify the default behavior when exporting texture info
          * @param context The context when loading the asset
@@ -71899,7 +73034,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param binaryWriter glTF serializer binary writer instance
          * @returns nullable IMeshPrimitive promise
          */
-        postExportMeshPrimitiveAsync?(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Nullable<Promise<IMeshPrimitive>>;
+        postExportMeshPrimitiveAsync?(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Promise<IMeshPrimitive>;
         /**
          * Define this method to modify the default behavior when exporting a node
          * @param context The context when exporting the node
@@ -71907,7 +73042,25 @@ declare module BABYLON.GLTF2.Exporter {
          * @param babylonNode BabylonJS node
          * @returns nullable INode promise
          */
-        postExportNodeAsync?(context: string, node: INode, babylonNode: Node): Nullable<Promise<INode>>;
+        postExportNodeAsync?(context: string, node: INode, babylonNode: Node): Promise<INode>;
+        /**
+         * Define this method to modify the default behavior when exporting a material
+         * @param material glTF material
+         * @param babylonMaterial BabylonJS material
+         * @returns nullable IMaterial promise
+         */
+        postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;
+        /**
+         * Define this method to return additional textures to export from a material
+         * @param material glTF material
+         * @param babylonMaterial BabylonJS material
+         * @returns List of textures
+         */
+        postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[];
+        /** Gets a boolean indicating that this extension was used */
+        wasUsed: boolean;
+        /** Gets a boolean indicating that this extension is required for the file to work */
+        required: boolean;
         /**
          * Called after the exporter state changes to EXPORTING
          */
@@ -72001,7 +73154,8 @@ declare module BABYLON.GLTF2.Exporter {
          * @param imageData map of image file name to data
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          */
-        _convertStandardMaterialAsync(babylonStandardMaterial: StandardMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<void>;
+        _convertStandardMaterialAsync(babylonStandardMaterial: StandardMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<IMaterial>;
+        private _finishMaterial;
         /**
          * Converts a Babylon PBR Metallic Roughness Material to a glTF Material
          * @param babylonPBRMetalRoughMaterial BJS PBR Metallic Roughness Material
@@ -72012,7 +73166,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param imageData map of image file name to data
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          */
-        _convertPBRMetallicRoughnessMaterialAsync(babylonPBRMetalRoughMaterial: PBRMetallicRoughnessMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<void>;
+        _convertPBRMetallicRoughnessMaterialAsync(babylonPBRMetalRoughMaterial: PBRMetallicRoughnessMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<IMaterial>;
         /**
          * Converts an image typed array buffer to a base64 image
          * @param buffer typed array buffer
@@ -72111,7 +73265,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param imageData map of image file name to data
          * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
          */
-        _convertPBRMaterialAsync(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<void>;
+        _convertPBRMaterialAsync(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<IMaterial>;
         private setMetallicRoughnessPbrMaterial;
         private getPixelsFromTexture;
         /**
@@ -72393,10 +73547,14 @@ declare module BABYLON.GLTF2.Exporter {
         private _extensions;
         private static _ExtensionNames;
         private static _ExtensionFactories;
+        private _applyExtension;
         private _applyExtensions;
-        _extensionsPreExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Nullable<Promise<BaseTexture>>;
-        _extensionsPostExportMeshPrimitiveAsync(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Nullable<Promise<IMeshPrimitive>>;
-        _extensionsPostExportNodeAsync(context: string, node: INode, babylonNode: Node): Nullable<Promise<INode>>;
+        _extensionsPreExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Nullable<BaseTexture>>;
+        _extensionsPostExportMeshPrimitiveAsync(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Promise<Nullable<IMeshPrimitive>>;
+        _extensionsPostExportNodeAsync(context: string, node: INode, babylonNode: Node): Promise<Nullable<INode>>;
+        _extensionsPostExportMaterialAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<Nullable<IMaterial>>;
+        _extensionsPostExportMaterialAdditionalTextures(context: string, material: IMaterial, babylonMaterial: Material): BaseTexture[];
+        _extensionsPostExportTextures(context: string, textureInfo: ITextureInfo, babylonTexture: BaseTexture): void;
         private _forEachExtensions;
         private _extensionsOnExporting;
         /**
@@ -72409,6 +73567,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param options Options to modify the behavior of the exporter
          */
         constructor(babylonScene: Scene, options?: IExportOptions);
+        dispose(): void;
         /**
          * Registers a glTF exporter extension
          * @param name Name of the extension to export
@@ -72503,9 +73662,10 @@ declare module BABYLON.GLTF2.Exporter {
         /**
          * Generates data for .gltf and .bin files based on the glTF prefix string
          * @param glTFPrefix Text to use when prefixing a glTF file
+         * @param dispose Dispose the exporter
          * @returns GLTFData with glTF file data
          */
-        _generateGLTFAsync(glTFPrefix: string): Promise<GLTFData>;
+        _generateGLTFAsync(glTFPrefix: string, dispose?: boolean): Promise<GLTFData>;
         /**
          * Creates a binary buffer for glTF
          * @returns array buffer for binary data
@@ -72518,12 +73678,9 @@ declare module BABYLON.GLTF2.Exporter {
          */
         private _getPadding;
         /**
-         * Generates a glb file from the json and binary data
-         * Returns an object with the glb file name as the key and data as the value
-         * @param glTFPrefix
-         * @returns object with glb filename as key and data as value
+         * @hidden
          */
-        _generateGLBAsync(glTFPrefix: string): Promise<GLTFData>;
+        _generateGLBAsync(glTFPrefix: string, dispose?: boolean): Promise<GLTFData>;
         /**
          * Sets the TRS for each node
          * @param node glTF Node for storing the transformation data
@@ -72839,6 +73996,7 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
      * @hidden
      */
     export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
+        private _recordedTextures;
         /** Name of this extension */
         readonly name: string;
         /** Defines whether this extension is enabled */
@@ -72846,10 +74004,13 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
         /** Defines whether this extension is required */
         required: boolean;
         /** Reference to the glTF exporter */
-        private _exporter;
+        private _wasUsed;
         constructor(exporter: _Exporter);
         dispose(): void;
-        preExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Nullable<Promise<Texture>>;
+        /** @hidden */
+        readonly wasUsed: boolean;
+        postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void;
+        preExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Texture>;
         /**
          * Transform the babylon texture by the offset, rotation and scale parameters using a procedural texture
          * @param babylonTexture
@@ -72880,6 +74041,8 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
         /** @hidden */
         dispose(): void;
         /** @hidden */
+        readonly wasUsed: boolean;
+        /** @hidden */
         onExporting(): void;
         /**
          * Define this method to modify the default behavior when exporting a node
@@ -72888,7 +74051,32 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
          * @param babylonNode BabylonJS node
          * @returns nullable INode promise
          */
-        postExportNodeAsync(context: string, node: INode, babylonNode: Node): Nullable<Promise<INode>>;
+        postExportNodeAsync(context: string, node: INode, babylonNode: Node): Promise<INode>;
+    }
+}
+declare module BABYLON.GLTF2.Exporter.Extensions {
+    /**
+     * @hidden
+     */
+    export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
+        /** Name of this extension */
+        readonly name: string;
+        /** Defines whether this extension is enabled */
+        enabled: boolean;
+        /** Defines whether this extension is required */
+        required: boolean;
+        /** Reference to the glTF exporter */
+        private _textureInfos;
+        private _exportedTextures;
+        private _wasUsed;
+        constructor(exporter: _Exporter);
+        dispose(): void;
+        /** @hidden */
+        readonly wasUsed: boolean;
+        private _getTextureIndex;
+        postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void;
+        postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[];
+        postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;
     }
 }
 declare module BABYLON {

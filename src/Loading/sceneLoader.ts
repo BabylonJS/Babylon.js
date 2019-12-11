@@ -223,6 +223,31 @@ export interface ISceneLoaderPluginAsync extends ISceneLoaderPluginBase {
 }
 
 /**
+ * Mode that determines how to handle old animation groups before loading new ones.
+ */
+export enum SceneLoaderAnimationGroupLoadingMode {
+    /**
+     * Reset all old animations to initial state then dispose them.
+     */
+    Clean = 0,
+
+    /**
+     * Stop all old animations.
+     */
+    Stop = 1,
+
+    /**
+     * Restart old animations from first frame.
+     */
+    Sync = 2,
+
+    /**
+     * Old animations remains untouched.
+     */
+    NoSync = 3
+}
+
+/**
  * Defines a plugin registered by the SceneLoader
  */
 interface IRegisteredPlugin {
@@ -974,6 +999,107 @@ export class SceneLoader {
             }, onProgress, (scene, message, exception) => {
                 reject(exception || new Error(message));
             }, pluginExtension);
+        });
+    }
+
+    /**
+     * Import animations from a file into a scene
+     * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+     * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+     * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+     * @param overwriteAnimations when true, animations are cleaned before importing new ones. Animations are appended otherwise
+     * @param animationGroupLoadingMode defines how to handle old animations groups before importing new ones
+     * @param targetConverter defines a function used to convert animation targets from loaded scene to current scene (default: search node by name)
+     * @param onSuccess a callback with the scene when import succeeds
+     * @param onProgress a callback with a progress event for each file being loaded
+     * @param onError a callback with the scene, a message, and possibly an exception when import fails
+     */
+    public static ImportAnimations(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, overwriteAnimations = true, animationGroupLoadingMode = SceneLoaderAnimationGroupLoadingMode.Clean, targetConverter: Nullable<(target: any) => any> = null, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null): void {
+        if (!scene) {
+            Logger.Error("No scene available to load animations to");
+            return;
+        }
+
+        if (overwriteAnimations) {
+            // Reset, stop and dispose all animations before loading new ones
+            for (let animatable of scene.animatables) {
+                animatable.reset();
+            }
+            scene.stopAllAnimations();
+            scene.animationGroups.slice().forEach((animationGroup) => {
+                animationGroup.dispose();
+            });
+            let nodes = scene.getNodes();
+            nodes.forEach((node) => {
+                if (node.animations) {
+                    node.animations = [];
+                }
+            });
+        }
+        else {
+            switch (animationGroupLoadingMode) {
+                case SceneLoaderAnimationGroupLoadingMode.Clean:
+                    scene.animationGroups.slice().forEach((animationGroup) => {
+                        animationGroup.dispose();
+                    });
+                    break;
+                case SceneLoaderAnimationGroupLoadingMode.Stop:
+                    scene.animationGroups.forEach((animationGroup) => {
+                        animationGroup.stop();
+                    });
+                    break;
+                case SceneLoaderAnimationGroupLoadingMode.Sync:
+                    scene.animationGroups.forEach((animationGroup) => {
+                        animationGroup.reset();
+                        animationGroup.restart();
+                    });
+                    break;
+                case SceneLoaderAnimationGroupLoadingMode.NoSync:
+                    // nothing to do
+                    break;
+                default:
+                    Logger.Error("Unknown animation group loading mode value '" + animationGroupLoadingMode + "'");
+                    return;
+            }
+        }
+
+        let startingIndexForNewAnimatables = scene.animatables.length;
+
+        let onAssetContainerLoaded = (container: AssetContainer) => {
+            container.mergeAnimationsTo(scene, scene.animatables.slice(startingIndexForNewAnimatables), targetConverter);
+
+            container.dispose();
+
+            scene.onAnimationFileImportedObservable.notifyObservers(scene);
+
+            if (onSuccess) {
+                onSuccess(scene);
+            }
+        };
+
+        this.LoadAssetContainer(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError);
+    }
+
+    /**
+     * Import animations from a file into a scene
+     * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+     * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+     * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+     * @param overwriteAnimations when true, animations are cleaned before importing new ones. Animations are appended otherwise
+     * @param animationGroupLoadingMode defines how to handle old animations groups before importing new ones
+     * @param targetConverter defines a function used to convert animation targets from loaded scene to current scene (default: search node by name)
+     * @param onSuccess a callback with the scene when import succeeds
+     * @param onProgress a callback with a progress event for each file being loaded
+     * @param onError a callback with the scene, a message, and possibly an exception when import fails
+     * @returns the updated scene with imported animations
+     */
+    public static ImportAnimationsAsync(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, overwriteAnimations = true, animationGroupLoadingMode = SceneLoaderAnimationGroupLoadingMode.Clean, targetConverter: Nullable<(target: any) => any> = null, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null): Promise<Scene> {
+        return new Promise((resolve, reject) => {
+            SceneLoader.ImportAnimations(rootUrl, sceneFilename, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, (_scene: Scene) => {
+                resolve(_scene);
+            }, onProgress, (_scene: Scene, message: string, exception: any) => {
+                reject(exception || new Error(message));
+            });
         });
     }
 }

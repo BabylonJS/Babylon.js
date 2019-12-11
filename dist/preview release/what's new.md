@@ -35,6 +35,7 @@
 - Display Oculus Quest controller when using a Quest in WebVR ([TrevorDev](https://github.com/TrevorDev))
 - Added startAndReleaseDragOnPointerEvents property to pointerDragBehavior which can be set to false for custom drag triggering ([TrevorDev](https://github.com/TrevorDev))
 - Added optional picking predicate to pointerDragBehavior for filtering affected meshes ([Exolun](https://github.com/Exolun))
+- Added accessor functions for `PointerDragBehavior._options` ([Popov72](https://github.com/Popov72))
 - Effect renderer to render one or multiple shader effects to a texture ([TrevorDev](https://github.com/TrevorDev))
 - Added url parameters to web request modifiers ([PierreLeBlond](https://github.com/PierreLeBlond))
 - Added `VRExperienceHelper.exitVROnDoubleTap` ([Deltakosh](https://github.com/deltakosh/))
@@ -48,6 +49,7 @@
 - Added various (interpolation) functions to Path3D, also `alignTangentsWithPath`, `slice`, `getClosestPositionTo` ([Poolminer](https://github.com/Poolminer/))
 - Allow setting of `BABYLON.Basis.JSModuleURL` and `BABYLON.Basis.WasmModuleURL`, for hosting the Basis transcoder locally ([JasonAyre])(https://github.com/jasonyre))
 - PNG support for browsers not supporting SVG ([RaananW](https://github.com/RaananW/))
+- Device orientation event permissions for iOS 13+ ([RaananW](https://github.com/RaananW/))
 
 ### Engine
 
@@ -73,6 +75,8 @@
 - Added support for inspectable strings ([Deltakosh](https://github.com/deltakosh/))
 - Added support for CreateScreenshotUsingRenderTarget ([13djwright](https://github.com/13djwright/))
 - Added support for `Material.depthFunction` property ([Popov72](https://github.com/Popov72))
+- Added an optional config option `initialTab` ([ycw](https://github.com/ycw/)) 
+- Added support for ImportAnimations ([noalak](https://github.com/noalak/))
 
 ### Tools
 
@@ -121,6 +125,7 @@
 - Added support for GLTF sheen extension [Sebavan](https://github.com/sebavan/)
 - Added support for GLTF mesh quantization extension ([zeux](https://github.com/zeux))
 - Added support for 8 bone influences to glTF loader ([zeux](https://github.com/zeux))
+- Added support for animations import from separate files ([noalak](https://github.com/noalak/))
 
 ### Materials
 
@@ -132,6 +137,7 @@
 - Added `pbrBRDFConfiguration.useSpecularGlossinessInputEnergyConservation` to allow Specular-Workflow energy conservation to be turned off ([ColorDigital-PS](https://github.com/ColorDigital-PS)).
 - Added support for the `freeze` / `unfreeze` functions in `ShaderMaterial` ([Popov72](https://github.com/Popov72))
 - Added `depthFunction` new property to `Material` base class ([Popov72](https://github.com/Popov72))
+- Added `setCompressedTextureExclusions` method to `Engine` to allow for skipping compressed textures on certain files ([abogartz](https://github.com/abogartz))
 
 ### ScreenshotTools
 
@@ -147,6 +153,8 @@
 
 - SpritePackedManager extends SpriteManager so that a sprite sheet with different size sprites can be used ([JohnK](https://github.com/BabylonJSGuide))
 - MultiPickSprite and multiPickSpriteWithRay added to sprites ([JohnK](https://github.com/BabylonJSGuide))
+- SpritePackedManager support for JSON Objects that where not stringified, of with the frames parameter accepting Objects and Arrays ([Pryme8](https://github.com/Pryme8))
+- Added `SpriteMap` for creation of grid-based dynamically animated sprite atlas rendering (Beta) ([Pryme8](https://github.com/Pryme8))
 
 ### WebXR / WebVR
 
@@ -165,6 +173,11 @@
 - VRExperienceHelper has now an XR fallback to force XR usage (Beta) ([RaananW](https://github.com/RaananW/))
 - Added option to change the teleportation easing function in the VRExperienceHelper class ([https://github.com/LeoRodz](https://github.com/LeoRodz))
 - Windows motion controller mapping corrected to XR ([RaananW](https://github.com/RaananW/))
+- Pointer-Event simulation for screen target ray mode ([RaananW](https://github.com/RaananW/))
+- New observable that triggers when a session was initialized ([RaananW](https://github.com/RaananW/))
+- WebXR teleportation can now be disabled after initialized ([RaananW](https://github.com/RaananW/))
+- New Features Manager for WebXR features ([RaananW](https://github.com/RaananW/))
+- New features - Plane detection, Hit Test, Background remover ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
@@ -244,6 +257,9 @@
 - WebXR UI BUtton will only change to "In XR" after XR Session started ([RaananW](https://github.com/RaananW/))
 - Fix bug when we call `Mesh.render` twice and the material is still not ready on the second call ([barroij](https://github.com/barroij/))
 - Fixed an issue with pose input in webxr ([RaananW](https://github.com/RaananW/))
+- Fixed bug when parsing animation group without 'to' value ([noalak](https://github.com/noalak/))
+- isRightCamer and isLeftCamera were not set in WebXR ([RaananW](https://github.com/RaananW/))
+- Sandbox will now load assets relatively path-ed to same folder([Kyle Belfort](https://github.com/belfortk))
 
 ## Breaking changes
 
@@ -253,3 +269,4 @@
 - Removed external data from Engine (`addExternalData`, `getExternalData`, `getOrAddExternalDataWithFactory`, `removeExternalData`) ([Deltakosh](https://github.com/deltakosh/))
 - The glTF loader extensions that map to glTF 2.0 extensions will now be disabled if the extension is not present in `extensionsUsed`. ([bghgary](https://github.com/bghgary))
 - The STL loader does not create light or camera automatically, please use `scene.createDefaultCameraOrLight();` in your code [Sebavan](https://github.com/sebavan/)
+- The glTF2 exporter extension no longer ignores childless empty nodes.([drigax](https://github.com/drigax))

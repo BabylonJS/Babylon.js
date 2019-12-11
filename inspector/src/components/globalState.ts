@@ -18,6 +18,8 @@ export class GlobalState {
     public onTabChangedObservable = new Observable<number>();
     public onPluginActivatedObserver: Nullable<Observer<ISceneLoaderPlugin | ISceneLoaderPluginAsync>>;
 
+    public sceneImportDefaults: { [key: string]: any } = {};
+
     public validationResults: IGLTFValidationResults;
     public onValidationResultsUpdatedObservable = new Observable<IGLTFValidationResults>();
 

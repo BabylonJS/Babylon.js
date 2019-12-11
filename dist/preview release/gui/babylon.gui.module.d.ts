@@ -1545,6 +1545,8 @@ declare module "babylonjs-gui/2D/controls/image" {
         autoScale: boolean;
         /** Gets or sets the streching mode used by the image */
         stretch: number;
+        /** @hidden */
+        _rotate90(n: number): Image;
         /**
          * Gets or sets the internal DOM image used to render the control
          */
@@ -2868,14 +2870,16 @@ declare module "babylonjs-gui/2D/controls/sliders/imageScrollBar" {
      */
     export class ImageScrollBar extends BaseSlider {
         name?: string | undefined;
+        private _backgroundBaseImage;
         private _backgroundImage;
         private _thumbImage;
+        private _thumbBaseImage;
         private _thumbLength;
         private _thumbHeight;
         private _barImageHeight;
         private _tempMeasure;
         /**
-         * Gets or sets the image used to render the background
+         * Gets or sets the image used to render the background for horizontal bar
          */
         backgroundImage: Image;
         /**
@@ -3851,6 +3855,10 @@ declare module "babylonjs-gui/3D/controls/holographicButton" {
         private _tooltipHoverObserver;
         private _tooltipOutObserver;
         private _disposeTooltip;
+        /**
+         * Rendering ground id of all the mesh in the button
+         */
+        renderingGroupId: number;
         /**
          * Text to be displayed on the tooltip shown when hovering on the button. When set to null tooltip is disabled. (Default: null)
          */
@@ -5528,6 +5536,8 @@ declare module BABYLON.GUI {
         autoScale: boolean;
         /** Gets or sets the streching mode used by the image */
         stretch: number;
+        /** @hidden */
+        _rotate90(n: number): Image;
         /**
          * Gets or sets the internal DOM image used to render the control
          */
@@ -6777,14 +6787,16 @@ declare module BABYLON.GUI {
      */
     export class ImageScrollBar extends BaseSlider {
         name?: string | undefined;
+        private _backgroundBaseImage;
         private _backgroundImage;
         private _thumbImage;
+        private _thumbBaseImage;
         private _thumbLength;
         private _thumbHeight;
         private _barImageHeight;
         private _tempMeasure;
         /**
-         * Gets or sets the image used to render the background
+         * Gets or sets the image used to render the background for horizontal bar
          */
         backgroundImage: Image;
         /**
@@ -7640,6 +7652,10 @@ declare module BABYLON.GUI {
         private _tooltipHoverObserver;
         private _tooltipOutObserver;
         private _disposeTooltip;
+        /**
+         * Rendering ground id of all the mesh in the button
+         */
+        renderingGroupId: number;
         /**
          * Text to be displayed on the tooltip shown when hovering on the button. When set to null tooltip is disabled. (Default: null)
          */

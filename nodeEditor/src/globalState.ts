@@ -10,12 +10,13 @@ import { GraphNode } from './diagram/graphNode';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { NodePort } from './diagram/nodePort';
 import { NodeLink } from './diagram/nodeLink';
+import { GraphFrame } from './diagram/graphFrame';
 
 export class GlobalState {
     nodeMaterial: NodeMaterial;
     hostElement: HTMLElement;
     hostDocument: HTMLDocument;
-    onSelectionChangedObservable = new Observable<Nullable<GraphNode | NodeLink>>();
+    onSelectionChangedObservable = new Observable<Nullable<GraphNode | NodeLink | GraphFrame>>();
     onRebuildRequiredObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<void>();
     onUpdateRequiredObservable = new Observable<void>();
@@ -31,7 +32,8 @@ export class GlobalState {
     onDepthPrePassChanged = new Observable<void>();
     onAnimationCommandActivated = new Observable<void>();
     onCandidateLinkMoved = new Observable<Nullable<Vector2>>();   
-    onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();   
+    onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();       
+    onFrameCreated = new Observable<GraphFrame>();   
     onCandidatePortSelected = new Observable<Nullable<NodePort>>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
     onGridSizeChanged = new Observable<void>();

@@ -14,7 +14,7 @@ import { Effect, IEffectCreationOptions } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { WebVRFreeCamera } from '../Cameras/VR/webVRCamera';
 import { MaterialDefines } from "./materialDefines";
-import { Color3, TmpColors } from '../Maths/math.color';
+import { Color3 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
 
 /**
@@ -665,43 +665,7 @@ export class MaterialHelper {
      * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      */
     public static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff = false, rebuildInParallel = false): void {
-        let iAsString = lightIndex.toString();
-        let needUpdate = false;
-
-        if (rebuildInParallel && light._uniformBuffer._alreadyBound) {
-            return;
-        }
-
-        light._uniformBuffer.bindToEffect(effect, "Light" + iAsString);
-
-        if (light._renderId !== scene.getRenderId() || !light._uniformBuffer.useUbo) {
-            light._renderId = scene.getRenderId();
-
-            let scaledIntensity = light.getScaledIntensity();
-
-            MaterialHelper.BindLightProperties(light, effect, lightIndex);
-
-            light.diffuse.scaleToRef(scaledIntensity, TmpColors.Color3[0]);
-            light._uniformBuffer.updateColor4("vLightDiffuse", TmpColors.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, iAsString);
-            if (useSpecular) {
-                light.specular.scaleToRef(scaledIntensity, TmpColors.Color3[1]);
-                light._uniformBuffer.updateColor3("vLightSpecular", TmpColors.Color3[1], iAsString);
-            }
-            needUpdate = true;
-        }
-
-        // Shadows
-        if (scene.shadowsEnabled && light.shadowEnabled) {
-            var shadowGenerator = light.getShadowGenerator();
-            if (shadowGenerator) {
-                shadowGenerator.bindShadowLight(iAsString, effect);
-                needUpdate = true;
-            }
-        }
-
-        if (needUpdate) {
-            light._uniformBuffer.update();
-        }
+        light.bindLight(lightIndex, scene, effect, useSpecular, usePhysicalLightFalloff, rebuildInParallel);
     }
 
     /**

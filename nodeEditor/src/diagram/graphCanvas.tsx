@@ -11,6 +11,8 @@ import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { DataStorage } from '../dataStorage';
+import { GraphFrame } from './graphFrame';
+import { IEditorData } from '../nodeLocationInfo';
 
 require("./graphCanvas.scss");
 
@@ -25,6 +27,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _hostCanvas: HTMLDivElement;
     private _graphCanvas: HTMLDivElement;
     private _selectionContainer: HTMLDivElement;
+    private _frameContainer: HTMLDivElement;
     private _svgCanvas: HTMLElement;
     private _rootContainer: HTMLDivElement;
     private _nodes: GraphNode[] = [];
@@ -43,11 +46,17 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _candidateLink: Nullable<NodeLink> = null;
     private _candidatePort: Nullable<NodePort> = null;
     private _gridSize = 20;
-    private _selectionBox: Nullable<HTMLDivElement> = null;
+    private _selectionBox: Nullable<HTMLDivElement> = null;   
+    private _selectedFrame: Nullable<GraphFrame> = null;   
+    private _frameCandidate: Nullable<HTMLDivElement> = null;  
+
+    private _frames: GraphFrame[] = [];
 
     private _altKeyIsPressed = false;
     private _ctrlKeyIsPressed = false;
     private _oldY = -1;
+
+    public _frameIsMoving = false;
 
     public get gridSize() {
         return this._gridSize;
@@ -69,6 +78,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
     public get links() {
         return this._links;
+    }
+
+    public get frames() {
+        return this._frames;
     }
 
     public get zoom() {
@@ -112,6 +125,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     public get selectedLink() {
         return this._selectedLink;
     }
+    public get selectedFrame() {
+        return this._selectedFrame;
+    }
 
     public get canvasContainer() {
         return this._graphCanvas;
@@ -121,18 +137,33 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         return this._svgCanvas;
     }
 
+    public get selectionContainer() {
+        return this._selectionContainer;
+    }
+
+    public get frameContainer() {
+        return this._frameContainer;
+    }
+    
+
     constructor(props: IGraphCanvasComponentProps) {
         super(props);
 
-        props.globalState.onSelectionChangedObservable.add(selection => {
-            
+        props.globalState.onSelectionChangedObservable.add(selection => {            
             if (!selection) {
                 this._selectedNodes = [];
                 this._selectedLink = null;
+                this._selectedFrame = null;
             } else {
                 if (selection instanceof NodeLink) {
+                    this._selectedNodes = [];
+                    this._selectedFrame = null;
                     this._selectedLink = selection;
-                } else {
+                } else if (selection instanceof GraphFrame) {
+                    this._selectedNodes = [];
+                    this._selectedFrame = selection;
+                    this._selectedLink = null;
+                } else{
                     if (this._ctrlKeyIsPressed) {
                         if (this._selectedNodes.indexOf(selection) === -1) {
                             this._selectedNodes.push(selection);
@@ -161,14 +192,37 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this._altKeyIsPressed = false;
             this._ctrlKeyIsPressed = false;
         }, false);     
+
+        // Store additional data to serialization object
+        this.props.globalState.storeEditorData = (editorData) => {
+            editorData.zoom = this.zoom;
+            editorData.x = this.x;
+            editorData.y = this.y;
+
+            editorData.frames = [];
+            for (var frame of this._frames) {
+                editorData.frames.push(frame.serialize());
+            }
+        }
     }
 
-    public getGridPosition(position: number) {
+    public getGridPosition(position: number, useCeil = false) {
+        let gridSize = this.gridSize;
+		if (gridSize === 0) {
+			return position;
+        }
+        if (useCeil) {
+            return gridSize * Math.ceil(position / gridSize);    
+        }
+		return gridSize * Math.floor(position / gridSize);
+    }
+    
+    public getGridPositionCeil(position: number) {
         let gridSize = this.gridSize;
 		if (gridSize === 0) {
 			return position;
 		}
-		return gridSize * Math.floor(position / gridSize);
+		return gridSize * Math.ceil(position / gridSize);
 	}
 
     updateTransform() {
@@ -196,7 +250,13 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         for (var node of this._nodes) {
             node.dispose();
         }
+        
+        const frames = this._frames.splice(0);
+        for (var frame of frames) {
+            frame.dispose();
+        }
         this._nodes = [];
+        this._frames = [];
         this._links = [];
         this._graphCanvas.innerHTML = "";
         this._svgCanvas.innerHTML = "";
@@ -308,7 +368,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this._rootContainer = this.props.globalState.hostDocument.getElementById("graph-container") as HTMLDivElement;
         this._graphCanvas = this.props.globalState.hostDocument.getElementById("graph-canvas-container") as HTMLDivElement;
         this._svgCanvas = this.props.globalState.hostDocument.getElementById("graph-svg-container") as HTMLElement;        
-        this._selectionContainer = this.props.globalState.hostDocument.getElementById("selection-container") as HTMLDivElement;        
+        this._selectionContainer = this.props.globalState.hostDocument.getElementById("selection-container") as HTMLDivElement;   
+        this._frameContainer = this.props.globalState.hostDocument.getElementById("frame-container") as HTMLDivElement;        
         
         this.gridSize = DataStorage.ReadNumber("GridSize", 20);
         this.updateTransform();
@@ -342,6 +403,32 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
             return;
         }
+
+        // Candidate frame box
+        if (this._frameCandidate) {
+            const rootRect = this.canvasContainer.getBoundingClientRect();      
+
+            const localX = evt.pageX - rootRect.left;
+            const localY = evt.pageY - rootRect.top;
+
+            if (localX > this._selectionStartX) {
+                this._frameCandidate.style.left = `${this._selectionStartX / this.zoom}px`;
+                this._frameCandidate.style.width = `${(localX - this._selectionStartX) / this.zoom}px`;
+            } else {
+                this._frameCandidate.style.left = `${localX / this.zoom}px`;
+                this._frameCandidate.style.width = `${(this._selectionStartX - localX) / this.zoom}px`;
+            }
+
+            if (localY > this._selectionStartY) {                
+                this._frameCandidate.style.top = `${this._selectionStartY / this.zoom}px`;
+                this._frameCandidate.style.height = `${(localY - this._selectionStartY) / this.zoom}px`;
+            } else {
+                this._frameCandidate.style.top = `${localY / this.zoom}px`;
+                this._frameCandidate.style.height = `${(this._selectionStartY - localY) / this.zoom}px`;
+            }
+
+            return;
+        }        
 
         // Candidate link
         if (this._candidateLink) {        
@@ -410,6 +497,23 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this._selectionBox.style.top = `${this._selectionStartY / this.zoom}px`;
             this._selectionBox.style.width = "0px";
             this._selectionBox.style.height = "0px";
+            return;
+        }
+
+        // Frame?
+        if (evt.currentTarget === this._hostCanvas && evt.shiftKey) {
+            this._frameCandidate = this.props.globalState.hostDocument.createElement("div");
+            this._frameCandidate.classList.add("frame-box");
+            this._frameContainer.appendChild(this._frameCandidate);
+
+            const rootRect = this.canvasContainer.getBoundingClientRect();      
+            this._selectionStartX = (evt.pageX - rootRect.left);
+            this._selectionStartY = (evt.pageY - rootRect.top);
+            this._frameCandidate.style.left = `${this._selectionStartX / this.zoom}px`;
+            this._frameCandidate.style.top = `${this._selectionStartY / this.zoom}px`;
+            this._frameCandidate.style.width = "0px";
+            this._frameCandidate.style.height = "0px";
+            return;
         }
 
         // Port dragging
@@ -444,6 +548,14 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
            this._selectionBox.parentElement!.removeChild(this._selectionBox);
            this._selectionBox = null;
         }
+
+        if (this._frameCandidate) {            
+            let newFrame = new GraphFrame(this._frameCandidate, this);
+            this._frames.push(newFrame);
+
+            this._frameCandidate.parentElement!.removeChild(this._frameCandidate);
+            this._frameCandidate = null;
+         }
     }
 
     onWheel(evt: React.WheelEvent) {
@@ -524,6 +636,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             return;
         }
 
+        if (pointB.ownerBlock === pointA.ownerBlock) {
+            return;
+        }
+
         // Check compatibility
         let isFragmentOutput = pointB.ownerBlock.getClassName() === "FragmentOutputBlock";
         let compatibilityState = pointA.checkCompatibilityState(pointB);
@@ -568,6 +684,27 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
     }
+
+    processEditorData(editorData: IEditorData) {
+        const frames = this._frames.splice(0);
+        for (var frame of frames) {
+            frame.dispose();
+        }
+
+        this._frames = [];
+
+        this.x = editorData.x || 0;
+        this.y = editorData.y || 0;
+        this.zoom = editorData.zoom || 1;
+
+        // Frames
+        if (editorData.frames) {
+            for (var frameData of editorData.frames) {
+                var frame = GraphFrame.Parse(frameData, this);
+                this._frames.push(frame);
+            }
+        }
+    }
  
     render() {
         return (
@@ -580,8 +717,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 <div id="graph-container">
                     <div id="graph-canvas-container">
                     </div>     
+                    <div id="frame-container">                        
+                    </div>
                     <svg id="graph-svg-container">
-                    </svg>
+                    </svg>                    
                     <div id="selection-container">                        
                     </div>
                 </div>

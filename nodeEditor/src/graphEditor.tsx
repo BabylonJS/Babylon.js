@@ -146,7 +146,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
 
         this.props.globalState.hostDocument!.addEventListener("keydown", evt => {
-            if (evt.keyCode === 46) { // Delete                
+            if (evt.keyCode === 46 && !this.props.globalState.blockKeyboardEvents) { // Delete                
                 let selectedItems = this._graphCanvas.selectedNodes;
 
                 for (var selectedItem of selectedItems) {
@@ -165,12 +165,16 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     this._graphCanvas.selectedLink.dispose();
                 }
 
+                if (this._graphCanvas.selectedFrame) {
+                    this._graphCanvas.selectedFrame.dispose();
+                }
+
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(null);  
                 this.props.globalState.onRebuildRequiredObservable.notifyObservers();  
                 return;
             }
 
-            if (!evt.ctrlKey) {
+            if (!evt.ctrlKey || this.props.globalState.blockKeyboardEvents) {
                 return;
             }
 
@@ -231,12 +235,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
             }
 
         }, false);
-
-        this.props.globalState.storeEditorData = (editorData) => {
-            editorData.zoom = this._graphCanvas.zoom;
-            editorData.x = this._graphCanvas.x;
-            editorData.y = this._graphCanvas.y;
-        }
     }
 
     zoomToFit() {
@@ -305,9 +303,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         if (!editorData || !editorData.locations) {
             this._graphCanvas.distributeGraph();
         } else {
-            this._graphCanvas.x = editorData.x || 0;
-            this._graphCanvas.y = editorData.y || 0;
-            this._graphCanvas.zoom = editorData.zoom || 1;
+            // Locations
             for (var location of editorData.locations) {
                 for (var node of this._graphCanvas.nodes) {
                     if (node.block && node.block.uniqueId === location.blockId) {
@@ -318,6 +314,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     }
                 }
             }
+
+            this._graphCanvas.processEditorData(editorData);
         }
     }
 
@@ -390,6 +388,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         newNode.y = y / this._graphCanvas.zoom;
         newNode.cleanAccumulation();
 
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         this.props.globalState.onSelectionChangedObservable.notifyObservers(newNode);
 
         let block = newNode.block;
