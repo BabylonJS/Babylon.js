@@ -269,7 +269,7 @@ export class WindowsMotionController extends WebVRController {
 
         var meshInfo = this._loadedMeshInfo.buttonMeshes[buttonName];
 
-        if (!meshInfo.unpressed.rotationQuaternion || !meshInfo.pressed.rotationQuaternion || !meshInfo.value.rotationQuaternion) {
+        if (!meshInfo || !meshInfo.unpressed.rotationQuaternion || !meshInfo.pressed.rotationQuaternion || !meshInfo.value.rotationQuaternion) {
             return;
         }
 

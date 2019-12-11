@@ -16,7 +16,8 @@ export class GraphFrame {
     private _gridAlignedY = 0;    
     private _width: number;
     private _height: number;
-    public element: HTMLDivElement;   
+    public element: HTMLDivElement;       
+    private _borderElement: HTMLDivElement;    
     private _headerElement: HTMLDivElement;    
     private _headerTextElement: HTMLDivElement;        
     private _headerCollapseElement: HTMLDivElement;    
@@ -231,6 +232,10 @@ export class GraphFrame {
             this.isCollapsed = !this.isCollapsed;
         });
         this.element.appendChild(this._headerElement);
+
+        this._borderElement = root.ownerDocument!.createElement("div");  
+        this._borderElement.classList.add("frame-box-border");
+        this.element.appendChild(this._borderElement);
 
         this._headerTextElement = root.ownerDocument!.createElement("div"); 
         this._headerTextElement.classList.add("frame-box-header-title");

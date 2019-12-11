@@ -3299,7 +3299,7 @@ export class ThinEngine {
 
         gl.bindRenderbuffer(gl.RENDERBUFFER, depthStencilBuffer);
 
-        if (samples > 1) {
+        if (samples > 1 && gl.renderbufferStorageMultisample) {
             gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, msInternalFormat, width, height);
         } else {
             gl.renderbufferStorage(gl.RENDERBUFFER, internalFormat, width, height);
@@ -4188,20 +4188,25 @@ export class ThinEngine {
 
     // Statics
 
+    private static _isSupported: Nullable<boolean> = null;
     /**
      * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
      * @returns true if the engine can be created
      * @ignorenaming
      */
     public static isSupported(): boolean {
-        try {
-            var tempcanvas = CanvasGenerator.CreateCanvas(1, 1);
-            var gl = tempcanvas.getContext("webgl") || (tempcanvas as any).getContext("experimental-webgl");
+        if (this._isSupported === null) {
+            try {
+                var tempcanvas = CanvasGenerator.CreateCanvas(1, 1);
+                var gl = tempcanvas.getContext("webgl") || (tempcanvas as any).getContext("experimental-webgl");
 
-            return gl != null && !!window.WebGLRenderingContext;
-        } catch (e) {
-            return false;
+                this._isSupported = gl != null && !!window.WebGLRenderingContext;
+            } catch (e) {
+                this._isSupported = false;
+            }
         }
+
+        return this._isSupported;
     }
 
     /**
