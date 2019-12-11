@@ -208,6 +208,11 @@
 
 - Added Light intensity output to LightInformationBlock ([Drigax](https://github.com/drigax))
 
+### Serializers
+- Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))
+- Expanded animation group serialization to include all targeted TransformNodes ([Drigax]https://github.com/drigax/)
+
+
 ### Documentation
 
 - Added a note on shallow bounding of getBoundingInfo ([tibotiber](https://github.com/tibotiber))
@@ -217,7 +222,6 @@
 
 - Fixed Textblock line spacing evaluation when linespacing > 0 ([Deltakosh](https://github.com/deltakosh/))
 - Fixed Xbox One gamepad controller button schemes ([MackeyK24](https://github.com/MackeyK24/))
-- Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))
 - Removing `assetContainer` from scene will also remove gui layers ([TrevorDev](https://github.com/TrevorDev))
 - A scene's input manager not adding key listeners when the canvas is already focused ([Poolminer](https://github.com/Poolminer))
 - Runtime animation `goToFrame` when going back in time now correctly triggers future events when reached ([zakhenry](https://github.com/zakhenry))
