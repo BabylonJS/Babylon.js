@@ -329,15 +329,13 @@ napi_status napi_coerce_to_string(napi_env env,
 
 napi_status napi_create_object(napi_env env, napi_value* result) {
   static JSClassRef classDef = nullptr;
-  if (!classDef)
-  {
-      JSClassDefinition classDefinition = kJSClassDefinitionEmpty;
-      classDefinition.className = "dummyObject";
-      classDef = JSClassCreate(&classDefinition);
+  if (!classDef) {
+    JSClassDefinition classDefinition = kJSClassDefinitionEmpty;
+    classDefinition.className = "dummyObject";
+    classDef = JSClassCreate(&classDefinition);
   }
   JSObjectRef jsObject = JSObjectMake(env->m_globalContext, classDef, nullptr);
   *result = reinterpret_cast<napi_value>(jsObject);
-
   return napi_ok;
 }
 
