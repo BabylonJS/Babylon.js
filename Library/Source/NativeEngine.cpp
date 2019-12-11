@@ -6,7 +6,7 @@
 #include <bgfx/platform.h>
 #ifndef WIN32
 #include <alloca.h>
-#define alloca(size)   __builtin_alloca(size)
+#define alloca(size) __builtin_alloca(size)
 #endif
 // TODO: this needs to be fixed in bgfx
 namespace bgfx
@@ -15,7 +15,7 @@ namespace bgfx
 }
 
 #define BGFX_UNIFORM_FRAGMENTBIT UINT8_C(0x10) // Copy-pasta from bgfx_p.h
-#define BGFX_UNIFORM_SAMPLERBIT  UINT8_C(0x20) // Copy-pasta from bgfx_p.h
+#define BGFX_UNIFORM_SAMPLERBIT UINT8_C(0x20)  // Copy-pasta from bgfx_p.h
 #define BGFX_RESET_FLAGS (BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X4 | BGFX_RESET_MAXANISOTROPY)
 
 #include <bimg/bimg.h>
@@ -222,18 +222,20 @@ namespace Babylon
         {
             switch (type)
             {
-            case WebGLAttribType::UNSIGNED_BYTE:    return bgfx::AttribType::Uint8;
-            case WebGLAttribType::SHORT:            return bgfx::AttribType::Int16;
-            case WebGLAttribType::FLOAT:            return bgfx::AttribType::Float;
-            default: // avoid "warning: 4 enumeration values not handled"
-                throw std::exception();
-                break;
+                case WebGLAttribType::UNSIGNED_BYTE:
+                    return bgfx::AttribType::Uint8;
+                case WebGLAttribType::SHORT:
+                    return bgfx::AttribType::Int16;
+                case WebGLAttribType::FLOAT:
+                    return bgfx::AttribType::Float;
+                default: // avoid "warning: 4 enumeration values not handled"
+                    throw std::exception();
+                    break;
             }
         }
 
         // Must match constants.ts in Babylon.js.
-        constexpr std::array<uint64_t, 11> ALPHA_MODE
-        {
+        constexpr std::array<uint64_t, 11> ALPHA_MODE{
             // ALPHA_DISABLE
             0x0,
 
@@ -268,11 +270,9 @@ namespace Babylon
             BGFX_STATE_BLEND_FUNC_SEPARATE(BGFX_STATE_BLEND_ONE, BGFX_STATE_BLEND_INV_SRC_COLOR, BGFX_STATE_BLEND_ONE, BGFX_STATE_BLEND_INV_SRC_ALPHA),
         };
 
-        constexpr std::array<bgfx::TextureFormat::Enum, 2> TEXTURE_FORMAT
-        {
+        constexpr std::array<bgfx::TextureFormat::Enum, 2> TEXTURE_FORMAT{
             bgfx::TextureFormat::RGBA8,
-            bgfx::TextureFormat::RGBA32F
-        };
+            bgfx::TextureFormat::RGBA32F};
     }
 
     Napi::FunctionReference NativeEngine::InitializeAndCreateConstructor(Napi::Env& env)
@@ -293,7 +293,7 @@ namespace Babylon
         bgfx::touch(0);
 
         // Initialize the JavaScript side.
-        Napi::HandleScope scope{ env };
+        Napi::HandleScope scope{env};
 
         Napi::Function func = DefineClass(
             env,
@@ -366,20 +366,21 @@ namespace Babylon
                 InstanceMethod("getImageData", &NativeEngine::GetImageData),
                 InstanceMethod("encodeImage", &NativeEngine::EncodeImage),
             });
-        
+
         return Napi::Persistent(func);
     }
 
     NativeEngine::NativeEngine(const Napi::CallbackInfo& info)
         : NativeEngine(info, RuntimeImpl::GetNativeWindowFromJavaScript(info.Env()))
-    {}
+    {
+    }
 
     NativeEngine::NativeEngine(const Napi::CallbackInfo& info, NativeWindow& nativeWindow)
-        : Napi::ObjectWrap<NativeEngine>{ info }
-        , m_runtimeImpl{ RuntimeImpl::GetRuntimeImplFromJavaScript(info.Env()) }
-        , m_currentProgram{ nullptr }
-        , m_engineState{ BGFX_STATE_DEFAULT }
-        , m_resizeCallbackTicket{ nativeWindow.AddOnResizeCallback([this](size_t width, size_t height) { this->UpdateSize(width, height); }) }
+        : Napi::ObjectWrap<NativeEngine>{info}
+        , m_runtimeImpl{RuntimeImpl::GetRuntimeImplFromJavaScript(info.Env())}
+        , m_currentProgram{nullptr}
+        , m_engineState{BGFX_STATE_DEFAULT}
+        , m_resizeCallbackTicket{nativeWindow.AddOnResizeCallback([this](size_t width, size_t height) { this->UpdateSize(width, height); })}
     {
         UpdateSize(static_cast<uint32_t>(nativeWindow.GetWidth()), static_cast<uint32_t>(nativeWindow.GetHeight()));
     }
@@ -449,14 +450,14 @@ namespace Babylon
 
     void NativeEngine::DeleteIndexBuffer(const Napi::CallbackInfo& info)
     {
-        const bgfx::IndexBufferHandle handle{ static_cast<uint16_t>(info[0].As<Napi::Number>().Uint32Value()) };
+        const bgfx::IndexBufferHandle handle{static_cast<uint16_t>(info[0].As<Napi::Number>().Uint32Value())};
         bgfx::destroy(handle);
     }
 
     void NativeEngine::RecordIndexBuffer(const Napi::CallbackInfo& info)
     {
         VertexArray& vertexArray = *(info[0].As<Napi::External<VertexArray>>().Data());
-        const bgfx::IndexBufferHandle handle{ static_cast<uint16_t>(info[1].As<Napi::Number>().Uint32Value()) };
+        const bgfx::IndexBufferHandle handle{static_cast<uint16_t>(info[1].As<Napi::Number>().Uint32Value())};
         vertexArray.indexBuffer.handle = handle;
     }
 
@@ -477,14 +478,14 @@ namespace Babylon
 
     void NativeEngine::DeleteVertexBuffer(const Napi::CallbackInfo& info)
     {
-        const bgfx::VertexBufferHandle handle{ static_cast<uint16_t>(info[0].As<Napi::Number>().Uint32Value()) };
+        const bgfx::VertexBufferHandle handle{static_cast<uint16_t>(info[0].As<Napi::Number>().Uint32Value())};
         bgfx::destroy(handle);
     }
 
     void NativeEngine::RecordVertexBuffer(const Napi::CallbackInfo& info)
     {
         VertexArray& vertexArray = *(info[0].As<Napi::External<VertexArray>>().Data());
-        const bgfx::VertexBufferHandle handle{ static_cast<uint16_t>(info[1].As<Napi::Number>().Uint32Value()) };
+        const bgfx::VertexBufferHandle handle{static_cast<uint16_t>(info[1].As<Napi::Number>().Uint32Value())};
         const uint32_t location = info[2].As<Napi::Number>().Uint32Value();
         const uint32_t byteOffset = info[3].As<Napi::Number>().Uint32Value();
         const uint32_t byteStride = info[4].As<Napi::Number>().Uint32Value();
@@ -500,7 +501,7 @@ namespace Babylon
         vertexLayout.m_stride = static_cast<uint16_t>(byteStride);
         vertexLayout.end();
 
-        vertexArray.vertexBuffers.push_back({ std::move(handle), byteOffset / byteStride, bgfx::createVertexLayout(vertexLayout) });
+        vertexArray.vertexBuffers.push_back({std::move(handle), byteOffset / byteStride, bgfx::createVertexLayout(vertexLayout)});
     }
 
     Napi::Value NativeEngine::CreateProgram(const Napi::CallbackInfo& info)
@@ -514,8 +515,7 @@ namespace Babylon
         std::vector<uint8_t> fragmentBytes{};
         std::unordered_map<std::string, uint32_t> attributeLocations;
 
-        m_shaderCompiler.Compile(vertexSource, fragmentSource, [&](ShaderCompiler::ShaderInfo vertexShaderInfo, ShaderCompiler::ShaderInfo fragmentShaderInfo)
-        {
+        m_shaderCompiler.Compile(vertexSource, fragmentSource, [&](ShaderCompiler::ShaderInfo vertexShaderInfo, ShaderCompiler::ShaderInfo fragmentShaderInfo) {
             constexpr uint8_t BGFX_SHADER_BIN_VERSION = 6;
 
             // These hashes are generated internally by BGFX's custom shader compilation pipeline,
@@ -549,7 +549,7 @@ namespace Babylon
                 {
                     const uint32_t location = compiler.get_decoration(stageInput.id, spv::DecorationLocation);
                     AppendBytes(vertexBytes, bgfx::attribToId(static_cast<bgfx::Attrib::Enum>(location)));
-                    
+
                     std::string attributeName = stageInput.name;
                     if (attributeName == "a_position")
                         attributeName = "position";
@@ -557,13 +557,21 @@ namespace Babylon
                         attributeName = "normal";
                     else if (attributeName == "a_tangent")
                         attributeName = "tangent";
-                    else if (attributeName == "a_color")
+                    else if (attributeName == "a_texcoord0")
+                        attributeName = "uv";
+                    else if (attributeName == "a_texcoord1")
+                        attributeName = "uv2";
+                    else if (attributeName == "a_texcoord2")
+                        attributeName = "uv3";
+                    else if (attributeName == "a_texcoord3")
+                        attributeName = "uv4";
+                    else if (attributeName == "a_color0")
                         attributeName = "color";
-                    else if (attributeName == "a_index")
+                    else if (attributeName == "a_indices")
                         attributeName = "matricesIndices";
                     else if (attributeName == "a_weight")
                         attributeName = "matricesWeights";
-                    
+
                     attributeLocations[attributeName] = location;
                 }
 
@@ -606,8 +614,7 @@ namespace Babylon
 
         programData->Program = bgfx::createProgram(vertexShader, fragmentShader, true);
 
-        auto finalizer = [](Napi::Env, ProgramData* data)
-        {
+        auto finalizer = [](Napi::Env, ProgramData* data) {
             delete data;
         };
 
@@ -710,7 +717,7 @@ namespace Babylon
     Napi::Value NativeEngine::GetZOffset(const Napi::CallbackInfo& info)
     {
         // STUB: Stub.
-        return{};
+        return {};
     }
 
     void NativeEngine::SetDepthTest(const Napi::CallbackInfo& info)
@@ -757,7 +764,8 @@ namespace Babylon
         m_currentProgram->SetUniform(uniformData->Handle, gsl::make_span(&value, 1));
     }
 
-    template<int size, typename arrayType> void NativeEngine::SetTypeArrayN(const Napi::CallbackInfo& info)
+    template<int size, typename arrayType>
+    void NativeEngine::SetTypeArrayN(const Napi::CallbackInfo& info)
     {
         const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
         const auto array = info[1].As<arrayType>();
@@ -768,29 +776,33 @@ namespace Babylon
         for (size_t index = 0; index < elementLength; index += size)
         {
             const float values[] = {
-                static_cast<float>(array[index])
-                , (size > 1) ? static_cast<float>(array[index + 1]) : 0.f
-                , (size > 2) ? static_cast<float>(array[index + 2]) : 0.f
-                , (size > 3) ? static_cast<float>(array[index + 3]) : 0.f };
+                static_cast<float>(array[index]),
+                (size > 1) ? static_cast<float>(array[index + 1]) : 0.f,
+                (size > 2) ? static_cast<float>(array[index + 2]) : 0.f,
+                (size > 3) ? static_cast<float>(array[index + 3]) : 0.f,
+            };
             m_scratch.insert(m_scratch.end(), values, values + 4);
         }
 
         m_currentProgram->SetUniform(uniformData->Handle, m_scratch, elementLength / size);
     }
 
-    template<int size> void NativeEngine::SetFloatN(const Napi::CallbackInfo& info)
+    template<int size>
+    void NativeEngine::SetFloatN(const Napi::CallbackInfo& info)
     {
         const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
-        const float values[] = { 
+        const float values[] = {
             info[1].As<Napi::Number>().FloatValue(),
             (size > 1) ? info[2].As<Napi::Number>().FloatValue() : 0.f,
             (size > 2) ? info[3].As<Napi::Number>().FloatValue() : 0.f,
-            (size > 3) ? info[4].As<Napi::Number>().FloatValue() : 0.f };
+            (size > 3) ? info[4].As<Napi::Number>().FloatValue() : 0.f,
+        };
 
         m_currentProgram->SetUniform(uniformData->Handle, values);
     }
 
-    template<int size> void NativeEngine::SetMatrixN(const Napi::CallbackInfo& info)
+    template<int size>
+    void NativeEngine::SetMatrixN(const Napi::CallbackInfo& info)
     {
         const auto uniformData = info[0].As<Napi::External<UniformInfo>>().Data();
         const auto matrix = info[1].As<Napi::Float32Array>();
@@ -947,15 +959,15 @@ namespace Babylon
         const auto image = imageData->Image.get();
         bx::MemoryBlock mb(&m_allocator);
         bx::MemoryWriter writer(&mb);
-        bimg::imageWritePng(&writer, image->m_width, image->m_height, image->m_size/image->m_height, image->m_data, image->m_format, false);
-        
+        bimg::imageWritePng(&writer, image->m_width, image->m_height, image->m_size / image->m_height, image->m_data, image->m_format, false);
+
         auto data = Napi::Int8Array::New(info.Env(), mb.getSize());
         memcpy(data.Data(), static_cast<uint8_t*>(mb.more()), imageData->Image->m_size);
 
         return data;
     }
 
-	Napi::Value NativeEngine::LoadTexture(const Napi::CallbackInfo& info)
+    Napi::Value NativeEngine::LoadTexture(const Napi::CallbackInfo& info)
     {
         const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
         const auto buffer = info[1].As<Napi::ArrayBuffer>();
@@ -966,13 +978,13 @@ namespace Babylon
         auto& image = *textureData->Images.front();
 
         bool useMipMap = false;
-        
+
         if (invertY)
         {
             FlipYInImageBytes(gsl::make_span(static_cast<uint8_t*>(image.m_data), image.m_size), image.m_height, image.m_size / image.m_height);
         }
 
-        auto imageDataRef{ bgfx::makeRef(image.m_data, image.m_size) };
+        auto imageDataRef{bgfx::makeRef(image.m_data, image.m_size)};
 
         if (mipMap)
         {
@@ -1064,12 +1076,12 @@ namespace Babylon
         }
 
         textureData->Texture = bgfx::createTextureCube(
-            images.front().front()->m_width,         // Side size
-            true,                                           // Has mips
-            1,                                              // Number of layers
-            format,                                         // Self-explanatory
-            0x0,                                            // Flags
-            allPixels);                                     // Memory
+            images.front().front()->m_width, // Side size
+            true,                            // Has mips
+            1,                               // Number of layers
+            format,                          // Self-explanatory
+            0x0,                             // Flags
+            allPixels);                      // Memory
         return Napi::Value::From(info.Env(), bgfx::isValid(textureData->Texture));
     }
 
@@ -1093,18 +1105,18 @@ namespace Babylon
         auto filter = static_cast<uint32_t>(info[1].As<Napi::Number>().Uint32Value());
 
         constexpr std::array<uint32_t, 12> bgfxFiltering = {
-            BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIN_POINT,                            // nearest is mag = nearest and min = nearest and mip = linear
-            BGFX_SAMPLER_MIP_POINT,                                                     // Bilinear is mag = linear and min = linear and mip = nearest
-            0,                                                                          // Trilinear is mag = linear and min = linear and mip = linear
-            BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT,   // mag = nearest and min = nearest and mip = nearest
-            BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT,                            // mag = nearest and min = linear and mip = nearest
-            BGFX_SAMPLER_MAG_POINT,                                                     // mag = nearest and min = linear and mip = linear
-            BGFX_SAMPLER_MAG_POINT,                                                     // mag = nearest and min = linear and mip = none
-            BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIN_POINT,                            // mag = nearest and min = nearest and mip = none
-            BGFX_SAMPLER_MIP_POINT | BGFX_SAMPLER_MIP_POINT,                            // mag = linear and min = nearest and mip = nearest
-            BGFX_SAMPLER_MIN_POINT,                                                     // mag = linear and min = nearest and mip = linear
-            0,                                                                          // mag = linear and min = linear and mip = none
-            BGFX_SAMPLER_MIN_POINT };                                                   // mag = linear and min = nearest and mip = none
+            BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIN_POINT,                          // nearest is mag = nearest and min = nearest and mip = linear
+            BGFX_SAMPLER_MIP_POINT,                                                   // Bilinear is mag = linear and min = linear and mip = nearest
+            0,                                                                        // Trilinear is mag = linear and min = linear and mip = linear
+            BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT, // mag = nearest and min = nearest and mip = nearest
+            BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT,                          // mag = nearest and min = linear and mip = nearest
+            BGFX_SAMPLER_MAG_POINT,                                                   // mag = nearest and min = linear and mip = linear
+            BGFX_SAMPLER_MAG_POINT,                                                   // mag = nearest and min = linear and mip = none
+            BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIN_POINT,                          // mag = nearest and min = nearest and mip = none
+            BGFX_SAMPLER_MIP_POINT | BGFX_SAMPLER_MIP_POINT,                          // mag = linear and min = nearest and mip = nearest
+            BGFX_SAMPLER_MIN_POINT,                                                   // mag = linear and min = nearest and mip = linear
+            0,                                                                        // mag = linear and min = linear and mip = none
+            BGFX_SAMPLER_MIN_POINT};                                                  // mag = linear and min = nearest and mip = none
 
         textureData->Flags &= ~(BGFX_SAMPLER_MIN_MASK | BGFX_SAMPLER_MAG_MASK | BGFX_SAMPLER_MIP_MASK);
 
@@ -1127,7 +1139,7 @@ namespace Babylon
 
         constexpr std::array<uint32_t, 3> bgfxSamplers = {0, BGFX_SAMPLER_U_CLAMP, BGFX_SAMPLER_U_MIRROR};
 
-        uint32_t addressMode = bgfxSamplers[addressModeU] + 
+        uint32_t addressMode = bgfxSamplers[addressModeU] +
             (bgfxSamplers[addressModeV] << BGFX_SAMPLER_V_SHIFT) +
             (bgfxSamplers[addressModeW] << BGFX_SAMPLER_W_SHIFT);
 
@@ -1178,7 +1190,7 @@ namespace Babylon
         bgfx::FrameBufferHandle frameBufferHandle{};
         if (generateStencilBuffer && !generateDepth)
         {
-            throw std::exception{ /* Does this case even make any sense? */ };
+            throw std::exception{/* Does this case even make any sense? */};
         }
         else if (!generateStencilBuffer && !generateDepth)
         {
@@ -1195,11 +1207,9 @@ namespace Babylon
             assert(bgfx::isTextureValid(0, false, 1, TEXTURE_FORMAT[format], BGFX_TEXTURE_RT));
             assert(bgfx::isTextureValid(0, false, 1, depthStencilFormat, BGFX_TEXTURE_RT));
 
-            std::array<bgfx::TextureHandle, 2> textures
-            {
+            std::array<bgfx::TextureHandle, 2> textures{
                 bgfx::createTexture2D(width, height, generateMipMaps, 1, TEXTURE_FORMAT[format], BGFX_TEXTURE_RT),
-                bgfx::createTexture2D(width, height, generateMipMaps, 1, depthStencilFormat, BGFX_TEXTURE_RT)
-            };
+                bgfx::createTexture2D(width, height, generateMipMaps, 1, depthStencilFormat, BGFX_TEXTURE_RT)};
             std::array<bgfx::Attachment, textures.size()> attachments{};
             for (int idx = 0; idx < attachments.size(); ++idx)
             {
@@ -1242,7 +1252,7 @@ namespace Babylon
         for (const auto& it : m_currentProgram->Uniforms)
         {
             const ProgramData::UniformValue& value = it.second;
-            bgfx::setUniform({ it.first }, value.Data.data(), value.ElementLength);
+            bgfx::setUniform({it.first}, value.Data.data(), value.ElementLength);
         }
 
         bgfx::setState(m_engineState);
@@ -1305,9 +1315,9 @@ namespace Babylon
         const bgfx::ViewId viewId = m_frameBufferManager.GetBound().ViewId;
         bgfx::setViewFrameBuffer(viewId, m_frameBufferManager.GetBound().FrameBuffer);
         bgfx::setViewRect(viewId,
-            static_cast<uint16_t>(x * backbufferWidth), 
+            static_cast<uint16_t>(x * backbufferWidth),
             static_cast<uint16_t>(yOrigin * backbufferHeight),
-            static_cast<uint16_t>(width * backbufferWidth), 
+            static_cast<uint16_t>(width * backbufferWidth),
             static_cast<uint16_t>(height * backbufferHeight));
     }
 
@@ -1317,10 +1327,7 @@ namespace Babylon
         // put into a kind of function which requires a copy constructor for all of its captured variables.  Because
         // the Napi::FunctionReference is not copyable, this breaks when trying to capture the callback directly, so we
         // wrap it in a std::shared_ptr to allow the capture to function correctly.
-        m_runtimeImpl.Dispatch([this, callbackPtr = std::make_shared<Napi::FunctionReference>(std::move(callback))](auto&)
-        {
-            //bgfx_test(static_cast<uint16_t>(m_size.Width), static_cast<uint16_t>(m_size.Height));
-
+        m_runtimeImpl.Dispatch([this, callbackPtr = std::make_shared<Napi::FunctionReference>(std::move(callback))](auto&) {
             callbackPtr->Call({});
             EndFrame();
         });
@@ -1335,10 +1342,8 @@ namespace Babylon
 
     void NativeEngine::Dispatch(std::function<void()> function)
     {
-        m_runtimeImpl.Dispatch([function = std::move(function)](auto&)
-        {
+        m_runtimeImpl.Dispatch([function = std::move(function)](auto&) {
             function();
         });
     }
 }
-

@@ -2,7 +2,7 @@
 
 #include <arcana/threading/dispatcher.h>
 
-#if defined( __APPLE__) || defined(__ANDROID__)
+#if defined(__APPLE__) || defined(__ANDROID__)
 struct Filepath : public std::string
 {
     const std::string& u8string() const

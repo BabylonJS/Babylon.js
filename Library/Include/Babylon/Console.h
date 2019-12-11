@@ -10,7 +10,7 @@ namespace Babylon
     class Console final : public Napi::ObjectWrap<Console>
     {
     public:
-        static inline constexpr char* JS_INSTANCE_NAME{ "console" };
+        static inline constexpr char* JS_INSTANCE_NAME{"console"};
 
         /**
          * Importance level of messages sent via logging callbacks.
@@ -27,7 +27,7 @@ namespace Babylon
 
         static void CreateInstance(Napi::Env env, CallbackT callback)
         {
-            Napi::HandleScope scope{ env };
+            Napi::HandleScope scope{env};
 
             Napi::Function func = ParentT::DefineClass(
                 env,
@@ -38,14 +38,15 @@ namespace Babylon
                     ParentT::InstanceMethod("error", &Console::Error),
                 });
 
-            Napi::Object console = func.New({ Napi::External<CallbackT>::New(env, new CallbackT(std::move(callback))) });
+            Napi::Object console = func.New({Napi::External<CallbackT>::New(env, new CallbackT(std::move(callback)))});
             env.Global().Set(JS_INSTANCE_NAME, console);
         }
-        
+
         explicit Console(const Napi::CallbackInfo& info)
-            : ParentT{ info }
-            , m_callback{ *info[0].As<Napi::External<CallbackT>>().Data() }
-        {}
+            : ParentT{info}
+            , m_callback{*info[0].As<Napi::External<CallbackT>>().Data()}
+        {
+        }
 
     private:
         void Log(const Napi::CallbackInfo& info)

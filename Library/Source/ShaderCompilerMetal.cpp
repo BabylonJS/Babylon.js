@@ -11,7 +11,7 @@ namespace glslang
 {
     void AddShader(glslang::TProgram& program, glslang::TShader& shader, std::string_view source)
     {
-        const std::array<const char*, 1> sources{ source.data() };
+        const std::array<const char*, 1> sources{source.data()};
         shader.setStrings(sources.data(), gsl::narrow_cast<int>(sources.size()));
         shader.setEnvInput(glslang::EShSourceGlsl, shader.getStage(), glslang::EShClientVulkan, 100);
         shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_0);
@@ -19,7 +19,7 @@ namespace glslang
 
         if (!shader.parse(&Babylon::DefaultTBuiltInResource, 450, false, EShMsgDefault))
         {
-            throw std::exception();//shader.getInfoDebugLog());
+            throw std::exception(); //shader.getInfoDebugLog());
         }
 
         program.addShader(&shader);
@@ -30,7 +30,7 @@ namespace glslang
         std::vector<uint32_t> spirv;
         glslang::GlslangToSpv(*program.getIntermediate(stage), spirv);
 
-        spirv_cross::Parser parser{ std::move(spirv) };
+        spirv_cross::Parser parser{std::move(spirv)};
         parser.parse();
 
         auto compiler = std::make_unique<spirv_cross::CompilerMSL>(parser.get_parsed_ir());
@@ -64,10 +64,10 @@ namespace Babylon
     {
         glslang::TProgram program;
 
-        glslang::TShader vertexShader{ EShLangVertex };
+        glslang::TShader vertexShader{EShLangVertex};
         AddShader(program, vertexShader, vertexSource);
 
-        glslang::TShader fragmentShader{ EShLangFragment };
+        glslang::TShader fragmentShader{EShLangFragment};
         AddShader(program, fragmentShader, fragmentSource);
         InvertYDerivativeOperands(fragmentShader);
 
@@ -78,17 +78,16 @@ namespace Babylon
 
         std::string vertexShaderMSL(vertexSource.data(), vertexSource.size());
         auto vertexCompiler = CompileShader(program, EShLangVertex, vertexShaderMSL);
+        ShaderInfo vertexShaderInfo{
+            std::move(vertexCompiler),
+            gsl::make_span(reinterpret_cast<uint8_t*>(vertexShaderMSL.data()), vertexShaderMSL.size())};
 
         std::string fragmentShaderMSL(fragmentSource.data(), fragmentSource.size());
         auto fragmentCompiler = CompileShader(program, EShLangFragment, fragmentShaderMSL);
+        ShaderInfo fragmentShaderInfo{
+            std::move(fragmentCompiler),
+            gsl::make_span(reinterpret_cast<uint8_t*>(fragmentShaderMSL.data()), fragmentShaderMSL.size())};
 
-        uint8_t* strVertex = (uint8_t*)vertexShaderMSL.data();
-        uint8_t* strFragment = (uint8_t*)fragmentShaderMSL.data();
-
-        onCompiled
-        (
-            { std::move(vertexCompiler), gsl::make_span(strVertex, vertexShaderMSL.size()) },
-            { std::move(fragmentCompiler), gsl::make_span(strFragment, fragmentShaderMSL.size()) }
-        );
+        onCompiled(std::move(vertexShaderInfo), std::move(fragmentShaderInfo));
     }
 }

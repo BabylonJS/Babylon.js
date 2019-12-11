@@ -7,13 +7,13 @@
 namespace Babylon
 {
     RuntimeUWP::RuntimeUWP(ABI::Windows::UI::Core::ICoreWindow* window)
-        : RuntimeUWP{ window, {} }
+        : RuntimeUWP{window, {}}
     {
     }
 
     RuntimeUWP::RuntimeUWP(ABI::Windows::UI::Core::ICoreWindow* window, const std::string& rootUrl)
-        : Runtime { std::make_unique<RuntimeImpl>(window, rootUrl) }
-        , m_window{ window }
+        : Runtime{std::make_unique<RuntimeImpl>(window, rootUrl)}
+        , m_window{window}
     {
         m_window->AddRef();
     }
@@ -29,8 +29,7 @@ namespace Babylon
 
     void RuntimeImpl::ThreadProcedure()
     {
-        this->Dispatch([](Env& env)
-        {
+        this->Dispatch([](Env& env) {
             InitializeNativeXr(env);
         });
 

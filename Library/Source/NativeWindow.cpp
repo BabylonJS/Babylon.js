@@ -13,7 +13,7 @@ namespace Babylon
 
     Napi::ObjectReference NativeWindow::Create(Napi::Env& env, void* windowPtr, size_t width, size_t height)
     {
-        Napi::HandleScope scope{ env };
+        Napi::HandleScope scope{env};
 
         Napi::Function constructor = DefineClass(
             env,
@@ -22,7 +22,7 @@ namespace Babylon
 
             });
 
-        return Napi::Persistent(constructor.New({ Napi::External<void>::New(env, windowPtr), Napi::Number::From(env, width), Napi::Number::From(env, height) }));
+        return Napi::Persistent(constructor.New({Napi::External<void>::New(env, windowPtr), Napi::Number::From(env, width), Napi::Number::From(env, height)}));
     }
 
     Napi::FunctionReference NativeWindow::GetSetTimeoutFunction(Napi::ObjectReference& nativeWindow)
@@ -36,12 +36,13 @@ namespace Babylon
     }
 
     NativeWindow::NativeWindow(const Napi::CallbackInfo& info)
-        : Napi::ObjectWrap<NativeWindow>{ info }
-        , m_runtimeImpl{ RuntimeImpl::GetRuntimeImplFromJavaScript(info.Env()) }
-        , m_windowPtr{ info[0].As<Napi::External<void>>().Data() }
-        , m_width{ static_cast<size_t>(info[1].As<Napi::Number>().Uint32Value()) }
-        , m_height{ static_cast<size_t>(info[2].As<Napi::Number>().Uint32Value()) }
-    {}
+        : Napi::ObjectWrap<NativeWindow>{info}
+        , m_runtimeImpl{RuntimeImpl::GetRuntimeImplFromJavaScript(info.Env())}
+        , m_windowPtr{info[0].As<Napi::External<void>>().Data()}
+        , m_width{static_cast<size_t>(info[1].As<Napi::Number>().Uint32Value())}
+        , m_height{static_cast<size_t>(info[2].As<Napi::Number>().Uint32Value())}
+    {
+    }
 
     void NativeWindow::Resize(size_t newWidth, size_t newHeight)
     {
@@ -50,7 +51,7 @@ namespace Babylon
             m_width = newWidth;
             m_height = newHeight;
 
-            std::scoped_lock lock{ m_mutex };
+            std::scoped_lock lock{m_mutex};
             for (const auto& callback : m_onResizeCallbacks)
             {
                 callback(m_width, m_height);
@@ -60,7 +61,7 @@ namespace Babylon
 
     NativeWindow::OnResizeCallbackTicket NativeWindow::AddOnResizeCallback(OnResizeCallback&& callback)
     {
-        std::scoped_lock lock{ m_mutex };
+        std::scoped_lock lock{m_mutex};
         return m_onResizeCallbacks.insert(callback, m_mutex);
     }
 
@@ -82,7 +83,7 @@ namespace Babylon
     void NativeWindow::SetTimeout(const Napi::CallbackInfo& info)
     {
         auto function = Napi::Persistent(info[0].As<Napi::Function>());
-        auto milliseconds = std::chrono::milliseconds{ info[1].As<Napi::Number>().Int32Value() };
+        auto milliseconds = std::chrono::milliseconds{info[1].As<Napi::Number>().Int32Value()};
 
         auto& nativeWindow = *static_cast<NativeWindow*>(info.Data());
 
@@ -107,8 +108,7 @@ namespace Babylon
         }
         else
         {
-            m_runtimeImpl.Dispatch([this, function = std::move(function), whenToRun](auto&)
-            {
+            m_runtimeImpl.Dispatch([this, function = std::move(function), whenToRun](auto&) {
                 RecursiveWaitOrCall(std::move(function), whenToRun);
             });
         }

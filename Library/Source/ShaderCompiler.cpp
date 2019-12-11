@@ -9,7 +9,8 @@ namespace Babylon
         class InvertYDerivativeOperandsTraverser : public glslang::TIntermTraverser
         {
         public:
-            InvertYDerivativeOperandsTraverser(glslang::TIntermediate* intermediate) : m_intermediate(intermediate)
+            InvertYDerivativeOperandsTraverser(glslang::TIntermediate* intermediate)
+                : m_intermediate(intermediate)
             {
             }
 
@@ -36,7 +37,7 @@ namespace Babylon
     void ShaderCompiler::InvertYDerivativeOperands(glslang::TShader& shader)
     {
         auto intermediate = shader.getIntermediate();
-        InvertYDerivativeOperandsTraverser invertYDerivativeOperandsTraverser{ shader.getIntermediate() };
+        InvertYDerivativeOperandsTraverser invertYDerivativeOperandsTraverser{shader.getIntermediate()};
         intermediate->getTreeRoot()->traverse(&invertYDerivativeOperandsTraverser);
     }
 }

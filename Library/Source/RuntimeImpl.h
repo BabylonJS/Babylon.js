@@ -33,7 +33,8 @@ namespace Babylon
         const std::string& RootUrl() const;
 
         std::string GetAbsoluteUrl(const std::string& url);
-        template<typename T> arcana::task<T, std::exception_ptr> LoadUrlAsync(const std::string& url);
+        template<typename T>
+        arcana::task<T, std::exception_ptr> LoadUrlAsync(const std::string& url);
 
         arcana::manual_dispatcher<babylon_dispatcher::work_size>& Dispatcher();
         arcana::cancellation& Cancellation();
@@ -59,7 +60,7 @@ namespace Babylon
         std::mutex m_taskMutex;
         std::mutex m_suspendMutex;
         std::condition_variable m_suspendVariable;
-        bool m_suspended{ false };
+        bool m_suspended{false};
 
         void* m_nativeWindowPtr{};
 
@@ -75,4 +76,3 @@ namespace Babylon
         const std::string m_rootUrl{};
     };
 }
-    
