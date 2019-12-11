@@ -1100,7 +1100,7 @@ declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_texture_transform"
         constructor(exporter: _Exporter);
         dispose(): void;
         /** @hidden */
-        readonly wasUsed: boolean;
+        get wasUsed(): boolean;
         postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void;
         preExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Texture>;
         /**
@@ -1137,7 +1137,7 @@ declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_lights_punctual" {
         /** @hidden */
         dispose(): void;
         /** @hidden */
-        readonly wasUsed: boolean;
+        get wasUsed(): boolean;
         /** @hidden */
         onExporting(): void;
         /**
@@ -1174,7 +1174,7 @@ declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_materials_sheen" {
         constructor(exporter: _Exporter);
         dispose(): void;
         /** @hidden */
-        readonly wasUsed: boolean;
+        get wasUsed(): boolean;
         private _getTextureIndex;
         postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void;
         postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[];
@@ -2294,7 +2294,7 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
         constructor(exporter: _Exporter);
         dispose(): void;
         /** @hidden */
-        readonly wasUsed: boolean;
+        get wasUsed(): boolean;
         postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void;
         preExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Texture>;
         /**
@@ -2327,7 +2327,7 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
         /** @hidden */
         dispose(): void;
         /** @hidden */
-        readonly wasUsed: boolean;
+        get wasUsed(): boolean;
         /** @hidden */
         onExporting(): void;
         /**
@@ -2358,7 +2358,7 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
         constructor(exporter: _Exporter);
         dispose(): void;
         /** @hidden */
-        readonly wasUsed: boolean;
+        get wasUsed(): boolean;
         private _getTextureIndex;
         postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void;
         postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[];
