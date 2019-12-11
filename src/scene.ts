@@ -294,6 +294,16 @@ export class Scene extends AbstractScene implements IAnimatable {
     public clipPlane4: Nullable<Plane>;
 
     /**
+     * Gets or sets the active clipplane 5
+     */
+    public clipPlane5: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 6
+     */
+    public clipPlane6: Nullable<Plane>;
+
+    /**
      * Gets or sets a boolean indicating if animations are enabled
      */
     public animationsEnabled = true;
