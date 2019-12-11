@@ -137,23 +137,90 @@ compileAndRun = function(parent, fpsLabel) {
             }
 
             engine = engine;
-            engine.runRenderLoop(function () {
-                if (engine.scenes.length === 0) {
-                    return;
-                }
 
-                if (canvas.width !== canvas.clientWidth) {
-                    engine.resize();
-                }
+            // //~~~~~~~~~~~~~~~~~~~~~ ORIGINAL IMPLEMENTATION ~~~~~~~~~~~~~~~~~~~~~
+            // engine.runRenderLoop(function () {
+            //     if (engine.scenes.length === 0) {
+            //         return;
+            //     }
 
-                var scene = engine.scenes[0];
+            //     if (canvas.width !== canvas.clientWidth) {
+            //         engine.resize();
+            //     }
 
-                if (scene.activeCamera || scene.activeCameras.length > 0) {
-                    scene.render();
-                }
+            //     var scene = engine.scenes[0];
 
-                fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
-            }.bind(this));
+            //     if (scene.activeCamera || scene.activeCameras.length > 0) {
+            //         scene.render();
+            //     }
+
+            //     fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+            // }.bind(this));
+
+
+            //~~~~~~~~~~~~~~~~~~~~~ FIRST IMPLEMENTATION ~~~~~~~~~~~~~~~~~~~~~
+            var sceneToRender;
+            if (scene.then) {
+                scene.then(s => {
+                   
+                    engine.runRenderLoop(function () {
+                        if (engine.scenes.length === 0) {
+                            return;
+                        }
+        
+                        if (canvas.width !== canvas.clientWidth) {
+                            engine.resize();
+                        }
+        
+                        if (s.activeCamera || s.activeCameras.length > 0) {
+                            s.render();
+                        }
+        
+                        fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+                    }.bind(this));
+                })
+            } else {
+                sceneToRender = scene;
+                engine.runRenderLoop(function () {
+                    if (engine.scenes.length === 0) {
+                        return;
+                    }
+    
+                    if (canvas.width !== canvas.clientWidth) {
+                        engine.resize();
+                    }
+    
+                    if (sceneToRender.activeCamera || sceneToRender.activeCameras.length > 0) {
+                        sceneToRender.render();
+                    }
+    
+                    fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+                }.bind(this));
+            }
+
+            // // ~~~~~~~~~~~~~~~~~~~~~ SECOND IMPLEMENTATION ~~~~~~~~~~~~~~~~~~~~~
+            // function renderLoopFunction (renderScene){
+            //     if (engine.scenes.length === 0) {
+            //         return;
+            //     }
+
+            //     if (canvas.width !== canvas.clientWidth) {
+            //         engine.resize();
+            //     }
+
+            //     if (renderScene.activeCamera || renderScene.activeCameras.length > 0) {
+            //         renderScene.render();
+            //     }
+
+            //     fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+            // }
+            // renderLoopFunction.bind(this);
+
+            // if (scene.then) {
+            //     scene.then(scene => renderLoopFunction(scene));
+            // } else {
+            //     renderLoopFunction(scene)
+            // }
 
             if (checkSceneCount && engine.scenes.length === 0) {
                 parent.utils.showError("You must at least create a scene.", null);
