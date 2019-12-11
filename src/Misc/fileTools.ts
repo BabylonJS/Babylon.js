@@ -301,7 +301,10 @@ export class FileTools {
     public static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
         // If file and file input are set
         if (url.indexOf("file:") !== -1) {
-            const fileName = decodeURIComponent(url.substring(5).toLowerCase());
+            let fileName = decodeURIComponent(url.substring(5).toLowerCase());
+            if (fileName.indexOf('./') === 0) {
+                fileName = fileName.substring(2);
+            }
             const file = FilesInputStore.FilesToLoad[fileName];
             if (file) {
                 return this.ReadFile(file, onSuccess, onProgress, useArrayBuffer, onError ? (error) => onError(undefined, new LoadFileError(error.message, error.file)) : undefined);
