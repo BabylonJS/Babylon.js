@@ -100,7 +100,7 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         style.innerHTML = keyFrames;
         document.getElementsByTagName('head')[0].appendChild(style);
 
-        const svgSupport = false; // !!window.SVGSVGElement;
+        const svgSupport = !!window.SVGSVGElement;
         // Loading img
         var imgBack = new Image();
         if (!DefaultLoadingScreen.DefaultLogoUrl) {
