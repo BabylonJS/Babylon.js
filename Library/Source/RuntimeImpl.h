@@ -59,6 +59,9 @@ namespace Babylon
         arcana::cancellation_source m_cancelSource{};
         std::mutex m_taskMutex;
         std::mutex m_suspendMutex;
+        // when asking for suspension, we need to ensure no rendering is on going.
+        // This mutex is used to be sure no rendering is happening after Suspend method returns.
+        std::mutex m_blockTickingMutex;
         std::condition_variable m_suspendVariable;
         bool m_suspended{false};
 
