@@ -87,7 +87,7 @@ export class FileTools {
      * Gets or sets a function used to pre-process url before using them to load assets
      */
     public static PreprocessUrl = (url: string) => {
-       return url;
+        return url;
     }
 
     /**
