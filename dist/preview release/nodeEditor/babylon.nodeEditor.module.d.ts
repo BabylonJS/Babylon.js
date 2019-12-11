@@ -179,6 +179,7 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _width;
         private _height;
         element: HTMLDivElement;
+        private _borderElement;
         private _headerElement;
         private _headerTextElement;
         private _headerCollapseElement;
@@ -1390,6 +1391,7 @@ declare module "babylonjs-node-editor/graphEditor" {
         private _blocks;
         private _previewManager;
         private _copiedNodes;
+        private _copiedFrame;
         private _mouseLocationX;
         private _mouseLocationY;
         private _onWidgetKeyUpPointer;
@@ -1402,6 +1404,8 @@ declare module "babylonjs-node-editor/graphEditor" {
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
+        reconnectNewNodes(nodeIndex: number, newNodes: GraphNode[], sourceNodes: GraphNode[], done: boolean[]): void;
+        pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number): void;
         zoomToFit(): void;
         buildMaterial(): void;
         build(): void;
@@ -1562,6 +1566,7 @@ declare module NODEEDITOR {
         private _width;
         private _height;
         element: HTMLDivElement;
+        private _borderElement;
         private _headerElement;
         private _headerTextElement;
         private _headerCollapseElement;
@@ -2603,6 +2608,7 @@ declare module NODEEDITOR {
         private _blocks;
         private _previewManager;
         private _copiedNodes;
+        private _copiedFrame;
         private _mouseLocationX;
         private _mouseLocationY;
         private _onWidgetKeyUpPointer;
@@ -2615,6 +2621,8 @@ declare module NODEEDITOR {
         componentDidMount(): void;
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
+        reconnectNewNodes(nodeIndex: number, newNodes: GraphNode[], sourceNodes: GraphNode[], done: boolean[]): void;
+        pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number): void;
         zoomToFit(): void;
         buildMaterial(): void;
         build(): void;
