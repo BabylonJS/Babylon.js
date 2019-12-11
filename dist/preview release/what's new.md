@@ -257,6 +257,7 @@
 - Fixed an issue with pose input in webxr ([RaananW](https://github.com/RaananW/))
 - Fixed bug when parsing animation group without 'to' value ([noalak](https://github.com/noalak/))
 - isRightCamer and isLeftCamera were not set in WebXR ([RaananW](https://github.com/RaananW/))
+- Sandbox will now load assets relatively path-ed to same folder([Kyle Belfort](https://github.com/belfortk))
 
 ## Breaking changes
 
