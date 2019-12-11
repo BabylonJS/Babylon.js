@@ -557,9 +557,17 @@ namespace Babylon
                         attributeName = "normal";
                     else if (attributeName == "a_tangent")
                         attributeName = "tangent";
-                    else if (attributeName == "a_color")
+                    else if (attributeName == "a_texcoord0")
+                        attributeName = "uv";
+                    else if (attributeName == "a_texcoord1")
+                        attributeName = "uv2";
+                    else if (attributeName == "a_texcoord2")
+                        attributeName = "uv3";
+                    else if (attributeName == "a_texcoord3")
+                        attributeName = "uv4";
+                    else if (attributeName == "a_color0")
                         attributeName = "color";
-                    else if (attributeName == "a_index")
+                    else if (attributeName == "a_indices")
                         attributeName = "matricesIndices";
                     else if (attributeName == "a_weight")
                         attributeName = "matricesWeights";
