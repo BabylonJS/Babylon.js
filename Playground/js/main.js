@@ -137,32 +137,9 @@ compileAndRun = function(parent, fpsLabel) {
             }
 
             engine = engine;
-
-            // //~~~~~~~~~~~~~~~~~~~~~ ORIGINAL IMPLEMENTATION ~~~~~~~~~~~~~~~~~~~~~
-            // engine.runRenderLoop(function () {
-            //     if (engine.scenes.length === 0) {
-            //         return;
-            //     }
-
-            //     if (canvas.width !== canvas.clientWidth) {
-            //         engine.resize();
-            //     }
-
-            //     var scene = engine.scenes[0];
-
-            //     if (scene.activeCamera || scene.activeCameras.length > 0) {
-            //         scene.render();
-            //     }
-
-            //     fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
-            // }.bind(this));
-
-
-            //~~~~~~~~~~~~~~~~~~~~~ FIRST IMPLEMENTATION ~~~~~~~~~~~~~~~~~~~~~
             var sceneToRender;
             if (scene.then) {
                 scene.then(s => {
-                   
                     engine.runRenderLoop(function () {
                         if (engine.scenes.length === 0) {
                             return;
@@ -197,30 +174,6 @@ compileAndRun = function(parent, fpsLabel) {
                     fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
                 }.bind(this));
             }
-
-            // // ~~~~~~~~~~~~~~~~~~~~~ SECOND IMPLEMENTATION ~~~~~~~~~~~~~~~~~~~~~
-            // function renderLoopFunction (renderScene){
-            //     if (engine.scenes.length === 0) {
-            //         return;
-            //     }
-
-            //     if (canvas.width !== canvas.clientWidth) {
-            //         engine.resize();
-            //     }
-
-            //     if (renderScene.activeCamera || renderScene.activeCameras.length > 0) {
-            //         renderScene.render();
-            //     }
-
-            //     fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
-            // }
-            // renderLoopFunction.bind(this);
-
-            // if (scene.then) {
-            //     scene.then(scene => renderLoopFunction(scene));
-            // } else {
-            //     renderLoopFunction(scene)
-            // }
 
             if (checkSceneCount && engine.scenes.length === 0) {
                 parent.utils.showError("You must at least create a scene.", null);
