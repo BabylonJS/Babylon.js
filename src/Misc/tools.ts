@@ -1010,9 +1010,7 @@ export class Tools {
 
         Tools._EndUserMark(counterName, condition);
 
-        if (console.time) {
-            console.timeEnd(counterName);
-        }
+        console.timeEnd(counterName);
     }
 
     /**

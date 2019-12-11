@@ -19,7 +19,7 @@ declare module BABYLON {
         /**
          * Gets the size of one char in the texture (each char fits in size * size space in the texture).
          */
-        readonly charSize: number;
+        get charSize(): number;
         /**
          * Create a new instance of the Ascii Art FontTexture class
          * @param name the name of the texture
@@ -127,7 +127,7 @@ declare module BABYLON {
         /**
          * Gets the size of one char in the texture (each char fits in size * size space in the texture).
          */
-        readonly charSize: number;
+        get charSize(): number;
         /**
          * Create a new instance of the Digital Rain FontTexture class
          * @param name the name of the texture
@@ -254,24 +254,26 @@ declare module BABYLON {
         /**
          * Gets a boolean indicating if the real-time reflection is enabled on the ocean.
          */
+        get reflectionEnabled(): boolean;
         /**
-        * Sets weither or not the real-time reflection is enabled on the ocean.
-        * Is set to true, the reflection mirror texture will be used as reflection texture.
-        */
-        reflectionEnabled: boolean;
+         * Sets weither or not the real-time reflection is enabled on the ocean.
+         * Is set to true, the reflection mirror texture will be used as reflection texture.
+         */
+        set reflectionEnabled(enabled: boolean);
         /**
          * Gets a boolean indicating if the real-time refraction is enabled on the ocean.
          */
+        get refractionEnabled(): boolean;
         /**
-        * Sets weither or not the real-time refraction is enabled on the ocean.
-        * Is set to true, the refraction render target texture will be used as refraction texture.
-        */
-        refractionEnabled: boolean;
+         * Sets weither or not the real-time refraction is enabled on the ocean.
+         * Is set to true, the refraction render target texture will be used as refraction texture.
+         */
+        set refractionEnabled(enabled: boolean);
         /**
          * Gets wether or not the post-processes is supported by the running hardware.
          * This requires draw buffer supports.
          */
-        readonly isSupported: boolean;
+        get isSupported(): boolean;
         /**
          * This is the reflection mirror texture used to display reflections on the ocean.
          * By default, render list is empty.

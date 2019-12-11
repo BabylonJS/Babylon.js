@@ -376,7 +376,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             value.meshMap[this.uniqueId] = this;
         }
 
-        if (this.onMaterialChangedObservable.hasObservers) {
+        if (this.onMaterialChangedObservable.hasObservers()) {
             this.onMaterialChangedObservable.notifyObservers(this);
         }
 

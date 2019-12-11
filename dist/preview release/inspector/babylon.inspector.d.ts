@@ -51,9 +51,11 @@ declare module INSPECTOR {
         selectedLineContainerTitle: string;
         recorder: ReplayRecorder;
         private _onlyUseEulers;
-        onlyUseEulers: boolean;
+        get onlyUseEulers(): boolean;
+        set onlyUseEulers(value: boolean);
         private _ignoreBackfacesForPicking;
-        ignoreBackfacesForPicking: boolean;
+        get ignoreBackfacesForPicking(): boolean;
+        set ignoreBackfacesForPicking(value: boolean);
         init(propertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>): void;
         prepareGLTFPlugin(loader: BABYLON.GLTFFileLoader): void;
         lightGizmos: Array<BABYLON.LightGizmo>;
@@ -1846,7 +1848,7 @@ declare module INSPECTOR {
         private static _CreateActionTabs;
         private static _CreateEmbedHost;
         static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): BABYLON.Nullable<HTMLDivElement>;
-        static readonly IsVisible: boolean;
+        static get IsVisible(): boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: BABYLON.Scene, userOptions: Partial<BABYLON.IInspectorOptions>): void;
         static _CreateCanvasContainer(parentControl: HTMLElement): void;
