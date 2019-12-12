@@ -126,6 +126,7 @@
 - Added support for GLTF mesh quantization extension ([zeux](https://github.com/zeux))
 - Added support for 8 bone influences to glTF loader ([zeux](https://github.com/zeux))
 - Added support for animations import from separate files ([noalak](https://github.com/noalak/))
+- Use web workers to validate glTF to avoid blocking the main thread. ([bghgary](https://github.com/bghgary))
 
 ### Materials
 
