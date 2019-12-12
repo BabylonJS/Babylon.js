@@ -53720,10 +53720,22 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         graph.graph().rankdir = "LR";
         // Build dagre graph
         this._nodes.forEach(function (node) {
+            if (_this._frames.some(function (f) { return f.nodes.indexOf(node) !== -1; })) {
+                return;
+            }
             graph.setNode(node.id.toString(), {
                 id: node.id,
+                type: "node",
                 width: node.width,
                 height: node.height
+            });
+        });
+        this._frames.forEach(function (frame) {
+            graph.setNode(frame.id.toString(), {
+                id: frame.id,
+                type: "frame",
+                width: frame.element.clientWidth,
+                height: frame.element.clientHeight
             });
         });
         this._nodes.forEach(function (node) {
@@ -53732,7 +53744,11 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                     return;
                 }
                 output.endpoints.forEach(function (endpoint) {
-                    graph.setEdge(node.id.toString(), endpoint.ownerBlock.uniqueId.toString());
+                    var sourceFrames = _this._frames.filter(function (f) { return f.nodes.indexOf(node) !== -1; });
+                    var targetFrames = _this._frames.filter(function (f) { return f.nodes.some(function (n) { return n.block === endpoint.ownerBlock; }); });
+                    var sourceId = sourceFrames.length > 0 ? sourceFrames[0].id : node.id;
+                    var targetId = targetFrames.length > 0 ? targetFrames[0].id : endpoint.ownerBlock.uniqueId;
+                    graph.setEdge(sourceId.toString(), targetId.toString());
                 });
             });
         });
@@ -53741,12 +53757,23 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         // Update graph
         var dagreNodes = graph.nodes().map(function (node) { return graph.node(node); });
         dagreNodes.forEach(function (dagreNode) {
-            for (var _i = 0, _a = _this._nodes; _i < _a.length; _i++) {
-                var node = _a[_i];
-                if (node.id === dagreNode.id) {
-                    node.x = dagreNode.x - dagreNode.width / 2;
-                    node.y = dagreNode.y - dagreNode.height / 2;
-                    node.cleanAccumulation();
+            if (dagreNode.type === "node") {
+                for (var _i = 0, _a = _this._nodes; _i < _a.length; _i++) {
+                    var node = _a[_i];
+                    if (node.id === dagreNode.id) {
+                        node.x = dagreNode.x - dagreNode.width / 2;
+                        node.y = dagreNode.y - dagreNode.height / 2;
+                        node.cleanAccumulation();
+                        return;
+                    }
+                }
+                return;
+            }
+            for (var _b = 0, _c = _this._frames; _b < _c.length; _b++) {
+                var frame = _c[_b];
+                if (frame.id === dagreNode.id) {
+                    frame.move(dagreNode.x - dagreNode.width / 2, dagreNode.y - dagreNode.height / 2, false);
+                    frame.cleanAccumulation();
                     return;
                 }
             }
@@ -54031,7 +54058,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         if (editorData.frames) {
             for (var _a = 0, _b = editorData.frames; _a < _b.length; _a++) {
                 var frameData = _b[_a];
-                var frame = _graphFrame__WEBPACK_IMPORTED_MODULE_7__["GraphFrame"].Parse(frameData, this);
+                var frame = _graphFrame__WEBPACK_IMPORTED_MODULE_7__["GraphFrame"].Parse(frameData, this, editorData.map);
                 this._frames.push(frame);
             }
         }
@@ -54084,6 +54111,7 @@ var GraphFrame = /** @class */ (function () {
         this.CloseSVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 30 30\"><g id=\"Layer_2\" data-name=\"Layer 2\"><path d=\"M16,15l5.85,5.84-1,1L15,15.93,9.15,21.78l-1-1L14,15,8.19,9.12l1-1L15,14l5.84-5.84,1,1Z\"/></g></svg>";
         this.ExpandSVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 30 30\"><g id=\"Layer_2\" data-name=\"Layer 2\"><path d=\"M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-6.75,6.75H11.06V14.44h3.38V11.06h1.12v3.38h3.38v1.12H15.56v3.38H14.44Z\"/></g></svg>";
         this.CollapseSVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 30 30\"><g id=\"Layer_2\" data-name=\"Layer 2\"><path d=\"M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-2.25,6.75H11.06V14.44h7.88Z\"/></g></svg>";
+        this._id = GraphFrame._FrameCounter++;
         this._ownerCanvas = canvas;
         var root = canvas.frameContainer;
         this.element = root.ownerDocument.createElement("div");
@@ -54114,14 +54142,6 @@ var GraphFrame = /** @class */ (function () {
             evt.stopPropagation();
             _this._headerCollapseElement.classList.remove("down");
             _this.isCollapsed = !_this.isCollapsed;
-            if (_this.isCollapsed) {
-                _this._headerCollapseElement.innerHTML = _this.ExpandSVG;
-                _this._headerCollapseElement.title = "Expand";
-            }
-            else {
-                _this._headerCollapseElement.innerHTML = _this.CollapseSVG;
-                _this._headerCollapseElement.title = "Collapse";
-            }
         });
         this._headerCollapseElement.innerHTML = this.CollapseSVG;
         this._headerElement.appendChild(this._headerCollapseElement);
@@ -54173,6 +54193,13 @@ var GraphFrame = /** @class */ (function () {
             this.refresh();
         }
     }
+    Object.defineProperty(GraphFrame.prototype, "id", {
+        get: function () {
+            return this._id;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(GraphFrame.prototype, "isCollapsed", {
         get: function () {
             return this._isCollapsed;
@@ -54257,6 +54284,15 @@ var GraphFrame = /** @class */ (function () {
             }
             this.cleanAccumulation();
             this._ownerCanvas._frameIsMoving = false;
+            // UI        
+            if (this._isCollapsed) {
+                this._headerCollapseElement.innerHTML = this.ExpandSVG;
+                this._headerCollapseElement.title = "Expand";
+            }
+            else {
+                this._headerCollapseElement.innerHTML = this.CollapseSVG;
+                this._headerCollapseElement.title = "Collapse";
+            }
         },
         enumerable: true,
         configurable: true
@@ -54303,9 +54339,9 @@ var GraphFrame = /** @class */ (function () {
             return this._x;
         },
         set: function (value) {
-            // if (this._x === value) {
-            //     return;
-            // }
+            if (this._x === value) {
+                return;
+            }
             this._x = value;
             this._gridAlignedX = this._ownerCanvas.getGridPosition(value);
             this.element.style.left = this._gridAlignedX + "px";
@@ -54318,9 +54354,9 @@ var GraphFrame = /** @class */ (function () {
             return this._y;
         },
         set: function (value) {
-            // if (this._y === value) {
-            //     return;
-            // }
+            if (this._y === value) {
+                return;
+            }
             this._y = value;
             this._gridAlignedY = this._ownerCanvas.getGridPosition(value);
             this.element.style.top = this._gridAlignedY + "px";
@@ -54400,15 +54436,21 @@ var GraphFrame = /** @class */ (function () {
         this._headerTextElement.setPointerCapture(evt.pointerId);
         this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
         this._ownerCanvas._frameIsMoving = true;
+        this.move(this._ownerCanvas.getGridPosition(this.x), this._ownerCanvas.getGridPosition(this.y));
+    };
+    GraphFrame.prototype.move = function (newX, newY, align) {
+        if (align === void 0) { align = true; }
         var oldX = this.x;
         var oldY = this.y;
-        this.x = this._ownerCanvas.getGridPosition(this.x);
-        this.y = this._ownerCanvas.getGridPosition(this.y);
+        this.x = newX;
+        this.y = newY;
         for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
             var selectedNode = _a[_i];
             selectedNode.x += this.x - oldX;
             selectedNode.y += this.y - oldY;
-            selectedNode.cleanAccumulation(true);
+            if (align) {
+                selectedNode.cleanAccumulation(true);
+            }
         }
     };
     GraphFrame.prototype._onUp = function (evt) {
@@ -54455,10 +54497,11 @@ var GraphFrame = /** @class */ (function () {
             height: this._height,
             color: this._color.asArray(),
             name: this.name,
-            isCollapsed: this.isCollapsed
+            isCollapsed: this.isCollapsed,
+            blocks: this.nodes.map(function (n) { return n.block.uniqueId; })
         };
     };
-    GraphFrame.Parse = function (serializationData, canvas) {
+    GraphFrame.Parse = function (serializationData, canvas, map) {
         var newFrame = new GraphFrame(null, canvas, true);
         newFrame.x = serializationData.x;
         newFrame.y = serializationData.y;
@@ -54466,10 +54509,26 @@ var GraphFrame = /** @class */ (function () {
         newFrame.height = serializationData.height;
         newFrame.name = serializationData.name;
         newFrame.color = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(serializationData.color);
-        newFrame.refresh();
+        if (serializationData.blocks && map) {
+            var _loop_1 = function () {
+                var actualId = map[blockId];
+                var node = canvas.nodes.filter(function (n) { return n.block.uniqueId === actualId; });
+                if (node.length) {
+                    newFrame.nodes.push(node[0]);
+                }
+            };
+            for (var _i = 0, _a = serializationData.blocks; _i < _a.length; _i++) {
+                var blockId = _a[_i];
+                _loop_1();
+            }
+        }
+        else {
+            newFrame.refresh();
+        }
         newFrame.isCollapsed = !!serializationData.isCollapsed;
         return newFrame;
     };
+    GraphFrame._FrameCounter = 0;
     return GraphFrame;
 }());
 
@@ -54538,6 +54597,9 @@ var GraphNode = /** @class */ (function () {
             _this.isSelected = overlap;
         });
         this._onFrameCreatedObserver = this._globalState.onFrameCreated.add(function (frame) {
+            if (_this._ownerCanvas.frames.some(function (f) { return f.nodes.indexOf(_this) !== -1; })) {
+                return;
+            }
             if (_this.isOverlappingFrame(frame)) {
                 frame.nodes.push(_this);
             }
@@ -54604,9 +54666,9 @@ var GraphNode = /** @class */ (function () {
             return this._x;
         },
         set: function (value) {
-            // if (this._x === value) {
-            //     return;
-            // }
+            if (this._x === value) {
+                return;
+            }
             this._x = value;
             this._gridAlignedX = this._ownerCanvas.getGridPosition(value);
             this._visual.style.left = this._gridAlignedX + "px";
@@ -54621,9 +54683,9 @@ var GraphNode = /** @class */ (function () {
             return this._y;
         },
         set: function (value) {
-            // if (this._y === value) {
-            //     return;
-            // }
+            if (this._y === value) {
+                return;
+            }
             this._y = value;
             this._gridAlignedY = this._ownerCanvas.getGridPosition(value);
             this._visual.style.top = this._gridAlignedY + "px";
@@ -55037,7 +55099,6 @@ var NodeLink = /** @class */ (function () {
         }
         if (this._nodeB) {
             this._nodeA.links.splice(this._nodeA.links.indexOf(this), 1);
-            this._nodeB.links.splice(this._nodeB.links.indexOf(this), 1);
             this._nodeB.links.splice(this._nodeB.links.indexOf(this), 1);
             this._graphCanvas.links.splice(this._graphCanvas.links.indexOf(this), 1);
             this._portA.connectionPoint.disconnectFrom(this._portB.connectionPoint);

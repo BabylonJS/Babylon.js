@@ -84,6 +84,7 @@ declare module NODEEDITOR {
         color: number[];
         name: string;
         isCollapsed: boolean;
+        blocks: number[];
     }
     export interface IEditorData {
         locations: INodeLocationInfo[];
@@ -91,10 +92,14 @@ declare module NODEEDITOR {
         y: number;
         zoom: number;
         frames?: IFrameData[];
+        map?: {
+            [key: number]: number;
+        };
     }
 }
 declare module NODEEDITOR {
     export class GraphFrame {
+        private static _FrameCounter;
         private _name;
         private _color;
         private _x;
@@ -120,9 +125,11 @@ declare module NODEEDITOR {
         private _isCollapsed;
         private _ports;
         private _controlledPorts;
+        private _id;
         private readonly CloseSVG;
         private readonly ExpandSVG;
         private readonly CollapseSVG;
+        get id(): number;
         get isCollapsed(): boolean;
         private _createInputPort;
         set isCollapsed(value: boolean);
@@ -146,12 +153,15 @@ declare module NODEEDITOR {
         syncNode(node: GraphNode): void;
         cleanAccumulation(): void;
         private _onDown;
+        move(newX: number, newY: number, align?: boolean): void;
         private _onUp;
         private _moveFrame;
         private _onMove;
         dispose(): void;
         serialize(): IFrameData;
-        static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent): GraphFrame;
+        static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {
+            [key: number]: number;
+        }): GraphFrame;
     }
 }
 declare module NODEEDITOR {

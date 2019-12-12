@@ -138,7 +138,6 @@ export class NodeLink {
         if (this._nodeB) {
             this._nodeA.links.splice(this._nodeA.links.indexOf(this), 1);
             this._nodeB.links.splice(this._nodeB.links.indexOf(this), 1);
-            this._nodeB.links.splice(this._nodeB.links.indexOf(this), 1);
             this._graphCanvas.links.splice(this._graphCanvas.links.indexOf(this), 1);
 
             this._portA.connectionPoint.disconnectFrom(this._portB!.connectionPoint);
