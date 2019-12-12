@@ -1254,6 +1254,13 @@ export class NodeMaterial extends PushMaterial {
                 this.editorData.locations = locations;
             }
 
+            let blockMap: number[] = [];
+
+            for (var key in map) {
+                blockMap[key] = map[key].uniqueId;
+            }
+
+            this.editorData.map = blockMap;
         }
     }
 
