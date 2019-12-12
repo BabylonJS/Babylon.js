@@ -265,6 +265,7 @@
 - Fixed bug when parsing animation group without 'to' value ([noalak](https://github.com/noalak/))
 - isRightCamera and isLeftCamera were not set in WebXR ([RaananW](https://github.com/RaananW/))
 - Sandbox will now load assets relatively path-ed to same folder([Kyle Belfort](https://github.com/belfortk))
+- Playground will now render the returned scene from createScene() when there are multiple scenes added to engine([Kyle Belfort](https://github.com/belfortk))
 
 ## Breaking changes
 
