@@ -38,6 +38,7 @@ namespace Babylon
             InitializeNativeXr(env);
         });
 
-        RuntimeImpl::BaseThreadProcedure();
+        RuntimeImpl::BaseThreadInit();
+        RuntimeImpl::BaseThreadRun();
     }
 }
