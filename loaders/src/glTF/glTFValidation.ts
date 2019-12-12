@@ -81,6 +81,14 @@ export class GLTFValidation {
 
     private static _LoadScriptPromise: Promise<void>;
 
+    /**
+     * Validate a glTF asset using the glTF-Validator.
+     * @param data The JSON of a glTF or the array buffer of a binary glTF
+     * @param rootUrl The root url for the glTF
+     * @param fileName The file name for the glTF
+     * @param getExternalResource The callback to get external resources for the glTF validator
+     * @returns A promise that resolves with the glTF validation results once complete
+     */
     public static ValidateAsync(data: string | ArrayBuffer, rootUrl: string, fileName: string, getExternalResource: (uri: string) => Promise<ArrayBuffer>): Promise<GLTF2.IGLTFValidationResults>
     {
         if (typeof Worker === "function") {
