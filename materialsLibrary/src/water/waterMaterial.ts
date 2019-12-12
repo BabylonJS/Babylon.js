@@ -34,6 +34,8 @@ class WaterMaterialDefines extends MaterialDefines implements IImageProcessingCo
     public CLIPPLANE2 = false;
     public CLIPPLANE3 = false;
     public CLIPPLANE4 = false;
+    public CLIPPLANE5 = false;
+    public CLIPPLANE6 = false;
     public ALPHATEST = false;
     public DEPTHPREPASS = false;
     public POINTSIZE = false;
@@ -438,7 +440,7 @@ export class WaterMaterial extends PushMaterial {
                 "vFogInfos", "vFogColor", "pointSize",
                 "vNormalInfos",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "normalMatrix",
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "normalMatrix",
                 "logarithmicDepthConstant",
 
                 // Water
