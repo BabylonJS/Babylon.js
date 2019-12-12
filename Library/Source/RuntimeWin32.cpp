@@ -24,7 +24,11 @@ namespace Babylon
         }
     }
 
-    void RuntimeImpl::ThreadProcedure()
+    void RuntimeImpl::ThreadInit()
+    {
+    }
+
+    void RuntimeImpl::ThreadRun()
     {
         HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
         assert(SUCCEEDED(hr));

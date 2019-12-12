@@ -35,9 +35,15 @@ namespace Babylon
 
     RuntimeImpl::RuntimeImpl(void* nativeWindowPtr, const std::string& rootUrl)
         : m_nativeWindowPtr{nativeWindowPtr}
-        , m_thread{[this] { ThreadProcedure(); }}
+#ifndef APPLE
+        , m_thread{ [this] { ThreadInit(); ThreadRun();} }
+#endif
         , m_rootUrl{rootUrl}
     {
+#ifdef APPLE
+        ThreadInit();
+        m_thread = std::thread([this] { ThreadRun(); });
+#endif        
     }
 
     RuntimeImpl::~RuntimeImpl()
@@ -209,20 +215,19 @@ namespace Babylon
         global.Set(JS_XML_HTTP_REQUEST_CONSTRUCTOR_NAME, jsXmlHttpRequestConstructor.Value());
     }
 
-    void RuntimeImpl::BaseThreadProcedure()
+    void RuntimeImpl::BaseThreadInit()
     {
-        m_dispatcher.set_affinity(std::this_thread::get_id());
-
         auto executeOnScriptThread = [this](std::function<void()> action) {
             Dispatch([action = std::move(action)](auto&) {
                 action();
             });
         };
+        m_env = std::make_unique<Env>(GetModulePath().u8string().data(), std::move(executeOnScriptThread));
+    }
 
-        Env env{GetModulePath().u8string().data(), std::move(executeOnScriptThread)};
-
-        m_env = &env;
-        auto hostScopeGuard = gsl::finally([this] { m_env = nullptr; });
+    void RuntimeImpl::BaseThreadRun()
+    {
+        m_dispatcher.set_affinity(std::this_thread::get_id());
 
         InitializeJavaScriptVariables();
 
@@ -237,6 +242,7 @@ namespace Babylon
             }
             m_dispatcher.blocking_tick(m_cancelSource);
         }
+        m_env = nullptr;
     }
 
     template arcana::task<std::string, std::exception_ptr> RuntimeImpl::LoadUrlAsync(const std::string& url);

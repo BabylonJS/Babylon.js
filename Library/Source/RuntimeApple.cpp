@@ -16,8 +16,13 @@ namespace Babylon
         // Apple Stub
     }
 
-    void RuntimeImpl::ThreadProcedure()
+    void RuntimeImpl::ThreadInit()
     {
-        RuntimeImpl::BaseThreadProcedure();
+        RuntimeImpl::BaseThreadInit();
+    }
+    
+    void RuntimeImpl::ThreadRun()
+    {
+        RuntimeImpl::BaseThreadRun();
     }
 }

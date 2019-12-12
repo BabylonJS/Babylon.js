@@ -27,12 +27,17 @@ namespace Babylon
         : Runtime{ std::make_unique<RuntimeImpl>(from_abi<winrt::Windows::UI::Xaml::Controls::SwapChainPanel>(panel), rootUrl) }
     {}*/
 
-    void RuntimeImpl::ThreadProcedure()
+    void RuntimeImpl::ThreadInit()
+    {
+    }
+    
+    void RuntimeImpl::ThreadRun()
     {
         this->Dispatch([](Env& env) {
             InitializeNativeXr(env);
         });
 
-        RuntimeImpl::BaseThreadProcedure();
+        RuntimeImpl::BaseThreadInit();
+        RuntimeImpl::BaseThreadRun();
     }
 }
