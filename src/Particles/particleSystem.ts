@@ -1493,7 +1493,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
     /** @hidden */
     public static _GetEffectCreationOptions(isAnimationSheetEnabled = false): string[] {
-        var effectCreationOption = ["invView", "view", "projection", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "textureMask", "translationPivot", "eyePosition"];
+        var effectCreationOption = ["invView", "view", "projection", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "textureMask", "translationPivot", "eyePosition"];
 
         if (isAnimationSheetEnabled) {
             effectCreationOption.push("particlesInfos");
@@ -1524,6 +1524,14 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         if (this._scene.clipPlane4) {
             defines.push("#define CLIPPLANE4");
+        }
+
+        if (this._scene.clipPlane5) {
+            defines.push("#define CLIPPLANE5");
+        }
+
+        if (this._scene.clipPlane6) {
+            defines.push("#define CLIPPLANE6");
         }
 
         if (this._isAnimationSheetEnabled) {
@@ -1763,7 +1771,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             effect.setTexture("rampSampler", this._rampGradientsTexture);
         }
 
-        if (this._scene.clipPlane || this._scene.clipPlane2 || this._scene.clipPlane3 || this._scene.clipPlane4) {
+        if (this._scene.clipPlane || this._scene.clipPlane2 || this._scene.clipPlane3 || this._scene.clipPlane4 || this._scene.clipPlane5 || this._scene.clipPlane6) {
             var invView = viewMatrix.clone();
             invView.invert();
             effect.setMatrix("invView", invView);

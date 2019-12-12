@@ -123,11 +123,15 @@ export class MaterialHelper {
         let useClipPlane2 = false;
         let useClipPlane3 = false;
         let useClipPlane4 = false;
+        let useClipPlane5 = false;
+        let useClipPlane6 = false;
 
         useClipPlane1 = useClipPlane == null ? (scene.clipPlane !== undefined && scene.clipPlane !== null) : useClipPlane;
         useClipPlane2 = useClipPlane == null ? (scene.clipPlane2 !== undefined && scene.clipPlane2 !== null) : useClipPlane;
         useClipPlane3 = useClipPlane == null ? (scene.clipPlane3 !== undefined && scene.clipPlane3 !== null) : useClipPlane;
         useClipPlane4 = useClipPlane == null ? (scene.clipPlane4 !== undefined && scene.clipPlane4 !== null) : useClipPlane;
+        useClipPlane5 = useClipPlane == null ? (scene.clipPlane5 !== undefined && scene.clipPlane5 !== null) : useClipPlane;
+        useClipPlane6 = useClipPlane == null ? (scene.clipPlane6 !== undefined && scene.clipPlane6 !== null) : useClipPlane;
 
         if (defines["CLIPPLANE"] !== useClipPlane1) {
             defines["CLIPPLANE"] = useClipPlane1;
@@ -146,6 +150,16 @@ export class MaterialHelper {
 
         if (defines["CLIPPLANE4"] !== useClipPlane4) {
             defines["CLIPPLANE4"] = useClipPlane4;
+            changed = true;
+        }
+
+        if (defines["CLIPPLANE5"] !== useClipPlane5) {
+            defines["CLIPPLANE5"] = useClipPlane5;
+            changed = true;
+        }
+
+        if (defines["CLIPPLANE6"] !== useClipPlane6) {
+            defines["CLIPPLANE6"] = useClipPlane6;
             changed = true;
         }
 
@@ -787,6 +801,14 @@ export class MaterialHelper {
         if (scene.clipPlane4) {
             let clipPlane = scene.clipPlane4;
             effect.setFloat4("vClipPlane4", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+        }
+        if (scene.clipPlane5) {
+            let clipPlane = scene.clipPlane5;
+            effect.setFloat4("vClipPlane5", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+        }
+        if (scene.clipPlane6) {
+            let clipPlane = scene.clipPlane6;
+            effect.setFloat4("vClipPlane6", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
         }
     }
 }
