@@ -26067,6 +26067,8 @@ declare module BABYLON {
         CLIPPLANE2: boolean;
         CLIPPLANE3: boolean;
         CLIPPLANE4: boolean;
+        CLIPPLANE5: boolean;
+        CLIPPLANE6: boolean;
         ALPHATEST: boolean;
         DEPTHPREPASS: boolean;
         ALPHAFROMDIFFUSE: boolean;
@@ -34907,6 +34909,14 @@ declare module BABYLON {
          * Gets or sets the active clipplane 4
          */
         clipPlane4: Nullable<Plane>;
+        /**
+         * Gets or sets the active clipplane 5
+         */
+        clipPlane5: Nullable<Plane>;
+        /**
+         * Gets or sets the active clipplane 6
+         */
+        clipPlane6: Nullable<Plane>;
         /**
          * Gets or sets a boolean indicating if animations are enabled
          */
@@ -49794,6 +49804,8 @@ declare module BABYLON {
         CLIPPLANE2: boolean;
         CLIPPLANE3: boolean;
         CLIPPLANE4: boolean;
+        CLIPPLANE5: boolean;
+        CLIPPLANE6: boolean;
         POINTSIZE: boolean;
         FOG: boolean;
         LOGARITHMICDEPTH: boolean;
