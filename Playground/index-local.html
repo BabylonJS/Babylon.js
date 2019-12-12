@@ -33,7 +33,6 @@
     <script src="../dist/preview%20release/recast.js"></script>
     <script src="../dist/preview%20release/cannon.js"></script>
     <script src="../dist/preview%20release/Oimo.js"></script>
-    <script src="../dist/preview%20release/gltf_validator.js"></script>
     <script src="../dist/preview%20release/earcut.min.js"></script>
     <!-- Monaco -->
 
@@ -408,6 +407,9 @@
                     wasmUrl: "../dist/preview%20release/draco_wasm_wrapper_gltf.js",
                     wasmBinaryUrl: "../dist/preview%20release/draco_decoder_gltf.wasm",
                     fallbackUrl: "../dist/preview%20release/draco_decoder_gltf.js"
+                };
+                BABYLON.GLTFValidation.Configuration = {
+                    url: "../dist/preview%20release/gltf_validator.js"
                 };
             });
     </script>
