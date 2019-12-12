@@ -57,6 +57,8 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public CLIPPLANE2 = false;
     public CLIPPLANE3 = false;
     public CLIPPLANE4 = false;
+    public CLIPPLANE5 = false;
+    public CLIPPLANE6 = false;
     public ALPHATEST = false;
     public DEPTHPREPASS = false;
     public ALPHAFROMDIFFUSE = false;
@@ -1122,7 +1124,7 @@ export class StandardMaterial extends PushMaterial {
                 "vFogInfos", "vFogColor", "pointSize",
                 "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "normalMatrix", "lightmapMatrix", "refractionMatrix",
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "normalMatrix", "lightmapMatrix", "refractionMatrix",
                 "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
                 "vReflectionPosition", "vReflectionSize",
                 "logarithmicDepthConstant", "vTangentSpaceParams", "alphaCutOff", "boneTextureWidth"
