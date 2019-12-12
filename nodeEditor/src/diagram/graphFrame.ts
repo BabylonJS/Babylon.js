@@ -134,6 +134,15 @@ export class GraphFrame {
 
         this.cleanAccumulation();
         this._ownerCanvas._frameIsMoving = false;
+
+        // UI        
+        if (this._isCollapsed) {                
+            this._headerCollapseElement.innerHTML = this.ExpandSVG;
+            this._headerCollapseElement.title = "Expand";   
+        } else {
+            this._headerCollapseElement.innerHTML = this.CollapseSVG;
+            this._headerCollapseElement.title = "Collapse";   
+        }
     }
 
     public get nodes() {
@@ -254,14 +263,6 @@ export class GraphFrame {
             evt.stopPropagation();
             this._headerCollapseElement.classList.remove("down");
             this.isCollapsed = !this.isCollapsed;
-
-            if (this.isCollapsed) {                
-                this._headerCollapseElement.innerHTML = this.ExpandSVG;
-                this._headerCollapseElement.title = "Expand";   
-            } else {
-                this._headerCollapseElement.innerHTML = this.CollapseSVG;
-                this._headerCollapseElement.title = "Collapse";   
-            }
         });
         this._headerCollapseElement.innerHTML = this.CollapseSVG;
         this._headerElement.appendChild(this._headerCollapseElement);
