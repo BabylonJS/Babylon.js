@@ -47,8 +47,8 @@ declare module "babylonjs-inspector/components/globalState" {
         sceneImportDefaults: {
             [key: string]: any;
         };
-        validationResults: IGLTFValidationResults;
-        onValidationResultsUpdatedObservable: Observable<IGLTFValidationResults>;
+        validationResults: Nullable<IGLTFValidationResults>;
+        onValidationResultsUpdatedObservable: Observable<Nullable<IGLTFValidationResults>>;
         onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
         glTFLoaderExtensionDefaults: {
             [name: string]: {
@@ -1778,10 +1778,13 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/tools/gltfCompone
         globalState: GlobalState;
     }
     export class GLTFComponent extends React.Component<IGLTFComponentProps> {
+        private _onValidationResultsUpdatedObserver;
         constructor(props: IGLTFComponentProps);
         openValidationDetails(): void;
         prepareText(singularForm: string, count: number): string;
-        renderValidation(): JSX.Element;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        renderValidation(): JSX.Element | null;
         render(): JSX.Element;
     }
 }
@@ -2391,8 +2394,8 @@ declare module INSPECTOR {
         sceneImportDefaults: {
             [key: string]: any;
         };
-        validationResults: BABYLON.GLTF2.IGLTFValidationResults;
-        onValidationResultsUpdatedObservable: BABYLON.Observable<BABYLON.GLTF2.IGLTFValidationResults>;
+        validationResults: BABYLON.Nullable<BABYLON.GLTF2.IGLTFValidationResults>;
+        onValidationResultsUpdatedObservable: BABYLON.Observable<BABYLON.Nullable<BABYLON.GLTF2.IGLTFValidationResults>>;
         onExtensionLoadedObservable: BABYLON.Observable<BABYLON.IGLTFLoaderExtension>;
         glTFLoaderExtensionDefaults: {
             [name: string]: {
@@ -3730,10 +3733,13 @@ declare module INSPECTOR {
         globalState: GlobalState;
     }
     export class GLTFComponent extends React.Component<IGLTFComponentProps> {
+        private _onValidationResultsUpdatedObserver;
         constructor(props: IGLTFComponentProps);
         openValidationDetails(): void;
         prepareText(singularForm: string, count: number): string;
-        renderValidation(): JSX.Element;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        renderValidation(): JSX.Element | null;
         render(): JSX.Element;
     }
 }

@@ -3297,7 +3297,13 @@ export class ThinEngine {
             return this._getDepthStencilBuffer(width, height, samples, gl.DEPTH_STENCIL, gl.DEPTH24_STENCIL8, gl.DEPTH_STENCIL_ATTACHMENT);
         }
         if (generateDepthBuffer) {
-            return this._getDepthStencilBuffer(width, height, samples, gl.DEPTH_COMPONENT16, gl.DEPTH_COMPONENT16, gl.DEPTH_ATTACHMENT);
+            let anyGl = <any>gl;
+            let depthFormat = gl.DEPTH_COMPONENT16;
+            if (this._webGLVersion > 1) {
+                depthFormat = anyGl.DEPTH_COMPONENT32F;
+            }
+
+            return this._getDepthStencilBuffer(width, height, samples, depthFormat, depthFormat, gl.DEPTH_ATTACHMENT);
         }
         if (generateStencilBuffer) {
             return this._getDepthStencilBuffer(width, height, samples, gl.STENCIL_INDEX8, gl.STENCIL_INDEX8, gl.STENCIL_ATTACHMENT);
