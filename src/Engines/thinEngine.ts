@@ -28,6 +28,7 @@ import { IOfflineProvider } from '../Offline/IOfflineProvider';
 import { IEffectFallbacks } from '../Materials/iEffectFallbacks';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 import { CanvasGenerator } from '../Misc/canvasGenerator';
+import { WebRequest, LoadFileError } from '..';
 
 declare type Observer<T> = import("../Misc/observable").Observer<T>;
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
