@@ -40580,9 +40580,9 @@ var ActionTabsComponent = /** @class */ (function (_super) {
             ? babylonjs_Debug_debugLayer__WEBPACK_IMPORTED_MODULE_2__["DebugLayerTab"].Properties
             : props.initialTab;
         if (_this.props.globalState) {
-            var validationResutls = _this.props.globalState.validationResults;
-            if (validationResutls) {
-                if (validationResutls.issues.numErrors || validationResutls.issues.numWarnings) {
+            var validationResults = _this.props.globalState.validationResults;
+            if (validationResults) {
+                if (validationResults.issues.numErrors || validationResults.issues.numWarnings) {
                     initialIndex = babylonjs_Debug_debugLayer__WEBPACK_IMPORTED_MODULE_2__["DebugLayerTab"].Tools;
                 }
             }
@@ -47452,6 +47452,7 @@ var GLTFComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GLTFComponent, _super);
     function GLTFComponent(props) {
         var _this = _super.call(this, props) || this;
+        _this._onValidationResultsUpdatedObserver = null;
         var extensionStates = _this.props.globalState.glTFLoaderExtensionDefaults;
         extensionStates["MSFT_lod"] = extensionStates["MSFT_lod"] || { enabled: true, maxLODsToLoad: 10 };
         extensionStates["MSFT_minecraftMesh"] = extensionStates["MSFT_minecraftMesh"] || { enabled: true };
@@ -47499,9 +47500,27 @@ var GLTFComponent = /** @class */ (function (_super) {
         }
         return "" + singularForm;
     };
+    GLTFComponent.prototype.componentDidMount = function () {
+        var _this = this;
+        if (this.props.globalState) {
+            this._onValidationResultsUpdatedObserver = this.props.globalState.onValidationResultsUpdatedObservable.add(function () {
+                _this.forceUpdate();
+            });
+        }
+    };
+    GLTFComponent.prototype.componentWillUnmount = function () {
+        if (this.props.globalState) {
+            if (this._onValidationResultsUpdatedObserver) {
+                this.props.globalState.onValidationResultsUpdatedObservable.remove(this._onValidationResultsUpdatedObserver);
+            }
+        }
+    };
     GLTFComponent.prototype.renderValidation = function () {
         var _this = this;
         var validationResults = this.props.globalState.validationResults;
+        if (!validationResults) {
+            return null;
+        }
         var issues = validationResults.issues;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GLTF VALIDATION", closed: !issues.numErrors && !issues.numWarnings },
             issues.numErrors !== 0 &&
@@ -47999,6 +48018,7 @@ var GlobalState = /** @class */ (function () {
         this.onInspectorClosedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onTabChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.sceneImportDefaults = {};
+        this.validationResults = null;
         this.onValidationResultsUpdatedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.glTFLoaderExtensionDefaults = {};
         this.glTFLoaderDefaults = { "validate": true };
@@ -48061,6 +48081,10 @@ var GlobalState = /** @class */ (function () {
                 }
             }
         });
+        if (this.validationResults) {
+            this.validationResults = null;
+            this.onValidationResultsUpdatedObservable.notifyObservers(null);
+        }
         loader.onValidatedObservable.add(function (results) {
             _this.validationResults = results;
             _this.onValidationResultsUpdatedObservable.notifyObservers(results);

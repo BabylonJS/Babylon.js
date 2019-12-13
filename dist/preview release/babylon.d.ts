@@ -33885,7 +33885,7 @@ declare module BABYLON {
          * @param scriptId defines the id of the script element
          * @returns a promise request object
          */
-        static LoadScriptAsync(scriptUrl: string, scriptId?: string): Promise<boolean>;
+        static LoadScriptAsync(scriptUrl: string, scriptId?: string): Promise<void>;
         /**
          * Loads a file from a blob
          * @param fileToLoad defines the blob to use
@@ -34887,6 +34887,12 @@ declare module BABYLON {
          */
         set forceWireframe(value: boolean);
         get forceWireframe(): boolean;
+        private _skipFrustumClipping;
+        /**
+         * Gets or sets a boolean indicating if we should skip the frustum clipping part of the active meshes selection
+         */
+        set skipFrustumClipping(value: boolean);
+        get skipFrustumClipping(): boolean;
         private _forcePointsCloud;
         /**
          * Gets or sets a boolean indicating if all rendering must be done in point cloud
@@ -56813,6 +56819,10 @@ declare module BABYLON {
          * Gets the specular output component
          */
         get specularOutput(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the shadow output component
+         */
+        get shadow(): NodeMaterialConnectionPoint;
         autoConfigure(material: NodeMaterial): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]): void;
