@@ -625,7 +625,7 @@ export class ThinEngine {
                     if (this._gl) {
                         this._webGLVersion = 2.0;
 
-                        // Prevent weird browsers to lie :-)
+                        // Prevent weird browsers to lie
                         if (!this._gl.deleteQuery) {
                             this._webGLVersion = 1.0;
                         }
