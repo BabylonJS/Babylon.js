@@ -1,3 +1,34 @@
+declare module "babylonjs-loaders/glTF/glTFValidation" {
+    import * as GLTF2 from 'babylonjs-gltf2interface';
+    /**
+     * Configuration for glTF validation
+     */
+    export interface IGLTFValidationConfiguration {
+        /**
+         * The url of the glTF validator.
+         */
+        url: string;
+    }
+    /**
+     * glTF validation
+     */
+    export class GLTFValidation {
+        /**
+         * The configuration. Defaults to `{ url: "https://preview.babylonjs.com/gltf_validator.js" }`.
+         */
+        static Configuration: IGLTFValidationConfiguration;
+        private static _LoadScriptPromise;
+        /**
+         * Validate a glTF asset using the glTF-Validator.
+         * @param data The JSON of a glTF or the array buffer of a binary glTF
+         * @param rootUrl The root url for the glTF
+         * @param fileName The file name for the glTF
+         * @param getExternalResource The callback to get external resources for the glTF validator
+         * @returns A promise that resolves with the glTF validation results once complete
+         */
+        static ValidateAsync(data: string | ArrayBuffer, rootUrl: string, fileName: string, getExternalResource: (uri: string) => Promise<ArrayBuffer>): Promise<GLTF2.IGLTFValidationResults>;
+    }
+}
 declare module "babylonjs-loaders/glTF/glTFFileLoader" {
     import * as GLTF2 from "babylonjs-gltf2interface";
     import { Nullable } from "babylonjs/types";
@@ -324,7 +355,7 @@ declare module "babylonjs-loaders/glTF/glTFFileLoader" {
          * @returns a promise that resolves when the asset is completely loaded.
          */
         whenCompleteAsync(): Promise<void>;
-        private _validateAsync;
+        private _validate;
         private _getLoader;
         private _parseJson;
         private _unpackBinaryAsync;
@@ -2184,6 +2215,7 @@ declare module "babylonjs-loaders/glTF/2.0/index" {
 }
 declare module "babylonjs-loaders/glTF/index" {
     export * from "babylonjs-loaders/glTF/glTFFileLoader";
+    export * from "babylonjs-loaders/glTF/glTFValidation";
     import * as GLTF1 from "babylonjs-loaders/glTF/1.0/index";
     import * as GLTF2 from "babylonjs-loaders/glTF/2.0/index";
     export { GLTF1, GLTF2 };
@@ -2502,6 +2534,7 @@ declare module "babylonjs-loaders/index" {
 }
 declare module "babylonjs-loaders/legacy/legacy-glTF" {
     export * from "babylonjs-loaders/glTF/glTFFileLoader";
+    export * from "babylonjs-loaders/glTF/glTFValidation";
 }
 declare module "babylonjs-loaders/legacy/legacy-glTF1" {
     import * as GLTF1 from "babylonjs-loaders/glTF/1.0/index";
@@ -2540,6 +2573,36 @@ declare module "babylonjs-loaders/legacy/legacy" {
 }
 declare module "babylonjs-loaders" {
     export * from "babylonjs-loaders/legacy/legacy";
+}
+declare module BABYLON {
+    /**
+     * Configuration for glTF validation
+     */
+    export interface IGLTFValidationConfiguration {
+        /**
+         * The url of the glTF validator.
+         */
+        url: string;
+    }
+    /**
+     * glTF validation
+     */
+    export class GLTFValidation {
+        /**
+         * The configuration. Defaults to `{ url: "https://preview.babylonjs.com/gltf_validator.js" }`.
+         */
+        static Configuration: IGLTFValidationConfiguration;
+        private static _LoadScriptPromise;
+        /**
+         * Validate a glTF asset using the glTF-Validator.
+         * @param data The JSON of a glTF or the array buffer of a binary glTF
+         * @param rootUrl The root url for the glTF
+         * @param fileName The file name for the glTF
+         * @param getExternalResource The callback to get external resources for the glTF validator
+         * @returns A promise that resolves with the glTF validation results once complete
+         */
+        static ValidateAsync(data: string | ArrayBuffer, rootUrl: string, fileName: string, getExternalResource: (uri: string) => Promise<ArrayBuffer>): Promise<BABYLON.GLTF2.IGLTFValidationResults>;
+    }
 }
 declare module BABYLON {
     /**
@@ -2851,7 +2914,7 @@ declare module BABYLON {
          * @returns a promise that resolves when the asset is completely loaded.
          */
         whenCompleteAsync(): Promise<void>;
-        private _validateAsync;
+        private _validate;
         private _getLoader;
         private _parseJson;
         private _unpackBinaryAsync;

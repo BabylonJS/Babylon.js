@@ -33885,7 +33885,7 @@ declare module BABYLON {
          * @param scriptId defines the id of the script element
          * @returns a promise request object
          */
-        static LoadScriptAsync(scriptUrl: string, scriptId?: string): Promise<boolean>;
+        static LoadScriptAsync(scriptUrl: string, scriptId?: string): Promise<void>;
         /**
          * Loads a file from a blob
          * @param fileToLoad defines the blob to use
@@ -34887,6 +34887,12 @@ declare module BABYLON {
          */
         set forceWireframe(value: boolean);
         get forceWireframe(): boolean;
+        private _skipFrustumClipping;
+        /**
+         * Gets or sets a boolean indicating if we should skip the frustum clipping part of the active meshes selection
+         */
+        set skipFrustumClipping(value: boolean);
+        get skipFrustumClipping(): boolean;
         private _forcePointsCloud;
         /**
          * Gets or sets a boolean indicating if all rendering must be done in point cloud
@@ -56813,6 +56819,10 @@ declare module BABYLON {
          * Gets the specular output component
          */
         get specularOutput(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the shadow output component
+         */
+        get shadow(): NodeMaterialConnectionPoint;
         autoConfigure(material: NodeMaterial): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
         updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]): void;
@@ -71503,6 +71513,36 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON {
     /**
+     * Configuration for glTF validation
+     */
+    export interface IGLTFValidationConfiguration {
+        /**
+         * The url of the glTF validator.
+         */
+        url: string;
+    }
+    /**
+     * glTF validation
+     */
+    export class GLTFValidation {
+        /**
+         * The configuration. Defaults to `{ url: "https://preview.babylonjs.com/gltf_validator.js" }`.
+         */
+        static Configuration: IGLTFValidationConfiguration;
+        private static _LoadScriptPromise;
+        /**
+         * Validate a glTF asset using the glTF-Validator.
+         * @param data The JSON of a glTF or the array buffer of a binary glTF
+         * @param rootUrl The root url for the glTF
+         * @param fileName The file name for the glTF
+         * @param getExternalResource The callback to get external resources for the glTF validator
+         * @returns A promise that resolves with the glTF validation results once complete
+         */
+        static ValidateAsync(data: string | ArrayBuffer, rootUrl: string, fileName: string, getExternalResource: (uri: string) => Promise<ArrayBuffer>): Promise<BABYLON.GLTF2.IGLTFValidationResults>;
+    }
+}
+declare module BABYLON {
+    /**
      * Mode that determines the coordinate system to use.
      */
     export enum GLTFLoaderCoordinateSystemMode {
@@ -71811,7 +71851,7 @@ declare module BABYLON {
          * @returns a promise that resolves when the asset is completely loaded.
          */
         whenCompleteAsync(): Promise<void>;
-        private _validateAsync;
+        private _validate;
         private _getLoader;
         private _parseJson;
         private _unpackBinaryAsync;
