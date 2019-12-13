@@ -23,7 +23,6 @@ import { IPipelineContext } from './IPipelineContext';
 import { WebGLPipelineContext } from './WebGL/webGLPipelineContext';
 import { VertexBuffer } from '../Meshes/buffer';
 import { InstancingAttributeInfo } from './instancingAttributeInfo';
-import { FileTools } from '../Misc/fileTools';
 import { BaseTexture } from '../Materials/Textures/baseTexture';
 import { IOfflineProvider } from '../Offline/IOfflineProvider';
 import { IEffectFallbacks } from '../Materials/iEffectFallbacks';
@@ -2952,11 +2951,11 @@ export class ThinEngine {
                 if (buffer && ((<HTMLImageElement>buffer).decoding || (<ImageBitmap>buffer).close)) {
                     onload(<HTMLImageElement>buffer);
                 } else {
-                    FileTools.LoadImage(url, onload, onInternalError, scene ? scene.offlineProvider : null, mimeType);
+                    ThinEngine._FileToolsLoadImage(url, onload, onInternalError, scene ? scene.offlineProvider : null, mimeType);
                 }
             }
             else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || ArrayBuffer.isView(buffer) || buffer instanceof Blob) {
-                FileTools.LoadImage(buffer, onload, onInternalError, scene ? scene.offlineProvider : null, mimeType);
+                ThinEngine._FileToolsLoadImage(buffer, onload, onInternalError, scene ? scene.offlineProvider : null, mimeType);
             }
             else if (buffer) {
                 onload(<HTMLImageElement>buffer);
@@ -2964,6 +2963,20 @@ export class ThinEngine {
         }
 
         return texture;
+    }
+
+    /**
+     * Loads an image as an HTMLImageElement.
+     * @param input url string, ArrayBuffer, or Blob to load
+     * @param onLoad callback called when the image successfully loads
+     * @param onError callback called when the image fails to load
+     * @param offlineProvider offline provider for caching
+     * @param mimeType optional mime type
+     * @returns the HTMLImageElement of the loaded image
+     * @hidden
+     */
+    public static _FileToolsLoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement> {
+        throw _DevTools.WarnImport("FileTools");
     }
 
     /**
