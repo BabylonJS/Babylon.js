@@ -3,9 +3,11 @@
 #include "NativeWindow.h"
 #include "ShaderCompiler.h"
 #include "RuntimeImpl.h"
+#include "BGFXCallback.h"
 
 #include <napi/napi.h>
 
+#include "BGFXCallback.h"
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
 #include <bimg/bimg.h>
@@ -367,6 +369,7 @@ namespace Babylon
         Napi::Value GetRenderWidth(const Napi::CallbackInfo& info);
         Napi::Value GetRenderHeight(const Napi::CallbackInfo& info);
         void SetViewPort(const Napi::CallbackInfo& info);
+        Napi::Value GetFramebufferData(const Napi::CallbackInfo& info);
 
         void UpdateSize(size_t width, size_t height);
         void DispatchAnimationFrameAsync(Napi::FunctionReference callback);
@@ -384,6 +387,7 @@ namespace Babylon
         bx::DefaultAllocator m_allocator;
         uint64_t m_engineState;
 
+        inline static BGFXCallback m_bgfxCallback{};
         FrameBufferManager m_frameBufferManager{};
 
         NativeWindow::OnResizeCallbackTicket m_resizeCallbackTicket;

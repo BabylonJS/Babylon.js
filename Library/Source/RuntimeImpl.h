@@ -51,7 +51,7 @@ namespace Babylon
         std::scoped_lock<std::mutex> AcquireTaskLock();
 
     private:
-        void InitializeJavaScriptVariables();
+        void InitializeJavaScriptVariables(uint16_t width, uint16_t height);
         void BaseThreadProcedure();
         void ThreadProcedure();
 

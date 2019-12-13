@@ -184,7 +184,7 @@ namespace Babylon
         return std::scoped_lock{m_taskMutex};
     }
 
-    void RuntimeImpl::InitializeJavaScriptVariables()
+    void RuntimeImpl::InitializeJavaScriptVariables(uint16_t width, uint16_t height)
     {
         auto& env = *m_env;
         auto global = env.Global();
@@ -197,7 +197,7 @@ namespace Babylon
         auto jsRuntime = Napi::External<RuntimeImpl>::New(env, this);
         jsNative.Set(JS_RUNTIME_NAME, jsRuntime);
 
-        auto jsWindow = NativeWindow::Create(env, m_nativeWindowPtr, 32, 32);
+        auto jsWindow = NativeWindow::Create(env, m_nativeWindowPtr, width, height);
         jsNative.Set(JS_NATIVE_WINDOW_NAME, jsWindow.Value());
         global.Set("setTimeout", NativeWindow::GetSetTimeoutFunction(jsWindow).Value());
         global.Set("atob", NativeWindow::GetAToBFunction(jsWindow).Value());
@@ -224,7 +224,7 @@ namespace Babylon
         m_env = &env;
         auto hostScopeGuard = gsl::finally([this] { m_env = nullptr; });
 
-        InitializeJavaScriptVariables();
+        InitializeJavaScriptVariables(600, 400);
 
         // TODO: Handle device lost/restored.
 

@@ -287,6 +287,7 @@ namespace Babylon
         init.resolution.width = static_cast<uint32_t>(window.GetWidth());
         init.resolution.height = static_cast<uint32_t>(window.GetHeight());
         init.resolution.reset = BGFX_RESET_FLAGS;
+        init.callback = &m_bgfxCallback;
         bgfx::init(init);
         bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
         bgfx::setViewRect(0, 0, 0, init.resolution.width, init.resolution.height);
@@ -362,6 +363,7 @@ namespace Babylon
                 InstanceMethod("getRenderWidth", &NativeEngine::GetRenderWidth),
                 InstanceMethod("getRenderHeight", &NativeEngine::GetRenderHeight),
                 InstanceMethod("setViewPort", &NativeEngine::SetViewPort),
+                InstanceMethod("getFramebufferData", &NativeEngine::GetFramebufferData),
                 InstanceMethod("decodeImage", &NativeEngine::DecodeImage),
                 InstanceMethod("getImageData", &NativeEngine::GetImageData),
                 InstanceMethod("encodeImage", &NativeEngine::EncodeImage),
@@ -1319,6 +1321,49 @@ namespace Babylon
             static_cast<uint16_t>(yOrigin * backbufferHeight),
             static_cast<uint16_t>(width * backbufferWidth),
             static_cast<uint16_t>(height * backbufferHeight));
+    }
+
+    Napi::Value NativeEngine::GetFramebufferData(const Napi::CallbackInfo& info)
+    {
+        bgfx::FrameBufferHandle fbh = BGFX_INVALID_HANDLE;
+        bgfx::requestScreenShot(fbh, "GetImageData");
+
+        while (BGFXCallback::screenShotBitmap.empty())
+        {
+            bgfx::frame();
+        }
+        const uint32_t x = info[0].As<Napi::Number>().Uint32Value();
+        const uint32_t y = info[1].As<Napi::Number>().Uint32Value();
+        const uint32_t width = info[2].As<Napi::Number>().Uint32Value();
+        const uint32_t height = info[3].As<Napi::Number>().Uint32Value();
+
+        auto imageData = new ImageData();
+        const auto buffer = info[0].As<Napi::ArrayBuffer>();
+
+        imageData->Image.reset(bimg::imageAlloc(&m_allocator, bimg::TextureFormat::RGBA8, width, height, 1, 1, false, false));
+
+        auto bitmap = static_cast<uint8_t*>(imageData->Image->m_data);
+
+        uint32_t sourceWidth = bgfx::getStats()->width;
+        uint32_t sourceHeight = bgfx::getStats()->height;
+
+        for (auto py = y; py < (y + height); py++)
+        {
+            for (auto px = x; px < (x + width); px++)
+            {
+                // bgfx screenshot is BGRA
+                *bitmap++ = BGFXCallback::screenShotBitmap[(py * sourceWidth + px) * 4 + 2];
+                *bitmap++ = BGFXCallback::screenShotBitmap[(py * sourceWidth + px) * 4 + 1];
+                *bitmap++ = BGFXCallback::screenShotBitmap[(py * sourceWidth + px) * 4 + 0];
+                *bitmap++ = BGFXCallback::screenShotBitmap[(py * sourceWidth + px) * 4 + 3];
+            }
+        }
+
+        BGFXCallback::screenShotBitmap.clear();
+
+        // TEST!!! force exit
+        exit(-1);
+        return Napi::External<ImageData>::New(info.Env(), imageData);
     }
 
     void NativeEngine::DispatchAnimationFrameAsync(Napi::FunctionReference callback)
