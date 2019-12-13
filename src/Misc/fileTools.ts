@@ -8,6 +8,8 @@ import { FilesInputStore } from './filesInputStore';
 import { RetryStrategy } from './retryStrategy';
 import { BaseError } from './baseError';
 import { StringTools } from './stringTools';
+import { ThinEngine } from '../Engines';
+import { ShaderProcessor } from '../Engines/Processors';
 
 /** @ignore */
 export class LoadFileError extends BaseError {
@@ -469,3 +471,6 @@ export class FileTools {
         return location.protocol === "file:";
     }
 }
+
+ThinEngine._FileToolsLoadImage = FileTools.LoadImage;
+ShaderProcessor._FileToolsLoadFile = FileTools.LoadFile;
