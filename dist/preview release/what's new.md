@@ -265,8 +265,9 @@
 - Fixed an issue with pose input in webxr ([RaananW](https://github.com/RaananW/))
 - Fixed bug when parsing animation group without 'to' value ([noalak](https://github.com/noalak/))
 - isRightCamera and isLeftCamera were not set in WebXR ([RaananW](https://github.com/RaananW/))
-- Sandbox will now load assets relatively path-ed to same folder([Kyle Belfort](https://github.com/belfortk))
-- Playground will now render the returned scene from createScene() when there are multiple scenes added to engine([Kyle Belfort](https://github.com/belfortk))
+- Sandbox will now load assets relatively path-ed to same folder ([Kyle Belfort](https://github.com/belfortk))
+- Playground will now render the returned scene from createScene() when there are multiple scenes added to engine ([Kyle Belfort](https://github.com/belfortk))
+- Fixed bug so Playground will now download .env texture files to ./textures in .zip  ([Kyle Belfort](https://github.com/belfortk))
 - It was not possible to change the gaze and laser color in VR ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
 
 ## Breaking changes
