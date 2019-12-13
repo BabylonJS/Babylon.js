@@ -34805,7 +34805,7 @@ declare module BABYLON {
          * Defines that each mesh of the scene should keep up-to-date a map of referencing cloned meshes for fast diposing
          * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
          */
-        useClonedMeshhMap?: boolean;
+        useClonedMeshMap?: boolean;
         /** Defines if the creation of the scene should impact the engine (Eg. UtilityLayer's scene) */
         virtual?: boolean;
     }
@@ -35530,7 +35530,7 @@ declare module BABYLON {
         /** @hidden */
         readonly useMaterialMeshMap: boolean;
         /** @hidden */
-        readonly useClonedMeshhMap: boolean;
+        readonly useClonedMeshMap: boolean;
         private _externalData;
         private _uid;
         /**
