@@ -53,6 +53,7 @@ export class LightBlock extends NodeMaterialBlock {
 
         this.registerOutput("diffuseOutput", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("specularOutput", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
+        this.registerOutput("shadow", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
     }
 
     /**
@@ -124,6 +125,13 @@ export class LightBlock extends NodeMaterialBlock {
      */
     public get specularOutput(): NodeMaterialConnectionPoint {
         return this._outputs[1];
+    }
+
+    /**
+     * Gets the shadow output component
+     */
+    public get shadow(): NodeMaterialConnectionPoint {
+        return this._outputs[2];
     }
 
     public autoConfigure(material: NodeMaterial) {
@@ -302,6 +310,10 @@ export class LightBlock extends NodeMaterialBlock {
         state.compilationString += this._declareOutput(diffuseOutput, state) + ` = diffuseBase${this.diffuseColor.isConnected ? " * " + this.diffuseColor.associatedVariableName : ""};\r\n`;
         if (specularOutput.hasEndpoints) {
             state.compilationString += this._declareOutput(specularOutput, state) + ` = specularBase${this.specularColor.isConnected ? " * " + this.specularColor.associatedVariableName : ""};\r\n`;
+        }
+
+        if (this.shadow.hasEndpoints) {
+            state.compilationString += this._declareOutput(this.shadow, state) + ` = shadow;\r\n`;
         }
 
         return this;
