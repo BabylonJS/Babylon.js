@@ -8,8 +8,8 @@ import { FilesInputStore } from './filesInputStore';
 import { RetryStrategy } from './retryStrategy';
 import { BaseError } from './baseError';
 import { StringTools } from './stringTools';
-import { ThinEngine } from '../Engines';
-import { ShaderProcessor } from '../Engines/Processors';
+import { ThinEngine } from '../Engines/thinEngine';
+import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
 
 /** @ignore */
 export class LoadFileError extends BaseError {
