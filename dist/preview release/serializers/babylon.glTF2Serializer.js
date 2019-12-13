@@ -811,7 +811,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 /**
  * @hidden
  * Enum for handling in tangent and out tangent.
@@ -979,11 +978,11 @@ var _GLTFAnimation = /** @class */ (function () {
                     var targetAnimation = _b[_a];
                     var target = targetAnimation.target;
                     var animation = targetAnimation.animation;
-                    if (target instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Mesh"] || target.length === 1 && target[0] instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Mesh"]) { // TODO: Update to support bones
+                    if (target instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["TransformNode"] || target.length === 1 && target[0] instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["TransformNode"]) {
                         var animationInfo = _GLTFAnimation._DeduceAnimationInfo(targetAnimation.animation);
                         if (animationInfo) {
-                            var babylonMesh = target instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Mesh"] ? target : target[0];
-                            _GLTFAnimation.AddAnimation("" + animation.name, glTFAnimation, babylonMesh, animation, animationInfo.dataAccessorType, animationInfo.animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, animationInfo.useQuaternion, animationSampleRate);
+                            var babylonTransformNode = target instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["TransformNode"] ? target : target[0];
+                            _GLTFAnimation.AddAnimation("" + animation.name, glTFAnimation, babylonTransformNode, animation, animationInfo.dataAccessorType, animationInfo.animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, animationInfo.useQuaternion, animationSampleRate);
                         }
                     }
                 }

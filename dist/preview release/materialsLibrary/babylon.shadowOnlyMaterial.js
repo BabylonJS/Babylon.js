@@ -502,6 +502,8 @@ var ShadowOnlyMaterialDefines = /** @class */ (function (_super) {
         _this.CLIPPLANE2 = false;
         _this.CLIPPLANE3 = false;
         _this.CLIPPLANE4 = false;
+        _this.CLIPPLANE5 = false;
+        _this.CLIPPLANE6 = false;
         _this.POINTSIZE = false;
         _this.FOG = false;
         _this.NORMAL = false;
@@ -604,7 +606,7 @@ var ShadowOnlyMaterial = /** @class */ (function (_super) {
             var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType",
                 "vFogInfos", "vFogColor", "pointSize", "alpha", "shadowColor",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4"
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6"
             ];
             var samplers = new Array();
             var uniformBuffers = new Array();

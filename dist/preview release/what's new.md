@@ -21,6 +21,7 @@
 
 ### General
 
+- Add two new clip planes (5 and 6) to get a clip cube ([MickPastor](https://github.com/mickPASTOR))
 - Added support for dual shock gamepads ([Deltakosh](https://github.com/deltakosh/))
 - Support Vive Focus 3Dof controller ([TrevorDev](https://github.com/TrevorDev))
 - Planar positioning support for GizmoManager ([Balupg](https://github.com/balupg))
@@ -75,7 +76,7 @@
 - Added support for inspectable strings ([Deltakosh](https://github.com/deltakosh/))
 - Added support for CreateScreenshotUsingRenderTarget ([13djwright](https://github.com/13djwright/))
 - Added support for `Material.depthFunction` property ([Popov72](https://github.com/Popov72))
-- Added an optional config option `initialTab` ([ycw](https://github.com/ycw/)) 
+- Added an optional config option `initialTab` ([ycw](https://github.com/ycw/))
 - Added support for ImportAnimations ([noalak](https://github.com/noalak/))
 
 ### Tools
@@ -126,6 +127,7 @@
 - Added support for GLTF mesh quantization extension ([zeux](https://github.com/zeux))
 - Added support for 8 bone influences to glTF loader ([zeux](https://github.com/zeux))
 - Added support for animations import from separate files ([noalak](https://github.com/noalak/))
+- Use web workers to validate glTF to avoid blocking the main thread. ([bghgary](https://github.com/bghgary))
 
 ### Materials
 
@@ -175,6 +177,9 @@
 - Windows motion controller mapping corrected to XR ([RaananW](https://github.com/RaananW/))
 - Pointer-Event simulation for screen target ray mode ([RaananW](https://github.com/RaananW/))
 - New observable that triggers when a session was initialized ([RaananW](https://github.com/RaananW/))
+- WebXR teleportation can now be disabled after initialized ([RaananW](https://github.com/RaananW/))
+- New Features Manager for WebXR features ([RaananW](https://github.com/RaananW/))
+- New features - Plane detection, Hit Test, Background remover ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
@@ -195,7 +200,7 @@
 - Added the feature `expandable` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 - Added the feature `removeParticles()` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 - Added the feature "storable particles" and `insertParticlesFromArray()` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
-- Added the support for MultiMaterials to the Solid Particle System ([jerome](https://github.com/jbousquie/))  
+- Added the support for MultiMaterials to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 
 ### Navigation Mesh
 
@@ -204,6 +209,11 @@
 ### Node Material
 
 - Added Light intensity output to LightInformationBlock ([Drigax](https://github.com/drigax))
+
+### Serializers
+- Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))
+- Expanded animation group serialization to include all targeted TransformNodes ([Drigax]https://github.com/drigax/)
+
 
 ### Documentation
 
@@ -214,7 +224,6 @@
 
 - Fixed Textblock line spacing evaluation when linespacing > 0 ([Deltakosh](https://github.com/deltakosh/))
 - Fixed Xbox One gamepad controller button schemes ([MackeyK24](https://github.com/MackeyK24/))
-- Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))
 - Removing `assetContainer` from scene will also remove gui layers ([TrevorDev](https://github.com/TrevorDev))
 - A scene's input manager not adding key listeners when the canvas is already focused ([Poolminer](https://github.com/Poolminer))
 - Runtime animation `goToFrame` when going back in time now correctly triggers future events when reached ([zakhenry](https://github.com/zakhenry))
@@ -255,6 +264,11 @@
 - Fix bug when we call `Mesh.render` twice and the material is still not ready on the second call ([barroij](https://github.com/barroij/))
 - Fixed an issue with pose input in webxr ([RaananW](https://github.com/RaananW/))
 - Fixed bug when parsing animation group without 'to' value ([noalak](https://github.com/noalak/))
+- isRightCamera and isLeftCamera were not set in WebXR ([RaananW](https://github.com/RaananW/))
+- Sandbox will now load assets relatively path-ed to same folder ([Kyle Belfort](https://github.com/belfortk))
+- Playground will now render the returned scene from createScene() when there are multiple scenes added to engine ([Kyle Belfort](https://github.com/belfortk))
+- Fixed bug so Playground will now download .env texture files to ./textures in .zip  ([Kyle Belfort](https://github.com/belfortk))
+- It was not possible to change the gaze and laser color in VR ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
 
 ## Breaking changes
 

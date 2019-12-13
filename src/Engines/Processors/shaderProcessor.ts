@@ -8,7 +8,12 @@ import { ShaderDefineAndOperator } from './Expressions/Operators/shaderDefineAnd
 import { ShaderDefineExpression } from './Expressions/shaderDefineExpression';
 import { ShaderDefineArithmeticOperator } from './Expressions/Operators/shaderDefineArithmeticOperator';
 import { ProcessingOptions } from './shaderProcessingOptions';
-import { FileTools } from '../../Misc/fileTools';
+import { _DevTools } from '../../Misc/devTools';
+
+declare type WebRequest = import("../../Misc/webRequest").WebRequest;
+declare type LoadFileError = import("../../Misc/fileTools").LoadFileError;
+declare type IOfflineProvider = import("../../Offline/IOfflineProvider").IOfflineProvider;
+declare type IFileRequest  = import("../../Misc/fileRequest").IFileRequest;
 
 /** @hidden */
 export class ShaderProcessor {
@@ -331,7 +336,7 @@ export class ShaderProcessor {
             } else {
                 var includeShaderUrl = options.shadersRepository + "ShadersInclude/" + includeFile + ".fx";
 
-                FileTools.LoadFile(includeShaderUrl, (fileContent) => {
+                ShaderProcessor._FileToolsLoadFile(includeShaderUrl, (fileContent) => {
                     options.includesShadersStore[includeFile] = fileContent as string;
                     this._ProcessIncludes(<string>returnValue, options, callback);
                 });
@@ -342,5 +347,20 @@ export class ShaderProcessor {
         }
 
         callback(returnValue);
+    }
+
+    /**
+     * Loads a file from a url
+     * @param url url to load
+     * @param onSuccess callback called when the file successfully loads
+     * @param onProgress callback called while file is loading (if the server supports this mode)
+     * @param offlineProvider defines the offline provider for caching
+     * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+     * @param onError callback called when the file fails to load
+     * @returns a file request object
+     * @hidden
+     */
+    public static _FileToolsLoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
+        throw  _DevTools.WarnImport("FileTools");
     }
 }

@@ -91,6 +91,7 @@ if (BABYLON.Engine.isSupported()) {
         dropdownContent.innerHTML = "";
         animationBar.style.display = "none";
         currentGroup = null;
+        babylonScene.skipFrustumClipping = true;
 
         if (babylonScene.animationGroups.length > 0) {
             animationBar.style.display = "flex";

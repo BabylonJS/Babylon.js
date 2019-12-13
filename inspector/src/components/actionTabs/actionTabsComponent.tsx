@@ -42,9 +42,9 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
             : props.initialTab
 
         if (this.props.globalState) {
-            const validationResutls = this.props.globalState.validationResults;
-            if (validationResutls) {
-                if (validationResutls.issues.numErrors || validationResutls.issues.numWarnings) {
+            const validationResults = this.props.globalState.validationResults;
+            if (validationResults) {
+                if (validationResults.issues.numErrors || validationResults.issues.numWarnings) {
                     initialIndex = DebugLayerTab.Tools;
                 }
             }

@@ -490,6 +490,8 @@ var SkyMaterialDefines = /** @class */ (function (_super) {
         _this.CLIPPLANE2 = false;
         _this.CLIPPLANE3 = false;
         _this.CLIPPLANE4 = false;
+        _this.CLIPPLANE5 = false;
+        _this.CLIPPLANE6 = false;
         _this.POINTSIZE = false;
         _this.FOG = false;
         _this.VERTEXCOLOR = false;
@@ -633,7 +635,7 @@ var SkyMaterial = /** @class */ (function (_super) {
             var shaderName = "sky";
             var join = defines.toString();
             subMesh.setEffect(scene.getEngine().createEffect(shaderName, attribs, ["world", "viewProjection", "view",
-                "vFogInfos", "vFogColor", "pointSize", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4",
+                "vFogInfos", "vFogColor", "pointSize", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6",
                 "luminance", "turbidity", "rayleigh", "mieCoefficient", "mieDirectionalG", "sunPosition",
                 "cameraPosition", "cameraOffset"
             ], [], join, fallbacks, this.onCompiled, this.onError), defines);

@@ -5582,7 +5582,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "#graph-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro\";\n  user-select: none;\n  overflow: hidden;\n  cursor: move;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #graph-canvas #selection-container {\n    pointer-events: none; }\n    #graph-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #graph-canvas #graph-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #graph-canvas #graph-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #graph-canvas #graph-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      border: transparent solid 4px;\n      box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        align-content: center;\n        overflow: hidden;\n        margin: -4px;\n        border: #484848 solid 4px;\n        border-bottom: 0; }\n      #graph-canvas #graph-container .frame-box.selected {\n        border-color: white;\n        z-index: 1; }\n        #graph-canvas #graph-container .frame-box.selected .frame-box-header {\n          border-color: white !important; }\n    #graph-canvas #graph-container #graph-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 1; }\n      #graph-canvas #graph-container #graph-svg-container .link {\n        stroke-width: 4px; }\n        #graph-canvas #graph-container #graph-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n      #graph-canvas #graph-container #graph-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link:hover, #graph-canvas #graph-container #graph-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #graph-canvas #graph-container #graph-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #graph-canvas #graph-container #graph-canvas-container .visual {\n        z-index: 3;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.constant {\n            border-color: #4E5C74;\n            background: #4E5C74; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.inspector {\n            border-color: #396437;\n            background: #396437; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .connections {\n          grid-row: 2;\n          grid-column: 1;\n          display: grid;\n          grid-template-columns: 50% 50%; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .port {\n            border-radius: 20px;\n            width: 20px;\n            height: 20px;\n            align-self: center; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .connections .port .img {\n              width: 100%; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .connections .port:hover, #graph-canvas #graph-container #graph-canvas-container .visual .connections .port.selected {\n              filter: brightness(2); }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .portLine {\n            height: 24px;\n            display: grid;\n            grid-template-rows: 100%; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .label {\n            align-items: center; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .inputsContainer {\n            grid-row: 1;\n            grid-column: 1; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .connections .inputsContainer .portLine {\n              grid-template-columns: 12px calc(100% - 15px); }\n              #graph-canvas #graph-container #graph-canvas-container .visual .connections .inputsContainer .portLine .label {\n                grid-row: 1;\n                grid-column: 2; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .connections .inputsContainer .portLine .port {\n                grid-row: 1;\n                grid-column: 1;\n                transform: translateX(-12px); }\n          #graph-canvas #graph-container #graph-canvas-container .visual .connections .outputsContainer {\n            grid-row: 1;\n            grid-column: 2; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .connections .outputsContainer .portLine {\n              grid-template-columns: calc(100% - 10px) 12px; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .connections .outputsContainer .portLine .label {\n                grid-row: 1;\n                grid-column: 1;\n                text-align: right; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .connections .outputsContainer .portLine .port {\n                grid-row: 1;\n                grid-column: 2;\n                transform: translateX(2px); }\n        #graph-canvas #graph-container #graph-canvas-container .visual .content {\n          min-height: 20px;\n          grid-row: 3;\n          grid-column: 1; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.output-block {\n            min-height: 0px;\n            height: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.clamp-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.gradient-block {\n            grid-row: 2;\n            height: 34px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block {\n            grid-row: 3;\n            height: 140px;\n            width: 140px;\n            margin-top: -115px;\n            overflow: hidden;\n            border-bottom-left-radius: 7px;\n            border: black 4px solid;\n            border-left: 0px;\n            border-bottom: 0px; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img {\n              width: 100%;\n              height: 100%;\n              pointer-events: none; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img.empty {\n                display: none; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.remap-block {\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.trigonometry-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n", ""]);
+exports.push([module.i, "#graph-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro\";\n  user-select: none;\n  overflow: hidden;\n  cursor: move;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #graph-canvas #selection-container {\n    pointer-events: none; }\n    #graph-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #graph-canvas .port {\n    border-radius: 20px;\n    width: 20px;\n    height: 20px;\n    align-self: center; }\n    #graph-canvas .port .img {\n      width: 100%; }\n    #graph-canvas .port:hover, #graph-canvas .port.selected {\n      filter: brightness(2); }\n  #graph-canvas .portLine {\n    height: 24px;\n    display: grid;\n    grid-template-rows: 100%; }\n  #graph-canvas .port-label {\n    align-items: center; }\n  #graph-canvas .inputsContainer {\n    grid-row: 1;\n    grid-column: 1; }\n    #graph-canvas .inputsContainer .portLine {\n      grid-template-columns: 12px calc(100% - 15px); }\n      #graph-canvas .inputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 2; }\n      #graph-canvas .inputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 1;\n        transform: translateX(-12px); }\n  #graph-canvas .outputsContainer {\n    grid-row: 1;\n    grid-column: 2; }\n    #graph-canvas .outputsContainer .portLine {\n      grid-template-columns: calc(100% - 10px) 12px; }\n      #graph-canvas .outputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 1;\n        text-align: right; }\n      #graph-canvas .outputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 2;\n        transform: translateX(2px); }\n  #graph-canvas #graph-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #graph-canvas #graph-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #graph-canvas #graph-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box.collapsed {\n        height: auto !important;\n        width: 200px !important; }\n        #graph-canvas #graph-container .frame-box.collapsed .frame-box-header {\n          font-size: 16px;\n          grid-template-columns: calc(100% - 37px) 30px 7px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-collapse {\n            margin-top: -2px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-close {\n            display: none; }\n      #graph-canvas #graph-container .frame-box .frame-box-border {\n        grid-row: 1 / span 2;\n        grid-column: 1;\n        width: 100%;\n        height: 100%;\n        border: transparent solid 4px;\n        pointer-events: none;\n        box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;\n        align-content: center;\n        overflow: hidden; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button {\n          cursor: pointer;\n          align-self: center;\n          transform-origin: 50% 50%;\n          transform: scale(1);\n          stroke: transparent;\n          fill: white;\n          display: grid; }\n          #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button.down {\n            transform: scale(0.9); }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-collapse {\n          grid-column: 2;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-close {\n          grid-column: 4;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-title {\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          height: 100%;\n          width: 100%;\n          align-self: stretch;\n          align-items: center;\n          margin-top: -2px; }\n      #graph-canvas #graph-container .frame-box .port-container {\n        margin-top: 6px;\n        margin-bottom: 6px;\n        margin-left: 4px;\n        margin-right: 4px;\n        color: white;\n        grid-row: 2;\n        grid-column: 1;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: 50% 50%;\n        z-index: 2; }\n      #graph-canvas #graph-container .frame-box.selected .frame-box-border {\n        border-color: white; }\n    #graph-canvas #graph-container #graph-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 1; }\n      #graph-canvas #graph-container #graph-svg-container .link {\n        stroke-width: 4px; }\n        #graph-canvas #graph-container #graph-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n        #graph-canvas #graph-container #graph-svg-container .link.hidden {\n          display: none; }\n      #graph-canvas #graph-container #graph-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link:hover, #graph-canvas #graph-container #graph-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #graph-canvas #graph-container #graph-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #graph-canvas #graph-container #graph-canvas-container .visual {\n        z-index: 3;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.constant {\n            border-color: #4E5C74;\n            background: #4E5C74; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.inspector {\n            border-color: #396437;\n            background: #396437; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .connections {\n          grid-row: 2;\n          grid-column: 1;\n          display: grid;\n          grid-template-columns: 50% 50%; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .content {\n          min-height: 20px;\n          grid-row: 3;\n          grid-column: 1; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.output-block {\n            min-height: 0px;\n            height: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.clamp-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.gradient-block {\n            grid-row: 2;\n            height: 34px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block {\n            grid-row: 3;\n            height: 140px;\n            width: 140px;\n            margin-top: -115px;\n            overflow: hidden;\n            border-bottom-left-radius: 7px;\n            border: black 4px solid;\n            border-left: 0px;\n            border-bottom: 0px; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img {\n              width: 100%;\n              height: 100%;\n              pointer-events: none; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img.empty {\n                display: none; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.remap-block {\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.trigonometry-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n", ""]);
 
 // exports
 
@@ -51768,20 +51768,20 @@ var NodeListComponent = /** @class */ (function (_super) {
         // Block types used to create the menu from
         var allBlocks = {
             Animation: ["BonesBlock", "MorphTargetsBlock"],
-            Basic_Math: ["AddBlock", "DivideBlock", "MultiplyBlock", "ScaleBlock", "SubtractBlock", "OneMinusBlock", "MaxBlock", "MinBlock", "LengthBlock", "DistanceBlock", "NegateBlock", "RandomNumberBlock", "ReciprocalBlock"],
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Color3", "Color4", "TextureBlock", "ReflectionTextureBlock", "TimeBlock", "DeltaTimeBlock"],
             Interpolation: ["LerpBlock", "StepBlock", "SmoothStepBlock", "NLerpBlock"],
+            Math__Standard: ["AddBlock", "DivideBlock", "MaxBlock", "MinBlock", "MultiplyBlock", "NegateBlock", "OneMinusBlock", "ReciprocalBlock", "ScaleBlock", "SignBlock", "SqrtBlock", "SubtractBlock"],
+            Math__Scientific: ["AbsBlock", "ArcCosBlock", "ArcSinBlock", "ArcTanBlock", "ArcTan2Block", "CosBlock", "DegreesToRadiansBlock", "ExpBlock", "Exp2Block", "FractBlock", "LogBlock", "PowBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "SinBlock", "SquareWaveBlock", "TanBlock", "TriangleWaveBlock"],
+            Math__Vector: ["CrossBlock", "DerivativeBlock", "DistanceBlock", "DotBlock", "FresnelBlock", "LengthBlock", "ReflectBlock", "RefractBlock", "Rotate2dBlock", "TransformBlock",],
             Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock"],
-            Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "FrontFacingBlock"],
-            Noises: ["SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
+            Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "FrontFacingBlock"],
+            Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
             Output_Blocks: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
-            Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock", "PerturbNormalBlock", "NormalBlendBlock"],
-            Trigonometry: ["CosBlock", "SinBlock", "AbsBlock", "ExpBlock", "Exp2Block", "SqrtBlock", "PowBlock", "LogBlock", "ArcCosBlock", "ArcSinBlock", "TanBlock", "ArcTanBlock", "FractBlock", "SignBlock", "ArcTan2Block", "DegreesToRadiansBlock", "RadiansToDegreesBlock", "SawToothWaveBlock", "TriangleWaveBlock", "SquareWaveBlock"],
-            Vector_Math: ["CrossBlock", "DotBlock", "TransformBlock", "FresnelBlock", "Rotate2dBlock", "DerivativeBlock", "RefractBlock", "ReflectBlock"],
+            Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
         };
         // Create node menu
         var blockMenu = [];
@@ -51793,7 +51793,7 @@ var NodeListComponent = /** @class */ (function (_super) {
                 return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineComponent__WEBPACK_IMPORTED_MODULE_3__["DraggableLineComponent"], { key: block, data: block, tooltip: tooltip });
             });
             if (blockList.length) {
-                blockMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { key: key + " blocks", title: key.replace("__", ":").replace("_", " "), closed: false }, blockList));
+                blockMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { key: key + " blocks", title: key.replace("__", ": ").replace("_", " "), closed: false }, blockList));
             }
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "nodeList" },
@@ -51804,70 +51804,75 @@ var NodeListComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "list-container" }, blockMenu)))));
     };
     NodeListComponent._Tooltips = {
-        "BonesBlock": "Provides a world matrix for each vertex, based on skeletal (bone/joint) animation. mesh.matricesIndices and mesh.matricesWeights are the vertex to bone assignments and weighting, and assume no more than 4 bones influencing any given vertex. If a vertex is influenced by more than 4 bones, then mesh.matricesIndicesExtra and mesh.matricesWeightsExtra can be used for up to 8 bones of influence per vertex",
+        "BonesBlock": "Provides a world matrix for each vertex, based on skeletal (bone/joint) animation",
         "MorphTargetsBlock": "Provides the final positions, normals, tangents, and uvs based on morph targets in a mesh",
-        "AddBlock": "Adds the left and right inputs together. Left and right inputs have to be of the same type",
+        "AddBlock": "Adds the left and right inputs of the same type together",
         "DistanceBlock": "Provides a distance vector based on the left and right input vectors",
-        "DivideBlock": "Divides the left input by the right input",
+        "DivideBlock": "Divides the left input by the right input of the same type",
         "LengthBlock": "Outputs the length of an input vector",
-        "MaxBlock": "Outputs the largest value between the left and right inputs",
-        "MinBlock": "Outputs the smallest value between the left and right inputs",
-        "MultiplyBlock": "Multiplies the left and right inputs together",
+        "MaxBlock": "Outputs the largest value between the left and right inputs of the same type",
+        "MinBlock": "Outputs the smallest value between the left and right inputs of the same type",
+        "MultiplyBlock": "Multiplies the left and right inputs of the same type together",
         "NegateBlock": "Multiplies the input by -1",
-        "OneMinusBlock": "Subtracts the input value from 1 (1 - input)",
+        "OneMinusBlock": "Subtracts each channel of the input value from 1 (1 - input)",
         "RandomNumberBlock": "Provides a random number based on an input seed",
-        "ReciprocalBlock": "Outputs the reciprocal value(s) vased on the input value(s)",
-        "ScaleBlock": "Multiplies the input value(s) by the factor",
-        "SubtractBlock": "Subtracts the right input from the left input",
-        "PosterizeBlock": "Reduces the number of colors in an image to the value of input steps",
-        "ReplaceColorBlock": "Replaces a reference color in input value with a different replacement color. Distance is the tolerance variation of the color",
-        "ColorMergerBlock": "Combines individual color channels into color Vectors",
-        "ColorSplitterBlock": "Separates color Vectors into individual color channels",
-        "VectorMergerBlock": "Combines up to 4 input values into Vectors",
-        "VectorSplitterBlock": "Separates Vectors into individual elements",
-        "Color3": "A Vector3 representing combined color values (red, green, and blue)",
-        "Color4": "A Vector4 representing combined color and alpha values (red, green, blue, and alpha)",
-        "DeltaTimeBlock": "A Float representing the time value that's passed since the last frame has rendered",
-        "Float": "A Float for a single floating point value",
-        "TextureBlock": "A container node for a texture (image or url)",
-        "TimeBlock": "A Float of a constantly increasing floating point value, starting when the scene is loaded",
-        "Vector2": "A Vector2 representing two values",
-        "Vector3": "A Vector3 representing three values",
-        "Vector4": "A Vector4 representing four values",
-        "LerpBlock": "Provides linear interpolated value(s) between the left and right inputs, based on the gradient input",
+        "ReciprocalBlock": "Quotient of 1 divided by the input",
+        "ScaleBlock": "Multiplies the input channels by a float factor",
+        "SubtractBlock": "Subtracts the right input from the left input of the same type",
+        "GradientBlock": "Returns the color in the gradient represented by the target value of the input",
+        "PosterizeBlock": "Reduces the number of values in each channel to the number in the corresponding channel of steps",
+        "ReplaceColorBlock": "Replaces a reference color in value with the color in replacement blended by distance",
+        "ColorMergerBlock": "Combines float input channels into a color",
+        "ColorSplitterBlock": "Separates color input channels into individual floats",
+        "VectorMergerBlock": "Combines up to four input floats into a vector",
+        "VectorSplitterBlock": "Separates vectors input channels into individual floats",
+        "Color3": "A color made up of red, green, and blue channel values",
+        "Color4": "A color made up of red, green, blue, and alpha channel values",
+        "DeltaTimeBlock": "A float representing the time that has passed since the last frame was rendered",
+        "Float": "A floating point number representing a value with a fractional component",
+        "TextureBlock": "A node for reading a linked or embedded texture file",
+        "TimeBlock": "A float value that represents the time that has passed since the scene was loaded",
+        "Vector2": "a vector composed of X and Y channels",
+        "Vector3": "a vector composed of X, Y, and Z channels",
+        "Vector4": "a vector composed of X, Y, Z, and W channels",
+        "LerpBlock": "Outputs a value that is a mix of the left and right inputs based on the target value",
+        "NLerpBlock": "Outputs a value that is a mix of the left and right inputs based on the target's normalized value",
         "SmoothStepBlock": "Outputs a value based on a the input value's position on a curve between the two edge values",
-        "Matrix": "A container for a vector transformation",
-        "ProjectionMatrixBlock": "A matrix moving from 3D space to screen space",
-        "ViewMatrixBlock": "A matrix moving from 3D space to camera space",
-        "ViewProjectionMatrixBlock": "A matrix moving from 3D space to camera space, and ending in screen space",
-        "WorldMatrixBlock": "A matrix moving from local space to world space",
-        "WorldViewProjectionMatrixBlock": "A matrix moving from local space to world space, then to camera space, and ending in screen space",
-        "ColorBlock": "A Color4 representing the color of each vertex of the attached mesh",
-        "InstancesBlock": "Provides the world matrix for each instance. This is used to apply materials to instances as well as original meshes",
+        "StepBlock": "Outputs 1 for any input value above the edge input, outputs 0 for any input value below the edge input",
+        "Matrix": "A 4x4 table of related values",
+        "ProjectionMatrixBlock": "A matrix to remap points in 3D space to 2D plane relative to the screen",
+        "ViewMatrixBlock": "A matrix to remap points in 3D space to 2D plane relative to the view of the scene camera",
+        "ViewProjectionMatrixBlock": "A matrix to remap points in 3D space to 2D view space before remapping to 2D screen space",
+        "WorldMatrixBlock": "A matrix to remap points in 3D local space to 3D world space",
+        "WorldViewProjectionMatrixBlock": "A matrix to remap points in 3D local space to 3D world space, then to 2D camera space, and ending in 2D screen space",
+        "ColorBlock": "Outputs the RGBA color of each vertex in the mesh",
+        "InstancesBlock": "Provides the world matrix for each instance to apply this material to all instances",
         "MatrixIndicesBlock": "A Vector4 representing the vertex to bone skinning assignments",
-        "MatricesWeightsBlock": "A Vector4 representing the vertex to bone skinning weights",
+        "MatrixWeightsBlock": "A Vector4 representing the vertex to bone skinning weights",
         "NormalBlock": "A Vector3 representing the normal of each vertex of the attached mesh",
         "PositionBlock": "A Vector3 representing the position of each vertex of the attached mesh",
         "TangentBlock": "A Vector3 representing the tangent of each vertex of the attached mesh",
         "UVBlock": "A Vector2 representing the UV coordinates of each vertex of the attached mesh",
-        "DiscardBlock": "A final output node that will not output a pixel below the cutoff value",
-        "FragmentOutputBlock": "The final node for outputing the color of each pixel. This node must be included in every node material",
-        "VertexOutputBlock": "The final node for outputing the position of each vertex. This node must be included in every node material",
-        "ClampBlock": "Ignores all values of the input outside of the Minimum and Maximum property values",
+        "WorldNormal": "A Vector4 representing the normal of each vertex of the attached mesh transformed into world space",
+        "PerturbNormalBlock": "Creates high-frequency detail normal vectors based on a normal map, the world position, and world normal",
+        "NormalBlend": "Outputs the result of blending two normal maps together using a per-channel screen",
+        "WorldPosition": "A Vector4 representing the position of each vertex of the attached mesh transformed into world space",
+        "DiscardBlock": "A final node that will not output a pixel below the cutoff value",
+        "FragmentOutputBlock": "A mandatory final node for outputing the color of each pixel",
+        "VertexOutputBlock": "A mandatory final node for outputing the position of each vertex",
+        "ClampBlock": "Outputs values above the maximum or below minimum as maximum or minimum values respectively",
         "NormalizeBlock": "Remaps the length of a vector or color to 1",
-        "RemapBlock": "Remaps all input values between sourceMin and sourceMax, to be between targetMin and targetMax. source and target inputs can be static or variable inputs",
-        "CeilingBlock": "Outputs the highest value of the input",
-        "FloorBlock": "Outputs the lowest value of the input",
-        "RoundBlock": "Outputs the nearest whole number based on the input value",
-        "StepBlock": "Outputs 1 for any input value above the edge input, outputs 0 for any input value below the edge input",
-        "CameraPositionBlock": "A Vector3 position of the active scene camera",
-        "FogBlock": "Applies fog to a scene. Outputs fog with increasing value based on distance from the camera",
-        "FogColorBlock": "A Color3 for the fog color",
+        "RemapBlock": "Remaps input value between sourceMin and sourceMax to a new range between targetMin and targetMax",
+        "CeilingBlock": "Outputs fractional values as the next higher whole number",
+        "FloorBlock": "Outputs fractional values as the next lower whole number",
+        "RoundBlock": "Outputs fractional values rounded to the nearest whole number",
+        "CameraPositionBlock": "Outputs a Vector3 position of the active scene camera",
+        "FogBlock": "Applies fog to the scene with an increasing opacity based on distance from the camera",
+        "FogColorBlock": "The system value for fog color pulled from the scene",
         "ImageProcessingBlock": "Provides access to all of the Babylon image processing properties",
-        "LightBlock": "Returns the individual color values (red, green, and blue) of the diffuse or specular colors of the combined OR individual lighting within the scene",
+        "LightBlock": "Outputs diffuse and specular contributions from one or more scene lights",
         "LightInformationBlock": "Provides the direction, color and intensity of a selected light based on its world position",
-        "PerturbNormalBlock": "Creates a new normal direction based on a normal map, the world position, and world normal",
-        "ReflectionTextureBlock": "Creates a reflection of the input texture",
+        "ReflectionTextureBlock": "Creates a reflection from the input texture",
         "ViewDirectionBlock": "Outputs the direction vector of where the camera is aimed",
         "AbsBlock": "Outputs the absolute value of the input value",
         "ArcCosBlock": "Outputs the inverse of the cosine value based on the input value",
@@ -51875,15 +51880,15 @@ var NodeListComponent = /** @class */ (function (_super) {
         "ArcTan2Block": "Outputs the inverse of the tangent value based on the input value",
         "ArcTanBlock": "Outputs the inverse of the tangent value based on the input value",
         "CosBlock": "Outputs the cosine value based on the input value",
-        "DegreesToRadiansBlock": "Converts the input value (degrees) to radians",
+        "DegreesToRadiansBlock": "Converts the input degrees value to radians",
         "Exp2Block": "Outputs the input value multiplied by itself 1 time. (Exponent of 2)",
         "ExpBlock": "Outputs the input value multiplied by itself 9 time. (Exponent of 10)",
-        "FractBlock": "Everything after the period",
-        "LogBlock": "The logarithm value based on the input value",
+        "FractBlock": "Outputs only the fractional value of a floating point number",
+        "LogBlock": "The logarithmic value based on the input value",
         "PowBlock": "Outputs the input value multiplied by itself the number of times equal to the power input (Exponent of power)",
-        "RadiansToDegreesBlock": "Converts the input value (radians) to degrees",
+        "RadiansToDegreesBlock": "Converts the input radians value to degrees",
         "SawToothWaveBlock": "Outputs a sawtooth pattern value between -1 and 1 based on the input value",
-        "SignBlock": "returns 1 if 10 or -1 if -10",
+        "SignBlock": "returns 1 if the input is positive, 0 if input is equal to 0, or -1 if the input is negative",
         "SinBlock": "Outputs the the sine value based on the input value",
         "SqrtBlock": "Outputs the the square root of the input value",
         "SquareWaveBlock": "Outputs a stepped pattern value between -1 and 1 based on the input value",
@@ -51891,8 +51896,17 @@ var NodeListComponent = /** @class */ (function (_super) {
         "TriangleWaveBlock": "Outputs a sawtooth pattern value between 0 and 1 based on the input value",
         "CrossBlock": "Outputs a vector that is perpendicular to two input vectors",
         "DotBlock": "Outputs the cos of the angle between two vectors",
-        "FresnelBlock": "Outputs the grazing angle of the surface of the mesh, relative to a camera. Angle can be influenced by the bias and power inputs",
-        "TransformBlock": "Transforms a input vector based on an input matrix"
+        "FresnelBlock": "Outputs the grazing angle of the surface of the mesh, relative to a camera influenced by the bias and power inputs",
+        "TransformBlock": "Transforms a input vector based on the input matrix",
+        "DerivativeBlock": "FRAGMENT SHADER ONLY. Provides the rate of change for an input on a given axis (x,y).",
+        "DesaturateBlock": "Convert a color input into a grayscale representation.",
+        "WorldViewMatrixBlock": "A matrix to remap points in 3D local space to 3D world space, and ending in 2D camera space.",
+        "FrontFacingBlock": "Returns 1 if a mesh triangle faces the normal direction and 0 if it does not.",
+        "SimplexPerlin3DBlock": "Creates a type of gradient noise with few directional artifacts.",
+        "WorleyNoise3DBlock": "Creates a random pattern resembling cells.",
+        "ReflectBlock": "Outputs the direction of the input vector reflected across the surface normal.",
+        "RefractBlock": "Outputs a direction simulating a deflection of the input vector.",
+        "Rotate2dBlock": "Rotates UV coordinates around the W axis."
     };
     return NodeListComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -52744,7 +52758,17 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_13__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: this.state.currentFrame }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_14__["Color3LineComponent"], { label: "Color", target: this.state.currentFrame, propertyName: "color" })))));
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_14__["Color3LineComponent"], { label: "Color", target: this.state.currentFrame, propertyName: "color" }),
+                        !this.state.currentFrame.isCollapsed &&
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Collapse", onClick: function () {
+                                    _this.state.currentFrame.isCollapsed = true;
+                                    _this.forceUpdate();
+                                } }),
+                        this.state.currentFrame.isCollapsed &&
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Expand", onClick: function () {
+                                    _this.state.currentFrame.isCollapsed = false;
+                                    _this.forceUpdate();
+                                } })))));
         }
         var gridSize = _dataStorage__WEBPACK_IMPORTED_MODULE_9__["DataStorage"].ReadNumber("GridSize", 20);
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" },
@@ -53593,10 +53617,14 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
-    GraphCanvasComponent.prototype.getGridPosition = function (position) {
+    GraphCanvasComponent.prototype.getGridPosition = function (position, useCeil) {
+        if (useCeil === void 0) { useCeil = false; }
         var gridSize = this.gridSize;
         if (gridSize === 0) {
             return position;
+        }
+        if (useCeil) {
+            return gridSize * Math.ceil(position / gridSize);
         }
         return gridSize * Math.floor(position / gridSize);
     };
@@ -53692,10 +53720,22 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         graph.graph().rankdir = "LR";
         // Build dagre graph
         this._nodes.forEach(function (node) {
+            if (_this._frames.some(function (f) { return f.nodes.indexOf(node) !== -1; })) {
+                return;
+            }
             graph.setNode(node.id.toString(), {
                 id: node.id,
+                type: "node",
                 width: node.width,
                 height: node.height
+            });
+        });
+        this._frames.forEach(function (frame) {
+            graph.setNode(frame.id.toString(), {
+                id: frame.id,
+                type: "frame",
+                width: frame.element.clientWidth,
+                height: frame.element.clientHeight
             });
         });
         this._nodes.forEach(function (node) {
@@ -53704,7 +53744,11 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                     return;
                 }
                 output.endpoints.forEach(function (endpoint) {
-                    graph.setEdge(node.id.toString(), endpoint.ownerBlock.uniqueId.toString());
+                    var sourceFrames = _this._frames.filter(function (f) { return f.nodes.indexOf(node) !== -1; });
+                    var targetFrames = _this._frames.filter(function (f) { return f.nodes.some(function (n) { return n.block === endpoint.ownerBlock; }); });
+                    var sourceId = sourceFrames.length > 0 ? sourceFrames[0].id : node.id;
+                    var targetId = targetFrames.length > 0 ? targetFrames[0].id : endpoint.ownerBlock.uniqueId;
+                    graph.setEdge(sourceId.toString(), targetId.toString());
                 });
             });
         });
@@ -53713,12 +53757,23 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         // Update graph
         var dagreNodes = graph.nodes().map(function (node) { return graph.node(node); });
         dagreNodes.forEach(function (dagreNode) {
-            for (var _i = 0, _a = _this._nodes; _i < _a.length; _i++) {
-                var node = _a[_i];
-                if (node.id === dagreNode.id) {
-                    node.x = dagreNode.x - dagreNode.width / 2;
-                    node.y = dagreNode.y - dagreNode.height / 2;
-                    node.cleanAccumulation();
+            if (dagreNode.type === "node") {
+                for (var _i = 0, _a = _this._nodes; _i < _a.length; _i++) {
+                    var node = _a[_i];
+                    if (node.id === dagreNode.id) {
+                        node.x = dagreNode.x - dagreNode.width / 2;
+                        node.y = dagreNode.y - dagreNode.height / 2;
+                        node.cleanAccumulation();
+                        return;
+                    }
+                }
+                return;
+            }
+            for (var _b = 0, _c = _this._frames; _b < _c.length; _b++) {
+                var frame = _c[_b];
+                if (frame.id === dagreNode.id) {
+                    frame.move(dagreNode.x - dagreNode.width / 2, dagreNode.y - dagreNode.height / 2, false);
+                    frame.cleanAccumulation();
                     return;
                 }
             }
@@ -54003,7 +54058,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         if (editorData.frames) {
             for (var _a = 0, _b = editorData.frames; _a < _b.length; _a++) {
                 var frameData = _b[_a];
-                var frame = _graphFrame__WEBPACK_IMPORTED_MODULE_7__["GraphFrame"].Parse(frameData, this);
+                var frame = _graphFrame__WEBPACK_IMPORTED_MODULE_7__["GraphFrame"].Parse(frameData, this, editorData.map);
                 this._frames.push(frame);
             }
         }
@@ -54036,10 +54091,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GraphFrame", function() { return GraphFrame; });
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _nodePort__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./nodePort */ "./diagram/nodePort.ts");
+
 
 var GraphFrame = /** @class */ (function () {
-    function GraphFrame(candidate, canvas) {
+    function GraphFrame(candidate, canvas, doNotCaptureNodes) {
         var _this = this;
+        if (doNotCaptureNodes === void 0) { doNotCaptureNodes = false; }
         this._x = 0;
         this._y = 0;
         this._gridAlignedX = 0;
@@ -54047,6 +54105,13 @@ var GraphFrame = /** @class */ (function () {
         this._nodes = [];
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
+        this._isCollapsed = false;
+        this._ports = [];
+        this._controlledPorts = [];
+        this.CloseSVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 30 30\"><g id=\"Layer_2\" data-name=\"Layer 2\"><path d=\"M16,15l5.85,5.84-1,1L15,15.93,9.15,21.78l-1-1L14,15,8.19,9.12l1-1L15,14l5.84-5.84,1,1Z\"/></g></svg>";
+        this.ExpandSVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 30 30\"><g id=\"Layer_2\" data-name=\"Layer 2\"><path d=\"M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-6.75,6.75H11.06V14.44h3.38V11.06h1.12v3.38h3.38v1.12H15.56v3.38H14.44Z\"/></g></svg>";
+        this.CollapseSVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 30 30\"><g id=\"Layer_2\" data-name=\"Layer 2\"><path d=\"M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-2.25,6.75H11.06V14.44h7.88Z\"/></g></svg>";
+        this._id = GraphFrame._FrameCounter++;
         this._ownerCanvas = canvas;
         var root = canvas.frameContainer;
         this.element = root.ownerDocument.createElement("div");
@@ -54054,7 +54119,55 @@ var GraphFrame = /** @class */ (function () {
         root.appendChild(this.element);
         this._headerElement = root.ownerDocument.createElement("div");
         this._headerElement.classList.add("frame-box-header");
+        this._headerElement.addEventListener("dblclick", function () {
+            _this.isCollapsed = !_this.isCollapsed;
+        });
         this.element.appendChild(this._headerElement);
+        this._borderElement = root.ownerDocument.createElement("div");
+        this._borderElement.classList.add("frame-box-border");
+        this.element.appendChild(this._borderElement);
+        this._headerTextElement = root.ownerDocument.createElement("div");
+        this._headerTextElement.classList.add("frame-box-header-title");
+        this._headerElement.appendChild(this._headerTextElement);
+        this._headerCollapseElement = root.ownerDocument.createElement("div");
+        this._headerCollapseElement.classList.add("frame-box-header-collapse");
+        this._headerCollapseElement.classList.add("frame-box-header-button");
+        this._headerCollapseElement.title = "Collapse";
+        this._headerCollapseElement.ondragstart = function () { return false; };
+        this._headerCollapseElement.addEventListener("pointerdown", function (evt) {
+            _this._headerCollapseElement.classList.add("down");
+            evt.stopPropagation();
+        });
+        this._headerCollapseElement.addEventListener("pointerup", function (evt) {
+            evt.stopPropagation();
+            _this._headerCollapseElement.classList.remove("down");
+            _this.isCollapsed = !_this.isCollapsed;
+        });
+        this._headerCollapseElement.innerHTML = this.CollapseSVG;
+        this._headerElement.appendChild(this._headerCollapseElement);
+        this._headerCloseElement = root.ownerDocument.createElement("div");
+        this._headerCloseElement.classList.add("frame-box-header-close");
+        this._headerCloseElement.classList.add("frame-box-header-button");
+        this._headerCloseElement.title = "Close";
+        this._headerCloseElement.ondragstart = function () { return false; };
+        this._headerCloseElement.addEventListener("pointerdown", function (evt) {
+            evt.stopPropagation();
+        });
+        this._headerCloseElement.addEventListener("pointerup", function (evt) {
+            evt.stopPropagation();
+            _this.dispose();
+        });
+        this._headerCloseElement.innerHTML = this.CloseSVG;
+        this._headerElement.appendChild(this._headerCloseElement);
+        this._portContainer = root.ownerDocument.createElement("div");
+        this._portContainer.classList.add("port-container");
+        this.element.appendChild(this._portContainer);
+        this._outputPortContainer = root.ownerDocument.createElement("div");
+        this._outputPortContainer.classList.add("outputsContainer");
+        this._portContainer.appendChild(this._outputPortContainer);
+        this._inputPortContainer = root.ownerDocument.createElement("div");
+        this._inputPortContainer.classList.add("inputsContainer");
+        this._portContainer.appendChild(this._inputPortContainer);
         this.name = "Frame";
         this.color = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromInts(72, 72, 72);
         if (candidate) {
@@ -54064,9 +54177,9 @@ var GraphFrame = /** @class */ (function () {
             this.height = parseFloat(candidate.style.height.replace("px", ""));
             this.cleanAccumulation();
         }
-        this._headerElement.addEventListener("pointerdown", function (evt) { return _this._onDown(evt); });
-        this._headerElement.addEventListener("pointerup", function (evt) { return _this._onUp(evt); });
-        this._headerElement.addEventListener("pointermove", function (evt) { return _this._onMove(evt); });
+        this._headerTextElement.addEventListener("pointerdown", function (evt) { return _this._onDown(evt); });
+        this._headerTextElement.addEventListener("pointerup", function (evt) { return _this._onUp(evt); });
+        this._headerTextElement.addEventListener("pointermove", function (evt) { return _this._onMove(evt); });
         this._onSelectionChangedObserver = canvas.globalState.onSelectionChangedObservable.add(function (node) {
             if (node === _this) {
                 _this.element.classList.add("selected");
@@ -54076,9 +54189,120 @@ var GraphFrame = /** @class */ (function () {
             }
         });
         // Get nodes
-        this._nodes = [];
-        this._ownerCanvas.globalState.onFrameCreated.notifyObservers(this);
+        if (!doNotCaptureNodes) {
+            this.refresh();
+        }
     }
+    Object.defineProperty(GraphFrame.prototype, "id", {
+        get: function () {
+            return this._id;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphFrame.prototype, "isCollapsed", {
+        get: function () {
+            return this._isCollapsed;
+        },
+        set: function (value) {
+            if (this._isCollapsed === value) {
+                return;
+            }
+            this._isCollapsed = value;
+            this._ownerCanvas._frameIsMoving = true;
+            // Need to delegate the outside ports to the frame
+            if (value) {
+                this.element.classList.add("collapsed");
+                this._moveFrame((this.width - 200) / 2, 0);
+                for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
+                    var node = _a[_i];
+                    node.isVisible = false;
+                    for (var _b = 0, _c = node.outputPorts; _b < _c.length; _b++) { // Output
+                        var port = _c[_b];
+                        if (port.connectionPoint.hasEndpoints) {
+                            var portAdded = false;
+                            for (var _d = 0, _e = node.links; _d < _e.length; _d++) {
+                                var link = _e[_d];
+                                if (link.portA === port && this.nodes.indexOf(link.nodeB) === -1) {
+                                    var localPort = void 0;
+                                    if (!portAdded) {
+                                        portAdded = true;
+                                        localPort = _nodePort__WEBPACK_IMPORTED_MODULE_1__["NodePort"].CreatePortElement(port.connectionPoint, link.nodeB, this._outputPortContainer, null, this._ownerCanvas.globalState);
+                                        this._ports.push(localPort);
+                                    }
+                                    else {
+                                        localPort = this._ports.filter(function (p) { return p.connectionPoint === port.connectionPoint; })[0];
+                                    }
+                                    port.delegatedPort = localPort;
+                                    this._controlledPorts.push(port);
+                                    link.isVisible = true;
+                                }
+                            }
+                        }
+                        else {
+                            var localPort = _nodePort__WEBPACK_IMPORTED_MODULE_1__["NodePort"].CreatePortElement(port.connectionPoint, node, this._outputPortContainer, null, this._ownerCanvas.globalState);
+                            this._ports.push(localPort);
+                            port.delegatedPort = localPort;
+                            this._controlledPorts.push(port);
+                        }
+                    }
+                    for (var _f = 0, _g = node.inputPorts; _f < _g.length; _f++) { // Input
+                        var port = _g[_f];
+                        if (port.connectionPoint.isConnected) {
+                            for (var _h = 0, _j = node.links; _h < _j.length; _h++) {
+                                var link = _j[_h];
+                                if (link.portB === port && this.nodes.indexOf(link.nodeA) === -1) {
+                                    this._createInputPort(port, node);
+                                    link.isVisible = true;
+                                }
+                            }
+                        }
+                        else {
+                            this._createInputPort(port, node);
+                        }
+                    }
+                }
+            }
+            else {
+                this.element.classList.remove("collapsed");
+                this._outputPortContainer.innerHTML = "";
+                this._inputPortContainer.innerHTML = "";
+                this._ports.forEach(function (p) {
+                    p.dispose();
+                });
+                this._controlledPorts.forEach(function (port) {
+                    port.delegatedPort = null;
+                    port.refresh();
+                });
+                this._ports = [];
+                this._controlledPorts = [];
+                for (var _k = 0, _l = this._nodes; _k < _l.length; _k++) {
+                    var node = _l[_k];
+                    node.isVisible = true;
+                }
+                this._moveFrame(-(this.width - 200) / 2, 0);
+            }
+            this.cleanAccumulation();
+            this._ownerCanvas._frameIsMoving = false;
+            // UI        
+            if (this._isCollapsed) {
+                this._headerCollapseElement.innerHTML = this.ExpandSVG;
+                this._headerCollapseElement.title = "Expand";
+            }
+            else {
+                this._headerCollapseElement.innerHTML = this.CollapseSVG;
+                this._headerCollapseElement.title = "Collapse";
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    GraphFrame.prototype._createInputPort = function (port, node) {
+        var localPort = _nodePort__WEBPACK_IMPORTED_MODULE_1__["NodePort"].CreatePortElement(port.connectionPoint, node, this._inputPortContainer, null, this._ownerCanvas.globalState);
+        this._ports.push(localPort);
+        port.delegatedPort = localPort;
+        this._controlledPorts.push(port);
+    };
     Object.defineProperty(GraphFrame.prototype, "nodes", {
         get: function () {
             return this._nodes;
@@ -54092,7 +54316,7 @@ var GraphFrame = /** @class */ (function () {
         },
         set: function (value) {
             this._name = value;
-            this._headerElement.innerHTML = value;
+            this._headerTextElement.innerHTML = value;
         },
         enumerable: true,
         configurable: true
@@ -54170,43 +54394,81 @@ var GraphFrame = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    GraphFrame.prototype.refresh = function () {
+        this._nodes = [];
+        this._ownerCanvas.globalState.onFrameCreated.notifyObservers(this);
+    };
+    GraphFrame.prototype.addNode = function (node) {
+        var index = this.nodes.indexOf(node);
+        if (index === -1) {
+            this.nodes.push(node);
+        }
+    };
+    GraphFrame.prototype.removeNode = function (node) {
+        var index = this.nodes.indexOf(node);
+        if (index > -1) {
+            this.nodes.splice(index, 1);
+        }
+    };
     GraphFrame.prototype.syncNode = function (node) {
+        if (this.isCollapsed) {
+            return;
+        }
         if (node.isOverlappingFrame(this)) {
-            var index = this.nodes.indexOf(node);
-            if (index === -1) {
-                this.nodes.push(node);
-            }
+            this.addNode(node);
         }
         else {
-            var index = this.nodes.indexOf(node);
-            if (index > -1) {
-                this.nodes.splice(index, 1);
-            }
+            this.removeNode(node);
         }
     };
     GraphFrame.prototype.cleanAccumulation = function () {
-        this.x = this._gridAlignedX;
-        this.y = this._gridAlignedY;
+        for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
+            var selectedNode = _a[_i];
+            selectedNode.cleanAccumulation();
+        }
+        this.x = this._ownerCanvas.getGridPosition(this.x);
+        this.y = this._ownerCanvas.getGridPosition(this.y);
     };
     GraphFrame.prototype._onDown = function (evt) {
         evt.stopPropagation();
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
-        this._headerElement.setPointerCapture(evt.pointerId);
+        this._headerTextElement.setPointerCapture(evt.pointerId);
         this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
         this._ownerCanvas._frameIsMoving = true;
+        this.move(this._ownerCanvas.getGridPosition(this.x), this._ownerCanvas.getGridPosition(this.y));
+    };
+    GraphFrame.prototype.move = function (newX, newY, align) {
+        if (align === void 0) { align = true; }
+        var oldX = this.x;
+        var oldY = this.y;
+        this.x = newX;
+        this.y = newY;
+        for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
+            var selectedNode = _a[_i];
+            selectedNode.x += this.x - oldX;
+            selectedNode.y += this.y - oldY;
+            if (align) {
+                selectedNode.cleanAccumulation(true);
+            }
+        }
     };
     GraphFrame.prototype._onUp = function (evt) {
         evt.stopPropagation();
-        for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
-            var selectedNode = _a[_i];
-            selectedNode.cleanAccumulation();
-        }
         this.cleanAccumulation();
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
-        this._headerElement.releasePointerCapture(evt.pointerId);
+        this._headerTextElement.releasePointerCapture(evt.pointerId);
         this._ownerCanvas._frameIsMoving = false;
+    };
+    GraphFrame.prototype._moveFrame = function (offsetX, offsetY) {
+        for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
+            var selectedNode = _a[_i];
+            selectedNode.x += offsetX;
+            selectedNode.y += offsetY;
+        }
+        this.x += offsetX;
+        this.y += offsetY;
     };
     GraphFrame.prototype._onMove = function (evt) {
         if (this._mouseStartPointX === null || this._mouseStartPointY === null || evt.ctrlKey) {
@@ -54214,18 +54476,13 @@ var GraphFrame = /** @class */ (function () {
         }
         var newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
         var newY = (evt.clientY - this._mouseStartPointY) / this._ownerCanvas.zoom;
-        for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
-            var selectedNode = _a[_i];
-            selectedNode.x += newX;
-            selectedNode.y += newY;
-        }
-        this.x += newX;
-        this.y += newY;
+        this._moveFrame(newX, newY);
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
         evt.stopPropagation();
     };
     GraphFrame.prototype.dispose = function () {
+        this.isCollapsed = false;
         if (this._onSelectionChangedObserver) {
             this._ownerCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
         }
@@ -54239,19 +54496,39 @@ var GraphFrame = /** @class */ (function () {
             width: this._width,
             height: this._height,
             color: this._color.asArray(),
-            name: this.name
+            name: this.name,
+            isCollapsed: this.isCollapsed,
+            blocks: this.nodes.map(function (n) { return n.block.uniqueId; })
         };
     };
-    GraphFrame.Parse = function (serializationData, canvas) {
-        var newFrame = new GraphFrame(null, canvas);
+    GraphFrame.Parse = function (serializationData, canvas, map) {
+        var newFrame = new GraphFrame(null, canvas, true);
         newFrame.x = serializationData.x;
         newFrame.y = serializationData.y;
         newFrame.width = serializationData.width;
         newFrame.height = serializationData.height;
         newFrame.name = serializationData.name;
         newFrame.color = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(serializationData.color);
+        if (serializationData.blocks && map) {
+            var _loop_1 = function () {
+                var actualId = map[blockId];
+                var node = canvas.nodes.filter(function (n) { return n.block.uniqueId === actualId; });
+                if (node.length) {
+                    newFrame.nodes.push(node[0]);
+                }
+            };
+            for (var _i = 0, _a = serializationData.blocks; _i < _a.length; _i++) {
+                var blockId = _a[_i];
+                _loop_1();
+            }
+        }
+        else {
+            newFrame.refresh();
+        }
+        newFrame.isCollapsed = !!serializationData.isCollapsed;
         return newFrame;
     };
+    GraphFrame._FrameCounter = 0;
     return GraphFrame;
 }());
 
@@ -54294,6 +54571,7 @@ var GraphNode = /** @class */ (function () {
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
         this._displayManager = null;
+        this._isVisible = true;
         this._globalState = globalState;
         this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add(function (node) {
             if (node === _this) {
@@ -54319,11 +54597,49 @@ var GraphNode = /** @class */ (function () {
             _this.isSelected = overlap;
         });
         this._onFrameCreatedObserver = this._globalState.onFrameCreated.add(function (frame) {
+            if (_this._ownerCanvas.frames.some(function (f) { return f.nodes.indexOf(_this) !== -1; })) {
+                return;
+            }
             if (_this.isOverlappingFrame(frame)) {
                 frame.nodes.push(_this);
             }
         });
     }
+    Object.defineProperty(GraphNode.prototype, "isVisible", {
+        get: function () {
+            return this._isVisible;
+        },
+        set: function (value) {
+            this._isVisible = value;
+            if (!value) {
+                this._visual.classList.add("hidden");
+            }
+            else {
+                this._visual.classList.remove("hidden");
+            }
+            for (var _i = 0, _a = this._links; _i < _a.length; _i++) {
+                var link = _a[_i];
+                link.isVisible = value;
+            }
+            this._refreshLinks();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphNode.prototype, "outputPorts", {
+        get: function () {
+            return this._outputPorts;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GraphNode.prototype, "inputPorts", {
+        get: function () {
+            return this._inputPorts;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(GraphNode.prototype, "links", {
         get: function () {
             return this._links;
@@ -54499,18 +54815,6 @@ var GraphNode = /** @class */ (function () {
         this._comments.innerHTML = this.block.comments || "";
         this._comments.title = this.block.comments || "";
     };
-    GraphNode.prototype._appendConnection = function (connectionPoint, root, displayManager) {
-        var portContainer = root.ownerDocument.createElement("div");
-        portContainer.classList.add("portLine");
-        root.appendChild(portContainer);
-        if (!displayManager || displayManager.shouldDisplayPortLabels(this.block)) {
-            var portLabel = root.ownerDocument.createElement("div");
-            portLabel.classList.add("label");
-            portLabel.innerHTML = connectionPoint.name;
-            portContainer.appendChild(portLabel);
-        }
-        return new _nodePort__WEBPACK_IMPORTED_MODULE_4__["NodePort"](portContainer, connectionPoint, this, this._globalState);
-    };
     GraphNode.prototype._onDown = function (evt) {
         // Check if this is coming from the port
         if (evt.srcElement && evt.srcElement.nodeName === "IMG") {
@@ -54524,13 +54828,18 @@ var GraphNode = /** @class */ (function () {
             this.isSelected = false;
         }
         evt.stopPropagation();
+        for (var _i = 0, _a = this._ownerCanvas.selectedNodes; _i < _a.length; _i++) {
+            var selectedNode = _a[_i];
+            selectedNode.cleanAccumulation();
+        }
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
         this._visual.setPointerCapture(evt.pointerId);
     };
-    GraphNode.prototype.cleanAccumulation = function () {
-        this.x = this.gridAlignedX;
-        this.y = this.gridAlignedY;
+    GraphNode.prototype.cleanAccumulation = function (useCeil) {
+        if (useCeil === void 0) { useCeil = false; }
+        this.x = this._ownerCanvas.getGridPosition(this.x, useCeil);
+        this.y = this._ownerCanvas.getGridPosition(this.y, useCeil);
     };
     GraphNode.prototype._onUp = function (evt) {
         evt.stopPropagation();
@@ -54607,11 +54916,11 @@ var GraphNode = /** @class */ (function () {
         // Connections
         for (var _i = 0, _a = this.block.inputs; _i < _a.length; _i++) {
             var input = _a[_i];
-            this._inputPorts.push(this._appendConnection(input, this._inputsContainer, this._displayManager));
+            this._inputPorts.push(_nodePort__WEBPACK_IMPORTED_MODULE_4__["NodePort"].CreatePortElement(input, this, this._inputsContainer, this._displayManager, this._globalState));
         }
         for (var _b = 0, _c = this.block.outputs; _b < _c.length; _b++) {
             var output = _c[_b];
-            this._outputPorts.push(this._appendConnection(output, this._outputsContainer, this._displayManager));
+            this._outputPorts.push(_nodePort__WEBPACK_IMPORTED_MODULE_4__["NodePort"].CreatePortElement(output, this, this._outputsContainer, this._displayManager, this._globalState));
         }
         this.refresh();
     };
@@ -54663,9 +54972,14 @@ var GraphNode = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "NodeLink", function() { return NodeLink; });
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
+
 var NodeLink = /** @class */ (function () {
     function NodeLink(graphCanvas, portA, nodeA, portB, nodeB) {
         var _this = this;
+        this._isVisible = true;
+        this.onDisposedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this._portA = portA;
         this._portB = portB;
         this._nodeA = nodeA;
@@ -54698,6 +55012,25 @@ var NodeLink = /** @class */ (function () {
             }
         });
     }
+    Object.defineProperty(NodeLink.prototype, "isVisible", {
+        get: function () {
+            return this._isVisible;
+        },
+        set: function (value) {
+            this._isVisible = value;
+            if (!value) {
+                this._path.classList.add("hidden");
+                this._selectionPath.classList.add("hidden");
+            }
+            else {
+                this._path.classList.remove("hidden");
+                this._selectionPath.classList.remove("hidden");
+            }
+            this.update();
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(NodeLink.prototype, "portA", {
         get: function () {
             return this._portA;
@@ -54708,6 +55041,20 @@ var NodeLink = /** @class */ (function () {
     Object.defineProperty(NodeLink.prototype, "portB", {
         get: function () {
             return this._portB;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NodeLink.prototype, "nodeA", {
+        get: function () {
+            return this._nodeA;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(NodeLink.prototype, "nodeB", {
+        get: function () {
+            return this._nodeB;
         },
         enumerable: true,
         configurable: true
@@ -54756,6 +55103,7 @@ var NodeLink = /** @class */ (function () {
             this._graphCanvas.links.splice(this._graphCanvas.links.indexOf(this), 1);
             this._portA.connectionPoint.disconnectFrom(this._portB.connectionPoint);
         }
+        this.onDisposedObservable.notifyObservers(this);
     };
     return NodeLink;
 }());
@@ -54784,6 +55132,7 @@ var NodePort = /** @class */ (function () {
         var _this = this;
         this.connectionPoint = connectionPoint;
         this.node = node;
+        this.delegatedPort = null;
         this._element = portContainer.ownerDocument.createElement("div");
         this._element.classList.add("port");
         portContainer.appendChild(this._element);
@@ -54806,6 +55155,9 @@ var NodePort = /** @class */ (function () {
     }
     Object.defineProperty(NodePort.prototype, "element", {
         get: function () {
+            if (this.delegatedPort) {
+                return this.delegatedPort.element;
+            }
             return this._element;
         },
         enumerable: true,
@@ -54836,6 +55188,19 @@ var NodePort = /** @class */ (function () {
     };
     NodePort.prototype.dispose = function () {
         this._globalState.onCandidateLinkMoved.remove(this._onCandidateLinkMovedObserver);
+    };
+    NodePort.CreatePortElement = function (connectionPoint, node, root, displayManager, globalState) {
+        var portContainer = root.ownerDocument.createElement("div");
+        var block = connectionPoint.ownerBlock;
+        portContainer.classList.add("portLine");
+        root.appendChild(portContainer);
+        if (!displayManager || displayManager.shouldDisplayPortLabels(block)) {
+            var portLabel = root.ownerDocument.createElement("div");
+            portLabel.classList.add("port-label");
+            portLabel.innerHTML = connectionPoint.name;
+            portContainer.appendChild(portLabel);
+        }
+        return new NodePort(portContainer, connectionPoint, node, globalState);
     };
     return NodePort;
 }());
@@ -56063,6 +56428,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_preview_previewAreaComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./components/preview/previewAreaComponent */ "./components/preview/previewAreaComponent.tsx");
 /* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./serializationTools */ "./serializationTools.ts");
 /* harmony import */ var _diagram_graphCanvas__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./diagram/graphCanvas */ "./diagram/graphCanvas.tsx");
+/* harmony import */ var _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./diagram/graphFrame */ "./diagram/graphFrame.ts");
+
 
 
 
@@ -56088,6 +56455,7 @@ var GraphEditor = /** @class */ (function (_super) {
         _this._rightWidth = _dataStorage__WEBPACK_IMPORTED_MODULE_6__["DataStorage"].ReadNumber("RightWidth", 300);
         _this._blocks = new Array();
         _this._copiedNodes = [];
+        _this._copiedFrame = null;
         _this._mouseLocationX = 0;
         _this._mouseLocationY = 0;
         _this.props.globalState.onRebuildRequiredObservable.add(function () {
@@ -56133,10 +56501,16 @@ var GraphEditor = /** @class */ (function (_super) {
                 _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
                 return;
             }
-            if (!evt.ctrlKey) {
+            if (!evt.ctrlKey || _this.props.globalState.blockKeyboardEvents) {
                 return;
             }
             if (evt.key === "c") { // Copy
+                _this._copiedNodes = [];
+                _this._copiedFrame = null;
+                if (_this._graphCanvas.selectedFrame) {
+                    _this._copiedFrame = _this._graphCanvas.selectedFrame;
+                    return;
+                }
                 var selectedItems = _this._graphCanvas.selectedNodes;
                 if (!selectedItems.length) {
                     return;
@@ -56148,40 +56522,37 @@ var GraphEditor = /** @class */ (function (_super) {
                 _this._copiedNodes = selectedItems.slice(0);
             }
             else if (evt.key === "v") { // Paste
+                var rootElement = _this.props.globalState.hostDocument.querySelector(".diagram-container");
+                var zoomLevel = _this._graphCanvas.zoom;
+                var currentY = (_this._mouseLocationY - rootElement.offsetTop - _this._graphCanvas.y - 20) / zoomLevel;
+                if (_this._copiedFrame) {
+                    // New frame
+                    var newFrame = new _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_15__["GraphFrame"](null, _this._graphCanvas, true);
+                    _this._graphCanvas.frames.push(newFrame);
+                    newFrame.width = _this._copiedFrame.width;
+                    newFrame.height = _this._copiedFrame.height;
+                    newFrame.width / 2;
+                    newFrame.name = _this._copiedFrame.name;
+                    newFrame.color = _this._copiedFrame.color;
+                    var currentX_1 = (_this._mouseLocationX - rootElement.offsetLeft - _this._graphCanvas.x) / zoomLevel;
+                    newFrame.x = currentX_1 - newFrame.width / 2;
+                    newFrame.y = currentY;
+                    // Paste nodes
+                    if (_this._copiedFrame.nodes.length) {
+                        currentX_1 = newFrame.x + _this._copiedFrame.nodes[0].x - _this._copiedFrame.x;
+                        currentY = newFrame.y + _this._copiedFrame.nodes[0].y - _this._copiedFrame.y;
+                        _this.pasteSelection(_this._copiedFrame.nodes, currentX_1, currentY);
+                    }
+                    if (_this._copiedFrame.isCollapsed) {
+                        newFrame.isCollapsed = true;
+                    }
+                    return;
+                }
                 if (!_this._copiedNodes.length) {
                     return;
                 }
-                var rootElement = _this.props.globalState.hostDocument.querySelector(".diagram-container");
-                var zoomLevel = _this._graphCanvas.zoom;
                 var currentX = (_this._mouseLocationX - rootElement.offsetLeft - _this._graphCanvas.x - _this.NodeWidth) / zoomLevel;
-                var currentY = (_this._mouseLocationY - rootElement.offsetTop - _this._graphCanvas.y - 20) / zoomLevel;
-                var originalNode = null;
-                for (var _a = 0, _b = _this._copiedNodes; _a < _b.length; _a++) {
-                    var node = _b[_a];
-                    var block = node.block;
-                    if (!block) {
-                        continue;
-                    }
-                    var clone = block.clone(_this.props.globalState.nodeMaterial.getScene());
-                    if (!clone) {
-                        return;
-                    }
-                    var newNode = _this.createNodeFromObject(clone);
-                    var x = 0;
-                    var y = 0;
-                    if (originalNode) {
-                        x = currentX + node.x - originalNode.x;
-                        y = currentY + node.y - originalNode.y;
-                    }
-                    else {
-                        originalNode = node;
-                        x = currentX;
-                        y = currentY;
-                    }
-                    newNode.x = x;
-                    newNode.y = y;
-                    newNode.cleanAccumulation();
-                }
+                _this.pasteSelection(_this._copiedNodes, currentX, currentY);
             }
         }, false);
         return _this;
@@ -56246,6 +56617,81 @@ var GraphEditor = /** @class */ (function (_super) {
             this._previewManager.dispose();
         }
     };
+    GraphEditor.prototype.reconnectNewNodes = function (nodeIndex, newNodes, sourceNodes, done) {
+        if (done[nodeIndex]) {
+            return;
+        }
+        var currentNode = newNodes[nodeIndex];
+        var block = currentNode.block;
+        var sourceNode = sourceNodes[nodeIndex];
+        var _loop_1 = function () {
+            var sourceInput = sourceNode.block.inputs[inputIndex];
+            var currentInput = block.inputs[inputIndex];
+            if (!sourceInput.isConnected) {
+                return "continue";
+            }
+            var sourceBlock = sourceInput.connectedPoint.ownerBlock;
+            var activeNodes = sourceNodes.filter(function (s) { return s.block === sourceBlock; });
+            if (activeNodes.length > 0) {
+                var activeNode = activeNodes[0];
+                var indexInList = sourceNodes.indexOf(activeNode);
+                // First make sure to connect the other one
+                this_1.reconnectNewNodes(indexInList, newNodes, sourceNodes, done);
+                // Then reconnect
+                var outputIndex = sourceBlock.outputs.indexOf(sourceInput.connectedPoint);
+                var newOutput = newNodes[indexInList].block.outputs[outputIndex];
+                newOutput.connectTo(currentInput);
+            }
+            else {
+                // Connect with outside blocks
+                sourceInput._connectedPoint.connectTo(currentInput);
+            }
+            this_1._graphCanvas.connectPorts(currentInput.connectedPoint, currentInput);
+        };
+        var this_1 = this;
+        for (var inputIndex = 0; inputIndex < sourceNode.block.inputs.length; inputIndex++) {
+            _loop_1();
+        }
+        currentNode.refresh();
+        done[nodeIndex] = true;
+    };
+    GraphEditor.prototype.pasteSelection = function (copiedNodes, currentX, currentY) {
+        var originalNode = null;
+        var newNodes = [];
+        // Create new nodes
+        for (var _i = 0, copiedNodes_1 = copiedNodes; _i < copiedNodes_1.length; _i++) {
+            var node = copiedNodes_1[_i];
+            var block = node.block;
+            if (!block) {
+                continue;
+            }
+            var clone = block.clone(this.props.globalState.nodeMaterial.getScene());
+            if (!clone) {
+                return;
+            }
+            var newNode = this.createNodeFromObject(clone);
+            var x = 0;
+            var y = 0;
+            if (originalNode) {
+                x = currentX + node.x - originalNode.x;
+                y = currentY + node.y - originalNode.y;
+            }
+            else {
+                originalNode = node;
+                x = currentX;
+                y = currentY;
+            }
+            newNode.x = x;
+            newNode.y = y;
+            newNode.cleanAccumulation();
+            newNodes.push(newNode);
+        }
+        // Relink
+        var done = new Array(newNodes.length);
+        for (var index = 0; index < newNodes.length; index++) {
+            this.reconnectNewNodes(index, newNodes, copiedNodes, done);
+        }
+    };
     GraphEditor.prototype.zoomToFit = function () {
         this._graphCanvas.zoomToFit();
     };
@@ -56305,7 +56751,6 @@ var GraphEditor = /** @class */ (function (_super) {
             this._graphCanvas.distributeGraph();
         }
         else {
-            this._graphCanvas.processEditorData(editorData);
             // Locations
             for (var _i = 0, _a = editorData.locations; _i < _a.length; _i++) {
                 var location = _a[_i];
@@ -56319,6 +56764,7 @@ var GraphEditor = /** @class */ (function (_super) {
                     }
                 }
             }
+            this._graphCanvas.processEditorData(editorData);
         }
     };
     GraphEditor.prototype.onPointerDown = function (evt) {
@@ -56382,6 +56828,7 @@ var GraphEditor = /** @class */ (function (_super) {
         newNode.x = x / this._graphCanvas.zoom;
         newNode.y = y / this._graphCanvas.zoom;
         newNode.cleanAccumulation();
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
         this.props.globalState.onSelectionChangedObservable.notifyObservers(newNode);
         var block = newNode.block;
         x -= this.NodeWidth + 150;

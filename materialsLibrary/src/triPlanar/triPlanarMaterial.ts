@@ -34,6 +34,8 @@ class TriPlanarMaterialDefines extends MaterialDefines {
     public CLIPPLANE2 = false;
     public CLIPPLANE3 = false;
     public CLIPPLANE4 = false;
+    public CLIPPLANE5 = false;
+    public CLIPPLANE6 = false;
     public ALPHATEST = false;
     public DEPTHPREPASS = false;
     public POINTSIZE = false;
@@ -232,7 +234,7 @@ export class TriPlanarMaterial extends PushMaterial {
             var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor", "vSpecularColor",
                 "vFogInfos", "vFogColor", "pointSize",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4",
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6",
                 "tileSize"
             ];
             var samplers = ["diffuseSamplerX", "diffuseSamplerY", "diffuseSamplerZ",

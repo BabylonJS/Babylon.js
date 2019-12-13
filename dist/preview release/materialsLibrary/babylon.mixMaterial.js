@@ -505,6 +505,8 @@ var MixMaterialDefines = /** @class */ (function (_super) {
         _this.CLIPPLANE2 = false;
         _this.CLIPPLANE3 = false;
         _this.CLIPPLANE4 = false;
+        _this.CLIPPLANE5 = false;
+        _this.CLIPPLANE6 = false;
         _this.ALPHATEST = false;
         _this.DEPTHPREPASS = false;
         _this.POINTSIZE = false;
@@ -650,7 +652,7 @@ var MixMaterial = /** @class */ (function (_super) {
                 "vFogInfos", "vFogColor", "pointSize",
                 "vTextureInfos",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "textureMatrix",
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "textureMatrix",
                 "diffuse1Infos", "diffuse2Infos", "diffuse3Infos", "diffuse4Infos",
                 "diffuse5Infos", "diffuse6Infos", "diffuse7Infos", "diffuse8Infos"
             ];

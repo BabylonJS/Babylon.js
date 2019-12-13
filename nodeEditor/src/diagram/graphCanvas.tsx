@@ -206,11 +206,14 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
     }
 
-    public getGridPosition(position: number) {
+    public getGridPosition(position: number, useCeil = false) {
         let gridSize = this.gridSize;
 		if (gridSize === 0) {
 			return position;
-		}
+        }
+        if (useCeil) {
+            return gridSize * Math.ceil(position / gridSize);    
+        }
 		return gridSize * Math.floor(position / gridSize);
     }
     
@@ -324,12 +327,27 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         // Build dagre graph
         this._nodes.forEach(node => {
+
+            if (this._frames.some(f => f.nodes.indexOf(node) !== -1)) {
+                return;
+            }
+
             graph.setNode(node.id.toString(), {
                 id: node.id,
+                type: "node",
                 width: node.width,
                 height: node.height
             });
         });
+
+        this._frames.forEach(frame => {
+            graph.setNode(frame.id.toString(), {
+                id: frame.id,
+                type: "frame",
+                width: frame.element.clientWidth,
+                height: frame.element.clientHeight
+            });
+        })
 
         this._nodes.forEach(node => {
             node.block.outputs.forEach(output => {
@@ -338,7 +356,14 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 }
 
                 output.endpoints.forEach(endpoint => {
-                    graph.setEdge(node.id.toString(), endpoint.ownerBlock.uniqueId.toString());
+                    let sourceFrames = this._frames.filter(f => f.nodes.indexOf(node) !== -1);
+                    let targetFrames = this._frames.filter(f => f.nodes.some(n => n.block === endpoint.ownerBlock));
+
+
+                    let sourceId = sourceFrames.length > 0 ? sourceFrames[0].id : node.id;
+                    let targetId = targetFrames.length > 0 ? targetFrames[0].id : endpoint.ownerBlock.uniqueId;
+
+                    graph.setEdge(sourceId.toString(), targetId.toString());
                 });
             });
         });
@@ -349,11 +374,22 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         // Update graph
         let dagreNodes = graph.nodes().map(node => graph.node(node));
         dagreNodes.forEach(dagreNode => {
-            for (var node of this._nodes) {
-                if (node.id === dagreNode.id) {
-                    node.x = dagreNode.x - dagreNode.width / 2;
-                    node.y = dagreNode.y - dagreNode.height / 2;
-                    node.cleanAccumulation();
+            if (dagreNode.type === "node") {
+                for (var node of this._nodes) {
+                    if (node.id === dagreNode.id) {
+                        node.x = dagreNode.x - dagreNode.width / 2;
+                        node.y = dagreNode.y - dagreNode.height / 2;
+                        node.cleanAccumulation();
+                        return;
+                    }
+                }
+                return;
+            }
+
+            for (var frame of this._frames) {
+                if (frame.id === dagreNode.id) {
+                    frame.move(dagreNode.x - dagreNode.width / 2, dagreNode.y - dagreNode.height / 2, false);
+                    frame.cleanAccumulation();
                     return;
                 }
             }
@@ -697,7 +733,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         // Frames
         if (editorData.frames) {
             for (var frameData of editorData.frames) {
-                var frame = GraphFrame.Parse(frameData, this);
+                var frame = GraphFrame.Parse(frameData, this, editorData.map);
                 this._frames.push(frame);
             }
         }

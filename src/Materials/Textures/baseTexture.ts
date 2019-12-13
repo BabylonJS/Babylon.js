@@ -11,6 +11,8 @@ import { IAnimatable } from '../../Animations/animatable.interface';
 import { GUID } from '../../Misc/guid';
 import { ISize, Size } from '../../Maths/math.size';
 
+import "../../Misc/fileTools";
+
 declare type Animation = import("../../Animations/animation").Animation;
 
 /**
