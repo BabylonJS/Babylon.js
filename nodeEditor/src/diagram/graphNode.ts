@@ -38,6 +38,35 @@ export class GraphNode {
     private _ownerCanvas: GraphCanvasComponent; 
     private _isSelected: boolean;
     private _displayManager: Nullable<IDisplayManager> = null;
+    private _isVisible = true;
+
+    public get isVisible() {
+        return this._isVisible;
+    }
+
+    public set isVisible(value: boolean) {
+        this._isVisible = value;
+
+        if (!value) {
+            this._visual.classList.add("hidden");
+        } else {
+            this._visual.classList.remove("hidden");
+        }
+
+        for (var link of this._links) {
+            link.isVisible = value;
+        }
+
+        this._refreshLinks();
+    }
+
+    public get outputPorts() {
+        return this._outputPorts;
+    }
+
+    public get inputPorts() {
+        return this._inputPorts;
+    }
 
     public get links() {
         return this._links;
@@ -154,7 +183,11 @@ export class GraphNode {
             this.isSelected = overlap;
         });
 
-        this._onFrameCreatedObserver = this._globalState.onFrameCreated.add(frame => {            
+        this._onFrameCreatedObserver = this._globalState.onFrameCreated.add(frame => {      
+            if (this._ownerCanvas.frames.some(f => f.nodes.indexOf(this) !== -1)) {
+                return;
+            }
+            
             if (this.isOverlappingFrame(frame)) {
                 frame.nodes.push(this);
             }
@@ -237,21 +270,6 @@ export class GraphNode {
 
     }
 
-    private _appendConnection(connectionPoint: NodeMaterialConnectionPoint, root: HTMLDivElement, displayManager: Nullable<IDisplayManager>) {
-        let portContainer = root.ownerDocument!.createElement("div");
-        portContainer.classList.add("portLine");
-        root.appendChild(portContainer);
-
-        if (!displayManager || displayManager.shouldDisplayPortLabels(this.block)) {
-            let portLabel = root.ownerDocument!.createElement("div");
-            portLabel.classList.add("label");
-            portLabel.innerHTML = connectionPoint.name;        
-            portContainer.appendChild(portLabel);
-        }
-    
-        return new NodePort(portContainer, connectionPoint, this, this._globalState);
-    }
-
     private _onDown(evt: PointerEvent) {
         // Check if this is coming from the port
         if (evt.srcElement && (evt.srcElement as HTMLElement).nodeName === "IMG") {
@@ -267,15 +285,19 @@ export class GraphNode {
 
         evt.stopPropagation();
 
+        for (var selectedNode of this._ownerCanvas.selectedNodes) {
+            selectedNode.cleanAccumulation();
+        }
+
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;        
         
         this._visual.setPointerCapture(evt.pointerId);
     }
 
-    public cleanAccumulation() {
-        this.x = this.gridAlignedX;
-        this.y = this.gridAlignedY;
+    public cleanAccumulation(useCeil = false) {
+        this.x = this._ownerCanvas.getGridPosition(this.x, useCeil);
+        this.y = this._ownerCanvas.getGridPosition(this.y, useCeil);
     }
 
     private _onUp(evt: PointerEvent) {
@@ -376,11 +398,11 @@ export class GraphNode {
 
         // Connections
         for (var input of this.block.inputs) {
-            this._inputPorts.push(this._appendConnection(input, this._inputsContainer, this._displayManager));
+            this._inputPorts.push(NodePort.CreatePortElement(input,  this, this._inputsContainer, this._displayManager, this._globalState));
         }
 
         for (var output of this.block.outputs) {
-            this._outputPorts.push(this._appendConnection(output, this._outputsContainer, this._displayManager));
+            this._outputPorts.push(NodePort.CreatePortElement(output,  this, this._outputsContainer, this._displayManager, this._globalState));
         }
 
         this.refresh();

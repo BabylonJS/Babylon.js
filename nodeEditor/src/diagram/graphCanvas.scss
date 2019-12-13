@@ -22,6 +22,72 @@
         }
     }
 
+    .port {
+        border-radius: 20px;
+        width: 20px;
+        height: 20px;                                                    
+        align-self: center;   
+        
+        .img {
+            width: 100%;
+        }     
+        
+        &:hover, &.selected {
+            filter: brightness(2);
+        }
+    }
+
+    .portLine {
+        height: 24px;
+        display: grid;                
+        grid-template-rows: 100%;
+    }
+
+    .port-label {                   
+        align-items: center;
+    }
+
+    .inputsContainer {                        
+        grid-row: 1;
+        grid-column: 1;
+
+        .portLine {
+            grid-template-columns: 12px calc(100% - 15px);
+
+            .port-label {                    
+                grid-row: 1;
+                grid-column: 2;
+            }
+
+            .port {                              
+                grid-row: 1;
+                grid-column: 1;
+                transform: translateX(-12px);     
+            }
+        }
+    }
+
+    .outputsContainer {                  
+        grid-row: 1;
+        grid-column: 2;
+
+        .portLine {
+            grid-template-columns: calc(100% - 10px) 12px;
+
+            .port-label {                    
+                grid-row: 1;
+                grid-column: 1;
+                text-align: right;
+            }
+
+            .port {                              
+                grid-row: 1;
+                grid-column: 2;
+                transform: translateX(2px);                        
+            }        
+        }
+    }
+
     #graph-container {
         width: 100%;
         height: 100%;
@@ -47,8 +113,35 @@
             display: grid;
             grid-template-rows: 40px calc(100% - 40px);
             grid-template-columns: 100%;            
-            border: transparent solid 4px;
             box-sizing: border-box;
+
+            &.collapsed {
+                height: auto !important;
+                width: 200px !important;
+
+                .frame-box-header {
+                    font-size: 16px;
+                    grid-template-columns: calc(100% - 37px) 30px 7px;  
+                    
+                    .frame-box-header-collapse {
+                        margin-top: -2px;
+                    }
+                    
+                    .frame-box-header-close {
+                        display: none;
+                    }
+                }
+            }
+
+            .frame-box-border {                
+                grid-row: 1 / span 2;
+                grid-column: 1;
+                width: 100%;
+                height: 100%;
+                border: transparent solid 4px;
+                pointer-events: none;
+                box-sizing: border-box;
+            }
 
             .frame-box-header {
                 grid-row: 1;
@@ -58,19 +151,64 @@
                 font-size: 24px;
                 text-align: center;
                 display: grid;
+                grid-template-rows: 100%;  
+                grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;  
                 align-content: center;
                 overflow: hidden;
-                margin: -4px;
-                border: rgba(72, 72, 72, 1) solid 4px;
-                border-bottom: 0;
+
+                .frame-box-header-button {
+                    cursor: pointer;
+                    align-self: center;
+                    transform-origin: 50% 50%;
+                    transform: scale(1);
+                    stroke: transparent;
+                    fill: white;
+                    display: grid;               
+
+                    &.down {
+                        transform: scale(0.90);
+                    }
+                }
+
+                .frame-box-header-collapse {
+                    grid-column: 2;
+                    grid-row: 1;
+                }
+
+                .frame-box-header-close {
+                    grid-column: 4;
+                    grid-row: 1;
+                }
+
+                .frame-box-header-title {
+                    grid-column: 1;
+                    grid-row: 1;
+                    display: grid;
+                    height: 100%;
+                    width: 100%;
+                    align-self: stretch;
+                    align-items: center;
+                    margin-top: -2px;
+                }
+            }
+
+            .port-container {
+                margin-top: 6px;      
+                margin-bottom: 6px; 
+                margin-left: 4px;     
+                margin-right: 4px;     
+                color: white;
+                grid-row: 2;
+                grid-column: 1;
+                display: grid;
+                grid-template-rows: 100%;
+                grid-template-columns: 50% 50%; 
+                z-index: 2;
             }
 
             &.selected {
-                border-color: white;
-                z-index: 1;
-
-                .frame-box-header {
-                    border-color: white !important;
+                .frame-box-border {
+                  border-color: white;
                 }
             }
         }
@@ -91,19 +229,28 @@
                     stroke: white !important;
                     stroke-dasharray: 10, 2;
                 }       
+
+                &.hidden {
+                    display: none;
+                }
             }
 
             .selection-link {
                 pointer-events: all;
                 stroke-width: 16px;
                 opacity: 0;
+                transition: opacity 75ms;
+                stroke: transparent;                        
+                cursor: pointer;
+
+                &.hidden {
+                    display: none;
+                }
+
                 &:hover, &.selected {
                     stroke: white !important;
                     opacity: 0.4;
                 }
-                transition: opacity 75ms;
-                stroke: transparent;                        
-                cursor: pointer;
             }
         }
 
@@ -127,6 +274,10 @@
                 grid-template-rows: 30px auto;
                 grid-template-columns: 100%;
                 color: white;
+
+                &.hidden {
+                    display: none;
+                }
 
                 .comments {
                     position: absolute;
@@ -191,74 +342,7 @@
                     grid-column: 1;
 
                     display: grid;
-                    grid-template-columns: 50% 50%;
-
-                    .port {
-                        border-radius: 20px;
-                        width: 20px;
-                        height: 20px;                                                    
-                        align-self: center;   
-                        
-                        .img {
-                            width: 100%;
-                        }     
-                        
-                        &:hover, &.selected {
-                            filter: brightness(2);
-                        }
-                    }
-
-                    .portLine {
-                        height: 24px;
-                        display: grid;                
-                        grid-template-rows: 100%;
-                    }
-
-                    .label {                   
-                        align-items: center;
-                    }
-
-                    .inputsContainer {                        
-                        grid-row: 1;
-                        grid-column: 1;
-
-                        .portLine {
-                            grid-template-columns: 12px calc(100% - 15px);
-
-                            .label {                    
-                                grid-row: 1;
-                                grid-column: 2;
-                            }
-
-                            .port {                              
-                                grid-row: 1;
-                                grid-column: 1;
-                                transform: translateX(-12px);     
-                            }
-                        }
-                    }
-
-                    .outputsContainer {                        
-                        grid-row: 1;
-                        grid-column: 2;
-
-                        .portLine {
-                            grid-template-columns: calc(100% - 10px) 12px;
-
-                            .label {                    
-                                grid-row: 1;
-                                grid-column: 1;
-                                text-align: right;
-                            }
-
-                            .port {                              
-                                grid-row: 1;
-                                grid-column: 2;
-                                transform: translateX(2px);                        
-                            }
-                        
-                        }
-                    }
+                    grid-template-columns: 50% 50%;                  
                 }
 
                 .content {

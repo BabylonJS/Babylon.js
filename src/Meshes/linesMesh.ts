@@ -81,7 +81,7 @@ export class LinesMesh extends Mesh {
         var defines: string[] = [];
         var options = {
             attributes: [VertexBuffer.PositionKind, "world0", "world1", "world2", "world3"],
-            uniforms: ["vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "world", "viewProjection"],
+            uniforms: ["vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "world", "viewProjection"],
             needAlphaBlending: true,
             defines: defines
         };
@@ -132,6 +132,8 @@ export class LinesMesh extends Mesh {
         scene.clipPlane2 ? this._addClipPlaneDefine("CLIPPLANE2") : this._removeClipPlaneDefine("CLIPPLANE2");
         scene.clipPlane3 ? this._addClipPlaneDefine("CLIPPLANE3") : this._removeClipPlaneDefine("CLIPPLANE3");
         scene.clipPlane4 ? this._addClipPlaneDefine("CLIPPLANE4") : this._removeClipPlaneDefine("CLIPPLANE4");
+        scene.clipPlane5 ? this._addClipPlaneDefine("CLIPPLANE5") : this._removeClipPlaneDefine("CLIPPLANE5");
+        scene.clipPlane6 ? this._addClipPlaneDefine("CLIPPLANE6") : this._removeClipPlaneDefine("CLIPPLANE6");
 
         if (!this._colorShader.isReady()) {
             return false;
