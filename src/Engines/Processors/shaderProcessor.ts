@@ -11,7 +11,7 @@ import { ProcessingOptions } from './shaderProcessingOptions';
 import { _DevTools } from '../../Misc/devTools';
 
 declare type WebRequest = import("../../Misc/webRequest").WebRequest;
-declare type LoadFileError = import("../../Misc/FileTools").LoadFileError;
+declare type LoadFileError = import("../../Misc/fileTools").LoadFileError;
 declare type IOfflineProvider = import("../../Offline/IOfflineProvider").IOfflineProvider;
 declare type IFileRequest  = import("../../Misc/fileRequest").IFileRequest;
 
