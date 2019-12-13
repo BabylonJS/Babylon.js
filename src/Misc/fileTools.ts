@@ -472,6 +472,6 @@ export class FileTools {
     }
 }
 
-ThinEngine._FileToolsLoadImage = FileTools.LoadImage;
-ThinEngine._FileToolsLoadFile = FileTools.LoadFile;
-ShaderProcessor._FileToolsLoadFile = FileTools.LoadFile;
+ThinEngine._FileToolsLoadImage = FileTools.LoadImage.bind(FileTools);
+ThinEngine._FileToolsLoadFile = FileTools.LoadFile.bind(FileTools);
+ShaderProcessor._FileToolsLoadFile = FileTools.LoadFile.bind(FileTools);
