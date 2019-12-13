@@ -23,13 +23,14 @@ import { IPipelineContext } from './IPipelineContext';
 import { WebGLPipelineContext } from './WebGL/webGLPipelineContext';
 import { VertexBuffer } from '../Meshes/buffer';
 import { InstancingAttributeInfo } from './instancingAttributeInfo';
-import { FileTools } from '../Misc/fileTools';
 import { BaseTexture } from '../Materials/Textures/baseTexture';
 import { IOfflineProvider } from '../Offline/IOfflineProvider';
 import { IEffectFallbacks } from '../Materials/iEffectFallbacks';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 import { CanvasGenerator } from '../Misc/canvasGenerator';
 
+declare type WebRequest = import("../Misc/webRequest").WebRequest;
+declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
 declare type Observer<T> = import("../Misc/observable").Observer<T>;
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
@@ -131,14 +132,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-beta.12";
+        return "babylonjs@4.1.0-beta.13";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-beta.12";
+        return "4.1.0-beta.13";
     }
 
     /**
@@ -624,7 +625,7 @@ export class ThinEngine {
                     if (this._gl) {
                         this._webGLVersion = 2.0;
 
-                        // Prevent weird browsers to lie :-)
+                        // Prevent weird browsers to lie
                         if (!this._gl.deleteQuery) {
                             this._webGLVersion = 1.0;
                         }
@@ -2952,11 +2953,11 @@ export class ThinEngine {
                 if (buffer && ((<HTMLImageElement>buffer).decoding || (<ImageBitmap>buffer).close)) {
                     onload(<HTMLImageElement>buffer);
                 } else {
-                    FileTools.LoadImage(url, onload, onInternalError, scene ? scene.offlineProvider : null, mimeType);
+                    ThinEngine._FileToolsLoadImage(url, onload, onInternalError, scene ? scene.offlineProvider : null, mimeType);
                 }
             }
             else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || ArrayBuffer.isView(buffer) || buffer instanceof Blob) {
-                FileTools.LoadImage(buffer, onload, onInternalError, scene ? scene.offlineProvider : null, mimeType);
+                ThinEngine._FileToolsLoadImage(buffer, onload, onInternalError, scene ? scene.offlineProvider : null, mimeType);
             }
             else if (buffer) {
                 onload(<HTMLImageElement>buffer);
@@ -2964,6 +2965,20 @@ export class ThinEngine {
         }
 
         return texture;
+    }
+
+    /**
+     * Loads an image as an HTMLImageElement.
+     * @param input url string, ArrayBuffer, or Blob to load
+     * @param onLoad callback called when the image successfully loads
+     * @param onError callback called when the image fails to load
+     * @param offlineProvider offline provider for caching
+     * @param mimeType optional mime type
+     * @returns the HTMLImageElement of the loaded image
+     * @hidden
+     */
+    public static _FileToolsLoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement> {
+        throw _DevTools.WarnImport("FileTools");
     }
 
     /**
@@ -4167,12 +4182,27 @@ export class ThinEngine {
     /** @hidden */
     public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void,
         offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: IWebRequest, exception?: any) => void): IFileRequest {
-        let request = FileTools.LoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
+        let request = ThinEngine._FileToolsLoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
             this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
         });
         return request;
+    }
+
+    /**
+     * Loads a file from a url
+     * @param url url to load
+     * @param onSuccess callback called when the file successfully loads
+     * @param onProgress callback called while file is loading (if the server supports this mode)
+     * @param offlineProvider defines the offline provider for caching
+     * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+     * @param onError callback called when the file fails to load
+     * @returns a file request object
+     * @hidden
+     */
+    public static _FileToolsLoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
+        throw  _DevTools.WarnImport("FileTools");
     }
 
     /**
