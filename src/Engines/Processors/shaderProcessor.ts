@@ -9,7 +9,11 @@ import { ShaderDefineExpression } from './Expressions/shaderDefineExpression';
 import { ShaderDefineArithmeticOperator } from './Expressions/Operators/shaderDefineArithmeticOperator';
 import { ProcessingOptions } from './shaderProcessingOptions';
 import { _DevTools } from '../../Misc/devTools';
-import { IOfflineProvider, WebRequest, LoadFileError, IFileRequest } from '../..';
+
+declare type WebRequest = import("../../Misc/webRequest").WebRequest;
+declare type LoadFileError = import("../../Misc/FileTools").LoadFileError;
+declare type IOfflineProvider = import("../../Offline/IOfflineProvider").IOfflineProvider;
+declare type IFileRequest  = import("../../Misc/fileRequest").IFileRequest;
 
 /** @hidden */
 export class ShaderProcessor {
