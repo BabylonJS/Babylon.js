@@ -4013,6 +4013,8 @@ export class ThinEngine {
                         return this._gl.LUMINANCE;
                     case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
                         return this._gl.LUMINANCE_ALPHA;
+                    case Constants.TEXTUREFORMAT_RGB:
+                        return this._gl.RGB;
                 }
             }
             return this._gl.RGBA;
