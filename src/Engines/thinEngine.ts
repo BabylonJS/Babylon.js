@@ -132,14 +132,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-beta.13";
+        return "babylonjs@4.1.0-beta.14";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-beta.13";
+        return "4.1.0-beta.14";
     }
 
     /**
@@ -4013,6 +4013,8 @@ export class ThinEngine {
                         return this._gl.LUMINANCE;
                     case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
                         return this._gl.LUMINANCE_ALPHA;
+                    case Constants.TEXTUREFORMAT_RGB:
+                        return this._gl.RGB;
                 }
             }
             return this._gl.RGBA;
