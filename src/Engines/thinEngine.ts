@@ -132,14 +132,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-beta.14";
+        return "babylonjs@4.1.0-beta.15";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-beta.14";
+        return "4.1.0-beta.15";
     }
 
     /**
@@ -3196,7 +3196,7 @@ export class ThinEngine {
 
         var textureType = this._getWebGLTextureType(texture.type);
         var format = this._getInternalFormat(texture.format);
-        var internalFormat = babylonInternalFormat === undefined ? this._getRGBABufferInternalSizedFormat(texture.type, format) : this._getInternalFormat(babylonInternalFormat);
+        var internalFormat = babylonInternalFormat === undefined ? this._getRGBABufferInternalSizedFormat(texture.type, texture.format) : this._getInternalFormat(babylonInternalFormat);
 
         this._unpackFlipY(texture.invertY);
 
