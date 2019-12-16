@@ -840,6 +840,17 @@ export class Vector3 {
     }
 
     /**
+     * Negate this vector in place
+     * @returns this
+     */
+    public negateInPlace(): Vector3 {
+        this.x *= -1;
+        this.y *= -1;
+        this.z *= -1;
+        return this;
+    }
+
+    /**
      * Multiplies the Vector3 coordinates by the float "scale"
      * @param scale defines the multiplier factor
      * @returns the current updated Vector3
@@ -2652,6 +2663,14 @@ export class Quaternion {
      */
     public equals(otherQuaternion: DeepImmutable<Quaternion>): boolean {
         return otherQuaternion && this.x === otherQuaternion.x && this.y === otherQuaternion.y && this.z === otherQuaternion.z && this.w === otherQuaternion.w;
+    }
+
+    public equalsWithEpsilon(otherQuaternion: DeepImmutable<Quaternion>, epsilon: number = Epsilon): boolean {
+        return otherQuaternion
+            && Scalar.WithinEpsilon(this.x, otherQuaternion.x, epsilon)
+            && Scalar.WithinEpsilon(this.y, otherQuaternion.y, epsilon)
+            && Scalar.WithinEpsilon(this.z, otherQuaternion.z, epsilon)
+            && Scalar.WithinEpsilon(this.w, otherQuaternion.w, epsilon);
     }
 
     /**
