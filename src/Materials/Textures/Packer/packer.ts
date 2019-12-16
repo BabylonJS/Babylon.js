@@ -1,8 +1,8 @@
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { Constants } from "../../Engines/constants";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { VertexBuffer } from "../../Meshes/buffer";
-import { Scene } from "../../scene";
+import { Constants } from "../../../Engines/constants";
+import { AbstractMesh } from "../../../Meshes/abstractMesh";
+import { VertexBuffer } from "../../../Meshes/buffer";
+import { Scene } from "../../../scene";
 
 /**
  * Defines the basic options interface of a SpriteMap
@@ -17,12 +17,12 @@ export interface IPackerOptions{
     /**
 	 * the UV input targets, as a single value for all meshes or an array of values that matches the mesh count.  Defaults to VertexBuffer.UVKind
 	 */
-    uvsIn?: number | number[];
+    uvsIn?: string | string[];
 
     /**
 	 * the UV output targets, as a single value for all meshes or an array of values that matches the mesh count.  Defaults to VertexBuffer.UVKind
 	 */
-    uvsOut?: number | number[];
+    uvsOut?: string | string[];
 
     /**
 	 * number representing the layout style. Defaults to LAYOUT_STRIP
@@ -69,6 +69,10 @@ export class Packer{
     /** mag = nearest and min = linear and mip = linear */
     public static readonly LAYOUT_COLNUM = Constants.LAYOUT_COLNUM;
 
+    /** Arguments passed with the Constructor */
+    public options: IPackerOptions;
+
+
     /**
     * Initializes a texture package series from an array of meshes or a single mesh. 
     * @param name The name of the package
@@ -77,29 +81,38 @@ export class Packer{
     * @param scene The scene which the textures are scoped to.
     * @returns Packer
     */
-    constructor(name: string, meshes: AbstractMesh | AbstractMesh[], options: IPackerOptions = {
-        map: [
-            'ambientTexture',
-            'bumpTexture',
-            'diffuseTexture',
-            'emissiveTexture',
-            'lightmapTexture',
-            'opacityTexture',
-            'reflectionTexture',
-            'refractionTexture',
-            'specularTexture'
-        ],
-        uvsIn : VertexBuffer.UVKind,
-        uvsOut : VertexBuffer.UVKind,
-        layout : Constants.LAYOUT_STRIP,
-        colcount : 4,
-        updateInputMeshes : true,
-        disposeSource : true,
-        fillBlanks : true,
-        customFillColor : 'black'
-    }, scene: Scene ){        
+    constructor(name: string, meshes: AbstractMesh | AbstractMesh[], options: IPackerOptions, scene: Scene ){
+        /**
+        * Run through the options and set what ever defaults are needed that where not declared.
+        */
+        this.options = options;
+        this.options.map = this.options.map || [
+                'ambientTexture',
+                'bumpTexture',
+                'diffuseTexture',
+                'emissiveTexture',
+                'lightmapTexture',
+                'opacityTexture',
+                'reflectionTexture',
+                'refractionTexture',
+                'specularTexture'
+            ];            
+      
+        this.options.uvsIn = this.options.uvsIn || VertexBuffer.UVKind;
+        this.options.uvsOut = this.options.uvsOut || VertexBuffer.UVKind;
+        this.options.layout = this.options.layout || Packer.LAYOUT_STRIP;
         
+        if(this.options.layout === Packer.LAYOUT_COLNUM){
+            this.options.colcount = this.options.colcount || 4;
+        }
         
+        this.options.updateInputMeshes = this.options.updateInputMeshes || true;
+        this.options.disposeSource = this.options.disposeSource || true;
+        this.options.fillBlanks = this.options.fillBlanks || true;
+        
+        if(this.options.fillBlanks === true){
+            this.options.customFillColor = this.options.customFillColor || 'black';
+        }        
         
               
     }    
