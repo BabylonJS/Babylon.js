@@ -1,8 +1,7 @@
 import { Nullable } from "../../types";
 import { Observable } from "../../Misc/observable";
 import { IDisposable, Scene } from "../../scene";
-import { Quaternion, Vector3 } from "../../Maths/math.vector";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { Quaternion } from "../../Maths/math.vector";
 import { Camera } from "../../Cameras/camera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { WebXRCamera } from "./webXRCamera";
@@ -14,10 +13,6 @@ import { WebXRFeaturesManager } from './webXRFeaturesManager';
  * @see https://doc.babylonjs.com/how_to/webxr
  */
 export class WebXRExperienceHelper implements IDisposable {
-    /**
-     * Container which stores the xr camera and controllers as children. This can be used to move the camera/user as the camera's position is updated by the xr device
-     */
-    public container: AbstractMesh;
     /**
      * Camera used to render xr content
      */
@@ -32,8 +27,6 @@ export class WebXRExperienceHelper implements IDisposable {
         this.state = val;
         this.onStateChangedObservable.notifyObservers(this.state);
     }
-
-    private static _TmpVector = new Vector3();
 
     /**
      * Fires when the state of the experience helper has changed
@@ -83,8 +76,6 @@ export class WebXRExperienceHelper implements IDisposable {
         this.sessionManager = new WebXRSessionManager(scene);
         this.camera = new WebXRCamera("", scene, this.sessionManager);
         this.featuresManager = new WebXRFeaturesManager(this.sessionManager);
-        this.container = new AbstractMesh("WebXR Container", scene);
-        this.camera.parent = this.container;
 
         scene.onDisposeObservable.add(() => {
             this.exitXRAsync();
@@ -165,34 +156,10 @@ export class WebXRExperienceHelper implements IDisposable {
     }
 
     /**
-     * Updates the global position of the camera by moving the camera's container
-     * This should be used instead of modifying the camera's position as it will be overwritten by an xrSessions's update frame
-     * @param position The desired global position of the camera
-     */
-    public setPositionOfCameraUsingContainer(position: Vector3) {
-        this.camera.globalPosition.subtractToRef(position, WebXRExperienceHelper._TmpVector);
-        this.container.position.subtractInPlace(WebXRExperienceHelper._TmpVector);
-    }
-
-    /**
-     * Rotates the xr camera by rotating the camera's container around the camera's position
-     * This should be used instead of modifying the camera's rotation as it will be overwritten by an xrSessions's update frame
-     * @param rotation the desired quaternion rotation to apply to the camera
-     */
-    public rotateCameraByQuaternionUsingContainer(rotation: Quaternion) {
-        if (!this.container.rotationQuaternion) {
-            this.container.rotationQuaternion = Quaternion.FromEulerVector(this.container.rotation);
-        }
-        this.container.rotationQuaternion.multiplyInPlace(rotation);
-        this.container.position.rotateByQuaternionAroundPointToRef(rotation, this.camera.globalPosition, this.container.position);
-    }
-
-    /**
      * Disposes of the experience helper
      */
     public dispose() {
         this.camera.dispose();
-        this.container.dispose();
         this.onStateChangedObservable.clear();
         this.sessionManager.dispose();
     }
