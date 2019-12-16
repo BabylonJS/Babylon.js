@@ -1,12 +1,6 @@
 ﻿{
     "root": "https://cdn.babylonjs.com",
     "tests": [  
-		{
-            "title": "GLTF Mesh Primitive Attribute",
-            "playgroundId": "#DS8AA7#18",
-            "replace": "__folder__, Mesh_PrimitiveAttribute, __page__, 0",
-            "referenceImage": "gltfMeshPrimitiveAttribute.png"
-        },	
         {
             "title": "setParent",
             "playgroundId": "#JD49CT#2",
