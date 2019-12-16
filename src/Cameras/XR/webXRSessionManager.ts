@@ -47,9 +47,22 @@ export class WebXRSessionManager implements IDisposable {
     public session: XRSession;
 
     /**
-     * Type of reference space used when creating the session
+     * The viewer (head position) reference space. This can be used to get the XR world coordinates
+     * or get the offset the player is currently at.
+     */
+    public viewerReferenceSpace: XRReferenceSpace;
+
+    /**
+     * The current reference space used in this session. This reference space can constantly change!
+     * It is mainly used to offset the camera's position.
      */
     public referenceSpace: XRReferenceSpace;
+
+    /**
+     * Used just in case of a failure to initialize an immersive session.
+     * The viewer reference space is compensated using this height, creating a kind of "viewer-floor" reference space
+     */
+    public defaultHeightCompensation = 1.7;
 
     /**
      * Current XR frame
@@ -128,17 +141,25 @@ export class WebXRSessionManager implements IDisposable {
      */
     public setReferenceSpaceAsync(referenceSpace: XRReferenceSpaceType) {
         return this.session.requestReferenceSpace(referenceSpace).then((referenceSpace: XRReferenceSpace) => {
-            this.referenceSpace = referenceSpace;
+            return referenceSpace;
         }, (rejectionReason) => {
             Logger.Error("XR.requestReferenceSpace failed for the following reason: ");
             Logger.Error(rejectionReason);
             Logger.Log("Defaulting to universally-supported \"viewer\" reference space type.");
 
             return this.session.requestReferenceSpace("viewer").then((referenceSpace: XRReferenceSpace) => {
-                this.referenceSpace = referenceSpace;
+                const heightCompensation = new XRRigidTransform({ x: 0, y: -this.defaultHeightCompensation, z: 0 });
+                return referenceSpace.getOffsetReferenceSpace(heightCompensation);
             }, (rejectionReason) => {
                 Logger.Error(rejectionReason);
                 throw "XR initialization failed: required \"viewer\" reference space type not supported.";
+            });
+        }).then((referenceSpace) => {
+            // initialize the base and offset (currently the same)
+            this.referenceSpace = referenceSpace;
+
+            this.session.requestReferenceSpace("viewer").then((referenceSpace: XRReferenceSpace) => {
+                this.viewerReferenceSpace = referenceSpace;
             });
         });
     }
@@ -172,8 +193,9 @@ export class WebXRSessionManager implements IDisposable {
                 this.currentTimestamp = timestamp;
                 if (xrFrame) {
                     this.onXRFrameObservable.notifyObservers(xrFrame);
+                    // only run the render loop if a frame exists
+                    this.scene.getEngine()._renderLoop();
                 }
-                this.scene.getEngine()._renderLoop();
             }
         };
 
