@@ -59,6 +59,12 @@ export class WebXRSessionManager implements IDisposable {
     public referenceSpace: XRReferenceSpace;
 
     /**
+     * The base reference space from which the session started. good if you want to reset your
+     * reference space
+     */
+    public baseReferenceSpace: XRReferenceSpace;
+
+    /**
      * Used just in case of a failure to initialize an immersive session.
      * The viewer reference space is compensated using this height, creating a kind of "viewer-floor" reference space
      */
@@ -156,7 +162,7 @@ export class WebXRSessionManager implements IDisposable {
             });
         }).then((referenceSpace) => {
             // initialize the base and offset (currently the same)
-            this.referenceSpace = referenceSpace;
+            this.referenceSpace = this.baseReferenceSpace = referenceSpace;
 
             this.session.requestReferenceSpace("viewer").then((referenceSpace: XRReferenceSpace) => {
                 this.viewerReferenceSpace = referenceSpace;
