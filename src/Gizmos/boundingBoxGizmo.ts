@@ -549,7 +549,7 @@ export class BoundingBoxGizmo extends Gizmo {
         this._dragMesh = Mesh.CreateBox("dummy", 1, this.gizmoLayer.utilityLayerScene);
         this._dragMesh.visibility = 0;
         this._dragMesh.rotationQuaternion = new Quaternion();
-        this.pointerDragBehavior.useObjectOrienationForDragging = false;
+        this.pointerDragBehavior.useObjectOrientationForDragging = false;
         this._dragMesh.addBehavior(this.pointerDragBehavior);
     }
 

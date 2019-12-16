@@ -588,6 +588,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
             this._frameCandidate.parentElement!.removeChild(this._frameCandidate);
             this._frameCandidate = null;
+
+            this.props.globalState.onSelectionChangedObservable.notifyObservers(newFrame);
          }
     }
 
