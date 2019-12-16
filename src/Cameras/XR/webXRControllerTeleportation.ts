@@ -111,22 +111,23 @@ export class WebXRControllerTeleportation {
                 }
 
                 if (c.inputSource.gamepad) {
-                    if (c.inputSource.gamepad.axes[3] !== undefined) {
+                    const yIndex = c.inputSource.gamepad.axes.length - 1;
+                    const xIndex = c.inputSource.gamepad.axes.length - 2;
+                    if (c.inputSource.gamepad.axes[yIndex] !== undefined) {
                         // Forward teleportation
-                        if (c.inputSource.gamepad.axes[3] < -0.7) {
+                        if (c.inputSource.gamepad.axes[yIndex] < -0.7) {
                             forwardReadyToTeleport = true;
                         } else {
                             if (forwardReadyToTeleport) {
                                 // Teleport the users feet to where they targeted
                                 this._tmpVector.copyFrom(teleportationTarget.position);
-                                this._tmpVector.y += input.baseExperience.camera.position.y;
-                                input.baseExperience.setPositionOfCameraUsingContainer(this._tmpVector);
+                                input.baseExperience.camera.position.addInPlace(this._tmpVector);
                             }
                             forwardReadyToTeleport = false;
                         }
 
                         // Backward teleportation
-                        if (c.inputSource.gamepad.axes[3] > 0.7) {
+                        if (c.inputSource.gamepad.axes[yIndex] > 0.7) {
                             backwardReadyToTeleport = true;
                         } else {
                             if (backwardReadyToTeleport) {
@@ -148,28 +149,27 @@ export class WebXRControllerTeleportation {
                                 if (pick && pick.pickedPoint) {
                                     // Teleport the users feet to where they targeted
                                     this._tmpVector.copyFrom(pick.pickedPoint);
-                                    this._tmpVector.y += input.baseExperience.camera.position.y;
-                                    input.baseExperience.setPositionOfCameraUsingContainer(this._tmpVector);
+                                    input.baseExperience.camera.position.addInPlace(this._tmpVector);
                                 }
                             }
                             backwardReadyToTeleport = false;
                         }
                     }
 
-                    if (c.inputSource.gamepad.axes[2] !== undefined) {
-                        if (c.inputSource.gamepad.axes[2] < -0.7) {
+                    if (c.inputSource.gamepad.axes[xIndex] !== undefined) {
+                        if (c.inputSource.gamepad.axes[xIndex] < -0.7) {
                             leftReadyToTeleport = true;
                         } else {
                             if (leftReadyToTeleport) {
-                                input.baseExperience.rotateCameraByQuaternionUsingContainer(Quaternion.FromEulerAngles(0, -Math.PI / 4, 0));
+                                input.baseExperience.camera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, -Math.PI / 4, 0));
                             }
                             leftReadyToTeleport = false;
                         }
-                        if (c.inputSource.gamepad.axes[2] > 0.7) {
+                        if (c.inputSource.gamepad.axes[xIndex] > 0.7) {
                             rightReadyToTeleport = true;
                         } else {
                             if (rightReadyToTeleport) {
-                                input.baseExperience.rotateCameraByQuaternionUsingContainer(Quaternion.FromEulerAngles(0, Math.PI / 4, 0));
+                                input.baseExperience.camera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, Math.PI / 4, 0));
                             }
                             rightReadyToTeleport = false;
                         }
