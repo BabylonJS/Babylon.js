@@ -40,6 +40,15 @@ export class WebXRExperienceHelper implements IDisposable {
      */
     public onStateChangedObservable = new Observable<WebXRState>();
 
+    /**
+     * Observers registered here will be triggered after the camera's initial transformation is set
+     * This can be used to set a different ground level or an extra rotation.
+     *
+     * Note that ground level is considered to be at 0. The height defined by the XR camera will be added
+     * to the position set after this observable is done executing.
+     */
+    public onInitialXRPoseSetObservable = new Observable<WebXRCamera>();
+
     /** Session manager used to keep track of xr session */
     public sessionManager: WebXRSessionManager;
 
@@ -71,8 +80,8 @@ export class WebXRExperienceHelper implements IDisposable {
      * @param scene The scene the helper should be created in
      */
     private constructor(private scene: Scene) {
-        this.camera = new WebXRCamera("", scene);
         this.sessionManager = new WebXRSessionManager(scene);
+        this.camera = new WebXRCamera("", scene, this.sessionManager);
         this.featuresManager = new WebXRFeaturesManager(this.sessionManager);
         this.container = new AbstractMesh("WebXR Container", scene);
         this.camera.parent = this.container;
@@ -121,11 +130,8 @@ export class WebXRExperienceHelper implements IDisposable {
 
             // Overwrite current scene settings
             this.scene.autoClear = false;
-            this.scene.activeCamera = this.camera;
 
-            this.sessionManager.onXRFrameObservable.add(() => {
-                this.camera.updateFromXRSessionManager(this.sessionManager);
-            });
+            this.nonVrToVrCamera();
 
             this.sessionManager.onXRSessionEnded.addOnce(() => {
                 // Reset camera rigs output render target to ensure sessions render target is not drawn after it ends
@@ -136,6 +142,11 @@ export class WebXRExperienceHelper implements IDisposable {
                 // Restore scene settings
                 this.scene.autoClear = this._originalSceneAutoClear;
                 this.scene.activeCamera = this._nonVRCamera;
+                if ((<any>this._nonVRCamera).setPosition) {
+                    (<any>this._nonVRCamera).setPosition(this.camera.position);
+                } else {
+                    this._nonVRCamera!.position.copyFrom(this.camera.position);
+                }
 
                 this._setState(WebXRState.NOT_IN_XR);
             });
@@ -143,8 +154,6 @@ export class WebXRExperienceHelper implements IDisposable {
             // Wait until the first frame arrives before setting state to in xr
             this.sessionManager.onXRFrameObservable.addOnce(() => {
                 this._setState(WebXRState.IN_XR);
-
-                this.setPositionOfCameraUsingContainer(new Vector3(this._nonVRCamera!.position.x, this.camera.position.y, this._nonVRCamera!.position.z));
             });
 
             return this.sessionManager;
@@ -186,5 +195,16 @@ export class WebXRExperienceHelper implements IDisposable {
         this.container.dispose();
         this.onStateChangedObservable.clear();
         this.sessionManager.dispose();
+    }
+
+    private nonVrToVrCamera() {
+        this.scene.activeCamera = this.camera;
+        const mat = this._nonVRCamera!.computeWorldMatrix();
+        mat.decompose(undefined, this.camera.rotationQuaternion, this.camera.position);
+        // set the ground level
+        this.camera.position.y = 0;
+        Quaternion.FromEulerAnglesToRef(0, this.camera.rotationQuaternion.toEulerAngles().y, 0, this.camera.rotationQuaternion);
+
+        this.onInitialXRPoseSetObservable.notifyObservers(this.camera);
     }
 }
