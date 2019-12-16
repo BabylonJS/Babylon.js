@@ -2,6 +2,10 @@ import { Node } from "babylonjs/node";
 import { Scene } from "babylonjs/scene";
 import { GLTFData } from "./glTFData";
 import { _Exporter } from "./glTFExporter";
+import { Mesh } from 'babylonjs/Meshes/mesh';
+import { Vector3 } from "babylonjs/Maths/math";
+import { Quaternion } from "babylonjs/Maths/math";
+import { Material } from "babylonjs/Materials/material";
 
 /**
  * Holds a collection of exporter options and parameters
@@ -82,10 +86,49 @@ export class GLTF2Export {
      * @returns Returns an object with a .glb filename as key and data as value
      */
     public static GLBAsync(scene: Scene, filePrefix: string, options?: IExportOptions): Promise<GLTFData> {
+        let oldRoot: Node;
+        let oldRootChildren: Array<Node> = new Array<Node>();
+
+        // Remove __root__ node temporary
+        scene.rootNodes.forEach((rootNode) => {
+            if (rootNode.name === "__root__" && oldRoot === undefined) {
+                oldRoot = rootNode;
+                // Update hierarchy
+                for (let childNode of rootNode.getDescendants(true)) {
+                    childNode.parent = null;
+                    oldRootChildren.push(childNode);
+                }
+                rootNode.dispose();
+                // Toggle coordinate system
+                scene.useRightHandedSystem = !scene.useRightHandedSystem;
+                scene.meshes.forEach((mesh) => {
+                    if (mesh instanceof Mesh) {
+                        mesh.overrideMaterialSideOrientation = mesh.overrideMaterialSideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
+                    }
+                });
+            }
+        });
         return this._PreExportAsync(scene, options).then(() => {
             const glTFPrefix = filePrefix.replace(/\.[^/.]+$/, "");
             const gltfGenerator = new _Exporter(scene, options);
             return gltfGenerator._generateGLBAsync(glTFPrefix).then((glTFData) => {
+                // Recreate __root__ node
+                if (oldRoot) {
+                    let newRoot = new Mesh(oldRoot.name, scene);
+                    // Update hierarchy
+                    oldRootChildren.forEach((oldRootChild) => {
+                        oldRootChild.parent = newRoot;
+                    });
+                    newRoot.rotationQuaternion = new Quaternion(0, 1, 0, 0);
+                    newRoot.scaling = new Vector3(1, 1, -1);
+                    // Toggle coordinate system
+                    scene.useRightHandedSystem = !scene.useRightHandedSystem;
+                    scene.meshes.forEach((mesh) => {
+                        if (mesh instanceof Mesh) {
+                            mesh.overrideMaterialSideOrientation = mesh.overrideMaterialSideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
+                        }
+                    });
+                }
                 return this._PostExportAsync(scene, glTFData, options);
             });
         });
