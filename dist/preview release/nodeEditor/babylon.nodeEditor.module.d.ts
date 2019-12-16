@@ -174,6 +174,7 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
     import { IFrameData } from "babylonjs-node-editor/nodeLocationInfo";
     import { Color3 } from 'babylonjs/Maths/math.color';
     export class GraphFrame {
+        private readonly CollapsedWidth;
         private static _FrameCounter;
         private _name;
         private _color;
@@ -1587,6 +1588,7 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class GraphFrame {
+        private readonly CollapsedWidth;
         private static _FrameCounter;
         private _name;
         private _color;

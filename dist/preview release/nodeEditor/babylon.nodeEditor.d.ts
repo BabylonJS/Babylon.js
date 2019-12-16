@@ -99,6 +99,7 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class GraphFrame {
+        private readonly CollapsedWidth;
         private static _FrameCounter;
         private _name;
         private _color;

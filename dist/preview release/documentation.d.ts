@@ -38961,7 +38961,7 @@ declare module BABYLON {
         /**
          * If set, the drag plane/axis will be rotated based on the attached mesh's world rotation (Default: true)
          */
-        useObjectOrienationForDragging: boolean;
+        useObjectOrientationForDragging: boolean;
         private _options;
         /**
          * Gets the options used by the behavior
