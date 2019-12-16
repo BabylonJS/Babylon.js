@@ -2,6 +2,7 @@ import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { VertexBuffer } from "../../Meshes/buffer";
+import { Scene } from "../../scene";
 
 /**
  * Defines the basic options interface of a SpriteMap
@@ -76,7 +77,30 @@ export class Packer{
     * @param scene The scene which the textures are scoped to.
     * @returns Packer
     */
-    constructor(name: string, meshes: AbstractMesh | AbstractMesh[], options, scene ){
+    constructor(name: string, meshes: AbstractMesh | AbstractMesh[], options: IPackerOptions = {
+        map: [
+            'ambientTexture',
+            'bumpTexture',
+            'diffuseTexture',
+            'emissiveTexture',
+            'lightmapTexture',
+            'opacityTexture',
+            'reflectionTexture',
+            'refractionTexture',
+            'specularTexture'
+        ],
+        uvsIn : VertexBuffer.UVKind,
+        uvsOut : VertexBuffer.UVKind,
+        layout : Constants.LAYOUT_STRIP,
+        colcount : 4,
+        updateInputMeshes : true,
+        disposeSource : true,
+        fillBlanks : true,
+        customFillColor : 'black'
+    }, scene: Scene ){        
+        
+        
+        
               
     }    
 }
