@@ -1,4 +1,4 @@
-import { Vector3, Matrix, Quaternion, TmpVectors } from "../../Maths/math.vector";
+import { Vector3, Matrix, Quaternion } from "../../Maths/math.vector";
 import { Scene } from "../../scene";
 import { Camera } from "../../Cameras/camera";
 import { FreeCamera } from "../../Cameras/freeCamera";
@@ -47,7 +47,6 @@ export class WebXRCamera extends FreeCamera {
         while (this.rigCameras.length < viewCount) {
             var newCamera = new TargetCamera("view: " + this.rigCameras.length, Vector3.Zero(), this.getScene());
             newCamera.minZ = 0.1;
-            newCamera.parent = this;
             newCamera.rotationQuaternion = new Quaternion();
             newCamera.updateUpVectorFromRotation = true;
             this.rigCameras.push(newCamera);
@@ -85,23 +84,6 @@ export class WebXRCamera extends FreeCamera {
         super.update();
     }
 
-    /**
-     * overriding getWorldMatrix notice that the world matrix is identity!
-     * To construct a real world matrix for the camera, compose it from position and rotationQuaternion
-     */
-    public getWorldMatrix() {
-        TmpVectors.Vector3[12].copyFrom(this.position);
-        this.position.copyFrom(this._referencedPosition);
-        this.position.copyFromFloats(0, 0, 0);
-        TmpVectors.Quaternion[1].copyFrom(this.rotationQuaternion);
-        this.rotationQuaternion.copyFrom(this._referenceQuaternion);
-        this.rotationQuaternion.copyFromFloats(0, 0, 0, 1);
-        const mat = super.getWorldMatrix();
-        this.position.copyFrom(TmpVectors.Vector3[12]);
-        this.rotationQuaternion.copyFrom(TmpVectors.Quaternion[1]);
-        return mat;
-    }
-
     private _referencedPosition: Vector3 = new Vector3();
     private _referenceQuaternion: Quaternion = Quaternion.Identity();
 
@@ -109,7 +91,8 @@ export class WebXRCamera extends FreeCamera {
         // were position & rotation updated OUTSIDE of the xr update loop
         if (!this.position.equals(this._referencedPosition) || !this.rotationQuaternion.equals(this._referenceQuaternion)) {
             this.position.subtractToRef(this._referencedPosition, this._referencedPosition);
-            this.rotationQuaternion.multiplyToRef(this._referenceQuaternion.conjugateInPlace(), this._referenceQuaternion);
+            this._referenceQuaternion.conjugateInPlace();
+            this._referenceQuaternion.multiplyToRef(this.rotationQuaternion, this._referenceQuaternion);
             this.updateReferenceSpaceOffset(this._referencedPosition, this._referenceQuaternion.normalize());
             return true;
         }
@@ -151,7 +134,29 @@ export class WebXRCamera extends FreeCamera {
         // Update offset reference to use a new originOffset with the teleported
         // player position and orientation.
         // This new offset needs to be applied to the base ref space.
-        this._xrSessionManager.referenceSpace = this._xrSessionManager.referenceSpace.getOffsetReferenceSpace(transform);
+        const referenceSpace = this._xrSessionManager.referenceSpace.getOffsetReferenceSpace(transform);
+
+        const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(referenceSpace);
+
+        if (pose) {
+            const pos = new Vector3();
+            pos.copyFrom(<any>(pose.transform.position));
+            if (!this._scene.useRightHandedSystem) {
+                pos.z *= -1;
+            }
+            this.position.subtractToRef(pos, pos);
+            if (!this._scene.useRightHandedSystem) {
+                pos.z *= -1;
+            }
+            pos.negateInPlace();
+
+            const transform2 = new XRRigidTransform(
+                { ...pos });
+            // Update offset reference to use a new originOffset with the teleported
+            // player position and orientation.
+            // This new offset needs to be applied to the base ref space.
+            this._xrSessionManager.referenceSpace = referenceSpace.getOffsetReferenceSpace(transform2);
+        }
     }
 
     private pose: XRViewerPose;
