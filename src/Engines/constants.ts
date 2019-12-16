@@ -245,6 +245,14 @@ export class Constants {
     public static readonly SCALEMODE_NEAREST = 2;
     /** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
     public static readonly SCALEMODE_CEILING = 3;
+    
+    // Texture Packer Layouts
+    /** Defines that texture packer will use a strip mode layout. */
+    public static readonly LAYOUT_STRIP = 0;
+    /** Defines that texture packer will use a power of two mode layout. */
+    public static readonly LAYOUT_POWER2 = 1;
+    /** Defines that texture packer will use a custom number of columns . */
+    public static readonly LAYOUT_COLNUM = 2;
 
     /**
      * The dirty texture flag value
