@@ -1361,8 +1361,6 @@ namespace Babylon
 
         BGFXCallback::screenShotBitmap.clear();
 
-        // TEST!!! force exit
-        exit(-1);
         return Napi::External<ImageData>::New(info.Env(), imageData);
     }
 
