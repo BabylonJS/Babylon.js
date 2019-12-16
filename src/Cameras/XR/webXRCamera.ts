@@ -1,10 +1,11 @@
-import { Vector3, Matrix, Quaternion } from "../../Maths/math.vector";
+import { Vector3, Matrix, Quaternion, TmpVectors } from "../../Maths/math.vector";
 import { Scene } from "../../scene";
 import { Camera } from "../../Cameras/camera";
 import { FreeCamera } from "../../Cameras/freeCamera";
 import { TargetCamera } from "../../Cameras/targetCamera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { Viewport } from '../../Maths/math.viewport';
+// import { Space } from '../../Maths/math.axis';
 
 /**
  * WebXR Camera which holds the views for the xrSession
@@ -17,12 +18,14 @@ export class WebXRCamera extends FreeCamera {
      */
     public debugMode = false;
 
+    private _firstFrame = false;
+
     /**
      * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
      * @param name the name of the camera
      * @param scene the scene to add the camera to
      */
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene: Scene, private _xrSessionManager: WebXRSessionManager) {
         super(name, Vector3.Zero(), scene);
 
         // Initial camera configuration
@@ -31,6 +34,13 @@ export class WebXRCamera extends FreeCamera {
         this.cameraRigMode = Camera.RIG_MODE_CUSTOM;
         this.updateUpVectorFromRotation = true;
         this._updateNumberOfRigCameras(1);
+
+        this._xrSessionManager.onXRSessionInit.add(() => {
+            this._referencedPosition.copyFromFloats(0, 0, 0);
+            this._referenceQuaternion.copyFromFloats(0, 0, 0, 1);
+            // first frame - camera's y position should be 0 for the correct offset
+            this._firstFrame = true;
+        });
     }
 
     private _updateNumberOfRigCameras(viewCount = 1) {
@@ -67,30 +77,129 @@ export class WebXRCamera extends FreeCamera {
      * @param xrSessionManager the session containing pose information
      * @returns true if the camera has been updated, false if the session did not contain pose or frame data
      */
-    public updateFromXRSessionManager(xrSessionManager: WebXRSessionManager) {
-        // Ensure all frame data is available
-        if (!xrSessionManager.currentFrame || !xrSessionManager.currentFrame.getViewerPose) {
-            return false;
+    public update() {
+        if (!this._firstFrame) {
+            this._updateReferenceSpace();
         }
-        var pose = xrSessionManager.currentFrame.getViewerPose(xrSessionManager.referenceSpace);
-        if (!pose) {
-            return false;
+        this._updateFromXRSession();
+        super.update();
+    }
+
+    /**
+     * overriding getWorldMatrix notice that the world matrix is identity!
+     * To construct a real world matrix for the camera, compose it from position and rotationQuaternion
+     */
+    public getWorldMatrix() {
+        TmpVectors.Vector3[12].copyFrom(this.position);
+        this.position.copyFrom(this._referencedPosition);
+        this.position.copyFromFloats(0, 0, 0);
+        TmpVectors.Quaternion[1].copyFrom(this.rotationQuaternion);
+        this.rotationQuaternion.copyFrom(this._referenceQuaternion);
+        this.rotationQuaternion.copyFromFloats(0, 0, 0, 1);
+        const mat = super.getWorldMatrix();
+        this.position.copyFrom(TmpVectors.Vector3[12]);
+        this.rotationQuaternion.copyFrom(TmpVectors.Quaternion[1]);
+        return mat;
+    }
+
+    private _referencedPosition: Vector3 = new Vector3();
+    private _referenceQuaternion: Quaternion = Quaternion.Identity();
+
+    private _updateReferenceSpace(): boolean {
+        // were position & rotation updated OUTSIDE of the xr update loop
+        if (!this.position.equals(this._referencedPosition) || !this.rotationQuaternion.equals(this._referenceQuaternion)) {
+            this.position.subtractToRef(this._referencedPosition, this._referencedPosition);
+            this.rotationQuaternion.multiplyToRef(this._referenceQuaternion.conjugateInPlace(), this._referenceQuaternion);
+            this.updateReferenceSpaceOffset(this._referencedPosition, this._referenceQuaternion.normalize());
+            return true;
+        }
+        return false;
+    }
+
+    private _xrInvPositionCache: Vector3 = new Vector3();
+    private _xrInvQuaternionCache = Quaternion.Identity();
+
+    public updateReferenceSpaceOffset(positionOffset: Vector3, rotationOffset?: Quaternion, ignoreHeight: boolean = false) {
+        if (!this._xrSessionManager.referenceSpace || !this._xrSessionManager.currentFrame) {
+            return;
+        }
+        // Compute the origin offset based on player position/orientation.
+        this._xrInvPositionCache.copyFrom(positionOffset);
+        if (rotationOffset) {
+            this._xrInvQuaternionCache.copyFrom(rotationOffset);
+        } else {
+            this._xrInvQuaternionCache.copyFromFloats(0, 0, 0, 1);
         }
 
-        if (pose.transform && pose.emulatedPosition) {
-            this.position.copyFrom(<any>(pose.transform.position));
-            this.rotationQuaternion.copyFrom(<any>(pose.transform.orientation));
+        // right handed system
+        if (!this._scene.useRightHandedSystem) {
+            this._xrInvPositionCache.z *= -1;
+            this._xrInvQuaternionCache.z *= -1;
+            this._xrInvQuaternionCache.w *= -1;
+        }
+
+        this._xrInvPositionCache.negateInPlace();
+        this._xrInvQuaternionCache.conjugateInPlace();
+        // transform point according to rotation with pivot
+        this._xrInvPositionCache.rotateByQuaternionToRef(this._xrInvQuaternionCache, this._xrInvPositionCache);
+        if (ignoreHeight) {
+            this._xrInvPositionCache.y = 0;
+        }
+        const transform = new XRRigidTransform(
+            { ...this._xrInvPositionCache },
+            { ...this._xrInvQuaternionCache });
+        // Update offset reference to use a new originOffset with the teleported
+        // player position and orientation.
+        // This new offset needs to be applied to the base ref space.
+        this._xrSessionManager.referenceSpace = this._xrSessionManager.referenceSpace.getOffsetReferenceSpace(transform);
+    }
+
+    private pose: XRViewerPose;
+
+    private _updateFromXRSession() {
+
+        const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.referenceSpace);
+
+        if (!pose) {
+            return;
+        }
+
+        this.pose = pose;
+
+        if (this.pose.transform) {
+            this._referencedPosition.copyFrom(<any>(this.pose.transform.position));
+            this._referenceQuaternion.copyFrom(<any>(this.pose.transform.orientation));
             if (!this._scene.useRightHandedSystem) {
-                this.position.z *= -1;
-                this.rotationQuaternion.z *= -1;
-                this.rotationQuaternion.w *= -1;
+                this._referencedPosition.z *= -1;
+                this._referenceQuaternion.z *= -1;
+                this._referenceQuaternion.w *= -1;
             }
-            this.computeWorldMatrix();
+
+            if (this._firstFrame) {
+                this._firstFrame = false;
+                // we have the XR reference, now use this to find the offset to get the camera to be
+                // in the right position
+
+                // set the height to correlate to the current height
+                this.position.y += this._referencedPosition.y;
+                // avoid using the head rotation on the first frame.
+                this._referenceQuaternion.copyFromFloats(0, 0, 0, 1);
+                // update the reference space so that the position will be correct
+
+                return this.update();
+
+            }
+
+            this.rotationQuaternion.copyFrom(this._referenceQuaternion);
+            this.position.copyFrom(this._referencedPosition);
         }
 
         // Update camera rigs
-        this._updateNumberOfRigCameras(pose.views.length);
-        pose.views.forEach((view: any, i: number) => {
+        if (this.rigCameras.length !== this.pose.views.length) {
+            this._updateNumberOfRigCameras(this.pose.views.length);
+        }
+
+        this.pose.views.forEach((view: any, i: number) => {
             const currentRig = <TargetCamera>this.rigCameras[i];
             // update right and left, where applicable
             if (!currentRig.isLeftCamera && !currentRig.isRightCamera) {
@@ -101,7 +210,7 @@ export class WebXRCamera extends FreeCamera {
                 }
             }
             // Update view/projection matrix
-            if (view.transform.position && view.transform.orientation) {
+            if (view.transform.position) {
                 currentRig.position.copyFrom(view.transform.position);
                 currentRig.rotationQuaternion.copyFrom(view.transform.orientation);
                 if (!this._scene.useRightHandedSystem) {
@@ -122,10 +231,10 @@ export class WebXRCamera extends FreeCamera {
             }
 
             // Update viewport
-            if (xrSessionManager.session.renderState.baseLayer) {
-                var viewport = xrSessionManager.session.renderState.baseLayer.getViewport(view);
-                var width = xrSessionManager.session.renderState.baseLayer.framebufferWidth;
-                var height = xrSessionManager.session.renderState.baseLayer.framebufferHeight;
+            if (this._xrSessionManager.session.renderState.baseLayer) {
+                var viewport = this._xrSessionManager.session.renderState.baseLayer.getViewport(view);
+                var width = this._xrSessionManager.session.renderState.baseLayer.framebufferWidth;
+                var height = this._xrSessionManager.session.renderState.baseLayer.framebufferHeight;
                 currentRig.viewport.width = viewport.width / width;
                 currentRig.viewport.height = viewport.height / height;
                 currentRig.viewport.x = viewport.x / width;
@@ -136,8 +245,7 @@ export class WebXRCamera extends FreeCamera {
             }
 
             // Set cameras to render to the session's render target
-            currentRig.outputRenderTarget = xrSessionManager.getRenderTargetTextureForEye(view.eye);
+            currentRig.outputRenderTarget = this._xrSessionManager.getRenderTargetTextureForEye(view.eye);
         });
-        return true;
     }
 }
