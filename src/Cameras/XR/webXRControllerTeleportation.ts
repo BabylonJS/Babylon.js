@@ -121,7 +121,8 @@ export class WebXRControllerTeleportation {
                             if (forwardReadyToTeleport) {
                                 // Teleport the users feet to where they targeted
                                 this._tmpVector.copyFrom(teleportationTarget.position);
-                                input.baseExperience.camera.position.addInPlace(this._tmpVector);
+                                this._tmpVector.y += input.baseExperience.camera.position.y;
+                                input.baseExperience.camera.position.copyFrom(this._tmpVector);
                             }
                             forwardReadyToTeleport = false;
                         }
@@ -131,12 +132,8 @@ export class WebXRControllerTeleportation {
                             backwardReadyToTeleport = true;
                         } else {
                             if (backwardReadyToTeleport) {
-                                // Cast a ray down from behind the user
-                                let camMat = input.baseExperience.camera.computeWorldMatrix();
-                                let q = new Quaternion();
-                                camMat.decompose(undefined, q, this._tmpRay.origin);
                                 this._tmpVector.set(0, 0, -1);
-                                this._tmpVector.rotateByQuaternionToRef(q, this._tmpVector);
+                                this._tmpVector.rotateByQuaternionToRef(input.baseExperience.camera.rotationQuaternion, this._tmpVector);
                                 this._tmpVector.y = 0;
                                 this._tmpVector.normalize();
                                 this._tmpVector.y = -1.5;
