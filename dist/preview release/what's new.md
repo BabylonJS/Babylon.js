@@ -180,6 +180,7 @@
 - WebXR teleportation can now be disabled after initialized ([RaananW](https://github.com/RaananW/))
 - New Features Manager for WebXR features ([RaananW](https://github.com/RaananW/))
 - New features - Plane detection, Hit Test, Background remover ([RaananW](https://github.com/RaananW/))
+- Camera's API works as expected (position, rotationQuaternion, world matrix etc') ([#7239](https://github.com/BabylonJS/Babylon.js/issues/7239)) ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
@@ -211,9 +212,9 @@
 - Added Light intensity output to LightInformationBlock ([Drigax](https://github.com/drigax))
 
 ### Serializers
+
 - Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))
 - Expanded animation group serialization to include all targeted TransformNodes ([Drigax]https://github.com/drigax/)
-
 
 ### Documentation
 
@@ -265,8 +266,10 @@
 - Fixed an issue with pose input in webxr ([RaananW](https://github.com/RaananW/))
 - Fixed bug when parsing animation group without 'to' value ([noalak](https://github.com/noalak/))
 - isRightCamera and isLeftCamera were not set in WebXR ([RaananW](https://github.com/RaananW/))
-- Sandbox will now load assets relatively path-ed to same folder([Kyle Belfort](https://github.com/belfortk))
-- Playground will now render the returned scene from createScene() when there are multiple scenes added to engine([Kyle Belfort](https://github.com/belfortk))
+- Sandbox will now load assets relatively path-ed to same folder ([Kyle Belfort](https://github.com/belfortk))
+- Playground will now render the returned scene from createScene() when there are multiple scenes added to engine ([Kyle Belfort](https://github.com/belfortk))
+- Fixed bug so Playground will now download .env texture files to ./textures in .zip  ([Kyle Belfort](https://github.com/belfortk))
+- It was not possible to change the gaze and laser color in VR ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
 
 ## Breaking changes
 
@@ -277,3 +280,4 @@
 - The glTF loader extensions that map to glTF 2.0 extensions will now be disabled if the extension is not present in `extensionsUsed`. ([bghgary](https://github.com/bghgary))
 - The STL loader does not create light or camera automatically, please use `scene.createDefaultCameraOrLight();` in your code [Sebavan](https://github.com/sebavan/)
 - The glTF2 exporter extension no longer ignores childless empty nodes.([drigax](https://github.com/drigax))
+- Default culling strategy changed to CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY ([Deltakosh](https://github.com/deltakosh/))

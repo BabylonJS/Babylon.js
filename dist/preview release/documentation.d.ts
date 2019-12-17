@@ -1461,6 +1461,18 @@ declare module BABYLON {
         private static _PreparePreProcessors;
         private static _ProcessShaderConversion;
         private static _ProcessIncludes;
+        /**
+         * Loads a file from a url
+         * @param url url to load
+         * @param onSuccess callback called when the file successfully loads
+         * @param onProgress callback called while file is loading (if the server supports this mode)
+         * @param offlineProvider defines the offline provider for caching
+         * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+         * @param onError callback called when the file fails to load
+         * @returns a file request object
+         * @hidden
+         */
+        static _FileToolsLoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest;
     }
 }
 declare module BABYLON {
@@ -7725,8 +7737,9 @@ declare module BABYLON {
          * @param url the url of the texture
          * @param forcedExtension defines the extension to use
          * @param onLoad callback called when the texture is loaded  (defaults to null)
+         * @param prefiltered Defines whether the updated texture is prefiltered or not
          */
-        updateURL(url: string, forcedExtension?: string, onLoad?: () => void): void;
+        updateURL(url: string, forcedExtension?: string, onLoad?: () => void, prefiltered?: boolean): void;
         /**
          * Delays loading of the cube texture
          * @param forcedExtension defines the extension to use
@@ -31490,6 +31503,17 @@ declare module BABYLON {
          */
         createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, excludeLoaders?: Array<IInternalTextureLoader>, mimeType?: string): InternalTexture;
         /**
+         * Loads an image as an HTMLImageElement.
+         * @param input url string, ArrayBuffer, or Blob to load
+         * @param onLoad callback called when the image successfully loads
+         * @param onError callback called when the image fails to load
+         * @param offlineProvider offline provider for caching
+         * @param mimeType optional mime type
+         * @returns the HTMLImageElement of the loaded image
+         * @hidden
+         */
+        static _FileToolsLoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement>;
+        /**
          * @hidden
          */
         _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void;
@@ -31634,7 +31658,7 @@ declare module BABYLON {
          */
         setTextureArray(channel: number, uniform: Nullable<WebGLUniformLocation>, textures: BaseTexture[]): void;
         /** @hidden */
-        _setAnisotropicLevel(target: number, texture: BaseTexture): void;
+        _setAnisotropicLevel(target: number, internalTexture: InternalTexture, anisotropicFilteringLevel: number): void;
         private _setTextureParameterFloat;
         private _setTextureParameterInteger;
         /**
@@ -31678,6 +31702,18 @@ declare module BABYLON {
         _getRGBAMultiSampleBufferFormat(type: number): number;
         /** @hidden */
         _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: IWebRequest, exception?: any) => void): IFileRequest;
+        /**
+         * Loads a file from a url
+         * @param url url to load
+         * @param onSuccess callback called when the file successfully loads
+         * @param onProgress callback called while file is loading (if the server supports this mode)
+         * @param offlineProvider defines the offline provider for caching
+         * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+         * @param onError callback called when the file fails to load
+         * @returns a file request object
+         * @hidden
+         */
+        static _FileToolsLoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest;
         /**
          * Reads pixels from the current frame buffer. Please note that this function can be slow
          * @param x defines the x coordinate of the rectangle where pixels must be read
@@ -34770,7 +34806,7 @@ declare module BABYLON {
          * Defines that each mesh of the scene should keep up-to-date a map of referencing cloned meshes for fast diposing
          * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
          */
-        useClonedMeshhMap?: boolean;
+        useClonedMeshMap?: boolean;
         /** Defines if the creation of the scene should impact the engine (Eg. UtilityLayer's scene) */
         virtual?: boolean;
     }
@@ -35495,7 +35531,7 @@ declare module BABYLON {
         /** @hidden */
         readonly useMaterialMeshMap: boolean;
         /** @hidden */
-        readonly useClonedMeshhMap: boolean;
+        readonly useClonedMeshMap: boolean;
         private _externalData;
         private _uid;
         /**
@@ -38926,7 +38962,7 @@ declare module BABYLON {
         /**
          * If set, the drag plane/axis will be rotated based on the attached mesh's world rotation (Default: true)
          */
-        useObjectOrienationForDragging: boolean;
+        useObjectOrientationForDragging: boolean;
         private _options;
         /**
          * Gets the options used by the behavior
@@ -43876,6 +43912,10 @@ declare module BABYLON {
         private _padSensibilityDown;
         private _leftController;
         private _rightController;
+        private _gazeColor;
+        private _laserColor;
+        private _pickedLaserColor;
+        private _pickedGazeColor;
         /**
          * Observable raised when a new mesh is selected based on meshSelectionPredicate
          */
@@ -44104,6 +44144,18 @@ declare module BABYLON {
         private _convertNormalToDirectionOfRay;
         private _castRayAndSelectObject;
         private _notifySelectedMeshUnselected;
+        /**
+         * Permanently set new colors for the laser pointer
+         * @param color the new laser color
+         * @param pickedColor the new laser color when picked mesh detected
+         */
+        setLaserColor(color: Color3, pickedColor?: Color3): void;
+        /**
+         * Permanently set new colors for the gaze pointer
+         * @param color the new gaze color
+         * @param pickedColor the new gaze color when picked mesh detected
+         */
+        setGazeColor(color: Color3, pickedColor?: Color3): void;
         /**
          * Sets the color of the laser ray from the vr controllers.
          * @param color new color for the ray.
