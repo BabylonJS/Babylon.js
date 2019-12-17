@@ -7,7 +7,6 @@
 
 #include <napi/napi.h>
 
-#include "BGFXCallback.h"
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
 #include <bimg/bimg.h>
