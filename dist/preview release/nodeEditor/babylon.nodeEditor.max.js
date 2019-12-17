@@ -53939,6 +53939,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             this._frames.push(newFrame);
             this._frameCandidate.parentElement.removeChild(this._frameCandidate);
             this._frameCandidate = null;
+            this.props.globalState.onSelectionChangedObservable.notifyObservers(newFrame);
         }
     };
     GraphCanvasComponent.prototype.onWheel = function (evt) {
@@ -54098,6 +54099,7 @@ var GraphFrame = /** @class */ (function () {
     function GraphFrame(candidate, canvas, doNotCaptureNodes) {
         var _this = this;
         if (doNotCaptureNodes === void 0) { doNotCaptureNodes = false; }
+        this.CollapsedWidth = 200;
         this._x = 0;
         this._y = 0;
         this._gridAlignedX = 0;
@@ -54213,7 +54215,7 @@ var GraphFrame = /** @class */ (function () {
             // Need to delegate the outside ports to the frame
             if (value) {
                 this.element.classList.add("collapsed");
-                this._moveFrame((this.width - 200) / 2, 0);
+                this._moveFrame((this.width - this.CollapsedWidth) / 2, 0);
                 for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
                     var node = _a[_i];
                     node.isVisible = false;
@@ -54280,7 +54282,7 @@ var GraphFrame = /** @class */ (function () {
                     var node = _l[_k];
                     node.isVisible = true;
                 }
-                this._moveFrame(-(this.width - 200) / 2, 0);
+                this._moveFrame(-(this.width - this.CollapsedWidth) / 2, 0);
             }
             this.cleanAccumulation();
             this._ownerCanvas._frameIsMoving = false;
@@ -54462,13 +54464,13 @@ var GraphFrame = /** @class */ (function () {
         this._ownerCanvas._frameIsMoving = false;
     };
     GraphFrame.prototype._moveFrame = function (offsetX, offsetY) {
+        this.x += offsetX;
+        this.y += offsetY;
         for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
             var selectedNode = _a[_i];
             selectedNode.x += offsetX;
             selectedNode.y += offsetY;
         }
-        this.x += offsetX;
-        this.y += offsetY;
     };
     GraphFrame.prototype._onMove = function (evt) {
         if (this._mouseStartPointX === null || this._mouseStartPointY === null || evt.ctrlKey) {
@@ -54503,6 +54505,7 @@ var GraphFrame = /** @class */ (function () {
     };
     GraphFrame.Parse = function (serializationData, canvas, map) {
         var newFrame = new GraphFrame(null, canvas, true);
+        var isCollapsed = !!serializationData.isCollapsed;
         newFrame.x = serializationData.x;
         newFrame.y = serializationData.y;
         newFrame.width = serializationData.width;
@@ -54525,7 +54528,19 @@ var GraphFrame = /** @class */ (function () {
         else {
             newFrame.refresh();
         }
-        newFrame.isCollapsed = !!serializationData.isCollapsed;
+        newFrame.isCollapsed = isCollapsed;
+        if (isCollapsed) {
+            canvas._frameIsMoving = true;
+            newFrame._moveFrame(-(newFrame.width - newFrame.CollapsedWidth) / 2, 0);
+            var diff = serializationData.x - newFrame.x;
+            newFrame._moveFrame(diff, 0);
+            newFrame.cleanAccumulation();
+            for (var _b = 0, _c = newFrame.nodes; _b < _c.length; _b++) {
+                var selectedNode = _c[_b];
+                selectedNode.refresh();
+            }
+            canvas._frameIsMoving = false;
+        }
         return newFrame;
     };
     GraphFrame._FrameCounter = 0;

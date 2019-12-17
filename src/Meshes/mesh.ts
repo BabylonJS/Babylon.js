@@ -417,7 +417,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             // Source mesh
             this._internalMeshDataInfo._source = source;
-            if (scene.useClonedMeshhMap) {
+            if (scene.useClonedMeshMap) {
                 if (!source._internalMeshDataInfo.meshMap) {
                     source._internalMeshDataInfo.meshMap = {};
                 }
@@ -2236,7 +2236,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Sources
-        if (this._scene.useClonedMeshhMap) {
+        if (this._scene.useClonedMeshMap) {
             if (internalDataInfo.meshMap) {
                 for (const uniqueId in internalDataInfo.meshMap) {
                     const mesh = internalDataInfo.meshMap[uniqueId];

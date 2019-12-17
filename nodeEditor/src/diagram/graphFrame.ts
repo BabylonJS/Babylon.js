@@ -8,6 +8,7 @@ import { Color3 } from 'babylonjs/Maths/math.color';
 import { NodePort } from './nodePort';
 
 export class GraphFrame {
+    private readonly CollapsedWidth = 200;
     private static _FrameCounter = 0;
     private _name: string;
     private _color: Color3;
@@ -68,7 +69,7 @@ export class GraphFrame {
         if (value) {
             this.element.classList.add("collapsed");
                         
-            this._moveFrame((this.width - 200) / 2, 0);
+            this._moveFrame((this.width - this.CollapsedWidth) / 2, 0);
 
             for (var node of this._nodes) {
                 node.isVisible = false;
@@ -135,7 +136,7 @@ export class GraphFrame {
                 node.isVisible = true;
             }
                         
-            this._moveFrame(-(this.width - 200) / 2, 0);
+            this._moveFrame(-(this.width - this.CollapsedWidth) / 2, 0);
         }
 
         this.cleanAccumulation();
@@ -416,13 +417,13 @@ export class GraphFrame {
     }
 
     private _moveFrame(offsetX: number, offsetY: number) {
+        this.x += offsetX;
+        this.y += offsetY;
+
         for (var selectedNode of this._nodes) {
             selectedNode.x += offsetX;
             selectedNode.y += offsetY;
         }
-
-        this.x += offsetX;
-        this.y += offsetY;
     }
 
     private _onMove(evt: PointerEvent) {
@@ -469,6 +470,7 @@ export class GraphFrame {
 
     public static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {[key: number]: number}) {
         let newFrame = new GraphFrame(null, canvas, true);
+        const isCollapsed = !!serializationData.isCollapsed;
 
         newFrame.x = serializationData.x;
         newFrame.y = serializationData.y;
@@ -490,7 +492,20 @@ export class GraphFrame {
             newFrame.refresh();
         }
 
-        newFrame.isCollapsed = !!serializationData.isCollapsed;
+        newFrame.isCollapsed = isCollapsed;
+
+        if (isCollapsed) {
+            canvas._frameIsMoving = true;
+            newFrame._moveFrame(-(newFrame.width - newFrame.CollapsedWidth) / 2, 0);
+            let diff = serializationData.x - newFrame.x;
+            newFrame._moveFrame(diff, 0);
+            newFrame.cleanAccumulation();
+            
+            for (var selectedNode of newFrame.nodes) {
+                selectedNode.refresh();
+            }
+            canvas._frameIsMoving = false;
+        }
 
         return newFrame;
     }
