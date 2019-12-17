@@ -19,6 +19,10 @@ export class WebXRCamera extends FreeCamera {
     public debugMode = false;
 
     private _firstFrame = false;
+    private _referencedPosition: Vector3 = new Vector3();
+    private _referenceQuaternion: Quaternion = Quaternion.Identity();
+    private _xrInvPositionCache: Vector3 = new Vector3();
+    private _xrInvQuaternionCache = Quaternion.Identity();
 
     /**
      * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
@@ -84,9 +88,6 @@ export class WebXRCamera extends FreeCamera {
         super.update();
     }
 
-    private _referencedPosition: Vector3 = new Vector3();
-    private _referenceQuaternion: Quaternion = Quaternion.Identity();
-
     private _updateReferenceSpace(): boolean {
         // were position & rotation updated OUTSIDE of the xr update loop
         if (!this.position.equals(this._referencedPosition) || !this.rotationQuaternion.equals(this._referenceQuaternion)) {
@@ -98,9 +99,6 @@ export class WebXRCamera extends FreeCamera {
         }
         return false;
     }
-
-    private _xrInvPositionCache: Vector3 = new Vector3();
-    private _xrInvQuaternionCache = Quaternion.Identity();
 
     public updateReferenceSpaceOffset(positionOffset: Vector3, rotationOffset?: Quaternion, ignoreHeight: boolean = false) {
         if (!this._xrSessionManager.referenceSpace || !this._xrSessionManager.currentFrame) {
@@ -159,8 +157,6 @@ export class WebXRCamera extends FreeCamera {
         }
     }
 
-    private pose: XRViewerPose;
-
     private _updateFromXRSession() {
 
         const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.referenceSpace);
@@ -169,11 +165,9 @@ export class WebXRCamera extends FreeCamera {
             return;
         }
 
-        this.pose = pose;
-
-        if (this.pose.transform) {
-            this._referencedPosition.copyFrom(<any>(this.pose.transform.position));
-            this._referenceQuaternion.copyFrom(<any>(this.pose.transform.orientation));
+        if (pose.transform) {
+            this._referencedPosition.copyFrom(<any>(pose.transform.position));
+            this._referenceQuaternion.copyFrom(<any>(pose.transform.orientation));
             if (!this._scene.useRightHandedSystem) {
                 this._referencedPosition.z *= -1;
                 this._referenceQuaternion.z *= -1;
@@ -200,11 +194,11 @@ export class WebXRCamera extends FreeCamera {
         }
 
         // Update camera rigs
-        if (this.rigCameras.length !== this.pose.views.length) {
-            this._updateNumberOfRigCameras(this.pose.views.length);
+        if (this.rigCameras.length !== pose.views.length) {
+            this._updateNumberOfRigCameras(pose.views.length);
         }
 
-        this.pose.views.forEach((view: any, i: number) => {
+        pose.views.forEach((view: any, i: number) => {
             const currentRig = <TargetCamera>this.rigCameras[i];
             // update right and left, where applicable
             if (!currentRig.isLeftCamera && !currentRig.isRightCamera) {
