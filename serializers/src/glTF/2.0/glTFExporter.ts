@@ -1309,7 +1309,7 @@ export class _Exporter {
      */
     private isNodeConvertingToLeftHanded(node: Node): boolean {
         if (node instanceof TransformNode &&
-            (!node.position.equalsToFloats(0,0,0) ||
+            (!node.position.equalsToFloats(0, 0, 0) ||
             (!node.rotationQuaternion && node.rotation && (node.rotation.x != 0 || node.rotation.z != 0 || Math.abs(node.rotation.y - Math.PI) > Epsilon)) || // rotation Quaternion has priority over Vector3
             (node.rotationQuaternion && !node.rotationQuaternion.equals(new Quaternion(0, 1, 0, 0))) ||
             !node.scaling.equalsToFloats(1, 1, -1))) {
