@@ -81,14 +81,8 @@
         },
         {
             "title": "Camera rig",
-            "playgroundId": "#ATL1CS#9",
+            "playgroundId": "#ATL1CS#11",
             "referenceImage": "cameraRig.png"
-        },
-        {
-            "title": "XR camera container rotation",
-            "playgroundId": "#JV98QW#5",
-            "referenceImage": "xrCameraContainerRotation.png",
-            "excludeFromAutomaticTesting": true
         },
         {
             "title": "Sliders",
