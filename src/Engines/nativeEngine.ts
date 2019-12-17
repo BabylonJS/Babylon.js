@@ -95,6 +95,8 @@ interface INativeEngine {
     clearDepth(depth: number): void;
     clearStencil(stencil: number): void;
 
+    exit(exitCode: number): void;
+
     getRenderWidth(): number;
     getRenderHeight(): number;
 
@@ -299,6 +301,22 @@ export class NativeEngine extends Engine {
      */
     public getHostDocument(): Nullable<Document> {
         return null;
+    }
+
+    /**
+     * Gets host window
+     * @returns the host window object
+     */
+    public getHostWindow(): Nullable<Window> {
+        return window;
+    }
+
+    public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
+        // TODO
+    }
+
+    public exit(exitCode: number): void {
+        this._native.exit(exitCode);
     }
 
     public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
