@@ -115,15 +115,6 @@ CreateBoxAsync().then(function () {
         };
     }
 
-    var takeScreenshot = function () {
-        width = engine._native.getRenderWidth();
-        height = engine._native.getRenderHeight();
-        BABYLON.Tools.Log("screenshot: " + width + " , " + height);
-        var screenshot = engine._native.getFramebufferData(0, 0, width, height);
-    };
-
-    window.setTimeout(takeScreenshot, 5000);
-    
     if (logfps) {
         var logFpsLoop = function () {
             BABYLON.Tools.Log("FPS: " + Math.round(engine.getFps()));
