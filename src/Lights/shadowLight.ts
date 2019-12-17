@@ -165,7 +165,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
         this._setDirection(value);
     }
 
-    private _shadowMinZ: number;
+    protected _shadowMinZ: number;
     /**
      * Gets the shadow projection clipping minimum z value.
      */
@@ -181,7 +181,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
         this.forceProjectionMatrixCompute();
     }
 
-    private _shadowMaxZ: number;
+    protected _shadowMaxZ: number;
     /**
      * Sets the shadow projection clipping maximum z value.
      */
