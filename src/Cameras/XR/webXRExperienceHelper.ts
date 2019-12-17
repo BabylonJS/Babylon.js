@@ -122,7 +122,7 @@ export class WebXRExperienceHelper implements IDisposable {
             // Overwrite current scene settings
             this.scene.autoClear = false;
 
-            this.nonVrToVrCamera();
+            this._nonXRToXRCamera();
 
             this.sessionManager.onXRSessionEnded.addOnce(() => {
                 // Reset camera rigs output render target to ensure sessions render target is not drawn after it ends
@@ -164,7 +164,7 @@ export class WebXRExperienceHelper implements IDisposable {
         this.sessionManager.dispose();
     }
 
-    private nonVrToVrCamera() {
+    private _nonXRToXRCamera() {
         this.scene.activeCamera = this.camera;
         const mat = this._nonVRCamera!.computeWorldMatrix();
         mat.decompose(undefined, this.camera.rotationQuaternion, this.camera.position);
