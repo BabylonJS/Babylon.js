@@ -370,6 +370,7 @@ namespace Babylon
         Napi::Value GetRenderHeight(const Napi::CallbackInfo& info);
         void SetViewPort(const Napi::CallbackInfo& info);
         Napi::Value GetFramebufferData(const Napi::CallbackInfo& info);
+        void Exit(const Napi::CallbackInfo& info);
 
         void UpdateSize(size_t width, size_t height);
         void DispatchAnimationFrameAsync(Napi::FunctionReference callback);

@@ -50,6 +50,7 @@ namespace Babylon
         arcana::task<void, std::exception_ptr> Task = arcana::task_from_result<std::exception_ptr>();
         std::scoped_lock<std::mutex> AcquireTaskLock();
 
+        void* GetNativeWindow() const { return m_nativeWindowPtr; }
     private:
         void InitializeJavaScriptVariables(uint16_t width, uint16_t height);
         void BaseThreadProcedure();

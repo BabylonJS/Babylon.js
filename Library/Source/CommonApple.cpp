@@ -11,4 +11,9 @@ namespace Babylon
     {
         return {};
     }
+
+    void ExitApplication(void *nativeWindowPtr, int exitCode)
+    {
+        // TODO
+    }
 }

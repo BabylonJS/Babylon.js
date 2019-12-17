@@ -12,4 +12,9 @@ namespace Babylon
         // stub
         return std::string("");
     }
+
+    void ExitApplication(void *nativeWindowPtr, int exitCode)
+    {
+        // TODO
+    }
 }

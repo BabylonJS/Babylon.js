@@ -15,4 +15,9 @@ namespace Babylon
         // TODO: implement with Windows::Foundation::Uri
         throw std::exception("Not implemented!");
     }
+
+    void ExitApplication(void *nativeWindowPtr, int exitCode)
+    {
+        // TODO
+    }
 }

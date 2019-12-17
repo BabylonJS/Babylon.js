@@ -367,6 +367,7 @@ namespace Babylon
                 InstanceMethod("decodeImage", &NativeEngine::DecodeImage),
                 InstanceMethod("getImageData", &NativeEngine::GetImageData),
                 InstanceMethod("encodeImage", &NativeEngine::EncodeImage),
+                InstanceMethod("exit", &NativeEngine::Exit),
             });
 
         return Napi::Persistent(func);
@@ -1362,6 +1363,13 @@ namespace Babylon
         BGFXCallback::screenShotBitmap.clear();
 
         return Napi::External<ImageData>::New(info.Env(), imageData);
+    }
+
+    void NativeEngine::Exit(const Napi::CallbackInfo& info)
+    {
+        const int32_t exitCode = info[0].As<Napi::Number>().Int32Value();
+        
+        ExitApplication(m_runtimeImpl.GetNativeWindow(), exitCode);
     }
 
     void NativeEngine::DispatchAnimationFrameAsync(Napi::FunctionReference callback)
