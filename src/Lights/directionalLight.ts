@@ -67,6 +67,7 @@ export class DirectionalLight extends ShadowLight {
      * Automatically compute the shadowMinZ and shadowMaxZ for the projection matrix to best fit (including all the casters)
      * on each frame. autoUpdateExtends must be set to true for this to work
      */
+    @serialize()
     public autoCalcShadowZBounds = false;
 
     // Cache
