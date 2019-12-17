@@ -61,7 +61,7 @@ export class WebXRControllerModelLoader {
             controllerModel.hand = c.inputSource.handedness;
             controllerModel.isXR = true;
             controllerModel.initControllerMesh(c.getScene(), (m) => {
-                controllerModel.mesh!.parent = c.grip || input.baseExperience.container;
+                controllerModel.mesh!.parent = c.grip || null;
                 controllerModel.mesh!.rotationQuaternion = rotation;
                 controllerModel.mesh!.position = position;
                 m.isPickable = false;

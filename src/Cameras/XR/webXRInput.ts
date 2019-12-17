@@ -69,7 +69,7 @@ export class WebXRInput implements IDisposable {
         let sources = this.controllers.map((c) => {return c.inputSource; });
         for (let input of addInputs) {
             if (sources.indexOf(input) === -1) {
-                let controller = new WebXRController(this.baseExperience.camera._scene, input, this.baseExperience.container);
+                let controller = new WebXRController(this.baseExperience.camera._scene, input);
                 this.controllers.push(controller);
                 this.onControllerAddedObservable.notifyObservers(controller);
             }
