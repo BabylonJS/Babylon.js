@@ -94,13 +94,13 @@ export class WebXRCamera extends FreeCamera {
             this.position.subtractToRef(this._referencedPosition, this._referencedPosition);
             this._referenceQuaternion.conjugateInPlace();
             this._referenceQuaternion.multiplyToRef(this.rotationQuaternion, this._referenceQuaternion);
-            this.updateReferenceSpaceOffset(this._referencedPosition, this._referenceQuaternion.normalize());
+            this._updateReferenceSpaceOffset(this._referencedPosition, this._referenceQuaternion.normalize());
             return true;
         }
         return false;
     }
 
-    public updateReferenceSpaceOffset(positionOffset: Vector3, rotationOffset?: Quaternion, ignoreHeight: boolean = false) {
+    private _updateReferenceSpaceOffset(positionOffset: Vector3, rotationOffset?: Quaternion, ignoreHeight: boolean = false) {
         if (!this._xrSessionManager.referenceSpace || !this._xrSessionManager.currentFrame) {
             return;
         }
