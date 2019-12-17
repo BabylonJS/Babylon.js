@@ -7737,8 +7737,9 @@ declare module BABYLON {
          * @param url the url of the texture
          * @param forcedExtension defines the extension to use
          * @param onLoad callback called when the texture is loaded  (defaults to null)
+         * @param prefiltered Defines whether the updated texture is prefiltered or not
          */
-        updateURL(url: string, forcedExtension?: string, onLoad?: () => void): void;
+        updateURL(url: string, forcedExtension?: string, onLoad?: () => void, prefiltered?: boolean): void;
         /**
          * Delays loading of the cube texture
          * @param forcedExtension defines the extension to use
@@ -31657,7 +31658,7 @@ declare module BABYLON {
          */
         setTextureArray(channel: number, uniform: Nullable<WebGLUniformLocation>, textures: BaseTexture[]): void;
         /** @hidden */
-        _setAnisotropicLevel(target: number, texture: BaseTexture): void;
+        _setAnisotropicLevel(target: number, internalTexture: InternalTexture, anisotropicFilteringLevel: number): void;
         private _setTextureParameterFloat;
         private _setTextureParameterInteger;
         /**
