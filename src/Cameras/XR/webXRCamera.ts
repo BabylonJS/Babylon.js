@@ -78,7 +78,6 @@ export class WebXRCamera extends FreeCamera {
     /**
      * Updates the cameras position from the current pose information of the  XR session
      * @param xrSessionManager the session containing pose information
-     * @returns true if the camera has been updated, false if the session did not contain pose or frame data
      */
     public update() {
         if (!this._firstFrame) {
