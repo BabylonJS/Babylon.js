@@ -5,7 +5,6 @@ import { FreeCamera } from "../../Cameras/freeCamera";
 import { TargetCamera } from "../../Cameras/targetCamera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { Viewport } from '../../Maths/math.viewport';
-// import { Space } from '../../Maths/math.axis';
 
 /**
  * WebXR Camera which holds the views for the xrSession
