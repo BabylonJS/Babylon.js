@@ -95,7 +95,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     /**
      * If set, the drag plane/axis will be rotated based on the attached mesh's world rotation (Default: true)
      */
-    public useObjectOrienationForDragging = true;
+    public useObjectOrientationForDragging = true;
 
     private _options: { dragAxis?: Vector3, dragPlaneNormal?: Vector3 };
 
@@ -330,8 +330,8 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             var dragLength = 0;
             // depending on the drag mode option drag accordingly
             if (this._options.dragAxis) {
-                // Convert local drag axis to world if useObjectOrienationForDragging
-                this.useObjectOrienationForDragging ? Vector3.TransformCoordinatesToRef(this._options.dragAxis, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._worldDragAxis) : this._worldDragAxis.copyFrom(this._options.dragAxis);
+                // Convert local drag axis to world if useObjectOrientationForDragging
+                this.useObjectOrientationForDragging ? Vector3.TransformCoordinatesToRef(this._options.dragAxis, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._worldDragAxis) : this._worldDragAxis.copyFrom(this._options.dragAxis);
 
                 // Project delta drag from the drag plane onto the drag axis
                 pickedPoint.subtractToRef(this.lastDragPosition, this._tmpVector);
@@ -400,7 +400,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     private _updateDragPlanePosition(ray: Ray, dragPlanePosition: Vector3) {
         this._pointA.copyFrom(dragPlanePosition);
         if (this._options.dragAxis) {
-            this.useObjectOrienationForDragging ? Vector3.TransformCoordinatesToRef(this._options.dragAxis, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._localAxis) : this._localAxis.copyFrom(this._options.dragAxis);
+            this.useObjectOrientationForDragging ? Vector3.TransformCoordinatesToRef(this._options.dragAxis, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._localAxis) : this._localAxis.copyFrom(this._options.dragAxis);
 
             // Calculate plane normal in direction of camera but perpendicular to drag axis
             this._pointA.addToRef(this._localAxis, this._pointB); // towards drag axis
@@ -418,7 +418,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             this._pointA.addToRef(this._lookAt, this._lookAt);
             this._dragPlane.lookAt(this._lookAt);
         } else if (this._options.dragPlaneNormal) {
-            this.useObjectOrienationForDragging ? Vector3.TransformCoordinatesToRef(this._options.dragPlaneNormal, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._localAxis) : this._localAxis.copyFrom(this._options.dragPlaneNormal);
+            this.useObjectOrientationForDragging ? Vector3.TransformCoordinatesToRef(this._options.dragPlaneNormal, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._localAxis) : this._localAxis.copyFrom(this._options.dragPlaneNormal);
             this._dragPlane.position.copyFrom(this._pointA);
             this._pointA.addToRef(this._localAxis, this._lookAt);
             this._dragPlane.lookAt(this._lookAt);
