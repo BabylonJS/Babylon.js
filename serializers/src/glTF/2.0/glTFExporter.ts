@@ -1317,7 +1317,7 @@ export class _Exporter {
                 !node.scaling.equalsToFloats(1, 1, -1)) {
                 return false;
             }
-            
+
             // Geometry
             if ((node instanceof Mesh && node.geometry !== null) ||
                 (node instanceof InstancedMesh && node._masterMesh instanceof Mesh && node._masterMesh.geometry !== null)) {
