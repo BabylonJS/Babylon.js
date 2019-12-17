@@ -2665,6 +2665,12 @@ export class Quaternion {
         return otherQuaternion && this.x === otherQuaternion.x && this.y === otherQuaternion.y && this.z === otherQuaternion.z && this.w === otherQuaternion.w;
     }
 
+    /**
+     * Gets a boolean if two quaternions are equals (using an epsilon value)
+     * @param otherQuaternion defines the other quaternion
+     * @param epsilon defines the minimal distance to consider equality
+     * @returns true if the given quaternion coordinates are close to the current ones by a distance of epsilon.
+     */
     public equalsWithEpsilon(otherQuaternion: DeepImmutable<Quaternion>, epsilon: number = Epsilon): boolean {
         return otherQuaternion
             && Scalar.WithinEpsilon(this.x, otherQuaternion.x, epsilon)
