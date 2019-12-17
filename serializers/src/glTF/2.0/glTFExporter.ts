@@ -1308,15 +1308,25 @@ export class _Exporter {
      * @returns True if the node is used to convert its descendants from right-handed to left-handed. False otherwise
      */
     private isNodeConvertingToLeftHanded(node: Node): boolean {
-        if (node instanceof TransformNode &&
-            (!node.position.equalsToFloats(0, 0, 0) ||
-            (!node.rotationQuaternion && node.rotation && (node.rotation.x != 0 || node.rotation.z != 0 || Math.abs(node.rotation.y - Math.PI) > Epsilon)) || // rotation Quaternion has priority over Vector3
-            (node.rotationQuaternion && !node.rotationQuaternion.equals(new Quaternion(0, 1, 0, 0))) ||
-            !node.scaling.equalsToFloats(1, 1, -1))) {
+        if (node instanceof TransformNode)
+        {
+            // TRS
+            if (!node.position.equalsToFloats(0, 0, 0) ||
+                (!node.rotationQuaternion && node.rotation && (node.rotation.x != 0 || node.rotation.z != 0 || Math.abs(node.rotation.y - Math.PI) > Epsilon)) || // rotation Quaternion has priority over Vector3
+                (node.rotationQuaternion && !node.rotationQuaternion.equals(new Quaternion(0, 1, 0, 0))) ||
+                !node.scaling.equalsToFloats(1, 1, -1)) {
                 return false;
-        }
+            }
+            
+            // Geometry
+            if ((node instanceof Mesh && node.geometry !== null) ||
+                (node instanceof InstancedMesh && node._masterMesh instanceof Mesh && node._masterMesh.geometry !== null)) {
+                return false;
+            }
 
-        return true;
+            return true;
+        }
+        return false;
     }
 
     /**
