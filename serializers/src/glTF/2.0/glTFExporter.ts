@@ -1,7 +1,7 @@
 import { AccessorType, IBufferView, IAccessor, INode, IScene, IMesh, IMaterial, ITexture, IImage, ISampler, IAnimation, ImageMimeType, IMeshPrimitive, IBuffer, IGLTF, MeshPrimitiveMode, AccessorComponentType, ITextureInfo } from "babylonjs-gltf2interface";
 
 import { FloatArray, Nullable, IndicesArray } from "babylonjs/types";
-import { Viewport, Color3, Vector2, Vector3, Vector4, Quaternion } from "babylonjs/Maths/math";
+import { Viewport, Color3, Vector2, Vector3, Vector4, Quaternion, Epsilon } from "babylonjs/Maths/math";
 import { Tools } from "babylonjs/Misc/tools";
 import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { Node } from "babylonjs/node";
@@ -1252,7 +1252,7 @@ export class _Exporter {
                         let sideOrientation = bufferMesh.overrideMaterialSideOrientation !== null ? bufferMesh.overrideMaterialSideOrientation : babylonMaterial.sideOrientation;
 
                         // Only reverse the winding if we have a clockwise winding
-                        if (sideOrientation === Material.ClockWiseSideOrientation) {
+                        if (this._convertToRightHandedSystem && sideOrientation === Material.ClockWiseSideOrientation) {
                             let byteOffset = indexBufferViewIndex != null ? this._bufferViews[indexBufferViewIndex].byteOffset : null;
                             if (byteOffset == null) { byteOffset = 0; }
                             let babylonIndices: Nullable<IndicesArray> = null;
@@ -1294,6 +1294,26 @@ export class _Exporter {
     }
 
     /**
+     * Check if the node is used to convert its descendants from right-handed to left-handed
+     * @param node The node to check
+     * @returns True if the node is used to convert its descendants from right-handed to left-handed. False otherwise
+     */
+    private isNodeConvertingToLeftHanded(node: Node): boolean {
+        if (node.name !== "__root__") {
+            return false;
+        }
+
+        if (node instanceof TransformNode &&
+            ((!node.rotationQuaternion && node.rotation && (node.rotation.x != 0 || node.rotation.z != 0 || Math.abs(node.rotation.y - Math.PI) > Epsilon)) || // rotation Quaternion has priority over Vector3
+            (node.rotationQuaternion && !node.rotationQuaternion.equals(new Quaternion(0, 1, 0, 0))) ||
+            !node.scaling.equalsToFloats(1, 1, -1))) {
+                return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Creates a glTF scene based on the array of meshes
      * Returns the the total byte offset
      * @param babylonScene Babylon scene to get the mesh data from
@@ -1305,6 +1325,25 @@ export class _Exporter {
         let glTFNode: INode;
         let directDescendents: Node[];
         const nodes: Node[] = [...babylonScene.transformNodes, ...babylonScene.meshes, ...babylonScene.lights];
+        let rootNodeToLeftHanded: Node;
+
+        // Check if a __root__ node is present
+        if (this._convertToRightHandedSystem) {
+            babylonScene.rootNodes.forEach((rootNode) => {
+                if (rootNodeToLeftHanded === undefined && this.isNodeConvertingToLeftHanded(rootNode)) {
+                    rootNodeToLeftHanded = rootNode;
+
+                    // Exclude the node from list of nodes to export
+                    const indexRootNode = nodes.indexOf(rootNode);
+                    if (indexRootNode !== -1) { // should always be true
+                        nodes.splice(indexRootNode, 1);
+                    }
+
+                    // Cancel conversion to right handed system
+                    this._convertToRightHandedSystem = false;
+                }
+            });
+        }
 
         return this._glTFMaterialExporter._convertMaterialsToGLTFAsync(babylonScene.materials, ImageMimeType.PNG, true).then(() => {
             return this.createNodeMapAndAnimationsAsync(babylonScene, nodes, binaryWriter).then((nodeMap) => {
@@ -1329,7 +1368,7 @@ export class _Exporter {
                             }
                         }
 
-                        if (!babylonNode.parent) {
+                        if (!babylonNode.parent || babylonNode.parent === rootNodeToLeftHanded) {
                             if (this._options.shouldExportNode && !this._options.shouldExportNode(babylonNode)) {
                                 Tools.Log("Omitting " + babylonNode.name + " from scene.");
                             }

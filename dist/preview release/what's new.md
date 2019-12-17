@@ -269,6 +269,7 @@
 - Playground will now render the returned scene from createScene() when there are multiple scenes added to engine ([Kyle Belfort](https://github.com/belfortk))
 - Fixed bug so Playground will now download .env texture files to ./textures in .zip  ([Kyle Belfort](https://github.com/belfortk))
 - It was not possible to change the gaze and laser color in VR ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
+- Ignore the root node used for conversion from right-handed to left-handed when exporting to GLB ([noalak](https://github.com/noalak/))
 
 ## Breaking changes
 
