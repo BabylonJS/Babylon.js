@@ -350,17 +350,13 @@ export class MaterialHelper {
         defines["SHADOWCUBE" + lightIndex] = false;
         defines["SHADOWLOWQUALITY" + lightIndex] = false;
         defines["SHADOWMEDIUMQUALITY" + lightIndex] = false;
+        defines["SHADOWCLOSEESM" + lightIndex] = false;
 
         if (mesh && mesh.receiveShadows && scene.shadowsEnabled && light.shadowEnabled) {
             var shadowGenerator = light.getShadowGenerator();
-            if (shadowGenerator) {
-                const shadowMap = shadowGenerator.getShadowMap();
-                if (shadowMap) {
-                    if (shadowMap.renderList && shadowMap.renderList.length > 0) {
-                        state.shadowEnabled = true;
-                        shadowGenerator.prepareDefines(defines, lightIndex);
-                    }
-                }
+            if (shadowGenerator && shadowGenerator.mustRender) {
+                state.shadowEnabled = true;
+                shadowGenerator.prepareDefines(defines, lightIndex);
             }
         }
 

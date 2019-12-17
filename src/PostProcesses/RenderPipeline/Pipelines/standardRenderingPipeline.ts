@@ -20,6 +20,7 @@ import { Scene } from "../../../scene";
 import { Constants } from "../../../Engines/constants";
 import { _TypeStore } from '../../../Misc/typeStore';
 import { MotionBlurPostProcess } from "../../motionBlurPostProcess";
+import { ShadowGenerator } from "../../../Lights/Shadows/shadowGenerator";
 
 declare type Animation = import("../../../Animations/animation").Animation;
 
@@ -789,9 +790,8 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         var depthValues = Vector2.Zero();
 
         this.volumetricLightPostProcess.onApply = (effect: Effect) => {
-            if (this.sourceLight && this.sourceLight.getShadowGenerator() && this._scene.activeCamera) {
-                var generator = this.sourceLight.getShadowGenerator()!;
-
+            var generator = this.sourceLight ? this.sourceLight.getShadowGenerator() : null;
+            if (this.sourceLight && generator && generator instanceof ShadowGenerator && this._scene.activeCamera) {
                 effect.setTexture("shadowMapSampler", generator.getShadowMap());
                 effect.setTexture("positionSampler", geometry.textures[2]);
 

@@ -64,16 +64,23 @@ export interface ICustomShaderOptions {
  * Interface to implement to create a shadow generator compatible with BJS.
  */
 export interface IShadowGenerator {
+
+    mustRender: boolean;
+
+    renderList: Nullable<Array<AbstractMesh>>;
+
+    getShadowMaps(): Array<RenderTargetTexture>;
+
     /**
      * Gets the main RTT containing the shadow map (usually storing depth from the light point of view).
      * @returns The render target texture if present otherwise, null
      */
-    getShadowMap(): Nullable<RenderTargetTexture>;
+//    getShadowMap(): Nullable<RenderTargetTexture>;
     /**
      * Gets the RTT used during rendering (can be a blurred version of the shadow map or the shadow map itself).
      * @returns The render target texture if the shadow map is present otherwise, null
      */
-    getShadowMapForRendering(): Nullable<RenderTargetTexture>;
+//    getShadowMapForRendering(): Nullable<RenderTargetTexture>;
 
     /**
      * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
@@ -102,13 +109,13 @@ export interface IShadowGenerator {
      * (eq to shadow prjection matrix * light transform matrix)
      * @returns The transform matrix used to create the shadow map
      */
-    getTransformMatrix(): Matrix;
+//    getTransformMatrix(): Matrix;
 
     /**
      * Recreates the shadow map dependencies like RTT and post processes. This can be used during the switch between
      * Cube and 2D textures for instance.
      */
-    recreateShadowMap(): void;
+    recreate(): void;
 
     /**
      * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
@@ -660,6 +667,16 @@ export class ShadowGenerator implements IShadowGenerator {
         return this._shadowMap;
     }
 
+    public getShadowMaps(): Array<RenderTargetTexture> {
+        const rtt = this.getShadowMap();
+
+        return rtt ? [rtt] : [];
+    }
+
+    public get viewMatrix(): Matrix {
+        return this._viewMatrix;
+    }
+
     /**
      * Gets the class name of that object
      * @returns "ShadowGenerator"
@@ -724,7 +741,9 @@ export class ShadowGenerator implements IShadowGenerator {
      */
     public frustumEdgeFalloff = 0;
 
-    private _light: IShadowLight;
+    public depthClamp: boolean = false;
+
+    protected _light: IShadowLight;
     /**
      * Returns the associated light object.
      * @returns the light generating the shadow
@@ -740,28 +759,28 @@ export class ShadowGenerator implements IShadowGenerator {
      */
     public forceBackFacesOnly = false;
 
-    private _scene: Scene;
-    private _lightDirection = Vector3.Zero();
+    protected _scene: Scene;
+    protected _lightDirection = Vector3.Zero();
 
-    private _effect: Effect;
+    protected _effect: Effect;
 
-    private _viewMatrix = Matrix.Zero();
-    private _projectionMatrix = Matrix.Zero();
-    private _transformMatrix = Matrix.Zero();
-    private _cachedPosition: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-    private _cachedDirection: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-    private _cachedDefines: string;
-    private _currentRenderID: number;
-    private _boxBlurPostprocess: Nullable<PostProcess>;
-    private _kernelBlurXPostprocess: Nullable<PostProcess>;
-    private _kernelBlurYPostprocess: Nullable<PostProcess>;
-    private _blurPostProcesses: PostProcess[];
-    private _mapSize: number;
-    private _currentFaceIndex = 0;
-    private _currentFaceIndexCache = 0;
-    private _textureType: number;
-    private _defaultTextureMatrix = Matrix.Identity();
-    private _storedUniqueId: Nullable<number>;
+    protected _viewMatrix = Matrix.Zero();
+    protected _projectionMatrix = Matrix.Zero();
+    protected _transformMatrix = Matrix.Zero();
+    protected _cachedPosition: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+    protected _cachedDirection: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+    protected _cachedDefines: string;
+    protected _currentRenderID: number;
+    protected _boxBlurPostprocess: Nullable<PostProcess>;
+    protected _kernelBlurXPostprocess: Nullable<PostProcess>;
+    protected _kernelBlurYPostprocess: Nullable<PostProcess>;
+    protected _blurPostProcesses: PostProcess[];
+    protected _mapSize: number;
+    protected _currentFaceIndex = 0;
+    protected _currentFaceIndexCache = 0;
+    protected _textureType: number;
+    protected _defaultTextureMatrix = Matrix.Identity();
+    protected _storedUniqueId: Nullable<number>;
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
@@ -1162,6 +1181,10 @@ export class ShadowGenerator implements IShadowGenerator {
             defines.push("#define DEPTHTEXTURE");
         }
 
+        if (this.depthClamp) {
+            defines.push("#define DEPTHCLAMP");
+        }
+
         var attribs = [VertexBuffer.PositionKind];
 
         var mesh = subMesh.getMesh();
@@ -1459,6 +1482,28 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         return this._transformMatrix;
+    }
+
+    public get mustRender(): boolean {
+        return this.renderList !== null && this.renderList.length > 0;
+    }
+
+    public get renderList(): Nullable<Array<AbstractMesh>> {
+        const shadowMap = this.getShadowMap();
+
+        return shadowMap ? shadowMap.renderList : null;
+    }
+
+    public set renderList(list: Nullable<Array<AbstractMesh>>) {
+        const shadowMap = this.getShadowMap();
+
+        if (shadowMap) {
+            shadowMap.renderList = list;
+        }
+    }
+
+    public recreate(): void {
+        this.recreateShadowMap();
     }
 
     /**

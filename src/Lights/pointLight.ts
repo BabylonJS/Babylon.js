@@ -57,7 +57,7 @@ export class PointLight extends ShadowLight {
         var previousNeedCube = this.needCube();
         this._direction = value;
         if (this.needCube() !== previousNeedCube && this._shadowGenerator) {
-            this._shadowGenerator.recreateShadowMap();
+            this._shadowGenerator.recreate();
         }
     }
 
