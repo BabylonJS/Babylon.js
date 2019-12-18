@@ -167,6 +167,33 @@ declare module "babylonjs-node-editor/nodeLocationInfo" {
         };
     }
 }
+declare module "babylonjs-node-editor/serializationTools" {
+    import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
+    export class SerializationTools {
+        static UpdateLocations(material: NodeMaterial, globalState: GlobalState): void;
+        static Serialize(material: NodeMaterial, globalState: GlobalState, selectedBlocks?: NodeMaterialBlock[]): string;
+        static Deserialize(serializationObject: any, globalState: GlobalState): void;
+    }
+}
+declare module "babylonjs-node-editor/stringTools" {
+    import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
+    export class StringTools {
+        private static _SaveAs;
+        private static _Click;
+        /**
+         * Gets the base math type of node material block connection point.
+         * @param type Type to parse.
+         */
+        static GetBaseType(type: NodeMaterialBlockConnectionPointTypes): string;
+        /**
+         * Download a string into a file that will be saved locally by the browser
+         * @param content defines the string to download locally as a file
+         */
+        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
+    }
+}
 declare module "babylonjs-node-editor/diagram/graphFrame" {
     import { GraphNode } from "babylonjs-node-editor/diagram/graphNode";
     import { GraphCanvasComponent } from "babylonjs-node-editor/diagram/graphCanvas";
@@ -235,6 +262,7 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _onMove;
         dispose(): void;
         serialize(): IFrameData;
+        export(): void;
         static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {
             [key: number]: number;
         }): GraphFrame;
@@ -994,23 +1022,6 @@ declare module "babylonjs-node-editor/diagram/propertyLedger" {
         };
     }
 }
-declare module "babylonjs-node-editor/stringTools" {
-    import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
-    export class StringTools {
-        private static _SaveAs;
-        private static _Click;
-        /**
-         * Gets the base math type of node material block connection point.
-         * @param type Type to parse.
-         */
-        static GetBaseType(type: NodeMaterialBlockConnectionPointTypes): string;
-        /**
-         * Download a string into a file that will be saved locally by the browser
-         * @param content defines the string to download locally as a file
-         */
-        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
-    }
-}
 declare module "babylonjs-node-editor/diagram/display/inputDisplayManager" {
     import { IDisplayManager } from "babylonjs-node-editor/diagram/display/displayManager";
     import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
@@ -1281,15 +1292,6 @@ declare module "babylonjs-node-editor/components/nodeList/nodeListComponent" {
         constructor(props: INodeListComponentProps);
         filterContent(filter: string): void;
         render(): JSX.Element;
-    }
-}
-declare module "babylonjs-node-editor/serializationTools" {
-    import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
-    import { GlobalState } from "babylonjs-node-editor/globalState";
-    export class SerializationTools {
-        static UpdateLocations(material: NodeMaterial, globalState: GlobalState): void;
-        static Serialize(material: NodeMaterial, globalState: GlobalState): string;
-        static Deserialize(serializationObject: any, globalState: GlobalState): void;
     }
 }
 declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponent" {
@@ -1587,6 +1589,29 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export class SerializationTools {
+        static UpdateLocations(material: BABYLON.NodeMaterial, globalState: GlobalState): void;
+        static Serialize(material: BABYLON.NodeMaterial, globalState: GlobalState, selectedBlocks?: BABYLON.NodeMaterialBlock[]): string;
+        static Deserialize(serializationObject: any, globalState: GlobalState): void;
+    }
+}
+declare module NODEEDITOR {
+    export class StringTools {
+        private static _SaveAs;
+        private static _Click;
+        /**
+         * Gets the base math type of node material block connection point.
+         * @param type Type to parse.
+         */
+        static GetBaseType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
+        /**
+         * Download a string into a file that will be saved locally by the browser
+         * @param content defines the string to download locally as a file
+         */
+        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
+    }
+}
+declare module NODEEDITOR {
     export class GraphFrame {
         private readonly CollapsedWidth;
         private static _FrameCounter;
@@ -1649,6 +1674,7 @@ declare module NODEEDITOR {
         private _onMove;
         dispose(): void;
         serialize(): IFrameData;
+        export(): void;
         static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {
             [key: number]: number;
         }): GraphFrame;
@@ -2302,22 +2328,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class StringTools {
-        private static _SaveAs;
-        private static _Click;
-        /**
-         * Gets the base math type of node material block connection point.
-         * @param type Type to parse.
-         */
-        static GetBaseType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
-        /**
-         * Download a string into a file that will be saved locally by the browser
-         * @param content defines the string to download locally as a file
-         */
-        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
-    }
-}
-declare module NODEEDITOR {
     export class InputDisplayManager implements IDisplayManager {
         getHeaderClass(block: BABYLON.NodeMaterialBlock): "" | "constant" | "inspector";
         shouldDisplayPortLabels(block: BABYLON.NodeMaterialBlock): boolean;
@@ -2548,13 +2558,6 @@ declare module NODEEDITOR {
         constructor(props: INodeListComponentProps);
         filterContent(filter: string): void;
         render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    export class SerializationTools {
-        static UpdateLocations(material: BABYLON.NodeMaterial, globalState: GlobalState): void;
-        static Serialize(material: BABYLON.NodeMaterial, globalState: GlobalState): string;
-        static Deserialize(serializationObject: any, globalState: GlobalState): void;
     }
 }
 declare module NODEEDITOR {
