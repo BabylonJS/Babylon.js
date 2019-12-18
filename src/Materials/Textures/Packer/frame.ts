@@ -27,7 +27,7 @@ export interface ITexturePackerFrame{
     /**
 	 * The Frames offset
 	 */
-    offset: Vector2;    
+    offset: Vector2;
 
 }
 
@@ -50,7 +50,7 @@ export class TexturePackerFrame implements ITexturePackerFrame{
 	 * The Frames offset
 	 */
     public offset: Vector2;
-    
+
     /**
     * Initializes a texture package frame.
     * @returns TexturePackerFrame
@@ -59,5 +59,5 @@ export class TexturePackerFrame implements ITexturePackerFrame{
         this.id = id;
         this.scale = scale;
         this.offset = offset;
-    }    
+    }
 }
