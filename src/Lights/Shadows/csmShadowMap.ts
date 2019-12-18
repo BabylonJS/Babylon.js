@@ -6,6 +6,14 @@ import { ShadowGenerator } from "./shadowGenerator";
 declare type ShadowCSMGenerator = import("./csmShadowGenerator").CSMShadowGenerator;
 declare type ICascade = import("./csmShadowGenerator").ICascade;
 
+const UpDir = Vector3.Up();
+const RightDir = Vector3.Right();
+const ZeroVec = Vector3.Zero();
+
+let tmpv1 = new Vector3(),
+    tmpv2 = new Vector3(),
+    matrix = new Matrix();
+
 export class CSMShadowMap extends ShadowGenerator {
 
     protected static readonly frustumCornersNDCSpace = [
@@ -33,6 +41,12 @@ export class CSMShadowMap extends ShadowGenerator {
 
     protected _parent: ShadowCSMGenerator;
     protected _cascade: Nullable<ICascade>;
+    protected _frustumCornersWorldSpace: Array<Vector3>;
+    protected _minExtents: Vector3;
+    protected _maxExtents: Vector3;
+    protected _frustumCenter: Vector3;
+    protected _cascadeExtents: Vector3;
+    protected _shadowCameraPos: Vector3;
 
     constructor(mapSize: number, light: IShadowLight, usefulFloatFirst: boolean, parent: ShadowCSMGenerator) {
         super(mapSize, light, usefulFloatFirst);
@@ -42,6 +56,18 @@ export class CSMShadowMap extends ShadowGenerator {
         this._cascade = null;
         this._lightMinExtents = new Vector3(0, 0, 0);
         this._lightMaxExtents = new Vector3(0, 0, 0);
+
+        this._frustumCornersWorldSpace = [];
+
+        for (let i = 0; i < CSMShadowMap.frustumCornersNDCSpace.length; ++i) {
+            this._frustumCornersWorldSpace.push(new Vector3());
+        }
+
+        this._minExtents = new Vector3();
+        this._maxExtents = new Vector3();
+        this._frustumCenter = new Vector3();
+        this._cascadeExtents = new Vector3();
+        this._shadowCameraPos = new Vector3();
     }
 
     public get viewMatrix(): Matrix {
@@ -87,11 +113,9 @@ export class CSMShadowMap extends ShadowGenerator {
     }
 
     // Get the 8 points of the view frustum in world space
-    protected _computeFrustumInWorldSpace(): Array<Vector3> {
-        const frustumCornersWorldSpace: Array<Vector3> = [];
-
+    protected _computeFrustumInWorldSpace(): void {
         if (!this._cascade || !this._scene.activeCamera) {
-            return frustumCornersWorldSpace;
+            return;
         }
 
         const prevSplitDist = this._cascade.prevSplitDistance,
@@ -101,71 +125,72 @@ export class CSMShadowMap extends ShadowGenerator {
 
         const invViewProj = Matrix.Invert(this._scene.activeCamera.getTransformationMatrix());
         for (let cornerIndex = 0; cornerIndex < CSMShadowMap.frustumCornersNDCSpace.length; ++cornerIndex) {
-            frustumCornersWorldSpace.push(Vector3.TransformCoordinates(CSMShadowMap.frustumCornersNDCSpace[cornerIndex], invViewProj));
+            Vector3.TransformCoordinatesToRef(CSMShadowMap.frustumCornersNDCSpace[cornerIndex], invViewProj, this._frustumCornersWorldSpace[cornerIndex]);
         }
 
         // Get the corners of the current cascade slice of the view frustum
         for (let cornerIndex = 0; cornerIndex < CSMShadowMap.frustumCornersNDCSpace.length / 2; ++cornerIndex) {
-            const cornerRay = frustumCornersWorldSpace[cornerIndex + 4].subtract(frustumCornersWorldSpace[cornerIndex]),
-                  nearCornerRay = cornerRay.scale(prevSplitDist),
-                  farCornerRay = cornerRay.scale(splitDist);
+            tmpv1.copyFrom(this._frustumCornersWorldSpace[cornerIndex + 4]).subtractInPlace(this._frustumCornersWorldSpace[cornerIndex]);
+            tmpv2.copyFrom(tmpv1).scaleInPlace(prevSplitDist); // near corner ray
+            tmpv1.scaleInPlace(splitDist); // far corner ray
 
-            frustumCornersWorldSpace[cornerIndex + 4] = frustumCornersWorldSpace[cornerIndex].add(farCornerRay);
-            frustumCornersWorldSpace[cornerIndex].addInPlace(nearCornerRay);
+            tmpv1.addInPlace(this._frustumCornersWorldSpace[cornerIndex]);
+
+            this._frustumCornersWorldSpace[cornerIndex + 4].copyFrom(tmpv1);
+            this._frustumCornersWorldSpace[cornerIndex].addInPlace(tmpv2);
         }
-
-        return frustumCornersWorldSpace;
     }
 
-    protected _computeLightFrustum(frustumCornersWorldSpace: Array<Vector3>): [Vector3, Vector3, Vector3] {
-        let minExtents = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE),
-            maxExtents = new Vector3(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE),
-            frustumCenter = new Vector3(0, 0, 0);
+    protected _computeLightFrustum(): void {
+        this._minExtents.copyFromFloats(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        this._maxExtents.copyFromFloats(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
+        this._frustumCenter.copyFromFloats(0, 0, 0);
 
         const camera = this._scene.activeCamera;
 
         if (!camera) {
-            return [minExtents, maxExtents, frustumCenter];
+            return;
         }
 
         // Calculate the centroid of the view frustum slice
-        for (let cornerIndex = 0; cornerIndex < frustumCornersWorldSpace.length; ++cornerIndex) {
-            frustumCenter.addInPlace(frustumCornersWorldSpace[cornerIndex]);
+        for (let cornerIndex = 0; cornerIndex < this._frustumCornersWorldSpace.length; ++cornerIndex) {
+            this._frustumCenter.addInPlace(this._frustumCornersWorldSpace[cornerIndex]);
         }
 
-        frustumCenter.scaleInPlace(1 / frustumCornersWorldSpace.length);
+        this._frustumCenter.scaleInPlace(1 / this._frustumCornersWorldSpace.length);
 
         if (this._parent.stabilizeCascades) {
             // Calculate the radius of a bounding sphere surrounding the frustum corners
             let sphereRadius = 0;
-            for (let cornerIndex = 0; cornerIndex < frustumCornersWorldSpace.length; ++cornerIndex) {
-                const dist = frustumCornersWorldSpace[cornerIndex].subtract(frustumCenter).length();
+            for (let cornerIndex = 0; cornerIndex < this._frustumCornersWorldSpace.length; ++cornerIndex) {
+                const dist = this._frustumCornersWorldSpace[cornerIndex].subtract(this._frustumCenter).length();
                 sphereRadius = Math.max(sphereRadius, dist);
             }
 
             sphereRadius = Math.ceil(sphereRadius * 16) / 16;
 
-            maxExtents.set(sphereRadius, sphereRadius, sphereRadius);
-            minExtents.set(-sphereRadius, -sphereRadius, -sphereRadius);
+            this._maxExtents.copyFromFloats(sphereRadius, sphereRadius, sphereRadius);
+            this._minExtents.copyFromFloats(-sphereRadius, -sphereRadius, -sphereRadius);
         } else {
             // Create a temporary view matrix for the light
-            const upDir = this._parent.useRightDirectionAsUpForOrthoProj ? camera.getDirection(new Vector3(1, 0, 0)) : Vector3.Up();
+            const upDir = this._parent.useRightDirectionAsUpForOrthoProj ? camera.getDirection(RightDir) : UpDir;
 
-            const lightCameraPos = frustumCenter,
-                  lookAt = frustumCenter.add(this._lightDirection);
+            const lightCameraPos = this._frustumCenter;
 
-            let lightView = Matrix.LookAtLH(lightCameraPos, lookAt, upDir);
+            this._frustumCenter.addToRef(this._lightDirection, tmpv1); // tmpv1 = look at
+
+            Matrix.LookAtLHToRef(lightCameraPos, tmpv1, upDir, matrix); // matrix = lightView
 
             // Calculate an AABB around the frustum corners
-            for (let cornerIndex = 0; cornerIndex < frustumCornersWorldSpace.length; ++cornerIndex) {
-                const corner = Vector3.TransformCoordinates(frustumCornersWorldSpace[cornerIndex], lightView);
+            for (let cornerIndex = 0; cornerIndex < this._frustumCornersWorldSpace.length; ++cornerIndex) {
+                Vector3.TransformCoordinatesToRef(this._frustumCornersWorldSpace[cornerIndex], matrix, tmpv1);
 
-                minExtents.minimizeInPlace(corner);
-                maxExtents.maximizeInPlace(corner);
+                this._minExtents.minimizeInPlace(tmpv1);
+                this._maxExtents.maximizeInPlace(tmpv1);
             }
         }
 
-        return [minExtents, maxExtents, frustumCenter];
+        return;
     }
 
     protected _computeLightMatrices(): void {
@@ -175,20 +200,21 @@ export class CSMShadowMap extends ShadowGenerator {
             return;
         }
 
-        const frustumCornersWorldSpace = this._computeFrustumInWorldSpace(),
-              [minExtents, maxExtents, frustumCenter] = this._computeLightFrustum(frustumCornersWorldSpace);
+        this._computeFrustumInWorldSpace();
 
-        const cascadeExtents = maxExtents.subtract(minExtents);
+        this._computeLightFrustum();
+
+        this._maxExtents.subtractToRef(this._minExtents, this._cascadeExtents);
 
         // Get position of the shadow camera
-        const shadowCameraPos = frustumCenter.add(this._lightDirection.scale(minExtents.z));
+        this._frustumCenter.addToRef(this._lightDirection.scale(this._minExtents.z), this._shadowCameraPos);
 
         // Come up with a new orthographic camera for the shadow caster
-        const upDir = this._parent.stabilizeCascades || !this._parent.useRightDirectionAsUpForOrthoProj ? Vector3.Up() : camera.getDirection(new Vector3(1, 0, 0));
+        const upDir = this._parent.stabilizeCascades || !this._parent.useRightDirectionAsUpForOrthoProj ? UpDir : camera.getDirection(RightDir);
 
-        Matrix.LookAtLHToRef(shadowCameraPos, frustumCenter, upDir, this._viewMatrix);
+        Matrix.LookAtLHToRef(this._shadowCameraPos, this._frustumCenter, upDir, this._viewMatrix);
 
-        let minZ = 0, maxZ = cascadeExtents.z;
+        let minZ = 0, maxZ = this._cascadeExtents.z;
 
         // Try to tighten minZ and maxZ based on the bounding box of the shadow casters
         const boundingInfo = this._parent.shadowCastersBoundingInfo;
@@ -206,25 +232,28 @@ export class CSMShadowMap extends ShadowGenerator {
         }
 
         if (this._scene.useRightHandedSystem) {
-            Matrix.OrthoOffCenterRHToRef(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, minZ, maxZ, this._projectionMatrix);
+            Matrix.OrthoOffCenterRHToRef(this._minExtents.x, this._maxExtents.x, this._minExtents.y, this._maxExtents.y, minZ, maxZ, this._projectionMatrix);
         } else {
-            Matrix.OrthoOffCenterLHToRef(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, minZ, maxZ, this._projectionMatrix);
+            Matrix.OrthoOffCenterLHToRef(this._minExtents.x, this._maxExtents.x, this._minExtents.y, this._maxExtents.y, minZ, maxZ, this._projectionMatrix);
         }
 
-        this._lightMinExtents.set(minExtents.x, minExtents.y, minZ);
-        this._lightMaxExtents.set(maxExtents.x, maxExtents.y, maxZ);
+        this._lightMinExtents.set(this._minExtents.x, this._minExtents.y, minZ);
+        this._lightMaxExtents.set(this._maxExtents.x, this._maxExtents.y, maxZ);
 
         this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
 
         if (this._parent.stabilizeCascades) {
             // Create the rounding matrix, by projecting the world-space origin and determining
             // the fractional offset in texel space
-            const shadowOrigin = Vector3.TransformCoordinates(Vector3.Zero(), this._transformMatrix).scaleInPlace(this._mapSize / 2);
+            Vector3.TransformCoordinatesToRef(ZeroVec, this._transformMatrix, tmpv1); // tmpv1 = shadowOrigin
+            tmpv1.scaleInPlace(this._mapSize / 2);
 
-            const roundedOrigin = new Vector3(Math.round(shadowOrigin.x), Math.round(shadowOrigin.y), Math.round(shadowOrigin.z)),
-                  roundOffset = roundedOrigin.subtract(shadowOrigin).scaleInPlace(2 / this._mapSize);
+            tmpv2.copyFromFloats(Math.round(tmpv1.x), Math.round(tmpv1.y), Math.round(tmpv1.z)); // tmpv2 = roundedOrigin
+            tmpv2.subtractInPlace(tmpv1).scaleInPlace(2 / this._mapSize); // tmpv2 = roundOffset
 
-            this._projectionMatrix.multiplyToRef(Matrix.Translation(roundOffset.x, roundOffset.y, 0.0), this._projectionMatrix);
+            Matrix.TranslationToRef(tmpv2.x, tmpv2.y, 0.0, matrix);
+
+            this._projectionMatrix.multiplyToRef(matrix, this._projectionMatrix);
             this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
         }
     }
