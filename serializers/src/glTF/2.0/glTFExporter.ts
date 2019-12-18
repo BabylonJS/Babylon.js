@@ -335,7 +335,11 @@ export class _Exporter {
             localCanvas.id = "WriteCanvas";
             localCanvas.width = 2048;
             localCanvas.height = 2048;
-            this._localEngine = new Engine(localCanvas, true, { premultipliedAlpha: false, preserveDrawingBuffer: true });
+            if (Tools.IsSafari()) {
+                this._localEngine = new Engine(localCanvas, true, { premultipliedAlpha: true, preserveDrawingBuffer: true });
+            } else {
+                this._localEngine = new Engine(localCanvas, true, { premultipliedAlpha: false, preserveDrawingBuffer: true });
+            }
             this._localEngine.setViewport(new Viewport(0, 0, 1, 1));
         }
 
