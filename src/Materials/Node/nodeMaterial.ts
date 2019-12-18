@@ -694,7 +694,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         if (subMesh.effect && this.isFrozen) {
-            if (this._wasPreviouslyReady) {
+            if (subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -810,7 +810,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         defines._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
 
         return true;
     }
@@ -1130,26 +1130,30 @@ export class NodeMaterial extends PushMaterial {
      * Serializes this material in a JSON representation
      * @returns the serialized material object
      */
-    public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
-        serializationObject.customType = "BABYLON.NodeMaterial";
-
-        serializationObject.outputNodes = [];
+    public serialize(selectedBlocks?: NodeMaterialBlock[]): any {
+        var serializationObject = selectedBlocks ? {} : SerializationHelper.Serialize(this);
         serializationObject.editorData = JSON.parse(JSON.stringify(this.editorData)); // Copy
 
         let blocks: NodeMaterialBlock[] = [];
 
-        // Outputs
-        for (var outputNode of this._vertexOutputNodes) {
-            this._gatherBlocks(outputNode, blocks);
-            serializationObject.outputNodes.push(outputNode.uniqueId);
-        }
+        if (selectedBlocks) {
+            blocks = selectedBlocks;
+        } else {
+            serializationObject.customType = "BABYLON.NodeMaterial";
+            serializationObject.outputNodes = [];
 
-        for (var outputNode of this._fragmentOutputNodes) {
-            this._gatherBlocks(outputNode, blocks);
-
-            if (serializationObject.outputNodes.indexOf(outputNode.uniqueId) === -1) {
+            // Outputs
+            for (var outputNode of this._vertexOutputNodes) {
+                this._gatherBlocks(outputNode, blocks);
                 serializationObject.outputNodes.push(outputNode.uniqueId);
+            }
+
+            for (var outputNode of this._fragmentOutputNodes) {
+                this._gatherBlocks(outputNode, blocks);
+
+                if (serializationObject.outputNodes.indexOf(outputNode.uniqueId) === -1) {
+                    serializationObject.outputNodes.push(outputNode.uniqueId);
+                }
             }
         }
 
@@ -1160,11 +1164,13 @@ export class NodeMaterial extends PushMaterial {
             serializationObject.blocks.push(block.serialize());
         }
 
-        for (var block of this.attachedBlocks) {
-            if (blocks.indexOf(block) !== -1) {
-                continue;
+        if (!selectedBlocks) {
+            for (var block of this.attachedBlocks) {
+                if (blocks.indexOf(block) !== -1) {
+                    continue;
+                }
+                serializationObject.blocks.push(block.serialize());
             }
-            serializationObject.blocks.push(block.serialize());
         }
 
         return serializationObject;
