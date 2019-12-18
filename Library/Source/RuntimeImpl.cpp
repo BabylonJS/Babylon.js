@@ -61,6 +61,7 @@ namespace Babylon
     void RuntimeImpl::Suspend()
     {
         std::unique_lock<std::mutex> lockSuspension(m_suspendMutex);
+        // Lock block ticking so no rendering will happen once we exit Suspend method
         std::unique_lock<std::mutex> lockTicking(m_blockTickingMutex);
         m_suspended = true;
         m_suspendVariable.notify_one();
