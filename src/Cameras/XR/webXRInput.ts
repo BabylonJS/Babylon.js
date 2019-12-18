@@ -2,8 +2,12 @@ import { Nullable } from "../../types";
 import { Observer, Observable } from "../../Misc/observable";
 import { IDisposable } from "../../scene";
 import { WebXRController } from './webXRController';
-import { WebXRSessionManager, WebXRCamera } from '../../Legacy/legacy';
+import { WebXRSessionManager } from './webXRSessionManager';
+import { WebXRCamera } from './webXRCamera';
 
+export interface IWebXRInputOptions {
+    doNotLoadControllerMeshes?: boolean;
+}
 /**
  * XR input used to track XR inputs such as controllers/rays
  */
@@ -32,7 +36,10 @@ export class WebXRInput implements IDisposable {
         /**
          * Base experience the input listens to
          */
-        public xrSessionManager: WebXRSessionManager
+        public xrSessionManager: WebXRSessionManager,
+
+        public xrCamera: WebXRCamera,
+        private options: IWebXRInputOptions = {}
     ) {
         // Remove controllers when exiting XR
         this._sessionEndedObserver = this.xrSessionManager.onXRSessionEnded.add(() => {
@@ -40,7 +47,6 @@ export class WebXRInput implements IDisposable {
         });
 
         this._sessionInitObserver = this.xrSessionManager.onXRSessionInit.add((session) => {
-            this._addAndRemoveControllers(session.inputSources, []);
             session.addEventListener("inputsourceschange", this._onInputSourcesChange);
         });
 
@@ -63,6 +69,9 @@ export class WebXRInput implements IDisposable {
             if (sources.indexOf(input) === -1) {
                 let controller = new WebXRController(this.xrSessionManager.scene, input);
                 this.controllers.push(controller);
+                if (!this.options.doNotLoadControllerMeshes && controller.gamepadController) {
+                    controller.gamepadController.loadModel();
+                }
                 this.onControllerAddedObservable.notifyObservers(controller);
             }
         }
