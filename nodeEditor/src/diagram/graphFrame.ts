@@ -6,6 +6,8 @@ import { NodeLink } from './nodeLink';
 import { IFrameData } from '../nodeLocationInfo';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { NodePort } from './nodePort';
+import { SerializationTools } from '../serializationTools';
+import { StringTools } from '../stringTools';
 
 export class GraphFrame {
     private readonly CollapsedWidth = 200;
@@ -466,6 +468,12 @@ export class GraphFrame {
             isCollapsed: this.isCollapsed,
             blocks: this.nodes.map(n => n.block.uniqueId)
         }
+    }
+
+    public export() {
+        const state = this._ownerCanvas.globalState;
+        const json = SerializationTools.Serialize(state.nodeMaterial, state, this.nodes.map(n => n.block));
+        StringTools.DownloadAsFile(state.hostDocument, json, this._name + ".json");
     }
 
     public static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {[key: number]: number}) {
