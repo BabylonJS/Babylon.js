@@ -30,7 +30,9 @@ export class WebXRMotionControllerManager {
         // try using the gamepad id
         if (xrInput.gamepad) {
             switch (xrInput.gamepad.id) {
-
+                case (xrInput.gamepad.id.match(/oculus/gi) ? xrInput.gamepad.id : undefined):
+                    // oculus in gamepad id - legacy mapping
+                    return this._AvailableControllers["oculus-touch-legacy"](xrInput, scene);
             }
         }
         // check fallbacks
