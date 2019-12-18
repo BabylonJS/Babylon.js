@@ -60,7 +60,9 @@ namespace Babylon
 
     void RuntimeImpl::Suspend()
     {
-        std::unique_lock<std::mutex> lock(m_suspendMutex);
+        std::unique_lock<std::mutex> lockSuspension(m_suspendMutex);
+        // Lock block ticking so no rendering will happen once we exit Suspend method
+        std::unique_lock<std::mutex> lockTicking(m_blockTickingMutex);
         m_suspended = true;
         m_suspendVariable.notify_one();
     }
@@ -235,7 +237,10 @@ namespace Babylon
                 std::unique_lock<std::mutex> lock(m_suspendMutex);
                 m_suspendVariable.wait(lock, [this]() { return !m_suspended; });
             }
-            m_dispatcher.blocking_tick(m_cancelSource);
+            {
+                std::unique_lock<std::mutex> lock(m_blockTickingMutex);
+                m_dispatcher.blocking_tick(m_cancelSource);
+            }
         }
     }
 
