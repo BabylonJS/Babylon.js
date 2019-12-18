@@ -1,9 +1,8 @@
 import { Nullable } from "../../types";
 import { Observer, Observable } from "../../Misc/observable";
 import { IDisposable } from "../../scene";
-import { WebXRExperienceHelper } from "./webXRExperienceHelper";
 import { WebXRController } from './webXRController';
-import { WebXRState } from './webXRTypes';
+import { WebXRSessionManager, WebXRCamera } from '../../Legacy/legacy';
 
 /**
  * XR input used to track XR inputs such as controllers/rays
@@ -14,7 +13,8 @@ export class WebXRInput implements IDisposable {
      */
     public controllers: Array<WebXRController> = [];
     private _frameObserver: Nullable<Observer<any>>;
-    private _stateObserver: Nullable<Observer<any>>;
+    private _sessionEndedObserver: Nullable<Observer<any>>;
+    private _sessionInitObserver: Nullable<Observer<any>>;
     /**
      * Event when a controller has been connected/added
      */
@@ -32,31 +32,23 @@ export class WebXRInput implements IDisposable {
         /**
          * Base experience the input listens to
          */
-        public baseExperience: WebXRExperienceHelper
+        public xrSessionManager: WebXRSessionManager
     ) {
         // Remove controllers when exiting XR
-        this._stateObserver = baseExperience.onStateChangedObservable.add((s) => {
-            if (s === WebXRState.NOT_IN_XR) {
-                this._addAndRemoveControllers([], this.controllers.map((c) => {return c.inputSource; }));
-            }
+        this._sessionEndedObserver = this.xrSessionManager.onXRSessionEnded.add(() => {
+            this._addAndRemoveControllers([], this.controllers.map((c) => { return c.inputSource; }));
         });
 
-        this._frameObserver = baseExperience.sessionManager.onXRFrameObservable.add(() => {
-            if (!baseExperience.sessionManager.currentFrame) {
-                return;
-            }
+        this._sessionInitObserver = this.xrSessionManager.onXRSessionInit.add((session) => {
+            this._addAndRemoveControllers(session.inputSources, []);
+            session.addEventListener("inputsourceschange", this._onInputSourcesChange);
+        });
 
-            // Start listing to input add/remove event
-            if (this.controllers.length == 0 && baseExperience.sessionManager.session.inputSources && baseExperience.sessionManager.session.inputSources.length > 0) {
-                this._addAndRemoveControllers(baseExperience.sessionManager.session.inputSources, []);
-                baseExperience.sessionManager.session.addEventListener("inputsourceschange", this._onInputSourcesChange);
-            }
-
+        this._frameObserver = this.xrSessionManager.onXRFrameObservable.add((frame) => {
             // Update controller pose info
             this.controllers.forEach((controller) => {
-                controller.updateFromXRFrame(baseExperience.sessionManager.currentFrame!, baseExperience.sessionManager.referenceSpace);
+                controller.updateFromXRFrame(frame, this.xrSessionManager.referenceSpace);
             });
-
         });
     }
 
@@ -66,10 +58,10 @@ export class WebXRInput implements IDisposable {
 
     private _addAndRemoveControllers(addInputs: Array<XRInputSource>, removeInputs: Array<XRInputSource>) {
         // Add controllers if they don't already exist
-        let sources = this.controllers.map((c) => {return c.inputSource; });
+        let sources = this.controllers.map((c) => { return c.inputSource; });
         for (let input of addInputs) {
             if (sources.indexOf(input) === -1) {
-                let controller = new WebXRController(this.baseExperience.camera._scene, input, this.baseExperience.container);
+                let controller = new WebXRController(this.xrSessionManager.scene, input);
                 this.controllers.push(controller);
                 this.onControllerAddedObservable.notifyObservers(controller);
             }
@@ -81,7 +73,7 @@ export class WebXRInput implements IDisposable {
         this.controllers.forEach((c) => {
             if (removeInputs.indexOf(c.inputSource) === -1) {
                 keepControllers.push(c);
-            }else {
+            } else {
                 removedControllers.push(c);
             }
         });
@@ -100,7 +92,8 @@ export class WebXRInput implements IDisposable {
         this.controllers.forEach((c) => {
             c.dispose();
         });
-        this.baseExperience.sessionManager.onXRFrameObservable.remove(this._frameObserver);
-        this.baseExperience.onStateChangedObservable.remove(this._stateObserver);
+        this.xrSessionManager.onXRFrameObservable.remove(this._frameObserver);
+        this.xrSessionManager.onXRSessionInit.remove(this._sessionInitObserver);
+        this.xrSessionManager.onXRSessionEnded.remove(this._sessionEndedObserver);
     }
 }
