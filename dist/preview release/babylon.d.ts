@@ -2424,6 +2424,11 @@ declare module BABYLON {
          */
         negate(): Vector3;
         /**
+         * Negate this vector in place
+         * @returns this
+         */
+        negateInPlace(): Vector3;
+        /**
          * Multiplies the Vector3 coordinates by the float "scale"
          * @param scale defines the multiplier factor
          * @returns the current updated Vector3
@@ -3494,6 +3499,13 @@ declare module BABYLON {
          * @return true if the current quaternion and the given one coordinates are strictly equals
          */
         equals(otherQuaternion: DeepImmutable<Quaternion>): boolean;
+        /**
+         * Gets a boolean if two quaternions are equals (using an epsilon value)
+         * @param otherQuaternion defines the other quaternion
+         * @param epsilon defines the minimal distance to consider equality
+         * @returns true if the given quaternion coordinates are close to the current ones by a distance of epsilon.
+         */
+        equalsWithEpsilon(otherQuaternion: DeepImmutable<Quaternion>, epsilon?: number): boolean;
         /**
          * Clone the current quaternion
          * @returns a new quaternion copied from the current one
@@ -8884,7 +8896,7 @@ declare module BABYLON {
          * Also use as the light direction on spot and directional lights.
          */
         set direction(value: Vector3);
-        private _shadowMinZ;
+        protected _shadowMinZ: number;
         /**
          * Gets the shadow projection clipping minimum z value.
          */
@@ -8893,7 +8905,7 @@ declare module BABYLON {
          * Sets the shadow projection clipping minimum z value.
          */
         set shadowMinZ(value: number);
-        private _shadowMaxZ;
+        protected _shadowMaxZ: number;
         /**
          * Sets the shadow projection clipping maximum z value.
          */
@@ -42335,9 +42347,25 @@ declare module BABYLON {
          */
         session: XRSession;
         /**
-         * Type of reference space used when creating the session
+         * The viewer (head position) reference space. This can be used to get the XR world coordinates
+         * or get the offset the player is currently at.
+         */
+        viewerReferenceSpace: XRReferenceSpace;
+        /**
+         * The current reference space used in this session. This reference space can constantly change!
+         * It is mainly used to offset the camera's position.
          */
         referenceSpace: XRReferenceSpace;
+        /**
+         * The base reference space from which the session started. good if you want to reset your
+         * reference space
+         */
+        baseReferenceSpace: XRReferenceSpace;
+        /**
+         * Used just in case of a failure to initialize an immersive session.
+         * The viewer reference space is compensated using this height, creating a kind of "viewer-floor" reference space
+         */
+        defaultHeightCompensation: number;
         /**
          * Current XR frame
          */
@@ -42435,25 +42463,33 @@ declare module BABYLON {
      * @see https://doc.babylonjs.com/how_to/webxr
      */
     export class WebXRCamera extends FreeCamera {
+        private _xrSessionManager;
         /**
          * Is the camera in debug mode. Used when using an emulator
          */
         debugMode: boolean;
+        private _firstFrame;
+        private _referencedPosition;
+        private _referenceQuaternion;
+        private _xrInvPositionCache;
+        private _xrInvQuaternionCache;
         /**
          * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
          * @param name the name of the camera
          * @param scene the scene to add the camera to
          */
-        constructor(name: string, scene: Scene);
+        constructor(name: string, scene: Scene, _xrSessionManager: WebXRSessionManager);
         private _updateNumberOfRigCameras;
         /** @hidden */
         _updateForDualEyeDebugging(): void;
         /**
          * Updates the cameras position from the current pose information of the  XR session
          * @param xrSessionManager the session containing pose information
-         * @returns true if the camera has been updated, false if the session did not contain pose or frame data
          */
-        updateFromXRSessionManager(xrSessionManager: WebXRSessionManager): boolean;
+        update(): void;
+        private _updateReferenceSpace;
+        private _updateReferenceSpaceOffset;
+        private _updateFromXRSession;
     }
 }
 declare module BABYLON {
@@ -42596,10 +42632,6 @@ declare module BABYLON {
     export class WebXRExperienceHelper implements IDisposable {
         private scene;
         /**
-         * Container which stores the xr camera and controllers as children. This can be used to move the camera/user as the camera's position is updated by the xr device
-         */
-        container: AbstractMesh;
-        /**
          * Camera used to render xr content
          */
         camera: WebXRCamera;
@@ -42608,11 +42640,18 @@ declare module BABYLON {
          */
         state: WebXRState;
         private _setState;
-        private static _TmpVector;
         /**
          * Fires when the state of the experience helper has changed
          */
         onStateChangedObservable: Observable<WebXRState>;
+        /**
+         * Observers registered here will be triggered after the camera's initial transformation is set
+         * This can be used to set a different ground level or an extra rotation.
+         *
+         * Note that ground level is considered to be at 0. The height defined by the XR camera will be added
+         * to the position set after this observable is done executing.
+         */
+        onInitialXRPoseSetObservable: Observable<WebXRCamera>;
         /** Session manager used to keep track of xr session */
         sessionManager: WebXRSessionManager;
         /** A features manager for this xr session */
@@ -42645,21 +42684,10 @@ declare module BABYLON {
          */
         enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget): Promise<WebXRSessionManager>;
         /**
-         * Updates the global position of the camera by moving the camera's container
-         * This should be used instead of modifying the camera's position as it will be overwritten by an xrSessions's update frame
-         * @param position The desired global position of the camera
-         */
-        setPositionOfCameraUsingContainer(position: Vector3): void;
-        /**
-         * Rotates the xr camera by rotating the camera's container around the camera's position
-         * This should be used instead of modifying the camera's rotation as it will be overwritten by an xrSessions's update frame
-         * @param rotation the desired quaternion rotation to apply to the camera
-         */
-        rotateCameraByQuaternionUsingContainer(rotation: Quaternion): void;
-        /**
          * Disposes of the experience helper
          */
         dispose(): void;
+        private _nonXRToXRCamera;
     }
 }
 declare module BABYLON {
@@ -47733,6 +47761,11 @@ declare module BABYLON {
          * on each frame.
          */
         autoUpdateExtends: boolean;
+        /**
+         * Automatically compute the shadowMinZ and shadowMaxZ for the projection matrix to best fit (including all the casters)
+         * on each frame. autoUpdateExtends must be set to true for this to work
+         */
+        autoCalcShadowZBounds: boolean;
         private _orthoLeft;
         private _orthoRight;
         private _orthoTop;
@@ -55561,7 +55594,7 @@ declare module BABYLON {
          * Serializes this material in a JSON representation
          * @returns the serialized material object
          */
-        serialize(): any;
+        serialize(selectedBlocks?: NodeMaterialBlock[]): any;
         private _restoreConnections;
         /**
          * Clear the current graph and load a new one from a serialization object
@@ -67537,7 +67570,7 @@ interface XRWebGLLayer {
 }
 
 declare class XRRigidTransform {
-    constructor(matrix: Float32Array);
+    constructor(matrix: Float32Array | DOMPointInit, direction?: DOMPointInit);
     position: DOMPointReadOnly;
     orientation: DOMPointReadOnly;
     matrix: Float32Array;
@@ -67563,7 +67596,7 @@ interface XRInputSourceEvent extends Event {
 
 // Experimental(er) features
 declare class XRRay {
-    constructor(transformOrOrigin: XRRigidTransform | DOMPointReadOnly, direction?: DOMPointReadOnly);
+    constructor(transformOrOrigin: XRRigidTransform | DOMPointInit, direction?: DOMPointInit);
     origin: DOMPointReadOnly;
     direction: DOMPointReadOnly;
     matrix: Float32Array;

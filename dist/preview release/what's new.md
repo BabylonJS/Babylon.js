@@ -51,6 +51,7 @@
 - Allow setting of `BABYLON.Basis.JSModuleURL` and `BABYLON.Basis.WasmModuleURL`, for hosting the Basis transcoder locally ([JasonAyre])(https://github.com/jasonyre))
 - PNG support for browsers not supporting SVG ([RaananW](https://github.com/RaananW/))
 - Device orientation event permissions for iOS 13+ ([RaananW](https://github.com/RaananW/))
+- Added `DirectionalLight.autoCalcShadowZBounds` to automatically compute the `shadowMinZ` and `shadowMaxZ` values ([Popov72](https://github.com/Popov72))
 
 ### Engine
 
