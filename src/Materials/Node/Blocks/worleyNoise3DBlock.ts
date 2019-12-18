@@ -224,7 +224,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
         functionString += `    return sqrt(d11.xy); // F1, F2\r\n`;
         functionString += `}\r\n\r\n`;
 
-        state._emitFunction('worley3D', functionString, 'worley3D');
+        state._emitFunction('worley3D', functionString, '// Worley3D');
         state.compilationString += this._declareOutput(this._outputs[0], state) + ` = worley(${this.seed.associatedVariableName}, ${this.jitter.associatedVariableName}, ${this.manhattanDistance});\r\n`;
 
         return this;
