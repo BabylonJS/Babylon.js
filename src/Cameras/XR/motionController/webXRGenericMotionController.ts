@@ -57,8 +57,8 @@ export class WebXRGenericTriggerMotionController extends WebXRAbstractMotionCont
         this.rootMesh = new Mesh(this.profileId + " " + this.handness, this.scene);
 
         meshes.forEach((mesh) => {
+            mesh.isPickable = false;
             if (!mesh.parent) {
-                mesh.isPickable = false;
                 mesh.setParent(this.rootMesh);
             }
         });
