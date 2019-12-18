@@ -25,7 +25,7 @@ export interface IMotionControllerLayout {
         axes: Array<{
             componentId: string;
             axis: "x-axis" | "y-axis";
-        }>;
+        } | null>;
     };
 }
 
