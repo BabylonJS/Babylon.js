@@ -146,9 +146,12 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
                 buttonMap.unpressedMesh = this._getImmediateChildByName(buttonMesh, this._mapping.defaultButton.unpressedNodeName);
 
                 if (buttonMap.valueMesh && buttonMap.pressedMesh && buttonMap.unpressedMesh) {
-                    this.components[buttonName].onButtonStateChanged.add((component) => {
-                        this._lerpButtonTransform(buttonMap, component.value);
-                    }, undefined, true);
+                    const comp = this.getComponent(buttonName);
+                    if (comp) {
+                        comp.onButtonStateChanged.add((component) => {
+                            this._lerpButtonTransform(buttonMap, component.value);
+                        }, undefined, true);
+                    }
                 } else {
                     // If we didn't find the mesh, it simply means this button won't have transforms applied as mapped button value changes.
                     Logger.Warn('Missing button submesh under mesh with name: ' + buttonMeshName);
@@ -178,10 +181,14 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
             axisMap.maxMesh = this._getImmediateChildByName(axisMesh, this._mapping.defaultAxis.maxNodeName);
 
             if (axisMap.valueMesh && axisMap.minMesh && axisMap.maxMesh) {
-                this.components[axisData.componentId].onAxisValueChanged.add((axisValues) => {
-                    const value = axisData.axis === "x-axis" ? axisValues.x : axisValues.y;
-                    this._lerpAxisTransform(axisMap, value);
-                }, undefined, true);
+                const comp = this.getComponent(axisData.componentId);
+                if (comp) {
+                    comp.onAxisValueChanged.add((axisValues) => {
+                        const value = axisData.axis === "x-axis" ? axisValues.x : axisValues.y;
+                        this._lerpAxisTransform(axisMap, value);
+                    }, undefined, true);
+                }
+
             } else {
                 // If we didn't find the mesh, it simply means this button won't have transforms applied as mapped button value changes.
                 Logger.Warn('Missing axis submesh under mesh with name: ' + axisMap.rootNodeName);
@@ -220,24 +227,22 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
     }
 
     protected _getModelLoadingConstraints(): boolean {
-        return !SceneLoader.IsPluginForExtensionAvailable(".glb");
+        return SceneLoader.IsPluginForExtensionAvailable(".glb");
     }
 
     protected _setRootMesh(meshes: AbstractMesh[]): void {
         this.rootMesh = new Mesh(this.profileId + " " + this.handness, this.scene);
-
+        this.rootMesh.isPickable = false;
         let rootMesh;
         // Find the root node in the loaded glTF scene, and attach it as a child of 'parentMesh'
         for (let i = 0; i < meshes.length; i++) {
             let mesh = meshes[i];
 
-            if (!mesh.parent) {
-                // Exclude controller meshes from picking results
-                mesh.isPickable = false;
+            mesh.isPickable = false;
 
+            if (!mesh.parent) {
                 // Handle root node, attach to the new parentMesh
                 rootMesh = mesh;
-                break;
             }
         }
 
