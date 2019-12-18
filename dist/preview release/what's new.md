@@ -51,6 +51,7 @@
 - Allow setting of `BABYLON.Basis.JSModuleURL` and `BABYLON.Basis.WasmModuleURL`, for hosting the Basis transcoder locally ([JasonAyre])(https://github.com/jasonyre))
 - PNG support for browsers not supporting SVG ([RaananW](https://github.com/RaananW/))
 - Device orientation event permissions for iOS 13+ ([RaananW](https://github.com/RaananW/))
+- Added `DirectionalLight.autoCalcShadowZBounds` to automatically compute the `shadowMinZ` and `shadowMaxZ` values ([Popov72](https://github.com/Popov72))
 
 ### Engine
 
@@ -180,6 +181,7 @@
 - WebXR teleportation can now be disabled after initialized ([RaananW](https://github.com/RaananW/))
 - New Features Manager for WebXR features ([RaananW](https://github.com/RaananW/))
 - New features - Plane detection, Hit Test, Background remover ([RaananW](https://github.com/RaananW/))
+- Camera's API works as expected (position, rotationQuaternion, world matrix etc') ([#7239](https://github.com/BabylonJS/Babylon.js/issues/7239)) ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
@@ -211,9 +213,9 @@
 - Added Light intensity output to LightInformationBlock ([Drigax](https://github.com/drigax))
 
 ### Serializers
+
 - Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))
 - Expanded animation group serialization to include all targeted TransformNodes ([Drigax]https://github.com/drigax/)
-
 
 ### Documentation
 

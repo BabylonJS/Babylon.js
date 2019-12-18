@@ -63,6 +63,13 @@ export class DirectionalLight extends ShadowLight {
     @serialize()
     public autoUpdateExtends = true;
 
+    /**
+     * Automatically compute the shadowMinZ and shadowMaxZ for the projection matrix to best fit (including all the casters)
+     * on each frame. autoUpdateExtends must be set to true for this to work
+     */
+    @serialize()
+    public autoCalcShadowZBounds = false;
+
     // Cache
     private _orthoLeft = Number.MAX_VALUE;
     private _orthoRight = Number.MIN_VALUE;
@@ -148,6 +155,9 @@ export class DirectionalLight extends ShadowLight {
             this._orthoTop = Number.MIN_VALUE;
             this._orthoBottom = Number.MAX_VALUE;
 
+            var shadowMinZ = Number.MAX_VALUE;
+            var shadowMaxZ = Number.MIN_VALUE;
+
             for (var meshIndex = 0; meshIndex < renderList.length; meshIndex++) {
                 var mesh = renderList[meshIndex];
 
@@ -174,7 +184,20 @@ export class DirectionalLight extends ShadowLight {
                     if (tempVector3.y > this._orthoTop) {
                         this._orthoTop = tempVector3.y;
                     }
+                    if (this.autoCalcShadowZBounds) {
+                        if (tempVector3.z < shadowMinZ) {
+                            shadowMinZ = tempVector3.z;
+                        }
+                        if (tempVector3.z > shadowMaxZ) {
+                            shadowMaxZ = tempVector3.z;
+                        }
+                    }
                 }
+            }
+
+            if (this.autoCalcShadowZBounds) {
+                this._shadowMinZ = shadowMinZ;
+                this._shadowMaxZ = shadowMaxZ;
             }
         }
 

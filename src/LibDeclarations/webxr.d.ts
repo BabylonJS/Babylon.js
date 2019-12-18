@@ -124,7 +124,7 @@ interface XRWebGLLayer {
 }
 
 declare class XRRigidTransform {
-    constructor(matrix: Float32Array);
+    constructor(matrix: Float32Array | DOMPointInit, direction?: DOMPointInit);
     position: DOMPointReadOnly;
     orientation: DOMPointReadOnly;
     matrix: Float32Array;
@@ -150,7 +150,7 @@ interface XRInputSourceEvent extends Event {
 
 // Experimental(er) features
 declare class XRRay {
-    constructor(transformOrOrigin: XRRigidTransform | DOMPointReadOnly, direction?: DOMPointReadOnly);
+    constructor(transformOrOrigin: XRRigidTransform | DOMPointInit, direction?: DOMPointInit);
     origin: DOMPointReadOnly;
     direction: DOMPointReadOnly;
     matrix: Float32Array;
