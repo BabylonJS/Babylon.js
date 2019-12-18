@@ -2,6 +2,7 @@ import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 import { GlobalState } from './globalState';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
 import { DataStorage } from './dataStorage';
+import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 
 export class SerializationTools {
 
@@ -24,13 +25,13 @@ export class SerializationTools {
         globalState.storeEditorData(material.editorData);
     }
 
-    public static Serialize(material: NodeMaterial, globalState: GlobalState) {
+    public static Serialize(material: NodeMaterial, globalState: GlobalState, selectedBlocks?: NodeMaterialBlock[]) {
         let bufferSerializationState = Texture.SerializeBuffers;
         Texture.SerializeBuffers = DataStorage.ReadBoolean("EmbedTextures", true);
 
         this.UpdateLocations(material, globalState);
 
-        let serializationObject = material.serialize();
+        let serializationObject = material.serialize(selectedBlocks);
 
         Texture.SerializeBuffers = bufferSerializationState;
 
