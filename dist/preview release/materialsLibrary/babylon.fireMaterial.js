@@ -491,7 +491,7 @@ var FireMaterial = /** @class */ (function (_super) {
     // Methods
     FireMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -582,7 +582,7 @@ var FireMaterial = /** @class */ (function (_super) {
             return false;
         }
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
         return true;
     };
     FireMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
@@ -722,9 +722,6 @@ var FireMaterial = /** @class */ (function (_super) {
         }
         if (source._opacityTexture) {
             material._opacityTexture = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"].Parse(source._opacityTexture, scene, rootUrl);
-        }
-        if (source.checkReadyOnlyOnce) {
-            material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
         }
         return material;
     };

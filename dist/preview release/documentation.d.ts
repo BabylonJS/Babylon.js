@@ -20852,11 +20852,6 @@ declare module BABYLON {
          */
         _effect: Nullable<Effect>;
         /**
-         * @hidden
-         * Specifies if the material was previously ready
-         */
-        _wasPreviouslyReady: boolean;
-        /**
          * Specifies if uniform buffers should be used
          */
         private _useUBO;
@@ -29809,6 +29804,11 @@ declare module BABYLON {
         onErrorObservable: Observable<Effect>;
         /** @hidden */
         _onBindObservable: Nullable<Observable<Effect>>;
+        /**
+         * @hidden
+         * Specifies if the effect was previously ready
+         */
+        _wasPreviouslyReady: boolean;
         /**
          * Observable that will be called when effect is bound.
          */
