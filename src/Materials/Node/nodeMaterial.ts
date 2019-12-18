@@ -1130,7 +1130,7 @@ export class NodeMaterial extends PushMaterial {
      * Serializes this material in a JSON representation
      * @returns the serialized material object
      */
-    public serialize(selectedBlocks?:NodeMaterialBlock[]): any {
+    public serialize(selectedBlocks?: NodeMaterialBlock[]): any {
         var serializationObject = selectedBlocks ? {} : SerializationHelper.Serialize(this);
         serializationObject.editorData = JSON.parse(JSON.stringify(this.editorData)); // Copy
 
@@ -1141,7 +1141,7 @@ export class NodeMaterial extends PushMaterial {
         } else {
             serializationObject.customType = "BABYLON.NodeMaterial";
             serializationObject.outputNodes = [];
-    
+
             // Outputs
             for (var outputNode of this._vertexOutputNodes) {
                 this._gatherBlocks(outputNode, blocks);
