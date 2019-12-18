@@ -6,6 +6,7 @@ import { SceneLoader } from '../../../Loading/sceneLoader';
 import { AbstractMesh } from '../../../Meshes/abstractMesh';
 import { Nullable } from '../../../types';
 import { Quaternion, Vector3 } from '../../../Maths/math.vector';
+import { Mesh } from '../../../Meshes/mesh';
 
 export type MotionControllerHandness = "none" | "left" | "right" | "left-right" | "left-right-none";
 export type MotionControllerComponentType = "trigger" | "squeeze" | "touchpad" | "thumbstick" | "button";
@@ -95,13 +96,13 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
         _doNotLoadControllerMesh: boolean = false) {
         // initialize the components
         if (layout.gamepad) {
-            this.getComponentTypes().forEach(this.initComponent);
+            layout.gamepad.buttons.forEach(this.initComponent);
         }
         // Model is loaded in WebXRInput
     }
 
-    private initComponent = (id: string) => {
-        if (!this.layout.gamepad) { return; }
+    private initComponent = (id: string | null) => {
+        if (!this.layout.gamepad || !id) { return; }
         const type = this.layout.components[id].type;
         const buttonIndex = this.layout.gamepad.buttons.indexOf(id);
         // search for axes
@@ -230,7 +231,16 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
     }
 
     private _getGenericParentMesh(meshes: AbstractMesh[]): void {
-        // TODO set the parent mesh of the generic controller
+        this.rootMesh = new Mesh(this.profileId + " " + this.handness, this.scene);
+
+        meshes.forEach((mesh) => {
+            if (!mesh.parent) {
+                mesh.isPickable = false;
+                mesh.setParent(this.rootMesh);
+            }
+        });
+
+        this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
     }
 
     protected abstract _getFilenameAndPath(): { filename: string, path: string };
