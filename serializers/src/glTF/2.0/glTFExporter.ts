@@ -1,7 +1,7 @@
 import { AccessorType, IBufferView, IAccessor, INode, IScene, IMesh, IMaterial, ITexture, IImage, ISampler, IAnimation, ImageMimeType, IMeshPrimitive, IBuffer, IGLTF, MeshPrimitiveMode, AccessorComponentType, ITextureInfo } from "babylonjs-gltf2interface";
 
 import { FloatArray, Nullable, IndicesArray } from "babylonjs/types";
-import { Viewport, Color3, Vector2, Vector3, Vector4, Quaternion, Epsilon } from "babylonjs/Maths/math";
+import { Viewport, Color3, Vector2, Vector3, Vector4, Quaternion, Epsilon, Matrix } from "babylonjs/Maths/math";
 import { Tools } from "babylonjs/Misc/tools";
 import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { Node } from "babylonjs/node";
@@ -124,7 +124,7 @@ export class _Exporter {
     /**
      * Specifies if a Babylon node should be converted to right-handed on export
      */
-    public _convertToRightHandedSystemMap: Map<Node, boolean>;
+    public _convertToRightHandedSystemMap: { [nodeId: number]: boolean };
 
     /**
      * Baked animation sample rate
@@ -1310,12 +1310,15 @@ export class _Exporter {
     private isNodeConvertingToLeftHanded(node: Node): boolean {
         if (node instanceof TransformNode)
         {
-            // TRS
-            if (!node.position.equalsToFloats(0, 0, 0) ||
-                (!node.rotationQuaternion && node.rotation && (node.rotation.x != 0 || node.rotation.z != 0 || Math.abs(node.rotation.y - Math.PI) > Epsilon)) || // rotation Quaternion has priority over Vector3
-                (node.rotationQuaternion && !node.rotationQuaternion.equals(new Quaternion(0, 1, 0, 0))) ||
-                !node.scaling.equalsToFloats(1, 1, -1)) {
-                return false;
+            // Transform
+            let matrix = node.getWorldMatrix();
+            let matrixToLeftHanded = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
+            let matrixProduct = matrix.multiply(matrixToLeftHanded);
+            let matrixIdentity = Matrix.Identity();
+            for (let i = 0; i < 16; i++) {
+                if (Math.abs(matrixProduct.m[i] - matrixIdentity.m[i]) > Epsilon) {
+                    return false;
+                }
             }
 
             // Geometry
@@ -1343,13 +1346,13 @@ export class _Exporter {
         const nodes: Node[] = [...babylonScene.transformNodes, ...babylonScene.meshes, ...babylonScene.lights];
         let rootNodesToLeftHanded: Node[] = [];
 
-        this._convertToRightHandedSystemMap = new Map<Node, boolean>();
+        this._convertToRightHandedSystemMap = {};
 
         // Set default values for all nodes
         babylonScene.rootNodes.forEach((rootNode) => {
-            this._convertToRightHandedSystemMap.set(rootNode, !babylonScene.useRightHandedSystem);
+            this._convertToRightHandedSystemMap[rootNode.uniqueId] = !babylonScene.useRightHandedSystem;
             rootNode.getDescendants(false).forEach((descendant) => {
-                this._convertToRightHandedSystemMap.set(descendant, !babylonScene.useRightHandedSystem);
+                this._convertToRightHandedSystemMap[descendant.uniqueId] = !babylonScene.useRightHandedSystem;
             });
         });
 
@@ -1367,7 +1370,7 @@ export class _Exporter {
 
                     // Cancel conversion to right handed system
                     rootNode.getDescendants(false).forEach((descendant) => {
-                        this._convertToRightHandedSystemMap.set(descendant, false);
+                        this._convertToRightHandedSystemMap[descendant.uniqueId] = false;
                     });
                 }
             });
@@ -1401,7 +1404,7 @@ export class _Exporter {
                                 Tools.Log("Omitting " + babylonNode.name + " from scene.");
                             }
                             else {
-                                let convertToRightHandedSystem = this._convertToRightHandedSystemMap.get(babylonNode);
+                                let convertToRightHandedSystem = this._convertToRightHandedSystemMap[babylonNode.uniqueId];
                                 if (convertToRightHandedSystem) {
                                     if (glTFNode.translation) {
                                         glTFNode.translation[2] *= -1;
@@ -1456,7 +1459,7 @@ export class _Exporter {
         for (let babylonNode of nodes) {
             if (!this._options.shouldExportNode || this._options.shouldExportNode(babylonNode)) {
                 promiseChain = promiseChain.then(() => {
-                    let convertToRightHandedSystem = this._convertToRightHandedSystemMap.get(babylonNode) as boolean;
+                    let convertToRightHandedSystem = this._convertToRightHandedSystemMap[babylonNode.uniqueId];
                     return this.createNodeAsync(babylonNode, binaryWriter, convertToRightHandedSystem).then((node) => {
                         const promise = this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode);
                         if (promise == null) {

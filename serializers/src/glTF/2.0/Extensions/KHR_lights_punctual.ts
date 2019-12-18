@@ -97,7 +97,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                 }
                 else {
                     const lightPosition = babylonLight.position.clone();
-                    let convertToRightHandedSystem = this._exporter._convertToRightHandedSystemMap.get(babylonNode);
+                    let convertToRightHandedSystem = this._exporter._convertToRightHandedSystemMap[babylonNode.uniqueId];
                     if (!lightPosition.equals(Vector3.Zero())) {
                         if (convertToRightHandedSystem) {
                             _GLTFUtilities._GetRightHandedPositionVector3FromRef(lightPosition);
