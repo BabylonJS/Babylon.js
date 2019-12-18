@@ -72,17 +72,6 @@ export interface IShadowGenerator {
     getShadowMaps(): Array<RenderTargetTexture>;
 
     /**
-     * Gets the main RTT containing the shadow map (usually storing depth from the light point of view).
-     * @returns The render target texture if present otherwise, null
-     */
-//    getShadowMap(): Nullable<RenderTargetTexture>;
-    /**
-     * Gets the RTT used during rendering (can be a blurred version of the shadow map or the shadow map itself).
-     * @returns The render target texture if the shadow map is present otherwise, null
-     */
-//    getShadowMapForRendering(): Nullable<RenderTargetTexture>;
-
-    /**
      * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
      * @param subMesh The submesh we want to render in the shadow map
      * @param useInstances Defines wether will draw in the map using instances
@@ -104,12 +93,6 @@ export interface IShadowGenerator {
      * @param effect The effect we are binfing the information for
      */
     bindShadowLight(lightIndex: string, effect: Effect): void;
-    /**
-     * Gets the transformation matrix used to project the meshes into the map from the light point of view.
-     * (eq to shadow prjection matrix * light transform matrix)
-     * @returns The transform matrix used to create the shadow map
-     */
-//    getTransformMatrix(): Matrix;
 
     /**
      * Recreates the shadow map dependencies like RTT and post processes. This can be used during the switch between
