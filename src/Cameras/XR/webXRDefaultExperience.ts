@@ -1,7 +1,6 @@
 import { WebXRExperienceHelper } from "./webXRExperienceHelper";
 import { Scene } from '../../scene';
-import { WebXRInput } from './webXRInput';
-import { WebXRControllerModelLoader } from './webXRControllerModelLoader';
+import { WebXRInput, IWebXRInputOptions } from './webXRInput';
 import { WebXRControllerPointerSelection } from './webXRControllerPointerSelection';
 import { WebXRControllerTeleportation } from './webXRControllerTeleportation';
 import { WebXRRenderTarget } from './webXRTypes';
@@ -16,7 +15,7 @@ export class WebXRDefaultExperienceOptions {
     /**
      * Floor meshes that should be used for teleporting
      */
-    public floorMeshes: Array<AbstractMesh>;
+    public floorMeshes?: Array<AbstractMesh>;
 
     /**
      * Enable or disable default UI to enter XR
@@ -32,6 +31,11 @@ export class WebXRDefaultExperienceOptions {
      * optional UI options. This can be used among other to change session mode and reference space type
      */
     public uiOptions?: WebXREnterExitUIOptions;
+
+    /**
+     * Disable the controller mesh-loading. Can be used if you want to load your own meshes
+     */
+    public inputOptions?: IWebXRInputOptions;
 }
 
 /**
@@ -46,10 +50,6 @@ export class WebXRDefaultExperience {
      * Input experience extension
      */
     public input: WebXRInput;
-    /**
-     * Loads the controller models
-     */
-    public controllerModelLoader: WebXRControllerModelLoader;
     /**
      * Enables laser pointer and selection
      */
@@ -81,8 +81,7 @@ export class WebXRDefaultExperience {
             result.baseExperience = xrHelper;
 
             // Add controller support
-            result.input = new WebXRInput(xrHelper);
-            result.controllerModelLoader = new WebXRControllerModelLoader(result.input);
+            result.input = new WebXRInput(xrHelper.sessionManager, xrHelper.camera, options.inputOptions);
             result.pointerSelection = new WebXRControllerPointerSelection(result.input);
 
             if (options.floorMeshes) {
