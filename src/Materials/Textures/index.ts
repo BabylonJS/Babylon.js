@@ -20,3 +20,4 @@ export * from "./renderTargetTexture";
 export * from "./texture";
 export * from "./videoTexture";
 export * from "./htmlElementTexture";
+export * from "./Packer/index";
