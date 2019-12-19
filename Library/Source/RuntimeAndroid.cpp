@@ -15,7 +15,7 @@ namespace Babylon
     {
         int32_t width  = ANativeWindow_getWidth(engine->m_window);
         int32_t height = ANativeWindow_getHeight(engine->m_window);
-        NativeEngine::InitializeDeviceContext(nativeWindowPtr, width, height);
+        NativeEngine::InitializeWindow(nativeWindowPtr, width, height);
     }
 
     void RuntimeImpl::ThreadProcedure()
