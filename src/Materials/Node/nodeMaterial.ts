@@ -694,7 +694,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         if (subMesh.effect && this.isFrozen) {
-            if (this._wasPreviouslyReady) {
+            if (subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -810,7 +810,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         defines._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
 
         return true;
     }

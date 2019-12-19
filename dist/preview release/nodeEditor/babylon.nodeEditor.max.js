@@ -55106,8 +55106,11 @@ var NodeLink = /** @class */ (function () {
             this._path.setAttribute("stroke-linecap", "round");
         }
         else {
-            this._path.setAttribute("d", "M" + startX + "," + startY + " C" + (startX + 80) + "," + startY + " " + (endX - 80) + "," + endY + " " + endX + "," + endY);
-            this._selectionPath.setAttribute("d", "M" + startX + "," + startY + " C" + (startX + 80) + "," + startY + " " + (endX - 80) + "," + endY + " " + endX + "," + endY);
+            var deltaX = endX - startX;
+            var deltaY = endY - startY;
+            var tangentLength = Math.min(Math.sqrt(deltaX * deltaX + deltaY * deltaY) * 0.5, 300);
+            this._path.setAttribute("d", "M" + startX + "," + startY + " C" + (startX + tangentLength) + "," + startY + " " + (endX - tangentLength) + "," + endY + " " + endX + "," + endY);
+            this._selectionPath.setAttribute("d", "M" + startX + "," + startY + " C" + (startX + tangentLength) + "," + startY + " " + (endX - tangentLength) + "," + endY + " " + endX + "," + endY);
         }
         this._path.setAttribute("stroke", this._portA.element.style.backgroundColor);
     };

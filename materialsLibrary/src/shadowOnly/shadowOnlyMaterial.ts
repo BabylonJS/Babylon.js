@@ -72,7 +72,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
     // Methods
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -185,7 +185,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
         }
 
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
 
         return true;
     }

@@ -768,16 +768,16 @@ declare module BABYLON {
         static readonly TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV: number;
         /** FLOAT_32_UNSIGNED_INT_24_8_REV */
         static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV: number;
-        /** nearest is mag = nearest and min = nearest and mip = nearest */
+        /** nearest is mag = nearest and min = nearest and no mip */
         static readonly TEXTURE_NEAREST_SAMPLINGMODE: number;
-        /** Bilinear is mag = linear and min = linear and mip = nearest */
+        /** mag = nearest and min = nearest and mip = none */
+        static readonly TEXTURE_NEAREST_NEAREST: number;
+        /** Bilinear is mag = linear and min = linear and no mip */
         static readonly TEXTURE_BILINEAR_SAMPLINGMODE: number;
+        /** mag = linear and min = linear and mip = none */
+        static readonly TEXTURE_LINEAR_LINEAR: number;
         /** Trilinear is mag = linear and min = linear and mip = linear */
         static readonly TEXTURE_TRILINEAR_SAMPLINGMODE: number;
-        /** nearest is mag = nearest and min = nearest and mip = linear */
-        static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR: number;
-        /** Bilinear is mag = linear and min = linear and mip = nearest */
-        static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST: number;
         /** Trilinear is mag = linear and min = linear and mip = linear */
         static readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR: number;
         /** mag = nearest and min = nearest and mip = nearest */
@@ -788,14 +788,14 @@ declare module BABYLON {
         static readonly TEXTURE_NEAREST_LINEAR_MIPLINEAR: number;
         /** mag = nearest and min = linear and mip = none */
         static readonly TEXTURE_NEAREST_LINEAR: number;
-        /** mag = nearest and min = nearest and mip = none */
-        static readonly TEXTURE_NEAREST_NEAREST: number;
+        /** nearest is mag = nearest and min = nearest and mip = linear */
+        static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR: number;
         /** mag = linear and min = nearest and mip = nearest */
         static readonly TEXTURE_LINEAR_NEAREST_MIPNEAREST: number;
         /** mag = linear and min = nearest and mip = linear */
         static readonly TEXTURE_LINEAR_NEAREST_MIPLINEAR: number;
-        /** mag = linear and min = linear and mip = none */
-        static readonly TEXTURE_LINEAR_LINEAR: number;
+        /** Bilinear is mag = linear and min = linear and mip = nearest */
+        static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST: number;
         /** mag = linear and min = nearest and mip = none */
         static readonly TEXTURE_LINEAR_NEAREST: number;
         /** Explicit coordinates mode */
@@ -20852,11 +20852,6 @@ declare module BABYLON {
          */
         _effect: Nullable<Effect>;
         /**
-         * @hidden
-         * Specifies if the material was previously ready
-         */
-        _wasPreviouslyReady: boolean;
-        /**
          * Specifies if uniform buffers should be used
          */
         private _useUBO;
@@ -29810,6 +29805,11 @@ declare module BABYLON {
         /** @hidden */
         _onBindObservable: Nullable<Observable<Effect>>;
         /**
+         * @hidden
+         * Specifies if the effect was previously ready
+         */
+        _wasPreviouslyReady: boolean;
+        /**
          * Observable that will be called when effect is bound.
          */
         get onBindObservable(): Observable<Effect>;
@@ -34255,6 +34255,11 @@ declare module BABYLON {
          * @returns Promise that resolves after the given amount of time
          */
         static DelayAsync(delay: number): Promise<void>;
+        /**
+         * Utility function to detect if the current user agent is Safari
+         * @returns whether or not the current user agent is safari
+         */
+        static IsSafari(): boolean;
     }
     /**
      * Use this className as a decorator on a given class definition to add it a name and optionally its module.
@@ -74523,7 +74528,7 @@ declare module BABYLON.GLTF2.Exporter {
          */
         static UnregisterExtension(name: string): boolean;
         /**
-         * Lazy load a local engine with premultiplied alpha set to false
+         * Lazy load a local engine
          */
         _getLocalEngine(): Engine;
         private reorderIndicesBasedOnPrimitiveMode;

@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [    
         {
+            "title": "Black and White post-process",
+            "playgroundId": "#N55Q2M#0",
+            "referenceImage": "bwpp.png"
+        },       
+        {
             "title": "Node material #1",
             "playgroundId": "#QJ71C6#0",
             "referenceImage": "node-material1.png",
