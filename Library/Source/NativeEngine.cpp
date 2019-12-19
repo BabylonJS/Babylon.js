@@ -275,7 +275,7 @@ namespace Babylon
             bgfx::TextureFormat::RGBA32F};
     }
 
-    void NativeEngine::InitializeDeviceContext(void *nativeWindowPtr, uint32_t width, uint32_t height)
+    void NativeEngine::InitializeWindow(void* nativeWindowPtr, uint32_t width, uint32_t height)
     {
         // Initialize bgfx.
         bgfx::Init init{};
@@ -291,7 +291,7 @@ namespace Babylon
         bgfx::touch(0);
     }
 
-    Napi::FunctionReference NativeEngine::InitializeAndCreateConstructor(Napi::Env& env)
+    Napi::FunctionReference NativeEngine::CreateConstructor(Napi::Env& env)
     {
         // Initialize the JavaScript side.
         Napi::HandleScope scope{env};

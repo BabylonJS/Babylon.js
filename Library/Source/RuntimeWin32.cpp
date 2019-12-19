@@ -20,8 +20,7 @@ namespace Babylon
         {
             auto width = rect.right - rect.left;
             auto height = rect.bottom - rect.top;
-            NativeEngine::InitializeDeviceContext(hWnd, width, height);
-            UpdateSize(static_cast<float>(width), static_cast<float>(height));
+            NativeEngine::InitializeWindow(hWnd, width, height);
         }
     }
 

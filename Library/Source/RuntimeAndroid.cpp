@@ -13,7 +13,9 @@ namespace Babylon
     RuntimeAndroid::RuntimeAndroid(ANativeWindow* nativeWindowPtr, const std::string& rootUrl)
         : Runtime{std::make_unique<RuntimeImpl>(nativeWindowPtr, rootUrl)}
     {
-        NativeEngine::InitializeDeviceContext(nativeWindowPtr, 32, 32);
+        int32_t width  = ANativeWindow_getWidth(engine->m_window);
+        int32_t height = ANativeWindow_getHeight(engine->m_window);
+        NativeEngine::InitializeDeviceContext(nativeWindowPtr, width, height);
     }
 
     void RuntimeImpl::ThreadProcedure()

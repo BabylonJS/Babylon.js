@@ -4,6 +4,11 @@
 #include "NativeEngine.h"
 #include "NativeXr.h"
 
+#include <winrt/Windows.Graphics.Display.h>
+
+using namespace winrt;
+using namespace Windows::Graphics::Display;
+
 namespace Babylon
 {
     RuntimeUWP::RuntimeUWP(ABI::Windows::UI::Core::ICoreWindow* window)
@@ -15,7 +20,11 @@ namespace Babylon
         : Runtime{std::make_unique<RuntimeImpl>(window, rootUrl)}
         , m_window{window}
     {
-        NativeEngine::InitializeDeviceContext(window, 32, 32);
+        ABI::Windows::Foundation::Rect bounds;
+        HRESULT result = window->get_Bounds(&bounds);
+        auto displayInformation = DisplayInformation::GetForCurrentView();
+        float displayScale = static_cast<float>(displayInformation.RawPixelsPerViewPixel());
+        NativeEngine::InitializeWindow(window, static_cast<uint32_t>(bounds.Width * displayScale), static_cast<uint32_t>(bounds.Height * displayScale));
         m_window->AddRef();
     }
 
