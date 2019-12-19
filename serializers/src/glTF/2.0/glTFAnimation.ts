@@ -178,7 +178,6 @@ export class _GLTFAnimation {
      * @param bufferViews
      * @param accessors
      * @param convertToRightHandedSystem
-     * @param animationSampleRate
      */
     public static _CreateNodeAnimationFromNodeAnimations(babylonNode: Node, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: { [key: number]: number }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number) {
         let glTFAnimation: IAnimation;
@@ -225,10 +224,9 @@ export class _GLTFAnimation {
      * @param binaryWriter
      * @param bufferViews
      * @param accessors
-     * @param convertToRightHandedSystemMap
-     * @param animationSampleRate
+     * @param convertToRightHandedSystem
      */
-    public static _CreateNodeAnimationFromAnimationGroups(babylonScene: Scene, glTFAnimations: IAnimation[], nodeMap: { [key: number]: number }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystemMap: { [nodeId: number]: boolean }, animationSampleRate: number) {
+    public static _CreateNodeAnimationFromAnimationGroups(babylonScene: Scene, glTFAnimations: IAnimation[], nodeMap: { [key: number]: number }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number) {
         let glTFAnimation: IAnimation;
         if (babylonScene.animationGroups) {
             let animationGroups = babylonScene.animationGroups;
@@ -246,7 +244,6 @@ export class _GLTFAnimation {
                         let animationInfo = _GLTFAnimation._DeduceAnimationInfo(targetAnimation.animation);
                         if (animationInfo) {
                             let babylonTransformNode = target instanceof TransformNode ? target as TransformNode : target[0] as TransformNode;
-                            let convertToRightHandedSystem = convertToRightHandedSystemMap[babylonTransformNode.uniqueId];
                             _GLTFAnimation.AddAnimation(`${animation.name}`,
                                 glTFAnimation,
                                 babylonTransformNode,
