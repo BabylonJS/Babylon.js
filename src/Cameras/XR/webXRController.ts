@@ -97,7 +97,7 @@ export class WebXRController {
         }
         if (this.gamepadController) {
             // either update buttons only or also position, if in gamepad mode
-            this.gamepadController.update(xrFrame);
+            this.gamepadController.updateFromXRFrame(xrFrame);
         }
     }
 

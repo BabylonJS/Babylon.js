@@ -30,9 +30,16 @@ const GenericTriggerLayout: IMotionControllerLayoutMap = {
 // TODO support all generic models with xr-standard mapping at:
 // https://github.com/immersive-web/webxr-input-profiles/tree/master/packages/registry/profiles/generic
 
+/**
+ * A generic trigger-only motion controller for WebXR
+ */
 export class WebXRGenericTriggerMotionController extends WebXRAbstractMotionController {
+    /**
+     * Static version of the profile id of this controller
+     */
     public static ProfileId = "generic-trigger";
-    public profileId = "generic-trigger";
+
+    public profileId = WebXRGenericTriggerMotionController.ProfileId;
 
     constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness) {
         super(scene, GenericTriggerLayout["left-right-none"], gamepadObject, handness);

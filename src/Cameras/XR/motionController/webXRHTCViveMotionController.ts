@@ -61,6 +61,9 @@ const HTCViveLegacyLayout: IMotionControllerLayoutMap = {
     }
 };
 
+/**
+ * The motion controller class for the standard HTC-Vive controllers
+ */
 export class WebXRHTCViveMotionController extends WebXRAbstractMotionController {
     /**
      * The base url used to load the left and right controller models

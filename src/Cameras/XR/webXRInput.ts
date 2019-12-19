@@ -5,7 +5,13 @@ import { WebXRController } from './webXRController';
 import { WebXRSessionManager } from './webXRSessionManager';
 import { WebXRCamera } from './webXRCamera';
 
+/**
+ * The schema for initialization options of the XR Input class
+ */
 export interface IWebXRInputOptions {
+    /**
+     * If set to true no model will be automatically loaded
+     */
     doNotLoadControllerMeshes?: boolean;
 }
 /**
@@ -30,16 +36,20 @@ export class WebXRInput implements IDisposable {
 
     /**
      * Initializes the WebXRInput
-     * @param baseExperience experience helper which the input should be created for
+     * @param xrSessionManager the xr session manager for this session
+     * @param xrCamera the WebXR camera for this session. Mainly used for teleportation
+     * @param options = initialization options for this xr input
      */
     public constructor(
         /**
-         * Base experience the input listens to
+         * the xr session manager for this session
          */
         public xrSessionManager: WebXRSessionManager,
-
+        /**
+         * the WebXR camera for this session. Mainly used for teleportation
+         */
         public xrCamera: WebXRCamera,
-        private options: IWebXRInputOptions = {}
+        private readonly options: IWebXRInputOptions = {}
     ) {
         // Remove controllers when exiting XR
         this._sessionEndedObserver = this.xrSessionManager.onXRSessionEnded.add(() => {

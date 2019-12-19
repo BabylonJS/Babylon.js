@@ -127,6 +127,10 @@ const OculusTouchLegacyLayouts: IMotionControllerLayoutMap = {
     }
 };
 
+/**
+ * The motion controller class for oculus touch (quest, rift).
+ * This class supports legacy mapping as well the standard xr mapping
+ */
 export class WebXROculusTouchMotionController extends WebXRAbstractMotionController {
     /**
      * The base url used to load the left and right controller models
