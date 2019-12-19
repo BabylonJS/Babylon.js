@@ -79,6 +79,7 @@ namespace Babylon
         void Update() const
         {
             bgfx::setViewClear(m_viewId, m_flags, Color(), m_depth, m_stencil);
+            bgfx::discard();
             bgfx::touch(m_viewId);
         }
 
