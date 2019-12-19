@@ -1,6 +1,6 @@
 #include "Babylon/RuntimeApple.h"
 #include "RuntimeImpl.h"
-//#include <filesystem>
+#include "NativeEngine.h"
 
 namespace Babylon
 {
@@ -13,16 +13,11 @@ namespace Babylon
     RuntimeApple::RuntimeApple(void* nativeWindowPtr, const std::string& rootUrl)
         : Runtime{std::make_unique<RuntimeImpl>(nativeWindowPtr, rootUrl)}
     {
-        // Apple Stub
+        NativeEngine::InitializeDeviceContext(nativeWindowPtr, 32, 32);
     }
 
-    void RuntimeImpl::ThreadInit()
+    void RuntimeImpl::ThreadProcedure()
     {
-        RuntimeImpl::BaseThreadInit();
-    }
-    
-    void RuntimeImpl::ThreadRun()
-    {
-        RuntimeImpl::BaseThreadRun();
+        RuntimeImpl::BaseThreadProcedure();
     }
 }

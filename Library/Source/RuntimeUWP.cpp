@@ -1,7 +1,7 @@
 #include "Babylon/Runtime.h"
 #include "Babylon/RuntimeUWP.h"
 #include "RuntimeImpl.h"
-
+#include "NativeEngine.h"
 #include "NativeXr.h"
 
 namespace Babylon
@@ -15,6 +15,7 @@ namespace Babylon
         : Runtime{std::make_unique<RuntimeImpl>(window, rootUrl)}
         , m_window{window}
     {
+        NativeEngine::InitializeDeviceContext(window, 32, 32);
         m_window->AddRef();
     }
 
@@ -27,17 +28,12 @@ namespace Babylon
         : Runtime{ std::make_unique<RuntimeImpl>(from_abi<winrt::Windows::UI::Xaml::Controls::SwapChainPanel>(panel), rootUrl) }
     {}*/
 
-    void RuntimeImpl::ThreadInit()
-    {
-    }
-    
-    void RuntimeImpl::ThreadRun()
-    {
+    void RuntimeImpl::ThreadProcedure()
+    {    
         this->Dispatch([](Env& env) {
             InitializeNativeXr(env);
         });
 
-        RuntimeImpl::BaseThreadInit();
-        RuntimeImpl::BaseThreadRun();
+        RuntimeImpl::BaseThreadProcedure();
     }
 }

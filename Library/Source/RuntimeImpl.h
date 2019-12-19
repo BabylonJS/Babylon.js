@@ -52,10 +52,8 @@ namespace Babylon
 
     private:
         void InitializeJavaScriptVariables();
-        void BaseThreadInit();
-        void BaseThreadRun();
-        void ThreadInit();
-        void ThreadRun();
+        void BaseThreadProcedure();
+        void ThreadProcedure();
 
         arcana::manual_dispatcher<babylon_dispatcher::work_size> m_dispatcher{};
         arcana::cancellation_source m_cancelSource{};
@@ -77,8 +75,7 @@ namespace Babylon
         // occasionally need access to the env as well; m_env provides this
         // access when the env is available, reverting to nullptr once the env
         // is destroyed.
-        //Babylon::Env* m_env{};
-        std::unique_ptr<Babylon::Env> m_env{};
+        Babylon::Env* m_env{};
         const std::string m_rootUrl{};
     };
 }

@@ -275,23 +275,24 @@ namespace Babylon
             bgfx::TextureFormat::RGBA32F};
     }
 
-    Napi::FunctionReference NativeEngine::InitializeAndCreateConstructor(Napi::Env& env)
+    void NativeEngine::InitializeDeviceContext(void *nativeWindowPtr, uint32_t width, uint32_t height)
     {
-        auto& window = RuntimeImpl::GetNativeWindowFromJavaScript(env);
-
         // Initialize bgfx.
         bgfx::Init init{};
-        init.platformData.nwh = window.GetWindowPtr();
+        init.platformData.nwh = nativeWindowPtr;
         bgfx::setPlatformData(init.platformData);
         init.type = bgfx::RendererType::Direct3D11;
-        init.resolution.width = static_cast<uint32_t>(window.GetWidth());
-        init.resolution.height = static_cast<uint32_t>(window.GetHeight());
+        init.resolution.width = width;
+        init.resolution.height = height;
         init.resolution.reset = BGFX_RESET_FLAGS;
         bgfx::init(init);
         bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
         bgfx::setViewRect(0, 0, 0, init.resolution.width, init.resolution.height);
         bgfx::touch(0);
+    }
 
+    Napi::FunctionReference NativeEngine::InitializeAndCreateConstructor(Napi::Env& env)
+    {
         // Initialize the JavaScript side.
         Napi::HandleScope scope{env};
 

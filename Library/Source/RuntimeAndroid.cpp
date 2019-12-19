@@ -1,6 +1,6 @@
 #include <Babylon/RuntimeAndroid.h>
 #include "RuntimeImpl.h"
-//#include <filesystem>
+#include "NativeEngine.h"
 
 namespace Babylon
 {
@@ -13,16 +13,11 @@ namespace Babylon
     RuntimeAndroid::RuntimeAndroid(ANativeWindow* nativeWindowPtr, const std::string& rootUrl)
         : Runtime{std::make_unique<RuntimeImpl>(nativeWindowPtr, rootUrl)}
     {
-        // android stub
+        NativeEngine::InitializeDeviceContext(nativeWindowPtr, 32, 32);
     }
 
-    void RuntimeImpl::ThreadInit()
+    void RuntimeImpl::ThreadProcedure()
     {
-        RuntimeImpl::BaseThreadInit();
-    }
-    
-    void RuntimeImpl::ThreadRun()
-    {
-        RuntimeImpl::BaseThreadRun();
+        RuntimeImpl::BaseThreadProcedure();
     }
 }

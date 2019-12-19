@@ -1,6 +1,6 @@
 #include <Babylon/RuntimeWin32.h>
 #include "RuntimeImpl.h"
-
+#include "NativeEngine.h"
 #include "NativeXr.h"
 
 #include <filesystem>
@@ -18,17 +18,14 @@ namespace Babylon
         RECT rect;
         if (GetWindowRect(hWnd, &rect))
         {
-            float width = static_cast<float>(rect.right - rect.left);
-            float height = static_cast<float>(rect.bottom - rect.top);
-            UpdateSize(width, height);
+            auto width = rect.right - rect.left;
+            auto height = rect.bottom - rect.top;
+            NativeEngine::InitializeDeviceContext(hWnd, width, height);
+            UpdateSize(static_cast<float>(width), static_cast<float>(height));
         }
     }
 
-    void RuntimeImpl::ThreadInit()
-    {
-    }
-
-    void RuntimeImpl::ThreadRun()
+    void RuntimeImpl::ThreadProcedure()
     {
         HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
         assert(SUCCEEDED(hr));
@@ -38,7 +35,6 @@ namespace Babylon
             InitializeNativeXr(env);
         });
 
-        RuntimeImpl::BaseThreadInit();
-        RuntimeImpl::BaseThreadRun();
+        RuntimeImpl::BaseThreadProcedure();
     }
 }

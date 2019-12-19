@@ -297,6 +297,7 @@ namespace Babylon
         NativeEngine(const Napi::CallbackInfo& info);
         NativeEngine(const Napi::CallbackInfo& info, NativeWindow& nativeWindow);
 
+        static void InitializeDeviceContext(void* nativeWindowPtr, uint32_t width, uint32_t height);
         static Napi::FunctionReference InitializeAndCreateConstructor(Napi::Env&);
 
         FrameBufferManager& GetFrameBufferManager();
