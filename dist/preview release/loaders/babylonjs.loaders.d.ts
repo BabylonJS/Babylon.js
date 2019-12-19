@@ -2024,6 +2024,10 @@ declare module BABYLON {
      */
     export class MTLFileLoader {
         /**
+         * Invert Y-Axis of referenced textures on load
+         */
+        static INVERT_TEXTURE_Y: boolean;
+        /**
          * All material loaded from the mtl will be set here
          */
         materials: StandardMaterial[];
@@ -2050,6 +2054,8 @@ declare module BABYLON {
          */
         private static _getTexture;
     }
+}
+declare module BABYLON {
     /**
      * Options for loading OBJ/MTL files
      */
@@ -2103,7 +2109,8 @@ declare module BABYLON {
         /**
          * Invert Y-Axis of referenced textures on load
          */
-        static INVERT_TEXTURE_Y: boolean;
+        static get INVERT_TEXTURE_Y(): boolean;
+        static set INVERT_TEXTURE_Y(value: boolean);
         /**
          * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
          */

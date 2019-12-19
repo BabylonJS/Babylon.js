@@ -610,8 +610,9 @@ var KHR_lights_punctual = /** @class */ (function () {
                 }
                 else {
                     var lightPosition = babylonLight.position.clone();
+                    var convertToRightHandedSystem = _this._exporter._convertToRightHandedSystemMap[babylonNode.uniqueId];
                     if (!lightPosition.equals(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Zero())) {
-                        if (_this._exporter._convertToRightHandedSystem) {
+                        if (convertToRightHandedSystem) {
                             _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__["_GLTFUtilities"]._GetRightHandedPositionVector3FromRef(lightPosition);
                         }
                         node.translation = lightPosition.asArray();
@@ -622,7 +623,7 @@ var KHR_lights_punctual = /** @class */ (function () {
                         var len = Math.sqrt(localAxis.x * localAxis.x + localAxis.z * localAxis.z);
                         var pitch = -Math.atan2(localAxis.y, len);
                         var lightRotationQuaternion = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Quaternion"].RotationYawPitchRoll(yaw, pitch, 0);
-                        if (_this._exporter._convertToRightHandedSystem) {
+                        if (convertToRightHandedSystem) {
                             _glTFUtilities__WEBPACK_IMPORTED_MODULE_2__["_GLTFUtilities"]._GetRightHandedQuaternionFromRef(lightRotationQuaternion);
                         }
                         if (!lightRotationQuaternion.equals(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Quaternion"].Identity())) {
@@ -1106,6 +1107,7 @@ var _GLTFAnimation = /** @class */ (function () {
      * @param bufferViews
      * @param accessors
      * @param convertToRightHandedSystem
+     * @param animationSampleRate
      */
     _GLTFAnimation._CreateNodeAnimationFromNodeAnimations = function (babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, nodes, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, animationSampleRate) {
         var glTFAnimation;
@@ -1139,9 +1141,10 @@ var _GLTFAnimation = /** @class */ (function () {
      * @param binaryWriter
      * @param bufferViews
      * @param accessors
-     * @param convertToRightHandedSystem
+     * @param convertToRightHandedSystemMap
+     * @param animationSampleRate
      */
-    _GLTFAnimation._CreateNodeAnimationFromAnimationGroups = function (babylonScene, glTFAnimations, nodeMap, nodes, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, animationSampleRate) {
+    _GLTFAnimation._CreateNodeAnimationFromAnimationGroups = function (babylonScene, glTFAnimations, nodeMap, nodes, binaryWriter, bufferViews, accessors, convertToRightHandedSystemMap, animationSampleRate) {
         var glTFAnimation;
         if (babylonScene.animationGroups) {
             var animationGroups = babylonScene.animationGroups;
@@ -1160,6 +1163,7 @@ var _GLTFAnimation = /** @class */ (function () {
                         var animationInfo = _GLTFAnimation._DeduceAnimationInfo(targetAnimation.animation);
                         if (animationInfo) {
                             var babylonTransformNode = target instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["TransformNode"] ? target : target[0];
+                            var convertToRightHandedSystem = convertToRightHandedSystemMap[babylonTransformNode.uniqueId];
                             _GLTFAnimation.AddAnimation("" + animation.name, glTFAnimation, babylonTransformNode, animation, animationInfo.dataAccessorType, animationInfo.animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, animationInfo.useQuaternion, animationSampleRate);
                         }
                     }
@@ -1769,7 +1773,6 @@ var _Exporter = /** @class */ (function () {
         this._samplers = [];
         this._animations = [];
         this._imageData = {};
-        this._convertToRightHandedSystem = !this._babylonScene.useRightHandedSystem;
         this._options = options || {};
         this._animationSampleRate = options && options.animationSampleRate ? options.animationSampleRate : 1 / 60;
         this._glTFMaterialExporter = new _glTFMaterialExporter__WEBPACK_IMPORTED_MODULE_2__["_GLTFMaterialExporter"](this);
@@ -1962,20 +1965,21 @@ var _Exporter = /** @class */ (function () {
      * @param meshAttributeArray The vertex attribute data
      * @param byteOffset The offset to the binary data
      * @param binaryWriter The binary data for the glTF file
+     * @param convertToRightHandedSystem Converts the values to right-handed
      */
-    _Exporter.prototype.reorderVertexAttributeDataBasedOnPrimitiveMode = function (submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter) {
-        if (this._convertToRightHandedSystem && sideOrientation === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].ClockWiseSideOrientation) {
+    _Exporter.prototype.reorderVertexAttributeDataBasedOnPrimitiveMode = function (submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter, convertToRightHandedSystem) {
+        if (convertToRightHandedSystem && sideOrientation === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].ClockWiseSideOrientation) {
             switch (primitiveMode) {
                 case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].TriangleFillMode: {
-                    this.reorderTriangleFillMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter);
+                    this.reorderTriangleFillMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter, convertToRightHandedSystem);
                     break;
                 }
                 case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].TriangleStripDrawMode: {
-                    this.reorderTriangleStripDrawMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter);
+                    this.reorderTriangleStripDrawMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter, convertToRightHandedSystem);
                     break;
                 }
                 case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].TriangleFanDrawMode: {
-                    this.reorderTriangleFanMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter);
+                    this.reorderTriangleFanMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter, convertToRightHandedSystem);
                     break;
                 }
             }
@@ -1991,8 +1995,9 @@ var _Exporter = /** @class */ (function () {
      * @param meshAttributeArray The vertex attribute data
      * @param byteOffset The offset to the binary data
      * @param binaryWriter The binary data for the glTF file
+     * @param convertToRightHandedSystem Converts the values to right-handed
      */
-    _Exporter.prototype.reorderTriangleFillMode = function (submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter) {
+    _Exporter.prototype.reorderTriangleFillMode = function (submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter, convertToRightHandedSystem) {
         var vertexBuffer = this.getVertexBufferFromMesh(vertexBufferKind, submesh.getMesh());
         if (vertexBuffer) {
             var stride = vertexBuffer.byteStride / babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].GetTypeByteLength(vertexBuffer.type);
@@ -2053,7 +2058,7 @@ var _Exporter = /** @class */ (function () {
                         babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Unsupported Vertex Buffer type: " + vertexBufferKind);
                     }
                 }
-                this.writeVertexAttributeData(vertexData, byteOffset, vertexBufferKind, meshAttributeArray, binaryWriter);
+                this.writeVertexAttributeData(vertexData, byteOffset, vertexBufferKind, meshAttributeArray, binaryWriter, convertToRightHandedSystem);
             }
         }
         else {
@@ -2070,8 +2075,9 @@ var _Exporter = /** @class */ (function () {
      * @param meshAttributeArray The vertex attribute data
      * @param byteOffset The offset to the binary data
      * @param binaryWriter The binary data for the glTF file
+     * @param convertToRightHandedSystem Converts the values to right-handed
      */
-    _Exporter.prototype.reorderTriangleStripDrawMode = function (submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter) {
+    _Exporter.prototype.reorderTriangleStripDrawMode = function (submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter, convertToRightHandedSystem) {
         var vertexBuffer = this.getVertexBufferFromMesh(vertexBufferKind, submesh.getMesh());
         if (vertexBuffer) {
             var stride = vertexBuffer.byteStride / babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].GetTypeByteLength(vertexBuffer.type);
@@ -2111,7 +2117,7 @@ var _Exporter = /** @class */ (function () {
                     babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Unsupported Vertex Buffer type: " + vertexBufferKind);
                 }
             }
-            this.writeVertexAttributeData(vertexData, byteOffset + 12, vertexBufferKind, meshAttributeArray, binaryWriter);
+            this.writeVertexAttributeData(vertexData, byteOffset + 12, vertexBufferKind, meshAttributeArray, binaryWriter, convertToRightHandedSystem);
         }
         else {
             babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("reorderTriangleStripDrawMode: Vertex buffer kind " + vertexBufferKind + " not present!");
@@ -2127,8 +2133,9 @@ var _Exporter = /** @class */ (function () {
      * @param meshAttributeArray The vertex attribute data
      * @param byteOffset The offset to the binary data
      * @param binaryWriter The binary data for the glTF file
+     * @param convertToRightHandedSystem Converts the values to right-handed
      */
-    _Exporter.prototype.reorderTriangleFanMode = function (submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter) {
+    _Exporter.prototype.reorderTriangleFanMode = function (submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter, convertToRightHandedSystem) {
         var vertexBuffer = this.getVertexBufferFromMesh(vertexBufferKind, submesh.getMesh());
         if (vertexBuffer) {
             var stride = vertexBuffer.byteStride / babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].GetTypeByteLength(vertexBuffer.type);
@@ -2170,7 +2177,7 @@ var _Exporter = /** @class */ (function () {
                     babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Unsupported Vertex Buffer type: " + vertexBufferKind);
                 }
             }
-            this.writeVertexAttributeData(vertexData, byteOffset, vertexBufferKind, meshAttributeArray, binaryWriter);
+            this.writeVertexAttributeData(vertexData, byteOffset, vertexBufferKind, meshAttributeArray, binaryWriter, convertToRightHandedSystem);
         }
         else {
             babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("reorderTriangleFanMode: Vertex buffer kind " + vertexBufferKind + " not present!");
@@ -2183,11 +2190,12 @@ var _Exporter = /** @class */ (function () {
      * @param vertexAttributeKind The vertex attribute type
      * @param meshAttributeArray The vertex attribute data
      * @param binaryWriter The writer containing the binary data
+     * @param convertToRightHandedSystem Converts the values to right-handed
      */
-    _Exporter.prototype.writeVertexAttributeData = function (vertices, byteOffset, vertexAttributeKind, meshAttributeArray, binaryWriter) {
+    _Exporter.prototype.writeVertexAttributeData = function (vertices, byteOffset, vertexAttributeKind, meshAttributeArray, binaryWriter, convertToRightHandedSystem) {
         for (var _i = 0, vertices_1 = vertices; _i < vertices_1.length; _i++) {
             var vertex = vertices_1[_i];
-            if (this._convertToRightHandedSystem && !(vertexAttributeKind === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].ColorKind) && !(vertex instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector2"])) {
+            if (convertToRightHandedSystem && !(vertexAttributeKind === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].ColorKind) && !(vertex instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector2"])) {
                 if (vertex instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"]) {
                     if (vertexAttributeKind === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].NormalKind) {
                         _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedNormalVector3FromRef(vertex);
@@ -2223,8 +2231,9 @@ var _Exporter = /** @class */ (function () {
      * @param meshAttributeArray Array containing the attribute data
      * @param binaryWriter The buffer to write the binary data to
      * @param indices Used to specify the order of the vertex data
+     * @param convertToRightHandedSystem Converts the values to right-handed
      */
-    _Exporter.prototype.writeAttributeData = function (vertexBufferKind, meshAttributeArray, byteStride, binaryWriter) {
+    _Exporter.prototype.writeAttributeData = function (vertexBufferKind, meshAttributeArray, byteStride, binaryWriter, convertToRightHandedSystem) {
         var stride = byteStride / 4;
         var vertexAttributes = [];
         var index;
@@ -2233,7 +2242,7 @@ var _Exporter = /** @class */ (function () {
                 for (var k = 0, length_2 = meshAttributeArray.length / stride; k < length_2; ++k) {
                     index = k * stride;
                     var vertexData = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(meshAttributeArray, index);
-                    if (this._convertToRightHandedSystem) {
+                    if (convertToRightHandedSystem) {
                         _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedPositionVector3FromRef(vertexData);
                     }
                     vertexAttributes.push(vertexData.asArray());
@@ -2244,7 +2253,7 @@ var _Exporter = /** @class */ (function () {
                 for (var k = 0, length_3 = meshAttributeArray.length / stride; k < length_3; ++k) {
                     index = k * stride;
                     var vertexData = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(meshAttributeArray, index);
-                    if (this._convertToRightHandedSystem) {
+                    if (convertToRightHandedSystem) {
                         _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedNormalVector3FromRef(vertexData);
                     }
                     vertexData.normalize();
@@ -2256,7 +2265,7 @@ var _Exporter = /** @class */ (function () {
                 for (var k = 0, length_4 = meshAttributeArray.length / stride; k < length_4; ++k) {
                     index = k * stride;
                     var vertexData = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector4"].FromArray(meshAttributeArray, index);
-                    if (this._convertToRightHandedSystem) {
+                    if (convertToRightHandedSystem) {
                         _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedVector4FromRef(vertexData);
                     }
                     _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._NormalizeTangentFromRef(vertexData);
@@ -2276,7 +2285,7 @@ var _Exporter = /** @class */ (function () {
             case babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UV2Kind: {
                 for (var k = 0, length_6 = meshAttributeArray.length / stride; k < length_6; ++k) {
                     index = k * stride;
-                    vertexAttributes.push(this._convertToRightHandedSystem ? [meshAttributeArray[index], meshAttributeArray[index + 1]] : [meshAttributeArray[index], meshAttributeArray[index + 1]]);
+                    vertexAttributes.push(convertToRightHandedSystem ? [meshAttributeArray[index], meshAttributeArray[index + 1]] : [meshAttributeArray[index], meshAttributeArray[index + 1]]);
                 }
                 break;
             }
@@ -2505,13 +2514,14 @@ var _Exporter = /** @class */ (function () {
      * Sets the TRS for each node
      * @param node glTF Node for storing the transformation data
      * @param babylonTransformNode Babylon mesh used as the source for the transformation data
+     * @param convertToRightHandedSystem Converts the values to right-handed
      */
-    _Exporter.prototype.setNodeTransformation = function (node, babylonTransformNode) {
+    _Exporter.prototype.setNodeTransformation = function (node, babylonTransformNode, convertToRightHandedSystem) {
         if (!babylonTransformNode.getPivotPoint().equalsToFloats(0, 0, 0)) {
             babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Pivot points are not supported in the glTF serializer");
         }
         if (!babylonTransformNode.position.equalsToFloats(0, 0, 0)) {
-            node.translation = this._convertToRightHandedSystem ? _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedPositionVector3(babylonTransformNode.position).asArray() : babylonTransformNode.position.asArray();
+            node.translation = convertToRightHandedSystem ? _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedPositionVector3(babylonTransformNode.position).asArray() : babylonTransformNode.position.asArray();
         }
         if (!babylonTransformNode.scaling.equalsToFloats(1, 1, 1)) {
             node.scale = babylonTransformNode.scaling.asArray();
@@ -2521,7 +2531,7 @@ var _Exporter = /** @class */ (function () {
             rotationQuaternion.multiplyInPlace(babylonTransformNode.rotationQuaternion);
         }
         if (!(rotationQuaternion.x === 0 && rotationQuaternion.y === 0 && rotationQuaternion.z === 0 && rotationQuaternion.w === 1)) {
-            if (this._convertToRightHandedSystem) {
+            if (convertToRightHandedSystem) {
                 _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedQuaternionFromRef(rotationQuaternion);
             }
             node.rotation = rotationQuaternion.normalize().asArray();
@@ -2541,8 +2551,9 @@ var _Exporter = /** @class */ (function () {
      * @param kind Indicates the type of vertices data
      * @param babylonTransformNode The Babylon mesh to get the vertices data from
      * @param binaryWriter The buffer to write the bufferview data to
+     * @param convertToRightHandedSystem Converts the values to right-handed
      */
-    _Exporter.prototype.createBufferViewKind = function (kind, babylonTransformNode, binaryWriter, byteStride) {
+    _Exporter.prototype.createBufferViewKind = function (kind, babylonTransformNode, binaryWriter, byteStride, convertToRightHandedSystem) {
         var bufferMesh = babylonTransformNode instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Mesh"] ?
             babylonTransformNode : babylonTransformNode instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["InstancedMesh"] ?
             babylonTransformNode.sourceMesh : null;
@@ -2552,7 +2563,7 @@ var _Exporter = /** @class */ (function () {
                 var byteLength = vertexData.length * 4;
                 var bufferView = _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, byteStride, kind + " - " + bufferMesh.name);
                 this._bufferViews.push(bufferView);
-                this.writeAttributeData(kind, vertexData, byteStride, binaryWriter);
+                this.writeAttributeData(kind, vertexData, byteStride, binaryWriter, convertToRightHandedSystem);
             }
         }
     };
@@ -2648,8 +2659,9 @@ var _Exporter = /** @class */ (function () {
      * @param mesh glTF Mesh object to store the primitive attribute information
      * @param babylonTransformNode Babylon mesh to get the primitive attribute data from
      * @param binaryWriter Buffer to write the attribute data to
+     * @param convertToRightHandedSystem Converts the values to right-handed
      */
-    _Exporter.prototype.setPrimitiveAttributesAsync = function (mesh, babylonTransformNode, binaryWriter) {
+    _Exporter.prototype.setPrimitiveAttributesAsync = function (mesh, babylonTransformNode, binaryWriter, convertToRightHandedSystem) {
         var promises = [];
         var bufferMesh = null;
         var bufferView;
@@ -2682,7 +2694,7 @@ var _Exporter = /** @class */ (function () {
                     if (attribute.byteStride === 12) {
                         attribute.accessorType = "VEC3" /* VEC3 */;
                     }
-                    this.createBufferViewKind(attributeKind, babylonTransformNode, binaryWriter, attribute.byteStride);
+                    this.createBufferViewKind(attributeKind, babylonTransformNode, binaryWriter, attribute.byteStride, convertToRightHandedSystem);
                     attribute.bufferViewIndex = this._bufferViews.length - 1;
                     vertexAttributeBufferViews[attributeKind] = attribute.bufferViewIndex;
                 }
@@ -2750,7 +2762,7 @@ var _Exporter = /** @class */ (function () {
                                 if (bufferViewIndex != undefined) { // check to see if bufferviewindex has a numeric value assigned.
                                     minMax = { min: null, max: null };
                                     if (attributeKind == babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].PositionKind) {
-                                        minMax = _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._CalculateMinMaxPositions(vertexData, 0, vertexData.length / stride, this._convertToRightHandedSystem);
+                                        minMax = _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._CalculateMinMaxPositions(vertexData, 0, vertexData.length / stride, convertToRightHandedSystem);
                                     }
                                     var accessor = _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._CreateAccessor(bufferViewIndex, attributeKind + " - " + babylonTransformNode.name, attribute.accessorType, 5126 /* FLOAT */, vertexData.length / stride, 0, minMax.min, minMax.max);
                                     this._accessors.push(accessor);
@@ -2768,7 +2780,7 @@ var _Exporter = /** @class */ (function () {
                     if (materialIndex != null && Object.keys(meshPrimitive.attributes).length > 0) {
                         var sideOrientation = bufferMesh.overrideMaterialSideOrientation !== null ? bufferMesh.overrideMaterialSideOrientation : babylonMaterial.sideOrientation;
                         // Only reverse the winding if we have a clockwise winding
-                        if (sideOrientation === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].ClockWiseSideOrientation) {
+                        if (convertToRightHandedSystem && sideOrientation === babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].ClockWiseSideOrientation) {
                             var byteOffset = indexBufferViewIndex != null ? this._bufferViews[indexBufferViewIndex].byteOffset : null;
                             if (byteOffset == null) {
                                 byteOffset = 0;
@@ -2789,7 +2801,7 @@ var _Exporter = /** @class */ (function () {
                                         if (!byteOffset_1) {
                                             byteOffset_1 = 0;
                                         }
-                                        this.reorderVertexAttributeDataBasedOnPrimitiveMode(submesh, primitiveMode, sideOrientation, attribute.kind, vertexData, byteOffset_1, binaryWriter);
+                                        this.reorderVertexAttributeDataBasedOnPrimitiveMode(submesh, primitiveMode, sideOrientation, attribute.kind, vertexData, byteOffset_1, binaryWriter, convertToRightHandedSystem);
                                     }
                                 }
                             }
@@ -2809,6 +2821,32 @@ var _Exporter = /** @class */ (function () {
         });
     };
     /**
+     * Check if the node is used to convert its descendants from right-handed to left-handed
+     * @param node The node to check
+     * @returns True if the node is used to convert its descendants from right-handed to left-handed. False otherwise
+     */
+    _Exporter.prototype.isNodeConvertingToLeftHanded = function (node) {
+        if (node instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["TransformNode"]) {
+            // Transform
+            var matrix = node.getWorldMatrix();
+            var matrixToLeftHanded = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Matrix"].Compose(new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"](-1, 1, 1), babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].Identity(), babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero());
+            var matrixProduct = matrix.multiply(matrixToLeftHanded);
+            var matrixIdentity = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Matrix"].IdentityReadOnly;
+            for (var i = 0; i < 16; i++) {
+                if (Math.abs(matrixProduct.m[i] - matrixIdentity.m[i]) > babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Epsilon"]) {
+                    return false;
+                }
+            }
+            // Geometry
+            if ((node instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Mesh"] && node.geometry !== null) ||
+                (node instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["InstancedMesh"] && node.sourceMesh.geometry !== null)) {
+                return false;
+            }
+            return true;
+        }
+        return false;
+    };
+    /**
      * Creates a glTF scene based on the array of meshes
      * Returns the the total byte offset
      * @param babylonScene Babylon scene to get the mesh data from
@@ -2821,6 +2859,32 @@ var _Exporter = /** @class */ (function () {
         var glTFNode;
         var directDescendents;
         var nodes = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArrays"])(babylonScene.transformNodes, babylonScene.meshes, babylonScene.lights);
+        var rootNodesToLeftHanded = [];
+        this._convertToRightHandedSystemMap = {};
+        // Set default values for all nodes
+        babylonScene.rootNodes.forEach(function (rootNode) {
+            _this._convertToRightHandedSystemMap[rootNode.uniqueId] = !babylonScene.useRightHandedSystem;
+            rootNode.getDescendants(false).forEach(function (descendant) {
+                _this._convertToRightHandedSystemMap[descendant.uniqueId] = !babylonScene.useRightHandedSystem;
+            });
+        });
+        if (!babylonScene.useRightHandedSystem) {
+            // Check if root nodes converting to left-handed are present
+            babylonScene.rootNodes.forEach(function (rootNode) {
+                if (_this.isNodeConvertingToLeftHanded(rootNode)) {
+                    rootNodesToLeftHanded.push(rootNode);
+                    // Exclude the node from list of nodes to export
+                    var indexRootNode = nodes.indexOf(rootNode);
+                    if (indexRootNode !== -1) { // should always be true
+                        nodes.splice(indexRootNode, 1);
+                    }
+                    // Cancel conversion to right handed system
+                    rootNode.getDescendants(false).forEach(function (descendant) {
+                        _this._convertToRightHandedSystemMap[descendant.uniqueId] = false;
+                    });
+                }
+            });
+        }
         return this._glTFMaterialExporter._convertMaterialsToGLTFAsync(babylonScene.materials, "image/png" /* PNG */, true).then(function () {
             return _this.createNodeMapAndAnimationsAsync(babylonScene, nodes, binaryWriter).then(function (nodeMap) {
                 _this._nodeMap = nodeMap;
@@ -2842,12 +2906,13 @@ var _Exporter = /** @class */ (function () {
                                 glTFNode.extras = babylonNode.metadata.gltf.extras;
                             }
                         }
-                        if (!babylonNode.parent) {
+                        if (!babylonNode.parent || rootNodesToLeftHanded.indexOf(babylonNode.parent) !== -1) {
                             if (_this._options.shouldExportNode && !_this._options.shouldExportNode(babylonNode)) {
                                 babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Log("Omitting " + babylonNode.name + " from scene.");
                             }
                             else {
-                                if (_this._convertToRightHandedSystem) {
+                                var convertToRightHandedSystem = _this._convertToRightHandedSystemMap[babylonNode.uniqueId];
+                                if (convertToRightHandedSystem) {
                                     if (glTFNode.translation) {
                                         glTFNode.translation[2] *= -1;
                                         glTFNode.translation[0] *= -1;
@@ -2899,7 +2964,8 @@ var _Exporter = /** @class */ (function () {
         var _loop_1 = function (babylonNode) {
             if (!this_1._options.shouldExportNode || this_1._options.shouldExportNode(babylonNode)) {
                 promiseChain = promiseChain.then(function () {
-                    return _this.createNodeAsync(babylonNode, binaryWriter).then(function (node) {
+                    var convertToRightHandedSystem = _this._convertToRightHandedSystemMap[babylonNode.uniqueId];
+                    return _this.createNodeAsync(babylonNode, binaryWriter, convertToRightHandedSystem).then(function (node) {
                         var promise = _this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode);
                         if (promise == null) {
                             babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Not exporting node " + babylonNode.name);
@@ -2914,7 +2980,7 @@ var _Exporter = /** @class */ (function () {
                                 nodeIndex = _this._nodes.length - 1;
                                 nodeMap[babylonNode.uniqueId] = nodeIndex;
                                 if (!babylonScene.animationGroups.length && babylonNode.animations.length) {
-                                    _glTFAnimation__WEBPACK_IMPORTED_MODULE_5__["_GLTFAnimation"]._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, _this._nodes, binaryWriter, _this._bufferViews, _this._accessors, _this._convertToRightHandedSystem, _this._animationSampleRate);
+                                    _glTFAnimation__WEBPACK_IMPORTED_MODULE_5__["_GLTFAnimation"]._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, _this._nodes, binaryWriter, _this._bufferViews, _this._accessors, convertToRightHandedSystem, _this._animationSampleRate);
                                 }
                             });
                         }
@@ -2940,7 +3006,7 @@ var _Exporter = /** @class */ (function () {
                 }
             });
             if (babylonScene.animationGroups.length) {
-                _glTFAnimation__WEBPACK_IMPORTED_MODULE_5__["_GLTFAnimation"]._CreateNodeAnimationFromAnimationGroups(babylonScene, _this._animations, nodeMap, _this._nodes, binaryWriter, _this._bufferViews, _this._accessors, _this._convertToRightHandedSystem, _this._animationSampleRate);
+                _glTFAnimation__WEBPACK_IMPORTED_MODULE_5__["_GLTFAnimation"]._CreateNodeAnimationFromAnimationGroups(babylonScene, _this._animations, nodeMap, _this._nodes, binaryWriter, _this._bufferViews, _this._accessors, _this._convertToRightHandedSystemMap, _this._animationSampleRate);
             }
             return nodeMap;
         });
@@ -2949,9 +3015,10 @@ var _Exporter = /** @class */ (function () {
      * Creates a glTF node from a Babylon mesh
      * @param babylonMesh Source Babylon mesh
      * @param binaryWriter Buffer for storing geometry data
+     * @param convertToRightHandedSystem Converts the values to right-handed
      * @returns glTF node
      */
-    _Exporter.prototype.createNodeAsync = function (babylonNode, binaryWriter) {
+    _Exporter.prototype.createNodeAsync = function (babylonNode, binaryWriter, convertToRightHandedSystem) {
         var _this = this;
         return Promise.resolve().then(function () {
             // create node to hold translation/rotation/scale and the mesh
@@ -2963,8 +3030,8 @@ var _Exporter = /** @class */ (function () {
             }
             if (babylonNode instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["TransformNode"]) {
                 // Set transformation
-                _this.setNodeTransformation(node, babylonNode);
-                return _this.setPrimitiveAttributesAsync(mesh, babylonNode, binaryWriter).then(function () {
+                _this.setNodeTransformation(node, babylonNode, convertToRightHandedSystem);
+                return _this.setPrimitiveAttributesAsync(mesh, babylonNode, binaryWriter, convertToRightHandedSystem).then(function () {
                     if (mesh.primitives.length) {
                         _this._meshes.push(mesh);
                         node.mesh = _this._meshes.length - 1;
