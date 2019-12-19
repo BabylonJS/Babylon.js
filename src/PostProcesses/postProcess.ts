@@ -453,11 +453,10 @@ export class PostProcess {
         var desiredWidth = ((<PostProcessOptions>this._options).width || requiredWidth);
         var desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;
 
-        const needMipMaps = 
+        const needMipMaps =
             this.renderTargetSamplingMode !== Constants.TEXTURE_NEAREST_LINEAR &&
             this.renderTargetSamplingMode !== Constants.TEXTURE_NEAREST_NEAREST &&
             this.renderTargetSamplingMode !== Constants.TEXTURE_LINEAR_LINEAR;
-
 
         if (!this._shareOutputWithPostProcess && !this._forcedOutputTexture) {
 

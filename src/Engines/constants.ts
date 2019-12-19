@@ -190,7 +190,7 @@ export class Constants {
     public static readonly TEXTURE_NEAREST_SAMPLINGMODE = 1;
     /** mag = nearest and min = nearest and mip = none */
     public static readonly TEXTURE_NEAREST_NEAREST = 1;
-    
+
     /** Bilinear is mag = linear and min = linear and no mip */
     public static readonly TEXTURE_BILINEAR_SAMPLINGMODE = 2;
     /** mag = linear and min = linear and mip = none */
@@ -200,7 +200,7 @@ export class Constants {
     public static readonly TEXTURE_TRILINEAR_SAMPLINGMODE = 3;
     /** Trilinear is mag = linear and min = linear and mip = linear */
     public static readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR = 3;
-    
+
     /** mag = nearest and min = nearest and mip = nearest */
     public static readonly TEXTURE_NEAREST_NEAREST_MIPNEAREST = 4;
     /** mag = nearest and min = linear and mip = nearest */
