@@ -29,7 +29,7 @@ export class WebXRMotionControllerManager {
             }
         }
         // try using the gamepad id
-        if (xrInput.gamepad) {
+        if (xrInput.gamepad && xrInput.gamepad.id) {
             switch (xrInput.gamepad.id) {
                 case (xrInput.gamepad.id.match(/oculus touch/gi) ? xrInput.gamepad.id : undefined):
                     // oculus in gamepad id - legacy mapping
@@ -37,6 +37,9 @@ export class WebXRMotionControllerManager {
                 case (xrInput.gamepad.id.match(/Spatial Controller/gi) ? xrInput.gamepad.id : undefined):
                     // oculus in gamepad id - legacy mapping
                     return this._AvailableControllers["microsoft-mixed-reality"](xrInput, scene);
+                case (xrInput.gamepad.id.match(/openvr/gi) ? xrInput.gamepad.id : undefined):
+                    // oculus in gamepad id - legacy mapping
+                    return this._AvailableControllers["htc-vive-legacy"](xrInput, scene);
             }
         }
         // check fallbacks

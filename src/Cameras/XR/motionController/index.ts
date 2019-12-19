@@ -4,3 +4,4 @@ export * from "./webXRGenericMotionController";
 export * from "./webXRMicrosoftMixedRealityController";
 export * from "./webXRMotionControllerManager";
 export * from "./webXROculusTouchMotionController";
+export * from "./webXRHTCViveMotionController";
