@@ -1098,6 +1098,14 @@ export class Tools {
             }, delay);
         });
     }
+
+    /**
+     * Utility function to detect if the current user agent is Safari
+     * @returns whether or not the current user agent is safari
+     */
+    public static IsSafari() : boolean {
+        return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    }
 }
 
 /**
