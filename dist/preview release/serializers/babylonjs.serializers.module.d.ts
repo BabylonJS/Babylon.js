@@ -661,7 +661,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
          */
         static UnregisterExtension(name: string): boolean;
         /**
-         * Lazy load a local engine with premultiplied alpha set to false
+         * Lazy load a local engine
          */
         _getLocalEngine(): Engine;
         private reorderIndicesBasedOnPrimitiveMode;
@@ -1867,7 +1867,7 @@ declare module BABYLON.GLTF2.Exporter {
          */
         static UnregisterExtension(name: string): boolean;
         /**
-         * Lazy load a local engine with premultiplied alpha set to false
+         * Lazy load a local engine
          */
         _getLocalEngine(): Engine;
         private reorderIndicesBasedOnPrimitiveMode;
