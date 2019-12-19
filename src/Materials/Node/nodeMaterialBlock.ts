@@ -541,7 +541,7 @@ export class NodeMaterialBlock {
 
         // Get unique name
         let nameAsVariableName = this.name.replace(/[^A-Za-z_]+/g, "");
-        this._codeVariableName = nameAsVariableName;
+        this._codeVariableName = nameAsVariableName || `${this.getClassName()}_${this.uniqueId}`;
 
         if (uniqueNames.indexOf(this._codeVariableName) !== -1) {
             let index = 0;
