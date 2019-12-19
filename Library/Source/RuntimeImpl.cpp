@@ -35,7 +35,7 @@ namespace Babylon
 
     RuntimeImpl::RuntimeImpl(void* nativeWindowPtr, const std::string& rootUrl)
         : m_nativeWindowPtr{nativeWindowPtr}
-        , m_thread{ [this] { ThreadProcedure();} }
+        , m_thread{[this] { ThreadProcedure(); }}
         , m_rootUrl{rootUrl}
     {
     }
@@ -220,6 +220,7 @@ namespace Babylon
                 action();
             });
         };
+
         Env env{GetModulePath().u8string().data(), std::move(executeOnScriptThread)};
 
         m_env = &env;

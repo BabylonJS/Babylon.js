@@ -29,7 +29,7 @@ namespace Babylon
     {}*/
 
     void RuntimeImpl::ThreadProcedure()
-    {    
+    {
         this->Dispatch([](Env& env) {
             InitializeNativeXr(env);
         });
