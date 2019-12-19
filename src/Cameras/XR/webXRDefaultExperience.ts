@@ -73,7 +73,7 @@ export class WebXRDefaultExperience {
      * @param options options for basic configuration
      * @returns resulting WebXRDefaultExperience
      */
-    public static CreateAsync(scene: Scene, options: WebXRDefaultExperienceOptions) {
+    public static CreateAsync(scene: Scene, options: WebXRDefaultExperienceOptions = {}) {
         var result = new WebXRDefaultExperience();
 
         // Create base experience
