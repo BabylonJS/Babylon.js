@@ -34255,6 +34255,11 @@ declare module BABYLON {
          * @returns Promise that resolves after the given amount of time
          */
         static DelayAsync(delay: number): Promise<void>;
+        /**
+         * Utility function to detect if the current user agent is Safari
+         * @returns whether or not the current user agent is safari
+         */
+        static IsSafari(): boolean;
     }
     /**
      * Use this className as a decorator on a given class definition to add it a name and optionally its module.
