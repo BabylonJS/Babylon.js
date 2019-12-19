@@ -19,7 +19,7 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
     
 }
 
-- (void)init:( void* )CALayerPtr width:(int)inWidth height:(int)inHeight
+- (void)init:( void* )CALayerPtr
 {
     NSBundle* main = [NSBundle mainBundle];
     NSURL* resourceUrl = [main resourceURL];
@@ -42,9 +42,21 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
     runtime->LoadScript("experience.js");
 }
 
+- (void)resize:(int)inWidth height:(int)inHeight
+{
+    if (runtime) 
+    {
+        runtime->UpdateSize(inWidth, inHeight);
+    }
+}
+
 - (void)setInputs:(int)x y:(int)y tap:(bool)tap
 {
-    
+    if (inputBuffer)
+    {
+        inputBuffer->SetPointerPosition(x, y);
+        inputBuffer->SetPointerDown(tap);
+    }
 }
 
 @end
