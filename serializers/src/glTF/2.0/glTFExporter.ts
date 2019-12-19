@@ -1314,7 +1314,7 @@ export class _Exporter {
             let matrix = node.getWorldMatrix();
             let matrixToLeftHanded = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
             let matrixProduct = matrix.multiply(matrixToLeftHanded);
-            let matrixIdentity = Matrix.Identity();
+            let matrixIdentity = Matrix.IdentityReadOnly;
             for (let i = 0; i < 16; i++) {
                 if (Math.abs(matrixProduct.m[i] - matrixIdentity.m[i]) > Epsilon) {
                     return false;
@@ -1323,7 +1323,7 @@ export class _Exporter {
 
             // Geometry
             if ((node instanceof Mesh && node.geometry !== null) ||
-                (node instanceof InstancedMesh && node._masterMesh instanceof Mesh && node._masterMesh.geometry !== null)) {
+                (node instanceof InstancedMesh && node.sourceMesh.geometry !== null)) {
                 return false;
             }
 
