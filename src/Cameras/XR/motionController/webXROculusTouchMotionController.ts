@@ -148,8 +148,14 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
 
     public profileId = "oculus-touch";
 
-    constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness, legacy?: boolean) {
-        super(scene, legacy ? OculusTouchLegacyLayouts[handness] : OculusTouchLayouts[handness], gamepadObject, handness);
+    private _modelRootNode: AbstractMesh;
+
+    constructor(scene: Scene,
+        gamepadObject: IMinimalMotionControllerObject,
+        handness: MotionControllerHandness,
+        legacyMapping: boolean = false,
+        private _forceLegacyControllers: boolean = false) {
+        super(scene, legacyMapping ? OculusTouchLegacyLayouts[handness] : OculusTouchLayouts[handness], gamepadObject, handness);
     }
 
     protected _processLoadedModel(_meshes: AbstractMesh[]): void {
@@ -157,7 +163,7 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
         const isQuest = this._isQuest();
         const triggerDirection = this.handness === 'right' ? -1 : 1;
 
-        this.layout.gamepad!.buttons.forEach((buttonName, index) => {
+        this.layout.gamepad!.buttons.forEach((buttonName) => {
             const comp = buttonName && this.getComponent(buttonName);
             if (comp) {
                 comp.onButtonStateChanged.add((component) => {
@@ -167,14 +173,14 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
                     switch (buttonName) {
                         case "xr-standard-trigger": // index trigger
                             if (!isQuest) {
-                                (<AbstractMesh>(this.rootMesh.getChildren()[3])).rotation.x = -component.value * 0.20;
-                                (<AbstractMesh>(this.rootMesh.getChildren()[3])).position.y = -component.value * 0.005;
-                                (<AbstractMesh>(this.rootMesh.getChildren()[3])).position.z = -component.value * 0.005;
+                                (<AbstractMesh>(this._modelRootNode.getChildren()[3])).rotation.x = -component.value * 0.20;
+                                (<AbstractMesh>(this._modelRootNode.getChildren()[3])).position.y = -component.value * 0.005;
+                                (<AbstractMesh>(this._modelRootNode.getChildren()[3])).position.z = -component.value * 0.005;
                             }
                             return;
                         case "xr-standard-squeeze":  // secondary trigger
                             if (!isQuest) {
-                                (<AbstractMesh>(this.rootMesh.getChildren()[4])).position.x = triggerDirection * component.value * 0.0035;
+                                (<AbstractMesh>(this._modelRootNode.getChildren()[4])).position.x = triggerDirection * component.value * 0.0035;
                             }
                             return;
                         case "xr-standard-thumbstick": // thumbstick
@@ -183,10 +189,10 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
                         case "x-button":
                             if (!isQuest) {
                                 if (component.pressed) {
-                                    (<AbstractMesh>(this.rootMesh.getChildren()[1])).position.y = -0.001;
+                                    (<AbstractMesh>(this._modelRootNode.getChildren()[1])).position.y = -0.001;
                                 }
                                 else {
-                                    (<AbstractMesh>(this.rootMesh.getChildren()[1])).position.y = 0;
+                                    (<AbstractMesh>(this._modelRootNode.getChildren()[1])).position.y = 0;
                                 }
                             }
                             return;
@@ -194,10 +200,10 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
                         case "y-button":
                             if (!isQuest) {
                                 if (component.pressed) {
-                                    (<AbstractMesh>(this.rootMesh.getChildren()[2])).position.y = -0.001;
+                                    (<AbstractMesh>(this._modelRootNode.getChildren()[2])).position.y = -0.001;
                                 }
                                 else {
-                                    (<AbstractMesh>(this.rootMesh.getChildren()[2])).position.y = 0;
+                                    (<AbstractMesh>(this._modelRootNode.getChildren()[2])).position.y = 0;
                                 }
                             }
                             return;
@@ -223,9 +229,13 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
         };
     }
 
-    protected _isQuest() {
-        // this is SADLY the only way to currently check. Until profiles will be available.
-        return !!navigator.userAgent.match(/Quest/gi);
+    /**
+     * Is this the new type of oculus touch. At the moment both have the same profile and it is impossible to differentiate
+     * between the touch and touch 2.
+     */
+    private _isQuest() {
+        // this is SADLY the only way to currently check. Until proper profiles will be available.
+        return !!navigator.userAgent.match(/Quest/gi) && !this._forceLegacyControllers;
     }
 
     protected _updateModel(): void {
@@ -241,14 +251,15 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
 
         meshes.forEach((mesh) => { mesh.isPickable = false; });
         if (this._isQuest()) {
-            meshes[0].parent = this.rootMesh;
+            this._modelRootNode = meshes[0];
             this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
             this.rootMesh.position.y = 0.034;
             this.rootMesh.position.z = 0.052;
         } else {
-            meshes[1].parent = this.rootMesh;
+            this._modelRootNode = meshes[1];
             this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(Math.PI / -4, Math.PI, 0);
         }
+        this._modelRootNode.parent = this.rootMesh;
     }
 
 }
