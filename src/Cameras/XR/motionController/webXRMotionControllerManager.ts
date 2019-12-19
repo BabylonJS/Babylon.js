@@ -23,16 +23,20 @@ export class WebXRMotionControllerManager {
 
     public static GetMotionControllerWithXRInput(xrInput: XRInputSource, scene: Scene) {
         for (let i = 0; i < xrInput.profiles.length; ++i) {
-            if (this._AvailableControllers[xrInput.profiles[i]]) {
-                return this._AvailableControllers[xrInput.profiles[i]](xrInput, scene);
+            const constructionFunction = this._AvailableControllers[xrInput.profiles[i]];
+            if (constructionFunction) {
+                return constructionFunction(xrInput, scene);
             }
         }
         // try using the gamepad id
         if (xrInput.gamepad) {
             switch (xrInput.gamepad.id) {
-                case (xrInput.gamepad.id.match(/oculus/gi) ? xrInput.gamepad.id : undefined):
+                case (xrInput.gamepad.id.match(/oculus touch/gi) ? xrInput.gamepad.id : undefined):
                     // oculus in gamepad id - legacy mapping
                     return this._AvailableControllers["oculus-touch-legacy"](xrInput, scene);
+                case (xrInput.gamepad.id.match(/Spatial Controller/gi) ? xrInput.gamepad.id : undefined):
+                    // oculus in gamepad id - legacy mapping
+                    return this._AvailableControllers["microsoft-mixed-reality"](xrInput, scene);
             }
         }
         // check fallbacks
@@ -40,8 +44,9 @@ export class WebXRMotionControllerManager {
             const fallbacks = this.FindFallbackWithProfileId(xrInput.profiles[i]);
             if (fallbacks) {
                 for (let j = 0; j < fallbacks.length; ++j) {
-                    if (this._AvailableControllers[fallbacks[j]]) {
-                        return this._AvailableControllers[fallbacks[j]](xrInput, scene);
+                    const constructionFunction = this._AvailableControllers[fallbacks[j]];
+                    if (constructionFunction) {
+                        return constructionFunction(xrInput, scene);
                     }
                 }
             }
