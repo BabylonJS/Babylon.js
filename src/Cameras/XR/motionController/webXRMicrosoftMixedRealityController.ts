@@ -42,6 +42,9 @@ const MixedRealityProfile: IMotionControllerLayoutMap = {
     }
 };
 
+/**
+ * The motion controller class for all microsoft mixed reality controllers
+ */
 export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionController {
     /**
      * The base url used to load the left and right controller models

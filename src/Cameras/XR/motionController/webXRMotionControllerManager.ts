@@ -4,6 +4,9 @@ import {
 import { WebXRGenericTriggerMotionController } from './webXRGenericMotionController';
 import { Scene } from '../../../scene';
 
+/**
+ * A construction function type to create a new controller based on an xrInput object
+ */
 export type MotionControllerConstructor = (xrInput: XRInputSource, scene: Scene) => WebXRAbstractMotionController;
 
 /**
@@ -17,11 +20,33 @@ export type MotionControllerConstructor = (xrInput: XRInputSource, scene: Scene)
 export class WebXRMotionControllerManager {
     private static _AvailableControllers: { [type: string]: MotionControllerConstructor } = {};
     private static _Fallbacks: { [profileId: string]: string[] } = {};
+
+    /**
+     * Register a new controller based on its profile. This function will be called by the controller classes themselves.
+     *
+     * If you are missing a profile, make sure it is imported in your source, otherwise it will not register.
+     *
+     * @param type the profile type to register
+     * @param constructFunction the function to be called when loading this profile
+     */
     public static RegisterController(type: string, constructFunction: MotionControllerConstructor) {
         this._AvailableControllers[type] = constructFunction;
     }
 
-    public static GetMotionControllerWithXRInput(xrInput: XRInputSource, scene: Scene) {
+    /**
+     * When acquiring a new xrInput object (usually by the WebXRInput class), match it with the correct profile.
+     * The order of search:
+     *
+     * 1) Iterate the profiles array of the xr input and try finding a corresponding motion controller
+     * 2) (If not found) search in the gamepad id and try using it (legacy versions only)
+     * 3) search for registered fallbacks (should be redundant, nonetheless it makes sense to check)
+     * 4) return the generic trigger controller if none were found
+     *
+     * @param xrInput the xrInput to which a new controller is initialized
+     * @param scene the scene to which the model will be added
+     * @return the motion controller class for this profile id or the generic standard class if none was found
+     */
+    public static GetMotionControllerWithXRInput(xrInput: XRInputSource, scene: Scene): WebXRAbstractMotionController {
         for (let i = 0; i < xrInput.profiles.length; ++i) {
             const constructionFunction = this._AvailableControllers[xrInput.profiles[i]];
             if (constructionFunction) {
@@ -45,12 +70,10 @@ export class WebXRMotionControllerManager {
         // check fallbacks
         for (let i = 0; i < xrInput.profiles.length; ++i) {
             const fallbacks = this.FindFallbackWithProfileId(xrInput.profiles[i]);
-            if (fallbacks) {
-                for (let j = 0; j < fallbacks.length; ++j) {
-                    const constructionFunction = this._AvailableControllers[fallbacks[j]];
-                    if (constructionFunction) {
-                        return constructionFunction(xrInput, scene);
-                    }
+            for (let j = 0; j < fallbacks.length; ++j) {
+                const constructionFunction = this._AvailableControllers[fallbacks[j]];
+                if (constructionFunction) {
+                    return constructionFunction(xrInput, scene);
                 }
             }
         }
@@ -58,11 +81,21 @@ export class WebXRMotionControllerManager {
         return this._AvailableControllers[WebXRGenericTriggerMotionController.ProfileId](xrInput, scene);
     }
 
+    /**
+     * Find a fallback profile if the profile was not found. There are a few predefined generic profiles.
+     * @param profileId the profile to which a fallback needs to be found
+     * @return an array with corresponding fallback profiles
+     */
     public static FindFallbackWithProfileId(profileId: string): string[] {
-        return this._Fallbacks[profileId];
+        return this._Fallbacks[profileId] || [];
     }
 
-    public static RegisterFallbacksForProfileId(profileId: string, fallbacks: string[]) {
+    /**
+     * Register a fallback to a specific profile.
+     * @param profileId the profileId that will receive the fallbacks
+     * @param fallbacks A list of fallback profiles
+     */
+    public static RegisterFallbacksForProfileId(profileId: string, fallbacks: string[]): void {
         if (this._Fallbacks[profileId]) {
             this._Fallbacks[profileId].push(...fallbacks);
         } else {
@@ -70,6 +103,10 @@ export class WebXRMotionControllerManager {
         }
     }
 
+    /**
+     * Register the default fallbacks.
+     * This function is called automatically when this file is imported.
+     */
     public static DefaultFallbacks() {
         this.RegisterFallbacksForProfileId("google-daydream", ["generic-touchpad"]);
         this.RegisterFallbacksForProfileId("htc-vive-focus", ["generic-trigger-touchpad"]);
