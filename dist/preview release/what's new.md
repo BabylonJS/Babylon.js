@@ -271,6 +271,7 @@
 - Playground will now render the returned scene from createScene() when there are multiple scenes added to engine ([Kyle Belfort](https://github.com/belfortk))
 - Fixed bug so Playground will now download .env texture files to ./textures in .zip  ([Kyle Belfort](https://github.com/belfortk))
 - It was not possible to change the gaze and laser color in VR ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
+- Fixed issue where textures exported using Safari web browser are Y mirrored. ([#7352](https://github.com/BabylonJS/Babylon.js/issues/7352)) ([Drigax](https://github.com/drigax))
 
 ## Breaking changes
 
