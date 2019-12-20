@@ -1,6 +1,7 @@
 #include <Babylon/RuntimeAndroid.h>
 #include "RuntimeImpl.h"
 #include "NativeEngine.h"
+#include <native_window.h>
 
 namespace Babylon
 {
