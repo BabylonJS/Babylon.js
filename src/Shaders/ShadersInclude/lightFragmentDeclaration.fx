@@ -15,7 +15,7 @@
         #elif defined(SHADOWCSM{X})
 			varying vec4 vPositionFromLight{X}[CSMMAXCASCADES];
 			varying float vDepthMetric{X}[CSMMAXCASCADES];
-            varying float vDepthInViewSpace{X};
+			varying float vDepthInViewSpace{X};
 
 			#if defined(SHADOWPCF{X})
 				uniform highp sampler2DShadow shadowSampler{X}[CSMMAXCASCADES];
