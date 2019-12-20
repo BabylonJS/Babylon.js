@@ -97,9 +97,8 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                 }
                 else {
                     const lightPosition = babylonLight.position.clone();
-                    let convertToRightHandedSystem = this._exporter._convertToRightHandedSystemMap[babylonNode.uniqueId];
                     if (!lightPosition.equals(Vector3.Zero())) {
-                        if (convertToRightHandedSystem) {
+                        if (this._exporter._convertToRightHandedSystem) {
                             _GLTFUtilities._GetRightHandedPositionVector3FromRef(lightPosition);
                         }
                         node.translation = lightPosition.asArray();
@@ -110,7 +109,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                         const len = Math.sqrt(localAxis.x * localAxis.x + localAxis.z * localAxis.z);
                         const pitch = -Math.atan2(localAxis.y, len);
                         const lightRotationQuaternion = Quaternion.RotationYawPitchRoll(yaw, pitch, 0);
-                        if (convertToRightHandedSystem) {
+                        if (this._exporter._convertToRightHandedSystem) {
                             _GLTFUtilities._GetRightHandedQuaternionFromRef(lightRotationQuaternion);
                         }
                         if (!lightRotationQuaternion.equals(Quaternion.Identity())) {

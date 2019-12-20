@@ -121,8 +121,8 @@ export class WebXRControllerTeleportation {
                             if (forwardReadyToTeleport) {
                                 // Teleport the users feet to where they targeted
                                 this._tmpVector.copyFrom(teleportationTarget.position);
-                                this._tmpVector.y += input.baseExperience.camera.position.y;
-                                input.baseExperience.camera.position.copyFrom(this._tmpVector);
+                                this._tmpVector.y += input.xrCamera.position.y;
+                                input.xrCamera.position.copyFrom(this._tmpVector);
                             }
                             forwardReadyToTeleport = false;
                         }
@@ -133,7 +133,7 @@ export class WebXRControllerTeleportation {
                         } else {
                             if (backwardReadyToTeleport) {
                                 this._tmpVector.set(0, 0, -1);
-                                this._tmpVector.rotateByQuaternionToRef(input.baseExperience.camera.rotationQuaternion, this._tmpVector);
+                                this._tmpVector.rotateByQuaternionToRef(input.xrCamera.rotationQuaternion, this._tmpVector);
                                 this._tmpVector.y = 0;
                                 this._tmpVector.normalize();
                                 this._tmpVector.y = -1.5;
@@ -146,7 +146,7 @@ export class WebXRControllerTeleportation {
                                 if (pick && pick.pickedPoint) {
                                     // Teleport the users feet to where they targeted
                                     this._tmpVector.copyFrom(pick.pickedPoint);
-                                    input.baseExperience.camera.position.addInPlace(this._tmpVector);
+                                    input.xrCamera.position.addInPlace(this._tmpVector);
                                 }
                             }
                             backwardReadyToTeleport = false;
@@ -158,7 +158,7 @@ export class WebXRControllerTeleportation {
                             leftReadyToTeleport = true;
                         } else {
                             if (leftReadyToTeleport) {
-                                input.baseExperience.camera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, -Math.PI / 4, 0));
+                                input.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, -Math.PI / 4, 0));
                             }
                             leftReadyToTeleport = false;
                         }
@@ -166,7 +166,7 @@ export class WebXRControllerTeleportation {
                             rightReadyToTeleport = true;
                         } else {
                             if (rightReadyToTeleport) {
-                                input.baseExperience.camera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, Math.PI / 4, 0));
+                                input.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, Math.PI / 4, 0));
                             }
                             rightReadyToTeleport = false;
                         }

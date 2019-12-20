@@ -182,6 +182,7 @@
 - New Features Manager for WebXR features ([RaananW](https://github.com/RaananW/))
 - New features - Plane detection, Hit Test, Background remover ([RaananW](https://github.com/RaananW/))
 - Camera's API works as expected (position, rotationQuaternion, world matrix etc') ([#7239](https://github.com/BabylonJS/Babylon.js/issues/7239)) ([RaananW](https://github.com/RaananW/))
+- XR Input now using standard profiles and completely separated from the gamepad class ([#7348](https://github.com/BabylonJS/Babylon.js/issues/7348)) ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
@@ -272,7 +273,6 @@
 - Fixed bug so Playground will now download .env texture files to ./textures in .zip  ([Kyle Belfort](https://github.com/belfortk))
 - It was not possible to change the gaze and laser color in VR ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
 - Fixed issue where textures exported using Safari web browser are Y mirrored. ([#7352](https://github.com/BabylonJS/Babylon.js/issues/7352)) ([Drigax](https://github.com/drigax))
-- Ignore the root nodes used for conversion from right-handed to left-handed when exporting to GLB ([noalak](https://github.com/noalak/))
 
 ## Breaking changes
 
@@ -284,3 +284,4 @@
 - The STL loader does not create light or camera automatically, please use `scene.createDefaultCameraOrLight();` in your code [Sebavan](https://github.com/sebavan/)
 - The glTF2 exporter extension no longer ignores childless empty nodes.([drigax](https://github.com/drigax))
 - Default culling strategy changed to CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY ([Deltakosh](https://github.com/deltakosh/))
+- `MaterialHelper.BindLight` and `MaterialHelper.BindLights` do not need the usePhysicalLight anymore ([Sebavan](https://github.com/sebavan/))
