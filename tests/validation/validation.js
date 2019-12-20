@@ -112,10 +112,6 @@ function evaluate(test, resultCanvas, result, renderImage, waitRing, done) {
         if (!test.onlyVisual) {
             var info = engine.getGlInfo();
             var defaultErrorRatio = 2.5
-            // Reduces error ratio on Embedded Firefox for travis.
-            if (info.vendor === "VMware, Inc.") {
-                defaultErrorRatio = 5;
-            }
 
             if (compare(renderData, resultCanvas, test.threshold || 25, test.errorRatio || defaultErrorRatio)) {
                 result.classList.add("failed");

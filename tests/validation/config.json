@@ -191,7 +191,8 @@
             "title": "The car",
             "sceneFolder": "/Scenes/TheCar/",
             "sceneFilename": "TheCar.binary.babylon",
-            "referenceImage": "TheCar.png"
+            "referenceImage": "TheCar.png",
+            "errorRatio": 5
         },
         {
             "title": "Viper",
@@ -228,7 +229,8 @@
             "title": "SpaceDeK",
             "sceneFolder": "/Scenes/SpaceDek/",
             "sceneFilename": "SpaceDek.babylon",
-            "referenceImage": "SpaceDeK.png"
+            "referenceImage": "SpaceDeK.png",
+            "errorRatio": 5
         },
         {
             "title": "Flat2009",
@@ -297,7 +299,8 @@
             "title": "LOD",
             "renderCount": 10,
             "playgroundId": "#FFMFW5#0",
-            "referenceImage": "lod.png"
+            "referenceImage": "lod.png",
+            "errorRatio": 5
         },
         {
             "title": "Lens",
