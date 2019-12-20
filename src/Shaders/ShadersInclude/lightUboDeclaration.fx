@@ -31,7 +31,10 @@
 		varying float vDepthInViewSpace{X};
 
 		#if defined(SHADOWPCF{X})
-			uniform highp sampler2DShadow shadowSampler{X}[CSMMAXCASCADES];
+            uniform highp sampler2DShadow shadowSampler{X}_0;
+            uniform highp sampler2DShadow shadowSampler{X}_1;
+            uniform highp sampler2DShadow shadowSampler{X}_2;
+            uniform highp sampler2DShadow shadowSampler{X}_3;
 		#else
 			uniform highp sampler2D shadowSampler{X}[CSMMAXCASCADES];
 		#endif

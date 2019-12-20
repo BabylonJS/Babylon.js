@@ -477,6 +477,10 @@ export class MaterialHelper {
         samplersList.push("shadowSampler" + lightIndex);
         samplersList.push("depthSampler" + lightIndex);
 
+        for (let i = 0; i < 8; ++i) {
+            samplersList.push("shadowSampler" + lightIndex + "_" + i);
+        }
+
         if (projectedLightTexture) {
             samplersList.push("projectionLightSampler" + lightIndex);
             uniformsList.push(
