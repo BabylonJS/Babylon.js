@@ -143,8 +143,12 @@ concurrency::task<void> App::RestartRuntimeAsync(Windows::Foundation::Rect bound
         rootUrl = "file:///" + parentPath.generic_string();
     }
 
+    DisplayInformation^ displayInformation = DisplayInformation::GetForCurrentView();
+    m_displayScale = static_cast<float>(displayInformation->RawPixelsPerViewPixel);
+
     m_runtime = std::make_unique<Babylon::RuntimeUWP>(
-        reinterpret_cast<ABI::Windows::UI::Core::ICoreWindow*>(CoreWindow::GetForCurrentThread()), rootUrl);
+        reinterpret_cast<ABI::Windows::UI::Core::ICoreWindow*>(CoreWindow::GetForCurrentThread()), rootUrl,
+        bounds.Width * m_displayScale, bounds.Height * m_displayScale);
 
     m_runtime->Dispatch([](Babylon::Env& env)
     {
@@ -176,11 +180,6 @@ concurrency::task<void> App::RestartRuntimeAsync(Windows::Foundation::Rect bound
 
         m_runtime->LoadScript(appUrl + "/Scripts/playground_runner.js");
     }
-
-    DisplayInformation^ displayInformation = DisplayInformation::GetForCurrentView();
-    m_displayScale = static_cast<float>(displayInformation->RawPixelsPerViewPixel);
-
-    m_runtime->UpdateSize(bounds.Width * m_displayScale, bounds.Height * m_displayScale);
 }
 
 void App::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ args)

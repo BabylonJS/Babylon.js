@@ -7,21 +7,15 @@
 
 namespace Babylon
 {
-    RuntimeWin32::RuntimeWin32(HWND hWnd)
-        : RuntimeWin32{hWnd, GetUrlFromPath(GetModulePath().parent_path())}
+    RuntimeWin32::RuntimeWin32(HWND hWnd, float width, float height)
+        : RuntimeWin32{hWnd, GetUrlFromPath(GetModulePath().parent_path()), width, height}
     {
     }
 
-    RuntimeWin32::RuntimeWin32(HWND hWnd, const std::string& rootUrl)
+    RuntimeWin32::RuntimeWin32(HWND hWnd, const std::string& rootUrl, float width, float height)
         : Runtime{std::make_unique<RuntimeImpl>(hWnd, rootUrl)}
     {
-        RECT rect;
-        if (GetWindowRect(hWnd, &rect))
-        {
-            auto width = rect.right - rect.left;
-            auto height = rect.bottom - rect.top;
-            NativeEngine::InitializeWindow(hWnd, width, height);
-        }
+        NativeEngine::InitializeWindow(hWnd, static_cast<uint32_t>(width), static_cast<uint32_t>(height));
     }
 
     void RuntimeImpl::ThreadProcedure()
