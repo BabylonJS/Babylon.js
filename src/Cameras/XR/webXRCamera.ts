@@ -44,6 +44,15 @@ export class WebXRCamera extends FreeCamera {
             // first frame - camera's y position should be 0 for the correct offset
             this._firstFrame = true;
         });
+
+        // Check transformation changes on each frame. Callback is added to be first so that the transformation will be
+        // applied to the rest of the elements using the referenceSpace object
+        this._xrSessionManager.onXRFrameObservable.add((frame) => {
+            if (!this._firstFrame) {
+                this._updateReferenceSpace();
+            }
+            this._updateFromXRSession();
+        }, undefined, true);
     }
 
     private _updateNumberOfRigCameras(viewCount = 1) {
@@ -72,18 +81,6 @@ export class WebXRCamera extends FreeCamera {
         this.rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
         // this.rigCameras[1].position.x = pupilDistance / 2;
         this.rigCameras[1].outputRenderTarget = null;
-    }
-
-    /**
-     * Updates the cameras position from the current pose information of the  XR session
-     * @param xrSessionManager the session containing pose information
-     */
-    public update() {
-        if (!this._firstFrame) {
-            this._updateReferenceSpace();
-        }
-        this._updateFromXRSession();
-        super.update();
     }
 
     private _updateReferenceSpace(): boolean {
