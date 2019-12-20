@@ -3,9 +3,9 @@
 	uniform vec4 vLightDiffuse{X};
 
 	#ifdef SPECULARTERM
-		uniform vec3 vLightSpecular{X};
+		uniform vec4 vLightSpecular{X};
 	#else
-		vec3 vLightSpecular{X} = vec3(0.);
+		vec4 vLightSpecular{X} = vec4(0.);
 	#endif
 	#ifdef SHADOW{X}
 		#if defined(SHADOWCUBE{X})

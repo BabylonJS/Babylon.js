@@ -844,18 +844,18 @@ export class VRExperienceHelper {
                         });
 
                         this.xr.input.onControllerAddedObservable.add((controller) => {
-                            var webVRController = controller.gamepadController;
-                            if (webVRController) {
-                                var localController = new VRExperienceHelperControllerGazer(webVRController, this._scene, this._cameraGazer._gazeTracker);
+                            // var webVRController = controller.gamepadController;
+                            // if (webVRController) {
+                            //     var localController = new VRExperienceHelperControllerGazer(webVRController, this._scene, this._cameraGazer._gazeTracker);
 
-                                if (controller.inputSource.handedness === "right" || (this._leftController && this._leftController.webVRController != webVRController)) {
-                                    this._rightController = localController;
-                                } else {
-                                    this._leftController = localController;
-                                }
+                            //     if (controller.inputSource.handedness === "right" || (this._leftController)) {
+                            //         this._rightController = localController;
+                            //     } else {
+                            //         this._leftController = localController;
+                            //     }
 
-                                this._tryEnableInteractionOnController(localController);
-                            }
+                            //     this._tryEnableInteractionOnController(localController);
+                            // }
                         });
                     });
                 } else {
