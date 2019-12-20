@@ -68,8 +68,8 @@ Java_com_android_appviewer_AndroidViewAppActivity_surfaceCreated(JNIEnv* env, jo
     if (!runtime)
     {
         ANativeWindow *window = ANativeWindow_fromSurface(env, surface);
-        int32_t width  = ANativeWindow_getWidth(nativeWindowPtr);
-        int32_t height = ANativeWindow_getHeight(nativeWindowPtr);
+        int32_t width  = ANativeWindow_getWidth(window);
+        int32_t height = ANativeWindow_getHeight(window);
 
         runtime = std::make_unique<Babylon::RuntimeAndroid>(window, "file:///data/local/tmp", width, height);
 
