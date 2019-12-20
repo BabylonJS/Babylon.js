@@ -1,4 +1,6 @@
-﻿#ifdef LIGHT{X}
+﻿#define CSMMAXCASCADES 8
+
+#ifdef LIGHT{X}
 	uniform Light{X}
 	{
 		vec4 vLightData;
@@ -23,6 +25,19 @@
 #ifdef SHADOW{X}
 	#if defined(SHADOWCUBE{X})
 		uniform samplerCube shadowSampler{X};		
+    #elif defined(SHADOWCSM{X})
+        varying vec4 vPositionFromLight{X}[CSMMAXCASCADES];
+        varying float vDepthMetric{X}[CSMMAXCASCADES];
+        varying float vDepthInViewSpace{X};
+
+        #if defined(SHADOWPCF{X})
+            uniform highp sampler2DShadow shadowSampler{X}[CSMMAXCASCADES];
+        #else
+            uniform highp sampler2D shadowSampler{X}[CSMMAXCASCADES];
+        #endif
+        uniform mat4 lightMatrix{X}[CSMMAXCASCADES];
+        uniform float cascadeSplits{X}[CSMMAXCASCADES];
+	    uniform lowp int numCascades{X};
 	#else
 		varying vec4 vPositionFromLight{X};
 		varying float vDepthMetric{X};

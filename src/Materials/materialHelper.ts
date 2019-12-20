@@ -351,6 +351,7 @@ export class MaterialHelper {
         defines["SHADOWLOWQUALITY" + lightIndex] = false;
         defines["SHADOWMEDIUMQUALITY" + lightIndex] = false;
         defines["SHADOWCLOSEESM" + lightIndex] = false;
+        defines["SHADOWCSM" + lightIndex] = false;
 
         if (mesh && mesh.receiveShadows && scene.shadowsEnabled && light.shadowEnabled) {
             var shadowGenerator = light.getShadowGenerator();
@@ -424,6 +425,7 @@ export class MaterialHelper {
                 defines["SHADOWCUBE" + index] = false;
                 defines["SHADOWLOWQUALITY" + index] = false;
                 defines["SHADOWMEDIUMQUALITY" + index] = false;
+                defines["SHADOWCSM" + index] = false;
             }
         }
 
@@ -464,6 +466,8 @@ export class MaterialHelper {
             "lightMatrix" + lightIndex,
             "shadowsInfo" + lightIndex,
             "depthValues" + lightIndex,
+            "numCascades" + lightIndex,
+            "cascadeSplits" + lightIndex,
         );
 
         if (uniformBuffersList) {

@@ -2,7 +2,8 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { BoundingInfo } from "../../Culling/boundingInfo";
 import { Effect } from "../../Materials/effect";
 import { IShadowGenerator, ShadowGenerator } from "./shadowGenerator";
-import { IShadowLight } from "../../Lights/shadowLight";
+import { IShadowLight } from "../shadowLight";
+import { Light } from "../light";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { Nullable } from "../../types";
@@ -311,22 +312,32 @@ export class CSMShadowGenerator implements IShadowGenerator {
     protected _scene: Scene;
     protected _mapSize: number;
     protected _usefulFloatFirst: boolean | undefined;
+    protected _lightMatrices: Float32Array;
+    protected _samplers: Array<RenderTargetTexture>;
+    protected _cascadeDepths: Array<number>;
 
     constructor(mapSize: number, light: IShadowLight, numCascades: number = 4, usefulFloatFirst?: boolean) {
         if (numCascades < 1) {
             numCascades = 1;
         }
 
+        if (light.getTypeID() != Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
+            console.error('Invalid light type for CSMShadowGenerator! Only directional lights are allowed.');
+        }
+
         this._cascades = [];
         this._activeCascade = CSMShadowGenerator.CASCADE_ALL;
         this._renderList = [];
         this._numCascades = numCascades;
-        this._lambda = 0.5;
+        this._lambda = 0.7;
         this._minDistance = 0;
         this._maxDistance = 1;
         this._stabilizeCascades = false;
         this._useRightDirectionAsUpForOrthoProj = false;
         this._shadowCastersBoundingInfo = new BoundingInfo(new Vector3(0, 0, 0), new Vector3(0, 0, 0));
+        this._lightMatrices = new Float32Array(numCascades * 16);
+        this._samplers = new Array(numCascades);
+        this._cascadeDepths = new Array(numCascades);
 
         this._mapSize = mapSize;
         this._usefulFloatFirst = usefulFloatFirst;
@@ -346,7 +357,6 @@ export class CSMShadowGenerator implements IShadowGenerator {
     }
 
     protected _initializeCSM(): void {
-        this._cascades = [];
         for (let cascadeIndex = 0; cascadeIndex < this._numCascades; ++cascadeIndex) {
             const cascade: ICascade = {
                 generator: new CSMShadowMap(this._mapSize, this._light, !!this._usefulFloatFirst, this),
@@ -447,13 +457,69 @@ export class CSMShadowGenerator implements IShadowGenerator {
     }
 
     prepareDefines(defines: MaterialDefines, lightIndex: number): void {
-        // todo. For the time being, only the first shadow map is sampled
+        var scene = this._scene;
+        var light = this._light;
+
+        if (!scene.shadowsEnabled || !light.shadowEnabled || this._cascades.length < 1) {
+            return;
+        }
+
         this._cascades[0].generator.prepareDefines(defines, lightIndex);
+
+        defines["SHADOWCSM" + lightIndex] = true;
     }
 
     bindShadowLight(lightIndex: string, effect: Effect): void {
-        // todo. For the time being, only the first shadow map is sampled
-        this._cascades[0].generator.bindShadowLight(lightIndex, effect);
+        const light = this._light;
+        const scene = this._scene;
+
+        if (!scene.shadowsEnabled || !light.shadowEnabled || this._cascades.length < 1) {
+            return;
+        }
+
+        let camera = scene.activeCamera;
+        if (!camera) {
+            return;
+        }
+
+        let masterGenerator = this._cascades[0].generator;
+        let shadowMap0 = masterGenerator.getShadowMap();
+
+        if (!shadowMap0) {
+            return;
+        }
+
+        const cameraRange = camera.maxZ - camera.minZ;
+
+        for (let cascadeIndex = 0; cascadeIndex < this._cascades.length; ++cascadeIndex) {
+            const cascade = this._cascades[cascadeIndex];
+
+            let matrix = cascade.generator.getTransformMatrix();
+
+            matrix.copyToArray(this._lightMatrices, cascadeIndex * 16);
+
+            this._samplers[cascadeIndex] = cascade.generator.getShadowMapForRendering()!;
+
+            this._cascadeDepths[cascadeIndex] = camera.minZ + cascade.splitDistance * cameraRange;
+        }
+
+        if (!light.needCube()) {
+            effect.setMatrices("lightMatrix" + lightIndex, this._lightMatrices);
+        }
+
+        effect.setInt("numCascades" + lightIndex, this._cascades.length);
+        effect.setTextureArray("shadowSampler" + lightIndex, this._samplers);
+        effect.setArray("cascadeSplits" + lightIndex, this._cascadeDepths);
+
+        if (masterGenerator.filter === ShadowGenerator.FILTER_PCF) {
+            light._uniformBuffer.updateFloat4("shadowsInfo", masterGenerator.getDarkness(), shadowMap0.getSize().width, 1 / shadowMap0.getSize().width, masterGenerator.frustumEdgeFalloff, lightIndex);
+        } else if (masterGenerator.filter === ShadowGenerator.FILTER_PCSS) {
+            light._uniformBuffer.updateFloat4("shadowsInfo", masterGenerator.getDarkness(), 1 / shadowMap0.getSize().width, masterGenerator.contactHardeningLightSizeUVRatio * shadowMap0.getSize().width, masterGenerator.frustumEdgeFalloff, lightIndex);
+        } else {
+            light._uniformBuffer.updateFloat4("shadowsInfo", masterGenerator.getDarkness(), masterGenerator.blurScale / shadowMap0.getSize().width, masterGenerator.depthScale, masterGenerator.frustumEdgeFalloff, lightIndex);
+        }
+
+        light._uniformBuffer.updateFloat2("depthValues", this.getLight().getDepthMinZ(camera), this.getLight().getDepthMinZ(camera) + this.getLight().getDepthMaxZ(camera), lightIndex);
     }
 
     recreate(): void {
