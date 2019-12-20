@@ -42484,11 +42484,6 @@ declare module BABYLON {
         private _updateNumberOfRigCameras;
         /** @hidden */
         _updateForDualEyeDebugging(): void;
-        /**
-         * Updates the cameras position from the current pose information of the  XR session
-         * @param xrSessionManager the session containing pose information
-         */
-        update(): void;
         private _updateReferenceSpace;
         private _updateReferenceSpaceOffset;
         private _updateFromXRSession;
