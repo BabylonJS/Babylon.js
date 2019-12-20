@@ -20,8 +20,10 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
     NSURL * resourceUrl = [main resourceURL];
 
     NSWindow* nativeWindow = [[self view] window];
+    NSSize size = [self view].frame.size;
     runtime = std::make_unique<Babylon::RuntimeApple>(
-        (__bridge void*)nativeWindow, [[NSString stringWithFormat:@"file://%s", [resourceUrl fileSystemRepresentation]] UTF8String]);
+        (__bridge void*)nativeWindow, [[NSString stringWithFormat:@"file://%s", [resourceUrl fileSystemRepresentation]] UTF8String],
+            size.width, size.height);
     
     runtime->Dispatch([](Babylon::Env& env)
     {

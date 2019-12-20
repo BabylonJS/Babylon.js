@@ -26,7 +26,8 @@ class ViewController: UIViewController {
 
             let rawMetalLayerPtr: UnsafeMutableRawPointer = Unmanaged.passUnretained(mtkView.layer).toOpaque()
             
-            appDelegate!._bridge!.init(rawMetalLayerPtr)
+            let size = mtkView.frame.size;
+            appDelegate!._bridge!.init(rawMetalLayerPtr, width:size.width, height:size.height)
         }
     }
 
