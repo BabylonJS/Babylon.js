@@ -252,16 +252,15 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
 
     protected _setRootMesh(meshes: AbstractMesh[]): void {
         this.rootMesh = new Mesh(this.profileId + " " + this.handness, this.scene);
+        this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
 
         meshes.forEach((mesh) => { mesh.isPickable = false; });
         if (this._isQuest()) {
             this._modelRootNode = meshes[0];
-            this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
-            this.rootMesh.position.y = 0.034;
-            this.rootMesh.position.z = 0.052;
         } else {
             this._modelRootNode = meshes[1];
-            this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(Math.PI / -4, Math.PI, 0);
+            this.rootMesh.position.y = 0.034;
+            this.rootMesh.position.z = 0.052;
         }
         this._modelRootNode.parent = this.rootMesh;
     }
