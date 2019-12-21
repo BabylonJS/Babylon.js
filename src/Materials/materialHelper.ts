@@ -343,6 +343,9 @@ export class MaterialHelper {
 
         // Shadows
         defines["SHADOW" + lightIndex] = false;
+        defines["SHADOWCSM" + lightIndex] = false;
+        defines["SHADOWCSMDEBUG" + lightIndex] = false;
+        defines["SHADOWCSMNUM_CASCADES" + lightIndex] = false;
         defines["SHADOWPCF" + lightIndex] = false;
         defines["SHADOWPCSS" + lightIndex] = false;
         defines["SHADOWPOISSON" + lightIndex] = false;
@@ -421,6 +424,9 @@ export class MaterialHelper {
                 defines["DIRLIGHT" + index] = false;
                 defines["SPOTLIGHT" + index] = false;
                 defines["SHADOW" + index] = false;
+                defines["SHADOWCSM" + index] = false;
+                defines["SHADOWCSMDEBUG" + index] = false;
+                defines["SHADOWCSMNUM_CASCADES" + index] = false;
                 defines["SHADOWPCF" + index] = false;
                 defines["SHADOWPCSS" + index] = false;
                 defines["SHADOWPOISSON" + index] = false;
@@ -476,6 +482,12 @@ export class MaterialHelper {
 
         samplersList.push("shadowSampler" + lightIndex);
         samplersList.push("depthSampler" + lightIndex);
+
+        uniformsList.push(
+            "lightMatrixCSM" + lightIndex,
+            "camViewMatCSM" + lightIndex,
+            "viewFrustumZCSM" + lightIndex,
+        );
 
         if (projectedLightTexture) {
             samplersList.push("projectionLightSampler" + lightIndex);
