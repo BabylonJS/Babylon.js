@@ -136,56 +136,128 @@
                 #if defined(SHADOWLOWQUALITY{X})
                     if (currentCascadeIndex{X} == 0)
                         shadow = computeShadowWithPCF1(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_0, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-                    else if (currentCascadeIndex{X} == 1)
-                        shadow = computeShadowWithPCF1(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_1, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-                    else if (currentCascadeIndex{X} == 2)
-                        shadow = computeShadowWithPCF1(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_2, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-                    else if (currentCascadeIndex{X} == 3)
-                        shadow = computeShadowWithPCF1(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_3, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #if SHADOWCSM{X}_NUMCASCADES >= 2
+                        else if (currentCascadeIndex{X} == 1)
+                            shadow = computeShadowWithPCF1(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_1, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
+                    #if SHADOWCSM{X}_NUMCASCADES >= 3
+                        else if (currentCascadeIndex{X} == 2)
+                            shadow = computeShadowWithPCF1(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_2, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
+                    #if SHADOWCSM{X}_NUMCASCADES >= 4
+                        else if (currentCascadeIndex{X} == 3)
+                            shadow = computeShadowWithPCF1(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_3, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
+                    #if SHADOWCSM{X}_NUMCASCADES >= 5
+                        else if (currentCascadeIndex{X} == 4)
+                            shadow = computeShadowWithPCF1(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_4, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
+                    #if SHADOWCSM{X}_NUMCASCADES >= 6
+                        else if (currentCascadeIndex{X} == 5)
+                            shadow = computeShadowWithPCF1(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_5, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
+                    #if SHADOWCSM{X}_NUMCASCADES >= 7
+                        else if (currentCascadeIndex{X} == 6)
+                            shadow = computeShadowWithPCF1(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_6, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
+                    #if SHADOWCSM{X}_NUMCASCADES >= 8
+                        else if (currentCascadeIndex{X} == 7)
+                            shadow = computeShadowWithPCF1(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_7, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
                 #elif defined(SHADOWMEDIUMQUALITY{X})
                     if (currentCascadeIndex{X} == 0)
                         shadow = computeShadowWithPCF3(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_0, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-                    else if (currentCascadeIndex{X} == 1)
-                        shadow = computeShadowWithPCF3(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_1, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-                    else if (currentCascadeIndex{X} == 2)
-                        shadow = computeShadowWithPCF3(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_2, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-                    else if (currentCascadeIndex{X} == 3)
-                        shadow = computeShadowWithPCF3(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_3, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-                    /*else if (currentCascadeIndex{X} == 4)
-                        shadow = computeShadowWithPCF3(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_4, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-                    else if (currentCascadeIndex{X} == 5)
-                        shadow = computeShadowWithPCF3(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_5, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-                    else if (currentCascadeIndex{X} == 6)
-                        shadow = computeShadowWithPCF3(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_6, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-                    else if (currentCascadeIndex{X} == 7)
-                        shadow = computeShadowWithPCF3(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_7, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);*/
+                    #if SHADOWCSM{X}_NUMCASCADES >= 2
+                        else if (currentCascadeIndex{X} == 1)
+                            shadow = computeShadowWithPCF3(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_1, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
+                    #if SHADOWCSM{X}_NUMCASCADES >= 3
+                        else if (currentCascadeIndex{X} == 2)
+                            shadow = computeShadowWithPCF3(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_2, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
+                    #if SHADOWCSM{X}_NUMCASCADES >= 4
+                        else if (currentCascadeIndex{X} == 3)
+                            shadow = computeShadowWithPCF3(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_3, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
+                    #if SHADOWCSM{X}_NUMCASCADES >= 5
+                        else if (currentCascadeIndex{X} == 4)
+                            shadow = computeShadowWithPCF3(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_4, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
+                    #if SHADOWCSM{X}_NUMCASCADES >= 6
+                        else if (currentCascadeIndex{X} == 5)
+                            shadow = computeShadowWithPCF3(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_5, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
+                    #if SHADOWCSM{X}_NUMCASCADES >= 7
+                        else if (currentCascadeIndex{X} == 6)
+                            shadow = computeShadowWithPCF3(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_6, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
+                    #if SHADOWCSM{X}_NUMCASCADES >= 8
+                        else if (currentCascadeIndex{X} == 7)
+                            shadow = computeShadowWithPCF3(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_7, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
                 #else
                     if (currentCascadeIndex{X} == 0)
                         shadow = computeShadowWithPCF5(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_0, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-                    else if (currentCascadeIndex{X} == 1)
-                        shadow = computeShadowWithPCF5(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_1, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-                    else if (currentCascadeIndex{X} == 2)
-                        shadow = computeShadowWithPCF5(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_2, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-                    else if (currentCascadeIndex{X} == 3)
-                        shadow = computeShadowWithPCF5(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_3, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #if SHADOWCSM{X}_NUMCASCADES >= 2
+                        else if (currentCascadeIndex{X} == 1)
+                            shadow = computeShadowWithPCF5(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_1, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
+                    #if SHADOWCSM{X}_NUMCASCADES >= 3
+                        else if (currentCascadeIndex{X} == 2)
+                            shadow = computeShadowWithPCF5(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_2, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
+                    #if SHADOWCSM{X}_NUMCASCADES >= 4
+                        else if (currentCascadeIndex{X} == 3)
+                            shadow = computeShadowWithPCF5(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_3, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
+                    #if SHADOWCSM{X}_NUMCASCADES >= 5
+                        else if (currentCascadeIndex{X} == 4)
+                            shadow = computeShadowWithPCF5(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_4, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
+                    #if SHADOWCSM{X}_NUMCASCADES >= 6
+                        else if (currentCascadeIndex{X} == 5)
+                            shadow = computeShadowWithPCF5(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_5, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
+                    #if SHADOWCSM{X}_NUMCASCADES >= 7
+                        else if (currentCascadeIndex{X} == 6)
+                            shadow = computeShadowWithPCF5(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_6, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
+                    #if SHADOWCSM{X}_NUMCASCADES >= 8
+                        else if (currentCascadeIndex{X} == 7)
+                            shadow = computeShadowWithPCF5(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}_7, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
                 #endif
             #else
                 if (currentCascadeIndex{X} == 0)
                     shadow = computeShadow(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}[0], light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-                else if (currentCascadeIndex{X} == 1)
-                    shadow = computeShadow(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}[1], light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-                else if (currentCascadeIndex{X} == 2)
-                    shadow = computeShadow(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}[2], light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-                else if (currentCascadeIndex{X} == 3)
-                    shadow = computeShadow(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}[3], light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-                else if (currentCascadeIndex{X} == 4)
-                    shadow = computeShadow(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}[4], light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-                else if (currentCascadeIndex{X} == 5)
-                    shadow = computeShadow(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}[5], light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-                else if (currentCascadeIndex{X} == 6)
-                    shadow = computeShadow(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}[6], light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-                else if (currentCascadeIndex{X} == 7)
-                    shadow = computeShadow(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}[7], light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                #if SHADOWCSM{X}_NUMCASCADES >= 2
+                    else if (currentCascadeIndex{X} == 1)
+                        shadow = computeShadow(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}[1], light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                #endif
+                #if SHADOWCSM{X}_NUMCASCADES >= 3
+                    else if (currentCascadeIndex{X} == 2)
+                        shadow = computeShadow(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}[2], light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                #endif
+                #if SHADOWCSM{X}_NUMCASCADES >= 4
+                    else if (currentCascadeIndex{X} == 3)
+                        shadow = computeShadow(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}[3], light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                #endif
+                #if SHADOWCSM{X}_NUMCASCADES >= 5
+                    else if (currentCascadeIndex{X} == 4)
+                        shadow = computeShadow(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}[4], light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                #endif
+                #if SHADOWCSM{X}_NUMCASCADES >= 6
+                    else if (currentCascadeIndex{X} == 5)
+                        shadow = computeShadow(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}[5], light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                #endif
+                #if SHADOWCSM{X}_NUMCASCADES >= 7
+                    else if (currentCascadeIndex{X} == 6)
+                        shadow = computeShadow(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}[6], light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                #endif
+                #if SHADOWCSM{X}_NUMCASCADES >= 8
+                    else if (currentCascadeIndex{X} == 7)
+                        shadow = computeShadow(vPositionFromLight{X}[currentCascadeIndex{X}], vDepthMetric{X}[currentCascadeIndex{X}], shadowSampler{X}[7], light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                #endif
             #endif
         #else
             #ifdef SHADOWCLOSEESM{X}

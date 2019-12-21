@@ -298,8 +298,8 @@ export class CSMShadowGenerator implements IShadowGenerator {
         return this;
     }
 
-    protected _getActiveCascades(): Array<ICascade> {
-        return  this._activeCascade === CSMShadowGenerator.CASCADE_ALL ? this._cascades :
+    protected _getActiveCascades(forceAll: boolean = true): Array<ICascade> {
+        return  this._activeCascade === CSMShadowGenerator.CASCADE_ALL || forceAll ? this._cascades :
                 this._activeCascade >= 0 && this._activeCascade < this._cascades.length ? [this._cascades[this._activeCascade]] : [];
     }
 
@@ -467,6 +467,7 @@ export class CSMShadowGenerator implements IShadowGenerator {
         this._cascades[0].generator.prepareDefines(defines, lightIndex);
 
         defines["SHADOWCSM" + lightIndex] = true;
+        defines["SHADOWCSM" + lightIndex + "_NUMCASCADES"] = this._numCascades;
     }
 
     bindShadowLight(lightIndex: string, effect: Effect): void {

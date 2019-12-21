@@ -1,6 +1,4 @@
-﻿#define CSMMAXCASCADES 8
-
-#ifdef LIGHT{X}
+﻿#ifdef LIGHT{X}
 	uniform Light{X}
 	{
 		vec4 vLightData;
@@ -26,20 +24,38 @@
 	#if defined(SHADOWCUBE{X})
 		uniform samplerCube shadowSampler{X};		
     #elif defined(SHADOWCSM{X})
-		varying vec4 vPositionFromLight{X}[CSMMAXCASCADES];
-		varying float vDepthMetric{X}[CSMMAXCASCADES];
+		varying vec4 vPositionFromLight{X}[SHADOWCSM{X}_NUMCASCADES];
+		varying float vDepthMetric{X}[SHADOWCSM{X}_NUMCASCADES];
 		varying float vDepthInViewSpace{X};
 
 		#if defined(SHADOWPCF{X})
-            uniform highp sampler2DShadow shadowSampler{X}_0;
-            uniform highp sampler2DShadow shadowSampler{X}_1;
-            uniform highp sampler2DShadow shadowSampler{X}_2;
-            uniform highp sampler2DShadow shadowSampler{X}_3;
+			uniform highp sampler2DShadow shadowSampler{X}_0;
+			#if SHADOWCSM{X}_NUMCASCADES >= 2
+				uniform highp sampler2DShadow shadowSampler{X}_1;
+			#endif
+			#if SHADOWCSM{X}_NUMCASCADES >= 3
+				uniform highp sampler2DShadow shadowSampler{X}_2;
+			#endif
+			#if SHADOWCSM{X}_NUMCASCADES >= 4
+				uniform highp sampler2DShadow shadowSampler{X}_3;
+			#endif
+			#if SHADOWCSM{X}_NUMCASCADES >= 5
+				uniform highp sampler2DShadow shadowSampler{X}_4;
+			#endif
+			#if SHADOWCSM{X}_NUMCASCADES >= 6
+				uniform highp sampler2DShadow shadowSampler{X}_5;
+			#endif
+			#if SHADOWCSM{X}_NUMCASCADES >= 7
+				uniform highp sampler2DShadow shadowSampler{X}_6;
+			#endif
+			#if SHADOWCSM{X}_NUMCASCADES >= 8
+				uniform highp sampler2DShadow shadowSampler{X}_7;
+			#endif
 		#else
-			uniform highp sampler2D shadowSampler{X}[CSMMAXCASCADES];
+			uniform highp sampler2D shadowSampler{X}[SHADOWCSM{X}_NUMCASCADES];
 		#endif
-		uniform mat4 lightMatrix{X}[CSMMAXCASCADES];
-		uniform float cascadeSplits{X}[CSMMAXCASCADES];
+		uniform mat4 lightMatrix{X}[SHADOWCSM{X}_NUMCASCADES];
+		uniform float cascadeSplits{X}[SHADOWCSM{X}_NUMCASCADES];
 		uniform lowp int numCascades{X};
 	#else
 		varying vec4 vPositionFromLight{X};
