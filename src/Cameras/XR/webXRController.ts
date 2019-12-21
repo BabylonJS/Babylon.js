@@ -1,10 +1,10 @@
-import { Nullable } from "../../types";
 import { Observable } from "../../Misc/observable";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Quaternion, Vector3 } from '../../Maths/math.vector';
 import { Ray } from '../../Culling/ray';
 import { Scene } from '../../scene';
-import { WebVRController } from '../../Gamepads/Controllers/webVRController';
+import { WebXRAbstractMotionController } from './motionController/webXRAbstractController';
+import { WebXRMotionControllerManager } from './motionController/webXRMotionControllerManager';
 /**
  * Represents an XR input
  */
@@ -24,7 +24,7 @@ export class WebXRController {
      * Using this object it is possible to get click events and trackpad changes of the
      * webxr controller that is currently being used.
      */
-    public gamepadController?: WebVRController;
+    public gamepadController?: WebXRAbstractMotionController;
 
     /**
      * Event that fires when the controller is removed/disposed
@@ -44,22 +44,22 @@ export class WebXRController {
     constructor(
         private scene: Scene,
         /** The underlying input source for the controller  */
-        public inputSource: XRInputSource,
-        private parentContainer: Nullable<AbstractMesh> = null) {
+        public inputSource: XRInputSource) {
         this.pointer = new AbstractMesh("controllerPointer", scene);
         this.pointer.rotationQuaternion = new Quaternion();
-        if (parentContainer) {
-            parentContainer.addChild(this.pointer);
-        }
 
         if (this.inputSource.gripSpace) {
             this.grip = new AbstractMesh("controllerGrip", this.scene);
             this.grip.rotationQuaternion = new Quaternion();
-            if (this.parentContainer) {
-                this.parentContainer.addChild(this.grip);
-            }
-        } else if (this.inputSource.gamepad) {
-            this._gamepadMode = true;
+        }
+
+        // for now only load motion controllers if gamepad available
+        if (this.inputSource.gamepad) {
+            this.gamepadController = WebXRMotionControllerManager.GetMotionControllerWithXRInput(inputSource, scene);
+            // if the model is loaded, do your thing
+            this.gamepadController.onModelLoadedObservable.addOnce(() => {
+                this.gamepadController!.rootMesh!.parent = this.pointer;
+            });
         }
     }
 
@@ -97,9 +97,7 @@ export class WebXRController {
         }
         if (this.gamepadController) {
             // either update buttons only or also position, if in gamepad mode
-            this.gamepadController.isXR = !this._gamepadMode;
-            this.gamepadController.update();
-            this.gamepadController.isXR = true;
+            this.gamepadController.updateFromXRFrame(xrFrame);
         }
     }
 

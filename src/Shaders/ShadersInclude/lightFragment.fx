@@ -50,7 +50,7 @@
             #ifdef HEMILIGHT{X}
                 preInfo.roughness = roughness;
             #else
-                preInfo.roughness = adjustRoughnessFromLightProperties(roughness, light{X}.vLightDiffuse.a, preInfo.lightDistance);
+                preInfo.roughness = adjustRoughnessFromLightProperties(roughness, light{X}.vLightSpecular.a, preInfo.lightDistance);
             #endif
 
             // Diffuse contribution
@@ -86,7 +86,7 @@
                 #ifdef HEMILIGHT{X}
                     preInfo.roughness = clearCoatRoughness;
                 #else
-                    preInfo.roughness = adjustRoughnessFromLightProperties(clearCoatRoughness, light{X}.vLightDiffuse.a, preInfo.lightDistance);
+                    preInfo.roughness = adjustRoughnessFromLightProperties(clearCoatRoughness, light{X}.vLightSpecular.a, preInfo.lightDistance);
                 #endif
 
                 info.clearCoat = computeClearCoatLighting(preInfo, clearCoatNormalW, clearCoatAARoughnessFactors.x, clearCoatIntensity, light{X}.vLightDiffuse.rgb);
@@ -111,11 +111,11 @@
             #endif
         #else
             #ifdef SPOTLIGHT{X}
-                info = computeSpotLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDirection, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, glossiness);
+                info = computeSpotLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDirection, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular.rgb, light{X}.vLightDiffuse.a, glossiness);
             #elif defined(HEMILIGHT{X})
-                info = computeHemisphericLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightGround, glossiness);
+                info = computeHemisphericLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular.rgb, light{X}.vLightGround, glossiness);
             #elif defined(POINTLIGHT{X}) || defined(DIRLIGHT{X})
-                info = computeLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, glossiness);
+                info = computeLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular.rgb, light{X}.vLightDiffuse.a, glossiness);
             #endif
         #endif
 
