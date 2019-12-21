@@ -191,7 +191,8 @@
             "title": "The car",
             "sceneFolder": "/Scenes/TheCar/",
             "sceneFilename": "TheCar.binary.babylon",
-            "referenceImage": "TheCar.png"
+            "referenceImage": "TheCar.png",
+            "errorRatio": 5
         },
         {
             "title": "Viper",
@@ -228,7 +229,8 @@
             "title": "SpaceDeK",
             "sceneFolder": "/Scenes/SpaceDek/",
             "sceneFilename": "SpaceDek.babylon",
-            "referenceImage": "SpaceDeK.png"
+            "referenceImage": "SpaceDeK.png",
+            "errorRatio": 5
         },
         {
             "title": "Flat2009",
@@ -297,7 +299,8 @@
             "title": "LOD",
             "renderCount": 10,
             "playgroundId": "#FFMFW5#0",
-            "referenceImage": "lod.png"
+            "referenceImage": "lod.png",
+            "errorRatio": 5
         },
         {
             "title": "Lens",
@@ -532,12 +535,14 @@
         {
             "title": "GLTF Serializer with Negative World Matrix",
             "playgroundId": "#KX53VK#27",
-            "referenceImage": "glTFSerializerNegativeWorldMatrix.png"
+            "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
+            "errorRatio": 1.1
         },
         {
             "title": "GLTF Serializer with Negative World Matrix (Right Handed)",
             "playgroundId": "#KX53VK#30",
-            "referenceImage": "glTFSerializerNegativeWorldMatrix_Right.png"
+            "referenceImage": "glTFSerializerNegativeWorldMatrix_Right.png",
+            "errorRatio": 1.1
         },
         {
             "title": "GLTF Buggy with Draco Mesh Compression",

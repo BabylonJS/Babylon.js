@@ -136,35 +136,30 @@ module.exports = g;
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _objFileLoader__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./objFileLoader */ "./OBJ/objFileLoader.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MTLFileLoader", function() { return _objFileLoader__WEBPACK_IMPORTED_MODULE_0__["MTLFileLoader"]; });
+/* harmony import */ var _mtlFileLoader__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./mtlFileLoader */ "./OBJ/mtlFileLoader.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MTLFileLoader", function() { return _mtlFileLoader__WEBPACK_IMPORTED_MODULE_0__["MTLFileLoader"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "OBJFileLoader", function() { return _objFileLoader__WEBPACK_IMPORTED_MODULE_0__["OBJFileLoader"]; });
+/* harmony import */ var _objFileLoader__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./objFileLoader */ "./OBJ/objFileLoader.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "OBJFileLoader", function() { return _objFileLoader__WEBPACK_IMPORTED_MODULE_1__["OBJFileLoader"]; });
+
 
 
 
 
 /***/ }),
 
-/***/ "./OBJ/objFileLoader.ts":
+/***/ "./OBJ/mtlFileLoader.ts":
 /*!******************************!*\
-  !*** ./OBJ/objFileLoader.ts ***!
+  !*** ./OBJ/mtlFileLoader.ts ***!
   \******************************/
-/*! exports provided: MTLFileLoader, OBJFileLoader */
+/*! exports provided: MTLFileLoader */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MTLFileLoader", function() { return MTLFileLoader; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "OBJFileLoader", function() { return OBJFileLoader; });
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__);
-
-
-
-
-
-
 
 
 
@@ -373,10 +368,39 @@ var MTLFileLoader = /** @class */ (function () {
         else {
             url += value;
         }
-        return new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Texture"](url, scene, false, OBJFileLoader.INVERT_TEXTURE_Y);
+        return new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Texture"](url, scene, false, MTLFileLoader.INVERT_TEXTURE_Y);
     };
+    /**
+     * Invert Y-Axis of referenced textures on load
+     */
+    MTLFileLoader.INVERT_TEXTURE_Y = true;
     return MTLFileLoader;
 }());
+
+
+
+/***/ }),
+
+/***/ "./OBJ/objFileLoader.ts":
+/*!******************************!*\
+  !*** ./OBJ/objFileLoader.ts ***!
+  \******************************/
+/*! exports provided: OBJFileLoader */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "OBJFileLoader", function() { return OBJFileLoader; });
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/tools");
+/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _mtlFileLoader__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./mtlFileLoader */ "./OBJ/mtlFileLoader.ts");
+
+
+
+
+
+
+
 
 /**
  * OBJ file type loader.
@@ -432,6 +456,19 @@ var OBJFileLoader = /** @class */ (function () {
         this.facePattern5 = /f\s+(((-[\d]{1,}\/-[\d]{1,}\/-[\d]{1,}[\s]?){3,})+)/;
         this._meshLoadOptions = meshLoadOptions || OBJFileLoader.currentMeshLoadOptions;
     }
+    Object.defineProperty(OBJFileLoader, "INVERT_TEXTURE_Y", {
+        /**
+         * Invert Y-Axis of referenced textures on load
+         */
+        get: function () {
+            return _mtlFileLoader__WEBPACK_IMPORTED_MODULE_1__["MTLFileLoader"].INVERT_TEXTURE_Y;
+        },
+        set: function (value) {
+            _mtlFileLoader__WEBPACK_IMPORTED_MODULE_1__["MTLFileLoader"].INVERT_TEXTURE_Y = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(OBJFileLoader, "currentMeshLoadOptions", {
         get: function () {
             return {
@@ -587,7 +624,7 @@ var OBJFileLoader = /** @class */ (function () {
         var triangles = []; //Indices from new triangles coming from polygons
         var materialNameFromObj = ""; //The name of the current material
         var fileToLoad = ""; //The name of the mtlFile to load
-        var materialsFromMTLFile = new MTLFileLoader();
+        var materialsFromMTLFile = new _mtlFileLoader__WEBPACK_IMPORTED_MODULE_1__["MTLFileLoader"]();
         var objMeshName = ""; //The name of the current obj mesh
         var increment = 1; //Id for meshes created by the multimaterial
         var isFirstMaterial = true;
@@ -1179,10 +1216,6 @@ var OBJFileLoader = /** @class */ (function () {
      * Invert model on y-axis (does a model scaling inversion)
      */
     OBJFileLoader.INVERT_Y = false;
-    /**
-     * Invert Y-Axis of referenced textures on load
-     */
-    OBJFileLoader.INVERT_TEXTURE_Y = true;
     /**
      * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
      */

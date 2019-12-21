@@ -4,7 +4,7 @@
 		vec4 vLightData;
 
 		vec4 vLightDiffuse;
-		vec3 vLightSpecular;
+		vec4 vLightSpecular;
 		#ifdef SPOTLIGHT{X}
 			vec4 vLightDirection;
 			vec4 vLightFalloff;

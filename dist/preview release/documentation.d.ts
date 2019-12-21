@@ -9234,10 +9234,9 @@ declare module BABYLON {
          * @param scene The scene where the light belongs to
          * @param effect The effect we are binding the data to
          * @param useSpecular Defines if specular is supported
-         * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
          * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
          */
-        static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff?: boolean, rebuildInParallel?: boolean): void;
+        static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel?: boolean): void;
         /**
          * Binds the lights information from the scene to the effect for the given mesh.
          * @param scene The scene the lights belongs to
@@ -9245,10 +9244,9 @@ declare module BABYLON {
          * @param effect The effect we are binding the data to
          * @param defines The generated defines for the effect
          * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
-         * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
          * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
          */
-        static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights?: number, usePhysicalLightFalloff?: boolean, rebuildInParallel?: boolean): void;
+        static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights?: number, rebuildInParallel?: boolean): void;
         private static _tempFogColor;
         /**
          * Binds the fog information from the scene to the effect for the given mesh.
@@ -10176,10 +10174,9 @@ declare module BABYLON {
          * @param scene The scene where the light belongs to
          * @param effect The effect we are binding the data to
          * @param useSpecular Defines if specular is supported
-         * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
          * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
          */
-        bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff?: boolean, rebuildInParallel?: boolean): void;
+        _bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel?: boolean): void;
         /**
          * Sets the passed Effect "effect" with the Light information.
          * @param effect The effect to update
@@ -34255,6 +34252,11 @@ declare module BABYLON {
          * @returns Promise that resolves after the given amount of time
          */
         static DelayAsync(delay: number): Promise<void>;
+        /**
+         * Utility function to detect if the current user agent is Safari
+         * @returns whether or not the current user agent is safari
+         */
+        static IsSafari(): boolean;
     }
     /**
      * Use this className as a decorator on a given class definition to add it a name and optionally its module.
@@ -42482,11 +42484,6 @@ declare module BABYLON {
         private _updateNumberOfRigCameras;
         /** @hidden */
         _updateForDualEyeDebugging(): void;
-        /**
-         * Updates the cameras position from the current pose information of the  XR session
-         * @param xrSessionManager the session containing pose information
-         */
-        update(): void;
         private _updateReferenceSpace;
         private _updateReferenceSpaceOffset;
         private _updateFromXRSession;
@@ -42692,102 +42689,139 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Represents an XR input
+     * X-Y values for axes in WebXR
      */
-    export class WebXRController {
-        private scene;
-        /** The underlying input source for the controller  */
-        inputSource: XRInputSource;
-        private parentContainer;
+    export interface IWebXRMotionControllerAxesValue {
         /**
-         * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if thats the case only the pointer from the head will be availible
+         * The value of the x axis
          */
-        grip?: AbstractMesh;
+        x: number;
         /**
-         * Pointer which can be used to select objects or attach a visible laser to
+         * The value of the y-axis
          */
-        pointer: AbstractMesh;
-        private _gamepadMode;
-        /**
-         * If available, this is the gamepad object related to this controller.
-         * Using this object it is possible to get click events and trackpad changes of the
-         * webxr controller that is currently being used.
-         */
-        gamepadController?: WebVRController;
-        /**
-         * Event that fires when the controller is removed/disposed
-         */
-        onDisposeObservable: Observable<{}>;
-        private _tmpQuaternion;
-        private _tmpVector;
-        /**
-         * Creates the controller
-         * @see https://doc.babylonjs.com/how_to/webxr
-         * @param scene the scene which the controller should be associated to
-         * @param inputSource the underlying input source for the controller
-         * @param parentContainer parent that the controller meshes should be children of
-         */
-        constructor(scene: Scene, 
-        /** The underlying input source for the controller  */
-        inputSource: XRInputSource, parentContainer?: Nullable<AbstractMesh>);
-        /**
-         * Updates the controller pose based on the given XRFrame
-         * @param xrFrame xr frame to update the pose with
-         * @param referenceSpace reference space to use
-         */
-        updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace): void;
-        /**
-         * Gets a world space ray coming from the controller
-         * @param result the resulting ray
-         */
-        getWorldPointerRayToRef(result: Ray): void;
-        /**
-         * Get the scene associated with this controller
-         * @returns the scene object
-         */
-        getScene(): Scene;
-        /**
-         * Disposes of the object
-         */
-        dispose(): void;
+        y: number;
     }
-}
-declare module BABYLON {
     /**
-     * XR input used to track XR inputs such as controllers/rays
+     * changed / previous values for the values of this component
      */
-    export class WebXRInput implements IDisposable {
+    export interface IWebXRMotionControllerComponentChangesValues<T> {
         /**
-         * Base experience the input listens to
+         * current (this frame) value
          */
-        baseExperience: WebXRExperienceHelper;
+        current: T;
         /**
-         * XR controllers being tracked
+         * previous (last change) value
          */
-        controllers: Array<WebXRController>;
-        private _frameObserver;
-        private _stateObserver;
+        previous: T;
+    }
+    /**
+     * Represents changes in the component between current frame and last values recorded
+     */
+    export interface IWebXRMotionControllerComponentChanges {
         /**
-         * Event when a controller has been connected/added
+         * will be populated with previous and current values if touched changed
          */
-        onControllerAddedObservable: Observable<WebXRController>;
+        touched?: IWebXRMotionControllerComponentChangesValues<boolean>;
         /**
-         * Event when a controller has been removed/disconnected
+         * will be populated with previous and current values if pressed changed
          */
-        onControllerRemovedObservable: Observable<WebXRController>;
+        pressed?: IWebXRMotionControllerComponentChangesValues<boolean>;
         /**
-         * Initializes the WebXRInput
-         * @param baseExperience experience helper which the input should be created for
+         * will be populated with previous and current values if value changed
+         */
+        value?: IWebXRMotionControllerComponentChangesValues<number>;
+        /**
+         * will be populated with previous and current values if axes changed
+         */
+        axes?: IWebXRMotionControllerComponentChangesValues<IWebXRMotionControllerAxesValue>;
+    }
+    /**
+     * This class represents a single component (for example button or thumbstick) of a motion controller
+     */
+    export class WebXRControllerComponent implements IDisposable {
+        /**
+         * the id of this component
+         */
+        id: string;
+        /**
+         * the type of the component
+         */
+        type: MotionControllerComponentType;
+        private _buttonIndex;
+        private _axesIndices;
+        /**
+         * Observers registered here will be triggered when the state of a button changes
+         * State change is either pressed / touched / value
+         */
+        onButtonStateChanged: Observable<WebXRControllerComponent>;
+        /**
+         * If axes are available for this component (like a touchpad or thumbstick) the observers will be notified when
+         * the axes data changes
+         */
+        onAxisValueChanged: Observable<{
+            x: number;
+            y: number;
+        }>;
+        private _currentValue;
+        private _touched;
+        private _pressed;
+        private _axes;
+        private _changes;
+        /**
+         * Creates a new component for a motion controller.
+         * It is created by the motion controller itself
+         *
+         * @param id the id of this component
+         * @param type the type of the component
+         * @param _buttonIndex index in the buttons array of the gamepad
+         * @param _axesIndices indices of the values in the axes array of the gamepad
          */
         constructor(
         /**
-         * Base experience the input listens to
+         * the id of this component
          */
-        baseExperience: WebXRExperienceHelper);
-        private _onInputSourcesChange;
-        private _addAndRemoveControllers;
+        id: string, 
         /**
-         * Disposes of the object
+         * the type of the component
+         */
+        type: MotionControllerComponentType, _buttonIndex?: number, _axesIndices?: number[]);
+        /**
+         * Get the current value of this component
+         */
+        get value(): number;
+        /**
+         * is the button currently pressed
+         */
+        get pressed(): boolean;
+        /**
+         * is the button currently touched
+         */
+        get touched(): boolean;
+        /**
+         * The current axes data. If this component has no axes it will still return an object { x: 0, y: 0 }
+         */
+        get axes(): IWebXRMotionControllerAxesValue;
+        /**
+         * Get the changes. Elements will be populated only if they changed with their previous and current value
+         */
+        get changes(): IWebXRMotionControllerComponentChanges;
+        /**
+         * Is this component a button (hence - pressable)
+         * @returns true if can be pressed
+         */
+        isButton(): boolean;
+        /**
+         * Are there axes correlating to this component
+         * @return true is axes data is available
+         */
+        isAxes(): boolean;
+        /**
+         * update this component using the gamepad object it is in. Called on every frame
+         * @param nativeController the native gamepad controller object
+         */
+        update(nativeController: IMinimalMotionControllerObject): void;
+        /**
+         * Dispose this component
          */
         dispose(): void;
     }
@@ -43204,385 +43238,510 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Generic Controller
+     * Handness type in xrInput profiles. These can be used to define layouts in the Layout Map.
      */
-    export class GenericController extends WebVRController {
-        /**
-         * Base Url for the controller model.
-         */
-        static readonly MODEL_BASE_URL: string;
-        /**
-         * File name for the controller model.
-         */
-        static readonly MODEL_FILENAME: string;
-        /**
-         * Creates a new GenericController from a gamepad
-         * @param vrGamepad the gamepad that the controller should be created from
-         */
-        constructor(vrGamepad: any);
-        /**
-         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
-         * @param scene scene in which to add meshes
-         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
-         */
-        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
-        /**
-         * Called once for each button that changed state since the last frame
-         * @param buttonIdx Which button index changed
-         * @param state New state of the button
-         * @param changes Which properties on the state changed since last frame
-         */
-        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
-    }
-}
-declare module BABYLON {
+    export type MotionControllerHandness = "none" | "left" | "right" | "left-right" | "left-right-none";
     /**
-     * Defines the WindowsMotionController object that the state of the windows motion controller
+     * The type of components available in motion controllers.
+     * This is not the name of the component.
      */
-    export class WindowsMotionController extends WebVRController {
+    export type MotionControllerComponentType = "trigger" | "squeeze" | "touchpad" | "thumbstick" | "button";
+    /**
+     * The schema of motion controller layout.
+     * No object will be initialized using this interface
+     * This is used just to define the profile.
+     */
+    export interface IMotionControllerLayout {
         /**
-         * The base url used to load the left and right controller models
+         * Defines the main button component id
          */
-        static MODEL_BASE_URL: string;
+        selectComponentId: string;
         /**
-         * The name of the left controller model file
+         * Available components (unsorted)
          */
-        static MODEL_LEFT_FILENAME: string;
-        /**
-         * The name of the right controller model file
-         */
-        static MODEL_RIGHT_FILENAME: string;
-        /**
-         * The controller name prefix for this controller type
-         */
-        static readonly GAMEPAD_ID_PREFIX: string;
-        /**
-         * The controller id pattern for this controller type
-         */
-        private static readonly GAMEPAD_ID_PATTERN;
-        private _loadedMeshInfo;
-        protected readonly _mapping: {
-            buttons: string[];
-            buttonMeshNames: {
-                'trigger': string;
-                'menu': string;
-                'grip': string;
-                'thumbstick': string;
-                'trackpad': string;
+        components: {
+            /**
+             * A map of component Ids
+             */
+            [componentId: string]: {
+                /**
+                 * The type of input the component outputs
+                 */
+                type: MotionControllerComponentType;
             };
-            buttonObservableNames: {
-                'trigger': string;
-                'menu': string;
-                'grip': string;
-                'thumbstick': string;
-                'trackpad': string;
-            };
-            axisMeshNames: string[];
-            pointingPoseMeshName: string;
         };
         /**
-         * Fired when the trackpad on this controller is clicked
+         * An optional gamepad object. If no gamepad object is not defined, no models will be loaded
          */
-        onTrackpadChangedObservable: Observable<ExtendedGamepadButton>;
+        gamepad?: {
+            /**
+             * Is the mapping based on the xr-standard defined here:
+             * https://www.w3.org/TR/webxr-gamepads-module-1/#xr-standard-gamepad-mapping
+             */
+            mapping: "" | "xr-standard";
+            /**
+             * The buttons available in this input in the right order
+             * index of this button will be the index in the gamepadObject.buttons array
+             * correlates to the componentId in components
+             */
+            buttons: Array<string | null>;
+            /**
+             * Definition of the axes of the gamepad input, sorted
+             * Correlates to componentIds in the components map
+             */
+            axes: Array<{
+                /**
+                 * The component id that the axis correlates to
+                 */
+                componentId: string;
+                /**
+                 * X or Y Axis
+                 */
+                axis: "x-axis" | "y-axis";
+            } | null>;
+        };
+    }
+    /**
+     * A definition for the layout map in the input profile
+     */
+    export interface IMotionControllerLayoutMap {
         /**
-         * Fired when the trackpad on this controller is modified
+         * Layouts with handness type as a key
          */
-        onTrackpadValuesChangedObservable: Observable<StickValues>;
+        [handness: string]: IMotionControllerLayout;
+    }
+    /**
+     * The XR Input profile schema
+     * Profiles can be found here:
+     * https://github.com/immersive-web/webxr-input-profiles/tree/master/packages/registry/profiles
+     */
+    export interface IMotionControllerProfile {
         /**
-         * The current x and y values of this controller's trackpad
+         * The id of this profile
+         * correlates to the profile(s) in the xrInput.profiles array
          */
-        trackpad: StickValues;
+        profileId: string;
         /**
-         * Creates a new WindowsMotionController from a gamepad
-         * @param vrGamepad the gamepad that the controller should be created from
+         * fallback profiles for this profileId
          */
-        constructor(vrGamepad: any);
+        fallbackProfileIds: string[];
         /**
-         * Fired when the trigger on this controller is modified
+         * The layout map, with handness as key
          */
-        get onTriggerButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        layouts: IMotionControllerLayoutMap;
+    }
+    /**
+     * A helper-interface for the 3 meshes needed for controller button animation
+     * The meshes are provided to the _lerpButtonTransform function to calculate the current position of the value mesh
+     */
+    export interface IMotionControllerButtonMeshMap {
         /**
-         * Fired when the menu button on this controller is modified
+         * The mesh that will be changed when value changes
          */
-        get onMenuButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        valueMesh: AbstractMesh;
         /**
-         * Fired when the grip button on this controller is modified
+         * the mesh that defines the pressed value mesh position.
+         * This is used to find the max-position of this button
          */
-        get onGripButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        pressedMesh: AbstractMesh;
         /**
-         * Fired when the thumbstick button on this controller is modified
+         * the mesh that defines the unpressed value mesh position.
+         * This is used to find the min (or initial) position of this button
          */
-        get onThumbstickButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        unpressedMesh: AbstractMesh;
+    }
+    /**
+     * A helper-interface for the 3 meshes needed for controller axis animation.
+     * This will be expanded when touchpad animations are fully supported
+     * The meshes are provided to the _lerpAxisTransform function to calculate the current position of the value mesh
+     */
+    export interface IMotionControllerAxisMeshMap {
         /**
-         * Fired when the touchpad button on this controller is modified
+         * The mesh that will be changed when axis value changes
          */
-        get onTouchpadButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        valueMesh: AbstractMesh;
         /**
-         * Fired when the touchpad values on this controller are modified
+         * the mesh that defines the minimum value mesh position.
          */
-        get onTouchpadValuesChangedObservable(): Observable<StickValues>;
-        protected _updateTrackpad(): void;
+        minMesh: AbstractMesh;
         /**
-         * Called once per frame by the engine.
+         * the mesh that defines the maximum value mesh position.
          */
-        update(): void;
+        maxMesh: AbstractMesh;
+    }
+    /**
+     * The elements needed for change-detection of the gamepad objects in motion controllers
+     */
+    export interface IMinimalMotionControllerObject {
         /**
-         * Called once for each button that changed state since the last frame
-         * @param buttonIdx Which button index changed
-         * @param state New state of the button
-         * @param changes Which properties on the state changed since last frame
+         * An array of available buttons
          */
-        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+        buttons: Array<{
+            /**
+            * Value of the button/trigger
+            */
+            value: number;
+            /**
+             * If the button/trigger is currently touched
+             */
+            touched: boolean;
+            /**
+             * If the button/trigger is currently pressed
+             */
+            pressed: boolean;
+        }>;
         /**
-         * Moves the buttons on the controller mesh based on their current state
-         * @param buttonName the name of the button to move
-         * @param buttonValue the value of the button which determines the buttons new position
+         * Available axes of this controller
          */
-        protected _lerpButtonTransform(buttonName: string, buttonValue: number): void;
+        axes: number[];
+    }
+    /**
+     * An Abstract Motion controller
+     * This class receives an xrInput and a profile layout and uses those to initialize the components
+     * Each component has an observable to check for changes in value and state
+     */
+    export abstract class WebXRAbstractMotionController implements IDisposable {
+        protected scene: Scene;
+        protected layout: IMotionControllerLayout;
+        /**
+         * The gamepad object correlating to this controller
+         */
+        gamepadObject: IMinimalMotionControllerObject;
+        /**
+         * handness (left/right/none) of this controller
+         */
+        handness: MotionControllerHandness;
+        /**
+         * Component type map
+         */
+        static ComponentType: {
+            TRIGGER: string;
+            SQUEEZE: string;
+            TOUCHPAD: string;
+            THUMBSTICK: string;
+            BUTTON: string;
+        };
+        /**
+         * The profile id of this motion controller
+         */
+        abstract profileId: string;
+        /**
+         * A map of components (WebXRControllerComponent) in this motion controller
+         * Components have a ComponentType and can also have both button and axis definitions
+         */
+        readonly components: {
+            [id: string]: WebXRControllerComponent;
+        };
+        /**
+         * Observers registered here will be triggered when the model of this controller is done loading
+         */
+        onModelLoadedObservable: Observable<WebXRAbstractMotionController>;
+        /**
+         * The root mesh of the model. It is null if the model was not yet initialized
+         */
+        rootMesh: Nullable<AbstractMesh>;
+        private _modelReady;
+        /**
+         * constructs a new abstract motion controller
+         * @param scene the scene to which the model of the controller will be added
+         * @param layout The profile layout to load
+         * @param gamepadObject The gamepad object correlating to this controller
+         * @param handness handness (left/right/none) of this controller
+         * @param _doNotLoadControllerMesh set this flag to ignore the mesh loading
+         */
+        constructor(scene: Scene, layout: IMotionControllerLayout, 
+        /**
+         * The gamepad object correlating to this controller
+         */
+        gamepadObject: IMinimalMotionControllerObject, 
+        /**
+         * handness (left/right/none) of this controller
+         */
+        handness: MotionControllerHandness, _doNotLoadControllerMesh?: boolean);
+        private _initComponent;
+        /**
+         * Update this model using the current XRFrame
+         * @param xrFrame the current xr frame to use and update the model
+         */
+        updateFromXRFrame(xrFrame: XRFrame): void;
+        /**
+         * Get the list of components available in this motion controller
+         * @returns an array of strings correlating to available components
+         */
+        getComponentTypes(): string[];
+        /**
+         * Get the main (Select) component of this controller as defined in the layout
+         * @returns the main component of this controller
+         */
+        getMainComponent(): WebXRControllerComponent;
+        /**
+         * get a component based an its component id as defined in layout.components
+         * @param id the id of the component
+         * @returns the component correlates to the id or undefined if not found
+         */
+        getComponent(id: string): WebXRControllerComponent;
+        /**
+         * Loads the model correlating to this controller
+         * When the mesh is loaded, the onModelLoadedObservable will be triggered
+         * @returns A promise fulfilled with the result of the model loading
+         */
+        loadModel(): Promise<boolean>;
+        /**
+         * Update the model itself with the current frame data
+         * @param xrFrame the frame to use for updating the model mesh
+         */
+        protected updateModel(xrFrame: XRFrame): void;
         /**
          * Moves the axis on the controller mesh based on its current state
          * @param axis the index of the axis
          * @param axisValue the value of the axis which determines the meshes new position
          * @hidden
          */
-        protected _lerpAxisTransform(axis: number, axisValue: number): void;
+        protected _lerpAxisTransform(axisMap: IMotionControllerAxisMeshMap, axisValue: number): void;
         /**
-         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
-         * @param scene scene in which to add meshes
-         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         * Moves the buttons on the controller mesh based on their current state
+         * @param buttonName the name of the button to move
+         * @param buttonValue the value of the button which determines the buttons new position
          */
-        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void, forceDefault?: boolean): void;
+        protected _lerpButtonTransform(buttonMap: IMotionControllerButtonMeshMap, buttonValue: number): void;
+        private _getGenericFilenameAndPath;
+        private _getGenericParentMesh;
         /**
-         * Takes a list of meshes (as loaded from the glTF file) and finds the root node, as well as nodes that
-         * can be transformed by button presses and axes values, based on this._mapping.
-         *
-         * @param scene scene in which the meshes exist
-         * @param meshes list of meshes that make up the controller model to process
-         * @return structured view of the given meshes, with mapping of buttons and axes to meshes that can be transformed.
+         * Get the filename and path for this controller's model
+         * @returns a map of filename and path
          */
-        private processModel;
-        private createMeshInfo;
-        /**
-         * Gets the ray of the controller in the direction the controller is pointing
-         * @param length the length the resulting ray should be
-         * @returns a ray in the direction the controller is pointing
-         */
-        getForwardRay(length?: number): Ray;
-        /**
-        * Disposes of the controller
-        */
-        dispose(): void;
-    }
-    /**
-     * This class represents a new windows motion controller in XR.
-     */
-    export class XRWindowsMotionController extends WindowsMotionController {
-        /**
-         * Changing the original WIndowsMotionController mapping to fir the new mapping
-         */
-        protected readonly _mapping: {
-            buttons: string[];
-            buttonMeshNames: {
-                'trigger': string;
-                'menu': string;
-                'grip': string;
-                'thumbstick': string;
-                'trackpad': string;
-            };
-            buttonObservableNames: {
-                'trigger': string;
-                'menu': string;
-                'grip': string;
-                'thumbstick': string;
-                'trackpad': string;
-            };
-            axisMeshNames: string[];
-            pointingPoseMeshName: string;
+        protected abstract _getFilenameAndPath(): {
+            filename: string;
+            path: string;
         };
         /**
-         * Construct a new XR-Based windows motion controller
-         *
-         * @param gamepadInfo the gamepad object from the browser
+         * This function will be called after the model was successfully loaded and can be used
+         * for mesh transformations before it is available for the user
+         * @param meshes the loaded meshes
          */
-        constructor(gamepadInfo: any);
+        protected abstract _processLoadedModel(meshes: AbstractMesh[]): void;
         /**
-         * holds the thumbstick values (X,Y)
+         * Set the root mesh for this controller. Important for the WebXR controller class
+         * @param meshes the loaded meshes
          */
-        thumbstickValues: StickValues;
+        protected abstract _setRootMesh(meshes: AbstractMesh[]): void;
         /**
-         * Fired when the thumbstick on this controller is clicked
+         * A function executed each frame that updates the mesh (if needed)
+         * @param xrFrame the current xrFrame
          */
-        onThumbstickStateChangedObservable: Observable<ExtendedGamepadButton>;
+        protected abstract _updateModel(xrFrame: XRFrame): void;
         /**
-         * Fired when the thumbstick on this controller is modified
+         * This function is called before the mesh is loaded. It checks for loading constraints.
+         * For example, this function can check if the GLB loader is available
+         * If this function returns false, the generic controller will be loaded instead
+         * @returns Is the client ready to load the mesh
          */
-        onThumbstickValuesChangedObservable: Observable<StickValues>;
+        protected abstract _getModelLoadingConstraints(): boolean;
         /**
-         * Fired when the touchpad button on this controller is modified
-         */
-        onTrackpadChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the touchpad values on this controller are modified
-         */
-        onTrackpadValuesChangedObservable: Observable<StickValues>;
-        /**
-         * Fired when the thumbstick button on this controller is modified
-         * here to prevent breaking changes
-         */
-        get onThumbstickButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
-        /**
-         * updating the thumbstick(!) and not the trackpad.
-         * This is named this way due to the difference between WebVR and XR and to avoid
-         * changing the parent class.
-         */
-        protected _updateTrackpad(): void;
-        /**
-         * Disposes the class with joy
+         * Dispose this controller, the model mesh and all its components
          */
         dispose(): void;
     }
 }
 declare module BABYLON {
     /**
-     * Oculus Touch Controller
+     * A generic trigger-only motion controller for WebXR
      */
-    export class OculusTouchController extends WebVRController {
+    export class WebXRGenericTriggerMotionController extends WebXRAbstractMotionController {
         /**
-         * Base Url for the controller model.
+         * Static version of the profile id of this controller
          */
-        static MODEL_BASE_URL: string;
-        /**
-         * File name for the left controller model.
-         */
-        static MODEL_LEFT_FILENAME: string;
-        /**
-         * File name for the right controller model.
-         */
-        static MODEL_RIGHT_FILENAME: string;
-        /**
-         * Base Url for the Quest controller model.
-         */
-        static QUEST_MODEL_BASE_URL: string;
-        /**
-         * @hidden
-         * If the controllers are running on a device that needs the updated Quest controller models
-         */
-        static _IsQuest: boolean;
-        /**
-         * Fired when the secondary trigger on this controller is modified
-         */
-        onSecondaryTriggerStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the thumb rest on this controller is modified
-         */
-        onThumbRestChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Creates a new OculusTouchController from a gamepad
-         * @param vrGamepad the gamepad that the controller should be created from
-         */
-        constructor(vrGamepad: any);
-        /**
-         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
-         * @param scene scene in which to add meshes
-         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
-         */
-        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
-        /**
-         * Fired when the A button on this controller is modified
-         */
-        get onAButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the B button on this controller is modified
-         */
-        get onBButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the X button on this controller is modified
-         */
-        get onXButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the Y button on this controller is modified
-         */
-        get onYButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
-        /**
-          * Called once for each button that changed state since the last frame
-          * 0) thumb stick (touch, press, value = pressed (0,1)). value is in this.leftStick
-          * 1) index trigger (touch (?), press (only when value > 0.1), value 0 to 1)
-          * 2) secondary trigger (same)
-          * 3) A (right) X (left), touch, pressed = value
-          * 4) B / Y
-          * 5) thumb rest
-          * @param buttonIdx Which button index changed
-          * @param state New state of the button
-          * @param changes Which properties on the state changed since last frame
-          */
-        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+        static ProfileId: string;
+        profileId: string;
+        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness);
+        protected _processLoadedModel(meshes: AbstractMesh[]): void;
+        protected _updateModel(): void;
+        protected _getFilenameAndPath(): {
+            filename: string;
+            path: string;
+        };
+        protected _setRootMesh(meshes: AbstractMesh[]): void;
+        protected _getModelLoadingConstraints(): boolean;
     }
 }
 declare module BABYLON {
     /**
-     * Vive Controller
+     * A construction function type to create a new controller based on an xrInput object
      */
-    export class ViveController extends WebVRController {
+    export type MotionControllerConstructor = (xrInput: XRInputSource, scene: Scene) => WebXRAbstractMotionController;
+    /**
+     * The MotionController Manager manages all registered motion controllers and loads the right one when needed.
+     *
+     * When this repository is complete: https://github.com/immersive-web/webxr-input-profiles/tree/master/packages/assets
+     * it should be replaced with auto-loaded controllers.
+     *
+     * When using a model try to stay as generic as possible. Eventually there will be no need in any of the controller classes
+     */
+    export class WebXRMotionControllerManager {
+        private static _AvailableControllers;
+        private static _Fallbacks;
         /**
-         * Base Url for the controller model.
+         * Register a new controller based on its profile. This function will be called by the controller classes themselves.
+         *
+         * If you are missing a profile, make sure it is imported in your source, otherwise it will not register.
+         *
+         * @param type the profile type to register
+         * @param constructFunction the function to be called when loading this profile
          */
-        static MODEL_BASE_URL: string;
+        static RegisterController(type: string, constructFunction: MotionControllerConstructor): void;
         /**
-         * File name for the controller model.
+         * When acquiring a new xrInput object (usually by the WebXRInput class), match it with the correct profile.
+         * The order of search:
+         *
+         * 1) Iterate the profiles array of the xr input and try finding a corresponding motion controller
+         * 2) (If not found) search in the gamepad id and try using it (legacy versions only)
+         * 3) search for registered fallbacks (should be redundant, nonetheless it makes sense to check)
+         * 4) return the generic trigger controller if none were found
+         *
+         * @param xrInput the xrInput to which a new controller is initialized
+         * @param scene the scene to which the model will be added
+         * @return the motion controller class for this profile id or the generic standard class if none was found
          */
-        static MODEL_FILENAME: string;
+        static GetMotionControllerWithXRInput(xrInput: XRInputSource, scene: Scene): WebXRAbstractMotionController;
         /**
-         * Creates a new ViveController from a gamepad
-         * @param vrGamepad the gamepad that the controller should be created from
+         * Find a fallback profile if the profile was not found. There are a few predefined generic profiles.
+         * @param profileId the profile to which a fallback needs to be found
+         * @return an array with corresponding fallback profiles
          */
-        constructor(vrGamepad: any);
+        static FindFallbackWithProfileId(profileId: string): string[];
         /**
-         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
-         * @param scene scene in which to add meshes
-         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         * Register a fallback to a specific profile.
+         * @param profileId the profileId that will receive the fallbacks
+         * @param fallbacks A list of fallback profiles
          */
-        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
+        static RegisterFallbacksForProfileId(profileId: string, fallbacks: string[]): void;
         /**
-         * Fired when the left button on this controller is modified
+         * Register the default fallbacks.
+         * This function is called automatically when this file is imported.
          */
-        get onLeftButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the right button on this controller is modified
-         */
-        get onRightButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the menu button on this controller is modified
-         */
-        get onMenuButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
-        /**
-         * Called once for each button that changed state since the last frame
-         * Vive mapping:
-         * 0: touchpad
-         * 1: trigger
-         * 2: left AND right buttons
-         * 3: menu button
-         * @param buttonIdx Which button index changed
-         * @param state New state of the button
-         * @param changes Which properties on the state changed since last frame
-         */
-        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+        static DefaultFallbacks(): void;
     }
 }
 declare module BABYLON {
     /**
-     * Loads a controller model and adds it as a child of the WebXRControllers grip when the controller is created
+     * Represents an XR input
      */
-    export class WebXRControllerModelLoader {
+    export class WebXRController {
+        private scene;
+        /** The underlying input source for the controller  */
+        inputSource: XRInputSource;
         /**
-         * an observable that triggers when a new model (the mesh itself) was initialized.
-         * To know when the mesh was loaded use the controller's own modelLoaded() method
+         * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if thats the case only the pointer from the head will be availible
          */
-        onControllerModelLoaded: Observable<WebXRController>;
+        grip?: AbstractMesh;
         /**
-         * Creates the WebXRControllerModelLoader
-         * @param input xr input that creates the controllers
+         * Pointer which can be used to select objects or attach a visible laser to
          */
-        constructor(input: WebXRInput);
+        pointer: AbstractMesh;
+        private _gamepadMode;
+        /**
+         * If available, this is the gamepad object related to this controller.
+         * Using this object it is possible to get click events and trackpad changes of the
+         * webxr controller that is currently being used.
+         */
+        gamepadController?: WebXRAbstractMotionController;
+        /**
+         * Event that fires when the controller is removed/disposed
+         */
+        onDisposeObservable: Observable<{}>;
+        private _tmpQuaternion;
+        private _tmpVector;
+        /**
+         * Creates the controller
+         * @see https://doc.babylonjs.com/how_to/webxr
+         * @param scene the scene which the controller should be associated to
+         * @param inputSource the underlying input source for the controller
+         * @param parentContainer parent that the controller meshes should be children of
+         */
+        constructor(scene: Scene, 
+        /** The underlying input source for the controller  */
+        inputSource: XRInputSource);
+        /**
+         * Updates the controller pose based on the given XRFrame
+         * @param xrFrame xr frame to update the pose with
+         * @param referenceSpace reference space to use
+         */
+        updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace): void;
+        /**
+         * Gets a world space ray coming from the controller
+         * @param result the resulting ray
+         */
+        getWorldPointerRayToRef(result: Ray): void;
+        /**
+         * Get the scene associated with this controller
+         * @returns the scene object
+         */
+        getScene(): Scene;
+        /**
+         * Disposes of the object
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * The schema for initialization options of the XR Input class
+     */
+    export interface IWebXRInputOptions {
+        /**
+         * If set to true no model will be automatically loaded
+         */
+        doNotLoadControllerMeshes?: boolean;
+    }
+    /**
+     * XR input used to track XR inputs such as controllers/rays
+     */
+    export class WebXRInput implements IDisposable {
+        /**
+         * the xr session manager for this session
+         */
+        xrSessionManager: WebXRSessionManager;
+        /**
+         * the WebXR camera for this session. Mainly used for teleportation
+         */
+        xrCamera: WebXRCamera;
+        private readonly options;
+        /**
+         * XR controllers being tracked
+         */
+        controllers: Array<WebXRController>;
+        private _frameObserver;
+        private _sessionEndedObserver;
+        private _sessionInitObserver;
+        /**
+         * Event when a controller has been connected/added
+         */
+        onControllerAddedObservable: Observable<WebXRController>;
+        /**
+         * Event when a controller has been removed/disconnected
+         */
+        onControllerRemovedObservable: Observable<WebXRController>;
+        /**
+         * Initializes the WebXRInput
+         * @param xrSessionManager the xr session manager for this session
+         * @param xrCamera the WebXR camera for this session. Mainly used for teleportation
+         * @param options = initialization options for this xr input
+         */
+        constructor(
+        /**
+         * the xr session manager for this session
+         */
+        xrSessionManager: WebXRSessionManager, 
+        /**
+         * the WebXR camera for this session. Mainly used for teleportation
+         */
+        xrCamera: WebXRCamera, options?: IWebXRInputOptions);
+        private _onInputSourcesChange;
+        private _addAndRemoveControllers;
+        /**
+         * Disposes of the object
+         */
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -43725,7 +43884,7 @@ declare module BABYLON {
         /**
          * Floor meshes that should be used for teleporting
          */
-        floorMeshes: Array<AbstractMesh>;
+        floorMeshes?: Array<AbstractMesh>;
         /**
          * Enable or disable default UI to enter XR
          */
@@ -43738,6 +43897,10 @@ declare module BABYLON {
          * optional UI options. This can be used among other to change session mode and reference space type
          */
         uiOptions?: WebXREnterExitUIOptions;
+        /**
+         * Disable the controller mesh-loading. Can be used if you want to load your own meshes
+         */
+        inputOptions?: IWebXRInputOptions;
     }
     /**
      * Default experience which provides a similar setup to the previous webVRExperience
@@ -43751,10 +43914,6 @@ declare module BABYLON {
          * Input experience extension
          */
         input: WebXRInput;
-        /**
-         * Loads the controller models
-         */
-        controllerModelLoader: WebXRControllerModelLoader;
         /**
          * Enables laser pointer and selection
          */
@@ -43777,7 +43936,7 @@ declare module BABYLON {
          * @param options options for basic configuration
          * @returns resulting WebXRDefaultExperience
          */
-        static CreateAsync(scene: Scene, options: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
+        static CreateAsync(scene: Scene, options?: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
         private constructor();
         /**
          * DIsposes of the experience helper
@@ -44620,6 +44779,161 @@ declare module BABYLON {
          * Dispose this feature and all of the resources attached
          */
         dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * The motion controller class for all microsoft mixed reality controllers
+     */
+    export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionController {
+        /**
+         * The base url used to load the left and right controller models
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * The name of the left controller model file
+         */
+        static MODEL_LEFT_FILENAME: string;
+        /**
+         * The name of the right controller model file
+         */
+        static MODEL_RIGHT_FILENAME: string;
+        profileId: string;
+        protected readonly _mapping: {
+            defaultButton: {
+                "valueNodeName": string;
+                "unpressedNodeName": string;
+                "pressedNodeName": string;
+            };
+            defaultAxis: {
+                "valueNodeName": string;
+                "minNodeName": string;
+                "maxNodeName": string;
+            };
+            buttons: {
+                "xr-standard-trigger": {
+                    "rootNodeName": string;
+                    "componentProperty": string;
+                    "states": string[];
+                };
+                "xr-standard-squeeze": {
+                    "rootNodeName": string;
+                    "componentProperty": string;
+                    "states": string[];
+                };
+                "xr-standard-touchpad": {
+                    "rootNodeName": string;
+                    "labelAnchorNodeName": string;
+                    "touchPointNodeName": string;
+                };
+                "xr-standard-thumbstick": {
+                    "rootNodeName": string;
+                    "componentProperty": string;
+                    "states": string[];
+                };
+                "menu": {
+                    "rootNodeName": string;
+                    "componentProperty": string;
+                    "states": string[];
+                };
+            };
+            axes: {
+                "xr-standard-touchpad": {
+                    "x-axis": {
+                        "rootNodeName": string;
+                    };
+                    "y-axis": {
+                        "rootNodeName": string;
+                    };
+                };
+                "xr-standard-thumbstick": {
+                    "x-axis": {
+                        "rootNodeName": string;
+                    };
+                    "y-axis": {
+                        "rootNodeName": string;
+                    };
+                };
+            };
+        };
+        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness);
+        protected _processLoadedModel(_meshes: AbstractMesh[]): void;
+        private _getChildByName;
+        private _getImmediateChildByName;
+        protected _getFilenameAndPath(): {
+            filename: string;
+            path: string;
+        };
+        protected _updateModel(): void;
+        protected _getModelLoadingConstraints(): boolean;
+        protected _setRootMesh(meshes: AbstractMesh[]): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * The motion controller class for oculus touch (quest, rift).
+     * This class supports legacy mapping as well the standard xr mapping
+     */
+    export class WebXROculusTouchMotionController extends WebXRAbstractMotionController {
+        private _forceLegacyControllers;
+        /**
+         * The base url used to load the left and right controller models
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * The name of the left controller model file
+         */
+        static MODEL_LEFT_FILENAME: string;
+        /**
+         * The name of the right controller model file
+         */
+        static MODEL_RIGHT_FILENAME: string;
+        /**
+         * Base Url for the Quest controller model.
+         */
+        static QUEST_MODEL_BASE_URL: string;
+        profileId: string;
+        private _modelRootNode;
+        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness, legacyMapping?: boolean, _forceLegacyControllers?: boolean);
+        protected _processLoadedModel(_meshes: AbstractMesh[]): void;
+        protected _getFilenameAndPath(): {
+            filename: string;
+            path: string;
+        };
+        /**
+         * Is this the new type of oculus touch. At the moment both have the same profile and it is impossible to differentiate
+         * between the touch and touch 2.
+         */
+        private _isQuest;
+        protected _updateModel(): void;
+        protected _getModelLoadingConstraints(): boolean;
+        protected _setRootMesh(meshes: AbstractMesh[]): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * The motion controller class for the standard HTC-Vive controllers
+     */
+    export class WebXRHTCViveMotionController extends WebXRAbstractMotionController {
+        /**
+         * The base url used to load the left and right controller models
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * File name for the controller model.
+         */
+        static MODEL_FILENAME: string;
+        profileId: string;
+        private _modelRootNode;
+        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness, legacyMapping?: boolean);
+        protected _processLoadedModel(_meshes: AbstractMesh[]): void;
+        protected _getFilenameAndPath(): {
+            filename: string;
+            path: string;
+        };
+        protected _updateModel(): void;
+        protected _getModelLoadingConstraints(): boolean;
+        protected _setRootMesh(meshes: AbstractMesh[]): void;
     }
 }
 declare module BABYLON {
@@ -47260,6 +47574,372 @@ declare module BABYLON {
          * @param changes Which properties on the state changed since last frame
          */
         protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Generic Controller
+     */
+    export class GenericController extends WebVRController {
+        /**
+         * Base Url for the controller model.
+         */
+        static readonly MODEL_BASE_URL: string;
+        /**
+         * File name for the controller model.
+         */
+        static readonly MODEL_FILENAME: string;
+        /**
+         * Creates a new GenericController from a gamepad
+         * @param vrGamepad the gamepad that the controller should be created from
+         */
+        constructor(vrGamepad: any);
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
+        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
+        /**
+         * Called once for each button that changed state since the last frame
+         * @param buttonIdx Which button index changed
+         * @param state New state of the button
+         * @param changes Which properties on the state changed since last frame
+         */
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Oculus Touch Controller
+     */
+    export class OculusTouchController extends WebVRController {
+        /**
+         * Base Url for the controller model.
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * File name for the left controller model.
+         */
+        static MODEL_LEFT_FILENAME: string;
+        /**
+         * File name for the right controller model.
+         */
+        static MODEL_RIGHT_FILENAME: string;
+        /**
+         * Base Url for the Quest controller model.
+         */
+        static QUEST_MODEL_BASE_URL: string;
+        /**
+         * @hidden
+         * If the controllers are running on a device that needs the updated Quest controller models
+         */
+        static _IsQuest: boolean;
+        /**
+         * Fired when the secondary trigger on this controller is modified
+         */
+        onSecondaryTriggerStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the thumb rest on this controller is modified
+         */
+        onThumbRestChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Creates a new OculusTouchController from a gamepad
+         * @param vrGamepad the gamepad that the controller should be created from
+         */
+        constructor(vrGamepad: any);
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
+        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
+        /**
+         * Fired when the A button on this controller is modified
+         */
+        get onAButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the B button on this controller is modified
+         */
+        get onBButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the X button on this controller is modified
+         */
+        get onXButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the Y button on this controller is modified
+         */
+        get onYButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+          * Called once for each button that changed state since the last frame
+          * 0) thumb stick (touch, press, value = pressed (0,1)). value is in this.leftStick
+          * 1) index trigger (touch (?), press (only when value > 0.1), value 0 to 1)
+          * 2) secondary trigger (same)
+          * 3) A (right) X (left), touch, pressed = value
+          * 4) B / Y
+          * 5) thumb rest
+          * @param buttonIdx Which button index changed
+          * @param state New state of the button
+          * @param changes Which properties on the state changed since last frame
+          */
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Vive Controller
+     */
+    export class ViveController extends WebVRController {
+        /**
+         * Base Url for the controller model.
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * File name for the controller model.
+         */
+        static MODEL_FILENAME: string;
+        /**
+         * Creates a new ViveController from a gamepad
+         * @param vrGamepad the gamepad that the controller should be created from
+         */
+        constructor(vrGamepad: any);
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
+        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
+        /**
+         * Fired when the left button on this controller is modified
+         */
+        get onLeftButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the right button on this controller is modified
+         */
+        get onRightButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the menu button on this controller is modified
+         */
+        get onMenuButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Called once for each button that changed state since the last frame
+         * Vive mapping:
+         * 0: touchpad
+         * 1: trigger
+         * 2: left AND right buttons
+         * 3: menu button
+         * @param buttonIdx Which button index changed
+         * @param state New state of the button
+         * @param changes Which properties on the state changed since last frame
+         */
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines the WindowsMotionController object that the state of the windows motion controller
+     */
+    export class WindowsMotionController extends WebVRController {
+        /**
+         * The base url used to load the left and right controller models
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * The name of the left controller model file
+         */
+        static MODEL_LEFT_FILENAME: string;
+        /**
+         * The name of the right controller model file
+         */
+        static MODEL_RIGHT_FILENAME: string;
+        /**
+         * The controller name prefix for this controller type
+         */
+        static readonly GAMEPAD_ID_PREFIX: string;
+        /**
+         * The controller id pattern for this controller type
+         */
+        private static readonly GAMEPAD_ID_PATTERN;
+        private _loadedMeshInfo;
+        protected readonly _mapping: {
+            buttons: string[];
+            buttonMeshNames: {
+                'trigger': string;
+                'menu': string;
+                'grip': string;
+                'thumbstick': string;
+                'trackpad': string;
+            };
+            buttonObservableNames: {
+                'trigger': string;
+                'menu': string;
+                'grip': string;
+                'thumbstick': string;
+                'trackpad': string;
+            };
+            axisMeshNames: string[];
+            pointingPoseMeshName: string;
+        };
+        /**
+         * Fired when the trackpad on this controller is clicked
+         */
+        onTrackpadChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the trackpad on this controller is modified
+         */
+        onTrackpadValuesChangedObservable: Observable<StickValues>;
+        /**
+         * The current x and y values of this controller's trackpad
+         */
+        trackpad: StickValues;
+        /**
+         * Creates a new WindowsMotionController from a gamepad
+         * @param vrGamepad the gamepad that the controller should be created from
+         */
+        constructor(vrGamepad: any);
+        /**
+         * Fired when the trigger on this controller is modified
+         */
+        get onTriggerButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the menu button on this controller is modified
+         */
+        get onMenuButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the grip button on this controller is modified
+         */
+        get onGripButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the thumbstick button on this controller is modified
+         */
+        get onThumbstickButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the touchpad button on this controller is modified
+         */
+        get onTouchpadButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the touchpad values on this controller are modified
+         */
+        get onTouchpadValuesChangedObservable(): Observable<StickValues>;
+        protected _updateTrackpad(): void;
+        /**
+         * Called once per frame by the engine.
+         */
+        update(): void;
+        /**
+         * Called once for each button that changed state since the last frame
+         * @param buttonIdx Which button index changed
+         * @param state New state of the button
+         * @param changes Which properties on the state changed since last frame
+         */
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+        /**
+         * Moves the buttons on the controller mesh based on their current state
+         * @param buttonName the name of the button to move
+         * @param buttonValue the value of the button which determines the buttons new position
+         */
+        protected _lerpButtonTransform(buttonName: string, buttonValue: number): void;
+        /**
+         * Moves the axis on the controller mesh based on its current state
+         * @param axis the index of the axis
+         * @param axisValue the value of the axis which determines the meshes new position
+         * @hidden
+         */
+        protected _lerpAxisTransform(axis: number, axisValue: number): void;
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
+        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void, forceDefault?: boolean): void;
+        /**
+         * Takes a list of meshes (as loaded from the glTF file) and finds the root node, as well as nodes that
+         * can be transformed by button presses and axes values, based on this._mapping.
+         *
+         * @param scene scene in which the meshes exist
+         * @param meshes list of meshes that make up the controller model to process
+         * @return structured view of the given meshes, with mapping of buttons and axes to meshes that can be transformed.
+         */
+        private processModel;
+        private createMeshInfo;
+        /**
+         * Gets the ray of the controller in the direction the controller is pointing
+         * @param length the length the resulting ray should be
+         * @returns a ray in the direction the controller is pointing
+         */
+        getForwardRay(length?: number): Ray;
+        /**
+        * Disposes of the controller
+        */
+        dispose(): void;
+    }
+    /**
+     * This class represents a new windows motion controller in XR.
+     */
+    export class XRWindowsMotionController extends WindowsMotionController {
+        /**
+         * Changing the original WIndowsMotionController mapping to fir the new mapping
+         */
+        protected readonly _mapping: {
+            buttons: string[];
+            buttonMeshNames: {
+                'trigger': string;
+                'menu': string;
+                'grip': string;
+                'thumbstick': string;
+                'trackpad': string;
+            };
+            buttonObservableNames: {
+                'trigger': string;
+                'menu': string;
+                'grip': string;
+                'thumbstick': string;
+                'trackpad': string;
+            };
+            axisMeshNames: string[];
+            pointingPoseMeshName: string;
+        };
+        /**
+         * Construct a new XR-Based windows motion controller
+         *
+         * @param gamepadInfo the gamepad object from the browser
+         */
+        constructor(gamepadInfo: any);
+        /**
+         * holds the thumbstick values (X,Y)
+         */
+        thumbstickValues: StickValues;
+        /**
+         * Fired when the thumbstick on this controller is clicked
+         */
+        onThumbstickStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the thumbstick on this controller is modified
+         */
+        onThumbstickValuesChangedObservable: Observable<StickValues>;
+        /**
+         * Fired when the touchpad button on this controller is modified
+         */
+        onTrackpadChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the touchpad values on this controller are modified
+         */
+        onTrackpadValuesChangedObservable: Observable<StickValues>;
+        /**
+         * Fired when the thumbstick button on this controller is modified
+         * here to prevent breaking changes
+         */
+        get onThumbstickButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * updating the thumbstick(!) and not the trackpad.
+         * This is named this way due to the difference between WebVR and XR and to avoid
+         * changing the parent class.
+         */
+        protected _updateTrackpad(): void;
+        /**
+         * Disposes the class with joy
+         */
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -73622,6 +74302,10 @@ declare module BABYLON {
      */
     export class MTLFileLoader {
         /**
+         * Invert Y-Axis of referenced textures on load
+         */
+        static INVERT_TEXTURE_Y: boolean;
+        /**
          * All material loaded from the mtl will be set here
          */
         materials: StandardMaterial[];
@@ -73648,6 +74332,8 @@ declare module BABYLON {
          */
         private static _getTexture;
     }
+}
+declare module BABYLON {
     /**
      * Options for loading OBJ/MTL files
      */
@@ -73701,7 +74387,8 @@ declare module BABYLON {
         /**
          * Invert Y-Axis of referenced textures on load
          */
-        static INVERT_TEXTURE_Y: boolean;
+        static get INVERT_TEXTURE_Y(): boolean;
+        static set INVERT_TEXTURE_Y(value: boolean);
         /**
          * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
          */
@@ -74523,7 +75210,7 @@ declare module BABYLON.GLTF2.Exporter {
          */
         static UnregisterExtension(name: string): boolean;
         /**
-         * Lazy load a local engine with premultiplied alpha set to false
+         * Lazy load a local engine
          */
         _getLocalEngine(): Engine;
         private reorderIndicesBasedOnPrimitiveMode;
