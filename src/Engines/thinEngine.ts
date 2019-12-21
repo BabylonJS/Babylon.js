@@ -1290,29 +1290,35 @@ export class ThinEngine {
      * @param requiredWidth The width of the target to render to
      * @param requiredHeight The height of the target to render to
      * @param forceFullscreenViewport Forces the viewport to be the entire texture/screen if true
-     * @param depthStencilTexture The depth stencil texture to use to render
-     * @param lodLevel defines le lod level to bind to the frame buffer
+     * @param lodLevel defines the lod level to bind to the frame buffer
+     * @param layer defines the 2d array index to bind to frame buffer to
      */
-    public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, depthStencilTexture?: InternalTexture, lodLevel = 0): void {
+    public bindFramebuffer(texture: InternalTexture, faceIndex: number = 0, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel = 0, layer = 0): void {
         if (this._currentRenderTarget) {
             this.unBindFramebuffer(this._currentRenderTarget);
         }
         this._currentRenderTarget = texture;
         this._bindUnboundFramebuffer(texture._MSAAFramebuffer ? texture._MSAAFramebuffer : texture._framebuffer);
-        var gl = this._gl;
-        if (texture.isCube) {
-            if (faceIndex === undefined) {
-                faceIndex = 0;
-            }
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._webGLTexture, lodLevel);
 
-            if (depthStencilTexture) {
-                if (depthStencilTexture._generateStencilBuffer) {
-                    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._webGLTexture, lodLevel);
-                }
-                else {
-                    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._webGLTexture, lodLevel);
-                }
+        const gl = this._gl;
+        if (texture.is2DArray) {
+            gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, texture._webGLTexture, lodLevel, layer);
+        }
+        else if (texture.isCube) {
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._webGLTexture, lodLevel);
+        }
+
+        const depthStencilTexture = texture._depthStencilTexture;
+        if (depthStencilTexture) {
+            const attachment = (depthStencilTexture._generateStencilBuffer) ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT;
+            if (texture.is2DArray) {
+                gl.framebufferTextureLayer(gl.FRAMEBUFFER, attachment, depthStencilTexture._webGLTexture, lodLevel, layer);
+            }
+            else if (texture.isCube) {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._webGLTexture, lodLevel);
+            }
+            else {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_2D, depthStencilTexture._webGLTexture, lodLevel);
             }
         }
 
@@ -3144,13 +3150,17 @@ export class ThinEngine {
     }
 
     /** @hidden */
-    public _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | { width: number, height: number }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number): void {
-        var width = (<{ width: number, height: number }>size).width || <number>size;
-        var height = (<{ width: number, height: number }>size).height || <number>size;
+    public _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | { width: number, height: number, layers?: number }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number): void {
+        const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
+        const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
+        const layers = (<{ width: number, height: number, layers?: number }>size).layers || 0;
+
         internalTexture.baseWidth = width;
         internalTexture.baseHeight = height;
         internalTexture.width = width;
         internalTexture.height = height;
+        internalTexture.is2DArray = layers > 0;
+        internalTexture.depth = layers;
         internalTexture.isReady = true;
         internalTexture.samples = 1;
         internalTexture.generateMipMaps = false;
@@ -3160,9 +3170,9 @@ export class ThinEngine {
         internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
         internalTexture._comparisonFunction = comparisonFunction;
 
-        var gl = this._gl;
-        var target = internalTexture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
-        var samplingParameters = this._getSamplingParameters(internalTexture.samplingMode, false);
+        const gl = this._gl;
+        const target = this._getTextureTarget(internalTexture);
+        const samplingParameters = this._getSamplingParameters(internalTexture.samplingMode, false);
         gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, samplingParameters.mag);
         gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, samplingParameters.min);
         gl.texParameteri(target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -3299,10 +3309,9 @@ export class ThinEngine {
             return this._getDepthStencilBuffer(width, height, samples, gl.DEPTH_STENCIL, gl.DEPTH24_STENCIL8, gl.DEPTH_STENCIL_ATTACHMENT);
         }
         if (generateDepthBuffer) {
-            let anyGl = <any>gl;
             let depthFormat = gl.DEPTH_COMPONENT16;
             if (this._webGLVersion > 1) {
-                depthFormat = anyGl.DEPTH_COMPONENT32F;
+                depthFormat = gl.DEPTH_COMPONENT32F;
             }
 
             return this._getDepthStencilBuffer(width, height, samples, depthFormat, depthFormat, gl.DEPTH_ATTACHMENT);
@@ -3327,6 +3336,9 @@ export class ThinEngine {
         }
 
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, depthStencilBuffer);
+
+        gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+
         return depthStencilBuffer;
     }
 

@@ -208,7 +208,7 @@ export class RenderTargetTexture extends Texture {
      * Define the clear color of the Render Target if it should be different from the scene.
      */
     public clearColor: Color4;
-    protected _size: number | { width: number, height: number };
+    protected _size: number | { width: number, height: number, layers?: number };
     protected _initialSizeParameter: number | { width: number, height: number } | { ratio: number };
     protected _sizeRatio: Nullable<number>;
     /** @hidden */
@@ -270,7 +270,9 @@ export class RenderTargetTexture extends Texture {
      * depth texture.
      * Otherwise, return null.
      */
-    public depthStencilTexture: Nullable<InternalTexture>;
+    public get depthStencilTexture(): Nullable<InternalTexture> {
+        return this.getInternalTexture()?._depthStencilTexture || null;
+    }
 
     /**
      * Instantiate a render target texture. This is mainly used to render of screen the scene to for instance apply post processse
@@ -289,7 +291,7 @@ export class RenderTargetTexture extends Texture {
      * @param format The internal format of the buffer in the RTT (RED, RG, RGB, RGBA, ALPHA...)
      * @param delayAllocation if the texture allocation should be delayed (default: false)
      */
-    constructor(name: string, size: number | { width: number, height: number } | { ratio: number }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Constants.TEXTUREFORMAT_RGBA, delayAllocation = false) {
+    constructor(name: string, size: number | { width: number, height: number, layers?: number } | { ratio: number }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Constants.TEXTUREFORMAT_RGBA, delayAllocation = false) {
         super(null, scene, !generateMipMaps);
         scene = this.getScene();
 
@@ -352,18 +354,18 @@ export class RenderTargetTexture extends Texture {
      * @param generateStencil Specifies whether or not a stencil should be allocated in the texture
      */
     public createDepthStencilTexture(comparisonFunction: number = 0, bilinearFiltering: boolean = true, generateStencil: boolean = false): void {
-        if (!this.getScene()) {
+        const internalTexture = this.getInternalTexture();
+        if (!this.getScene() || !internalTexture) {
             return;
         }
 
         var engine = this.getScene()!.getEngine();
-        this.depthStencilTexture = engine.createDepthStencilTexture(this._size, {
+        internalTexture._depthStencilTexture = engine.createDepthStencilTexture(this._size, {
             bilinearFiltering,
             comparisonFunction,
             generateStencil,
             isCube: this.isCube
         });
-        engine.setFrameBufferDepthStencilTexture(this);
     }
 
     private _processSizeParameter(size: number | { width: number, height: number } | { ratio: number }): void {
@@ -374,7 +376,7 @@ export class RenderTargetTexture extends Texture {
                 height: this._bestReflectionRenderTargetDimension(this._engine.getRenderHeight(), this._sizeRatio)
             };
         } else {
-            this._size = <number | { width: number, height: number }>size;
+            this._size = <number | { width: number, height: number, layers?: number }>size;
         }
     }
 
@@ -525,6 +527,19 @@ export class RenderTargetTexture extends Texture {
         }
 
         return <number>this._size;
+    }
+
+    /**
+     * Gets the actual number of layers of the texture.
+     * @returns the number of layers
+     */
+    public getRenderLayers(): number {
+        const layers = (<{ width: number, height: number, layers?: number }>this._size).layers;
+        if (layers) {
+            return layers;
+        }
+
+        return 0;
     }
 
     /**
@@ -717,7 +732,14 @@ export class RenderTargetTexture extends Texture {
             }
         }
 
-        if (this.isCube) {
+        if (this.is2DArray) {
+            for (let layer = 0; layer < this.getRenderLayers(); layer++) {
+                this.renderToTarget(0, currentRenderList, useCameraPostProcess, dumpForDebug, layer);
+                scene.incrementRenderId();
+                scene.resetCachedMaterial();
+            }
+        }
+        else if (this.isCube) {
             for (var face = 0; face < 6; face++) {
                 this.renderToTarget(face, currentRenderList, useCameraPostProcess, dumpForDebug);
                 scene.incrementRenderId();
@@ -752,8 +774,9 @@ export class RenderTargetTexture extends Texture {
     /**
      * @hidden
      * @param faceIndex face index to bind to if this is a cubetexture
+     * @param layer defines the index of the texture to bind in the array
      */
-    public _bindFrameBuffer(faceIndex: number = 0) {
+    public _bindFrameBuffer(faceIndex: number = 0, layer = 0) {
         var scene = this.getScene();
         if (!scene) {
             return;
@@ -761,7 +784,7 @@ export class RenderTargetTexture extends Texture {
 
         var engine = scene.getEngine();
         if (this._texture) {
-            engine.bindFramebuffer(this._texture, this.isCube ? faceIndex : undefined, undefined, undefined, this.ignoreCameraViewport, this.depthStencilTexture ? this.depthStencilTexture : undefined);
+            engine.bindFramebuffer(this._texture, this.isCube ? faceIndex : undefined, undefined, undefined, this.ignoreCameraViewport, 0, layer);
         }
     }
 
@@ -774,7 +797,7 @@ export class RenderTargetTexture extends Texture {
         });
     }
 
-    private renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], useCameraPostProcess: boolean, dumpForDebug: boolean): void {
+    private renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], useCameraPostProcess: boolean, dumpForDebug: boolean, layer = 0): void {
         var scene = this.getScene();
 
         if (!scene) {
@@ -792,10 +815,15 @@ export class RenderTargetTexture extends Texture {
             this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
         }
         else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
-            this._bindFrameBuffer(faceIndex);
+            this._bindFrameBuffer(faceIndex, layer);
         }
 
-        this.onBeforeRenderObservable.notifyObservers(faceIndex);
+        if (this.is2DArray) {
+            this.onBeforeRenderObservable.notifyObservers(layer);
+        }
+        else {
+            this.onBeforeRenderObservable.notifyObservers(faceIndex);
+        }
 
         // Clear
         if (this.onClearObservable.hasObservers()) {
