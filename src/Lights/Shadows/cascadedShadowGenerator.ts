@@ -470,6 +470,8 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         this._light._markMeshesAsLightDirty();
     }
 
+    public depthClamp: boolean = false;
+
     private _lambda = 0.5;
 
     /**
@@ -997,6 +999,10 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         }
 
         defines.push("#define DEPTHTEXTURE");
+
+        if (this.depthClamp) {
+            defines.push("#define DEPTHCLAMP");
+        }
 
         var attribs = [VertexBuffer.PositionKind];
 
