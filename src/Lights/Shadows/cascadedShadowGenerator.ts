@@ -688,7 +688,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         this._light = light;
         this._mapSize = mapSize;
         light._shadowGenerator = this;
-        this.frustumLength = this._scene.activeCamera?.maxZ ?? 10000;
+        this._frustumLength = this._scene.activeCamera?.maxZ ?? 10000;
 
         CascadedShadowGenerator._SceneComponentInitialization(this._scene);
 
@@ -779,6 +779,8 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             this._light._markMeshesAsLightDirty();
             this.recreateShadowMap();
         });
+
+        this._initCascades();
     }
 
     private _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void {
