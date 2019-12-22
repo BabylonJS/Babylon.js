@@ -484,9 +484,8 @@ export class MaterialHelper {
         samplersList.push("depthSampler" + lightIndex);
 
         uniformsList.push(
-            "lightMatrixCSM" + lightIndex,
-            "camViewMatCSM" + lightIndex,
-            "viewFrustumZCSM" + lightIndex,
+            "viewFrustumZ" + lightIndex,
+            "splitBlendFactor" + lightIndex,
         );
 
         if (projectedLightTexture) {
