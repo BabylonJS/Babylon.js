@@ -417,14 +417,13 @@ export class CascadedShadowGenerator implements IShadowGenerator {
 
     private _effect: Effect;
 
-    private _viewMatrix = Matrix.Zero();
+    private _viewMatrix: Array<Matrix>;
     private _cachedPosition: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
     private _cachedDirection: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
     private _cachedDefines: string;
-    private _currentRenderID: number;
+    private _currentRenderID: Array<number>;
     private _mapSize: number;
     private _currentLayer = 0;
-    private _currentLayerCache = 0;
     private _textureType: number;
     private _defaultTextureMatrix = Matrix.Identity();
     private _storedUniqueId: Nullable<number>;
@@ -492,6 +491,8 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             this._frustumLength = camera.maxZ;
         }
 
+        this._currentRenderID = new Array(this._cascades);
+
         // inits and sets all static params related to CSM
         let engine = this._scene.getEngine();
         this._viewSpaceFrustums = [];
@@ -555,8 +556,10 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         }
 
         // initialize the CSM transformMatrices
+        this._viewMatrix = [];
         this._transformMatrices = [];
         for (let index = 0; index < this.cascades; index++) {
+            this._viewMatrix[index] = Matrix.Zero();
             this._transformMatrices[index] = Matrix.Zero();
         }
         this._transformMatricesAsArray = new Float32Array(this.cascades * 16);
@@ -600,12 +603,8 @@ export class CascadedShadowGenerator implements IShadowGenerator {
      */
     public getCSMTransformMatrix(mapIndex: number): Matrix {
         var scene = this._scene;
-        if (this._currentRenderID === scene.getRenderId() && this._currentLayerCache === this._currentLayer) {
+        if (this._currentRenderID[mapIndex] === scene.getRenderId()) {
             return this._transformMatrices[mapIndex];
-        }
-
-        if (!this._viewSpaceBoundingSpheres || this._viewSpaceBoundingSpheres.length === 0) {
-            this._initCascades();
         }
 
         let camera = scene.activeCamera;
@@ -613,8 +612,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             return this._transformMatrices[mapIndex];
         }
 
-        this._currentRenderID = scene.getRenderId();
-        this._currentLayerCache = this._currentLayer;
+        this._currentRenderID[mapIndex] = scene.getRenderId();
 
         var lightPosition = this._light.position;
         if (this._light.computeTransformedInformation()) {
@@ -634,11 +632,11 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             let bs = new BoundingSphere(this._viewSpaceBoundingSpheres[mapIndex].minimum, this._viewSpaceBoundingSpheres[mapIndex].maximum, camera.getWorldMatrix());
             // get view matrix
             let shadowCamPos = bs.centerWorld.subtract(this._lightDirection.scale(bs.radius));
-            Matrix.LookAtLHToRef(shadowCamPos, bs.centerWorld, Vector3.Up(), this._viewMatrix);
+            Matrix.LookAtLHToRef(shadowCamPos, bs.centerWorld, Vector3.Up(), this._viewMatrix[mapIndex]);
             // get ortho matrix
             let OrthoMatrix = Matrix.OrthoLH(2.0 * bs.radius, 2.0 * bs.radius, 0, 2.0 * bs.radius);
             // get projection matrix
-            this._viewMatrix.multiplyToRef(OrthoMatrix, this._transformMatrices[mapIndex]);
+            this._viewMatrix[mapIndex].multiplyToRef(OrthoMatrix, this._transformMatrices[mapIndex]);
 
             // rounding the transform matrix to prevent shimmering artifacts from camera movement
             let shadowOrigin = Vector3.TransformCoordinates(Vector3.Zero(), this._transformMatrices[mapIndex]);
