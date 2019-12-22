@@ -486,11 +486,11 @@ export class CascadedShadowGenerator implements IShadowGenerator {
      * Sets csmLambda: parameter used for calculating the frustum in CSM.
      */
     public set lambda(value: number) {
-        this._lambda = Math.min(Math.max(value, 0), 1);
-        if (this._lambda == value) {
+        const lambda = Math.min(Math.max(value, 0), 1);
+        if (this._lambda == lambda) {
             return;
         }
-        this._lambda = value;
+        this._lambda = lambda;
         this._initCascades();
     }
 
