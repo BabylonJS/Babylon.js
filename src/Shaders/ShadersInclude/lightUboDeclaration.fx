@@ -22,24 +22,22 @@
 #endif
 #ifdef SHADOW{X}
 	#ifdef SHADOWCSM{X}
-		uniform mat4 lightMatrixCSM{X}[SHADOWCSMNUM_CASCADES{X}];
-		uniform mat4 camViewMatCSM{X};
-		uniform float viewFrustumZCSM{X}[SHADOWCSMNUM_CASCADES{X}];
-		varying vec4 vPositionFromLightCSM{X}[SHADOWCSMNUM_CASCADES{X}];
-		varying float vDepthMetricCSM{X}[SHADOWCSMNUM_CASCADES{X}];
-		varying vec4 vPositionFromCameraCSM{X};
+		uniform mat4 lightMatrix{X}[SHADOWCSMNUM_CASCADES{X}];
+		uniform float viewFrustumZ{X}[SHADOWCSMNUM_CASCADES{X}];
+        uniform float splitBlendFactor{X};
+
+		varying vec4 vPositionFromLight{X}[SHADOWCSMNUM_CASCADES{X}];
+		varying float vDepthMetric{X}[SHADOWCSMNUM_CASCADES{X}];
+		varying vec4 vPositionFromCamera{X};
 
 		#if defined(SHADOWPCSS{X})
 			uniform highp sampler2DArrayShadow shadowSampler{X};
 			uniform highp sampler2DArray depthSampler{X};
-		#else
+		#elif defined(SHADOWPCF{X})
 			uniform highp sampler2DArrayShadow shadowSampler{X};
+		#else
+			uniform highp sampler2DArray shadowSampler{X};
 		#endif
-
-		//uniform sampler2D shadowSamplerArrayCSM{X}[NUM_CASCADESP{X}];
-		// varying vec4 vPositionFromLight{X};
-		// varying float vDepthMetric{X};
-		// uniform mat4 lightMatrix{X};
 	#elif defined(SHADOWCUBE{X})
 		uniform samplerCube shadowSampler{X};		
 	#else
