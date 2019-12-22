@@ -127,7 +127,7 @@
     #ifdef SHADOW{X}
         #ifdef SHADOWCSM{X}
             #ifdef SHADOWCSMDEBUG{X}
-                const vec3 vCascadeColorsMultiplier[8] = vec3[8]
+                const vec3 vCascadeColorsMultiplier{X}[8] = vec3[8]
                 (
                     vec3 ( 1.5, 0.0, 0.0 ),
                     vec3 ( 0.0, 1.5, 0.0 ),
@@ -138,56 +138,77 @@
                     vec3 ( 0.0, 1.0, 5.5 ),
                     vec3 ( 0.5, 3.5, 0.75 )
                 );
-                vec3 shadowDebug;
+                vec3 shadowDebug{X};
             #endif
 
-            int index = SHADOWCSMNUM_CASCADES{X} - 1;
+            int index{X} = SHADOWCSMNUM_CASCADES{X} - 1;
 
-            float diff = 0.;
-            float frustrumLenght = 0.;
-            float previousFrustrumMax = 0.;
+            float diff{X} = 0.;
+            float frustrumLength{X} = 0.;
+            float previousFrustrumMax{X} = 0.;
             for (int i = 0; i < SHADOWCSMNUM_CASCADES{X} - 1; i++) {
-                diff = viewFrustumZCSM{X}[i] - vPositionFromCameraCSM{X}.z;
-                frustrumLenght = viewFrustumZCSM{X}[i] - previousFrustrumMax;
-                previousFrustrumMax = viewFrustumZCSM{X}[i];
+                diff{X} = viewFrustumZ{X}[i] - vPositionFromCamera{X}.z;
+                frustrumLength{X} = viewFrustumZ{X}[i] - previousFrustrumMax{X};
+                previousFrustrumMax{X} = viewFrustumZ{X}[i];
 
-                if (diff >= 0.){
-                    index = i;
+                if (diff{X} >= 0.){
+                    index{X} = i;
                     break;
                 }
             }
 
-            #if defined(SHADOWLOWQUALITY{X})
-                shadow = computeShadowWithCSMPCF1(float(index), vPositionFromLightCSM{X}[index], vDepthMetricCSM{X}[index], shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-            #elif defined(SHADOWMEDIUMQUALITY{X})
-                shadow = computeShadowWithCSMPCF3(float(index), vPositionFromLightCSM{X}[index], vDepthMetricCSM{X}[index], shadowSampler{X}, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-            #else
-                shadow = computeShadowWithCSMPCF5(float(index), vPositionFromLightCSM{X}[index], vDepthMetricCSM{X}[index], shadowSampler{X}, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
-            #endif
-
-            #ifdef SHADOWCSMDEBUG{X}
-                shadowDebug = vec3(shadow) * vCascadeColorsMultiplier[index];
-            #endif
-
-            float diffRatio = clamp(diff / frustrumLenght, 0., 1.) * 4.; // 25 % linear
-            #ifdef SHADOWCSMDEBUG{X}
-                int realIndex = index;
-            #endif
-            if (index < (SHADOWCSMNUM_CASCADES{X} - 1) && diffRatio < 1.)
-            {
-                index += 1;
-                float nextShadow = 0.;
+            #if defined(SHADOWPCF{X})
                 #if defined(SHADOWLOWQUALITY{X})
-                    nextShadow = computeShadowWithCSMPCF1(float(index), vPositionFromLightCSM{X}[index], vDepthMetricCSM{X}[index], shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    shadow = computeShadowWithCSMPCF1(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
                 #elif defined(SHADOWMEDIUMQUALITY{X})
-                    nextShadow = computeShadowWithCSMPCF3(float(index), vPositionFromLightCSM{X}[index], vDepthMetricCSM{X}[index], shadowSampler{X}, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    shadow = computeShadowWithCSMPCF3(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowSampler{X}, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
                 #else
-                    nextShadow = computeShadowWithCSMPCF5(float(index), vPositionFromLightCSM{X}[index], vDepthMetricCSM{X}[index], shadowSampler{X}, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    shadow = computeShadowWithCSMPCF5(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowSampler{X}, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                #endif
+            #elif defined(SHADOWPCSS{X})
+                #if defined(SHADOWLOWQUALITY{X})
+                    shadow = computeShadowWithCSMPCSS16(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthSampler{X}, shadowSampler{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                #elif defined(SHADOWMEDIUMQUALITY{X})
+                    shadow = computeShadowWithCSMPCSS32(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthSampler{X}, shadowSampler{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                #else
+                    shadow = computeShadowWithCSMPCSS64(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthSampler{X}, shadowSampler{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                #endif
+            #else
+                shadow = computeShadowCSM(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+            #endif
+
+            #ifdef SHADOWCSMDEBUG{X}
+                shadowDebug{X} = vec3(shadow) * vCascadeColorsMultiplier{X}[index{X}];
+            #endif
+
+            float diffRatio{X} = clamp(diff{X} / frustrumLength{X}, 0., 1.) * splitBlendFactor{X};
+            if (index{X} < (SHADOWCSMNUM_CASCADES{X} - 1) && diffRatio{X} < 1.)
+            {
+                index{X} += 1;
+                float nextShadow = 0.;
+                #if defined(SHADOWPCF{X})
+                    #if defined(SHADOWLOWQUALITY{X})
+                        nextShadow = computeShadowWithCSMPCF1(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #elif defined(SHADOWMEDIUMQUALITY{X})
+                        nextShadow = computeShadowWithCSMPCF3(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowSampler{X}, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #else
+                        nextShadow = computeShadowWithCSMPCF5(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowSampler{X}, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
+                #elif defined(SHADOWPCSS{X})
+                    #if defined(SHADOWLOWQUALITY{X})
+                        nextShadow = computeShadowWithCSMPCSS16(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthSampler{X}, shadowSampler{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #elif defined(SHADOWMEDIUMQUALITY{X})
+                        nextShadow = computeShadowWithCSMPCSS32(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthSampler{X}, shadowSampler{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #else
+                        nextShadow = computeShadowWithCSMPCSS64(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthSampler{X}, shadowSampler{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    #endif
+                #else
+                    nextShadow = computeShadowCSM(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
                 #endif
 
-                shadow = mix(nextShadow, shadow, diffRatio);
+                shadow = mix(nextShadow, shadow, diffRatio{X});
                 #ifdef SHADOWCSMDEBUG{X}
-                    shadowDebug = mix(vec3(nextShadow) * vCascadeColorsMultiplier[index], shadowDebug, diffRatio);
+                    shadowDebug{X} = mix(vec3(nextShadow) * vCascadeColorsMultiplier{X}[index{X}], shadowDebug{X}, diffRatio{X});
                 #endif
             }
         #elif SHADOWCLOSEESM{X}
@@ -268,7 +289,7 @@
             #endif
         #else
             #ifdef SHADOWCSMDEBUG{X}
-                diffuseBase += info.diffuse * shadowDebug;
+                diffuseBase += info.diffuse * shadowDebug{X};
             #else        
                 diffuseBase += info.diffuse * shadow;
             #endif

@@ -8,7 +8,25 @@
 		vec4 vLightSpecular{X} = vec4(0.);
 	#endif
 	#ifdef SHADOW{X}
-		#if defined(SHADOWCUBE{X})
+        #ifdef SHADOWCSM{X}
+            uniform mat4 lightMatrix{X}[SHADOWCSMNUM_CASCADES{X}];
+            uniform mat4 camViewMatCSM{X};
+            uniform float viewFrustumZ{X}[SHADOWCSMNUM_CASCADES{X}];
+            uniform float splitBlendFactor{X};
+
+            varying vec4 vPositionFromLight{X}[SHADOWCSMNUM_CASCADES{X}];
+            varying float vDepthMetric{X}[SHADOWCSMNUM_CASCADES{X}];
+            varying vec4 vPositionFromCamera{X};
+
+            #if defined(SHADOWPCSS{X})
+                uniform highp sampler2DArrayShadow shadowSampler{X};
+                uniform highp sampler2DArray depthSampler{X};
+            #elif defined(SHADOWPCF{X})
+                uniform highp sampler2DArrayShadow shadowSampler{X};
+            #else
+                uniform highp sampler2DArray shadowSampler{X};
+            #endif
+        #elif defined(SHADOWCUBE{X})
 			uniform samplerCube shadowSampler{X};
 		#else
 			varying vec4 vPositionFromLight{X};
