@@ -48,17 +48,21 @@ export class CascadedShadowGenerator implements IShadowGenerator {
     public static readonly MAX_CASCADES_COUNT = 4;
 
     /**
+     * Shadow generator mode None: no filtering applied.
+     */
+    public static readonly FILTER_NONE = 0;
+    /**
      * Shadow generator mode PCF: Percentage Closer Filtering
      * benefits from Webgl 2 shadow samplers. Fallback to Poisson Sampling in Webgl 1
      * (https://developer.nvidia.com/gpugems/GPUGems/gpugems_ch11.html)
      */
-    public static readonly FILTER_PCF = 0;
+    public static readonly FILTER_PCF = 6;
     /**
      * Shadow generator mode PCSS: Percentage Closering Soft Shadow.
      * benefits from Webgl 2 shadow samplers. Fallback to Poisson Sampling in Webgl 1
      * Contact Hardening
      */
-    public static readonly FILTER_PCSS = 1;
+    public static readonly FILTER_PCSS = 7;
 
     /**
      * Reserved for PCF and PCSS
@@ -162,6 +166,22 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         this._light._markMeshesAsLightDirty();
     }
 
+    /**
+     * Gets if the current filter is set to "PCF" (percentage closer filtering).
+     */
+    public get usePercentageCloserFiltering(): boolean {
+        return this.filter === CascadedShadowGenerator.FILTER_PCF;
+    }
+    /**
+     * Sets the current filter to "PCF" (percentage closer filtering).
+     */
+    public set usePercentageCloserFiltering(value: boolean) {
+        if (!value && this.filter !== CascadedShadowGenerator.FILTER_PCF) {
+            return;
+        }
+        this.filter = (value ? CascadedShadowGenerator.FILTER_PCF : CascadedShadowGenerator.FILTER_NONE);
+    }
+
     private _filteringQuality = CascadedShadowGenerator.QUALITY_HIGH;
     /**
      * Gets the PCF or PCSS Quality.
@@ -198,7 +218,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         if (!value && this.filter !== CascadedShadowGenerator.FILTER_PCSS) {
             return;
         }
-        this.filter = (value ? CascadedShadowGenerator.FILTER_PCSS : CascadedShadowGenerator.FILTER_PCF);
+        this.filter = (value ? CascadedShadowGenerator.FILTER_PCSS : CascadedShadowGenerator.FILTER_NONE);
     }
 
     private _contactHardeningLightSizeUVRatio = 0.1;
@@ -1095,7 +1115,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             }
             // else default to high.
         }
-        else {
+        else if (this.usePercentageCloserFiltering) {
             defines["SHADOWPCF" + lightIndex] = true;
             if (this._filteringQuality === CascadedShadowGenerator.QUALITY_LOW) {
                 defines["SHADOWLOWQUALITY" + lightIndex] = true;
@@ -1138,13 +1158,16 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         effect.setArray("viewFrustumZCSM" + lightIndex, this._viewSpaceFrustumsZ);
 
         // Only PCF uses depth stencil texture.
-        if (this._filter === CascadedShadowGenerator.FILTER_PCSS) {
+        if (this._filter === CascadedShadowGenerator.FILTER_PCF) {
+            effect.setDepthStencilTexture("shadowSampler" + lightIndex, shadowMap);
+            light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), width, 1 / width, this.frustumEdgeFalloff, lightIndex);
+        } else if (this._filter === CascadedShadowGenerator.FILTER_PCSS) {
             effect.setDepthStencilTexture("shadowSampler" + lightIndex, shadowMap);
             effect.setTexture("depthSampler" + lightIndex, shadowMap);
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), 1 / width, this._contactHardeningLightSizeUVRatio * width, this.frustumEdgeFalloff, lightIndex);
         }
         else {
-            effect.setDepthStencilTexture("shadowSampler" + lightIndex, shadowMap);
+            effect.setTexture("shadowSampler" + lightIndex, shadowMap);
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), width, 1 / width, this.frustumEdgeFalloff, lightIndex);
         }
 
@@ -1231,6 +1254,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         serializationObject.bias = this.bias;
         serializationObject.normalBias = this.normalBias;
 
+        serializationObject.usePercentageCloserFiltering = this.usePercentageCloserFiltering;
         serializationObject.useContactHardeningShadow = this.useContactHardeningShadow;
         serializationObject.filteringQuality = this.filteringQuality;
         serializationObject.contactHardeningLightSizeUVRatio = this.contactHardeningLightSizeUVRatio;
@@ -1271,7 +1295,10 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             });
         }
 
-        if (parsedShadowGenerator.useContactHardeningShadow) {
+        if (parsedShadowGenerator.usePercentageCloserFiltering) {
+            shadowGenerator.usePercentageCloserFiltering = true;
+        }
+        else if (parsedShadowGenerator.useContactHardeningShadow) {
             shadowGenerator.useContactHardeningShadow = true;
         }
 
