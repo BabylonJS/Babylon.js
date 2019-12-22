@@ -581,7 +581,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
     private _uniformSplit(amount: number, near: number, far: number): Array<number> {
         let r = [];
         for (let i = 1; i < amount; i++) {
-            r.push((near + (far - near) * i / amount) / far);
+            r.push(i / amount);
         }
         r.push(1);
         return r;
@@ -590,7 +590,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
     private _logarithmicSplit(amount: number, near: number, far: number): Array<number> {
         let r = [];
         for (let i = 1; i < amount; i++) {
-            r.push((near * (far / near) ** (i / amount)) / far);
+            r.push((near * (far / near) ** (i / amount) - near) / (far - near));
         }
         r.push(1);
         return r;
