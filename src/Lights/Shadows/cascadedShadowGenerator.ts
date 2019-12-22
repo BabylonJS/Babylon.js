@@ -472,6 +472,8 @@ export class CascadedShadowGenerator implements IShadowGenerator {
 
     public depthClamp: boolean = false;
 
+    public splitBlendPercentage: number = 0.1;
+
     private _lambda = 0.5;
 
     /**
@@ -1166,9 +1168,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
 
         const width = shadowMap.getSize().width;
 
-        effect.setMatrices("lightMatrixCSM" + lightIndex, this._transformMatricesAsArray);
-        effect.setMatrix("camViewMatCSM" + lightIndex, camera.getViewMatrix());
-        effect.setArray("viewFrustumZCSM" + lightIndex, this._viewSpaceFrustumsZ);
+        effect.setFloat("splitBlendFactor" + lightIndex, this.splitBlendPercentage === 0 ? 10000 : 1 / this.splitBlendPercentage);
 
         // Only PCF uses depth stencil texture.
         if (this._filter === CascadedShadowGenerator.FILTER_PCF) {
