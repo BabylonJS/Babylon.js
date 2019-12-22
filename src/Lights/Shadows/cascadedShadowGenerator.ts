@@ -459,7 +459,16 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         this._initCascades();
     }
 
-    public debug = false;
+    protected _debug = false;
+
+    public get debug(): boolean {
+        return this._debug;
+    }
+
+    public set debug(dbg: boolean) {
+        this._debug = dbg;
+        this._light._markMeshesAsLightDirty();
+    }
 
     private _lambda = 0.5;
 
