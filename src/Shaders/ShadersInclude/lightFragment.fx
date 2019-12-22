@@ -126,6 +126,21 @@
 
     #ifdef SHADOW{X}
         #ifdef SHADOWCSM{X}
+            #ifdef SHADOWCSMDEBUG{X}
+                const vec3 vCascadeColorsMultiplier[8] = vec3[8]
+                (
+                    vec3 ( 1.5, 0.0, 0.0 ),
+                    vec3 ( 0.0, 1.5, 0.0 ),
+                    vec3 ( 0.0, 0.0, 5.5 ),
+                    vec3 ( 1.5, 0.0, 5.5 ),
+                    vec3 ( 1.5, 1.5, 0.0 ),
+                    vec3 ( 1.0, 1.0, 1.0 ),
+                    vec3 ( 0.0, 1.0, 5.5 ),
+                    vec3 ( 0.5, 3.5, 0.75 )
+                );
+                vec3 shadowDebug;
+            #endif
+
             int index = SHADOWCSMNUM_CASCADES{X} - 1;
 
             float diff = 0.;
@@ -150,6 +165,10 @@
                 shadow = computeShadowWithCSMPCF5(float(index), vPositionFromLightCSM{X}[index], vDepthMetricCSM{X}[index], shadowSampler{X}, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
             #endif
 
+            #ifdef SHADOWCSMDEBUG{X}
+                shadowDebug = vec3(shadow) * vCascadeColorsMultiplier[index];
+            #endif
+
             float diffRatio = clamp(diff / frustrumLenght, 0., 1.) * 4.; // 25 % linear
             #ifdef SHADOWCSMDEBUG{X}
                 int realIndex = index;
@@ -167,19 +186,10 @@
                 #endif
 
                 shadow = mix(nextShadow, shadow, diffRatio);
+                #ifdef SHADOWCSMDEBUG{X}
+                    shadowDebug = mix(vec3(nextShadow) * vCascadeColorsMultiplier[index], shadowDebug, diffRatio);
+                #endif
             }
-
-            #ifdef SHADOWCSMDEBUG{X}
-                gl_FragColor = vec4(float(realIndex) / float(SHADOWCSMNUM_CASCADES{X}),
-                    1. - shadow,
-                    0,
-                    1.);
-                if (realIndex < (SHADOWCSMNUM_CASCADES{X} - 1) && diffRatio < 1.)
-                {
-                    gl_FragColor.b = 1. - diffRatio; // reverse for display
-                }
-                return;
-            #endif
         #elif SHADOWCLOSEESM{X}
             #if defined(SHADOWCUBE{X})
                 shadow = computeShadowWithCloseESMCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z, light{X}.depthValues);
@@ -257,7 +267,11 @@
                 #endif
             #endif
         #else
-            diffuseBase += info.diffuse * shadow;
+            #ifdef SHADOWCSMDEBUG{X}
+                diffuseBase += info.diffuse * shadowDebug;
+            #else        
+                diffuseBase += info.diffuse * shadow;
+            #endif
             #ifdef SPECULARTERM
                 specularBase += info.specular * shadow;
             #endif
