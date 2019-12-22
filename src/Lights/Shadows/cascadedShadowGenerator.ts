@@ -632,7 +632,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             lightPosition = this._light.transformedPosition;
         }
 
-        Vector3.NormalizeToRef(this._light.getShadowDirection(this._currentLayer), this._lightDirection);
+        Vector3.NormalizeToRef(this._light.getShadowDirection(0), this._lightDirection);
         if (Math.abs(Vector3.Dot(this._lightDirection, Vector3.Up())) === 1.0) {
             this._lightDirection.z = 0.0000000000001; // Required to avoid perfectly perpendicular light
         }
