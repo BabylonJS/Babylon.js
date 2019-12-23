@@ -581,7 +581,7 @@
         // It uses 16 Taps for search and a 32 PCF taps in a randomly rotating poisson sampling disc.
         // This is heavily inspired from http://developer.download.nvidia.com/shaderlibrary/docs/shadow_PCSS.pdf
         // and http://developer.download.nvidia.com/whitepapers/2008/PCSS_Integration.pdf
-        float computeShadowWithCSMPCSS(float layer, vec4 vPositionFromLight, float depthMetric, highp sampler2DArray depthSampler, highp sampler2DArrayShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff, int searchTapCount, int pcfTapCount, vec3[64] poissonSamplers)
+        float computeShadowWithCSMPCSS(float layer, vec4 vPositionFromLight, float depthMetric, highp sampler2DArray depthSampler, highp sampler2DArrayShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff, int searchTapCount, int pcfTapCount, vec3[64] poissonSamplers, vec2 lightSizeUVCorrection, float depthCorrection, float penumbraDarkness)
         {
             if (depthMetric > 1.0 || depthMetric < 0.0) {
                 return 1.0;
@@ -595,7 +595,7 @@
             float sumBlockerDepth = 0.0;
             float numBlocker = 0.0;
             for (int i = 0; i < searchTapCount; i ++) {
-                blockerDepth = texture(depthSampler, vec3(uvDepth.xy + (lightSizeUV * shadowMapSizeInverse * PoissonSamplers32[i].xy), layer)).r;
+                blockerDepth = texture(depthSampler, vec3(uvDepth.xy + (lightSizeUV * lightSizeUVCorrection * shadowMapSizeInverse * PoissonSamplers32[i].xy), layer)).r;
                 if (blockerDepth < depthMetric) {
                     sumBlockerDepth += blockerDepth;
                     numBlocker++;
@@ -611,8 +611,8 @@
             float AAOffset = shadowMapSizeInverse * 10.;
             // Do not dividing by z despite being physically incorrect looks better due to the limited kernel size.
             // float penumbraRatio = (depthMetric - avgBlockerDepth) / avgBlockerDepth;
-            float penumbraRatio = ((depthMetric - avgBlockerDepth) + AAOffset);
-            float filterRadius = penumbraRatio * lightSizeUV * shadowMapSizeInverse;
+            float penumbraRatio = ((depthMetric - avgBlockerDepth) * depthCorrection + AAOffset);
+            vec4 filterRadius = vec4(penumbraRatio * lightSizeUV * lightSizeUVCorrection * shadowMapSizeInverse, 0., 0.);
 
             float random = getRand(vPositionFromLight.xy);
             float rotationAngle = random * 3.1415926;
@@ -628,7 +628,7 @@
             shadow /= float(pcfTapCount);
 
             // Blocker distance falloff
-            shadow = mix(shadow, 1., depthMetric - avgBlockerDepth);
+            shadow = mix(shadow, 1., min((depthMetric - avgBlockerDepth) * depthCorrection * penumbraDarkness, 1.));
 
             // Apply darkness
             shadow = mix(darkness, 1., shadow);
@@ -712,19 +712,19 @@
             return computeShadowWithPCSS(vPositionFromLight, depthMetric, depthSampler, shadowSampler, shadowMapSizeInverse, lightSizeUV, darkness, frustumEdgeFalloff, 32, 64, PoissonSamplers64);
         }
 
-        float computeShadowWithCSMPCSS16(float layer, vec4 vPositionFromLight, float depthMetric, highp sampler2DArray depthSampler, highp sampler2DArrayShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff)
+        float computeShadowWithCSMPCSS16(float layer, vec4 vPositionFromLight, float depthMetric, highp sampler2DArray depthSampler, highp sampler2DArrayShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff, vec2 lightSizeUVCorrection, float depthCorrection, float penumbraDarkness)
         {
-            return computeShadowWithCSMPCSS(layer, vPositionFromLight, depthMetric, depthSampler, shadowSampler, shadowMapSizeInverse, lightSizeUV, darkness, frustumEdgeFalloff, 16, 16, PoissonSamplers32);
+            return computeShadowWithCSMPCSS(layer, vPositionFromLight, depthMetric, depthSampler, shadowSampler, shadowMapSizeInverse, lightSizeUV, darkness, frustumEdgeFalloff, 16, 16, PoissonSamplers32, lightSizeUVCorrection, depthCorrection, penumbraDarkness);
         }
 
-        float computeShadowWithCSMPCSS32(float layer, vec4 vPositionFromLight, float depthMetric, highp sampler2DArray depthSampler, highp sampler2DArrayShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff)
+        float computeShadowWithCSMPCSS32(float layer, vec4 vPositionFromLight, float depthMetric, highp sampler2DArray depthSampler, highp sampler2DArrayShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff, vec2 lightSizeUVCorrection, float depthCorrection, float penumbraDarkness)
         {
-            return computeShadowWithCSMPCSS(layer, vPositionFromLight, depthMetric, depthSampler, shadowSampler, shadowMapSizeInverse, lightSizeUV, darkness, frustumEdgeFalloff, 16, 32, PoissonSamplers32);
+            return computeShadowWithCSMPCSS(layer, vPositionFromLight, depthMetric, depthSampler, shadowSampler, shadowMapSizeInverse, lightSizeUV, darkness, frustumEdgeFalloff, 16, 32, PoissonSamplers32, lightSizeUVCorrection, depthCorrection, penumbraDarkness);
         }
 
-        float computeShadowWithCSMPCSS64(float layer, vec4 vPositionFromLight, float depthMetric, highp sampler2DArray depthSampler, highp sampler2DArrayShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff)
+        float computeShadowWithCSMPCSS64(float layer, vec4 vPositionFromLight, float depthMetric, highp sampler2DArray depthSampler, highp sampler2DArrayShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff, vec2 lightSizeUVCorrection, float depthCorrection, float penumbraDarkness)
         {
-            return computeShadowWithCSMPCSS(layer, vPositionFromLight, depthMetric, depthSampler, shadowSampler, shadowMapSizeInverse, lightSizeUV, darkness, frustumEdgeFalloff, 32, 64, PoissonSamplers64);
+            return computeShadowWithCSMPCSS(layer, vPositionFromLight, depthMetric, depthSampler, shadowSampler, shadowMapSizeInverse, lightSizeUV, darkness, frustumEdgeFalloff, 32, 64, PoissonSamplers64, lightSizeUVCorrection, depthCorrection, penumbraDarkness);
         }
     #endif
 #endif

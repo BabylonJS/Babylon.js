@@ -24,7 +24,7 @@
 	#ifdef SHADOWCSM{X}
 		uniform mat4 lightMatrix{X}[SHADOWCSMNUM_CASCADES{X}];
 		uniform float viewFrustumZ{X}[SHADOWCSMNUM_CASCADES{X}];
-        uniform float splitBlendFactor{X};
+        uniform float cascadeBlendFactor{X};
 
 		varying vec4 vPositionFromLight{X}[SHADOWCSMNUM_CASCADES{X}];
 		varying float vDepthMetric{X}[SHADOWCSMNUM_CASCADES{X}];
@@ -33,6 +33,9 @@
 		#if defined(SHADOWPCSS{X})
 			uniform highp sampler2DArrayShadow shadowSampler{X};
 			uniform highp sampler2DArray depthSampler{X};
+            uniform vec2 lightSizeUVCorrection{X}[SHADOWCSMNUM_CASCADES{X}];
+            uniform float depthCorrection{X}[SHADOWCSMNUM_CASCADES{X}];
+            uniform float penumbraDarkness{X};
 		#elif defined(SHADOWPCF{X})
 			uniform highp sampler2DArrayShadow shadowSampler{X};
 		#else
