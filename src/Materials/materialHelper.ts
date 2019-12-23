@@ -485,7 +485,10 @@ export class MaterialHelper {
 
         uniformsList.push(
             "viewFrustumZ" + lightIndex,
-            "splitBlendFactor" + lightIndex,
+            "cascadeBlendFactor" + lightIndex,
+            "lightSizeUVCorrection" + lightIndex,
+            "depthCorrection" + lightIndex,
+            "penumbraDarkness" + lightIndex,
         );
 
         if (projectedLightTexture) {
