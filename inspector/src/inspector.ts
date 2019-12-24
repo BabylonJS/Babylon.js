@@ -193,8 +193,8 @@ export class Inspector {
                     if (options.popup) {
                         this._ActionTabsWindow.close();
                     }
-
-                }
+                },
+                initialTab: options.initialTab
             });
             ReactDOM.render(actionTabsElement, this._ActionTabsHost);
         }
@@ -251,7 +251,8 @@ export class Inspector {
                     if (options.popup) {
                         this._EmbedHostWindow.close();
                     }
-                }
+                },
+                initialTab: options.initialTab
             });
             ReactDOM.render(embedHostElement, this._EmbedHost);
         }

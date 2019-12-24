@@ -251,7 +251,7 @@ export class ScreenshotTools {
             width = size;
         }
 
-        return { height, width };
+        return { height: height | 0, width: width | 0 };
     }
 }
 

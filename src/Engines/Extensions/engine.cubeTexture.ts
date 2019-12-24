@@ -131,7 +131,7 @@ ThinEngine.prototype._createDepthStencilCubeTexture = function(size: number, opt
 };
 
 ThinEngine.prototype._partialLoadFile = function(url: string, index: number, loadedFiles: (string | ArrayBuffer)[],
-        onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null): void {
+    onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null): void {
     var onload = (data: string | ArrayBuffer) => {
         loadedFiles[index] = data;
         (<any>loadedFiles)._internalCount++;
@@ -233,10 +233,11 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
 
     var lastDot = rootUrl.lastIndexOf('.');
     var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
+    const filteredFormat: Nullable<string> = this.excludedCompressedTextureFormats(rootUrl, this._textureFormatInUse);
 
     let loader: Nullable<IInternalTextureLoader> = null;
     for (let availableLoader of ThinEngine._TextureLoaders) {
-        if (excludeLoaders.indexOf(availableLoader) === -1 && availableLoader.canLoad(extension, this._textureFormatInUse, fallback, false, false)) {
+        if (excludeLoaders.indexOf(availableLoader) === -1 && availableLoader.canLoad(extension, filteredFormat, fallback, false, false)) {
             loader = availableLoader;
             break;
         }
@@ -259,7 +260,7 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
     };
 
     if (loader) {
-        rootUrl = loader.transformUrl(rootUrl, this._textureFormatInUse);
+        rootUrl = loader.transformUrl(rootUrl, filteredFormat);
 
         const onloaddata = (data: any) => {
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
@@ -290,14 +291,6 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
             var width = this.needPOTTextures ? ThinEngine.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
             var height = width;
 
-            this._prepareWorkingCanvas();
-
-            if (!this._workingCanvas || !this._workingContext) {
-                return;
-            }
-            this._workingCanvas.width = width;
-            this._workingCanvas.height = height;
-
             var faces = [
                 gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
                 gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
@@ -309,6 +302,16 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
             let internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
             for (var index = 0; index < faces.length; index++) {
                 if (imgs[index].width !== width || imgs[index].height !== height) {
+
+                    this._prepareWorkingCanvas();
+
+                    if (!this._workingCanvas || !this._workingContext) {
+                        Logger.Warn("Cannot create canvas to resize texture.");
+                        return;
+                    }
+                    this._workingCanvas.width = width;
+                    this._workingCanvas.height = height;
+
                     this._workingContext.drawImage(imgs[index], 0, 0, imgs[index].width, imgs[index].height, 0, 0, width, height);
                     gl.texImage2D(faces[index], 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, this._workingCanvas);
                 } else {

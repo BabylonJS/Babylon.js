@@ -1,22 +1,18 @@
 import { Nullable } from "../../types";
 import { Observable } from "../../Misc/observable";
 import { IDisposable, Scene } from "../../scene";
-import { Quaternion, Vector3 } from "../../Maths/math.vector";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { Quaternion } from "../../Maths/math.vector";
 import { Camera } from "../../Cameras/camera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { WebXRCamera } from "./webXRCamera";
 import { WebXRState, WebXRRenderTarget } from './webXRTypes';
+import { WebXRFeaturesManager } from './webXRFeaturesManager';
 
 /**
  * Base set of functionality needed to create an XR experince (WebXRSessionManager, Camera, StateManagement, etc.)
  * @see https://doc.babylonjs.com/how_to/webxr
  */
 export class WebXRExperienceHelper implements IDisposable {
-    /**
-     * Container which stores the xr camera and controllers as children. This can be used to move the camera/user as the camera's position is updated by the xr device
-     */
-    public container: AbstractMesh;
     /**
      * Camera used to render xr content
      */
@@ -32,15 +28,25 @@ export class WebXRExperienceHelper implements IDisposable {
         this.onStateChangedObservable.notifyObservers(this.state);
     }
 
-    private static _TmpVector = new Vector3();
-
     /**
      * Fires when the state of the experience helper has changed
      */
     public onStateChangedObservable = new Observable<WebXRState>();
 
+    /**
+     * Observers registered here will be triggered after the camera's initial transformation is set
+     * This can be used to set a different ground level or an extra rotation.
+     *
+     * Note that ground level is considered to be at 0. The height defined by the XR camera will be added
+     * to the position set after this observable is done executing.
+     */
+    public onInitialXRPoseSetObservable = new Observable<WebXRCamera>();
+
     /** Session manager used to keep track of xr session */
     public sessionManager: WebXRSessionManager;
+
+    /** A features manager for this xr session */
+    public featuresManager: WebXRFeaturesManager;
 
     private _nonVRCamera: Nullable<Camera> = null;
     private _originalSceneAutoClear = true;
@@ -67,10 +73,9 @@ export class WebXRExperienceHelper implements IDisposable {
      * @param scene The scene the helper should be created in
      */
     private constructor(private scene: Scene) {
-        this.camera = new WebXRCamera("", scene);
         this.sessionManager = new WebXRSessionManager(scene);
-        this.container = new AbstractMesh("WebXR Container", scene);
-        this.camera.parent = this.container;
+        this.camera = new WebXRCamera("", scene, this.sessionManager);
+        this.featuresManager = new WebXRFeaturesManager(this.sessionManager);
 
         scene.onDisposeObservable.add(() => {
             this.exitXRAsync();
@@ -116,11 +121,8 @@ export class WebXRExperienceHelper implements IDisposable {
 
             // Overwrite current scene settings
             this.scene.autoClear = false;
-            this.scene.activeCamera = this.camera;
 
-            this.sessionManager.onXRFrameObservable.add(() => {
-                this.camera.updateFromXRSessionManager(this.sessionManager);
-            });
+            this._nonXRToXRCamera();
 
             this.sessionManager.onXRSessionEnded.addOnce(() => {
                 // Reset camera rigs output render target to ensure sessions render target is not drawn after it ends
@@ -131,6 +133,11 @@ export class WebXRExperienceHelper implements IDisposable {
                 // Restore scene settings
                 this.scene.autoClear = this._originalSceneAutoClear;
                 this.scene.activeCamera = this._nonVRCamera;
+                if ((<any>this._nonVRCamera).setPosition) {
+                    (<any>this._nonVRCamera).setPosition(this.camera.position);
+                } else {
+                    this._nonVRCamera!.position.copyFrom(this.camera.position);
+                }
 
                 this._setState(WebXRState.NOT_IN_XR);
             });
@@ -138,8 +145,6 @@ export class WebXRExperienceHelper implements IDisposable {
             // Wait until the first frame arrives before setting state to in xr
             this.sessionManager.onXRFrameObservable.addOnce(() => {
                 this._setState(WebXRState.IN_XR);
-
-                this.setPositionOfCameraUsingContainer(new Vector3(this._nonVRCamera!.position.x, this.camera.position.y, this._nonVRCamera!.position.z));
             });
 
             return this.sessionManager;
@@ -151,35 +156,22 @@ export class WebXRExperienceHelper implements IDisposable {
     }
 
     /**
-     * Updates the global position of the camera by moving the camera's container
-     * This should be used instead of modifying the camera's position as it will be overwritten by an xrSessions's update frame
-     * @param position The desired global position of the camera
-     */
-    public setPositionOfCameraUsingContainer(position: Vector3) {
-        this.camera.globalPosition.subtractToRef(position, WebXRExperienceHelper._TmpVector);
-        this.container.position.subtractInPlace(WebXRExperienceHelper._TmpVector);
-    }
-
-    /**
-     * Rotates the xr camera by rotating the camera's container around the camera's position
-     * This should be used instead of modifying the camera's rotation as it will be overwritten by an xrSessions's update frame
-     * @param rotation the desired quaternion rotation to apply to the camera
-     */
-    public rotateCameraByQuaternionUsingContainer(rotation: Quaternion) {
-        if (!this.container.rotationQuaternion) {
-            this.container.rotationQuaternion = Quaternion.FromEulerVector(this.container.rotation);
-        }
-        this.container.rotationQuaternion.multiplyInPlace(rotation);
-        this.container.position.rotateByQuaternionAroundPointToRef(rotation, this.camera.globalPosition, this.container.position);
-    }
-
-    /**
      * Disposes of the experience helper
      */
     public dispose() {
         this.camera.dispose();
-        this.container.dispose();
         this.onStateChangedObservable.clear();
         this.sessionManager.dispose();
+    }
+
+    private _nonXRToXRCamera() {
+        this.scene.activeCamera = this.camera;
+        const mat = this._nonVRCamera!.computeWorldMatrix();
+        mat.decompose(undefined, this.camera.rotationQuaternion, this.camera.position);
+        // set the ground level
+        this.camera.position.y = 0;
+        Quaternion.FromEulerAnglesToRef(0, this.camera.rotationQuaternion.toEulerAngles().y, 0, this.camera.rotationQuaternion);
+
+        this.onInitialXRPoseSetObservable.notifyObservers(this.camera);
     }
 }

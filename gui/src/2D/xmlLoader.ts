@@ -24,10 +24,10 @@ export class XmlLoader {
 
     private _parentClass: any;
 
-     /**
-     * Create a new xml loader
-     * @param parentClass Sets the class context. Used when the loader is instanced inside a class and not in a global context
-     */
+    /**
+    * Create a new xml loader
+    * @param parentClass Sets the class context. Used when the loader is instanced inside a class and not in a global context
+    */
     constructor(parentClass = null) {
         if (parentClass) {
             this._parentClass = parentClass;
@@ -50,7 +50,7 @@ export class XmlLoader {
 
     }
 
-    private _getClassAttribute(attributeName : string) : any {
+    private _getClassAttribute(attributeName: string): any {
         const attribute = attributeName.split(".");
         const className = _TypeStore.GetClass("BABYLON.GUI." + attribute[0]);
         return className[attribute[1]];
@@ -102,8 +102,13 @@ export class XmlLoader {
                 return guiNode;
             }
 
-            if (!this._nodes[node.attributes.getNamedItem("id").nodeValue]) {
-                this._nodes[node.attributes.getNamedItem("id").nodeValue] = guiNode;
+            let id = node.attributes.getNamedItem("id").value;
+            if (id.startsWith("{{") && id.endsWith("}}")) {
+                id = this._getChainElement(id.substring(2, id.length - 2));
+            }
+
+            if (!this._nodes[id]) {
+                this._nodes[id] = guiNode;
             } else {
                 throw "XmlLoader Exception : Duplicate ID, every element should have an unique ID attribute";
             }
@@ -262,7 +267,7 @@ export class XmlLoader {
         }
 
         if (generated) {
-            node.setAttribute("id", parent.id + parent._children.length + 1);
+            node.setAttribute("id", parent.id + (parent._children.length + 1));
         }
 
         let guiNode = this._createGuiElement(node, parent);

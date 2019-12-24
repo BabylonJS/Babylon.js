@@ -13,6 +13,11 @@ export class WebGLPipelineContext implements IPipelineContext {
     public onCompiled?: () => void;
     public transformFeedback?: WebGLTransformFeedback | null;
 
+    public vertexCompilationError: Nullable<string> = null;
+    public fragmentCompilationError: Nullable<string> = null;
+    public programLinkError: Nullable<string> = null;
+    public programValidationError: Nullable<string> = null;
+
     public get isAsync() {
         return this.isParallelCompiled;
     }

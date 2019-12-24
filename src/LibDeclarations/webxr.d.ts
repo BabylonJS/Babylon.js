@@ -55,8 +55,9 @@ interface XRInputSource {
     profiles: Array<string>;
 }
 
-interface XRSession {
+interface XRSession extends XRAnchorCreator {
     addEventListener: Function;
+    removeEventListener: Function;
     requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
     updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
     requestAnimationFrame: Function;
@@ -64,6 +65,12 @@ interface XRSession {
     renderState: XRRenderState;
     inputSources: Array<XRInputSource>;
 
+    // AR hit test
+    requestHitTest(ray: XRRay, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
+
+    updateWorldTrackingState(options: {
+        planeDetectionState?: { enabled: boolean; }
+    }): void;
 }
 
 interface XRReferenceSpace extends XRSpace {
@@ -71,10 +78,20 @@ interface XRReferenceSpace extends XRSpace {
     onreset: any;
 }
 
+type XRPlaneSet = Set<XRPlane>;
+type XRAnchorSet = Set<XRAnchor>;
+
 interface XRFrame {
     session: XRSession;
     getViewerPose(referenceSpace: XRReferenceSpace): XRViewerPose | undefined;
     getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
+
+    // Anchors
+    trackedAnchors?: XRAnchorSet;
+    // Planes
+    worldInformation: {
+        detectedPlanes?: XRPlaneSet;
+    };
 }
 
 interface XRViewerPose extends XRPose {
@@ -87,12 +104,12 @@ interface XRPose {
 }
 
 interface XRWebGLLayerOptions {
-    antialias ?: boolean;
-    depth ?: boolean;
-    stencil ?: boolean;
-    alpha ?: boolean;
-    multiview ?: boolean;
-    framebufferScaleFactor ?: number;
+    antialias?: boolean;
+    depth?: boolean;
+    stencil?: boolean;
+    alpha?: boolean;
+    multiview?: boolean;
+    framebufferScaleFactor?: number;
 }
 
 declare var XRWebGLLayer: {
@@ -106,7 +123,8 @@ interface XRWebGLLayer {
     getViewport: Function;
 }
 
-interface XRRigidTransform {
+declare class XRRigidTransform {
+    constructor(matrix: Float32Array | DOMPointInit, direction?: DOMPointInit);
     position: DOMPointReadOnly;
     orientation: DOMPointReadOnly;
     matrix: Float32Array;
@@ -123,4 +141,41 @@ interface XRInputSourceChangeEvent {
     session: XRSession;
     removed: Array<XRInputSource>;
     added: Array<XRInputSource>;
+}
+
+interface XRInputSourceEvent extends Event {
+    readonly frame: XRFrame;
+    readonly inputSource: XRInputSource;
+}
+
+// Experimental(er) features
+declare class XRRay {
+    constructor(transformOrOrigin: XRRigidTransform | DOMPointInit, direction?: DOMPointInit);
+    origin: DOMPointReadOnly;
+    direction: DOMPointReadOnly;
+    matrix: Float32Array;
+}
+
+interface XRHitResult {
+    hitMatrix: Float32Array;
+}
+
+interface XRAnchor {
+    // remove?
+    id?: string;
+    anchorSpace: XRSpace;
+    lastChangedTime: number;
+    detach(): void;
+}
+
+interface XRPlane extends XRAnchorCreator {
+    orientation: "Horizontal" | "Vertical";
+    planeSpace: XRSpace;
+    polygon: Array<DOMPointReadOnly>;
+    lastChangedTime: number;
+}
+
+interface XRAnchorCreator {
+    // AR Anchors
+    createAnchor(pose: XRPose | XRRigidTransform, referenceSpace: XRReferenceSpace): Promise<XRAnchor>;
 }

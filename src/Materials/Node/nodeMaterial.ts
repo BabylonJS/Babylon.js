@@ -522,6 +522,21 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Remove a block from the current node material
+     * @param block defines the block to remove
+     */
+    public removeBlock(block: NodeMaterialBlock) {
+        let attachedBlockIndex = this.attachedBlocks.indexOf(block);
+        if (attachedBlockIndex > -1) {
+            this.attachedBlocks.splice(attachedBlockIndex, 1);
+        }
+
+        if (block.isFinalMerger) {
+            this.removeOutputNode(block);
+        }
+    }
+
+    /**
      * Build the material and generates the inner effect
      * @param verbose defines if the build should log activity
      */
@@ -679,7 +694,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         if (subMesh.effect && this.isFrozen) {
-            if (this._wasPreviouslyReady) {
+            if (subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -795,7 +810,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         defines._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
 
         return true;
     }
@@ -1115,25 +1130,30 @@ export class NodeMaterial extends PushMaterial {
      * Serializes this material in a JSON representation
      * @returns the serialized material object
      */
-    public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
-        serializationObject.customType = "BABYLON.NodeMaterial";
-
-        serializationObject.outputNodes = [];
+    public serialize(selectedBlocks?: NodeMaterialBlock[]): any {
+        var serializationObject = selectedBlocks ? {} : SerializationHelper.Serialize(this);
+        serializationObject.editorData = JSON.parse(JSON.stringify(this.editorData)); // Copy
 
         let blocks: NodeMaterialBlock[] = [];
 
-        // Outputs
-        for (var outputNode of this._vertexOutputNodes) {
-            this._gatherBlocks(outputNode, blocks);
-            serializationObject.outputNodes.push(outputNode.uniqueId);
-        }
+        if (selectedBlocks) {
+            blocks = selectedBlocks;
+        } else {
+            serializationObject.customType = "BABYLON.NodeMaterial";
+            serializationObject.outputNodes = [];
 
-        for (var outputNode of this._fragmentOutputNodes) {
-            this._gatherBlocks(outputNode, blocks);
-
-            if (serializationObject.outputNodes.indexOf(outputNode.uniqueId) === -1) {
+            // Outputs
+            for (var outputNode of this._vertexOutputNodes) {
+                this._gatherBlocks(outputNode, blocks);
                 serializationObject.outputNodes.push(outputNode.uniqueId);
+            }
+
+            for (var outputNode of this._fragmentOutputNodes) {
+                this._gatherBlocks(outputNode, blocks);
+
+                if (serializationObject.outputNodes.indexOf(outputNode.uniqueId) === -1) {
+                    serializationObject.outputNodes.push(outputNode.uniqueId);
+                }
             }
         }
 
@@ -1144,11 +1164,13 @@ export class NodeMaterial extends PushMaterial {
             serializationObject.blocks.push(block.serialize());
         }
 
-        for (var block of this.attachedBlocks) {
-            if (blocks.indexOf(block) !== -1) {
-                continue;
+        if (!selectedBlocks) {
+            for (var block of this.attachedBlocks) {
+                if (blocks.indexOf(block) !== -1) {
+                    continue;
+                }
+                serializationObject.blocks.push(block.serialize());
             }
-            serializationObject.blocks.push(block.serialize());
         }
 
         return serializationObject;
@@ -1216,18 +1238,35 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // UI related info
-        if (source.locations) {
+        if (source.locations || source.editorData && source.editorData.locations) {
             let locations: {
                 blockId: number;
                 x: number;
                 y: number;
-            }[] = source.locations;
+            }[] = source.locations || source.editorData.locations;
 
             for (var location of locations) {
-                location.blockId = map[location.blockId].uniqueId;
+                if (map[location.blockId]) {
+                    location.blockId = map[location.blockId].uniqueId;
+                }
             }
 
-            this.editorData = locations;
+            if (source.locations) {
+                this.editorData = {
+                    locations: locations
+                };
+            } else {
+                this.editorData = source.editorData;
+                this.editorData.locations = locations;
+            }
+
+            let blockMap: number[] = [];
+
+            for (var key in map) {
+                blockMap[key] = map[key].uniqueId;
+            }
+
+            this.editorData.map = blockMap;
         }
     }
 
