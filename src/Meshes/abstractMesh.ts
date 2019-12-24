@@ -182,7 +182,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * - AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY
      * Please read each static variable documentation to get details about the culling process.
      * */
-    public cullingStrategy = AbstractMesh.CULLINGSTRATEGY_STANDARD;
+    public cullingStrategy = AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY;
 
     /**
      * Gets the number of facets in the mesh
@@ -376,7 +376,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             value.meshMap[this.uniqueId] = this;
         }
 
-        if (this.onMaterialChangedObservable.hasObservers) {
+        if (this.onMaterialChangedObservable.hasObservers()) {
             this.onMaterialChangedObservable.notifyObservers(this);
         }
 

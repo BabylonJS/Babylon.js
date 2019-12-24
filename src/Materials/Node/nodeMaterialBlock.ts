@@ -1,7 +1,7 @@
 import { NodeMaterialBlockConnectionPointTypes } from './Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from './nodeMaterialBuildState';
 import { Nullable } from '../../types';
-import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint';
+import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection } from './nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
 import { Effect } from '../effect';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
@@ -44,6 +44,11 @@ export class NodeMaterialBlock {
      * Gets or sets the unique id of the node
      */
     public uniqueId: number;
+
+    /**
+     * Gets or sets the comments associated with this block
+     */
+    public comments: string = "";
 
     /**
      * Gets a boolean indicating that this block can only be used once per NodeMaterial
@@ -208,7 +213,7 @@ export class NodeMaterialBlock {
      * @returns the current block
      */
     public registerInput(name: string, type: NodeMaterialBlockConnectionPointTypes, isOptional: boolean = false, target?: NodeMaterialBlockTargets) {
-        let point = new NodeMaterialConnectionPoint(name, this);
+        let point = new NodeMaterialConnectionPoint(name, this, NodeMaterialConnectionPointDirection.Input);
         point.type = type;
         point.isOptional = isOptional;
         if (target) {
@@ -228,7 +233,7 @@ export class NodeMaterialBlock {
      * @returns the current block
      */
     public registerOutput(name: string, type: NodeMaterialBlockConnectionPointTypes, target?: NodeMaterialBlockTargets) {
-        let point = new NodeMaterialConnectionPoint(name, this);
+        let point = new NodeMaterialConnectionPoint(name, this, NodeMaterialConnectionPointDirection.Output);
         point.type = type;
         if (target) {
             point.target = target;
@@ -536,7 +541,7 @@ export class NodeMaterialBlock {
 
         // Get unique name
         let nameAsVariableName = this.name.replace(/[^A-Za-z_]+/g, "");
-        this._codeVariableName = nameAsVariableName;
+        this._codeVariableName = nameAsVariableName || `${this.getClassName()}_${this.uniqueId}`;
 
         if (uniqueNames.indexOf(this._codeVariableName) !== -1) {
             let index = 0;
@@ -551,6 +556,9 @@ export class NodeMaterialBlock {
 
         // Declaration
         codeString = `\r\n// ${this.getClassName()}\r\n`;
+        if (this.comments) {
+            codeString += `// ${this.comments}\r\n`;
+        }
         codeString += `var ${this._codeVariableName} = new BABYLON.${this.getClassName()}("${this.name}");\r\n`;
 
         // Properties
@@ -641,6 +649,7 @@ export class NodeMaterialBlock {
         serializationObject.customType = "BABYLON." + this.getClassName();
         serializationObject.id = this.uniqueId;
         serializationObject.name = this.name;
+        serializationObject.comments = this.comments;
 
         serializationObject.inputs = [];
 
@@ -654,6 +663,7 @@ export class NodeMaterialBlock {
     /** @hidden */
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         this.name = serializationObject.name;
+        this.comments = serializationObject.comments;
     }
 
     /**

@@ -57,6 +57,22 @@ export class HolographicButton extends Button3D {
     }
 
     /**
+     * Rendering ground id of all the mesh in the button
+     */
+    public set renderingGroupId(id: number) {
+        this._backPlate.renderingGroupId = id;
+        this._textPlate.renderingGroupId = id;
+        this._frontPlate.renderingGroupId = id;
+
+        if (this._tooltipMesh) {
+            this._tooltipMesh.renderingGroupId = id;
+        }
+    }
+    public get renderingGroupId(): number {
+        return this._backPlate.renderingGroupId;
+    }
+
+    /**
      * Text to be displayed on the tooltip shown when hovering on the button. When set to null tooltip is disabled. (Default: null)
      */
     public set tooltipText(text: Nullable<string>) {

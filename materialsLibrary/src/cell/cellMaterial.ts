@@ -26,6 +26,8 @@ class CellMaterialDefines extends MaterialDefines {
     public CLIPPLANE2 = false;
     public CLIPPLANE3 = false;
     public CLIPPLANE4 = false;
+    public CLIPPLANE5 = false;
+    public CLIPPLANE6 = false;
     public ALPHATEST = false;
     public POINTSIZE = false;
     public FOG = false;
@@ -93,7 +95,7 @@ export class CellMaterial extends PushMaterial {
     // Methods
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -188,7 +190,7 @@ export class CellMaterial extends PushMaterial {
                 "vFogInfos", "vFogColor", "pointSize",
                 "vDiffuseInfos",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix"
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "diffuseMatrix"
             ];
             var samplers = ["diffuseSampler"];
             var uniformBuffers = new Array<string>();
@@ -219,7 +221,7 @@ export class CellMaterial extends PushMaterial {
         }
 
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
 
         return true;
     }

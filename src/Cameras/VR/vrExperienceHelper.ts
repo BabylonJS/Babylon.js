@@ -429,6 +429,11 @@ export class VRExperienceHelper {
     private _leftController: Nullable<VRExperienceHelperControllerGazer> = null;
     private _rightController: Nullable<VRExperienceHelperControllerGazer> = null;
 
+    private _gazeColor: Color3 = new Color3(0.7, 0.7, 0.7);
+    private _laserColor: Color3 = new Color3(0.7, 0.7, 0.7);
+    private _pickedLaserColor: Color3 = new Color3(0.2, 0.2, 1);
+    private _pickedGazeColor: Color3 = new Color3(0, 0, 1);
+
     /**
      * Observable raised when a new mesh is selected based on meshSelectionPredicate
      */
@@ -839,18 +844,18 @@ export class VRExperienceHelper {
                         });
 
                         this.xr.input.onControllerAddedObservable.add((controller) => {
-                            var webVRController = controller.gamepadController;
-                            if (webVRController) {
-                                var localController = new VRExperienceHelperControllerGazer(webVRController, this._scene, this._cameraGazer._gazeTracker);
+                            // var webVRController = controller.gamepadController;
+                            // if (webVRController) {
+                            //     var localController = new VRExperienceHelperControllerGazer(webVRController, this._scene, this._cameraGazer._gazeTracker);
 
-                                if (controller.inputSource.handedness === "right" || (this._leftController && this._leftController.webVRController != webVRController)) {
-                                    this._rightController = localController;
-                                } else {
-                                    this._leftController = localController;
-                                }
+                            //     if (controller.inputSource.handedness === "right" || (this._leftController)) {
+                            //         this._rightController = localController;
+                            //     } else {
+                            //         this._leftController = localController;
+                            //     }
 
-                                this._tryEnableInteractionOnController(localController);
-                            }
+                            //     this._tryEnableInteractionOnController(localController);
+                            // }
                         });
                     });
                 } else {
@@ -2193,13 +2198,13 @@ export class VRExperienceHelper {
                     this.onNewMeshPicked.notifyObservers(hit);
                     gazer._currentMeshSelected = hit.pickedMesh;
                     if (hit.pickedMesh.isPickable && hit.pickedMesh.actionManager) {
-                        this.changeGazeColor(new Color3(0, 0, 1));
-                        this.changeLaserColor(new Color3(0.2, 0.2, 1));
+                        this.changeGazeColor(this._pickedGazeColor);
+                        this.changeLaserColor(this._pickedLaserColor);
                         gazer._isActionableMesh = true;
                     }
                     else {
-                        this.changeGazeColor(new Color3(0.7, 0.7, 0.7));
-                        this.changeLaserColor(new Color3(0.7, 0.7, 0.7));
+                        this.changeGazeColor(this._gazeColor);
+                        this.changeLaserColor(this._laserColor);
                         gazer._isActionableMesh = false;
                     }
                     try {
@@ -2216,8 +2221,8 @@ export class VRExperienceHelper {
                 else {
                     this._notifySelectedMeshUnselected(gazer._currentMeshSelected);
                     gazer._currentMeshSelected = null;
-                    this.changeGazeColor(new Color3(0.7, 0.7, 0.7));
-                    this.changeLaserColor(new Color3(0.7, 0.7, 0.7));
+                    this.changeGazeColor(this._gazeColor);
+                    this.changeLaserColor(this._laserColor);
                 }
             }
         }
@@ -2225,8 +2230,8 @@ export class VRExperienceHelper {
             this._notifySelectedMeshUnselected(gazer._currentMeshSelected);
             gazer._currentMeshSelected = null;
             //this._teleportationAllowed = false;
-            this.changeGazeColor(new Color3(0.7, 0.7, 0.7));
-            this.changeLaserColor(new Color3(0.7, 0.7, 0.7));
+            this.changeGazeColor(this._gazeColor);
+            this.changeLaserColor(this._laserColor);
         }
     }
 
@@ -2234,6 +2239,26 @@ export class VRExperienceHelper {
         if (mesh) {
             this.onSelectedMeshUnselected.notifyObservers(mesh);
         }
+    }
+
+    /**
+     * Permanently set new colors for the laser pointer
+     * @param color the new laser color
+     * @param pickedColor the new laser color when picked mesh detected
+     */
+    public setLaserColor(color: Color3, pickedColor: Color3 = this._pickedLaserColor) {
+        this._laserColor = color;
+        this._pickedLaserColor = pickedColor;
+    }
+
+    /**
+     * Permanently set new colors for the gaze pointer
+     * @param color the new gaze color
+     * @param pickedColor the new gaze color when picked mesh detected
+     */
+    public setGazeColor(color: Color3, pickedColor: Color3 = this._pickedGazeColor) {
+        this._gazeColor = color;
+        this._pickedGazeColor = pickedColor;
     }
 
     /**

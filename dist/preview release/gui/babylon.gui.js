@@ -6565,6 +6565,21 @@ var Image = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    /** @hidden */
+    Image.prototype._rotate90 = function (n) {
+        var canvas = document.createElement('canvas');
+        var context = canvas.getContext('2d');
+        var width = this._domImage.width;
+        var height = this._domImage.height;
+        canvas.width = height;
+        canvas.height = width;
+        context.translate(canvas.width / 2, canvas.height / 2);
+        context.rotate(n * Math.PI / 2);
+        context.drawImage(this._domImage, 0, 0, width, height, -width / 2, -height / 2, width, height);
+        var dataUrl = canvas.toDataURL("image/jpg");
+        var rotatedImage = new Image(this.name + "rotated", dataUrl);
+        return rotatedImage;
+    };
     Object.defineProperty(Image.prototype, "domImage", {
         get: function () {
             return this._domImage;
@@ -6679,6 +6694,17 @@ var Image = /** @class */ (function (_super) {
             // check if object alr exist in document
             var svgExist = document.body.querySelector('object[data="' + svgsrc + '"]');
             if (svgExist) {
+                var svgDoc = svgExist.contentDocument;
+                // get viewbox width and height, get svg document width and height in px
+                if (svgDoc && svgDoc.documentElement) {
+                    var vb = svgDoc.documentElement.getAttribute("viewBox");
+                    var docwidth = Number(svgDoc.documentElement.getAttribute("width"));
+                    var docheight = Number(svgDoc.documentElement.getAttribute("height"));
+                    if (vb && docwidth && docheight) {
+                        this._getSVGAttribs(svgExist, elemid);
+                        return value;
+                    }
+                }
                 // wait for object to load
                 svgExist.addEventListener("load", function () {
                     _this._getSVGAttribs(svgExist, elemid);
@@ -10837,21 +10863,42 @@ var ImageScrollBar = /** @class */ (function (_super) {
     }
     Object.defineProperty(ImageScrollBar.prototype, "backgroundImage", {
         /**
-         * Gets or sets the image used to render the background
+         * Gets or sets the image used to render the background for horizontal bar
          */
         get: function () {
-            return this._backgroundImage;
+            return this._backgroundBaseImage;
         },
         set: function (value) {
             var _this = this;
-            if (this._backgroundImage === value) {
+            if (this._backgroundBaseImage === value) {
                 return;
             }
-            this._backgroundImage = value;
-            if (value && !value.isLoaded) {
-                value.onImageLoadedObservable.addOnce(function () { return _this._markAsDirty(); });
+            this._backgroundBaseImage = value;
+            if (this.isVertical) {
+                if (value && !value.isLoaded) {
+                    value.onImageLoadedObservable.addOnce(function () {
+                        var rotatedValue = value._rotate90(1);
+                        _this._backgroundImage = rotatedValue;
+                        if (!rotatedValue.isLoaded) {
+                            rotatedValue.onImageLoadedObservable.addOnce(function () {
+                                _this._markAsDirty();
+                            });
+                        }
+                        _this._markAsDirty();
+                    });
+                }
+                this._backgroundImage = value._rotate90(1);
+                this._markAsDirty();
             }
-            this._markAsDirty();
+            else {
+                this._backgroundImage = value;
+                if (value && !value.isLoaded) {
+                    value.onImageLoadedObservable.addOnce(function () {
+                        _this._markAsDirty();
+                    });
+                }
+                this._markAsDirty();
+            }
         },
         enumerable: true,
         configurable: true
@@ -10861,18 +10908,39 @@ var ImageScrollBar = /** @class */ (function (_super) {
          * Gets or sets the image used to render the thumb
          */
         get: function () {
-            return this._thumbImage;
+            return this._thumbBaseImage;
         },
         set: function (value) {
             var _this = this;
-            if (this._thumbImage === value) {
+            if (this._thumbBaseImage === value) {
                 return;
             }
-            this._thumbImage = value;
-            if (value && !value.isLoaded) {
-                value.onImageLoadedObservable.addOnce(function () { return _this._markAsDirty(); });
+            this._thumbBaseImage = value;
+            if (this.isVertical) {
+                if (value && !value.isLoaded) {
+                    value.onImageLoadedObservable.addOnce(function () {
+                        var rotatedValue = value._rotate90(-1);
+                        _this._thumbImage = rotatedValue;
+                        if (!rotatedValue.isLoaded) {
+                            rotatedValue.onImageLoadedObservable.addOnce(function () {
+                                _this._markAsDirty();
+                            });
+                        }
+                        _this._markAsDirty();
+                    });
+                }
+                this._thumbImage = value._rotate90(-1);
+                this._markAsDirty();
             }
-            this._markAsDirty();
+            else {
+                this._thumbImage = value;
+                if (value && !value.isLoaded) {
+                    value.onImageLoadedObservable.addOnce(function () {
+                        _this._markAsDirty();
+                    });
+                }
+                this._markAsDirty();
+            }
         },
         enumerable: true,
         configurable: true
@@ -13452,8 +13520,12 @@ var XmlLoader = /** @class */ (function () {
                 this._nodes[node.nodeName + Object.keys(this._nodes).length + "_gen"] = guiNode;
                 return guiNode;
             }
-            if (!this._nodes[node.attributes.getNamedItem("id").nodeValue]) {
-                this._nodes[node.attributes.getNamedItem("id").nodeValue] = guiNode;
+            var id = node.attributes.getNamedItem("id").value;
+            if (id.startsWith("{{") && id.endsWith("}}")) {
+                id = this._getChainElement(id.substring(2, id.length - 2));
+            }
+            if (!this._nodes[id]) {
+                this._nodes[id] = guiNode;
             }
             else {
                 throw "XmlLoader Exception : Duplicate ID, every element should have an unique ID attribute";
@@ -13597,7 +13669,7 @@ var XmlLoader = /** @class */ (function () {
             return;
         }
         if (generated) {
-            node.setAttribute("id", parent.id + parent._children.length + 1);
+            node.setAttribute("id", parent.id + (parent._children.length + 1));
         }
         var guiNode = this._createGuiElement(node, parent);
         if (node.nodeName == "Grid") {
@@ -14609,6 +14681,24 @@ var HolographicButton = /** @class */ (function (_super) {
         this.onPointerEnterObservable.remove(this._tooltipHoverObserver);
         this.onPointerOutObservable.remove(this._tooltipOutObserver);
     };
+    Object.defineProperty(HolographicButton.prototype, "renderingGroupId", {
+        get: function () {
+            return this._backPlate.renderingGroupId;
+        },
+        /**
+         * Rendering ground id of all the mesh in the button
+         */
+        set: function (id) {
+            this._backPlate.renderingGroupId = id;
+            this._textPlate.renderingGroupId = id;
+            this._frontPlate.renderingGroupId = id;
+            if (this._tooltipMesh) {
+                this._tooltipMesh.renderingGroupId = id;
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(HolographicButton.prototype, "tooltipText", {
         get: function () {
             if (this._tooltipTextBlock) {
@@ -15974,7 +16064,7 @@ var FluentMaterial = /** @class */ (function (_super) {
     };
     FluentMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -16043,7 +16133,7 @@ var FluentMaterial = /** @class */ (function (_super) {
             return false;
         }
         defines._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
         return true;
     };
     FluentMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {

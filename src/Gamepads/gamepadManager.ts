@@ -18,7 +18,7 @@ export class GamepadManager {
     /** @hidden */
     public _isMonitoring: boolean = false;
     private _gamepadEventSupported: boolean;
-    private _gamepadSupport: () => Array<any>;
+    private _gamepadSupport?: () => Array<any>;
 
     /**
      * observable to be triggered when the gamepad controller has been connected

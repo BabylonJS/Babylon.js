@@ -464,6 +464,8 @@ var FurMaterialDefines = /** @class */ (function (_super) {
         _this.CLIPPLANE2 = false;
         _this.CLIPPLANE3 = false;
         _this.CLIPPLANE4 = false;
+        _this.CLIPPLANE5 = false;
+        _this.CLIPPLANE6 = false;
         _this.ALPHATEST = false;
         _this.DEPTHPREPASS = false;
         _this.POINTSIZE = false;
@@ -540,7 +542,7 @@ var FurMaterial = /** @class */ (function (_super) {
     // Methods
     FurMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -627,7 +629,7 @@ var FurMaterial = /** @class */ (function (_super) {
                 "vFogInfos", "vFogColor", "pointSize",
                 "vDiffuseInfos",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix",
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "diffuseMatrix",
                 "furLength", "furAngle", "furColor", "furOffset", "furGravity", "furTime", "furSpacing", "furDensity", "furOcclusion"
             ];
             var samplers = ["diffuseSampler",
@@ -657,7 +659,7 @@ var FurMaterial = /** @class */ (function (_super) {
             return false;
         }
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
         return true;
     };
     FurMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {

@@ -508,7 +508,7 @@ var GridMaterial = /** @class */ (function (_super) {
     };
     GridMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -571,7 +571,7 @@ var GridMaterial = /** @class */ (function (_super) {
             return false;
         }
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
         return true;
     };
     GridMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {

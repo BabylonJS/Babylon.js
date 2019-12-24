@@ -459,6 +459,8 @@ var CellMaterialDefines = /** @class */ (function (_super) {
         _this.CLIPPLANE2 = false;
         _this.CLIPPLANE3 = false;
         _this.CLIPPLANE4 = false;
+        _this.CLIPPLANE5 = false;
+        _this.CLIPPLANE6 = false;
         _this.ALPHATEST = false;
         _this.POINTSIZE = false;
         _this.FOG = false;
@@ -501,7 +503,7 @@ var CellMaterial = /** @class */ (function (_super) {
     // Methods
     CellMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -576,7 +578,7 @@ var CellMaterial = /** @class */ (function (_super) {
                 "vFogInfos", "vFogColor", "pointSize",
                 "vDiffuseInfos",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix"
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "diffuseMatrix"
             ];
             var samplers = ["diffuseSampler"];
             var uniformBuffers = new Array();
@@ -603,7 +605,7 @@ var CellMaterial = /** @class */ (function (_super) {
             return false;
         }
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
         return true;
     };
     CellMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {

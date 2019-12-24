@@ -459,6 +459,8 @@ var CellMaterialDefines = /** @class */ (function (_super) {
         _this.CLIPPLANE2 = false;
         _this.CLIPPLANE3 = false;
         _this.CLIPPLANE4 = false;
+        _this.CLIPPLANE5 = false;
+        _this.CLIPPLANE6 = false;
         _this.ALPHATEST = false;
         _this.POINTSIZE = false;
         _this.FOG = false;
@@ -501,7 +503,7 @@ var CellMaterial = /** @class */ (function (_super) {
     // Methods
     CellMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -576,7 +578,7 @@ var CellMaterial = /** @class */ (function (_super) {
                 "vFogInfos", "vFogColor", "pointSize",
                 "vDiffuseInfos",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix"
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "diffuseMatrix"
             ];
             var samplers = ["diffuseSampler"];
             var uniformBuffers = new Array();
@@ -603,7 +605,7 @@ var CellMaterial = /** @class */ (function (_super) {
             return false;
         }
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
         return true;
     };
     CellMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
@@ -1288,6 +1290,8 @@ var FireMaterialDefines = /** @class */ (function (_super) {
         _this.CLIPPLANE2 = false;
         _this.CLIPPLANE3 = false;
         _this.CLIPPLANE4 = false;
+        _this.CLIPPLANE5 = false;
+        _this.CLIPPLANE6 = false;
         _this.ALPHATEST = false;
         _this.DEPTHPREPASS = false;
         _this.POINTSIZE = false;
@@ -1325,7 +1329,7 @@ var FireMaterial = /** @class */ (function (_super) {
     // Methods
     FireMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -1394,7 +1398,7 @@ var FireMaterial = /** @class */ (function (_super) {
                     "vFogInfos", "vFogColor", "pointSize",
                     "vDiffuseInfos",
                     "mBones",
-                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix",
+                    "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "diffuseMatrix",
                     // Fire
                     "time", "speed"
                 ],
@@ -1416,7 +1420,7 @@ var FireMaterial = /** @class */ (function (_super) {
             return false;
         }
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
         return true;
     };
     FireMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
@@ -1556,9 +1560,6 @@ var FireMaterial = /** @class */ (function (_super) {
         }
         if (source._opacityTexture) {
             material._opacityTexture = babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Texture"].Parse(source._opacityTexture, scene, rootUrl);
-        }
-        if (source.checkReadyOnlyOnce) {
-            material.checkReadyOnlyOnce = source.checkReadyOnlyOnce;
         }
         return material;
     };
@@ -1719,6 +1720,8 @@ var FurMaterialDefines = /** @class */ (function (_super) {
         _this.CLIPPLANE2 = false;
         _this.CLIPPLANE3 = false;
         _this.CLIPPLANE4 = false;
+        _this.CLIPPLANE5 = false;
+        _this.CLIPPLANE6 = false;
         _this.ALPHATEST = false;
         _this.DEPTHPREPASS = false;
         _this.POINTSIZE = false;
@@ -1795,7 +1798,7 @@ var FurMaterial = /** @class */ (function (_super) {
     // Methods
     FurMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -1882,7 +1885,7 @@ var FurMaterial = /** @class */ (function (_super) {
                 "vFogInfos", "vFogColor", "pointSize",
                 "vDiffuseInfos",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix",
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "diffuseMatrix",
                 "furLength", "furAngle", "furColor", "furOffset", "furGravity", "furTime", "furSpacing", "furDensity", "furOcclusion"
             ];
             var samplers = ["diffuseSampler",
@@ -1912,7 +1915,7 @@ var FurMaterial = /** @class */ (function (_super) {
             return false;
         }
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
         return true;
     };
     FurMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
@@ -2291,6 +2294,8 @@ var GradientMaterialDefines = /** @class */ (function (_super) {
         _this.CLIPPLANE2 = false;
         _this.CLIPPLANE3 = false;
         _this.CLIPPLANE4 = false;
+        _this.CLIPPLANE5 = false;
+        _this.CLIPPLANE6 = false;
         _this.ALPHATEST = false;
         _this.DEPTHPREPASS = false;
         _this.POINTSIZE = false;
@@ -2338,7 +2343,7 @@ var GradientMaterial = /** @class */ (function (_super) {
     // Methods
     GradientMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -2394,7 +2399,7 @@ var GradientMaterial = /** @class */ (function (_super) {
             var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType",
                 "vFogInfos", "vFogColor", "pointSize",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4",
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6",
                 "topColor", "bottomColor", "offset", "smoothness", "scale"
             ];
             var samplers = [];
@@ -2422,7 +2427,7 @@ var GradientMaterial = /** @class */ (function (_super) {
             return false;
         }
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
         return true;
     };
     GradientMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
@@ -2698,7 +2703,7 @@ var GridMaterial = /** @class */ (function (_super) {
     };
     GridMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -2761,7 +2766,7 @@ var GridMaterial = /** @class */ (function (_super) {
             return false;
         }
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
         return true;
     };
     GridMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
@@ -3079,6 +3084,8 @@ var LavaMaterialDefines = /** @class */ (function (_super) {
         _this.CLIPPLANE2 = false;
         _this.CLIPPLANE3 = false;
         _this.CLIPPLANE4 = false;
+        _this.CLIPPLANE5 = false;
+        _this.CLIPPLANE6 = false;
         _this.ALPHATEST = false;
         _this.DEPTHPREPASS = false;
         _this.POINTSIZE = false;
@@ -3166,7 +3173,7 @@ var LavaMaterial = /** @class */ (function (_super) {
     // Methods
     LavaMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -3241,7 +3248,7 @@ var LavaMaterial = /** @class */ (function (_super) {
                 "vFogInfos", "vFogColor", "pointSize",
                 "vDiffuseInfos",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix",
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "diffuseMatrix",
                 "time", "speed", "movingSpeed",
                 "fogColor", "fogDensity", "lowFrequencySpeed"
             ];
@@ -3272,7 +3279,7 @@ var LavaMaterial = /** @class */ (function (_super) {
             return false;
         }
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
         return true;
     };
     LavaMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
@@ -3623,6 +3630,8 @@ var MixMaterialDefines = /** @class */ (function (_super) {
         _this.CLIPPLANE2 = false;
         _this.CLIPPLANE3 = false;
         _this.CLIPPLANE4 = false;
+        _this.CLIPPLANE5 = false;
+        _this.CLIPPLANE6 = false;
         _this.ALPHATEST = false;
         _this.DEPTHPREPASS = false;
         _this.POINTSIZE = false;
@@ -3668,7 +3677,7 @@ var MixMaterial = /** @class */ (function (_super) {
     // Methods
     MixMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -3768,7 +3777,7 @@ var MixMaterial = /** @class */ (function (_super) {
                 "vFogInfos", "vFogColor", "pointSize",
                 "vTextureInfos",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "textureMatrix",
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "textureMatrix",
                 "diffuse1Infos", "diffuse2Infos", "diffuse3Infos", "diffuse4Infos",
                 "diffuse5Infos", "diffuse6Infos", "diffuse7Infos", "diffuse8Infos"
             ];
@@ -3801,7 +3810,7 @@ var MixMaterial = /** @class */ (function (_super) {
             return false;
         }
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
         return true;
     };
     MixMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
@@ -4204,6 +4213,8 @@ var NormalMaterialDefines = /** @class */ (function (_super) {
         _this.CLIPPLANE2 = false;
         _this.CLIPPLANE3 = false;
         _this.CLIPPLANE4 = false;
+        _this.CLIPPLANE5 = false;
+        _this.CLIPPLANE6 = false;
         _this.ALPHATEST = false;
         _this.DEPTHPREPASS = false;
         _this.POINTSIZE = false;
@@ -4285,7 +4296,7 @@ var NormalMaterial = /** @class */ (function (_super) {
     // Methods
     NormalMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -4357,7 +4368,7 @@ var NormalMaterial = /** @class */ (function (_super) {
                 "vFogInfos", "vFogColor", "pointSize",
                 "vDiffuseInfos",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix"
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "diffuseMatrix"
             ];
             var samplers = ["diffuseSampler"];
             var uniformBuffers = new Array();
@@ -4384,7 +4395,7 @@ var NormalMaterial = /** @class */ (function (_super) {
             return false;
         }
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
         return true;
     };
     NormalMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
@@ -4622,6 +4633,8 @@ var ShadowOnlyMaterialDefines = /** @class */ (function (_super) {
         _this.CLIPPLANE2 = false;
         _this.CLIPPLANE3 = false;
         _this.CLIPPLANE4 = false;
+        _this.CLIPPLANE5 = false;
+        _this.CLIPPLANE6 = false;
         _this.POINTSIZE = false;
         _this.FOG = false;
         _this.NORMAL = false;
@@ -4662,7 +4675,7 @@ var ShadowOnlyMaterial = /** @class */ (function (_super) {
     // Methods
     ShadowOnlyMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -4724,7 +4737,7 @@ var ShadowOnlyMaterial = /** @class */ (function (_super) {
             var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType",
                 "vFogInfos", "vFogColor", "pointSize", "alpha", "shadowColor",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4"
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6"
             ];
             var samplers = new Array();
             var uniformBuffers = new Array();
@@ -4751,7 +4764,7 @@ var ShadowOnlyMaterial = /** @class */ (function (_super) {
             return false;
         }
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
         return true;
     };
     ShadowOnlyMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
@@ -4937,6 +4950,8 @@ var SimpleMaterialDefines = /** @class */ (function (_super) {
         _this.CLIPPLANE2 = false;
         _this.CLIPPLANE3 = false;
         _this.CLIPPLANE4 = false;
+        _this.CLIPPLANE5 = false;
+        _this.CLIPPLANE6 = false;
         _this.ALPHATEST = false;
         _this.DEPTHPREPASS = false;
         _this.POINTSIZE = false;
@@ -4975,7 +4990,7 @@ var SimpleMaterial = /** @class */ (function (_super) {
     // Methods
     SimpleMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -5048,7 +5063,7 @@ var SimpleMaterial = /** @class */ (function (_super) {
                 "vFogInfos", "vFogColor", "pointSize",
                 "vDiffuseInfos",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix"
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "diffuseMatrix"
             ];
             var samplers = ["diffuseSampler"];
             var uniformBuffers = new Array();
@@ -5075,7 +5090,7 @@ var SimpleMaterial = /** @class */ (function (_super) {
             return false;
         }
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
         return true;
     };
     SimpleMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
@@ -5301,6 +5316,8 @@ var SkyMaterialDefines = /** @class */ (function (_super) {
         _this.CLIPPLANE2 = false;
         _this.CLIPPLANE3 = false;
         _this.CLIPPLANE4 = false;
+        _this.CLIPPLANE5 = false;
+        _this.CLIPPLANE6 = false;
         _this.POINTSIZE = false;
         _this.FOG = false;
         _this.VERTEXCOLOR = false;
@@ -5410,7 +5427,7 @@ var SkyMaterial = /** @class */ (function (_super) {
      */
     SkyMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -5444,7 +5461,7 @@ var SkyMaterial = /** @class */ (function (_super) {
             var shaderName = "sky";
             var join = defines.toString();
             subMesh.setEffect(scene.getEngine().createEffect(shaderName, attribs, ["world", "viewProjection", "view",
-                "vFogInfos", "vFogColor", "pointSize", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4",
+                "vFogInfos", "vFogColor", "pointSize", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6",
                 "luminance", "turbidity", "rayleigh", "mieCoefficient", "mieDirectionalG", "sunPosition",
                 "cameraPosition", "cameraOffset"
             ], [], join, fallbacks, this.onCompiled, this.onError), defines);
@@ -5453,7 +5470,7 @@ var SkyMaterial = /** @class */ (function (_super) {
             return false;
         }
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
         return true;
     };
     /**
@@ -5728,6 +5745,8 @@ var TerrainMaterialDefines = /** @class */ (function (_super) {
         _this.CLIPPLANE2 = false;
         _this.CLIPPLANE3 = false;
         _this.CLIPPLANE4 = false;
+        _this.CLIPPLANE5 = false;
+        _this.CLIPPLANE6 = false;
         _this.ALPHATEST = false;
         _this.DEPTHPREPASS = false;
         _this.POINTSIZE = false;
@@ -5769,7 +5788,7 @@ var TerrainMaterial = /** @class */ (function (_super) {
     // Methods
     TerrainMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -5860,7 +5879,7 @@ var TerrainMaterial = /** @class */ (function (_super) {
                 "vFogInfos", "vFogColor", "pointSize",
                 "vTextureInfos",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "textureMatrix",
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "textureMatrix",
                 "diffuse1Infos", "diffuse2Infos", "diffuse3Infos"
             ];
             var samplers = ["textureSampler", "diffuse1Sampler", "diffuse2Sampler", "diffuse3Sampler",
@@ -5890,7 +5909,7 @@ var TerrainMaterial = /** @class */ (function (_super) {
             return false;
         }
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
         return true;
     };
     TerrainMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
@@ -6175,6 +6194,8 @@ var TriPlanarMaterialDefines = /** @class */ (function (_super) {
         _this.CLIPPLANE2 = false;
         _this.CLIPPLANE3 = false;
         _this.CLIPPLANE4 = false;
+        _this.CLIPPLANE5 = false;
+        _this.CLIPPLANE6 = false;
         _this.ALPHATEST = false;
         _this.DEPTHPREPASS = false;
         _this.POINTSIZE = false;
@@ -6215,7 +6236,7 @@ var TriPlanarMaterial = /** @class */ (function (_super) {
     // Methods
     TriPlanarMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -6300,7 +6321,7 @@ var TriPlanarMaterial = /** @class */ (function (_super) {
             var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor", "vSpecularColor",
                 "vFogInfos", "vFogColor", "pointSize",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4",
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6",
                 "tileSize"
             ];
             var samplers = ["diffuseSamplerX", "diffuseSamplerY", "diffuseSamplerZ",
@@ -6330,7 +6351,7 @@ var TriPlanarMaterial = /** @class */ (function (_super) {
             return false;
         }
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
         return true;
     };
     TriPlanarMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {
@@ -6738,6 +6759,8 @@ var WaterMaterialDefines = /** @class */ (function (_super) {
         _this.CLIPPLANE2 = false;
         _this.CLIPPLANE3 = false;
         _this.CLIPPLANE4 = false;
+        _this.CLIPPLANE5 = false;
+        _this.CLIPPLANE6 = false;
         _this.ALPHATEST = false;
         _this.DEPTHPREPASS = false;
         _this.POINTSIZE = false;
@@ -6944,7 +6967,7 @@ var WaterMaterial = /** @class */ (function (_super) {
     };
     WaterMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -7050,7 +7073,7 @@ var WaterMaterial = /** @class */ (function (_super) {
                 "vFogInfos", "vFogColor", "pointSize",
                 "vNormalInfos",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "normalMatrix",
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "normalMatrix",
                 "logarithmicDepthConstant",
                 // Water
                 "worldReflectionViewProjection", "windDirection", "waveLength", "time", "windForce",
@@ -7088,7 +7111,7 @@ var WaterMaterial = /** @class */ (function (_super) {
             return false;
         }
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
         return true;
     };
     WaterMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {

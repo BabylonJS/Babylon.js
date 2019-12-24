@@ -113,6 +113,12 @@ export class Effect implements IDisposable {
     public _onBindObservable: Nullable<Observable<Effect>> = null;
 
     /**
+     * @hidden
+     * Specifies if the effect was previously ready
+     */
+    public _wasPreviouslyReady = false;
+
+    /**
      * Observable that will be called when effect is bound.
      */
     public get onBindObservable(): Observable<Effect> {
@@ -137,6 +143,7 @@ export class Effect implements IDisposable {
     private _allFallbacksProcessed = false;
     private _attributesNames: string[];
     private _attributes: number[];
+    private _attributeLocationByName: { [name: string] : number };
     private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> } = {};
     /**
      * Key for the effect.
@@ -209,6 +216,8 @@ export class Effect implements IDisposable {
             this._indexParameters = indexParameters;
             this._fallbacks = fallbacks;
         }
+
+        this._attributeLocationByName = { };
 
         this.uniqueId = Effect._uniqueIdSeed++;
 
@@ -349,9 +358,7 @@ export class Effect implements IDisposable {
      * @returns the attribute location.
      */
     public getAttributeLocationByName(name: string): number {
-        var index = this._attributesNames.indexOf(name);
-
-        return this._attributes[index];
+        return this._attributeLocationByName[name];
     }
 
     /**
@@ -555,6 +562,12 @@ export class Effect implements IDisposable {
                 });
 
                 this._attributes = engine.getAttributes(this._pipelineContext!, attributesNames);
+                if (attributesNames) {
+                    for (let i = 0; i < attributesNames.length; i++) {
+                        const name = attributesNames[i];
+                        this._attributeLocationByName[name] = this._attributes[i];
+                    }
+                }
 
                 var index: number;
                 for (index = 0; index < this._samplerList.length; index++) {
@@ -661,7 +674,7 @@ export class Effect implements IDisposable {
      * @param texture Texture to bind.
      * @hidden
      */
-    public _bindTexture(channel: string, texture: InternalTexture): void {
+    public _bindTexture(channel: string, texture: Nullable<InternalTexture>): void {
         this._engine._bindTexture(this._samplers[channel], texture);
     }
 

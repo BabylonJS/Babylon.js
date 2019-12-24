@@ -18,8 +18,10 @@ export class GlobalState {
     public onTabChangedObservable = new Observable<number>();
     public onPluginActivatedObserver: Nullable<Observer<ISceneLoaderPlugin | ISceneLoaderPluginAsync>>;
 
-    public validationResults: IGLTFValidationResults;
-    public onValidationResultsUpdatedObservable = new Observable<IGLTFValidationResults>();
+    public sceneImportDefaults: { [key: string]: any } = {};
+
+    public validationResults: Nullable<IGLTFValidationResults> = null;
+    public onValidationResultsUpdatedObservable = new Observable<Nullable<IGLTFValidationResults>>();
 
     public onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
     public glTFLoaderExtensionDefaults: { [name: string]: { [key: string]: any } } = {};
@@ -79,7 +81,6 @@ export class GlobalState {
         }
 
         loader.onExtensionLoadedObservable.add((extension: IGLTFLoaderExtension) => {
-
             var extensionState = this.glTFLoaderExtensionDefaults[extension.name];
             if (extensionState !== undefined) {
                 for (const key in extensionState) {
@@ -87,6 +88,11 @@ export class GlobalState {
                 }
             }
         });
+
+        if (this.validationResults) {
+            this.validationResults = null;
+            this.onValidationResultsUpdatedObservable.notifyObservers(null);
+        }
 
         loader.onValidatedObservable.add((results: IGLTFValidationResults) => {
             this.validationResults = results;

@@ -85,7 +85,7 @@ export class ColorMergerBlock extends NodeMaterialBlock {
 
     /**
      * Gets the rgb component (output)
-     * @deprecated Please use rgbOut instead
+     * @deprecated Please use rgbOut instead.
      */
     public get rgb(): NodeMaterialConnectionPoint {
         return this.rgbOut;

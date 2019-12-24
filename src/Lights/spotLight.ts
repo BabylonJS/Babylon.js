@@ -309,7 +309,7 @@ export class SpotLight extends ShadowLight {
     protected _buildUniformLayout(): void {
         this._uniformBuffer.addUniform("vLightData", 4);
         this._uniformBuffer.addUniform("vLightDiffuse", 4);
-        this._uniformBuffer.addUniform("vLightSpecular", 3);
+        this._uniformBuffer.addUniform("vLightSpecular", 4);
         this._uniformBuffer.addUniform("vLightDirection", 3);
         this._uniformBuffer.addUniform("vLightFalloff", 4);
         this._uniformBuffer.addUniform("shadowsInfo", 3);
@@ -320,6 +320,29 @@ export class SpotLight extends ShadowLight {
     private _computeAngleValues(): void {
         this._lightAngleScale = 1.0 / Math.max(0.001, (Math.cos(this._innerAngle * 0.5) - this._cosHalfAngle));
         this._lightAngleOffset = -this._cosHalfAngle * this._lightAngleScale;
+    }
+
+    /**
+     * Sets the passed Effect "effect" with the Light textures.
+     * @param effect The effect to update
+     * @param lightIndex The index of the light in the effect to update
+     * @returns The light
+     */
+    public transferTexturesToEffect(effect: Effect, lightIndex: string): Light {
+        if (this.projectionTexture && this.projectionTexture.isReady()) {
+            if (this._projectionTextureViewLightDirty) {
+                this._computeProjectionTextureViewLightMatrix();
+            }
+            if (this._projectionTextureProjectionLightDirty) {
+                this._computeProjectionTextureProjectionLightMatrix();
+            }
+            if (this._projectionTextureDirty) {
+                this._computeProjectionTextureMatrix();
+            }
+            effect.setMatrix("textureProjectionMatrix" + lightIndex, this._projectionTextureMatrix);
+            effect.setTexture("projectionLightSampler" + lightIndex, this.projectionTexture);
+        }
+        return this;
     }
 
     /**
@@ -374,20 +397,6 @@ export class SpotLight extends ShadowLight {
             this._lightAngleOffset,
             lightIndex
         );
-
-        if (this.projectionTexture && this.projectionTexture.isReady()) {
-            if (this._projectionTextureViewLightDirty) {
-                this._computeProjectionTextureViewLightMatrix();
-            }
-            if (this._projectionTextureProjectionLightDirty) {
-                this._computeProjectionTextureProjectionLightMatrix();
-            }
-            if (this._projectionTextureDirty) {
-                this._computeProjectionTextureMatrix();
-            }
-            effect.setMatrix("textureProjectionMatrix" + lightIndex, this._projectionTextureMatrix);
-            effect.setTexture("projectionLightSampler" + lightIndex, this.projectionTexture);
-        }
         return this;
     }
 
