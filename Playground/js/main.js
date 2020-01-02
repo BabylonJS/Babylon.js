@@ -1,5 +1,5 @@
 var engine = null;
-var canas = null;
+var canvas = null;
 var scene = null;
 var globalParent = null;
 
@@ -68,7 +68,8 @@ compileAndRun = function(parent, fpsLabel) {
                 return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
             }
 
-            var defaultEngineZip = "new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true })";
+            var zipVariables = "var engine = null;\r\nvar scene = null;\r\n";
+            var defaultEngineZip = "var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); }";
 
             if (code.indexOf("createEngine") !== -1) {
                 createEngineFunction = "createEngine";
@@ -94,10 +95,13 @@ compileAndRun = function(parent, fpsLabel) {
                 fastEval("runScript = function(scene, canvas) {" + code + "}");
                 runScript(scene, canvas);
 
-                parent.zipTool.ZipCode = "var engine = " + defaultEngineZip + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
+                parent.zipTool.ZipCode = zipVariables + defaultEngineZip + "var engine = createDefaultEngine();" + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
             } else {
+                code += "\r\n\r\nengine = " + createEngineFunction + "();";
+                code += "\r\nif (!engine) throw 'engine should not be null.';";
+
                 if (parent.settingsPG.ScriptLanguage == "JS") {
-                    code += "\n" + "scene = " + createSceneFunction + "();";
+                    code += "\r\n" + "scene = " + createSceneFunction + "();";
                 }
                 else {
                     var startCar = code.search('var ' + createSceneFunction);
@@ -105,15 +109,13 @@ compileAndRun = function(parent, fpsLabel) {
                     code += "\n" + "scene = " + createSceneFunction + "();";
                 }
 
-                // Create engine
-                fastEval("engine = " + createEngineFunction + "()");
+                // Execute the code
+                fastEval(code);
+
                 if (!engine) {
                     parent.utils.showError("createEngine function must return an engine.", null);
                     return;
-                }                
-
-                // Execute the code
-                fastEval(code);
+                }
 
                 if (!scene) {
                     parent.utils.showError(createSceneFunction + " function must return a scene.", null);
@@ -127,17 +129,26 @@ compileAndRun = function(parent, fpsLabel) {
                 }
 
                 var createEngineZip = (createEngineFunction === "createEngine")
-                    ? "createEngine()"
-                    : defaultEngineZip;
+                    ? zipVariables
+                    : zipVariables + defaultEngineZip;
 
                 parent.zipTool.zipCode =
-                    "var engine = " + createEngineZip + ";\r\n" +
-                    code + "\r\n\r\n";
+                    createEngineZip + ";\r\n" +
+                    code;
             }
 
             engine = engine;
+            var sceneToRender;
+            if(scene.then) {
+                scene.then(s => {
+                    sceneToRender = s;
+                });
+            } else {
+                sceneToRender = scene;
+            }
+
             engine.runRenderLoop(function () {
-                if (engine.scenes.length === 0) {
+                if (!sceneToRender) {
                     return;
                 }
 
@@ -145,10 +156,9 @@ compileAndRun = function(parent, fpsLabel) {
                     engine.resize();
                 }
 
-                var scene = engine.scenes[0];
 
-                if (scene.activeCamera || scene.activeCameras.length > 0) {
-                    scene.render();
+                if (sceneToRender.activeCamera || sceneToRender.activeCameras.length > 0) {
+                    sceneToRender.render();
                 }
 
                 fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";

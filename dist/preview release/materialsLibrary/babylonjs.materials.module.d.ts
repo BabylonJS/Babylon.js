@@ -348,7 +348,8 @@ declare module "babylonjs-materials/fur/furMaterial" {
         private _renderId;
         private _furTime;
         constructor(name: string, scene: Scene);
-        furTime: number;
+        get furTime(): number;
+        set furTime(furTime: number);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): Nullable<BaseTexture>;
@@ -876,7 +877,8 @@ declare module "babylonjs-materials/shadowOnly/shadowOnlyMaterial" {
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): Nullable<BaseTexture>;
-        activeLight: IShadowLight;
+        get activeLight(): IShadowLight;
+        set activeLight(light: IShadowLight);
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         clone(name: string): ShadowOnlyMaterial;
@@ -1460,18 +1462,19 @@ declare module "babylonjs-materials/water/waterMaterial" {
         /**
          * Gets a boolean indicating that current material needs to register RTT
          */
-        readonly hasRenderTargetTextures: boolean;
+        get hasRenderTargetTextures(): boolean;
         /**
         * Constructor
         */
         constructor(name: string, scene: Scene, renderTargetSize?: Vector2);
-        useLogarithmicDepth: boolean;
-        readonly refractionTexture: Nullable<RenderTargetTexture>;
-        readonly reflectionTexture: Nullable<RenderTargetTexture>;
+        get useLogarithmicDepth(): boolean;
+        set useLogarithmicDepth(value: boolean);
+        get refractionTexture(): Nullable<RenderTargetTexture>;
+        get reflectionTexture(): Nullable<RenderTargetTexture>;
         addToRenderList(node: any): void;
         enableRenderTargets(enable: boolean): void;
         getRenderList(): Nullable<AbstractMesh[]>;
-        readonly renderTargetsEnabled: boolean;
+        get renderTargetsEnabled(): boolean;
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): Nullable<BaseTexture>;
@@ -1794,7 +1797,8 @@ declare module BABYLON {
         private _renderId;
         private _furTime;
         constructor(name: string, scene: BABYLON.Scene);
-        furTime: number;
+        get furTime(): number;
+        set furTime(furTime: number);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
@@ -2118,7 +2122,8 @@ declare module BABYLON {
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
-        activeLight: BABYLON.IShadowLight;
+        get activeLight(): BABYLON.IShadowLight;
+        set activeLight(light: BABYLON.IShadowLight);
         isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
         clone(name: string): ShadowOnlyMaterial;
@@ -2524,18 +2529,19 @@ declare module BABYLON {
         /**
          * Gets a boolean indicating that current material needs to register RTT
          */
-        readonly hasRenderTargetTextures: boolean;
+        get hasRenderTargetTextures(): boolean;
         /**
         * Constructor
         */
         constructor(name: string, scene: BABYLON.Scene, renderTargetSize?: BABYLON.Vector2);
-        useLogarithmicDepth: boolean;
-        readonly refractionTexture: BABYLON.Nullable<BABYLON.RenderTargetTexture>;
-        readonly reflectionTexture: BABYLON.Nullable<BABYLON.RenderTargetTexture>;
+        get useLogarithmicDepth(): boolean;
+        set useLogarithmicDepth(value: boolean);
+        get refractionTexture(): BABYLON.Nullable<BABYLON.RenderTargetTexture>;
+        get reflectionTexture(): BABYLON.Nullable<BABYLON.RenderTargetTexture>;
         addToRenderList(node: any): void;
         enableRenderTargets(enable: boolean): void;
         getRenderList(): BABYLON.Nullable<BABYLON.AbstractMesh[]>;
-        readonly renderTargetsEnabled: boolean;
+        get renderTargetsEnabled(): boolean;
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;

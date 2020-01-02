@@ -5,7 +5,6 @@ import { Vector3, Quaternion } from "babylonjs/Maths/math";
 import { Tools } from "babylonjs/Misc/tools";
 import { Animation } from "babylonjs/Animations/animation";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
 
 import { _BinaryWriter } from "./glTFExporter";
@@ -241,13 +240,13 @@ export class _GLTFAnimation {
                 for (let targetAnimation of animationGroup.targetedAnimations) {
                     let target = targetAnimation.target;
                     let animation = targetAnimation.animation;
-                    if (target instanceof Mesh || target.length === 1 && target[0] instanceof Mesh) { // TODO: Update to support bones
+                    if (target instanceof TransformNode || target.length === 1 && target[0] instanceof TransformNode) {
                         let animationInfo = _GLTFAnimation._DeduceAnimationInfo(targetAnimation.animation);
                         if (animationInfo) {
-                            let babylonMesh = target instanceof Mesh ? target : target[0] as Mesh;
+                            let babylonTransformNode = target instanceof TransformNode ? target as TransformNode : target[0] as TransformNode;
                             _GLTFAnimation.AddAnimation(`${animation.name}`,
                                 glTFAnimation,
-                                babylonMesh,
+                                babylonTransformNode,
                                 animation,
                                 animationInfo.dataAccessorType,
                                 animationInfo.animationChannelTargetPath,
