@@ -418,7 +418,7 @@ export class BlockTools {
     }
 
     public static GetColorFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes) {
-        let color = "Red";
+        let color = "#880000";
         switch (type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
 				color = "#cb9e27";

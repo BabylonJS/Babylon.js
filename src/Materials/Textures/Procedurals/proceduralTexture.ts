@@ -61,6 +61,7 @@ export class ProceduralTexture extends Texture {
     @serialize()
     private _size: number;
     private _currentRefreshId = -1;
+    private _frameId = -1;
     private _refreshRate = 1;
     private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _indexBuffer: Nullable<DataBuffer>;
@@ -155,12 +156,12 @@ export class ProceduralTexture extends Texture {
      * @returns an ArrayBufferView (Uint8Array or Float32Array)
      */
     public getContent(): Nullable<ArrayBufferView> {
-        if (this._contentData && this._currentRefreshId == this._contentUpdateId) {
+        if (this._contentData && this._frameId === this._contentUpdateId) {
             return this._contentData;
         }
 
         this._contentData = this.readPixels(0, 0, this._contentData);
-        this._contentUpdateId = this._currentRefreshId;
+        this._contentUpdateId = this._frameId;
 
         return this._contentData;
     }
@@ -307,11 +308,13 @@ export class ProceduralTexture extends Texture {
 
         if (this._currentRefreshId === -1) { // At least render once
             this._currentRefreshId = 1;
+            this._frameId++;
             return true;
         }
 
         if (this.refreshRate === this._currentRefreshId) {
             this._currentRefreshId = 1;
+            this._frameId++;
             return true;
         }
 

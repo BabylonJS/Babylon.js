@@ -183,12 +183,14 @@ export class CubeTexture extends BaseTexture {
         if (isEnv) {
             this.gammaSpace = false;
             this._prefiltered = false;
+            this.anisotropicFilteringLevel = 1;
         }
         else {
             this._prefiltered = prefiltered;
 
             if (prefiltered) {
                 this.gammaSpace = false;
+                this.anisotropicFilteringLevel = 1;
             }
         }
 
@@ -251,8 +253,9 @@ export class CubeTexture extends BaseTexture {
      * @param url the url of the texture
      * @param forcedExtension defines the extension to use
      * @param onLoad callback called when the texture is loaded  (defaults to null)
+     * @param prefiltered Defines whether the updated texture is prefiltered or not
      */
-    public updateURL(url: string, forcedExtension?: string, onLoad?: () => void): void {
+    public updateURL(url: string, forcedExtension?: string, onLoad?: () => void, prefiltered: boolean = false): void {
         if (this.url) {
             this.releaseInternalTexture();
             this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
@@ -263,7 +266,11 @@ export class CubeTexture extends BaseTexture {
         }
         this.url = url;
         this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
-        this._prefiltered = false;
+        this._prefiltered = prefiltered;
+        if (this._prefiltered) {
+            this.gammaSpace = false;
+            this.anisotropicFilteringLevel = 1;
+        }
         this._forcedExtension = forcedExtension || null;
 
         if (onLoad) {
@@ -292,7 +299,7 @@ export class CubeTexture extends BaseTexture {
 
         if (!this._texture) {
             if (this._prefiltered) {
-                this._texture = scene.getEngine().createPrefilteredCubeTexture(this.url, scene, this.lodGenerationScale, this.lodGenerationOffset, this._delayedOnLoad, undefined, this._format, undefined, this._createPolynomials);
+                this._texture = scene.getEngine().createPrefilteredCubeTexture(this.url, scene, 0.8, 0, this._delayedOnLoad, undefined, this._format, undefined, this._createPolynomials);
             }
             else {
                 this._texture = scene.getEngine().createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, null, this._format, forcedExtension);

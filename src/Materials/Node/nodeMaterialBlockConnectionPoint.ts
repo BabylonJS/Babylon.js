@@ -19,6 +19,16 @@ export enum NodeMaterialConnectionPointCompatibilityStates {
 }
 
 /**
+ * Defines the direction of a connection point
+ */
+export enum NodeMaterialConnectionPointDirection {
+    /** Input */
+    Input,
+    /** Output */
+    Output
+}
+
+/**
  * Defines a connection point for a block
  */
 export class NodeMaterialConnectionPoint {
@@ -29,6 +39,7 @@ export class NodeMaterialConnectionPoint {
 
     private _endpoints = new Array<NodeMaterialConnectionPoint>();
     private _associatedVariableName: string;
+    private _direction: NodeMaterialConnectionPointDirection;
 
     /** @hidden */
     public _typeConnectionSource: Nullable<NodeMaterialConnectionPoint> = null;
@@ -40,6 +51,11 @@ export class NodeMaterialConnectionPoint {
 
     /** @hidden */
     public _enforceAssociatedVariableName = false;
+
+    /** Gets the direction of the point */
+    public get direction() {
+        return this._direction;
+    }
 
     /**
      * Gets or sets the additional types supported by this connection point
@@ -266,10 +282,12 @@ export class NodeMaterialConnectionPoint {
      * Creates a new connection point
      * @param name defines the connection point name
      * @param ownerBlock defines the block hosting this connection point
+     * @param direction defines the direction of the connection point
      */
-    public constructor(name: string, ownerBlock: NodeMaterialBlock) {
+    public constructor(name: string, ownerBlock: NodeMaterialBlock, direction: NodeMaterialConnectionPointDirection) {
         this._ownerBlock = ownerBlock;
         this.name = name;
+        this._direction = direction;
     }
 
     /**

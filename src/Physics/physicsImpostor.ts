@@ -1263,6 +1263,10 @@ export class PhysicsImpostor {
      */
     public static ConvexHullImpostor = 10;
     /**
+     * Custom-Imposter type (Ammo.js plugin only)
+     */
+    public static CustomImpostor = 100;
+    /**
      * Rope-Imposter type
      */
     public static RopeImpostor = 101;

@@ -33,8 +33,11 @@ declare module INSPECTOR {
         onInspectorClosedObservable: BABYLON.Observable<BABYLON.Scene>;
         onTabChangedObservable: BABYLON.Observable<number>;
         onPluginActivatedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync>>;
-        validationResults: BABYLON.GLTF2.IGLTFValidationResults;
-        onValidationResultsUpdatedObservable: BABYLON.Observable<BABYLON.GLTF2.IGLTFValidationResults>;
+        sceneImportDefaults: {
+            [key: string]: any;
+        };
+        validationResults: BABYLON.Nullable<BABYLON.GLTF2.IGLTFValidationResults>;
+        onValidationResultsUpdatedObservable: BABYLON.Observable<BABYLON.Nullable<BABYLON.GLTF2.IGLTFValidationResults>>;
         onExtensionLoadedObservable: BABYLON.Observable<BABYLON.IGLTFLoaderExtension>;
         glTFLoaderExtensionDefaults: {
             [name: string]: {
@@ -48,9 +51,11 @@ declare module INSPECTOR {
         selectedLineContainerTitle: string;
         recorder: ReplayRecorder;
         private _onlyUseEulers;
-        onlyUseEulers: boolean;
+        get onlyUseEulers(): boolean;
+        set onlyUseEulers(value: boolean);
         private _ignoreBackfacesForPicking;
-        ignoreBackfacesForPicking: boolean;
+        get ignoreBackfacesForPicking(): boolean;
+        set ignoreBackfacesForPicking(value: boolean);
         init(propertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>): void;
         prepareGLTFPlugin(loader: BABYLON.GLTFFileLoader): void;
         lightGizmos: Array<BABYLON.LightGizmo>;
@@ -1299,6 +1304,7 @@ declare module INSPECTOR {
         constructor(props: INodeMaterialPropertyGridComponentProps);
         edit(): void;
         renderTextures(): JSX.Element | null;
+        renderInputBlock(block: BABYLON.InputBlock): JSX.Element | null;
         renderInputValues(): JSX.Element | null;
         render(): JSX.Element;
     }
@@ -1369,10 +1375,27 @@ declare module INSPECTOR {
         globalState: GlobalState;
     }
     export class GLTFComponent extends React.Component<IGLTFComponentProps> {
+        private _onValidationResultsUpdatedObserver;
         constructor(props: IGLTFComponentProps);
         openValidationDetails(): void;
         prepareText(singularForm: string, count: number): string;
-        renderValidation(): JSX.Element;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        renderValidation(): JSX.Element | null;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IFileMultipleButtonLineComponentProps {
+        label: string;
+        onClick: (event: any) => void;
+        accept: string;
+    }
+    export class FileMultipleButtonLineComponent extends React.Component<IFileMultipleButtonLineComponentProps> {
+        private static _IDGenerator;
+        private _id;
+        constructor(props: IFileMultipleButtonLineComponentProps);
+        onChange(evt: any): void;
         render(): JSX.Element;
     }
 }
@@ -1388,6 +1411,7 @@ declare module INSPECTOR {
         captureScreenshot(): void;
         captureRender(): void;
         recordVideo(): void;
+        importAnimations(event: any): void;
         shouldExport(node: BABYLON.Node): boolean;
         exportGLTF(): void;
         exportBabylon(): void;
@@ -1414,6 +1438,7 @@ declare module INSPECTOR {
         onPopup?: () => void;
         onClose?: () => void;
         globalState?: GlobalState;
+        initialTab?: BABYLON.DebugLayerTab;
     }
     export class ActionTabsComponent extends React.Component<IActionTabsComponentProps, {
         selectedEntity: any;
@@ -1486,7 +1511,7 @@ declare module INSPECTOR {
     export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComponentProps, {
         isActive: boolean;
     }> {
-        private _onActiveCameraObserver;
+        private _onBeforeRenderObserver;
         constructor(props: ICameraTreeItemComponentProps);
         setActive(): void;
         componentDidMount(): void;
@@ -1795,6 +1820,7 @@ declare module INSPECTOR {
         onClose: () => void;
         onPopup: () => void;
         extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
+        initialTab?: BABYLON.DebugLayerTab;
     }
     export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps> {
         private _once;
@@ -1825,7 +1851,7 @@ declare module INSPECTOR {
         private static _CreateActionTabs;
         private static _CreateEmbedHost;
         static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): BABYLON.Nullable<HTMLDivElement>;
-        static readonly IsVisible: boolean;
+        static get IsVisible(): boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: BABYLON.Scene, userOptions: Partial<BABYLON.IInspectorOptions>): void;
         static _CreateCanvasContainer(parentControl: HTMLElement): void;

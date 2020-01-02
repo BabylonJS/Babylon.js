@@ -1028,6 +1028,12 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         if (this._scene.clipPlane4) {
             defines = "\n#define CLIPPLANE4";
         }
+        if (this._scene.clipPlane5) {
+            defines = "\n#define CLIPPLANE5";
+        }
+        if (this._scene.clipPlane6) {
+            defines = "\n#define CLIPPLANE6";
+        }
 
         if (this.blendMode === ParticleSystem.BLENDMODE_MULTIPLY) {
             defines = "\n#define BLENDMULTIPLYMODE";
@@ -1066,7 +1072,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             return;
         }
 
-        var uniforms = ["worldOffset", "view", "projection", "colorDead", "invView", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "sheetInfos", "translationPivot", "eyePosition"];
+        var uniforms = ["worldOffset", "view", "projection", "colorDead", "invView", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "sheetInfos", "translationPivot", "eyePosition"];
         var samplers = ["textureSampler", "colorGradientSampler"];
 
         if (ImageProcessingConfiguration) {
@@ -1315,7 +1321,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 this._renderEffect.setVector3("eyePosition", camera.globalPosition);
             }
 
-            if (this._scene.clipPlane || this._scene.clipPlane2 || this._scene.clipPlane3 || this._scene.clipPlane4) {
+            if (this._scene.clipPlane || this._scene.clipPlane2 || this._scene.clipPlane3 || this._scene.clipPlane4 || this._scene.clipPlane5 || this._scene.clipPlane6) {
                 var invView = viewMatrix.clone();
                 invView.invert();
                 this._renderEffect.setMatrix("invView", invView);

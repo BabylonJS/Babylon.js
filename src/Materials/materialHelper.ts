@@ -14,7 +14,7 @@ import { Effect, IEffectCreationOptions } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { WebVRFreeCamera } from '../Cameras/VR/webVRCamera';
 import { MaterialDefines } from "./materialDefines";
-import { Color3, TmpColors } from '../Maths/math.color';
+import { Color3 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
 
 /**
@@ -123,11 +123,15 @@ export class MaterialHelper {
         let useClipPlane2 = false;
         let useClipPlane3 = false;
         let useClipPlane4 = false;
+        let useClipPlane5 = false;
+        let useClipPlane6 = false;
 
         useClipPlane1 = useClipPlane == null ? (scene.clipPlane !== undefined && scene.clipPlane !== null) : useClipPlane;
         useClipPlane2 = useClipPlane == null ? (scene.clipPlane2 !== undefined && scene.clipPlane2 !== null) : useClipPlane;
         useClipPlane3 = useClipPlane == null ? (scene.clipPlane3 !== undefined && scene.clipPlane3 !== null) : useClipPlane;
         useClipPlane4 = useClipPlane == null ? (scene.clipPlane4 !== undefined && scene.clipPlane4 !== null) : useClipPlane;
+        useClipPlane5 = useClipPlane == null ? (scene.clipPlane5 !== undefined && scene.clipPlane5 !== null) : useClipPlane;
+        useClipPlane6 = useClipPlane == null ? (scene.clipPlane6 !== undefined && scene.clipPlane6 !== null) : useClipPlane;
 
         if (defines["CLIPPLANE"] !== useClipPlane1) {
             defines["CLIPPLANE"] = useClipPlane1;
@@ -146,6 +150,16 @@ export class MaterialHelper {
 
         if (defines["CLIPPLANE4"] !== useClipPlane4) {
             defines["CLIPPLANE4"] = useClipPlane4;
+            changed = true;
+        }
+
+        if (defines["CLIPPLANE5"] !== useClipPlane5) {
+            defines["CLIPPLANE5"] = useClipPlane5;
+            changed = true;
+        }
+
+        if (defines["CLIPPLANE6"] !== useClipPlane6) {
+            defines["CLIPPLANE6"] = useClipPlane6;
             changed = true;
         }
 
@@ -661,47 +675,10 @@ export class MaterialHelper {
      * @param scene The scene where the light belongs to
      * @param effect The effect we are binding the data to
      * @param useSpecular Defines if specular is supported
-     * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
      * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      */
-    public static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff = false, rebuildInParallel = false): void {
-        let iAsString = lightIndex.toString();
-        let needUpdate = false;
-
-        if (rebuildInParallel && light._uniformBuffer._alreadyBound) {
-            return;
-        }
-
-        light._uniformBuffer.bindToEffect(effect, "Light" + iAsString);
-
-        if (light._renderId !== scene.getRenderId() || !light._uniformBuffer.useUbo) {
-            light._renderId = scene.getRenderId();
-
-            let scaledIntensity = light.getScaledIntensity();
-
-            MaterialHelper.BindLightProperties(light, effect, lightIndex);
-
-            light.diffuse.scaleToRef(scaledIntensity, TmpColors.Color3[0]);
-            light._uniformBuffer.updateColor4("vLightDiffuse", TmpColors.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, iAsString);
-            if (useSpecular) {
-                light.specular.scaleToRef(scaledIntensity, TmpColors.Color3[1]);
-                light._uniformBuffer.updateColor3("vLightSpecular", TmpColors.Color3[1], iAsString);
-            }
-            needUpdate = true;
-        }
-
-        // Shadows
-        if (scene.shadowsEnabled && light.shadowEnabled) {
-            var shadowGenerator = light.getShadowGenerator();
-            if (shadowGenerator) {
-                shadowGenerator.bindShadowLight(iAsString, effect);
-                needUpdate = true;
-            }
-        }
-
-        if (needUpdate) {
-            light._uniformBuffer.update();
-        }
+    public static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel = false): void {
+        light._bindLight(lightIndex, scene, effect, useSpecular, rebuildInParallel);
     }
 
     /**
@@ -711,16 +688,15 @@ export class MaterialHelper {
      * @param effect The effect we are binding the data to
      * @param defines The generated defines for the effect
      * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
-     * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
      * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      */
-    public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, usePhysicalLightFalloff = false, rebuildInParallel = false): void {
+    public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, rebuildInParallel = false): void {
         let len = Math.min(mesh.lightSources.length, maxSimultaneousLights);
 
         for (var i = 0; i < len; i++) {
 
             let light = mesh.lightSources[i];
-            this.BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], usePhysicalLightFalloff, rebuildInParallel);
+            this.BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], rebuildInParallel);
         }
     }
 
@@ -823,6 +799,14 @@ export class MaterialHelper {
         if (scene.clipPlane4) {
             let clipPlane = scene.clipPlane4;
             effect.setFloat4("vClipPlane4", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+        }
+        if (scene.clipPlane5) {
+            let clipPlane = scene.clipPlane5;
+            effect.setFloat4("vClipPlane5", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+        }
+        if (scene.clipPlane6) {
+            let clipPlane = scene.clipPlane6;
+            effect.setFloat4("vClipPlane6", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
         }
     }
 }
