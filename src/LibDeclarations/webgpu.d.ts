@@ -1,7 +1,8 @@
-https://github.com/gpuweb/gpuweb/blob/37812f5f39ae8c6dc85f6a12c0f65e9c9d6e2155
+// https://github.com/gpuweb/gpuweb/blob/37812f5f39ae8c6dc85f6a12c0f65e9c9d6e2155
 // except #280 setSubData (TODO)
+// plus #488 Make copyImageBitmapToTexture a GPUQueue operation.
 // plus #489 GPUAdapter.limits
-// v 0.0.17
+// v 0.0.19
 
 interface GPUColorDict {
   a: number;
@@ -544,11 +545,6 @@ class GPUCommandEncoder implements GPUObjectBase {
     destination: GPUTextureCopyView,
     copySize: GPUExtent3D
   ): void;
-  copyImageBitmapToTexture(
-    source: GPUImageBitmapCopyView,
-    destination: GPUTextureCopyView,
-    copySize: GPUExtent3D
-  ): void;
   finish(descriptor?: GPUCommandBufferDescriptor): GPUCommandBuffer;
 
   popDebugGroup(): void;
@@ -670,6 +666,11 @@ class GPUQueue implements GPUObjectBase {
   signal(fence: GPUFence, signalValue: number): void;
   submit(commandBuffers: GPUCommandBuffer[]): void;
   createFence(descriptor?: GPUFenceDescriptor): GPUFence;
+  copyImageBitmapToTexture(
+    source: GPUImageBitmapCopyView,
+    destination: GPUTextureCopyView,
+    copySize: GPUExtent3D
+  ): void;
 }
 
 interface GPURenderEncoderBase extends GPUProgrammablePassEncoder {
