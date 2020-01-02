@@ -129,6 +129,7 @@ export class NodeMaterialBuildStateSharedData {
         this.variableNames["diffuseBase"] = 0;
         this.variableNames["specularBase"] = 0;
         this.variableNames["worldPos"] = 0;
+        this.variableNames["shadow"] = 0;
 
         // Exclude known varyings
         this.variableNames["vTBN"] = 0;

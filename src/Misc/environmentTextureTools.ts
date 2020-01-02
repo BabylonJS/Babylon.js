@@ -450,6 +450,7 @@ export class EnvironmentTextureTools {
         texture.format = Constants.TEXTUREFORMAT_RGBA;
         texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
         texture.generateMipMaps = true;
+        texture._cachedAnisotropicFilteringLevel = null;
         engine.updateTextureSamplingMode(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, texture);
 
         // Add extra process if texture lod is not supported

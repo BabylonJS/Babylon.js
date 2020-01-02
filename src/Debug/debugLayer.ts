@@ -80,6 +80,10 @@ export interface IInspectorOptions {
      * Optional URL to get the inspector script from (by default it uses the babylonjs CDN).
      */
     inspectorURL?: string;
+    /**
+     * Optional initial tab (default to DebugLayerTab.Properties)
+     */
+    initialTab?: DebugLayerTab;
 }
 
 declare module "../scene" {
@@ -107,6 +111,32 @@ Object.defineProperty(Scene.prototype, "debugLayer", {
     enumerable: true,
     configurable: true
 });
+
+/**
+ * Enum of inspector action tab
+ */
+export enum DebugLayerTab {
+    /**
+     * Properties tag (default)
+     */
+    Properties = 0,
+    /**
+     * Debug tab
+     */
+    Debug = 1,
+    /**
+     * Statistics tab
+     */
+    Statistics = 2,
+    /**
+     * Tools tab
+     */
+    Tools = 3,
+    /**
+     * Settings tab
+     */
+    Settings = 4
+}
 
 /**
  * The debug layer (aka Inspector) is the go to tool in order to better understand

@@ -19,6 +19,14 @@ export class WebXRControllerTeleportation {
     private _tmpVector = new Vector3();
 
     /**
+     * when set to true (default) teleportation will wait for thumbstick changes.
+     * When set to false teleportation will be disabled.
+     *
+     * If set to false while teleporting results can be unexpected.
+     */
+    public enabled: boolean = true;
+
+    /**
      * Creates a WebXRControllerTeleportation
      * @param input input manager to add teleportation to
      * @param floorMeshes floormeshes which can be teleported to
@@ -81,7 +89,10 @@ export class WebXRControllerTeleportation {
 
             // Handle user input on every frame
             let renderObserver = scene.onBeforeRenderObservable.add(() => {
-                // Move the teleportationTarget to where the user is targetting to teleport to
+                if (!this.enabled) {
+                    return;
+                }
+                // Move the teleportationTarget to where the user is targeting to teleport to
                 if (forwardReadyToTeleport) {
                     c.getWorldPointerRayToRef(this._tmpRay);
                     let pick = scene.pickWithRay(this._tmpRay, (o) => {
@@ -100,31 +111,29 @@ export class WebXRControllerTeleportation {
                 }
 
                 if (c.inputSource.gamepad) {
-                    if (c.inputSource.gamepad.axes[1] !== undefined) {
+                    const yIndex = c.inputSource.gamepad.axes.length - 1;
+                    const xIndex = c.inputSource.gamepad.axes.length - 2;
+                    if (c.inputSource.gamepad.axes[yIndex] !== undefined) {
                         // Forward teleportation
-                        if (c.inputSource.gamepad.axes[1] < -0.7) {
+                        if (c.inputSource.gamepad.axes[yIndex] < -0.7) {
                             forwardReadyToTeleport = true;
                         } else {
                             if (forwardReadyToTeleport) {
-                                // Teleport the users feet to where they targetted
+                                // Teleport the users feet to where they targeted
                                 this._tmpVector.copyFrom(teleportationTarget.position);
-                                this._tmpVector.y += input.baseExperience.camera.position.y;
-                                input.baseExperience.setPositionOfCameraUsingContainer(this._tmpVector);
+                                this._tmpVector.y += input.xrCamera.position.y;
+                                input.xrCamera.position.copyFrom(this._tmpVector);
                             }
                             forwardReadyToTeleport = false;
                         }
 
                         // Backward teleportation
-                        if (c.inputSource.gamepad.axes[1] > 0.7) {
+                        if (c.inputSource.gamepad.axes[yIndex] > 0.7) {
                             backwardReadyToTeleport = true;
                         } else {
                             if (backwardReadyToTeleport) {
-                                // Cast a ray down from behind the user
-                                let camMat = input.baseExperience.camera.computeWorldMatrix();
-                                let q = new Quaternion();
-                                camMat.decompose(undefined, q, this._tmpRay.origin);
                                 this._tmpVector.set(0, 0, -1);
-                                this._tmpVector.rotateByQuaternionToRef(q, this._tmpVector);
+                                this._tmpVector.rotateByQuaternionToRef(input.xrCamera.rotationQuaternion, this._tmpVector);
                                 this._tmpVector.y = 0;
                                 this._tmpVector.normalize();
                                 this._tmpVector.y = -1.5;
@@ -135,30 +144,29 @@ export class WebXRControllerTeleportation {
                                 });
 
                                 if (pick && pick.pickedPoint) {
-                                    // Teleport the users feet to where they targetted
+                                    // Teleport the users feet to where they targeted
                                     this._tmpVector.copyFrom(pick.pickedPoint);
-                                    this._tmpVector.y += input.baseExperience.camera.position.y;
-                                    input.baseExperience.setPositionOfCameraUsingContainer(this._tmpVector);
+                                    input.xrCamera.position.addInPlace(this._tmpVector);
                                 }
                             }
                             backwardReadyToTeleport = false;
                         }
                     }
 
-                    if (c.inputSource.gamepad.axes[0] !== undefined) {
-                        if (c.inputSource.gamepad.axes[0] < -0.7) {
+                    if (c.inputSource.gamepad.axes[xIndex] !== undefined) {
+                        if (c.inputSource.gamepad.axes[xIndex] < -0.7) {
                             leftReadyToTeleport = true;
                         } else {
                             if (leftReadyToTeleport) {
-                                input.baseExperience.rotateCameraByQuaternionUsingContainer(Quaternion.FromEulerAngles(0, -Math.PI / 4, 0));
+                                input.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, -Math.PI / 4, 0));
                             }
                             leftReadyToTeleport = false;
                         }
-                        if (c.inputSource.gamepad.axes[0] > 0.7) {
+                        if (c.inputSource.gamepad.axes[xIndex] > 0.7) {
                             rightReadyToTeleport = true;
                         } else {
                             if (rightReadyToTeleport) {
-                                input.baseExperience.rotateCameraByQuaternionUsingContainer(Quaternion.FromEulerAngles(0, Math.PI / 4, 0));
+                                input.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, Math.PI / 4, 0));
                             }
                             rightReadyToTeleport = false;
                         }

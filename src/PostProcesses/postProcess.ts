@@ -453,6 +453,11 @@ export class PostProcess {
         var desiredWidth = ((<PostProcessOptions>this._options).width || requiredWidth);
         var desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;
 
+        const needMipMaps =
+            this.renderTargetSamplingMode !== Constants.TEXTURE_NEAREST_LINEAR &&
+            this.renderTargetSamplingMode !== Constants.TEXTURE_NEAREST_NEAREST &&
+            this.renderTargetSamplingMode !== Constants.TEXTURE_LINEAR_LINEAR;
+
         if (!this._shareOutputWithPostProcess && !this._forcedOutputTexture) {
 
             if (this.adaptScaleToCurrentViewport) {
@@ -464,7 +469,7 @@ export class PostProcess {
                 }
             }
 
-            if (this.renderTargetSamplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE || this.alwaysForcePOT) {
+            if (needMipMaps || this.alwaysForcePOT) {
                 if (!(<PostProcessOptions>this._options).width) {
                     desiredWidth = engine.needPOTTextures ? Engine.GetExponentOfTwo(desiredWidth, maxSize, this.scaleMode) : desiredWidth;
                 }
@@ -483,12 +488,6 @@ export class PostProcess {
                 }
                 this.width = desiredWidth;
                 this.height = desiredHeight;
-
-                const needMipMaps = this.renderTargetSamplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE ||
-                                    this.renderTargetSamplingMode === Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR ||
-                                    this.renderTargetSamplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR ||
-                                    this.renderTargetSamplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR ||
-                                    this.renderTargetSamplingMode === Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR;
 
                 let textureSize = { width: this.width, height: this.height };
                 let textureOptions = {
