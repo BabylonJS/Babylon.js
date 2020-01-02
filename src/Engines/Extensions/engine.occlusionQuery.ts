@@ -330,6 +330,9 @@ Object.defineProperty(AbstractMesh.prototype, "isOcclusionQueryInProgress", {
     get: function(this: AbstractMesh) {
         return this._occlusionDataStorage.isOcclusionQueryInProgress;
     },
+    set: function(this: AbstractMesh, value: boolean) {
+        this._occlusionDataStorage.isOcclusionQueryInProgress = value;
+    },
     enumerable: false,
     configurable: true
 });
