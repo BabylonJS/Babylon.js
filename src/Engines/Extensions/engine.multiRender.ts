@@ -282,7 +282,7 @@ ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(tex
         }
     }
 
-    if (samples > 1) {
+    if (samples > 1 && gl.renderbufferStorageMultisample) {
         let framebuffer = gl.createFramebuffer();
 
         if (!framebuffer) {

@@ -14,6 +14,9 @@ import { CubeTexture } from "babylonjs/Materials/Textures/cubeTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { SceneSerializer } from "babylonjs/Misc/sceneSerializer";
 import { Mesh } from "babylonjs/Meshes/mesh";
+import { FilesInput } from 'babylonjs/Misc/filesInput';
+import { Scene } from 'babylonjs/scene';
+import { SceneLoaderAnimationGroupLoadingMode } from 'babylonjs/Loading/sceneLoader';
 
 import { GLTFComponent } from "./tools/gltfComponent";
 
@@ -23,6 +26,8 @@ import { IScreenshotSize } from 'babylonjs/Misc/interfaces/screenshotSize';
 import { NumericInputComponent } from '../lines/numericInputComponent';
 import { CheckBoxLineComponent } from '../lines/checkBoxLineComponent';
 import { TextLineComponent } from '../lines/textLineComponent';
+import { FileMultipleButtonLineComponent } from '../lines/fileMultipleButtonLineComponent';
+import { OptionsLineComponent } from '../lines/optionsLineComponent';
 
 export class ToolsTabComponent extends PaneComponent {
     private _videoRecorder: Nullable<VideoRecorder>;
@@ -34,6 +39,14 @@ export class ToolsTabComponent extends PaneComponent {
         super(props);
 
         this.state = { tag: "Record video" };
+
+        const sceneImportDefaults = this.props.globalState.sceneImportDefaults;
+        if (sceneImportDefaults["overwriteAnimations"] === undefined) {
+            sceneImportDefaults["overwriteAnimations"] = true;
+        }
+        if (sceneImportDefaults["animationGroupLoadingMode"] === undefined) {
+            sceneImportDefaults["animationGroupLoadingMode"] = SceneLoaderAnimationGroupLoadingMode.Clean;
+        }
     }
 
     componentDidMount() {
@@ -91,6 +104,30 @@ export class ToolsTabComponent extends PaneComponent {
             this.setState({ tag: "Record video" });
         });
         this.setState({ tag: "Stop recording" });
+    }
+
+    importAnimations(event: any) {
+
+        const scene = this.props.scene;
+
+        const overwriteAnimations = this.props.globalState.sceneImportDefaults["overwriteAnimations"];
+        const animationGroupLoadingMode = this.props.globalState.sceneImportDefaults["animationGroupLoadingMode"];
+
+        var reload = function (sceneFile: File) {
+            // If a scene file has been provided
+            if (sceneFile) {
+                var onSuccess = function (scene: Scene) {
+                    if (scene.animationGroups.length > 0) {
+                        let currentGroup = scene.animationGroups[0];
+                        currentGroup.play(true);
+                    }
+                };
+                (BABYLON as any).SceneLoader.ImportAnimationsAsync("file:", sceneFile, scene, overwriteAnimations, animationGroupLoadingMode, null, onSuccess);
+            }
+        };
+        let filesInputAnimation = new FilesInput(scene.getEngine() as any, scene as any, () => { }, () => { }, () => { }, (remaining: number) => { }, () => { }, reload, () => { });
+
+        filesInputAnimation.loadFiles(event);
     }
 
     shouldExport(node: Node): boolean {
@@ -163,6 +200,15 @@ export class ToolsTabComponent extends PaneComponent {
             return null;
         }
 
+        const sceneImportDefaults = this.props.globalState.sceneImportDefaults;
+
+        var animationGroupLoadingModes = [
+            { label: "Clean", value: SceneLoaderAnimationGroupLoadingMode.Clean },
+            { label: "Stop", value: SceneLoaderAnimationGroupLoadingMode.Stop },
+            { label: "Sync", value: SceneLoaderAnimationGroupLoadingMode.Sync },
+            { label: "NoSync", value: SceneLoaderAnimationGroupLoadingMode.NoSync },
+        ];
+
         return (
             <div className="pane">
                 <LineContainerComponent globalState={this.props.globalState} title="CAPTURE">
@@ -191,6 +237,17 @@ export class ToolsTabComponent extends PaneComponent {
                 <LineContainerComponent globalState={this.props.globalState} title="REPLAY">
                     <ButtonLineComponent label="Generate replay code" onClick={() => this.exportReplay()} />
                     <ButtonLineComponent label="Reset" onClick={() => this.resetReplay()} />
+                </LineContainerComponent>
+                <LineContainerComponent globalState={this.props.globalState} title="SCENE IMPORT">
+                    <FileMultipleButtonLineComponent label="Import animations" accept="gltf" onClick={(evt: any) => this.importAnimations(evt)} />
+                    <CheckBoxLineComponent label="Overwrite animations" target={sceneImportDefaults} propertyName="overwriteAnimations" onSelect={value => {
+                        sceneImportDefaults["overwriteAnimations"] = value;
+                        this.forceUpdate();
+                    }} />
+                    {
+                        sceneImportDefaults["overwriteAnimations"] === false &&
+                        <OptionsLineComponent label="Animation merge mode" options={animationGroupLoadingModes} target={sceneImportDefaults} propertyName="animationGroupLoadingMode" />
+                    }
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="SCENE EXPORT">
                     {

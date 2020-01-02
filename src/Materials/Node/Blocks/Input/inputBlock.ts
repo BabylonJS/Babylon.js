@@ -42,6 +42,9 @@ export class InputBlock extends NodeMaterialBlock {
     /** Gets or sets a boolean indicating that the value of this input will not change after a build */
     public isConstant = false;
 
+    /** Gets or sets the group to use to display this block in the Inspector */
+    public groupInInspector = "";
+
     /**
      * Gets or sets the connection point type (default is float)
      */
@@ -538,22 +541,24 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
+        let variableName = this._codeVariableName;
+
         if (this.isAttribute) {
-            return `${this._codeVariableName}.setAsAttribute("${this.name}");\r\n`;
+            return `${variableName}.setAsAttribute("${this.name}");\r\n`;
         }
         if (this.isSystemValue) {
-            return `${this._codeVariableName}.setAsSystemValue(BABYLON.NodeMaterialSystemValues.${NodeMaterialSystemValues[this._systemValue!]});\r\n`;
+            return `${variableName}.setAsSystemValue(BABYLON.NodeMaterialSystemValues.${NodeMaterialSystemValues[this._systemValue!]});\r\n`;
         }
         if (this.isUniform) {
             let valueString = "";
             switch (this.type) {
                 case NodeMaterialBlockConnectionPointTypes.Float:
-                    let returnValue = `${this._codeVariableName}.value = ${this.value};\r\n`;
+                    let returnValue = `${variableName}.value = ${this.value};\r\n`;
 
-                    returnValue += `${this._codeVariableName}.min = ${this.min};\r\n`;
-                    returnValue += `${this._codeVariableName}.max = ${this.max};\r\n`;
-                    returnValue += `${this._codeVariableName}.matrixMode = ${this.matrixMode};\r\n`;
-                    returnValue += `${this._codeVariableName}.animationType  = BABYLON.AnimatedInputBlockTypes.${AnimatedInputBlockTypes[this.animationType]};\r\n`;
+                    returnValue += `${variableName}.min = ${this.min};\r\n`;
+                    returnValue += `${variableName}.max = ${this.max};\r\n`;
+                    returnValue += `${variableName}.matrixMode = ${this.matrixMode};\r\n`;
+                    returnValue += `${variableName}.animationType  = BABYLON.AnimatedInputBlockTypes.${AnimatedInputBlockTypes[this.animationType]};\r\n`;
 
                     return returnValue;
                 case NodeMaterialBlockConnectionPointTypes.Vector2:
@@ -572,9 +577,9 @@ export class InputBlock extends NodeMaterialBlock {
                     valueString = `new BABYLON.Color4(${this.value.r}, ${this.value.g}, ${this.value.b}, ${this.value.a})`;
                     break;
             }
-            let finalOutput = `${this._codeVariableName}.value = ${valueString};\r\n`;
-            finalOutput += `${this._codeVariableName}.isConstant = ${this.isConstant ? "true" : "false"};\r\n`;
-            finalOutput += `${this._codeVariableName}.visibleInInspector = ${this.visibleInInspector ? "true" : "false"};\r\n`;
+            let finalOutput = `${variableName}.value = ${valueString};\r\n`;
+            finalOutput += `${variableName}.isConstant = ${this.isConstant ? "true" : "false"};\r\n`;
+            finalOutput += `${variableName}.visibleInInspector = ${this.visibleInInspector ? "true" : "false"};\r\n`;
 
             return finalOutput;
         }
@@ -593,6 +598,7 @@ export class InputBlock extends NodeMaterialBlock {
         serializationObject.max = this.max;
         serializationObject.matrixMode = this.matrixMode;
         serializationObject.isConstant = this.isConstant;
+        serializationObject.groupInInspector = this.groupInInspector;
 
         if (this._storedValue != null && this._mode === NodeMaterialBlockConnectionPointMode.Uniform) {
             if (this._storedValue.asArray) {
@@ -619,6 +625,7 @@ export class InputBlock extends NodeMaterialBlock {
         this.max = serializationObject.max || 0;
         this.matrixMode = serializationObject.matrixMode || 0;
         this.isConstant = !!serializationObject.isConstant;
+        this.groupInInspector = serializationObject.groupInInspector || "";
 
         if (!serializationObject.valueType) {
             return;

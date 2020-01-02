@@ -63,6 +63,10 @@ export class WebXRControllerPointerSelection {
                             pressed = true;
                         }
                     }
+                    // in screen mode - means finger is on the screen
+                    if (controller.inputSource.targetRayMode === 'screen') {
+                        pressed = true;
+                    }
                     if (pressed) {
                         if (!triggerDown) {
                             scene.simulatePointerDown(pick, { pointerId: id });
@@ -106,7 +110,13 @@ export class WebXRControllerPointerSelection {
             controller.onDisposeObservable.addOnce(() => {
                 laserPointer.dispose();
                 cursorMesh.dispose();
-
+                if (controller.inputSource.targetRayMode === 'screen') {
+                    controller.getWorldPointerRayToRef(this._tmpRay);
+                    let pick = scene.pickWithRay(this._tmpRay);
+                    if (pick) {
+                        scene.simulatePointerUp(pick, { pointerId: id });
+                    }
+                }
                 scene.onBeforeRenderObservable.remove(renderObserver);
             });
         });

@@ -2,7 +2,7 @@ import { serialize, SerializationHelper, serializeAsColor3, expandToProperty } f
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
-import { Color3 } from "../Maths/math.color";
+import { Color3, TmpColors } from "../Maths/math.color";
 import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Effect } from "../Materials/effect";
@@ -363,6 +363,68 @@ export abstract class Light extends Node {
      * @returns The light
      */
     public abstract transferToEffect(effect: Effect, lightIndex: string): Light;
+
+    /**
+     * Sets the passed Effect "effect" with the Light textures.
+     * @param effect The effect to update
+     * @param lightIndex The index of the light in the effect to update
+     * @returns The light
+     */
+    public transferTexturesToEffect(effect: Effect, lightIndex: string): Light {
+        // Do nothing by default.
+        return this;
+    }
+
+    /**
+     * Binds the lights information from the scene to the effect for the given mesh.
+     * @param lightIndex Light index
+     * @param scene The scene where the light belongs to
+     * @param effect The effect we are binding the data to
+     * @param useSpecular Defines if specular is supported
+     * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
+     */
+    public _bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel = false): void {
+        let iAsString = lightIndex.toString();
+        let needUpdate = false;
+
+        if (rebuildInParallel && this._uniformBuffer._alreadyBound) {
+            return;
+        }
+
+        this._uniformBuffer.bindToEffect(effect, "Light" + iAsString);
+
+        if (this._renderId !== scene.getRenderId() || !this._uniformBuffer.useUbo) {
+            this._renderId = scene.getRenderId();
+
+            let scaledIntensity = this.getScaledIntensity();
+
+            this.transferToEffect(effect, iAsString);
+
+            this.diffuse.scaleToRef(scaledIntensity, TmpColors.Color3[0]);
+            this._uniformBuffer.updateColor4("vLightDiffuse", TmpColors.Color3[0], this.range, iAsString);
+            if (useSpecular) {
+                this.specular.scaleToRef(scaledIntensity, TmpColors.Color3[1]);
+                this._uniformBuffer.updateColor4("vLightSpecular", TmpColors.Color3[1], this.radius, iAsString);
+            }
+            needUpdate = true;
+        }
+
+        // Textures might still need to be rebound.
+        this.transferTexturesToEffect(effect, iAsString);
+
+        // Shadows
+        if (scene.shadowsEnabled && this.shadowEnabled) {
+            var shadowGenerator = this.getShadowGenerator();
+            if (shadowGenerator) {
+                shadowGenerator.bindShadowLight(iAsString, effect);
+                needUpdate = true;
+            }
+        }
+
+        if (needUpdate) {
+            this._uniformBuffer.update();
+        }
+    }
 
     /**
      * Sets the passed Effect "effect" with the Light information.

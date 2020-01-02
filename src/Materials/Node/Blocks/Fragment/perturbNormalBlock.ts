@@ -140,7 +140,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         let replaceForBumpInfos = this.strength.isConnectedToInputBlock && this.strength.connectInputBlock!.isConstant ? `${state._emitFloat(1.0 / this.strength.connectInputBlock!.value)}` : `1.0 / ${this.strength.associatedVariableName}`;
 
-        state._emitExtension("bump", "#extension GL_OES_standard_derivatives : enable");
+        state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
         state._emitFunctionFromInclude("bumpFragmentFunctions", comments, {
             replaceStrings: [
                 { search: /vBumpInfos.y/g, replace: replaceForBumpInfos},
