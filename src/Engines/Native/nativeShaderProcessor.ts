@@ -67,7 +67,7 @@ export class NativeShaderProcessor extends WebGL2ShaderProcessor {
             throw new Error("Can't find bgfx name mapping");
         }
         attribute = attribute.replace(name, newName);
-        this._replacements.push({ searchValue: new RegExp(`\\b${name}\\b`), replaceValue: `${newName}` });
+        this._replacements.push({ searchValue: new RegExp(`\\b${name}\\b`, 'g'), replaceValue: `${newName}` });
         return `layout(location=${location}) ${super.attributeProcessor(attribute)}`;
     }
 
