@@ -350,6 +350,7 @@ namespace Babylon
         Napi::Value LoadCubeTexture(const Napi::CallbackInfo& info);
         Napi::Value GetTextureWidth(const Napi::CallbackInfo& info);
         Napi::Value GetTextureHeight(const Napi::CallbackInfo& info);
+        void UpdateRawTexture(const Napi::CallbackInfo& info);
         void SetTextureSampling(const Napi::CallbackInfo& info);
         void SetTextureWrapMode(const Napi::CallbackInfo& info);
         void SetTextureAnisotropicLevel(const Napi::CallbackInfo& info);
@@ -400,6 +401,7 @@ namespace Babylon
         template<int size>
         void SetMatrixN(const Napi::CallbackInfo& info);
 
+        void ImageToTexture(TextureData* const textureData, bimg::ImageContainer& image, bool invertY, bool mipMap) const;
         // Scratch vector used for data alignment.
         std::vector<float> m_scratch{};
     };

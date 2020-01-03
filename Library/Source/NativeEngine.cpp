@@ -343,6 +343,7 @@ namespace Babylon
                 InstanceMethod("createTexture", &NativeEngine::CreateTexture),
                 InstanceMethod("loadTexture", &NativeEngine::LoadTexture),
                 InstanceMethod("loadCubeTexture", &NativeEngine::LoadCubeTexture),
+                InstanceMethod("updateRawTexture", &NativeEngine::UpdateRawTexture),
                 InstanceMethod("getTextureWidth", &NativeEngine::GetTextureWidth),
                 InstanceMethod("getTextureHeight", &NativeEngine::GetTextureHeight),
                 InstanceMethod("setTextureSampling", &NativeEngine::SetTextureSampling),
@@ -969,16 +970,8 @@ namespace Babylon
         return data;
     }
 
-    Napi::Value NativeEngine::LoadTexture(const Napi::CallbackInfo& info)
+    void NativeEngine::ImageToTexture(TextureData* const textureData, bimg::ImageContainer& image, bool invertY, bool mipMap) const
     {
-        const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
-        const auto buffer = info[1].As<Napi::ArrayBuffer>();
-        const auto mipMap = info[2].As<Napi::Boolean>().Value();
-        const auto invertY = info[3].As<Napi::Boolean>().Value();
-
-        textureData->Images.push_back(bimg::imageParse(&m_allocator, buffer.Data(), static_cast<uint32_t>(buffer.ByteLength())));
-        auto& image = *textureData->Images.front();
-
         bool useMipMap = false;
 
         if (invertY)
@@ -986,7 +979,7 @@ namespace Babylon
             FlipYInImageBytes(gsl::make_span(static_cast<uint8_t*>(image.m_data), image.m_size), image.m_height, image.m_size / image.m_height);
         }
 
-        auto imageDataRef{bgfx::makeRef(image.m_data, image.m_size)};
+        auto imageDataRef{ bgfx::makeRef(image.m_data, image.m_size) };
 
         if (mipMap)
         {
@@ -1007,7 +1000,50 @@ namespace Babylon
             static_cast<bgfx::TextureFormat::Enum>(image.m_format),
             0,
             imageDataRef);
+    }
+
+    Napi::Value NativeEngine::LoadTexture(const Napi::CallbackInfo& info)
+    {
+        const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
+        const auto buffer = info[1].As<Napi::ArrayBuffer>();
+        const auto mipMap = info[2].As<Napi::Boolean>().Value();
+        const auto invertY = info[3].As<Napi::Boolean>().Value();
+
+        textureData->Images.push_back(bimg::imageParse(&m_allocator, buffer.Data(), static_cast<uint32_t>(buffer.ByteLength())));
+        auto& image = *textureData->Images.front();
+
+        ImageToTexture(textureData, image, invertY, mipMap);
         return Napi::Value::From(info.Env(), bgfx::isValid(textureData->Texture));
+    }
+
+    void NativeEngine::UpdateRawTexture(const Napi::CallbackInfo& info)
+    {
+        const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
+        const auto width = static_cast<uint32_t>(info[2].As<Napi::Number>().Uint32Value());
+        const auto height = static_cast<uint32_t>(info[3].As<Napi::Number>().Uint32Value());
+        const auto formatIndex = info[4].As<Napi::Number>().Uint32Value();
+        const auto mipMap = info[5].As<Napi::Boolean>().Value();
+        const auto invertY = info[6].As<Napi::Boolean>().Value();
+
+        const void* data = nullptr;
+
+        switch(formatIndex)
+        {
+        case 0: // RGBA8
+            data = info[1].As<Napi::Uint8Array>().Data();
+            break;
+        case 1: // RGBA32F
+            data = info[1].As<Napi::Float32Array>().Data();
+            break;
+        default:
+            throw std::exception(); // unsupported format
+        }
+
+        if (data)
+        {
+            auto image = bimg::imageAlloc(&m_allocator, (bimg::TextureFormat::Enum)TEXTURE_FORMAT[formatIndex], width, height, 1, 1, false, false, data);
+            ImageToTexture(textureData, *image, invertY, mipMap);
+        }
     }
 
     Napi::Value NativeEngine::LoadCubeTexture(const Napi::CallbackInfo& info)
@@ -1183,7 +1219,7 @@ namespace Babylon
         const auto textureData = info[0].As<Napi::External<TextureData>>().Data();
         uint16_t width = static_cast<uint16_t>(info[1].As<Napi::Number>().Uint32Value());
         uint16_t height = static_cast<uint16_t>(info[2].As<Napi::Number>().Uint32Value());
-        bgfx::TextureFormat::Enum format = static_cast<bgfx::TextureFormat::Enum>(info[3].As<Napi::Number>().Uint32Value());
+        uint32_t formatIndex = info[3].As<Napi::Number>().Uint32Value();
         int samplingMode = info[4].As<Napi::Number>().Uint32Value();
         bool generateStencilBuffer = info[5].As<Napi::Boolean>();
         bool generateDepth = info[6].As<Napi::Boolean>();
@@ -1196,7 +1232,7 @@ namespace Babylon
         }
         else if (!generateStencilBuffer && !generateDepth)
         {
-            frameBufferHandle = bgfx::createFrameBuffer(width, height, TEXTURE_FORMAT[format], BGFX_TEXTURE_RT);
+            frameBufferHandle = bgfx::createFrameBuffer(width, height, TEXTURE_FORMAT[formatIndex], BGFX_TEXTURE_RT);
         }
         else
         {
@@ -1206,11 +1242,11 @@ namespace Babylon
                 depthStencilFormat = bgfx::TextureFormat::D24S8;
             }
 
-            assert(bgfx::isTextureValid(0, false, 1, TEXTURE_FORMAT[format], BGFX_TEXTURE_RT));
+            assert(bgfx::isTextureValid(0, false, 1, TEXTURE_FORMAT[formatIndex], BGFX_TEXTURE_RT));
             assert(bgfx::isTextureValid(0, false, 1, depthStencilFormat, BGFX_TEXTURE_RT));
 
             std::array<bgfx::TextureHandle, 2> textures{
-                bgfx::createTexture2D(width, height, generateMipMaps, 1, TEXTURE_FORMAT[format], BGFX_TEXTURE_RT),
+                bgfx::createTexture2D(width, height, generateMipMaps, 1, TEXTURE_FORMAT[formatIndex], BGFX_TEXTURE_RT),
                 bgfx::createTexture2D(width, height, generateMipMaps, 1, depthStencilFormat, BGFX_TEXTURE_RT)};
             std::array<bgfx::Attachment, textures.size()> attachments{};
             for (int idx = 0; idx < attachments.size(); ++idx)
