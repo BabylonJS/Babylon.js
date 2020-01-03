@@ -89,7 +89,9 @@ function runTest(index, done) {
 
     var test = config.tests[index];
 
-    console.log("Running " + test.title);
+    let testInfo = "Running " + test.title;
+    console.log(testInfo);
+    TestUtils.setTitle(testInfo);
     
     seed = 100000;
 
@@ -301,7 +303,7 @@ xhr.addEventListener("readystatechange", function() {
 }, false);
 
 console.log("Starting");
-
+TestUtils.setTitle("Starting Native Validation Tests");
 TestUtils.updateSize(640, 400);
 xhr.send();
 

@@ -25,6 +25,7 @@ namespace Babylon
                 {
                     ParentT::StaticMethod("exit", &TestUtils::Exit),
                     ParentT::StaticMethod("updateSize", &TestUtils::UpdateSize),
+                    ParentT::StaticMethod("setTitle", &TestUtils::SetTitle),
                     
                 });
 
@@ -64,6 +65,16 @@ namespace Babylon
             SetWindowPos(hwnd, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER);
 #else
             // TODO: handle resize for other platforms
+#endif
+        }
+
+        static void SetTitle(const Napi::CallbackInfo& info)
+        {
+            const auto title = info[0].As<Napi::String>().Utf8Value();
+#ifdef WIN32
+            SetWindowTextA((HWND)_nativeWindowPtr, title.c_str());
+#else
+            // TODO: handle title for other platforms
 #endif
         }
 

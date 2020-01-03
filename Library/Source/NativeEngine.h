@@ -216,7 +216,10 @@ namespace Babylon
     {
         ~TextureData()
         {
-            bgfx::destroy(Texture);
+            if (Texture.idx != bgfx::kInvalidHandle)
+            {
+                bgfx::destroy(Texture);
+            }
 
             for (auto image : Images)
             {
