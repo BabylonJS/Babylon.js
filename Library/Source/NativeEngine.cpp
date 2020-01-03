@@ -944,7 +944,7 @@ namespace Babylon
             return info.Env().Undefined();
         }
 
-        auto data = Napi::Int8Array::New(info.Env(), imageData->Image->m_size);
+        auto data = Napi::Uint8Array::New(info.Env(), imageData->Image->m_size);
         const auto ptr = static_cast<uint8_t*>(imageData->Image->m_data);
         memcpy(data.Data(), ptr, imageData->Image->m_size);
 
@@ -964,7 +964,7 @@ namespace Babylon
         bx::MemoryWriter writer(&mb);
         bimg::imageWritePng(&writer, image->m_width, image->m_height, image->m_size / image->m_height, image->m_data, image->m_format, false);
 
-        auto data = Napi::Int8Array::New(info.Env(), mb.getSize());
+        auto data = Napi::Uint8Array::New(info.Env(), mb.getSize());
         memcpy(data.Data(), static_cast<uint8_t*>(mb.more()), imageData->Image->m_size);
 
         return data;

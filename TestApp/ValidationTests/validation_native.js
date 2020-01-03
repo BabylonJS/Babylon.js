@@ -5,7 +5,7 @@ var justOnce;
 var threshold = 25;
 var errorRatio = 2.5;
 
-function compare(canvasImageData, referenceImage) {
+function compare(test, canvasImageData, referenceImage) {
     var renderData = engine._native.getImageData(canvasImageData);
     var size = renderData.length;
     var referenceData ={data: engine._native.getImageData(referenceImage)};
@@ -31,16 +31,21 @@ function compare(canvasImageData, referenceImage) {
     if (differencesCount) {
         console.log("%c Pixel difference: " + differencesCount + " pixels.", 'color: orange');
     }
+    
+    let error = (differencesCount * 100) / (size / 4) > errorRatio;
 
-    return (differencesCount * 100) / (size / 4) > errorRatio;
+    if (error) {
+        TestUtils.writePNG(referenceData.data, 600, 400, "Error "+test.title+".png");
+    }
+    return error;
 }
 
 function evaluate(test, resultCanvas, result, referenceImage, index, waitRing, done) {
-    var canvasImageData = engine._native.getFramebufferData(0,0,engine._native.getRenderWidth(), engine._native.getRenderHeight());
+    var canvasImageData = engine._native.getFramebufferData(0,0, engine._native.getRenderWidth(), engine._native.getRenderHeight());
     var testRes = true;
     // Visual check
     if (!test.onlyVisual) {
-        if (compare(canvasImageData, referenceImage)) {
+        if (compare(test, canvasImageData, referenceImage)) {
             testRes = false;
             console.log('%c failed', 'color: red');
         } else {
@@ -304,6 +309,6 @@ xhr.addEventListener("readystatechange", function() {
 
 console.log("Starting");
 TestUtils.setTitle("Starting Native Validation Tests");
-TestUtils.updateSize(640, 400);
+TestUtils.updateSize(600, 400);
 xhr.send();
 

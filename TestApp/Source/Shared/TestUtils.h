@@ -2,6 +2,13 @@
 
 #include <napi/env.h>
 
+#include <bgfx/bgfx.h>
+#include <bgfx/platform.h>
+
+#include <bimg/bimg.h>
+#include <bx/readerwriter.h>
+#include <bx/file.h>
+
 #include <functional>
 #include <sstream>
 
@@ -26,7 +33,7 @@ namespace Babylon
                     ParentT::StaticMethod("exit", &TestUtils::Exit),
                     ParentT::StaticMethod("updateSize", &TestUtils::UpdateSize),
                     ParentT::StaticMethod("setTitle", &TestUtils::SetTitle),
-                    
+                    ParentT::StaticMethod("writePNG", &TestUtils::WritePNG),
                 });
 
             constructor = Napi::Persistent(func);
@@ -73,6 +80,33 @@ namespace Babylon
             const auto title = info[0].As<Napi::String>().Utf8Value();
 #ifdef WIN32
             SetWindowTextA((HWND)_nativeWindowPtr, title.c_str());
+#else
+            // TODO: handle title for other platforms
+#endif
+        }
+
+        static void WritePNG(const Napi::CallbackInfo& info)
+        {
+            const auto buffer = info[0].As<Napi::Uint8Array>();
+            const auto width = info[1].As<Napi::Number>().Uint32Value();
+            const auto height = info[2].As<Napi::Number>().Uint32Value();
+            const auto filename = info[3].As<Napi::String>().Utf8Value();
+
+            if(buffer.ByteLength() < (width * height * 4))
+            {
+                return;
+            }
+#ifdef WIN32
+            bx::DefaultAllocator allocator;
+            bx::MemoryBlock mb(&allocator);
+            bx::FileWriter writer;
+            bx::FilePath filepath(filename.c_str());
+            bx::Error err;
+            if (writer.open(filepath, false, &err))
+            {
+                bimg::imageWritePng(&writer, width, height, width * 4, buffer.Data(), bimg::TextureFormat::RGBA8, false);
+                writer.close();
+            }
 #else
             // TODO: handle title for other platforms
 #endif

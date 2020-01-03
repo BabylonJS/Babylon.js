@@ -101,7 +101,14 @@ if(WINDOWS_STORE)
     target_compile_options(TestApp PRIVATE /await)
 endif()
 
-target_include_directories(TestApp PRIVATE "Source")
+if(WIN32)
+    set(TEST_DEPENDENCY "${CMAKE_CURRENT_SOURCE_DIR}/../Library/Dependencies/bgfx.cmake/bx/include/compat/msvc"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../Library/Dependencies/bgfx.cmake/bgfx/include"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../Library/Dependencies/bgfx.cmake/bx/include"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../Library/Dependencies/bgfx.cmake/bimg/include")
+endif()
+
+target_include_directories(TestApp PRIVATE "Source" ${TEST_DEPENDENCY})
 
 target_link_libraries(TestApp PRIVATE Library ${ADDITIONAL_LIBRARIES})
 
