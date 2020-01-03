@@ -285,11 +285,11 @@ xhr.addEventListener("readystatechange", function() {
             runTest(i, function(status) {
                 if (!status)
                 {
-                    engine.exit(-1);
+                    TestUtils.exit(-1);
                 }
                 i++;
                 if (justOnce || i >= config.tests.length) {
-                    engine.exit(0);
+                    TestUtils.exit(0);
                     return;
                 }
                 recursiveRunTest(i);

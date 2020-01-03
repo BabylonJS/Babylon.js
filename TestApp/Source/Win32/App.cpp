@@ -8,6 +8,7 @@
 #include <filesystem>
 
 #include <Shared/InputManager.h>
+#include <Shared/TestUtils.h>
 
 #include <Babylon/Console.h>
 #include <Babylon/RuntimeWin32.h>
@@ -81,6 +82,11 @@ namespace
             {
                 OutputDebugStringA(message);
             });
+        });
+
+        runtime->Dispatch([hWnd](Babylon::Env& env)
+        {
+            Babylon::TestUtils::CreateInstance(env, hWnd);
         });
 
         inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);

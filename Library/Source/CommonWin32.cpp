@@ -23,9 +23,4 @@ namespace Babylon
 
         return {url};
     }
-
-    void ExitApplication(void *nativeWindowPtr, int exitCode)
-    {
-        PostMessageW((HWND)nativeWindowPtr, WM_QUIT, exitCode, 0);
-    }
 }

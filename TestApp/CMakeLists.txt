@@ -8,7 +8,8 @@ set(SCRIPTS
 set(SOURCES
     ${SCRIPTS}
     "Source/Shared/InputManager.cpp"
-    "Source/Shared/InputManager.h")
+    "Source/Shared/InputManager.h"
+    "Source/Shared/TestUtils.h")
 if(WIN32 AND NOT WINDOWS_STORE)
     set(SOURCES
         ${SOURCES}

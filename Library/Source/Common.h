@@ -21,5 +21,4 @@ namespace Babylon
 
     Filepath GetModulePath();
     std::string GetUrlFromPath(const Filepath& path);
-    void ExitApplication(void* nativeWindowPtr, int exitCode);
 }
