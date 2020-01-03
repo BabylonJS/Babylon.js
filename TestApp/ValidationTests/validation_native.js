@@ -301,5 +301,7 @@ xhr.addEventListener("readystatechange", function() {
 }, false);
 
 console.log("Starting");
+
+TestUtils.updateSize(640, 400);
 xhr.send();
 

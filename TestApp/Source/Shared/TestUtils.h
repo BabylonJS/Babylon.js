@@ -23,7 +23,9 @@ namespace Babylon
                 env,
                 "TestUtils",
                 {
-                    ParentT::StaticMethod("exit", &TestUtils::Exit)
+                    ParentT::StaticMethod("exit", &TestUtils::Exit),
+                    ParentT::StaticMethod("updateSize", &TestUtils::UpdateSize),
+                    
                 });
 
             constructor = Napi::Persistent(func);
@@ -47,6 +49,21 @@ namespace Babylon
             PostMessageW((HWND)_nativeWindowPtr, WM_QUIT, exitCode, 0);
 #else
             // TODO: handle exit for other platforms
+#endif
+        }
+
+        static void UpdateSize(const Napi::CallbackInfo& info)
+        {
+            const int32_t width = info[0].As<Napi::Number>().Int32Value();
+            const int32_t height = info[1].As<Napi::Number>().Int32Value();
+            
+#ifdef WIN32
+            HWND hwnd = (HWND)_nativeWindowPtr;
+            RECT rc {0, 0, width, height};
+            AdjustWindowRectEx(&rc, GetWindowStyle(hwnd), GetMenu(hwnd) != NULL, GetWindowExStyle(hwnd));
+            SetWindowPos(hwnd, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER);
+#else
+            // TODO: handle resize for other platforms
 #endif
         }
 
