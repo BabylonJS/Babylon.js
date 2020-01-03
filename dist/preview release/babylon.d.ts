@@ -30555,6 +30555,7 @@ declare module BABYLON {
         private _settings;
         private _createInternalTextureOnEvent;
         private _frameId;
+        private _currentSrc;
         /**
          * Creates a video texture.
          * If you want to display a video in your scene, this is the special texture for that.
@@ -30592,6 +30593,11 @@ declare module BABYLON {
          * @param url New url.
          */
         updateURL(url: string): void;
+        /**
+         * Clones the texture.
+         * @returns the cloned texture
+         */
+        clone(): VideoTexture;
         /**
          * Dispose the texture and release its associated resources.
          */
