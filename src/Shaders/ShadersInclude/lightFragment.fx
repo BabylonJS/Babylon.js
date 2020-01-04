@@ -1,4 +1,4 @@
-﻿#ifdef LIGHT{X}
+#ifdef LIGHT{X}
     #if defined(SHADOWONLY) || defined(LIGHTMAP) && defined(LIGHTMAPEXCLUDED{X}) && defined(LIGHTMAPNOSPECULAR{X})
         //No light calculation
     #else
@@ -126,31 +126,9 @@
 
     #ifdef SHADOW{X}
         #ifdef SHADOWCSM{X}
-            #ifdef SHADOWCSMDEBUG{X}
-                const vec3 vCascadeColorsMultiplier{X}[8] = vec3[8]
-                (
-                    vec3 ( 1.5, 0.0, 0.0 ),
-                    vec3 ( 0.0, 1.5, 0.0 ),
-                    vec3 ( 0.0, 0.0, 5.5 ),
-                    vec3 ( 1.5, 0.0, 5.5 ),
-                    vec3 ( 1.5, 1.5, 0.0 ),
-                    vec3 ( 1.0, 1.0, 1.0 ),
-                    vec3 ( 0.0, 1.0, 5.5 ),
-                    vec3 ( 0.5, 3.5, 0.75 )
-                );
-                vec3 shadowDebug{X};
-            #endif
-
-            int index{X} = -1;
-
-            float diff{X} = 0.;
-            float frustrumLength{X} = 0.;
-            float previousFrustrumMax{X} = 0.;
-            for (int i = 0; i < SHADOWCSMNUM_CASCADES{X}; i++) {
+            for (int i = 0; i < SHADOWCSMNUM_CASCADES{X}; i++) 
+            {
                 diff{X} = viewFrustumZ{X}[i] - vPositionFromCamera{X}.z;
-                frustrumLength{X} = viewFrustumZ{X}[i] - previousFrustrumMax{X};
-                previousFrustrumMax{X} = viewFrustumZ{X}[i];
-
                 if (diff{X} >= 0.) {
                     index{X} = i;
                     break;

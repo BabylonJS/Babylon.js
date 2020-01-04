@@ -1,4 +1,4 @@
-﻿#ifdef LIGHT{X}
+#ifdef LIGHT{X}
 	uniform Light{X}
 	{
 		vec4 vLightData;
@@ -41,6 +41,29 @@
 		#else
 			uniform highp sampler2DArray shadowSampler{X};
 		#endif
+
+        #ifdef SHADOWCSMDEBUG{X}
+            const vec3 vCascadeColorsMultiplier{X}[8] = vec3[8]
+            (
+                vec3 ( 1.5, 0.0, 0.0 ),
+                vec3 ( 0.0, 1.5, 0.0 ),
+                vec3 ( 0.0, 0.0, 5.5 ),
+                vec3 ( 1.5, 0.0, 5.5 ),
+                vec3 ( 1.5, 1.5, 0.0 ),
+                vec3 ( 1.0, 1.0, 1.0 ),
+                vec3 ( 0.0, 1.0, 5.5 ),
+                vec3 ( 0.5, 3.5, 0.75 )
+            );
+            vec3 shadowDebug{X};
+        #endif
+
+        #ifdef SHADOWCSMUSESHADOWMAXZ{X}
+            int index{X} = -1;
+        #else
+            int index{X} = SHADOWCSMNUM_CASCADES{X} - 1;
+        #endif
+
+        float diff{X} = 0.;
 	#elif defined(SHADOWCUBE{X})
 		uniform samplerCube shadowSampler{X};		
 	#else
