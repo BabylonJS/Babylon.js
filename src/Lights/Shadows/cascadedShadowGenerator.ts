@@ -560,6 +560,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
     /**
      * Gets a cascade minimum extents
      * @param cascadeIndex index of the cascade
+     * @returns the minimum cascade extents
      */
     public getCascadeMinExtents(cascadeIndex: number): Nullable<Vector3> {
         return cascadeIndex >= 0 && cascadeIndex < this._numCascades ? this._cascadeMinExtents[cascadeIndex] : null;
@@ -568,6 +569,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
     /**
      * Gets a cascade maximum extents
      * @param cascadeIndex index of the cascade
+     * @returns the maximum cascade extents
      */
     public getCascadeMaxExtents(cascadeIndex: number): Nullable<Vector3> {
         return cascadeIndex >= 0 && cascadeIndex < this._numCascades ? this._cascadeMaxExtents[cascadeIndex] : null;
@@ -690,6 +692,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
     /**
      * Gets the view matrix corresponding to a given cascade
      * @param cascadeNum cascade to retrieve the view matrix from
+     * @returns the cascade view matrix
      */
     public getCascadeViewMatrix(cascadeNum: number): Nullable<Matrix> {
         return cascadeNum >= 0 && cascadeNum < this._numCascades ? this._viewMatrices[cascadeNum] : null;
