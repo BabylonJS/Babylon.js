@@ -26,8 +26,19 @@ import { EffectFallbacks } from '../../Materials/effectFallbacks';
 import { IShadowGenerator } from './shadowGenerator';
 import { DirectionalLight } from '../directionalLight';
 
-import { BoundingSphere } from "../../Culling/boundingSphere";
 import { BoundingInfo } from '../../Culling/boundingInfo';
+
+interface ICascade {
+    prevBreakDistance: number;
+    breakDistance: number;
+}
+
+const UpDir = Vector3.Up();
+const ZeroVec = Vector3.Zero();
+
+let tmpv1 = new Vector3(),
+    tmpv2 = new Vector3(),
+    matrix = new Matrix();
 
 /**
  * A CSM implementation allowing casting shadows on large scenes.
@@ -35,6 +46,18 @@ import { BoundingInfo } from '../../Culling/boundingInfo';
  * Based on: https://johanmedestrom.wordpress.com/2016/03/18/opengl-cascaded-shadow-maps/
  */
 export class CascadedShadowGenerator implements IShadowGenerator {
+
+    private static readonly frustumCornersNDCSpace = [
+        new Vector3(-1.0, +1.0, -1.0),
+        new Vector3(+1.0, +1.0, -1.0),
+        new Vector3(+1.0, -1.0, -1.0),
+        new Vector3(-1.0, -1.0, -1.0),
+        new Vector3(-1.0, +1.0, +1.0),
+        new Vector3(+1.0, +1.0, +1.0),
+        new Vector3(+1.0, -1.0, +1.0),
+        new Vector3(-1.0, -1.0, +1.0),
+    ];
+
     /**
      * Defines the default number of cascades used by the CSM.
      */
@@ -248,12 +271,6 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         this._contactHardeningLightSizeUVRatio = contactHardeningLightSizeUVRatio;
     }
 
-    public lightSizeCorrection: boolean = true;
-
-    public depthCorrection: boolean = true;
-
-    public penumbraDarkness: number = 1.0;
-
     private _darkness = 0;
 
     /** Gets or sets the actual darkness of a shadow */
@@ -291,6 +308,11 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         return this;
     }
 
+    /**
+     * Gets or sets the actual darkness of the soft shadows while using PCSS filtering (value between 0. and 1.)
+     */
+    public penumbraDarkness: number = 1.0;
+
     private _transparencyShadow = false;
 
     /** Gets or sets the ability to have transparent shadow  */
@@ -312,23 +334,30 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         return this;
     }
 
-    private _cascades = CascadedShadowGenerator.DEFAULT_CASCADES_COUNT;
+    private _numCascades = CascadedShadowGenerator.DEFAULT_CASCADES_COUNT;
 
     /**
      * Gets or set the number of cascades used by the CSM.
      */
-    public get cascades(): number {
-        return this._cascades;
+    public get numCascades(): number {
+        return this._numCascades;
     }
-    public set cascades(value: number) {
+
+    public set numCascades(value: number) {
         value = Math.min(Math.max(value, CascadedShadowGenerator.MIN_CASCADES_COUNT), CascadedShadowGenerator.MAX_CASCADES_COUNT);
-        if (value === this._cascades) {
+        if (value === this._numCascades) {
             return;
         }
 
-        this._cascades = value;
+        this._numCascades = value;
         this.recreateShadowMap();
     }
+
+    /**
+     * Sets this to true if you want that the edges of the shadows don't "swimm" / "shimmer" when rotating the camera.
+     * The trade off is that you loose some precision in the shadow rendering when enabling this setting.
+     */
+    public stabilizeCascades: boolean = false;
 
     private _shadowMap: Nullable<RenderTargetTexture>;
     /**
@@ -342,6 +371,11 @@ export class CascadedShadowGenerator implements IShadowGenerator {
     protected _freezeShadowCastersBoundingInfo: boolean = false;
     private _freezeShadowCastersBoundingInfoObservable: Nullable<Observer<Scene>> = null;
 
+    /**
+     * Enables or disables the shadow casters bounding info computation.
+     * If your shadow casters don't move, you can disable this feature.
+     * If it is enabled, the bounding box computation is done every frame.
+     */
     public get freezeShadowCastersBoundingInfo(): boolean {
         return this._freezeShadowCastersBoundingInfo;
     }
@@ -363,9 +397,12 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         }
     }
 
+    private _scbiMin = new Vector3(0, 0, 0);
+    private _scbiMax = new Vector3(0, 0, 0);
+
     protected _computeShadowCastersBoundingInfo(): void {
-        const min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE),
-              max = new Vector3(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
+        this._scbiMin.copyFromFloats(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        this._scbiMax.copyFromFloats(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
 
         if (this._shadowMap && this._shadowMap.renderList) {
             const renderList = this._shadowMap.renderList;
@@ -377,24 +414,65 @@ export class CascadedShadowGenerator implements IShadowGenerator {
                 }
 
                 const boundingInfo = mesh.getBoundingInfo(),
-                    boundingBox = boundingInfo.boundingBox;
+                      boundingBox = boundingInfo.boundingBox;
 
-                min.minimizeInPlace(boundingBox.minimumWorld);
-                max.maximizeInPlace(boundingBox.maximumWorld);
+                this._scbiMin.minimizeInPlace(boundingBox.minimumWorld);
+                this._scbiMax.maximizeInPlace(boundingBox.maximumWorld);
             }
         }
 
-        this._shadowCastersBoundingInfo.reConstruct(min, max);
+        this._shadowCastersBoundingInfo.reConstruct(this._scbiMin, this._scbiMax);
     }
 
     protected _shadowCastersBoundingInfo: BoundingInfo;
 
+    /**
+     * Gets or sets the shadow casters bounding info.
+     * If you provide your own shadow casters bounding info, first enable freezeShadowCastersBoundingInfo
+     * so that the system won't overwrite the bounds you provide
+     */
     public get shadowCastersBoundingInfo(): BoundingInfo {
         return this._shadowCastersBoundingInfo;
     }
 
     public set shadowCastersBoundingInfo(boundingInfo: BoundingInfo) {
         this._shadowCastersBoundingInfo = boundingInfo;
+    }
+
+    protected _breaksAreDirty: boolean = true;
+
+    protected _minDistance: number = 0;
+    protected _maxDistance: number = 1;
+
+    /**
+     * Sets the minimal and maximal distances to use when computing the cascade breaks.
+     *
+     * The values of min / max are typically the depth zmin and zmax values of your scene, for a given frame.
+     * If you don't know these values, simply leave them to their defaults and don't call this function.
+     * @param min minimal distance for the breaks (default to 0.)
+     * @param max maximal distance for the breaks (default to 1.)
+     */
+    public setMinMaxDistance(min: number, max: number): void {
+        if (this._minDistance === min && this._maxDistance === max) {
+            return;
+        }
+
+        if (min > max) {
+            min = 0;
+            max = 1;
+        }
+
+        if (min < 0) {
+            min = 0;
+        }
+
+        if (max > 1) {
+            max = 1;
+        }
+
+        this._minDistance = min;
+        this._maxDistance = max;
+        this._breaksAreDirty = true;
     }
 
     /**
@@ -457,7 +535,6 @@ export class CascadedShadowGenerator implements IShadowGenerator {
 
     /**
      * Controls the extent to which the shadows fade out at the edge of the frustum
-     * Used only by directionals and spots
      */
     public frustumEdgeFalloff = 0;
 
@@ -477,14 +554,31 @@ export class CascadedShadowGenerator implements IShadowGenerator {
      */
     public forceBackFacesOnly = false;
 
+    private _cascadeMinExtents: Array<Vector3>;
+    private _cascadeMaxExtents: Array<Vector3>;
+
+    /**
+     * Gets a cascade minimum extents
+     * @param cascadeIndex index of the cascade
+     */
+    public getCascadeMinExtents(cascadeIndex: number): Nullable<Vector3> {
+        return cascadeIndex >= 0 && cascadeIndex < this._numCascades ? this._cascadeMinExtents[cascadeIndex] : null;
+    }
+
+    /**
+     * Gets a cascade maximum extents
+     * @param cascadeIndex index of the cascade
+     */
+    public getCascadeMaxExtents(cascadeIndex: number): Nullable<Vector3> {
+        return cascadeIndex >= 0 && cascadeIndex < this._numCascades ? this._cascadeMaxExtents[cascadeIndex] : null;
+    }
+
     private _scene: Scene;
     private _lightDirection = Vector3.Zero();
 
     private _effect: Effect;
 
-    private _viewMatrix: Array<Matrix>;
-    private _lightMinExtents: Array<Vector3>;
-    private _lightMaxExtents: Array<Vector3>;
+    private _cascades: Array<ICascade>;
     private _cachedPosition: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
     private _cachedDirection: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
     private _cachedDefines: string;
@@ -495,15 +589,22 @@ export class CascadedShadowGenerator implements IShadowGenerator {
     private _defaultTextureMatrix = Matrix.Identity();
     private _storedUniqueId: Nullable<number>;
 
-    private _viewSpaceFrustums: Array<Array<Vector3>>;
     private _viewSpaceFrustumsZ: Array<number>;
-    private _viewSpaceBoundingSpheres: Array<BoundingSphere>;
+    private _viewMatrices: Array<Matrix>;
+    private _projectionMatrices: Array<Matrix>;
     private _transformMatrices: Array<Matrix>;
     private _transformMatricesAsArray: Float32Array;
+    private _frustumLengths: Array<number>;
+    private _lightSizeUVCorrection: Array<number>;
+    private _depthCorrection: Array<number>;
+    private _frustumCornersWorldSpace: Array<Array<Vector3>>;
+    private _frustumCenter: Array<Vector3>;
+    private _shadowCameraPos: Array<Vector3>;
 
     private _shadowMaxZ: number;
     /**
-     * Gets the csmFrustumLength value: furthest range of the frustum for the CSM mode.
+     * Gets the shadow max z distance. It's the limit beyond which shadows are not displayed.
+     * It defaults to camera.maxZ
      */
     public get shadowMaxZ(): number {
         if (!this._scene || !this._scene.activeCamera) {
@@ -512,7 +613,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         return this._shadowMaxZ;
     }
     /**
-     * Sets the csmFrustumLength: furthest range of the frustum for the CSM mode.
+     * Sets the shadow max z distance.
      */
     public set shadowMaxZ(value: number) {
         if (!this._scene || !this._scene.activeCamera) {
@@ -523,11 +624,15 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             return;
         }
         this._shadowMaxZ = value;
-        this._initCascades();
+        this._breaksAreDirty = true;
     }
 
     protected _debug = false;
 
+    /**
+     * Gets or sets the debug flag.
+     * When enabled, the cascades are materialized by different colors on the screen.
+     */
     public get debug(): boolean {
         return this._debug;
     }
@@ -537,129 +642,79 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         this._light._markMeshesAsLightDirty();
     }
 
-    public depthClamp: boolean = false;
+    private _depthClamp = true;
 
+    /**
+     * Gets or sets the depth clamping value.
+     *
+     * When enabled, it improves the shadow quality because the near z plane of the light frustum don't need to be adjusted
+     * to account for the shadow casters far away.
+     *
+     * Note that this property is incompatible with PCSS filtering, so it won't be used in that case.
+     */
+    public get depthClamp(): boolean {
+        return this._depthClamp;
+    }
+
+    public set depthClamp(value: boolean) {
+        this._depthClamp = value;
+    }
+
+    /**
+     * Gets or sets the percentage of blending between two cascades (value between 0. and 1.).
+     * It defaults to 0.1 (10% blending).
+     */
     public cascadeBlendPercentage: number = 0.1;
 
     private _lambda = 0.5;
 
     /**
-     * Gets csmLambda: parameter used for calculating the frustum in CSM.
+     * Gets or set the lambda parameter.
+     * This parameter is used to split the camera frustum and create the cascades.
+     * It's a value between 0. and 1.: If 0, the split is a uniform split of the frustum, if 1 it is a logarithmic split.
+     * For all values in-between, it's a linear combination of the uniform and logarithm split algorithm.
      */
     public get lambda(): number {
         return this._lambda;
     }
-    /**
-     * Sets csmLambda: parameter used for calculating the frustum in CSM.
-     */
+
     public set lambda(value: number) {
         const lambda = Math.min(Math.max(value, 0), 1);
         if (this._lambda == lambda) {
             return;
         }
         this._lambda = lambda;
-        this._initCascades();
+        this._breaksAreDirty = true;
     }
 
-    private _initCascades(): void {
+    /**
+     * Gets the view matrix corresponding to a given cascade
+     * @param cascadeNum cascade to retrieve the view matrix from
+     */
+    public getCascadeViewMatrix(cascadeNum: number): Nullable<Matrix> {
+        return cascadeNum >= 0 && cascadeNum < this._numCascades ? this._viewMatrices[cascadeNum] : null;
+    }
+
+    /**
+     * Create the cascade breaks according to the lambda, shadowMaxZ and min/max distance properties, as well as the camera near and far planes.
+     * This function is automatically called when updating lambda, shadowMaxZ and min/max distances, however you should call it yourself if
+     * you change the camera near/far planes!
+     */
+    public splitFrustum(): void {
+        this._breaksAreDirty = true;
+    }
+
+    private _splitFrustum(): void {
         let camera = this._scene.activeCamera;
         if (!camera) {
             return;
         }
 
-        if (!this._shadowMaxZ) {
-            this._shadowMaxZ = camera.maxZ;
-        }
-
-        this._currentRenderID = new Array(this._cascades);
-
-        // inits and sets all static params related to CSM
-        let engine = this._scene.getEngine();
-        this._viewSpaceFrustums = [];
-        this._viewSpaceFrustumsZ = [];
-        this._viewSpaceBoundingSpheres = [];
-        let nearx = 0;
-        let neary = 0;
-        let farx = 0;
-        let fary = 0;
-
-        // get all internal camera cascaded frustum points
-        let breaks = this._frustumSplit();
-        if (camera.fovMode === 0) {
-            nearx = camera.minZ * Math.tan(camera.fov / 2) * engine.getAspectRatio(camera);
-            neary = camera.minZ * Math.tan(camera.fov / 2);
-            farx = this._shadowMaxZ * Math.tan(camera.fov / 2) * engine.getAspectRatio(camera);
-            fary = this._shadowMaxZ * Math.tan(camera.fov / 2);
-        } else if (camera.fovMode === 1) {
-            nearx = camera.minZ * Math.tan(camera.fov / 2);
-            neary = camera.minZ * Math.tan(camera.fov / 2) * engine.getAspectRatio(camera);
-            farx = this._shadowMaxZ * Math.tan(camera.fov / 2);
-            fary = this._shadowMaxZ * Math.tan(camera.fov / 2) * engine.getAspectRatio(camera);
-        }
-
-        // populate the viewSpaceFrustums array
-        for (let i = 0; i < this.cascades + 1; i++) {
-            this._viewSpaceFrustums[i] = [];
-            this._viewSpaceFrustums[i].push(Vector3.Lerp(new Vector3(nearx, neary, camera.minZ), new Vector3(farx, fary, this._shadowMaxZ), breaks[i]));
-            this._viewSpaceFrustums[i].push(Vector3.Lerp(new Vector3(nearx, -neary, camera.minZ), new Vector3(farx, -fary, this._shadowMaxZ), breaks[i]));
-            this._viewSpaceFrustums[i].push(Vector3.Lerp(new Vector3(-nearx, -neary, camera.minZ), new Vector3(-farx, -fary, this._shadowMaxZ), breaks[i]));
-            this._viewSpaceFrustums[i].push(Vector3.Lerp(new Vector3(-nearx, neary, camera.minZ), new Vector3(-farx, fary, this._shadowMaxZ), breaks[i]));
-        }
-
-        // populate the viewSpaceBoundingSpheres array
-        var minX = Number.MAX_VALUE;
-        var minY = Number.MAX_VALUE;
-        var minZ = Number.MAX_VALUE;
-        var maxX = Number.MIN_VALUE;
-        var maxY = Number.MIN_VALUE;
-        var maxZ = Number.MIN_VALUE;
-        for (let i = 0; i < this.cascades; i++) {
-            for (let j = 0; j < this._viewSpaceFrustums[i].length; j++) {
-                minX = Math.min(minX, this._viewSpaceFrustums[i][j].x);
-                minY = Math.min(minY, this._viewSpaceFrustums[i][j].y);
-                minZ = Math.min(minZ, this._viewSpaceFrustums[i][j].z);
-                maxX = Math.max(maxX, this._viewSpaceFrustums[i][j].x);
-                maxY = Math.max(maxY, this._viewSpaceFrustums[i][j].y);
-                maxZ = Math.max(maxZ, this._viewSpaceFrustums[i][j].z);
-
-                minX = Math.min(minX, this._viewSpaceFrustums[i + 1][j].x);
-                minY = Math.min(minY, this._viewSpaceFrustums[i + 1][j].y);
-                minZ = Math.min(minZ, this._viewSpaceFrustums[i + 1][j].z);
-                maxX = Math.max(maxX, this._viewSpaceFrustums[i + 1][j].x);
-                maxY = Math.max(maxY, this._viewSpaceFrustums[i + 1][j].y);
-                maxZ = Math.max(maxZ, this._viewSpaceFrustums[i + 1][j].z);
-            }
-            let bs = new BoundingSphere(new Vector3(minX, minY, minZ), new Vector3(maxX, maxY, maxZ));
-            this._viewSpaceBoundingSpheres.push(bs);
-
-            this._viewSpaceFrustumsZ[i] = this._viewSpaceFrustums[i + 1][0].z;
-        }
-
-        // initialize the CSM transformMatrices
-        this._viewMatrix = [];
-        this._lightMinExtents = [];
-        this._lightMaxExtents = [];
-        this._transformMatrices = [];
-        for (let index = 0; index < this.cascades; index++) {
-            this._viewMatrix[index] = Matrix.Zero();
-            this._transformMatrices[index] = Matrix.Zero();
-            this._lightMinExtents[index] = new Vector3();
-            this._lightMaxExtents[index] = new Vector3();
-        }
-        this._transformMatricesAsArray = new Float32Array(this.cascades * 16);
-    }
-
-    private _frustumSplit(): Array<number> {
-        let camera = this._scene.activeCamera;
-        if (!camera) {
-            return [];
-        }
-
         const near = camera.minZ,
               far = camera.maxZ,
               cameraRange = far - near,
-              minDistance = 0,
-              maxDistance = this._shadowMaxZ < far && this._shadowMaxZ >= near ? (this._shadowMaxZ - near) / (far - near) : 1;
+              minDistance = this._minDistance,
+              maxDistance = this._shadowMaxZ < far && this._shadowMaxZ >= near ? Math.min((this._shadowMaxZ - near) / (far - near), this._maxDistance) : this._maxDistance;
 
         const minZ = near + minDistance * cameraRange,
               maxZ = near + maxDistance * cameraRange;
@@ -667,39 +722,41 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         const range = maxZ - minZ,
               ratio = maxZ / minZ;
 
-        let r = [];
-        r.push(minDistance);
-        for (let cascadeIndex = 0; cascadeIndex < this._cascades; ++cascadeIndex) {
-            const p = (cascadeIndex + 1) / this._cascades,
+        for (let cascadeIndex = 0; cascadeIndex < this._cascades.length; ++cascadeIndex) {
+            const p = (cascadeIndex + 1) / this._numCascades,
                   log = minZ * (ratio ** p),
                   uniform = minZ + range * p;
 
             const d = this._lambda * (log - uniform) + uniform;
 
-            r.push((d - near) / cameraRange);
+            this._cascades[cascadeIndex].prevBreakDistance = cascadeIndex === 0 ? minDistance : this._cascades[cascadeIndex - 1].breakDistance;
+            this._cascades[cascadeIndex].breakDistance = (d - near) / cameraRange;
+
+            this._viewSpaceFrustumsZ[cascadeIndex] = near + this._cascades[cascadeIndex].breakDistance * cameraRange;
+            this._frustumLengths[cascadeIndex] = (this._cascades[cascadeIndex].breakDistance - this._cascades[cascadeIndex].prevBreakDistance) * cameraRange;
         }
 
-        return r;
+        this._breaksAreDirty = false;
     }
 
     /**
      * Gets the CSM transformation matrix used to project the meshes into the map from the light point of view.
-     * (eq to shadow prjection matrix * light transform matrix)
-	 * @param mapIndex index number of the cascaded shadow map
+     * (eq to view projection * shadow projection matrices)
+	 * @param cascadeIndex index number of the cascaded shadow map
      * @returns The transform matrix used to create the CSM shadow map
      */
-    public getCSMTransformMatrix(mapIndex: number): Matrix {
+    public getCSMTransformMatrix(cascadeIndex: number): Matrix {
         var scene = this._scene;
-        if (this._currentRenderID[mapIndex] === scene.getRenderId()) {
-            return this._transformMatrices[mapIndex];
+        if (this._currentRenderID[cascadeIndex] === scene.getRenderId()) {
+            return this._transformMatrices[cascadeIndex];
         }
 
         let camera = scene.activeCamera;
         if (!camera) {
-            return this._transformMatrices[mapIndex];
+            return this._transformMatrices[cascadeIndex];
         }
 
-        this._currentRenderID[mapIndex] = scene.getRenderId();
+        this._currentRenderID[cascadeIndex] = scene.getRenderId();
 
         var lightPosition = this._light.position;
         if (this._light.computeTransformedInformation()) {
@@ -715,56 +772,141 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             this._cachedPosition.copyFrom(lightPosition);
             this._cachedDirection.copyFrom(this._lightDirection);
 
-            // get bounding sphere of current cascade
-            let bs = new BoundingSphere(this._viewSpaceBoundingSpheres[mapIndex].minimum, this._viewSpaceBoundingSpheres[mapIndex].maximum, camera.getWorldMatrix());
-            // get view matrix
-            let shadowCamPos = bs.centerWorld.subtract(this._lightDirection.scale(bs.radius));
-            Matrix.LookAtLHToRef(shadowCamPos, bs.centerWorld, Vector3.Up(), this._viewMatrix[mapIndex]);
-            // get ortho matrix
-            let minx = -bs.radius, miny = -bs.radius, minz = 0;
-            let maxx = bs.radius, maxy = bs.radius, maxz = 2 * bs.radius;
+            this._computeFrustumInWorldSpace(cascadeIndex);
+            this._computeCascadeFrustum(cascadeIndex);
+
+            this._cascadeMaxExtents[cascadeIndex].subtractToRef(this._cascadeMinExtents[cascadeIndex], tmpv1); // tmpv1 = cascadeExtents
+
+            // Get position of the shadow camera
+            this._frustumCenter[cascadeIndex].addToRef(this._lightDirection.scale(this._cascadeMinExtents[cascadeIndex].z), this._shadowCameraPos[cascadeIndex]);
+
+            // Come up with a new orthographic camera for the shadow caster
+            Matrix.LookAtLHToRef(this._shadowCameraPos[cascadeIndex], this._frustumCenter[cascadeIndex], UpDir, this._viewMatrices[cascadeIndex]);
+
+            let minZ = 0, maxZ = tmpv1.z;
 
             // Try to tighten minZ and maxZ based on the bounding box of the shadow casters
             const boundingInfo = this._shadowCastersBoundingInfo;
 
-            boundingInfo.update(this._viewMatrix[mapIndex]);
+            boundingInfo.update(this._viewMatrices[cascadeIndex]);
 
-            maxz = Math.min(maxz, boundingInfo.boundingBox.maximumWorld.z);
+            maxZ = Math.min(maxZ, boundingInfo.boundingBox.maximumWorld.z);
 
-            if (!this.depthClamp) {
+            if (!this._depthClamp || this.filter === CascadedShadowGenerator.FILTER_PCSS) {
                 // If we don't use depth clamping, we must set minZ so that all shadow casters are in the light frustum
-                minz = Math.min(minz, boundingInfo.boundingBox.minimumWorld.z);
+                minZ = Math.min(minZ, boundingInfo.boundingBox.minimumWorld.z);
             } else {
                 // If using depth clamping, we can adjust minZ to reduce the [minZ, maxZ] range (and get some additional precision in the shadow map)
-                minz = Math.max(minz, boundingInfo.boundingBox.minimumWorld.z);
+                minZ = Math.max(minZ, boundingInfo.boundingBox.minimumWorld.z);
             }
-
-            this._lightMinExtents[mapIndex].copyFromFloats(minx, miny, minz);
-            this._lightMaxExtents[mapIndex].copyFromFloats(maxx, maxy, maxz);
-
-            let OrthoMatrix;
 
             if (this._scene.useRightHandedSystem) {
-                OrthoMatrix = Matrix.OrthoOffCenterRH(minx, maxx, miny, maxy, minz, maxz);
+                Matrix.OrthoOffCenterRHToRef(this._cascadeMinExtents[cascadeIndex].x, this._cascadeMaxExtents[cascadeIndex].x, this._cascadeMinExtents[cascadeIndex].y, this._cascadeMaxExtents[cascadeIndex].y, minZ, maxZ, this._projectionMatrices[cascadeIndex]);
             } else {
-                OrthoMatrix = Matrix.OrthoOffCenterLH(minx, maxx, miny, maxy, minz, maxz);
+                Matrix.OrthoOffCenterLHToRef(this._cascadeMinExtents[cascadeIndex].x, this._cascadeMaxExtents[cascadeIndex].x, this._cascadeMinExtents[cascadeIndex].y, this._cascadeMaxExtents[cascadeIndex].y, minZ, maxZ, this._projectionMatrices[cascadeIndex]);
             }
 
-            // get projection matrix
-            this._viewMatrix[mapIndex].multiplyToRef(OrthoMatrix, this._transformMatrices[mapIndex]);
+            this._cascadeMinExtents[cascadeIndex].z = minZ;
+            this._cascadeMaxExtents[cascadeIndex].z = maxZ;
 
-            // rounding the transform matrix to prevent shimmering artifacts from camera movement
-            let shadowOrigin = Vector3.TransformCoordinates(Vector3.Zero(), this._transformMatrices[mapIndex]);
-            shadowOrigin = shadowOrigin.scale(this._mapSize / 2.0);
-            let roundedOrigin = new Vector3(Math.ceil(shadowOrigin.x), Math.ceil(shadowOrigin.y), Math.ceil(shadowOrigin.z));
-            let roundOffset = roundedOrigin.subtract(shadowOrigin);
-            roundOffset = roundOffset.scale(2.0 / this._mapSize);
-            let roundMatrix = Matrix.Translation(roundOffset.x, roundOffset.y, 0.0);
-            this._transformMatrices[mapIndex].multiplyToRef(roundMatrix, this._transformMatrices[mapIndex]);
+            this._viewMatrices[cascadeIndex].multiplyToRef(this._projectionMatrices[cascadeIndex], this._transformMatrices[cascadeIndex]);
+
+            // Create the rounding matrix, by projecting the world-space origin and determining
+            // the fractional offset in texel space
+            Vector3.TransformCoordinatesToRef(ZeroVec, this._transformMatrices[cascadeIndex], tmpv1); // tmpv1 = shadowOrigin
+            tmpv1.scaleInPlace(this._mapSize / 2);
+
+            tmpv2.copyFromFloats(Math.round(tmpv1.x), Math.round(tmpv1.y), Math.round(tmpv1.z)); // tmpv2 = roundedOrigin
+            tmpv2.subtractInPlace(tmpv1).scaleInPlace(2 / this._mapSize); // tmpv2 = roundOffset
+
+            Matrix.TranslationToRef(tmpv2.x, tmpv2.y, 0.0, matrix);
+
+            this._projectionMatrices[cascadeIndex].multiplyToRef(matrix, this._projectionMatrices[cascadeIndex]);
+            this._viewMatrices[cascadeIndex].multiplyToRef(this._projectionMatrices[cascadeIndex], this._transformMatrices[cascadeIndex]);
         }
 
-        this._transformMatrices[mapIndex].copyToArray(this._transformMatricesAsArray, mapIndex * 16);
-        return this._transformMatrices[mapIndex];
+        this._transformMatrices[cascadeIndex].copyToArray(this._transformMatricesAsArray, cascadeIndex * 16);
+
+        return this._transformMatrices[cascadeIndex];
+    }
+
+    // Get the 8 points of the view frustum in world space
+    private _computeFrustumInWorldSpace(cascadeIndex: number): void {
+        if (!this._scene.activeCamera) {
+            return;
+        }
+
+        const prevSplitDist = this._cascades[cascadeIndex].prevBreakDistance,
+              splitDist = this._cascades[cascadeIndex].breakDistance;
+
+        this._scene.activeCamera.getViewMatrix(); // make sure the transformation matrix we get when calling 'getTransformationMatrix()' is calculated with an up to date view matrix
+
+        const invViewProj = Matrix.Invert(this._scene.activeCamera.getTransformationMatrix());
+        for (let cornerIndex = 0; cornerIndex < CascadedShadowGenerator.frustumCornersNDCSpace.length; ++cornerIndex) {
+            Vector3.TransformCoordinatesToRef(CascadedShadowGenerator.frustumCornersNDCSpace[cornerIndex], invViewProj, this._frustumCornersWorldSpace[cascadeIndex][cornerIndex]);
+        }
+
+        // Get the corners of the current cascade slice of the view frustum
+        for (let cornerIndex = 0; cornerIndex < CascadedShadowGenerator.frustumCornersNDCSpace.length / 2; ++cornerIndex) {
+            tmpv1.copyFrom(this._frustumCornersWorldSpace[cascadeIndex][cornerIndex + 4]).subtractInPlace(this._frustumCornersWorldSpace[cascadeIndex][cornerIndex]);
+            tmpv2.copyFrom(tmpv1).scaleInPlace(prevSplitDist); // near corner ray
+            tmpv1.scaleInPlace(splitDist); // far corner ray
+
+            tmpv1.addInPlace(this._frustumCornersWorldSpace[cascadeIndex][cornerIndex]);
+
+            this._frustumCornersWorldSpace[cascadeIndex][cornerIndex + 4].copyFrom(tmpv1);
+            this._frustumCornersWorldSpace[cascadeIndex][cornerIndex].addInPlace(tmpv2);
+        }
+    }
+
+    private _computeCascadeFrustum(cascadeIndex: number): void {
+        this._cascadeMinExtents[cascadeIndex].copyFromFloats(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        this._cascadeMaxExtents[cascadeIndex].copyFromFloats(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
+        this._frustumCenter[cascadeIndex].copyFromFloats(0, 0, 0);
+
+        const camera = this._scene.activeCamera;
+
+        if (!camera) {
+            return;
+        }
+
+        // Calculate the centroid of the view frustum slice
+        for (let cornerIndex = 0; cornerIndex < this._frustumCornersWorldSpace[cascadeIndex].length; ++cornerIndex) {
+            this._frustumCenter[cascadeIndex].addInPlace(this._frustumCornersWorldSpace[cascadeIndex][cornerIndex]);
+        }
+
+        this._frustumCenter[cascadeIndex].scaleInPlace(1 / this._frustumCornersWorldSpace[cascadeIndex].length);
+
+        if (this.stabilizeCascades) {
+            // Calculate the radius of a bounding sphere surrounding the frustum corners
+            let sphereRadius = 0;
+            for (let cornerIndex = 0; cornerIndex < this._frustumCornersWorldSpace[cascadeIndex].length; ++cornerIndex) {
+                const dist = this._frustumCornersWorldSpace[cascadeIndex][cornerIndex].subtract(this._frustumCenter[cascadeIndex]).length();
+                sphereRadius = Math.max(sphereRadius, dist);
+            }
+
+            sphereRadius = Math.ceil(sphereRadius * 16) / 16;
+
+            this._cascadeMaxExtents[cascadeIndex].copyFromFloats(sphereRadius, sphereRadius, sphereRadius);
+            this._cascadeMinExtents[cascadeIndex].copyFromFloats(-sphereRadius, -sphereRadius, -sphereRadius);
+        } else {
+            // Create a temporary view matrix for the light
+            const lightCameraPos = this._frustumCenter[cascadeIndex];
+
+            this._frustumCenter[cascadeIndex].addToRef(this._lightDirection, tmpv1); // tmpv1 = look at
+
+            Matrix.LookAtLHToRef(lightCameraPos, tmpv1, UpDir, matrix); // matrix = lightView
+
+            // Calculate an AABB around the frustum corners
+            for (let cornerIndex = 0; cornerIndex < this._frustumCornersWorldSpace[cascadeIndex].length; ++cornerIndex) {
+                Vector3.TransformCoordinatesToRef(this._frustumCornersWorldSpace[cascadeIndex][cornerIndex], matrix, tmpv1);
+
+                this._cascadeMinExtents[cascadeIndex].minimizeInPlace(tmpv1);
+                this._cascadeMaxExtents[cascadeIndex].maximizeInPlace(tmpv1);
+            }
+        }
+
+        return;
     }
 
     /** @hidden */
@@ -831,11 +973,49 @@ export class CascadedShadowGenerator implements IShadowGenerator {
     }
 
     private _initializeShadowMap(): void {
+        // CSM
+        this._transformMatricesAsArray = new Float32Array(this._numCascades * 16);
+        this._viewSpaceFrustumsZ = new Array(this._numCascades);
+        this._frustumLengths = new Array(this._numCascades);
+        this._currentRenderID = new Array(this._numCascades);
+        this._lightSizeUVCorrection = new Array(this._numCascades * 2);
+        this._depthCorrection = new Array(this._numCascades);
+
+        this._cascades = [];
+        this._viewMatrices = [];
+        this._projectionMatrices = [];
+        this._transformMatrices = [];
+        this._cascadeMinExtents = [];
+        this._cascadeMaxExtents = [];
+        this._frustumCenter = [];
+        this._shadowCameraPos = [];
+        this._frustumCornersWorldSpace = [];
+
+        for (let cascadeIndex = 0; cascadeIndex < this._numCascades; ++cascadeIndex) {
+            this._cascades[cascadeIndex] = {
+                prevBreakDistance: 0,
+                breakDistance: 0,
+            };
+
+            this._viewMatrices[cascadeIndex] = Matrix.Zero();
+            this._projectionMatrices[cascadeIndex] = Matrix.Zero();
+            this._transformMatrices[cascadeIndex] = Matrix.Zero();
+            this._cascadeMinExtents[cascadeIndex] = new Vector3();
+            this._cascadeMaxExtents[cascadeIndex] = new Vector3();
+            this._frustumCenter[cascadeIndex] = new Vector3();
+            this._shadowCameraPos[cascadeIndex] = new Vector3();
+            this._frustumCornersWorldSpace[cascadeIndex] = new Array(CascadedShadowGenerator.frustumCornersNDCSpace.length);
+
+            for (let i = 0; i < CascadedShadowGenerator.frustumCornersNDCSpace.length; ++i) {
+                this._frustumCornersWorldSpace[cascadeIndex][i] = new Vector3();
+            }
+        }
+
         // Render target
         let engine = this._scene.getEngine();
 
-        const size = { width: this._mapSize, height: this._mapSize, layers: this.cascades };
-        this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", size, this._scene, false, true, this._textureType, false, undefined, false, false);
+        const size = { width: this._mapSize, height: this._mapSize, layers: this.numCascades };
+        this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", size, this._scene, false, true, this._textureType, false, undefined, false, false, undefined, Constants.TEXTUREFORMAT_RED);
         this._shadowMap.createDepthStencilTexture(Constants.LESS, true);
 
         this._shadowMap.wrapU = Texture.CLAMP_ADDRESSMODE;
@@ -847,6 +1027,12 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         if (this._storedUniqueId) {
             this._shadowMap.uniqueId = this._storedUniqueId;
         }
+
+        this._shadowMap.onBeforeBindObservable.add(() => {
+            if (this._breaksAreDirty) {
+                this._splitFrustum();
+            }
+        });
 
         // Record Face Index before render.
         this._shadowMap.onBeforeRenderObservable.add((layer: number) => {
@@ -884,7 +1070,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             this.recreateShadowMap();
         });
 
-        this._initCascades();
+        this._splitFrustum();
     }
 
     private _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void {
@@ -1108,7 +1294,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
 
         defines.push("#define DEPTHTEXTURE");
 
-        if (this.depthClamp) {
+        if (this._depthClamp && this._filter !== CascadedShadowGenerator.FILTER_PCSS) {
             defines.push("#define DEPTHCLAMP");
         }
 
@@ -1224,7 +1410,13 @@ export class CascadedShadowGenerator implements IShadowGenerator {
 
         defines["SHADOWCSM" + lightIndex] = true;
         defines["SHADOWCSMDEBUG" + lightIndex] = this.debug;
-        defines["SHADOWCSMNUM_CASCADES" + lightIndex] = this.cascades;
+        defines["SHADOWCSMNUM_CASCADES" + lightIndex] = this.numCascades;
+
+        const camera = scene.activeCamera;
+
+        if (camera && this._shadowMaxZ < camera.maxZ) {
+            defines["SHADOWCSMUSESHADOWMAXZ" + lightIndex] = true;
+        }
 
         if (this.useContactHardeningShadow) {
             defines["SHADOWPCSS" + lightIndex] = true;
@@ -1274,18 +1466,16 @@ export class CascadedShadowGenerator implements IShadowGenerator {
 
         const width = shadowMap.getSize().width;
 
-        const lightSizeUVCorrection: Array<number> = [],
-              depthCorrection: Array<number> = [];
-
-        for (let i = 0; i < this._cascades; ++i) {
-            lightSizeUVCorrection.push(i === 0 || !this.lightSizeCorrection ? 1 : (this._lightMaxExtents[0].x - this._lightMinExtents[0].x) / (this._lightMaxExtents[i].x - this._lightMinExtents[i].x)); // x correction
-            lightSizeUVCorrection.push(i === 0 || !this.lightSizeCorrection ? 1 : (this._lightMaxExtents[0].y - this._lightMinExtents[0].y) / (this._lightMaxExtents[i].y - this._lightMinExtents[i].y)); // y correction
-            depthCorrection.push(i === 0 || !this.depthCorrection ? 1 : (this._lightMaxExtents[i].z - this._lightMinExtents[i].z) / (this._lightMaxExtents[0].z - this._lightMinExtents[0].z));
+        for (let cascadeIndex = 0; cascadeIndex < this._numCascades; ++cascadeIndex) {
+            this._lightSizeUVCorrection[cascadeIndex * 2 + 0] = cascadeIndex === 0 ? 1 : (this._cascadeMaxExtents[0].x - this._cascadeMinExtents[0].x) / (this._cascadeMaxExtents[cascadeIndex].x - this._cascadeMinExtents[cascadeIndex].x); // x correction
+            this._lightSizeUVCorrection[cascadeIndex * 2 + 1] = cascadeIndex === 0 ? 1 : (this._cascadeMaxExtents[0].y - this._cascadeMinExtents[0].y) / (this._cascadeMaxExtents[cascadeIndex].y - this._cascadeMinExtents[cascadeIndex].y); // y correction
+            this._depthCorrection[cascadeIndex] = cascadeIndex === 0 ? 1 : (this._cascadeMaxExtents[cascadeIndex].z - this._cascadeMinExtents[cascadeIndex].z) / (this._cascadeMaxExtents[0].z - this._cascadeMinExtents[0].z);
         }
 
         effect.setMatrices("lightMatrix" + lightIndex, this._transformMatricesAsArray);
         effect.setArray("viewFrustumZ" + lightIndex, this._viewSpaceFrustumsZ);
         effect.setFloat("cascadeBlendFactor" + lightIndex, this.cascadeBlendPercentage === 0 ? 10000 : 1 / this.cascadeBlendPercentage);
+        effect.setArray("frustumLengths" + lightIndex, this._frustumLengths);
 
         // Only PCF uses depth stencil texture.
         if (this._filter === CascadedShadowGenerator.FILTER_PCF) {
@@ -1294,8 +1484,8 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         } else if (this._filter === CascadedShadowGenerator.FILTER_PCSS) {
             effect.setDepthStencilTexture("shadowSampler" + lightIndex, shadowMap);
             effect.setTexture("depthSampler" + lightIndex, shadowMap);
-            effect.setArray2("lightSizeUVCorrection" + lightIndex, lightSizeUVCorrection);
-            effect.setArray("depthCorrection" + lightIndex, depthCorrection);
+            effect.setArray2("lightSizeUVCorrection" + lightIndex, this._lightSizeUVCorrection);
+            effect.setArray("depthCorrection" + lightIndex, this._depthCorrection);
             effect.setFloat("penumbraDarkness" + lightIndex, this.penumbraDarkness);
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), 1 / width, this._contactHardeningLightSizeUVRatio * width, this.frustumEdgeFalloff, lightIndex);
         }
@@ -1308,8 +1498,8 @@ export class CascadedShadowGenerator implements IShadowGenerator {
     }
 
     /**
-     * Gets the transformation matrix used to project the meshes into the map from the light point of view.
-     * (eq to shadow prjection matrix * light transform matrix)
+     * Gets the transformation matrix of the first cascade used to project the meshes into the map from the light point of view.
+     * (eq to view projection * shadow projection matrices)
      * @returns The transform matrix used to create the shadow map
      */
     public getTransformMatrix(): Matrix {
@@ -1388,6 +1578,13 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         serializationObject.darkness = this.getDarkness();
         serializationObject.transparencyShadow = this._transparencyShadow;
         serializationObject.frustumEdgeFalloff = this.frustumEdgeFalloff;
+        serializationObject.numCascades = this._numCascades;
+        serializationObject.stabilizeCascades = this.stabilizeCascades;
+        serializationObject.depthClamp = this._depthClamp;
+        serializationObject.lambda = this._lambda;
+        serializationObject.freezeShadowCastersBoundingInfo = this._freezeShadowCastersBoundingInfo;
+        serializationObject.shadowMaxZ = this._shadowMaxZ;
+        serializationObject.cascadeBlendPercentage = this.cascadeBlendPercentage;
 
         serializationObject.bias = this.bias;
         serializationObject.normalBias = this.normalBias;
@@ -1396,6 +1593,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         serializationObject.useContactHardeningShadow = this.useContactHardeningShadow;
         serializationObject.filteringQuality = this.filteringQuality;
         serializationObject.contactHardeningLightSizeUVRatio = this.contactHardeningLightSizeUVRatio;
+        serializationObject.penumbraDarkness = this.penumbraDarkness;
 
         serializationObject.renderList = [];
         if (shadowMap.renderList) {
@@ -1440,11 +1638,11 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             shadowGenerator.useContactHardeningShadow = true;
         }
 
-        if (parsedShadowGenerator.filteringQuality) {
+        if (parsedShadowGenerator.filteringQuality !== undefined) {
             shadowGenerator.filteringQuality = parsedShadowGenerator.filteringQuality;
         }
 
-        if (parsedShadowGenerator.contactHardeningLightSizeUVRatio) {
+        if (parsedShadowGenerator.contactHardeningLightSizeUVRatio !== undefined) {
             shadowGenerator.contactHardeningLightSizeUVRatio = parsedShadowGenerator.contactHardeningLightSizeUVRatio;
         }
 
@@ -1460,7 +1658,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             shadowGenerator.frustumEdgeFalloff = parsedShadowGenerator.frustumEdgeFalloff;
         }
 
-        if (parsedShadowGenerator.darkness) {
+        if (parsedShadowGenerator.darkness !== undefined) {
             shadowGenerator.setDarkness(parsedShadowGenerator.darkness);
         }
 
@@ -1468,7 +1666,39 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             shadowGenerator.setTransparencyShadow(true);
         }
 
-        shadowGenerator.forceBackFacesOnly = parsedShadowGenerator.forceBackFacesOnly;
+        shadowGenerator.forceBackFacesOnly = !!parsedShadowGenerator.forceBackFacesOnly;
+
+        if (parsedShadowGenerator.stabilizeCascades !== undefined) {
+            shadowGenerator.stabilizeCascades = parsedShadowGenerator.stabilizeCascades;
+        }
+
+        if (parsedShadowGenerator.depthClamp !== undefined) {
+             shadowGenerator.depthClamp = parsedShadowGenerator.depthClamp;
+        }
+
+        if (parsedShadowGenerator.lambda !== undefined) {
+             shadowGenerator.lambda = parsedShadowGenerator.lambda;
+        }
+
+        if (parsedShadowGenerator.freezeShadowCastersBoundingInfo !== undefined) {
+            shadowGenerator.freezeShadowCastersBoundingInfo = parsedShadowGenerator.freezeShadowCastersBoundingInfo;
+        }
+
+        if (parsedShadowGenerator.shadowMaxZ !== undefined) {
+             shadowGenerator.shadowMaxZ = parsedShadowGenerator.shadowMaxZ;
+        }
+
+        if (parsedShadowGenerator.cascadeBlendPercentage !== undefined) {
+             shadowGenerator.cascadeBlendPercentage = parsedShadowGenerator.cascadeBlendPercentage;
+        }
+
+        if (parsedShadowGenerator.penumbraDarkness !== undefined) {
+            shadowGenerator.penumbraDarkness = parsedShadowGenerator.penumbraDarkness;
+        }
+
+        if (parsedShadowGenerator.numCascades !== undefined) {
+            shadowGenerator.numCascades = parsedShadowGenerator.numCascades;
+        }
 
         return shadowGenerator;
     }
