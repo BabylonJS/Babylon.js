@@ -346,6 +346,7 @@ export class MaterialHelper {
         defines["SHADOWCSM" + lightIndex] = false;
         defines["SHADOWCSMDEBUG" + lightIndex] = false;
         defines["SHADOWCSMNUM_CASCADES" + lightIndex] = false;
+        defines["SHADOWCSMUSESHADOWMAXZ" + lightIndex] = false;
         defines["SHADOWPCF" + lightIndex] = false;
         defines["SHADOWPCSS" + lightIndex] = false;
         defines["SHADOWPOISSON" + lightIndex] = false;
@@ -427,6 +428,7 @@ export class MaterialHelper {
                 defines["SHADOWCSM" + index] = false;
                 defines["SHADOWCSMDEBUG" + index] = false;
                 defines["SHADOWCSMNUM_CASCADES" + index] = false;
+                defines["SHADOWCSMUSESHADOWMAXZ" + index] = false;
                 defines["SHADOWPCF" + index] = false;
                 defines["SHADOWPCSS" + index] = false;
                 defines["SHADOWPOISSON" + index] = false;
@@ -489,6 +491,7 @@ export class MaterialHelper {
             "lightSizeUVCorrection" + lightIndex,
             "depthCorrection" + lightIndex,
             "penumbraDarkness" + lightIndex,
+            "frustumLengths" + lightIndex,
         );
 
         if (projectedLightTexture) {
