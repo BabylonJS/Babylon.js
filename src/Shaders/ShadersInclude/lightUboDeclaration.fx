@@ -1,4 +1,4 @@
-#ifdef LIGHT{X}
+﻿#ifdef LIGHT{X}
 	uniform Light{X}
 	{
 		vec4 vLightData;
@@ -24,6 +24,7 @@
 	#ifdef SHADOWCSM{X}
 		uniform mat4 lightMatrix{X}[SHADOWCSMNUM_CASCADES{X}];
 		uniform float viewFrustumZ{X}[SHADOWCSMNUM_CASCADES{X}];
+        uniform float frustumLengths{X}[SHADOWCSMNUM_CASCADES{X}];
         uniform float cascadeBlendFactor{X};
 
 		varying vec4 vPositionFromLight{X}[SHADOWCSMNUM_CASCADES{X}];

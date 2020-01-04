@@ -1,4 +1,4 @@
-#ifdef LIGHT{X}
+﻿#ifdef LIGHT{X}
     #if defined(SHADOWONLY) || defined(LIGHTMAP) && defined(LIGHTMAPEXCLUDED{X}) && defined(LIGHTMAPNOSPECULAR{X})
         //No light calculation
     #else
@@ -135,7 +135,9 @@
                 }
             }
 
-            if (index{X} >= 0) {
+            if (index{X} >= 0)
+            {
+                float frustumLength = frustumLengths{X}[index{X}];
                 #if defined(SHADOWPCF{X})
                     #if defined(SHADOWLOWQUALITY{X})
                         shadow = computeShadowWithCSMPCF1(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
@@ -160,7 +162,7 @@
                     shadowDebug{X} = vec3(shadow) * vCascadeColorsMultiplier{X}[index{X}];
                 #endif
 
-                float diffRatio{X} = clamp(diff{X} / frustrumLength{X}, 0., 1.) * cascadeBlendFactor{X};
+                float diffRatio{X} = clamp(diff{X} / frustumLength, 0., 1.) * cascadeBlendFactor{X};
                 if (index{X} < (SHADOWCSMNUM_CASCADES{X} - 1) && diffRatio{X} < 1.)
                 {
                     index{X} += 1;
