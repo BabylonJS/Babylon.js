@@ -1,4 +1,4 @@
-﻿#ifdef LIGHT{X}
+#ifdef LIGHT{X}
     #if defined(SHADOWONLY) || defined(LIGHTMAP) && defined(LIGHTMAPEXCLUDED{X}) && defined(LIGHTMAPNOSPECULAR{X})
         //No light calculation
     #else
@@ -135,7 +135,9 @@
                 }
             }
 
+            #ifdef SHADOWCSMUSESHADOWMAXZ{X}
             if (index{X} >= 0)
+            #endif
             {
                 float frustumLength = frustumLengths{X}[index{X}];
                 #if defined(SHADOWPCF{X})
