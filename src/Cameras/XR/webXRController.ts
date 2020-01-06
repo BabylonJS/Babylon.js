@@ -39,12 +39,13 @@ export class WebXRController {
      * @see https://doc.babylonjs.com/how_to/webxr
      * @param scene the scene which the controller should be associated to
      * @param inputSource the underlying input source for the controller
-     * @param parentContainer parent that the controller meshes should be children of
+     * @param controllerProfile An optional controller profile for this input. This will override the xrInput profile.
      */
     constructor(
         private scene: Scene,
         /** The underlying input source for the controller  */
-        public inputSource: XRInputSource) {
+        public inputSource: XRInputSource,
+        controllerProfile?: string) {
         this.pointer = new AbstractMesh("controllerPointer", scene);
         this.pointer.rotationQuaternion = new Quaternion();
 
@@ -55,7 +56,7 @@ export class WebXRController {
 
         // for now only load motion controllers if gamepad available
         if (this.inputSource.gamepad) {
-            this.gamepadController = WebXRMotionControllerManager.GetMotionControllerWithXRInput(inputSource, scene);
+            this.gamepadController = WebXRMotionControllerManager.GetMotionControllerWithXRInput(inputSource, scene, controllerProfile);
             // if the model is loaded, do your thing
             this.gamepadController.onModelLoadedObservable.addOnce(() => {
                 this.gamepadController!.rootMesh!.parent = this.pointer;
