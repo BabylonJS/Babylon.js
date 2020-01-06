@@ -5,8 +5,11 @@ import { Ray } from '../../Culling/ray';
 import { Scene } from '../../scene';
 import { WebXRAbstractMotionController } from './motionController/webXRAbstractController';
 import { WebXRMotionControllerManager } from './motionController/webXRMotionControllerManager';
+
+let idCount = 0;
+
 /**
- * Represents an XR input
+ * Represents an XR controller
  */
 export class WebXRController {
     /**
@@ -34,6 +37,7 @@ export class WebXRController {
     private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3();
 
+    private _uniqueId: string;
     /**
      * Creates the controller
      * @see https://doc.babylonjs.com/how_to/webxr
@@ -45,6 +49,7 @@ export class WebXRController {
         private scene: Scene,
         /** The underlying input source for the controller  */
         public inputSource: XRInputSource) {
+        this._uniqueId = `${idCount++}-${inputSource.targetRayMode}-${inputSource.handedness}`;
         this.pointer = new AbstractMesh("controllerPointer", scene);
         this.pointer.rotationQuaternion = new Quaternion();
 
@@ -61,6 +66,10 @@ export class WebXRController {
                 this.gamepadController!.rootMesh!.parent = this.pointer;
             });
         }
+    }
+
+    public get uniqueId() {
+        return this._uniqueId;
     }
 
     /**
