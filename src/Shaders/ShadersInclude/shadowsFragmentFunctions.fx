@@ -250,15 +250,21 @@
     }
 
     #ifdef WEBGL2
+        #define GREATEST_LESS_THAN_ONE 0.99999994
+
         // Shadow PCF kernel size 1 with a single tap (lowest quality)
         float computeShadowWithCSMPCF1(float layer, vec4 vPositionFromLight, float depthMetric, highp sampler2DArrayShadow shadowSampler, float darkness, float frustumEdgeFalloff)
         {
-            if (depthMetric > 1.0 || depthMetric < 0.0) {
+            vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
+            vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+
+            if (uvDepth.x < 0. || uvDepth.x > 1.0 || uvDepth.y < 0. || uvDepth.y > 1.0)
+            {
                 return 1.0;
             }
 
-            vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
-            vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+            uvDepth.z = clamp(uvDepth.z, 0., GREATEST_LESS_THAN_ONE);
+
             vec4 uvDepthLayer = vec4(uvDepth.x, uvDepth.y, layer, uvDepth.z);
 
             float shadow = texture(shadowSampler, uvDepthLayer);
@@ -271,12 +277,15 @@
         // https://mynameismjp.wordpress.com/2013/09/10/shadow-maps/
         float computeShadowWithCSMPCF3(float layer, vec4 vPositionFromLight, float depthMetric, highp sampler2DArrayShadow shadowSampler, vec2 shadowMapSizeAndInverse, float darkness, float frustumEdgeFalloff)
         {
-            if (depthMetric > 1.0 || depthMetric < 0.0) {
+            vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
+            vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+
+            if (uvDepth.x < 0. || uvDepth.x > 1.0 || uvDepth.y < 0. || uvDepth.y > 1.0)
+            {
                 return 1.0;
             }
 
-            vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
-            vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+            uvDepth.z = clamp(uvDepth.z, 0., GREATEST_LESS_THAN_ONE);
 
             vec2 uv = uvDepth.xy * shadowMapSizeAndInverse.x;	// uv in texel units
             uv += 0.5;											// offset of half to be in the center of the texel
@@ -309,12 +318,15 @@
         // https://mynameismjp.wordpress.com/2013/09/10/shadow-maps/
         float computeShadowWithCSMPCF5(float layer, vec4 vPositionFromLight, float depthMetric, highp sampler2DArrayShadow shadowSampler, vec2 shadowMapSizeAndInverse, float darkness, float frustumEdgeFalloff)
         {
-            if (depthMetric > 1.0 || depthMetric < 0.0) {
+            vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
+            vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+
+            if (uvDepth.x < 0. || uvDepth.x > 1.0 || uvDepth.y < 0. || uvDepth.y > 1.0)
+            {
                 return 1.0;
             }
 
-            vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
-            vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+            uvDepth.z = clamp(uvDepth.z, 0., GREATEST_LESS_THAN_ONE);
 
             vec2 uv = uvDepth.xy * shadowMapSizeAndInverse.x;	// uv in texel units
             uv += 0.5;											// offset of half to be in the center of the texel
@@ -585,12 +597,16 @@
         // and http://developer.download.nvidia.com/whitepapers/2008/PCSS_Integration.pdf
         float computeShadowWithCSMPCSS(float layer, vec4 vPositionFromLight, float depthMetric, highp sampler2DArray depthSampler, highp sampler2DArrayShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff, int searchTapCount, int pcfTapCount, vec3[64] poissonSamplers, vec2 lightSizeUVCorrection, float depthCorrection, float penumbraDarkness)
         {
-            if (depthMetric > 1.0 || depthMetric < 0.0) {
+            vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
+            vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+
+            if (uvDepth.x < 0. || uvDepth.x > 1.0 || uvDepth.y < 0. || uvDepth.y > 1.0)
+            {
                 return 1.0;
             }
 
-            vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
-            vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+            uvDepth.z = clamp(uvDepth.z, 0., GREATEST_LESS_THAN_ONE);
+
             vec4 uvDepthLayer = vec4(uvDepth.x, uvDepth.y, layer, uvDepth.z);
 
             float blockerDepth = 0.0;
