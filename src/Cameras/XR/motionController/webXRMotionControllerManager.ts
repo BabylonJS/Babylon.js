@@ -44,9 +44,18 @@ export class WebXRMotionControllerManager {
      *
      * @param xrInput the xrInput to which a new controller is initialized
      * @param scene the scene to which the model will be added
+     * @param forceProfile force a certain profile for this controller
      * @return the motion controller class for this profile id or the generic standard class if none was found
      */
-    public static GetMotionControllerWithXRInput(xrInput: XRInputSource, scene: Scene): WebXRAbstractMotionController {
+    public static GetMotionControllerWithXRInput(xrInput: XRInputSource, scene: Scene, forceProfile?: string): WebXRAbstractMotionController {
+        //if a type was forced, try creating a controller using it. Continue if not found.
+        if (forceProfile) {
+            const constructionFunction = this._AvailableControllers[forceProfile];
+            if (constructionFunction) {
+                return constructionFunction(xrInput, scene);
+            }
+        }
+
         for (let i = 0; i < xrInput.profiles.length; ++i) {
             const constructionFunction = this._AvailableControllers[xrInput.profiles[i]];
             if (constructionFunction) {
