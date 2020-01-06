@@ -20,8 +20,7 @@ const MixedRealityProfile: IMotionControllerLayoutMap = {
             "xr-standard-trigger": { "type": "trigger" },
             "xr-standard-squeeze": { "type": "squeeze" },
             "xr-standard-touchpad": { "type": "touchpad" },
-            "xr-standard-thumbstick": { "type": "thumbstick" },
-            "menu": { "type": "button" }
+            "xr-standard-thumbstick": { "type": "thumbstick" }
         },
         "gamepad": {
             "mapping": "xr-standard",
@@ -29,8 +28,7 @@ const MixedRealityProfile: IMotionControllerLayoutMap = {
                 "xr-standard-trigger",
                 "xr-standard-squeeze",
                 "xr-standard-touchpad",
-                "xr-standard-thumbstick",
-                "menu"
+                "xr-standard-thumbstick"
             ],
             "axes": [
                 { "componentId": "xr-standard-touchpad", "axis": "x-axis" },
@@ -93,11 +91,6 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
                 "rootNodeName": "THUMBSTICK_PRESS",
                 "componentProperty": "state",
                 "states": ["pressed"],
-            },
-            "menu": {
-                "rootNodeName": "MENU",
-                "componentProperty": "state",
-                "states": ["pressed"]
             }
         },
         axes: {
@@ -259,6 +252,6 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
 }
 
 // register the profile
-WebXRMotionControllerManager.RegisterController("microsoft-mixed-reality", (xrInput: XRInputSource, scene: Scene) => {
+WebXRMotionControllerManager.RegisterController("windows-mixed-reality", (xrInput: XRInputSource, scene: Scene) => {
     return new WebXRMicrosoftMixedRealityController(scene, <any>(xrInput.gamepad), xrInput.handedness);
 });
