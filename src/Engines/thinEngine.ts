@@ -3220,7 +3220,7 @@ export class ThinEngine {
      * @param xOffset defines the x coordinates of the update rectangle
      * @param yOffset defines the y coordinates of the update rectangle
      * @param width defines the width of the update rectangle
-     * @param height defines the height of the update rectangle 
+     * @param height defines the height of the update rectangle
      * @param faceIndex defines the face index if texture is a cube (0 by default)
      * @param lod defines the lod level to update (0 by default)
      */
@@ -3239,7 +3239,6 @@ export class ThinEngine {
 
         gl.texSubImage2D(target, lod, xOffset, yOffset, width, height, format, textureType, imageData);
     }
-
 
     /** @hidden */
     public _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
