@@ -121,11 +121,12 @@ export class WebXRMotionControllerManager {
         this.RegisterFallbacksForProfileId("htc-vive-focus", ["generic-trigger-touchpad"]);
         this.RegisterFallbacksForProfileId("htc-vive", ["generic-trigger-squeeze-touchpad"]);
         this.RegisterFallbacksForProfileId("magicleap-one", ["generic-trigger-squeeze-touchpad"]);
-        this.RegisterFallbacksForProfileId("microsoft-mixed-reality", ["generic-trigger-squeeze-touchpad-thumbstick"]);
+        this.RegisterFallbacksForProfileId("windows-mixed-reality", ["generic-trigger-squeeze-touchpad-thumbstick"]);
+        this.RegisterFallbacksForProfileId("microsoft-mixed-reality", ["windows-mixed-reality", "generic-trigger-squeeze-touchpad-thumbstick"]);
         this.RegisterFallbacksForProfileId("oculus-go", ["generic-trigger-touchpad"]);
         this.RegisterFallbacksForProfileId("oculus-touch-v2", ["oculus-touch", "generic-trigger-squeeze-thumbstick"]);
         this.RegisterFallbacksForProfileId("oculus-touch", ["generic-trigger-squeeze-thumbstick"]);
-        this.RegisterFallbacksForProfileId("samsung-gearvr", ["microsoft-mixed-reality", "generic-trigger-squeeze-touchpad-thumbstick"]);
+        this.RegisterFallbacksForProfileId("samsung-gearvr", ["windows-mixed-reality", "generic-trigger-squeeze-touchpad-thumbstick"]);
         this.RegisterFallbacksForProfileId("samsung-odyssey", ["generic-touchpad"]);
         this.RegisterFallbacksForProfileId("valve-index", ["generic-trigger-squeeze-touchpad-thumbstick"]);
     }
