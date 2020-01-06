@@ -31625,6 +31625,18 @@ declare module BABYLON {
         _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex?: number, lod?: number): void;
         /** @hidden */
         _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number, babylonInternalFormat?: number, useTextureWidthAndHeight?: boolean): void;
+        /**
+         * Update a portion of an internal texture
+         * @param texture defines the texture to update
+         * @param imageData defines the data to store into the texture
+         * @param xOffset defines the x coordinates of the update rectangle
+         * @param yOffset defines the y coordinates of the update rectangle
+         * @param width defines the width of the update rectangle
+         * @param height defines the height of the update rectangle
+         * @param faceIndex defines the face index if texture is a cube (0 by default)
+         * @param lod defines the lod level to update (0 by default)
+         */
+        updateTextureData(texture: InternalTexture, imageData: ArrayBufferView, xOffset: number, yOffset: number, width: number, height: number, faceIndex?: number, lod?: number): void;
         /** @hidden */
         _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number): void;
         protected _prepareWebGLTextureContinuation(texture: InternalTexture, scene: Nullable<ISceneLike>, noMipmap: boolean, isCompressed: boolean, samplingMode: number): void;
@@ -43606,9 +43618,10 @@ declare module BABYLON {
          *
          * @param xrInput the xrInput to which a new controller is initialized
          * @param scene the scene to which the model will be added
+         * @param forceProfile force a certain profile for this controller
          * @return the motion controller class for this profile id or the generic standard class if none was found
          */
-        static GetMotionControllerWithXRInput(xrInput: XRInputSource, scene: Scene): WebXRAbstractMotionController;
+        static GetMotionControllerWithXRInput(xrInput: XRInputSource, scene: Scene, forceProfile?: string): WebXRAbstractMotionController;
         /**
          * Find a fallback profile if the profile was not found. There are a few predefined generic profiles.
          * @param profileId the profile to which a fallback needs to be found
@@ -43662,11 +43675,11 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/how_to/webxr
          * @param scene the scene which the controller should be associated to
          * @param inputSource the underlying input source for the controller
-         * @param parentContainer parent that the controller meshes should be children of
+         * @param controllerProfile An optional controller profile for this input. This will override the xrInput profile.
          */
         constructor(scene: Scene, 
         /** The underlying input source for the controller  */
-        inputSource: XRInputSource);
+        inputSource: XRInputSource, controllerProfile?: string);
         /**
          * Updates the controller pose based on the given XRFrame
          * @param xrFrame xr frame to update the pose with
@@ -43698,6 +43711,12 @@ declare module BABYLON {
          * If set to true no model will be automatically loaded
          */
         doNotLoadControllerMeshes?: boolean;
+        /**
+         * If set, this profile will be used for all controllers loaded (for example "microsoft-mixed-reality")
+         * If not found, the xr input profile data will be used.
+         * Profiles are defined here - https://github.com/immersive-web/webxr-input-profiles/
+         */
+        forceInputProfile?: string;
     }
     /**
      * XR input used to track XR inputs such as controllers/rays
