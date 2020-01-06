@@ -1,7 +1,6 @@
-// https://github.com/gpuweb/gpuweb/blob/37812f5f39ae8c6dc85f6a12c0f65e9c9d6e2155
-// except #280 setSubData (TODO)
-// plus #488 Make copyImageBitmapToTexture a GPUQueue operation.
-// plus #489 GPUAdapter.limits
+// https://github.com/gpuweb/gpuweb/blob/402b69138fbedf4a3c9c85cd1bf7e1cc27c1b34e/spec/index.bs
+// except #280 which removed setSubData
+// except #494 which reverted the addition of GPUAdapter.limits
 // v 0.0.19
 
 interface GPUColorDict {
@@ -36,7 +35,8 @@ type GPUBindingResource =
   | GPUSampler
   | GPUTextureView
   | GPUBufferBinding;
-
+type GPUExtensionName =
+  | "anisotropic-filtering";
 type GPUAddressMode = "clamp-to-edge" | "repeat" | "mirror-repeat";
 type GPUBindingType =
   | "uniform-buffer"
@@ -179,45 +179,42 @@ type GPUVertexFormat =
 type GPUTextureAspect = "all" | "stencil-only" | "depth-only";
 
 type GPUBufferUsageFlags = number;
-// enum GPUBufferUsage {
-//   NONE = 0x0000,
-//   MAP_READ = 0x0001,
-//   MAP_WRITE = 0x0002,
-//   COPY_SRC = 0x0004,
-//   COPY_DST = 0x0008,
-//   INDEX = 0x0010,
-//   VERTEX = 0x0020,
-//   UNIFORM = 0x0040,
-//   STORAGE = 0x0080
-// }
+// const GPUBufferUsage: {
+//   MAP_READ:  0x0001;
+//   MAP_WRITE: 0x0002;
+//   COPY_SRC:  0x0004;
+//   COPY_DST:  0x0008;
+//   INDEX:     0x0010;
+//   VERTEX:    0x0020;
+//   UNIFORM:   0x0040;
+//   STORAGE:   0x0080;
+//   INDIRECT:  0x0100;
+// };
 
 type GPUColorWriteFlags = number;
-// enum GPUColorWrite {
-//   NONE = 0x0,
-//   RED = 0x1,
-//   GREEN = 0x2,
-//   BLUE = 0x4,
-//   ALPHA = 0x8,
-//   ALL = 0xf
-// }
+// const GPUColorWrite: {
+//   RED:   0x1;
+//   GREEN: 0x2;
+//   BLUE:  0x4;
+//   ALPHA: 0x8;
+//   ALL:   0xf;
+// };
 
 type GPUShaderStageFlags = number;
-// enum GPUShaderStage {
-//   NONE = 0x0,
-//   VERTEX = 0x1,
-//   FRAGMENT = 0x2,
-//   COMPUTE = 0x4
-// }
+// const GPUShaderStage: {
+//   VERTEX:   0x1;
+//   FRAGMENT: 0x2;
+//   COMPUTE:  0x4;
+// };
 
 type GPUTextureUsageFlags = number;
-// enum GPUTextureUsage {
-//   NONE = 0x00,
-//   COPY_SRC = 0x01,
-//   COPY_DST = 0x02,
-//   SAMPLED = 0x04,
-//   STORAGE = 0x08,
-//   OUTPUT_ATTACHMENT = 0x10
-// }
+// const GPUTextureUsage: {
+//   COPY_SRC:          0x01;
+//   COPY_DST:          0x02;
+//   SAMPLED:           0x04;
+//   STORAGE:           0x08;
+//   OUTPUT_ATTACHMENT: 0x10;
+// };
 
 interface GPUBindGroupBinding {
   binding: number;
@@ -311,12 +308,8 @@ interface GPUDepthStencilStateDescriptor {
 }
 
 interface GPUDeviceDescriptor extends GPUObjectDescriptorBase {
-  extensions?: GPUExtensions;
+  extensions?: GPUExtensionName[];
   limits?: GPULimits;
-}
-
-interface GPUExtensions {
-  anisotropicFiltering?: boolean;
 }
 
 interface GPUFenceDescriptor extends GPUObjectDescriptorBase {
@@ -480,7 +473,7 @@ interface GPUTextureViewDescriptor extends GPUObjectDescriptorBase {
 
 class GPUAdapter {
   readonly name: string;
-  readonly extensions: GPUExtensions;
+  readonly extensions: GPUExtensionName[];
   readonly limits: GPULimitsOut;
 
   requestDevice(descriptor?: GPUDeviceDescriptor): Promise<GPUDevice>;
@@ -596,7 +589,7 @@ class GPUCanvasContext {
 class GPUDevice extends EventTarget implements GPUObjectBase {
   label: string | undefined;
   readonly adapter: GPUAdapter;
-  readonly extensions: GPUExtensions;
+  readonly extensions: GPUExtensionName[];
   readonly limits: GPULimitsOut;
 
   createBindGroup(descriptor: GPUBindGroupDescriptor): GPUBindGroup;
