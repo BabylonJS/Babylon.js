@@ -195,7 +195,7 @@
                     #endif
                 }
             }
-        #elif SHADOWCLOSEESM{X}
+        #elif defined(SHADOWCLOSEESM{X})
             #if defined(SHADOWCUBE{X})
                 shadow = computeShadowWithCloseESMCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z, light{X}.depthValues);
             #else
