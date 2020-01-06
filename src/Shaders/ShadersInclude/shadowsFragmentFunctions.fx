@@ -113,31 +113,33 @@
         return esm;
     }
 
-    float computeShadowCSM(float layer, vec4 vPositionFromLight, float depthMetric, highp sampler2DArray shadowSampler, float darkness, float frustumEdgeFalloff)
-    {
-        vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
-        vec2 uv = 0.5 * clipSpace.xy + vec2(0.5);
-        vec3 uvLayer = vec3(uv.x, uv.y, layer);
-
-        if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)
+    #ifdef WEBGL2
+        float computeShadowCSM(float layer, vec4 vPositionFromLight, float depthMetric, highp sampler2DArray shadowSampler, float darkness, float frustumEdgeFalloff)
         {
-            return 1.0;
+            vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
+            vec2 uv = 0.5 * clipSpace.xy + vec2(0.5);
+            vec3 uvLayer = vec3(uv.x, uv.y, layer);
+
+            if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)
+            {
+                return 1.0;
+            }
+
+            float shadowPixelDepth = clamp(depthMetric, 0., 1.0);
+
+            #ifndef SHADOWFLOAT
+                float shadow = unpack(texture2D(shadowSampler, uvLayer));
+            #else
+                float shadow = texture2D(shadowSampler, uvLayer).x;
+            #endif
+
+            if (shadowPixelDepth > shadow)
+            {
+                return computeFallOff(darkness, clipSpace.xy, frustumEdgeFalloff);
+            }
+            return 1.;
         }
-
-        float shadowPixelDepth = clamp(depthMetric, 0., 1.0);
-
-        #ifndef SHADOWFLOAT
-            float shadow = unpack(texture2D(shadowSampler, uvLayer));
-        #else
-            float shadow = texture2D(shadowSampler, uvLayer).x;
-        #endif
-
-        if (shadowPixelDepth > shadow)
-        {
-            return computeFallOff(darkness, clipSpace.xy, frustumEdgeFalloff);
-        }
-        return 1.;
-    }
+    #endif
 
     float computeShadow(vec4 vPositionFromLight, float depthMetric, sampler2D shadowSampler, float darkness, float frustumEdgeFalloff)
     {
