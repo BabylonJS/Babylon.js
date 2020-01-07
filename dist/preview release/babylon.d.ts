@@ -8442,6 +8442,7 @@ declare module BABYLON {
             createRenderTargetTexture(size: number | {
                 width: number;
                 height: number;
+                layers?: number;
             }, options: boolean | RenderTargetCreationOptions): InternalTexture;
             /**
              * Creates a depth stencil texture.
@@ -8453,11 +8454,13 @@ declare module BABYLON {
             createDepthStencilTexture(size: number | {
                 width: number;
                 height: number;
+                layers?: number;
             }, options: DepthTextureCreationOptions): InternalTexture;
             /** @hidden */
             _createDepthStencilTexture(size: number | {
                 width: number;
                 height: number;
+                layers?: number;
             }, options: DepthTextureCreationOptions): InternalTexture;
         }
 }
@@ -9403,11 +9406,6 @@ declare module BABYLON {
          */
         getShadowMap(): Nullable<RenderTargetTexture>;
         /**
-         * Gets the RTT used during rendering (can be a blurred version of the shadow map or the shadow map itself).
-         * @returns The render target texture if the shadow map is present otherwise, null
-         */
-        getShadowMapForRendering(): Nullable<RenderTargetTexture>;
-        /**
          * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
          * @param subMesh The submesh we want to render in the shadow map
          * @param useInstances Defines wether will draw in the map using instances
@@ -9444,7 +9442,7 @@ declare module BABYLON {
          * @param onCompiled Callback triggered at the and of the effects compilation
          * @param options Sets of optional options forcing the compilation with different modes
          */
-        forceCompilation(onCompiled?: (generator: ShadowGenerator) => void, options?: Partial<{
+        forceCompilation(onCompiled?: (generator: IShadowGenerator) => void, options?: Partial<{
             useInstances: boolean;
         }>): void;
         /**
@@ -9853,7 +9851,7 @@ declare module BABYLON {
          * @param onCompiled Callback triggered at the and of the effects compilation
          * @param options Sets of optional options forcing the compilation with different modes
          */
-        forceCompilation(onCompiled?: (generator: ShadowGenerator) => void, options?: Partial<{
+        forceCompilation(onCompiled?: (generator: IShadowGenerator) => void, options?: Partial<{
             useInstances: boolean;
         }>): void;
         /**
@@ -15558,6 +15556,7 @@ declare module BABYLON {
         private _options;
         private _reusable;
         private _textureType;
+        private _textureFormat;
         /**
         * Smart array of input and output textures for the post process.
         * @hidden
@@ -15660,10 +15659,11 @@ declare module BABYLON {
          * @param vertexUrl The url of the vertex shader to be used. (default: "postprocess")
          * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
          * @param blockCompilation If the shader should not be compiled imediatly. (default: false)
+         * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
          */
         constructor(
         /** Name of the PostProcess. */
-        name: string, fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, defines?: Nullable<string>, textureType?: number, vertexUrl?: string, indexParameters?: any, blockCompilation?: boolean);
+        name: string, fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, defines?: Nullable<string>, textureType?: number, vertexUrl?: string, indexParameters?: any, blockCompilation?: boolean, textureFormat?: number);
         /**
          * Gets a string idenfifying the name of the class
          * @returns "PostProcess" string
@@ -20319,6 +20319,7 @@ declare module BABYLON {
         protected _size: number | {
             width: number;
             height: number;
+            layers?: number;
         };
         protected _initialSizeParameter: number | {
             width: number;
@@ -20363,7 +20364,7 @@ declare module BABYLON {
          * depth texture.
          * Otherwise, return null.
          */
-        depthStencilTexture: Nullable<InternalTexture>;
+        get depthStencilTexture(): Nullable<InternalTexture>;
         /**
          * Instantiate a render target texture. This is mainly used to render of screen the scene to for instance apply post processse
          * or used a shadow, depth texture...
@@ -20384,6 +20385,7 @@ declare module BABYLON {
         constructor(name: string, size: number | {
             width: number;
             height: number;
+            layers?: number;
         } | {
             ratio: number;
         }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio?: boolean, type?: number, isCube?: boolean, samplingMode?: number, generateDepthBuffer?: boolean, generateStencilBuffer?: boolean, isMulti?: boolean, format?: number, delayAllocation?: boolean);
@@ -20446,6 +20448,11 @@ declare module BABYLON {
          */
         getRenderHeight(): number;
         /**
+         * Gets the actual number of layers of the texture.
+         * @returns the number of layers
+         */
+        getRenderLayers(): number;
+        /**
          * Get if the texture can be rescaled or not.
          */
         get canRescale(): boolean;
@@ -20483,8 +20490,9 @@ declare module BABYLON {
         /**
          * @hidden
          * @param faceIndex face index to bind to if this is a cubetexture
+         * @param layer defines the index of the texture to bind in the array
          */
-        _bindFrameBuffer(faceIndex?: number): void;
+        _bindFrameBuffer(faceIndex?: number, layer?: number): void;
         protected unbindFrameBuffer(engine: Engine, faceIndex: number): void;
         private renderToTarget;
         /**
@@ -31095,10 +31103,10 @@ declare module BABYLON {
          * @param requiredWidth The width of the target to render to
          * @param requiredHeight The height of the target to render to
          * @param forceFullscreenViewport Forces the viewport to be the entire texture/screen if true
-         * @param depthStencilTexture The depth stencil texture to use to render
-         * @param lodLevel defines le lod level to bind to the frame buffer
+         * @param lodLevel defines the lod level to bind to the frame buffer
+         * @param layer defines the 2d array index to bind to frame buffer to
          */
-        bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, depthStencilTexture?: InternalTexture, lodLevel?: number): void;
+        bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel?: number, layer?: number): void;
         /** @hidden */
         _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>): void;
         /**
@@ -31620,11 +31628,24 @@ declare module BABYLON {
         _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | {
             width: number;
             height: number;
+            layers?: number;
         }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number): void;
         /** @hidden */
         _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex?: number, lod?: number): void;
         /** @hidden */
         _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number, babylonInternalFormat?: number, useTextureWidthAndHeight?: boolean): void;
+        /**
+         * Update a portion of an internal texture
+         * @param texture defines the texture to update
+         * @param imageData defines the data to store into the texture
+         * @param xOffset defines the x coordinates of the update rectangle
+         * @param yOffset defines the y coordinates of the update rectangle
+         * @param width defines the width of the update rectangle
+         * @param height defines the height of the update rectangle
+         * @param faceIndex defines the face index if texture is a cube (0 by default)
+         * @param lod defines the lod level to update (0 by default)
+         */
+        updateTextureData(texture: InternalTexture, imageData: ArrayBufferView, xOffset: number, yOffset: number, width: number, height: number, faceIndex?: number, lod?: number): void;
         /** @hidden */
         _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number): void;
         protected _prepareWebGLTextureContinuation(texture: InternalTexture, scene: Nullable<ISceneLike>, noMipmap: boolean, isCompressed: boolean, samplingMode: number): void;
@@ -32160,6 +32181,8 @@ declare module BABYLON {
         _lodGenerationScale: number;
         /** @hidden */
         _lodGenerationOffset: number;
+        /** @hidden */
+        _depthStencilTexture: Nullable<InternalTexture>;
         /** @hidden */
         _colorTextureArray: Nullable<WebGLTexture>;
         /** @hidden */
@@ -33562,11 +33585,6 @@ declare module BABYLON {
         /** @hidden */
         _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex?: number, lod?: number): void;
         /**
-         * Sets the frame buffer Depth / Stencil attachement of the render target to the defined depth stencil texture.
-         * @param renderTarget The render target to set the frame buffer for
-         */
-        setFrameBufferDepthStencilTexture(renderTarget: RenderTargetTexture): void;
-        /**
          * Update a dynamic index buffer
          * @param indexBuffer defines the target index buffer
          * @param indices defines the data to update
@@ -34550,8 +34568,9 @@ declare module BABYLON {
         * @param attachUp defines if you want to attach events to pointerup
         * @param attachDown defines if you want to attach events to pointerdown
         * @param attachMove defines if you want to attach events to pointermove
+        * @param elementToAttachTo defines the target DOM element to attach to (will use the canvas by default)
         */
-        attachControl(attachUp?: boolean, attachDown?: boolean, attachMove?: boolean): void;
+        attachControl(attachUp?: boolean, attachDown?: boolean, attachMove?: boolean, elementToAttachTo?: Nullable<HTMLElement>): void;
         /**
          * Detaches all event handlers
          */
@@ -43606,9 +43625,10 @@ declare module BABYLON {
          *
          * @param xrInput the xrInput to which a new controller is initialized
          * @param scene the scene to which the model will be added
+         * @param forceProfile force a certain profile for this controller
          * @return the motion controller class for this profile id or the generic standard class if none was found
          */
-        static GetMotionControllerWithXRInput(xrInput: XRInputSource, scene: Scene): WebXRAbstractMotionController;
+        static GetMotionControllerWithXRInput(xrInput: XRInputSource, scene: Scene, forceProfile?: string): WebXRAbstractMotionController;
         /**
          * Find a fallback profile if the profile was not found. There are a few predefined generic profiles.
          * @param profileId the profile to which a fallback needs to be found
@@ -43662,11 +43682,11 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/how_to/webxr
          * @param scene the scene which the controller should be associated to
          * @param inputSource the underlying input source for the controller
-         * @param parentContainer parent that the controller meshes should be children of
+         * @param controllerProfile An optional controller profile for this input. This will override the xrInput profile.
          */
         constructor(scene: Scene, 
         /** The underlying input source for the controller  */
-        inputSource: XRInputSource);
+        inputSource: XRInputSource, controllerProfile?: string);
         /**
          * Updates the controller pose based on the given XRFrame
          * @param xrFrame xr frame to update the pose with
@@ -43698,6 +43718,12 @@ declare module BABYLON {
          * If set to true no model will be automatically loaded
          */
         doNotLoadControllerMeshes?: boolean;
+        /**
+         * If set, this profile will be used for all controllers loaded (for example "microsoft-mixed-reality")
+         * If not found, the xr input profile data will be used.
+         * Profiles are defined here - https://github.com/immersive-web/webxr-input-profiles/
+         */
+        forceInputProfile?: string;
     }
     /**
      * XR input used to track XR inputs such as controllers/rays
@@ -44833,11 +44859,6 @@ declare module BABYLON {
                     "touchPointNodeName": string;
                 };
                 "xr-standard-thumbstick": {
-                    "rootNodeName": string;
-                    "componentProperty": string;
-                    "states": string[];
-                };
-                "menu": {
                     "rootNodeName": string;
                     "componentProperty": string;
                     "states": string[];
@@ -46471,7 +46492,6 @@ declare module BABYLON {
          * @param requiredWidth The width of the target to render to
          * @param requiredHeight The height of the target to render to
          * @param forceFullscreenViewport Forces the viewport to be the entire texture/screen if true
-         * @param depthStencilTexture The depth stencil texture to use to render
          * @param lodLevel defines le lod level to bind to the frame buffer
          */
         bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void;
@@ -53651,6 +53671,465 @@ declare module BABYLON {
          */
         dispose(): void;
         private _draw;
+    }
+}
+declare module BABYLON {
+    /**
+     * A CSM implementation allowing casting shadows on large scenes.
+     * Documentation : https://doc.babylonjs.com/babylon101/cascadedShadows
+     * Based on: https://github.com/TheRealMJP/Shadows and https://johanmedestrom.wordpress.com/2016/03/18/opengl-cascaded-shadow-maps/
+     */
+    export class CascadedShadowGenerator implements IShadowGenerator {
+        private static readonly frustumCornersNDCSpace;
+        /**
+         * Defines the default number of cascades used by the CSM.
+         */
+        static readonly DEFAULT_CASCADES_COUNT: number;
+        /**
+         * Defines the minimum number of cascades used by the CSM.
+         */
+        static readonly MIN_CASCADES_COUNT: number;
+        /**
+         * Defines the maximum number of cascades used by the CSM.
+         */
+        static readonly MAX_CASCADES_COUNT: number;
+        /**
+         * Shadow generator mode None: no filtering applied.
+         */
+        static readonly FILTER_NONE: number;
+        /**
+         * Shadow generator mode PCF: Percentage Closer Filtering
+         * benefits from Webgl 2 shadow samplers. Fallback to Poisson Sampling in Webgl 1
+         * (https://developer.nvidia.com/gpugems/GPUGems/gpugems_ch11.html)
+         */
+        static readonly FILTER_PCF: number;
+        /**
+         * Shadow generator mode PCSS: Percentage Closering Soft Shadow.
+         * benefits from Webgl 2 shadow samplers. Fallback to Poisson Sampling in Webgl 1
+         * Contact Hardening
+         */
+        static readonly FILTER_PCSS: number;
+        /**
+         * Reserved for PCF and PCSS
+         * Highest Quality.
+         *
+         * Execute PCF on a 5*5 kernel improving a lot the shadow aliasing artifacts.
+         *
+         * Execute PCSS with 32 taps blocker search and 64 taps PCF.
+         */
+        static readonly QUALITY_HIGH: number;
+        /**
+         * Reserved for PCF and PCSS
+         * Good tradeoff for quality/perf cross devices
+         *
+         * Execute PCF on a 3*3 kernel.
+         *
+         * Execute PCSS with 16 taps blocker search and 32 taps PCF.
+         */
+        static readonly QUALITY_MEDIUM: number;
+        /**
+         * Reserved for PCF and PCSS
+         * The lowest quality but the fastest.
+         *
+         * Execute PCF on a 1*1 kernel.
+         *
+         * Execute PCSS with 16 taps blocker search and 16 taps PCF.
+         */
+        static readonly QUALITY_LOW: number;
+        private static readonly _CLEARONE;
+        /**
+         * Observable triggered before the shadow is rendered. Can be used to update internal effect state
+         */
+        onBeforeShadowMapRenderObservable: Observable<Effect>;
+        /**
+         * Observable triggered after the shadow is rendered. Can be used to restore internal effect state
+         */
+        onAfterShadowMapRenderObservable: Observable<Effect>;
+        /**
+         * Observable triggered before a mesh is rendered in the shadow map.
+         * Can be used to update internal effect state (that you can get from the onBeforeShadowMapRenderObservable)
+         */
+        onBeforeShadowMapRenderMeshObservable: Observable<Mesh>;
+        /**
+         * Observable triggered after a mesh is rendered in the shadow map.
+         * Can be used to update internal effect state (that you can get from the onAfterShadowMapRenderObservable)
+         */
+        onAfterShadowMapRenderMeshObservable: Observable<Mesh>;
+        private _bias;
+        /**
+         * Gets the bias: offset applied on the depth preventing acnea (in light direction).
+         */
+        get bias(): number;
+        /**
+         * Sets the bias: offset applied on the depth preventing acnea (in light direction).
+         */
+        set bias(bias: number);
+        private _normalBias;
+        /**
+         * Gets the normalBias: offset applied on the depth preventing acnea (along side the normal direction and proportinal to the light/normal angle).
+         */
+        get normalBias(): number;
+        /**
+         * Sets the normalBias: offset applied on the depth preventing acnea (along side the normal direction and proportinal to the light/normal angle).
+         */
+        set normalBias(normalBias: number);
+        private _filter;
+        /**
+         * Gets the current mode of the shadow generator (normal, PCF, PCSS...).
+         * The returned value is a number equal to one of the available mode defined in ShadowMap.FILTER_x like _FILTER_NONE
+         */
+        get filter(): number;
+        /**
+         * Sets the current mode of the shadow generator (normal, PCF, PCSS...).
+         * The returned value is a number equal to one of the available mode defined in ShadowMap.FILTER_x like _FILTER_NONE
+         */
+        set filter(value: number);
+        /**
+         * Gets if the current filter is set to "PCF" (percentage closer filtering).
+         */
+        get usePercentageCloserFiltering(): boolean;
+        /**
+         * Sets the current filter to "PCF" (percentage closer filtering).
+         */
+        set usePercentageCloserFiltering(value: boolean);
+        private _filteringQuality;
+        /**
+         * Gets the PCF or PCSS Quality.
+         * Only valid if usePercentageCloserFiltering or usePercentageCloserFiltering is true.
+         */
+        get filteringQuality(): number;
+        /**
+         * Sets the PCF or PCSS Quality.
+         * Only valid if usePercentageCloserFiltering or usePercentageCloserFiltering is true.
+         */
+        set filteringQuality(filteringQuality: number);
+        /**
+         * Gets if the current filter is set to "PCSS" (contact hardening).
+         */
+        get useContactHardeningShadow(): boolean;
+        /**
+         * Sets the current filter to "PCSS" (contact hardening).
+         */
+        set useContactHardeningShadow(value: boolean);
+        private _contactHardeningLightSizeUVRatio;
+        /**
+         * Gets the Light Size (in shadow map uv unit) used in PCSS to determine the blocker search area and the penumbra size.
+         * Using a ratio helps keeping shape stability independently of the map size.
+         *
+         * It does not account for the light projection as it was having too much
+         * instability during the light setup or during light position changes.
+         *
+         * Only valid if useContactHardeningShadow is true.
+         */
+        get contactHardeningLightSizeUVRatio(): number;
+        /**
+         * Sets the Light Size (in shadow map uv unit) used in PCSS to determine the blocker search area and the penumbra size.
+         * Using a ratio helps keeping shape stability independently of the map size.
+         *
+         * It does not account for the light projection as it was having too much
+         * instability during the light setup or during light position changes.
+         *
+         * Only valid if useContactHardeningShadow is true.
+         */
+        set contactHardeningLightSizeUVRatio(contactHardeningLightSizeUVRatio: number);
+        private _darkness;
+        /** Gets or sets the actual darkness of a shadow */
+        get darkness(): number;
+        set darkness(value: number);
+        /**
+         * Returns the darkness value (float). This can only decrease the actual darkness of a shadow.
+         * 0 means strongest and 1 would means no shadow.
+         * @returns the darkness.
+         */
+        getDarkness(): number;
+        /**
+         * Sets the darkness value (float). This can only decrease the actual darkness of a shadow.
+         * @param darkness The darkness value 0 means strongest and 1 would means no shadow.
+         * @returns the shadow generator allowing fluent coding.
+         */
+        setDarkness(darkness: number): CascadedShadowGenerator;
+        /**
+         * Gets or sets the actual darkness of the soft shadows while using PCSS filtering (value between 0. and 1.)
+         */
+        penumbraDarkness: number;
+        private _transparencyShadow;
+        /** Gets or sets the ability to have transparent shadow  */
+        get transparencyShadow(): boolean;
+        set transparencyShadow(value: boolean);
+        /**
+         * Sets the ability to have transparent shadow (boolean).
+         * @param transparent True if transparent else False
+         * @returns the shadow generator allowing fluent coding
+         */
+        setTransparencyShadow(transparent: boolean): CascadedShadowGenerator;
+        private _numCascades;
+        /**
+         * Gets or set the number of cascades used by the CSM.
+         */
+        get numCascades(): number;
+        set numCascades(value: number);
+        /**
+         * Sets this to true if you want that the edges of the shadows don't "swimm" / "shimmer" when rotating the camera.
+         * The trade off is that you loose some precision in the shadow rendering when enabling this setting.
+         */
+        stabilizeCascades: boolean;
+        private _shadowMap;
+        /**
+         * Gets the main RTT containing the shadow map (usually storing depth from the light point of view).
+         * @returns The render target texture if present otherwise, null
+         */
+        getShadowMap(): Nullable<RenderTargetTexture>;
+        protected _freezeShadowCastersBoundingInfo: boolean;
+        private _freezeShadowCastersBoundingInfoObservable;
+        /**
+         * Enables or disables the shadow casters bounding info computation.
+         * If your shadow casters don't move, you can disable this feature.
+         * If it is enabled, the bounding box computation is done every frame.
+         */
+        get freezeShadowCastersBoundingInfo(): boolean;
+        set freezeShadowCastersBoundingInfo(freeze: boolean);
+        private _scbiMin;
+        private _scbiMax;
+        protected _computeShadowCastersBoundingInfo(): void;
+        protected _shadowCastersBoundingInfo: BoundingInfo;
+        /**
+         * Gets or sets the shadow casters bounding info.
+         * If you provide your own shadow casters bounding info, first enable freezeShadowCastersBoundingInfo
+         * so that the system won't overwrite the bounds you provide
+         */
+        get shadowCastersBoundingInfo(): BoundingInfo;
+        set shadowCastersBoundingInfo(boundingInfo: BoundingInfo);
+        protected _breaksAreDirty: boolean;
+        protected _minDistance: number;
+        protected _maxDistance: number;
+        /**
+         * Sets the minimal and maximal distances to use when computing the cascade breaks.
+         *
+         * The values of min / max are typically the depth zmin and zmax values of your scene, for a given frame.
+         * If you don't know these values, simply leave them to their defaults and don't call this function.
+         * @param min minimal distance for the breaks (default to 0.)
+         * @param max maximal distance for the breaks (default to 1.)
+         */
+        setMinMaxDistance(min: number, max: number): void;
+        /**
+         * Gets the class name of that object
+         * @returns "ShadowGenerator"
+         */
+        getClassName(): string;
+        /**
+         * Helper function to add a mesh and its descendants to the list of shadow casters.
+         * @param mesh Mesh to add
+         * @param includeDescendants boolean indicating if the descendants should be added. Default to true
+         * @returns the Shadow Generator itself
+         */
+        addShadowCaster(mesh: AbstractMesh, includeDescendants?: boolean): CascadedShadowGenerator;
+        /**
+         * Helper function to remove a mesh and its descendants from the list of shadow casters
+         * @param mesh Mesh to remove
+         * @param includeDescendants boolean indicating if the descendants should be removed. Default to true
+         * @returns the Shadow Generator itself
+         */
+        removeShadowCaster(mesh: AbstractMesh, includeDescendants?: boolean): CascadedShadowGenerator;
+        /**
+         * Controls the extent to which the shadows fade out at the edge of the frustum
+         */
+        frustumEdgeFalloff: number;
+        private _light;
+        /**
+         * Returns the associated light object.
+         * @returns the light generating the shadow
+         */
+        getLight(): DirectionalLight;
+        /**
+         * If true the shadow map is generated by rendering the back face of the mesh instead of the front face.
+         * This can help with self-shadowing as the geometry making up the back of objects is slightly offset.
+         * It might on the other hand introduce peter panning.
+         */
+        forceBackFacesOnly: boolean;
+        private _cascadeMinExtents;
+        private _cascadeMaxExtents;
+        /**
+         * Gets a cascade minimum extents
+         * @param cascadeIndex index of the cascade
+         * @returns the minimum cascade extents
+         */
+        getCascadeMinExtents(cascadeIndex: number): Nullable<Vector3>;
+        /**
+         * Gets a cascade maximum extents
+         * @param cascadeIndex index of the cascade
+         * @returns the maximum cascade extents
+         */
+        getCascadeMaxExtents(cascadeIndex: number): Nullable<Vector3>;
+        private _scene;
+        private _lightDirection;
+        private _effect;
+        private _cascades;
+        private _cachedPosition;
+        private _cachedDirection;
+        private _cachedDefines;
+        private _currentRenderID;
+        private _mapSize;
+        private _currentLayer;
+        private _textureType;
+        private _defaultTextureMatrix;
+        private _storedUniqueId;
+        private _viewSpaceFrustumsZ;
+        private _viewMatrices;
+        private _projectionMatrices;
+        private _transformMatrices;
+        private _transformMatricesAsArray;
+        private _frustumLengths;
+        private _lightSizeUVCorrection;
+        private _depthCorrection;
+        private _frustumCornersWorldSpace;
+        private _frustumCenter;
+        private _shadowCameraPos;
+        private _shadowMaxZ;
+        /**
+         * Gets the shadow max z distance. It's the limit beyond which shadows are not displayed.
+         * It defaults to camera.maxZ
+         */
+        get shadowMaxZ(): number;
+        /**
+         * Sets the shadow max z distance.
+         */
+        set shadowMaxZ(value: number);
+        protected _debug: boolean;
+        /**
+         * Gets or sets the debug flag.
+         * When enabled, the cascades are materialized by different colors on the screen.
+         */
+        get debug(): boolean;
+        set debug(dbg: boolean);
+        private _depthClamp;
+        /**
+         * Gets or sets the depth clamping value.
+         *
+         * When enabled, it improves the shadow quality because the near z plane of the light frustum don't need to be adjusted
+         * to account for the shadow casters far away.
+         *
+         * Note that this property is incompatible with PCSS filtering, so it won't be used in that case.
+         */
+        get depthClamp(): boolean;
+        set depthClamp(value: boolean);
+        /**
+         * Gets or sets the percentage of blending between two cascades (value between 0. and 1.).
+         * It defaults to 0.1 (10% blending).
+         */
+        cascadeBlendPercentage: number;
+        private _lambda;
+        /**
+         * Gets or set the lambda parameter.
+         * This parameter is used to split the camera frustum and create the cascades.
+         * It's a value between 0. and 1.: If 0, the split is a uniform split of the frustum, if 1 it is a logarithmic split.
+         * For all values in-between, it's a linear combination of the uniform and logarithm split algorithm.
+         */
+        get lambda(): number;
+        set lambda(value: number);
+        /**
+         * Gets the view matrix corresponding to a given cascade
+         * @param cascadeNum cascade to retrieve the view matrix from
+         * @returns the cascade view matrix
+         */
+        getCascadeViewMatrix(cascadeNum: number): Nullable<Matrix>;
+        /**
+         * Create the cascade breaks according to the lambda, shadowMaxZ and min/max distance properties, as well as the camera near and far planes.
+         * This function is automatically called when updating lambda, shadowMaxZ and min/max distances, however you should call it yourself if
+         * you change the camera near/far planes!
+         */
+        splitFrustum(): void;
+        private _splitFrustum;
+        /**
+         * Gets the CSM transformation matrix used to project the meshes into the map from the light point of view.
+         * (eq to view projection * shadow projection matrices)
+         * @param cascadeIndex index number of the cascaded shadow map
+         * @returns The transform matrix used to create the CSM shadow map
+         */
+        getCSMTransformMatrix(cascadeIndex: number): Matrix;
+        private _computeFrustumInWorldSpace;
+        private _computeCascadeFrustum;
+        /** @hidden */
+        static _SceneComponentInitialization: (scene: Scene) => void;
+        /**
+         * Creates a Cascaded Shadow Generator object.
+         * A ShadowGenerator is the required tool to use the shadows.
+         * Each directional light casting shadows needs to use its own ShadowGenerator.
+         * Documentation : https://doc.babylonjs.com/babylon101/cascadedShadows
+         * @param mapSize The size of the texture what stores the shadows. Example : 1024.
+         * @param light The directional light object generating the shadows.
+         * @param usefulFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
+         */
+        constructor(mapSize: number, light: DirectionalLight, usefulFloatFirst?: boolean);
+        private _initializeGenerator;
+        private _initializeShadowMap;
+        private _renderForShadowMap;
+        private _renderSubMeshForShadowMap;
+        private _applyFilterValues;
+        /**
+         * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
+         * @param onCompiled Callback triggered at the and of the effects compilation
+         * @param options Sets of optional options forcing the compilation with different modes
+         */
+        forceCompilation(onCompiled?: (generator: IShadowGenerator) => void, options?: Partial<{
+            useInstances: boolean;
+        }>): void;
+        /**
+         * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
+         * @param options Sets of optional options forcing the compilation with different modes
+         * @returns A promise that resolves when the compilation completes
+         */
+        forceCompilationAsync(options?: Partial<{
+            useInstances: boolean;
+        }>): Promise<void>;
+        /**
+         * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
+         * @param subMesh The submesh we want to render in the shadow map
+         * @param useInstances Defines wether will draw in the map using instances
+         * @returns true if ready otherwise, false
+         */
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        /**
+         * Prepare all the defines in a material relying on a shadow map at the specified light index.
+         * @param defines Defines of the material we want to update
+         * @param lightIndex Index of the light in the enabled light list of the material
+         */
+        prepareDefines(defines: any, lightIndex: number): void;
+        /**
+         * Binds the shadow related information inside of an effect (information like near, far, darkness...
+         * defined in the generator but impacting the effect).
+         * @param lightIndex Index of the light in the enabled light list of the material owning the effect
+         * @param effect The effect we are binfing the information for
+         */
+        bindShadowLight(lightIndex: string, effect: Effect): void;
+        /**
+         * Gets the transformation matrix of the first cascade used to project the meshes into the map from the light point of view.
+         * (eq to view projection * shadow projection matrices)
+         * @returns The transform matrix used to create the shadow map
+         */
+        getTransformMatrix(): Matrix;
+        /**
+         * Recreates the shadow map dependencies like RTT and post processes. This can be used during the switch between
+         * Cube and 2D textures for instance.
+         */
+        recreateShadowMap(): void;
+        private _disposeRTT;
+        /**
+         * Disposes the ShadowGenerator.
+         * Returns nothing.
+         */
+        dispose(): void;
+        /**
+         * Serializes the shadow generator setup to a json object.
+         * @returns The serialized JSON object
+         */
+        serialize(): any;
+        /**
+         * Parses a serialized ShadowGenerator and returns a new ShadowGenerator.
+         * @param parsedShadowGenerator The JSON object to parse
+         * @param scene The scene to create the shadow map for
+         * @returns The parsed shadow generator
+         */
+        static Parse(parsedShadowGenerator: any, scene: Scene): CascadedShadowGenerator;
     }
 }
 declare module BABYLON {
@@ -67849,10 +68328,13 @@ interface WebGLRenderingContext {
     readonly UNSIGNED_INT_10F_11F_11F_REV: number;
     readonly UNSIGNED_INT_5_9_9_9_REV: number;
     readonly FLOAT_32_UNSIGNED_INT_24_8_REV: number;
+    readonly DEPTH_COMPONENT32F: number;
 
     texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ArrayBufferView | null): void;
     texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ArrayBufferView, offset: number): void;
     texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ImageBitmap | ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement): void;
+
+    framebufferTextureLayer(target: number, attachment: number, texture: WebGLTexture | null, level: number, layer: number): void;
 
     compressedTexImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, data: ArrayBufferView, offset?: number, length?: number): void;
 
