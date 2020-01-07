@@ -57,6 +57,22 @@ export interface IWebXRMotionControllerComponentChanges {
 export class WebXRControllerComponent implements IDisposable {
 
     /**
+     * Thumbstick component type
+     */
+    public static THUMBSTICK = "xr-standard-thumbstick";
+    /**
+     * Touchpad component type
+     */
+    public static TOUCHPAD = "xr-standard-touchpad";
+    /**
+     * trigger component type
+     */
+    public static TRIGGER = "xr-standard-trigger";
+    /**
+     * squeeze component type
+     */
+    public static SQUEEZE = "xr-standard-squeeze";
+    /**
      * Observers registered here will be triggered when the state of a button changes
      * State change is either pressed / touched / value
      */
