@@ -1,12 +1,12 @@
 import { WebXRExperienceHelper } from "./webXRExperienceHelper";
 import { Scene } from '../../scene';
 import { WebXRInput, IWebXRInputOptions } from './webXRInput';
-import { WebXRControllerPointerSelection } from './webXRControllerPointerSelection';
+import { WebXRControllerPointerSelection } from './features/WebXRControllerPointerSelection';
 import { WebXRRenderTarget } from './webXRTypes';
 import { WebXREnterExitUI, WebXREnterExitUIOptions } from './webXREnterExitUI';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { WebXRManagedOutputCanvasOptions } from './webXRManagedOutputCanvas';
-import { WebXRMotionControllerTeleportation } from './features';
+import { WebXRMotionControllerTeleportation } from './features/WebXRControllerTeleportation';
 
 /**
  * Options for the default xr helper
@@ -82,7 +82,9 @@ export class WebXRDefaultExperience {
 
             // Add controller support
             result.input = new WebXRInput(xrHelper.sessionManager, xrHelper.camera, options.inputOptions);
-            result.pointerSelection = new WebXRControllerPointerSelection(result.input);
+            result.pointerSelection = <WebXRControllerPointerSelection>result.baseExperience.featuresManager.enableFeature(WebXRControllerPointerSelection.Name, "latest", {
+                xrInput: result.input
+            });
 
             if (options.floorMeshes) {
                 result.teleportation = <WebXRMotionControllerTeleportation>result.baseExperience.featuresManager.enableFeature(WebXRMotionControllerTeleportation.Name, "latest", {
