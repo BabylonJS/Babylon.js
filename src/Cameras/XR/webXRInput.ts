@@ -13,6 +13,13 @@ export interface IWebXRInputOptions {
      * If set to true no model will be automatically loaded
      */
     doNotLoadControllerMeshes?: boolean;
+
+    /**
+     * If set, this profile will be used for all controllers loaded (for example "microsoft-mixed-reality")
+     * If not found, the xr input profile data will be used.
+     * Profiles are defined here - https://github.com/immersive-web/webxr-input-profiles/
+     */
+    forceInputProfile?: string;
 }
 /**
  * XR input used to track XR inputs such as controllers/rays
@@ -77,7 +84,7 @@ export class WebXRInput implements IDisposable {
         let sources = this.controllers.map((c) => { return c.inputSource; });
         for (let input of addInputs) {
             if (sources.indexOf(input) === -1) {
-                let controller = new WebXRController(this.xrSessionManager.scene, input);
+                let controller = new WebXRController(this.xrSessionManager.scene, input, this.options.forceInputProfile);
                 this.controllers.push(controller);
                 if (!this.options.doNotLoadControllerMeshes && controller.gamepadController) {
                     controller.gamepadController.loadModel();

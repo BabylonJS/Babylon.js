@@ -32,6 +32,10 @@ attribute vec2 uv2;
 #endif
 #endif
 
+#ifdef DEPTHCLAMP
+varying float z;
+#endif
+
 void main(void)
 {
 vec3 positionUpdated = position;
@@ -78,8 +82,13 @@ gl_Position = viewProjection * worldPos;
     gl_Position.z += biasAndScale.x * gl_Position.w;
 #endif
 
+#ifdef DEPTHCLAMP
+    z = gl_Position.z;
+    gl_Position.z = 0.0;
+#else
     // Color Texture Linear bias.
     vDepthMetric = ((gl_Position.z + depthValues.x) / (depthValues.y)) + biasAndScale.x;
+#endif
 
 #ifdef ALPHATEST
     #ifdef UV1
