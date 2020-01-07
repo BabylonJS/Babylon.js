@@ -23,23 +23,55 @@ import { LinesBuilder } from '../../../Meshes/Builders/linesBuilder';
 
 const Name = "xr-controller-teleportation";
 
+/**
+ * The options container for the teleportation module
+ */
 export interface IWebXRTeleportationOptions {
+    /**
+     * Babylon XR Input class for controller
+     */
     xrInput: WebXRInput;
+    /**
+     * A list of meshes to use as floor meshes.
+     * Meshes can be added and removed after initializing the feature using the
+     * addFloorMesh and removeFloorMesh functions
+     */
     floorMeshes: AbstractMesh[];
-    rotationAngle?: number;
-    backwardsTeleportationDistance?: number;
+    /**
+     * Provide your own teleportation mesh instead of babylon's wonderful doughnut.
+     * If you want to support rotation, make sure your mesh has a direction indicator.
+     *
+     * When left untouched, the default mesh will be initialized.
+     */
     teleportationTargetMesh?: AbstractMesh;
+    /**
+     * Values to configure the default target mesh
+     */
     defaultTargetMeshOptions?: {
+        /**
+         * Fill color of the teleportation area
+         */
         teleportationFillColor?: string;
+        /**
+         * Border color for the teleportation area
+         */
         teleportationBorderColor?: string;
+        /**
+         * Override the default material of the torus and arrow
+         */
         torusArrowMaterial?: Material;
+        /**
+         * Disable the mesh's animation sequence
+         */
         disableAnimation?: boolean;
     };
-    disableTeleportationParabolicRay?: boolean;
-    disableRotation?: boolean;
-    parabolicCheckRadius?: number;
 }
 
+/**
+ * This is a teleportation feature to be used with webxr-enabled motion controllers.
+ * When enabled and attached, the feature will allow a user to move aroundand rotate in the scene using
+ * the input of the attached controllers.
+ */
 export class WebXRMotionControllerTeleportation implements IWebXRFeature {
     /**
      * The module's name
@@ -52,6 +84,33 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
      */
     public static readonly Version = 1;
 
+    /**
+     * Is rotation enabled when moving forward?
+     * Disabling this feature will prevent the user from deciding the direction when teleporting
+     */
+    public rotationEnabled: boolean = true;
+    /**
+     * Should the module support parabolic ray on top of direct ray
+     * If enabled, the user will be able to point "at the sky" and move according to predefined radius distance
+     * Very helpful when moving between floors / different heights
+     */
+    public parabolicRayEnabled: boolean = true;
+    /**
+     * The distance from the user to the inspection point in the direction of the controller
+     * A higher number will allow the user to move further
+     * defaults to 5 (meters, in xr units)
+     */
+    public parabolicCheckRadius: number = 5;
+    /**
+     * How much rotation should be applied when rotating right and left
+     */
+    public rotationAngle: number = Math.PI / 8;
+
+    /**
+     * Distance to travel when moving backwards
+     */
+    public backwardsTeleportationDistance: number = 0.5;
+
     private _observerTracked: Nullable<Observer<XRFrame>>;
 
     private _attached: boolean = false;
@@ -62,8 +121,54 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
         return this._attached;
     }
 
+    /**
+     * Add a new mesh to the floor meshes array
+     * @param mesh the mesh to use as floor mesh
+     */
+    public addFloorMesh(mesh: AbstractMesh) {
+        this._options.floorMeshes.push(mesh);
+    }
+
+    /**
+     * Remove a mesh from the floor meshes array
+     * @param mesh the mesh to remove
+     */
+    public removeFloorMesh(mesh: AbstractMesh) {
+        const index = this._options.floorMeshes.indexOf(mesh);
+        if (index !== -1) {
+            this._options.floorMeshes.splice(index, 1);
+        }
+    }
+
+    /**
+     * Remove a mesh from the floor meshes array using its name
+     * @param name the mesh name to remove
+     */
+    public removeFloorMeshByName(name: string) {
+        const mesh = this._xrSessionManager.scene.getMeshByName(name);
+        if (mesh) {
+            this.removeFloorMesh(mesh);
+        }
+    }
+
     private _tmpRay = new Ray(new Vector3(), new Vector3());
     private _tmpVector = new Vector3();
+
+    private _controllers: {
+        [controllerUniqueId: string]: {
+            xrController: WebXRController;
+            teleportationComponent?: WebXRControllerComponent;
+            teleportationState: {
+                forward: boolean;
+                backwards: boolean;
+                currentRotation: number;
+                baseRotation: number;
+                rotating: boolean;
+            }
+            onAxisChangedObserver?: Nullable<Observer<IWebXRMotionControllerAxesValue>>;
+            onButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
+        };
+    } = {};
 
     /**
      * constructs a new anchor system
@@ -71,21 +176,24 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
      * @param _options configuration object for this feature
      */
     constructor(private _xrSessionManager: WebXRSessionManager, private _options: IWebXRTeleportationOptions) {
-        // set defaults
-        if (!this._options.rotationAngle) {
-            this._options.rotationAngle = Math.PI / 8;
-        }
-
-        if (!this._options.backwardsTeleportationDistance) {
-            this._options.backwardsTeleportationDistance = 0.5;
-        }
-
         // create default mesh if not provided
         if (!this._options.teleportationTargetMesh) {
             this.createDefaultTargetMesh();
         }
 
         this.setTargetMeshVisibility(false);
+    }
+
+    private _selectionFeature: IWebXRFeature;
+
+    /**
+     * This function sets a selection feature that will be disabled when
+     * the forward ray is shown and will be reattached when hidden.
+     * This is used to remove the selection rays when moving.
+     * @param selectionFeature the feature to disable when forward movement is enabled
+     */
+    public setSelectionFeature(selectionFeature: IWebXRFeature) {
+        this._selectionFeature = selectionFeature;
     }
 
     /**
@@ -121,19 +229,21 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
                     Quaternion.RotationYawPitchRollToRef(controllerData.teleportationState.currentRotation + controllerData.teleportationState.baseRotation, 0, 0, targetMesh.rotationQuaternion);
                     // set the ray and position
 
+                    let hitPossible = false;
                     // first check if direct ray possible
                     controllerData.xrController.getWorldPointerRayToRef(this._tmpRay);
                     let pick = scene.pickWithRay(this._tmpRay, (o) => {
                         return this._options.floorMeshes.indexOf(o) !== -1;
                     });
                     if (pick && pick.pickedPoint) {
+                        hitPossible = true;
                         this.setTargetMeshPosition(pick.pickedPoint);
                         this.setTargetMeshVisibility(true);
                         this.showParabolicPath(pick);
                     } else {
-                        if (!this._options.disableTeleportationParabolicRay) {
+                        if (this.parabolicRayEnabled) {
                             // check parabolic ray
-                            const radius = this._options.parabolicCheckRadius || 5;
+                            const radius = this.parabolicCheckRadius;
                             this._tmpRay.origin.addToRef(this._tmpRay.direction.scale(radius * 2), this._tmpVector);
                             this._tmpVector.y = this._tmpRay.origin.y;
                             this._tmpRay.origin.addInPlace(this._tmpRay.direction.scale(radius));
@@ -144,6 +254,7 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
                                 return this._options.floorMeshes.indexOf(o) !== -1;
                             });
                             if (pick && pick.pickedPoint) {
+                                hitPossible = true;
                                 this.setTargetMeshPosition(pick.pickedPoint);
                                 this.setTargetMeshVisibility(true);
                                 this.showParabolicPath(pick);
@@ -152,7 +263,7 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
                     }
 
                     // if needed, set visible:
-                    this.setTargetMeshVisibility(true);
+                    this.setTargetMeshVisibility(hitPossible);
                 } else {
                     this.setTargetMeshVisibility(false);
                 }
@@ -165,21 +276,33 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
         return true;
     }
 
-    private _controllers: {
-        [controllerUniqueId: string]: {
-            xrController: WebXRController;
-            teleportationComponent?: WebXRControllerComponent;
-            teleportationState: {
-                forward: boolean;
-                backwards: boolean;
-                currentRotation: number;
-                baseRotation: number;
-                rotating: boolean;
-            }
-            onAxisChangedObserver?: Nullable<Observer<IWebXRMotionControllerAxesValue>>;
-            onButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
-        };
-    } = {};
+    /**
+     * detach this feature.
+     * Will usually be called by the features manager
+     *
+     * @returns true if successful.
+     */
+    detach(): boolean {
+        this._attached = false;
+
+        if (this._observerTracked) {
+            this._xrSessionManager.onXRFrameObservable.remove(this._observerTracked);
+        }
+
+        Object.keys(this._controllers).forEach((controllerId) => {
+            this._detachController(controllerId);
+        });
+
+        return true;
+    }
+
+    /**
+     * Dispose this feature and all of the resources attached
+     */
+    dispose(): void {
+        this.detach();
+        this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.dispose(false, true);
+    }
 
     private _currentTeleportationControllerId: string;
 
@@ -207,11 +330,10 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
             } else {
                 controllerData.onButtonChangedObserver = movementController.onButtonStateChanged.add(() => {
                     if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId && controllerData.teleportationState.forward && !movementController.touched) {
-                        console.log("in button changed", controllerData.teleportationState, movementController.touched, movementController.changes);
                         controllerData.teleportationState.forward = false;
                         this._currentTeleportationControllerId = "";
                         // do the movement forward here
-                        if (this._options.teleportationTargetMesh) {
+                        if (this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.isVisible) {
                             const height = this._options.xrInput.xrCamera.position.y - this._options.teleportationTargetMesh.position.y;
                             this._options.xrInput.xrCamera.position.copyFrom(this._options.teleportationTargetMesh.position);
                             this._options.xrInput.xrCamera.position.y += height;
@@ -232,7 +354,7 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
                         if (!controllerData.teleportationState.backwards) {
                             controllerData.teleportationState.backwards = true;
                             // teleport backwards ONCE
-                            this._tmpVector.set(0, 0, -this._options.backwardsTeleportationDistance!);
+                            this._tmpVector.set(0, 0, -this.backwardsTeleportationDistance!);
                             this._tmpVector.addInPlace(this._options.xrInput.xrCamera.position);
                             this._tmpRay.origin.copyFrom(this._tmpVector);
                             this._tmpRay.direction.set(0, -1, 0);
@@ -257,35 +379,23 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
                         if (!controllerData.teleportationState.forward) {
                             if (!controllerData.teleportationState.rotating && Math.abs(axesData.x) > 0.7) {
                                 // rotate in the right direction positive is right
-                                console.log("in rotating", controllerData.teleportationState, movementController.touched, movementController.changes);
                                 controllerData.teleportationState.rotating = true;
-                                const rotation = this._options.rotationAngle! * (axesData.x > 0 ? 1 : -1);
+                                const rotation = this.rotationAngle * (axesData.x > 0 ? 1 : -1);
                                 this._options.xrInput.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, rotation, 0));
                             }
                         } else {
                             if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId) {
                                 // set the rotation of the forward movement
-                                setTimeout(() => {
-                                    controllerData.teleportationState.currentRotation = Math.atan2(axesData.x, -axesData.y);
-                                });
+                                if (this.rotationEnabled) {
+                                    setTimeout(() => {
+                                        controllerData.teleportationState.currentRotation = Math.atan2(axesData.x, -axesData.y);
+                                    });
+                                }
                             }
                         }
                     } else {
                         controllerData.teleportationState.rotating = false;
                     }
-
-                    // if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId && controllerData.teleportationState.forward && !movementController.touched) {
-                    //     console.log("in forward axes", controllerData.teleportationState, movementController.touched, movementController.changes);
-                    //     controllerData.teleportationState.forward = false;
-                    //     this._currentTeleportationControllerId = "";
-                    //     // do the movement forward here
-                    //     if (this._options.teleportationTargetMesh) {
-                    //         const height = this._options.xrInput.xrCamera.position.y - this._options.teleportationTargetMesh.position.y;
-                    //         this._options.xrInput.xrCamera.position.copyFrom(this._options.teleportationTargetMesh.position);
-                    //         this._options.xrInput.xrCamera.position.y += height;
-                    //         this._options.xrInput.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, controllerData.teleportationState.currentRotation, 0));
-                    //     }
-                    // }
                 });
             }
         }
@@ -363,6 +473,7 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
         }
 
         var cone = CylinderBuilder.CreateCylinder("cone", { diameterTop: 0, tessellation: 4 }, scene);
+        cone.isPickable = false;
         cone.scaling.set(0.5, 0.12, 0.2);
 
         cone.rotate(Axis.X, Math.PI / 2);
@@ -385,8 +496,15 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
         this._options.teleportationTargetMesh.getChildren(undefined, false).forEach((m) => { (<any>(m)).isVisible = visible; });
 
         if (!visible) {
-            if (this.quadraticBezierCurve) {
-                this.quadraticBezierCurve.dispose();
+            if (this._quadraticBezierCurve) {
+                this._quadraticBezierCurve.dispose();
+            }
+            if (this._selectionFeature) {
+                this._selectionFeature.attach();
+            }
+        } else {
+            if (this._selectionFeature) {
+                this._selectionFeature.detach();
             }
         }
     }
@@ -397,7 +515,7 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
         this._options.teleportationTargetMesh.position.y += 0.01;
     }
 
-    private quadraticBezierCurve: AbstractMesh;
+    private _quadraticBezierCurve: AbstractMesh;
 
     private showParabolicPath(pickInfo: PickingInfo) {
         if (!pickInfo.pickedPoint) { return; }
@@ -410,40 +528,12 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
             pickInfo.pickedPoint,
             25);
 
-            if (this.quadraticBezierCurve) {
-                this.quadraticBezierCurve.dispose();
-            }
-
-            this.quadraticBezierCurve = LinesBuilder.CreateLines("qbezier", {points: quadraticBezierVectors.getPoints()});
-
-    }
-
-    /**
-     * detach this feature.
-     * Will usually be called by the features manager
-     *
-     * @returns true if successful.
-     */
-    detach(): boolean {
-        this._attached = false;
-
-        if (this._observerTracked) {
-            this._xrSessionManager.onXRFrameObservable.remove(this._observerTracked);
+        if (this._quadraticBezierCurve) {
+            this._quadraticBezierCurve.dispose();
         }
 
-        Object.keys(this._controllers).forEach((controllerId) => {
-            this._detachController(controllerId);
-        });
-
-        return true;
-    }
-
-    /**
-     * Dispose this feature and all of the resources attached
-     */
-    dispose(): void {
-        this.detach();
-        this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.dispose(false, true);
+        this._quadraticBezierCurve = LinesBuilder.CreateLines("path line", { points: quadraticBezierVectors.getPoints() });
+        this._quadraticBezierCurve.isPickable = false;
     }
 }
 
