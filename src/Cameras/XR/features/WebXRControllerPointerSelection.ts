@@ -15,7 +15,7 @@ import { StandardMaterial } from '../../../Materials/standardMaterial';
 import { CylinderBuilder } from '../../../Meshes/Builders/cylinderBuilder';
 import { TorusBuilder } from '../../../Meshes/Builders/torusBuilder';
 import { Ray } from '../../../Culling/ray';
-import { PickingInfo } from '../../../Collisions';
+import { PickingInfo } from '../../../Collisions/pickingInfo';
 
 const Name = "xr-controller-pointer-selection";
 
@@ -43,22 +43,47 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
      */
     public static readonly Version = 1;
 
+    /**
+     * This color will be set to the laser pointer when selection is triggered
+     */
+    public onPickedLaserPointerColor: Color3 = new Color3(0.7, 0.7, 0.7);
+    /**
+     * This color will be applied to the selection ring when selection is triggered
+     */
+    public onPickedSelectionMeshColor: Color3 = new Color3(0.7, 0.7, 0.7);
+    /**
+     * default color of the selection ring
+     */
+    public selectionMeshDefaultColor: Color3 = new Color3(0.5, 0.5, 0.5);
+    /**
+     * Default color of the laser pointer
+     */
+    public lasterPointerDefaultColor: Color3 = new Color3(0.5, 0.5, 0.5);
+
     private static _idCounter = 0;
 
     private _observerTracked: Nullable<Observer<XRFrame>>;
     private _attached: boolean = false;
     private _tmpRay = new Ray(new Vector3(), new Vector3());
+
+    private _controllers: {
+        [controllerUniqueId: string]: {
+            xrController: WebXRController;
+            selectionComponent?: WebXRControllerComponent;
+            onButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
+            laserPointer: AbstractMesh;
+            selectionMesh: AbstractMesh;
+            pick: Nullable<PickingInfo>;
+            id: number;
+        };
+    } = {};
+
     /**
      * Is this feature attached
      */
     public get attached() {
         return this._attached;
     }
-
-    private _onPickedLaserPointerColor: Color3 = new Color3(0.7, 0.7, 0.7);
-    private _onPickedSelectionMeshColor: Color3 = new Color3(0.7, 0.7, 0.7);
-    private _selectionMeshDefaultColor: Color3 = new Color3(0.5, 0.5, 0.5);
-    private _lasterPointerDefaultColor: Color3 = new Color3(0.5, 0.5, 0.5);
 
     private _scene: Scene;
 
@@ -67,11 +92,7 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
      * @param _xrSessionManager the session manager for this module
      * @param options read-only options to be used in this module
      */
-    constructor(private _xrSessionManager: WebXRSessionManager,
-        /**
-         * read-only options to be used in this module
-         */
-        private readonly _options: IWebXRControllerPointerSelectionOptions) {
+    constructor(private _xrSessionManager: WebXRSessionManager, private readonly _options: IWebXRControllerPointerSelectionOptions) {
         this._scene = this._xrSessionManager.scene;
     }
 
@@ -99,11 +120,11 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
                 controllerData.pick = this._scene.pickWithRay(this._tmpRay);
 
                 if (controllerData.selectionComponent && controllerData.selectionComponent.pressed) {
-                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this._onPickedSelectionMeshColor;
-                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this._onPickedLaserPointerColor;
+                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.onPickedSelectionMeshColor;
+                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.onPickedLaserPointerColor;
                 } else {
-                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this._selectionMeshDefaultColor;
-                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this._lasterPointerDefaultColor;
+                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
+                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.lasterPointerDefaultColor;
                 }
 
                 const pick = controllerData.pick;
@@ -119,7 +140,7 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
                     controllerData.selectionMesh.scaling.z = Math.sqrt(pick.distance);
 
                     // To avoid z-fighting
-                    let pickNormal = this._convertNormalToDirectionOfRay(pick.getNormal(), this._tmpRay);
+                    let pickNormal = this._convertNormalToDirectionOfRay(pick.getNormal(true), this._tmpRay);
                     let deltaFighting = 0.001;
                     controllerData.selectionMesh.position.copyFrom(pick.pickedPoint);
                     if (pickNormal) {
@@ -160,18 +181,6 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
 
         return true;
     }
-
-    private _controllers: {
-        [controllerUniqueId: string]: {
-            xrController: WebXRController;
-            selectionComponent?: WebXRControllerComponent;
-            onButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
-            laserPointer: AbstractMesh;
-            selectionMesh: AbstractMesh;
-            pick: Nullable<PickingInfo>;
-            id: number;
-        };
-    } = {};
 
     private _attachController = (xrController: WebXRController) => {
         // only support tracker pointer
@@ -234,6 +243,8 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
                 controllerData.selectionComponent.onButtonStateChanged.remove(controllerData.onButtonChangedObserver);
             }
         }
+        controllerData.selectionMesh.dispose();
+        controllerData.laserPointer.dispose();
         // remove from the map
         delete this._controllers[xrControllerUniqueId];
     }
@@ -248,7 +259,7 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
         }, this._scene);
         laserPointer.parent = xrController.pointer;
         let laserPointerMaterial = new StandardMaterial("laserPointerMat", this._scene);
-        laserPointerMaterial.emissiveColor = this._lasterPointerDefaultColor;
+        laserPointerMaterial.emissiveColor = this.lasterPointerDefaultColor;
         laserPointerMaterial.alpha = 0.6;
         laserPointer.material = laserPointerMaterial;
         laserPointer.rotation.x = Math.PI / 2;
@@ -266,7 +277,7 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
         selectionMesh.isVisible = false;
         let targetMat = new StandardMaterial("targetMat", this._scene);
         targetMat.specularColor = Color3.Black();
-        targetMat.emissiveColor = this._selectionMeshDefaultColor;
+        targetMat.emissiveColor = this.selectionMeshDefaultColor;
         targetMat.backFaceCulling = false;
         selectionMesh.material = targetMat;
 
