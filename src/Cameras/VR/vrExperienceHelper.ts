@@ -39,7 +39,6 @@ import { Axis } from '../../Maths/math.axis';
 import { WebXRSessionManager } from '../XR/webXRSessionManager';
 import { WebXRDefaultExperience } from '../XR/webXRDefaultExperience';
 import { WebXRState } from '../XR/webXRTypes';
-import { WebXRControllerTeleportation } from '../XR/webXRControllerTeleportation';
 
 /**
  * Options to modify the vr teleportation behavior.
@@ -842,21 +841,6 @@ export class VRExperienceHelper {
                                     break;
                             }
                         });
-
-                        this.xr.input.onControllerAddedObservable.add((controller) => {
-                            // var webVRController = controller.gamepadController;
-                            // if (webVRController) {
-                            //     var localController = new VRExperienceHelperControllerGazer(webVRController, this._scene, this._cameraGazer._gazeTracker);
-
-                            //     if (controller.inputSource.handedness === "right" || (this._leftController)) {
-                            //         this._rightController = localController;
-                            //     } else {
-                            //         this._leftController = localController;
-                            //     }
-
-                            //     this._tryEnableInteractionOnController(localController);
-                            // }
-                        });
                     });
                 } else {
                     // XR not supported (thou exists), continue WebVR init
@@ -1460,14 +1444,18 @@ export class VRExperienceHelper {
                     }
                 }
                 if (this.xr) {
-                    this.xr.teleportation = new WebXRControllerTeleportation(this.xr.input, floorMeshes);
+                    if (!this.xr.teleportation.attached) {
+                        this.xr.teleportation.attach();
+                    }
                     return;
                 } else if (!this.xrTestDone) {
                     const waitForXr = () => {
                         if (this.xrTestDone) {
                             this._scene.unregisterBeforeRender(waitForXr);
                             if (this.xr) {
-                                this.xr.teleportation = new WebXRControllerTeleportation(this.xr.input, floorMeshes);
+                                if (!this.xr.teleportation.attached) {
+                                    this.xr.teleportation.attach();
+                                }
                             } else {
                                 this.enableTeleportation(vrTeleportationOptions);
                             }
@@ -1479,7 +1467,9 @@ export class VRExperienceHelper {
             }
 
             if (this.xr && vrTeleportationOptions.floorMeshes) {
-                this.xr.teleportation = new WebXRControllerTeleportation(this.xr.input, vrTeleportationOptions.floorMeshes);
+                if (!this.xr.teleportation.attached) {
+                    this.xr.teleportation.attach();
+                }
                 return;
             } else {
                 if (this.webVROptions.useXR && !this.xrTestDone) {
