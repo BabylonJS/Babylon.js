@@ -53,6 +53,7 @@
 - PNG support for browsers not supporting SVG ([RaananW](https://github.com/RaananW/))
 - Device orientation event permissions for iOS 13+ ([RaananW](https://github.com/RaananW/))
 - Added `DirectionalLight.autoCalcShadowZBounds` to automatically compute the `shadowMinZ` and `shadowMaxZ` values ([Popov72](https://github.com/Popov72))
+- Improved cascade blending in CSM shadow technic ([Popov72](https://github.com/Popov72))
 
 ### Engine
 
