@@ -5,8 +5,11 @@ import { Ray } from '../../Culling/ray';
 import { Scene } from '../../scene';
 import { WebXRAbstractMotionController } from './motionController/webXRAbstractController';
 import { WebXRMotionControllerManager } from './motionController/webXRMotionControllerManager';
+
+let idCount = 0;
+
 /**
- * Represents an XR input
+ * Represents an XR controller
  */
 export class WebXRController {
     /**
@@ -34,6 +37,7 @@ export class WebXRController {
     private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3();
 
+    private _uniqueId: string;
     /**
      * Creates the controller
      * @see https://doc.babylonjs.com/how_to/webxr
@@ -46,6 +50,8 @@ export class WebXRController {
         /** The underlying input source for the controller  */
         public inputSource: XRInputSource,
         controllerProfile?: string) {
+        this._uniqueId = `${idCount++}-${inputSource.targetRayMode}-${inputSource.handedness}`;
+
         this.pointer = new AbstractMesh("controllerPointer", scene);
         this.pointer.rotationQuaternion = new Quaternion();
 
@@ -62,6 +68,13 @@ export class WebXRController {
                 this.gamepadController!.rootMesh!.parent = this.pointer;
             });
         }
+    }
+
+    /**
+     * Get this controllers unique id
+     */
+    public get uniqueId() {
+        return this._uniqueId;
     }
 
     /**
@@ -108,11 +121,11 @@ export class WebXRController {
      */
     public getWorldPointerRayToRef(result: Ray) {
         // Force update to ensure picked point is synced with ray
-        let worldMatrix = this.pointer.computeWorldMatrix(true);
+        let worldMatrix = this.pointer.computeWorldMatrix();
         worldMatrix.decompose(undefined, this._tmpQuaternion, undefined);
         this._tmpVector.set(0, 0, 1);
         this._tmpVector.rotateByQuaternionToRef(this._tmpQuaternion, this._tmpVector);
-        result.origin = this.pointer.absolutePosition;
+        result.origin.copyFrom(this.pointer.absolutePosition);
         result.direction.copyFrom(this._tmpVector);
         result.length = 1000;
     }
