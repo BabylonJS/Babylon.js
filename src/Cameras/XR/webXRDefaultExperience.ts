@@ -1,12 +1,12 @@
 import { WebXRExperienceHelper } from "./webXRExperienceHelper";
 import { Scene } from '../../scene';
 import { WebXRInput, IWebXRInputOptions } from './webXRInput';
-import { WebXRControllerPointerSelection } from './webXRControllerPointerSelection';
-import { WebXRControllerTeleportation } from './webXRControllerTeleportation';
+import { WebXRControllerPointerSelection } from './features/WebXRControllerPointerSelection';
 import { WebXRRenderTarget } from './webXRTypes';
 import { WebXREnterExitUI, WebXREnterExitUIOptions } from './webXREnterExitUI';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { WebXRManagedOutputCanvasOptions } from './webXRManagedOutputCanvas';
+import { WebXRMotionControllerTeleportation } from './features/WebXRControllerTeleportation';
 
 /**
  * Options for the default xr helper
@@ -57,7 +57,7 @@ export class WebXRDefaultExperience {
     /**
      * Enables teleportation
      */
-    public teleportation: WebXRControllerTeleportation;
+    public teleportation: WebXRMotionControllerTeleportation;
     /**
      * Enables ui for entering/exiting xr
      */
@@ -82,10 +82,16 @@ export class WebXRDefaultExperience {
 
             // Add controller support
             result.input = new WebXRInput(xrHelper.sessionManager, xrHelper.camera, options.inputOptions);
-            result.pointerSelection = new WebXRControllerPointerSelection(result.input);
+            result.pointerSelection = <WebXRControllerPointerSelection>result.baseExperience.featuresManager.enableFeature(WebXRControllerPointerSelection.Name, "latest", {
+                xrInput: result.input
+            });
 
             if (options.floorMeshes) {
-                result.teleportation = new WebXRControllerTeleportation(result.input, options.floorMeshes);
+                result.teleportation = <WebXRMotionControllerTeleportation>result.baseExperience.featuresManager.enableFeature(WebXRMotionControllerTeleportation.Name, "latest", {
+                    floorMeshes: options.floorMeshes,
+                    xrInput: result.input
+                });
+                result.teleportation.setSelectionFeature(result.pointerSelection);
             }
 
             // Create the WebXR output target

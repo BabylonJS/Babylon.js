@@ -58,6 +58,14 @@ export class WebXRHitTestLegacy implements IWebXRFeature {
      */
     public static readonly Version = 1;
 
+    private _attached: boolean = false;
+    /**
+     * Is this feature attached
+     */
+    public get attached() {
+        return this._attached;
+    }
+
     /**
      * Execute a hit test on the current running session using a select event returned from a transient input (such as touch)
      * @param event the (select) event to use to select with
@@ -95,6 +103,8 @@ export class WebXRHitTestLegacy implements IWebXRFeature {
      */
     public onHitTestResultObservable: Observable<IWebXRHitResult[]> = new Observable();
 
+    private _onSelectEnabled = false;
+    private _xrFrameObserver: Nullable<Observer<XRFrame>>;
     /**
      * Creates a new instance of the (legacy version) hit test feature
      * @param _xrSessionManager an instance of WebXRSessionManager
@@ -104,11 +114,9 @@ export class WebXRHitTestLegacy implements IWebXRFeature {
         /**
          * options to use when constructing this feature
          */
-        public readonly options: IWebXRHitTestOptions = {}) { }
+        public readonly options: IWebXRHitTestOptions = {}) {
 
-    private _onSelectEnabled = false;
-    private _xrFrameObserver: Nullable<Observer<XRFrame>>;
-    private _attached: boolean = false;
+    }
 
     /**
      * Populated with the last native XR Hit Results
