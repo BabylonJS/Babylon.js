@@ -42435,6 +42435,10 @@ declare module BABYLON {
          */
         onXRSessionInit: Observable<XRSession>;
         /**
+         * Fires when the reference space changed
+         */
+        onXRReferenceSpaceChanged: Observable<XRReferenceSpace>;
+        /**
          * Underlying xr session
          */
         session: XRSession;
@@ -42443,11 +42447,16 @@ declare module BABYLON {
          * or get the offset the player is currently at.
          */
         viewerReferenceSpace: XRReferenceSpace;
+        private _referenceSpace;
         /**
          * The current reference space used in this session. This reference space can constantly change!
          * It is mainly used to offset the camera's position.
          */
-        referenceSpace: XRReferenceSpace;
+        get referenceSpace(): XRReferenceSpace;
+        /**
+         * Set a new reference space and triggers the observable
+         */
+        set referenceSpace(newReferenceSpace: XRReferenceSpace);
         /**
          * The base reference space from which the session started. good if you want to reset your
          * reference space
@@ -42584,6 +42593,10 @@ declare module BABYLON {
      * Defining the interface required for a (webxr) feature
      */
     export interface IWebXRFeature extends IDisposable {
+        /**
+         * Is this feature attached
+         */
+        attached: boolean;
         /**
          * Attach the feature to the session
          * Will usually be called by the features manager
@@ -42839,6 +42852,22 @@ declare module BABYLON {
         type: MotionControllerComponentType;
         private _buttonIndex;
         private _axesIndices;
+        /**
+         * Thumbstick component type
+         */
+        static THUMBSTICK: string;
+        /**
+         * Touchpad component type
+         */
+        static TOUCHPAD: string;
+        /**
+         * trigger component type
+         */
+        static TRIGGER: string;
+        /**
+         * squeeze component type
+         */
+        static SQUEEZE: string;
         /**
          * Observers registered here will be triggered when the state of a button changes
          * State change is either pressed / touched / value
@@ -43715,7 +43744,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Represents an XR input
+     * Represents an XR controller
      */
     export class WebXRController {
         private scene;
@@ -43742,6 +43771,7 @@ declare module BABYLON {
         onDisposeObservable: Observable<{}>;
         private _tmpQuaternion;
         private _tmpVector;
+        private _uniqueId;
         /**
          * Creates the controller
          * @see https://doc.babylonjs.com/how_to/webxr
@@ -43752,6 +43782,10 @@ declare module BABYLON {
         constructor(scene: Scene, 
         /** The underlying input source for the controller  */
         inputSource: XRInputSource, controllerProfile?: string);
+        /**
+         * Get this controllers unique id
+         */
+        get uniqueId(): string;
         /**
          * Updates the controller pose based on the given XRFrame
          * @param xrFrame xr frame to update the pose with
@@ -43843,42 +43877,89 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Handles pointer input automatically for the pointer of XR controllers
+     * Options interface for the pointer selection module
      */
-    export class WebXRControllerPointerSelection {
-        private static _idCounter;
-        private _tmpRay;
+    export interface IWebXRControllerPointerSelectionOptions {
         /**
-         * Creates a WebXRControllerPointerSelection
-         * @param input input manager to setup pointer selection
+         * the xr input to use with this pointer selection
          */
-        constructor(input: WebXRInput);
+        xrInput: WebXRInput;
+        /**
+         * Different button type to use instead of the main component
+         */
+        overrideButtonId?: string;
+    }
+    /**
+     * A module that will enable pointer selection for motion controllers of XR Input Sources
+     */
+    export class WebXRControllerPointerSelection implements IWebXRFeature {
+        private _xrSessionManager;
+        private readonly _options;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the webxr specs version
+         */
+        static readonly Version: number;
+        /**
+         * This color will be set to the laser pointer when selection is triggered
+         */
+        onPickedLaserPointerColor: Color3;
+        /**
+         * This color will be applied to the selection ring when selection is triggered
+         */
+        onPickedSelectionMeshColor: Color3;
+        /**
+         * default color of the selection ring
+         */
+        selectionMeshDefaultColor: Color3;
+        /**
+         * Default color of the laser pointer
+         */
+        lasterPointerDefaultColor: Color3;
+        private static _idCounter;
+        private _observerTracked;
+        private _attached;
+        private _tmpRay;
+        private _controllers;
+        /**
+         * Is this feature attached
+         */
+        get attached(): boolean;
+        private _scene;
+        /**
+         * constructs a new background remover module
+         * @param _xrSessionManager the session manager for this module
+         * @param _options read-only options to be used in this module
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, _options: IWebXRControllerPointerSelectionOptions);
+        /**
+         * attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        private _attachController;
+        private _detachController;
+        private _generateNewMeshPair;
         private _convertNormalToDirectionOfRay;
         private _updatePointerDistance;
-    }
-}
-declare module BABYLON {
-    /**
-     * Enables teleportation
-     */
-    export class WebXRControllerTeleportation {
-        private _teleportationFillColor;
-        private _teleportationBorderColor;
-        private _tmpRay;
-        private _tmpVector;
         /**
-         * when set to true (default) teleportation will wait for thumbstick changes.
-         * When set to false teleportation will be disabled.
-         *
-         * If set to false while teleporting results can be unexpected.
+         * Dispose this feature and all of the resources attached
          */
-        enabled: boolean;
-        /**
-         * Creates a WebXRControllerTeleportation
-         * @param input input manager to add teleportation to
-         * @param floorMeshes floormeshes which can be teleported to
-         */
-        constructor(input: WebXRInput, floorMeshes?: Array<AbstractMesh>);
+        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -43975,6 +44056,238 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class containing static functions to help procedurally build meshes
+     */
+    export class LinesBuilder {
+        /**
+         * Creates a line system mesh. A line system is a pool of many lines gathered in a single mesh
+         * * A line system mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of lines as an input parameter
+         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineSystem to this static function
+         * * The parameter `lines` is an array of lines, each line being an array of successive Vector3
+         * * The optional parameter `instance` is an instance of an existing LineSystem object to be updated with the passed `lines` parameter
+         * * The optional parameter `colors` is an array of line colors, each line colors being an array of successive Color4, one per line point
+         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need the alpha blending (faster)
+         * * Updating a simple Line mesh, you just need to update every line in the `lines` array : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @see https://doc.babylonjs.com/how_to/parametric_shapes#line-system
+         * @param name defines the name of the new line system
+         * @param options defines the options used to create the line system
+         * @param scene defines the hosting scene
+         * @returns a new line system mesh
+         */
+        static CreateLineSystem(name: string, options: {
+            lines: Vector3[][];
+            updatable?: boolean;
+            instance?: Nullable<LinesMesh>;
+            colors?: Nullable<Color4[][]>;
+            useVertexAlpha?: boolean;
+        }, scene: Nullable<Scene>): LinesMesh;
+        /**
+         * Creates a line mesh
+         * A line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter
+         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function
+         * * The parameter `points` is an array successive Vector3
+         * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * * The optional parameter `colors` is an array of successive Color4, one per line point
+         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need alpha blending (faster)
+         * * When updating an instance, remember that only point positions can change, not the number of points
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @see https://doc.babylonjs.com/how_to/parametric_shapes#lines
+         * @param name defines the name of the new line system
+         * @param options defines the options used to create the line system
+         * @param scene defines the hosting scene
+         * @returns a new line mesh
+         */
+        static CreateLines(name: string, options: {
+            points: Vector3[];
+            updatable?: boolean;
+            instance?: Nullable<LinesMesh>;
+            colors?: Color4[];
+            useVertexAlpha?: boolean;
+        }, scene?: Nullable<Scene>): LinesMesh;
+        /**
+         * Creates a dashed line mesh
+         * * A dashed line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter
+         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function
+         * * The parameter `points` is an array successive Vector3
+         * * The parameter `dashNb` is the intended total number of dashes (positive integer, default 200)
+         * * The parameter `dashSize` is the size of the dashes relatively the dash number (positive float, default 3)
+         * * The parameter `gapSize` is the size of the gap between two successive dashes relatively the dash number (positive float, default 1)
+         * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * * When updating an instance, remember that only point positions can change, not the number of points
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @param name defines the name of the mesh
+         * @param options defines the options used to create the mesh
+         * @param scene defines the hosting scene
+         * @returns the dashed line mesh
+         * @see https://doc.babylonjs.com/how_to/parametric_shapes#dashed-lines
+         */
+        static CreateDashedLines(name: string, options: {
+            points: Vector3[];
+            dashSize?: number;
+            gapSize?: number;
+            dashNb?: number;
+            updatable?: boolean;
+            instance?: LinesMesh;
+        }, scene?: Nullable<Scene>): LinesMesh;
+    }
+}
+declare module BABYLON {
+    /**
+     * The options container for the teleportation module
+     */
+    export interface IWebXRTeleportationOptions {
+        /**
+         * Babylon XR Input class for controller
+         */
+        xrInput: WebXRInput;
+        /**
+         * A list of meshes to use as floor meshes.
+         * Meshes can be added and removed after initializing the feature using the
+         * addFloorMesh and removeFloorMesh functions
+         */
+        floorMeshes: AbstractMesh[];
+        /**
+         * Provide your own teleportation mesh instead of babylon's wonderful doughnut.
+         * If you want to support rotation, make sure your mesh has a direction indicator.
+         *
+         * When left untouched, the default mesh will be initialized.
+         */
+        teleportationTargetMesh?: AbstractMesh;
+        /**
+         * Values to configure the default target mesh
+         */
+        defaultTargetMeshOptions?: {
+            /**
+             * Fill color of the teleportation area
+             */
+            teleportationFillColor?: string;
+            /**
+             * Border color for the teleportation area
+             */
+            teleportationBorderColor?: string;
+            /**
+             * Override the default material of the torus and arrow
+             */
+            torusArrowMaterial?: Material;
+            /**
+             * Disable the mesh's animation sequence
+             */
+            disableAnimation?: boolean;
+        };
+    }
+    /**
+     * This is a teleportation feature to be used with webxr-enabled motion controllers.
+     * When enabled and attached, the feature will allow a user to move aroundand rotate in the scene using
+     * the input of the attached controllers.
+     */
+    export class WebXRMotionControllerTeleportation implements IWebXRFeature {
+        private _xrSessionManager;
+        private _options;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the webxr specs version
+         */
+        static readonly Version: number;
+        /**
+         * Is rotation enabled when moving forward?
+         * Disabling this feature will prevent the user from deciding the direction when teleporting
+         */
+        rotationEnabled: boolean;
+        /**
+         * Should the module support parabolic ray on top of direct ray
+         * If enabled, the user will be able to point "at the sky" and move according to predefined radius distance
+         * Very helpful when moving between floors / different heights
+         */
+        parabolicRayEnabled: boolean;
+        /**
+         * The distance from the user to the inspection point in the direction of the controller
+         * A higher number will allow the user to move further
+         * defaults to 5 (meters, in xr units)
+         */
+        parabolicCheckRadius: number;
+        /**
+         * How much rotation should be applied when rotating right and left
+         */
+        rotationAngle: number;
+        /**
+         * Distance to travel when moving backwards
+         */
+        backwardsTeleportationDistance: number;
+        private _observerTracked;
+        private _attached;
+        /**
+         * Is this feature attached
+         */
+        get attached(): boolean;
+        /**
+         * Add a new mesh to the floor meshes array
+         * @param mesh the mesh to use as floor mesh
+         */
+        addFloorMesh(mesh: AbstractMesh): void;
+        /**
+         * Remove a mesh from the floor meshes array
+         * @param mesh the mesh to remove
+         */
+        removeFloorMesh(mesh: AbstractMesh): void;
+        /**
+         * Remove a mesh from the floor meshes array using its name
+         * @param name the mesh name to remove
+         */
+        removeFloorMeshByName(name: string): void;
+        private _tmpRay;
+        private _tmpVector;
+        private _controllers;
+        /**
+         * constructs a new anchor system
+         * @param _xrSessionManager an instance of WebXRSessionManager
+         * @param _options configuration object for this feature
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, _options: IWebXRTeleportationOptions);
+        private _selectionFeature;
+        /**
+         * This function sets a selection feature that will be disabled when
+         * the forward ray is shown and will be reattached when hidden.
+         * This is used to remove the selection rays when moving.
+         * @param selectionFeature the feature to disable when forward movement is enabled
+         */
+        setSelectionFeature(selectionFeature: IWebXRFeature): void;
+        /**
+         * attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+        private _currentTeleportationControllerId;
+        private _attachController;
+        private _detachController;
+        private createDefaultTargetMesh;
+        private setTargetMeshVisibility;
+        private setTargetMeshPosition;
+        private _quadraticBezierCurve;
+        private showParabolicPath;
+    }
+}
+declare module BABYLON {
+    /**
      * Options for the default xr helper
      */
     export class WebXRDefaultExperienceOptions {
@@ -44018,7 +44331,7 @@ declare module BABYLON {
         /**
          * Enables teleportation
          */
-        teleportation: WebXRControllerTeleportation;
+        teleportation: WebXRMotionControllerTeleportation;
         /**
          * Enables ui for entering/exiting xr
          */
@@ -44509,6 +44822,11 @@ declare module BABYLON {
          * This number does not correspond to the webxr specs version
          */
         static readonly Version: number;
+        private _attached;
+        /**
+         * Is this feature attached
+         */
+        get attached(): boolean;
         /**
          * Execute a hit test on the current running session using a select event returned from a transient input (such as touch)
          * @param event the (select) event to use to select with
@@ -44530,6 +44848,8 @@ declare module BABYLON {
          * Triggered when new babylon (transformed) hit test results are available
          */
         onHitTestResultObservable: Observable<IWebXRHitResult[]>;
+        private _onSelectEnabled;
+        private _xrFrameObserver;
         /**
          * Creates a new instance of the (legacy version) hit test feature
          * @param _xrSessionManager an instance of WebXRSessionManager
@@ -44540,9 +44860,6 @@ declare module BABYLON {
          * options to use when constructing this feature
          */
         options?: IWebXRHitTestOptions);
-        private _onSelectEnabled;
-        private _xrFrameObserver;
-        private _attached;
         /**
          * Populated with the last native XR Hit Results
          */
@@ -44632,8 +44949,12 @@ declare module BABYLON {
          * This can execute N times every frame
          */
         onPlaneUpdatedObservable: Observable<IWebXRPlane>;
-        private _enabled;
         private _attached;
+        /**
+         * Is this feature attached
+         */
+        get attached(): boolean;
+        private _enabled;
         private _detectedPlanes;
         private _lastFrameDetected;
         private _observerTracked;
@@ -44737,10 +45058,14 @@ declare module BABYLON {
          * Observers registered here will be executed when an anchor was removed from the session
          */
         onAnchorRemovedObservable: Observable<IWebXRAnchor>;
+        private _attached;
+        /**
+         * Is this feature attached
+         */
+        get attached(): boolean;
         private _planeDetector;
         private _hitTestModule;
         private _enabled;
-        private _attached;
         private _trackedAnchors;
         private _lastFrameDetected;
         private _observerTracked;
@@ -44847,6 +45172,11 @@ declare module BABYLON {
          * registered observers will be triggered when the background state changes
          */
         onBackgroundStateChangedObservable: Observable<boolean>;
+        private _attached;
+        /**
+         * Is this feature attached
+         */
+        get attached(): boolean;
         /**
          * constructs a new background remover module
          * @param _xrSessionManager the session manager for this module
@@ -46010,85 +46340,6 @@ declare module BABYLON.Debug {
         private _getDebugMesh;
         /** Releases all resources */
         dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class containing static functions to help procedurally build meshes
-     */
-    export class LinesBuilder {
-        /**
-         * Creates a line system mesh. A line system is a pool of many lines gathered in a single mesh
-         * * A line system mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of lines as an input parameter
-         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineSystem to this static function
-         * * The parameter `lines` is an array of lines, each line being an array of successive Vector3
-         * * The optional parameter `instance` is an instance of an existing LineSystem object to be updated with the passed `lines` parameter
-         * * The optional parameter `colors` is an array of line colors, each line colors being an array of successive Color4, one per line point
-         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need the alpha blending (faster)
-         * * Updating a simple Line mesh, you just need to update every line in the `lines` array : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
-         * * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines
-         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes#line-system
-         * @param name defines the name of the new line system
-         * @param options defines the options used to create the line system
-         * @param scene defines the hosting scene
-         * @returns a new line system mesh
-         */
-        static CreateLineSystem(name: string, options: {
-            lines: Vector3[][];
-            updatable?: boolean;
-            instance?: Nullable<LinesMesh>;
-            colors?: Nullable<Color4[][]>;
-            useVertexAlpha?: boolean;
-        }, scene: Nullable<Scene>): LinesMesh;
-        /**
-         * Creates a line mesh
-         * A line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter
-         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function
-         * * The parameter `points` is an array successive Vector3
-         * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
-         * * The optional parameter `colors` is an array of successive Color4, one per line point
-         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need alpha blending (faster)
-         * * When updating an instance, remember that only point positions can change, not the number of points
-         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes#lines
-         * @param name defines the name of the new line system
-         * @param options defines the options used to create the line system
-         * @param scene defines the hosting scene
-         * @returns a new line mesh
-         */
-        static CreateLines(name: string, options: {
-            points: Vector3[];
-            updatable?: boolean;
-            instance?: Nullable<LinesMesh>;
-            colors?: Color4[];
-            useVertexAlpha?: boolean;
-        }, scene?: Nullable<Scene>): LinesMesh;
-        /**
-         * Creates a dashed line mesh
-         * * A dashed line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter
-         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function
-         * * The parameter `points` is an array successive Vector3
-         * * The parameter `dashNb` is the intended total number of dashes (positive integer, default 200)
-         * * The parameter `dashSize` is the size of the dashes relatively the dash number (positive float, default 3)
-         * * The parameter `gapSize` is the size of the gap between two successive dashes relatively the dash number (positive float, default 1)
-         * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
-         * * When updating an instance, remember that only point positions can change, not the number of points
-         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @param name defines the name of the mesh
-         * @param options defines the options used to create the mesh
-         * @param scene defines the hosting scene
-         * @returns the dashed line mesh
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes#dashed-lines
-         */
-        static CreateDashedLines(name: string, options: {
-            points: Vector3[];
-            dashSize?: number;
-            gapSize?: number;
-            dashNb?: number;
-            updatable?: boolean;
-            instance?: LinesMesh;
-        }, scene?: Nullable<Scene>): LinesMesh;
     }
 }
 declare module BABYLON {
