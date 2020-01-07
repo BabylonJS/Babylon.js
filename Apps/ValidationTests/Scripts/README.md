@@ -2,7 +2,7 @@
 
 The JS files in this folder are intended to be launched by file association with the Babylon Native UWP app.
 
-With an x64 UWP build of the v8 TestApp installed, simply double-click each script to launch it.
+With an x64 UWP build of the v8 Playground installed, simply double-click each script to launch it.
 
 ## gltf2_asset_generator_test.js
 
