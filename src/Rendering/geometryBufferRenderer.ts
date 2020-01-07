@@ -431,6 +431,10 @@ export class GeometryBufferRenderer {
             for (index = 0; index < alphaTestSubMeshes.length; index++) {
                 renderSubMesh(alphaTestSubMeshes.data[index]);
             }
+
+            for (index = 0; index < transparentSubMeshes.length; index++) {
+                renderSubMesh(transparentSubMeshes.data[index]);
+            }
         };
     }
 
