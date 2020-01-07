@@ -21,7 +21,7 @@ import { PickingInfo } from '../../../Collisions/pickingInfo';
 import { Curve3 } from '../../../Maths/math.path';
 import { LinesBuilder } from '../../../Meshes/Builders/linesBuilder';
 
-const Name = "xr-teleportation";
+const Name = "xr-controller-teleportation";
 
 export interface IWebXRTeleportationOptions {
     xrInput: WebXRInput;
@@ -133,7 +133,7 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
                     } else {
                         if (!this._options.disableTeleportationParabolicRay) {
                             // check parabolic ray
-                            const radius = this._options.parabolicCheckRadius || 4;
+                            const radius = this._options.parabolicCheckRadius || 5;
                             this._tmpRay.origin.addToRef(this._tmpRay.direction.scale(radius * 2), this._tmpVector);
                             this._tmpVector.y = this._tmpRay.origin.y;
                             this._tmpRay.origin.addInPlace(this._tmpRay.direction.scale(radius));
@@ -443,7 +443,7 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
      */
     dispose(): void {
         this.detach();
-        this._options.teleportationTargetMesh?.dispose(false, true);
+        this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.dispose(false, true);
     }
 }
 
