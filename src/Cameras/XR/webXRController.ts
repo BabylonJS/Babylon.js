@@ -116,11 +116,11 @@ export class WebXRController {
      */
     public getWorldPointerRayToRef(result: Ray) {
         // Force update to ensure picked point is synced with ray
-        let worldMatrix = this.pointer.computeWorldMatrix(true);
+        let worldMatrix = this.pointer.computeWorldMatrix();
         worldMatrix.decompose(undefined, this._tmpQuaternion, undefined);
         this._tmpVector.set(0, 0, 1);
         this._tmpVector.rotateByQuaternionToRef(this._tmpQuaternion, this._tmpVector);
-        result.origin = this.pointer.absolutePosition;
+        result.origin.copyFrom(this.pointer.absolutePosition);
         result.direction.copyFrom(this._tmpVector);
         result.length = 1000;
     }
