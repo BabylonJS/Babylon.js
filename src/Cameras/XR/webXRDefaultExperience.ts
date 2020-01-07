@@ -91,6 +91,7 @@ export class WebXRDefaultExperience {
                     floorMeshes: options.floorMeshes,
                     xrInput: result.input
                 });
+                result.teleportation.setSelectionFeature(result.pointerSelection);
             }
 
             // Create the WebXR output target
