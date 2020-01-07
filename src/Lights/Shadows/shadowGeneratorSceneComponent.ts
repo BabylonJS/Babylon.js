@@ -2,6 +2,7 @@ import { SmartArrayNoDuplicate } from "../../Misc/smartArray";
 import { Scene } from "../../scene";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { ShadowGenerator } from "./shadowGenerator";
+import { CascadedShadowGenerator } from "./cascadedShadowGenerator";
 import { SceneComponentConstants, ISceneSerializableComponent } from "../../sceneComponent";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { AbstractScene } from "../../abstractScene";
@@ -116,6 +117,14 @@ export class ShadowGeneratorSceneComponent implements ISceneSerializableComponen
 }
 
 ShadowGenerator._SceneComponentInitialization = (scene: Scene) => {
+    let component = scene._getComponent(SceneComponentConstants.NAME_SHADOWGENERATOR);
+    if (!component) {
+        component = new ShadowGeneratorSceneComponent(scene);
+        scene._addComponent(component);
+    }
+};
+
+CascadedShadowGenerator._SceneComponentInitialization = (scene: Scene) => {
     let component = scene._getComponent(SceneComponentConstants.NAME_SHADOWGENERATOR);
     if (!component) {
         component = new ShadowGeneratorSceneComponent(scene);

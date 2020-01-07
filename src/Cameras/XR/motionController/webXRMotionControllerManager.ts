@@ -44,9 +44,18 @@ export class WebXRMotionControllerManager {
      *
      * @param xrInput the xrInput to which a new controller is initialized
      * @param scene the scene to which the model will be added
+     * @param forceProfile force a certain profile for this controller
      * @return the motion controller class for this profile id or the generic standard class if none was found
      */
-    public static GetMotionControllerWithXRInput(xrInput: XRInputSource, scene: Scene): WebXRAbstractMotionController {
+    public static GetMotionControllerWithXRInput(xrInput: XRInputSource, scene: Scene, forceProfile?: string): WebXRAbstractMotionController {
+        //if a type was forced, try creating a controller using it. Continue if not found.
+        if (forceProfile) {
+            const constructionFunction = this._AvailableControllers[forceProfile];
+            if (constructionFunction) {
+                return constructionFunction(xrInput, scene);
+            }
+        }
+
         for (let i = 0; i < xrInput.profiles.length; ++i) {
             const constructionFunction = this._AvailableControllers[xrInput.profiles[i]];
             if (constructionFunction) {
@@ -112,11 +121,12 @@ export class WebXRMotionControllerManager {
         this.RegisterFallbacksForProfileId("htc-vive-focus", ["generic-trigger-touchpad"]);
         this.RegisterFallbacksForProfileId("htc-vive", ["generic-trigger-squeeze-touchpad"]);
         this.RegisterFallbacksForProfileId("magicleap-one", ["generic-trigger-squeeze-touchpad"]);
-        this.RegisterFallbacksForProfileId("microsoft-mixed-reality", ["generic-trigger-squeeze-touchpad-thumbstick"]);
+        this.RegisterFallbacksForProfileId("windows-mixed-reality", ["generic-trigger-squeeze-touchpad-thumbstick"]);
+        this.RegisterFallbacksForProfileId("microsoft-mixed-reality", ["windows-mixed-reality", "generic-trigger-squeeze-touchpad-thumbstick"]);
         this.RegisterFallbacksForProfileId("oculus-go", ["generic-trigger-touchpad"]);
         this.RegisterFallbacksForProfileId("oculus-touch-v2", ["oculus-touch", "generic-trigger-squeeze-thumbstick"]);
         this.RegisterFallbacksForProfileId("oculus-touch", ["generic-trigger-squeeze-thumbstick"]);
-        this.RegisterFallbacksForProfileId("samsung-gearvr", ["microsoft-mixed-reality", "generic-trigger-squeeze-touchpad-thumbstick"]);
+        this.RegisterFallbacksForProfileId("samsung-gearvr", ["windows-mixed-reality", "generic-trigger-squeeze-touchpad-thumbstick"]);
         this.RegisterFallbacksForProfileId("samsung-odyssey", ["generic-touchpad"]);
         this.RegisterFallbacksForProfileId("valve-index", ["generic-trigger-squeeze-touchpad-thumbstick"]);
     }
