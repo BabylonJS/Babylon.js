@@ -279,8 +279,7 @@ OffscreenCanvas = function (width, height) {
 
 var xhr = new XMLHttpRequest();
 
-// TODO: replace with BJS url
-xhr.open("GET", "https://raw.githubusercontent.com/CedricGuillemet/BabylonNative/canvasCapture/TestApp/ValidationTests/config.json", true);
+xhr.open("GET", "https://raw.githubusercontent.com/BabylonJS/Babylon.js/master/tests/validation/config.json", true);
 
 xhr.addEventListener("readystatechange", function() {
     if (xhr.status === 200) {
