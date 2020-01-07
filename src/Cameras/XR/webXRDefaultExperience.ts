@@ -2,11 +2,11 @@ import { WebXRExperienceHelper } from "./webXRExperienceHelper";
 import { Scene } from '../../scene';
 import { WebXRInput, IWebXRInputOptions } from './webXRInput';
 import { WebXRControllerPointerSelection } from './webXRControllerPointerSelection';
-import { WebXRControllerTeleportation } from './webXRControllerTeleportation';
 import { WebXRRenderTarget } from './webXRTypes';
 import { WebXREnterExitUI, WebXREnterExitUIOptions } from './webXREnterExitUI';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { WebXRManagedOutputCanvasOptions } from './webXRManagedOutputCanvas';
+import { WebXRMotionControllerTeleportation } from './features';
 
 /**
  * Options for the default xr helper
@@ -57,7 +57,7 @@ export class WebXRDefaultExperience {
     /**
      * Enables teleportation
      */
-    public teleportation: WebXRControllerTeleportation;
+    public teleportation: WebXRMotionControllerTeleportation;
     /**
      * Enables ui for entering/exiting xr
      */
@@ -85,7 +85,10 @@ export class WebXRDefaultExperience {
             result.pointerSelection = new WebXRControllerPointerSelection(result.input);
 
             if (options.floorMeshes) {
-                result.teleportation = new WebXRControllerTeleportation(result.input, options.floorMeshes);
+                result.teleportation = <WebXRMotionControllerTeleportation>result.baseExperience.featuresManager.enableFeature(WebXRMotionControllerTeleportation.Name, "latest", {
+                    floorMeshes: options.floorMeshes,
+                    xrInput: result.input
+                });
             }
 
             // Create the WebXR output target
