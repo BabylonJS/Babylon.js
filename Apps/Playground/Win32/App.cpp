@@ -2,7 +2,6 @@
 //
 
 #include "App.h"
-// NOMINMAX to prevent compilation errors with bgfx
 #include <Windows.h>
 #include <Windowsx.h>
 #include <Shlwapi.h>
