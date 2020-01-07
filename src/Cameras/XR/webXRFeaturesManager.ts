@@ -238,7 +238,6 @@ export class WebXRFeaturesManager implements IDisposable {
         const feature = this._features[featureName];
         if (feature && feature.enabled && !feature.featureImplementation.attached) {
             feature.featureImplementation.attach();
-            feature.featureImplementation.attached = true;
         }
     }
 
@@ -250,7 +249,6 @@ export class WebXRFeaturesManager implements IDisposable {
         const feature = this._features[featureName];
         if (feature && feature.featureImplementation.attached) {
             feature.featureImplementation.detach();
-            feature.featureImplementation.attached = false;
         }
     }
 

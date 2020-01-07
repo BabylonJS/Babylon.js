@@ -53,7 +53,15 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
     public static readonly Version = 1;
 
     private _observerTracked: Nullable<Observer<XRFrame>>;
-    public attached: boolean = false;
+
+    private _attached: boolean = false;
+    /**
+     * Is this feature attached
+     */
+    public get attached() {
+        return this._attached;
+    }
+
     private _tmpRay = new Ray(new Vector3(), new Vector3());
     private _tmpVector = new Vector3();
 
@@ -98,7 +106,7 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
         this._observerTracked = this._xrSessionManager.onXRFrameObservable.add(() => {
             const frame = this._xrSessionManager.currentFrame;
             const scene = this._xrSessionManager.scene;
-            if (!this.attached || !frame) { return; }
+            if (!this._attached || !frame) { return; }
 
             // render target if needed
             const targetMesh = this._options.teleportationTargetMesh;
@@ -153,7 +161,7 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
             }
         });
 
-        this.attached = true;
+        this._attached = true;
         return true;
     }
 
@@ -417,7 +425,7 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
      * @returns true if successful.
      */
     detach(): boolean {
-        this.attached = false;
+        this._attached = false;
 
         if (this._observerTracked) {
             this._xrSessionManager.onXRFrameObservable.remove(this._observerTracked);

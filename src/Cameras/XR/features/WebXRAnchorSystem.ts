@@ -81,10 +81,13 @@ export class WebXRAnchorSystem implements IWebXRFeature {
      */
     public onAnchorRemovedObservable: Observable<IWebXRAnchor> = new Observable();
 
+    private _attached: boolean = false;
     /**
-     * Set to true when attached
+     * Is this feature attached
      */
-    public attached: boolean = false;
+    public get attached() {
+        return this._attached;
+    }
     private _planeDetector: WebXRPlaneDetector;
     private _hitTestModule: WebXRHitTestLegacy;
 
@@ -128,7 +131,7 @@ export class WebXRAnchorSystem implements IWebXRFeature {
     attach(): boolean {
         this._observerTracked = this._xrSessionManager.onXRFrameObservable.add(() => {
             const frame = this._xrSessionManager.currentFrame;
-            if (!this.attached || !this._enabled || !frame) { return; }
+            if (!this._attached || !this._enabled || !frame) { return; }
             // const timestamp = this.xrSessionManager.currentTimestamp;
 
             const trackedAnchors = frame.trackedAnchors;
@@ -166,7 +169,7 @@ export class WebXRAnchorSystem implements IWebXRFeature {
             this._xrSessionManager.session.addEventListener('select', this._onSelect, false);
         }
 
-        this.attached = true;
+        this._attached = true;
         return true;
     }
 
@@ -177,7 +180,7 @@ export class WebXRAnchorSystem implements IWebXRFeature {
      * @returns true if successful.
      */
     detach(): boolean {
-        this.attached = false;
+        this._attached = false;
 
         this._xrSessionManager.session.removeEventListener('select', this._onSelect);
 

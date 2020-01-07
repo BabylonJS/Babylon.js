@@ -74,10 +74,13 @@ export class WebXRPlaneDetector implements IWebXRFeature {
      */
     public onPlaneUpdatedObservable: Observable<IWebXRPlane> = new Observable();
 
+    private _attached: boolean = false;
     /**
-     * Set to true when attached
+     * Is this feature attached
      */
-    public attached: boolean = false;
+    public get attached() {
+        return this._attached;
+    }
     private _enabled: boolean = false;
     private _detectedPlanes: Array<IWebXRPlane> = [];
     private _lastFrameDetected: XRPlaneSet = new Set();
@@ -110,7 +113,7 @@ export class WebXRPlaneDetector implements IWebXRFeature {
 
         this._observerTracked = this._xrSessionManager.onXRFrameObservable.add(() => {
             const frame = this._xrSessionManager.currentFrame;
-            if (!this.attached || !this._enabled || !frame) { return; }
+            if (!this._attached || !this._enabled || !frame) { return; }
             // const timestamp = this.xrSessionManager.currentTimestamp;
 
             const detectedPlanes = frame.worldInformation.detectedPlanes;
@@ -145,7 +148,7 @@ export class WebXRPlaneDetector implements IWebXRFeature {
             }
         });
 
-        this.attached = true;
+        this._attached = true;
         return true;
     }
 
@@ -156,7 +159,7 @@ export class WebXRPlaneDetector implements IWebXRFeature {
      * @returns true if successful.
      */
     detach(): boolean {
-        this.attached = false;
+        this._attached = false;
 
         if (this._observerTracked) {
             this._xrSessionManager.onXRFrameObservable.remove(this._observerTracked);
