@@ -120,11 +120,6 @@
             vec2 uv = 0.5 * clipSpace.xy + vec2(0.5);
             vec3 uvLayer = vec3(uv.x, uv.y, layer);
 
-            if (uv.x < 0. || uv.x > 1.0 || uv.y < 0. || uv.y > 1.0)
-            {
-                return 1.0;
-            }
-
             float shadowPixelDepth = clamp(depthMetric, 0., 1.0);
 
             #ifndef SHADOWFLOAT
@@ -258,11 +253,6 @@
             vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
             vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
 
-            if (uvDepth.x < 0. || uvDepth.x > 1.0 || uvDepth.y < 0. || uvDepth.y > 1.0)
-            {
-                return 1.0;
-            }
-
             uvDepth.z = clamp(uvDepth.z, 0., GREATEST_LESS_THAN_ONE);
 
             vec4 uvDepthLayer = vec4(uvDepth.x, uvDepth.y, layer, uvDepth.z);
@@ -279,11 +269,6 @@
         {
             vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
             vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
-
-            if (uvDepth.x < 0. || uvDepth.x > 1.0 || uvDepth.y < 0. || uvDepth.y > 1.0)
-            {
-                return 1.0;
-            }
 
             uvDepth.z = clamp(uvDepth.z, 0., GREATEST_LESS_THAN_ONE);
 
@@ -320,11 +305,6 @@
         {
             vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
             vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
-
-            if (uvDepth.x < 0. || uvDepth.x > 1.0 || uvDepth.y < 0. || uvDepth.y > 1.0)
-            {
-                return 1.0;
-            }
 
             uvDepth.z = clamp(uvDepth.z, 0., GREATEST_LESS_THAN_ONE);
 
@@ -599,11 +579,6 @@
         {
             vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
             vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
-
-            if (uvDepth.x < 0. || uvDepth.x > 1.0 || uvDepth.y < 0. || uvDepth.y > 1.0)
-            {
-                return 1.0;
-            }
 
             uvDepth.z = clamp(uvDepth.z, 0., GREATEST_LESS_THAN_ONE);
 
