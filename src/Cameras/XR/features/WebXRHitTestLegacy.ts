@@ -58,10 +58,13 @@ export class WebXRHitTestLegacy implements IWebXRFeature {
      */
     public static readonly Version = 1;
 
+    private _attached: boolean = false;
     /**
-     * Set to true when attached
+     * Is this feature attached
      */
-    public attached: boolean = false;
+    public get attached() {
+        return this._attached;
+    }
 
     /**
      * Execute a hit test on the current running session using a select event returned from a transient input (such as touch)
@@ -137,7 +140,7 @@ export class WebXRHitTestLegacy implements IWebXRFeature {
             const mat = new Matrix();
             this._xrFrameObserver = this._xrSessionManager.onXRFrameObservable.add((frame) => {
                 // make sure we do nothing if (async) not attached
-                if (!this.attached) {
+                if (!this._attached) {
                     return;
                 }
                 let pose = frame.getViewerPose(this._xrSessionManager.referenceSpace);
@@ -154,7 +157,7 @@ export class WebXRHitTestLegacy implements IWebXRFeature {
                 WebXRHitTestLegacy.XRHitTestWithRay(this._xrSessionManager.session, ray, this._xrSessionManager.referenceSpace).then(this._onHitTestResults);
             });
         }
-        this.attached = true;
+        this._attached = true;
 
         return true;
     }
@@ -173,7 +176,7 @@ export class WebXRHitTestLegacy implements IWebXRFeature {
             this._xrSessionManager.onXRFrameObservable.remove(this._xrFrameObserver);
             this._xrFrameObserver = null;
         }
-        this.attached = false;
+        this._attached = false;
         return true;
     }
 
