@@ -18575,6 +18575,71 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Particle emitter emitting particles from a custom list of positions.
+     */
+    export class CustomParticleEmitter implements IParticleEmitterType {
+        /**
+         * Gets or sets the position generator that will create the inital position of each particle.
+         * Index will be provided when used with GPU particle. Particle will be provided when used with CPU particles
+         */
+        particlePositionGenerator: (index: number, particle: Nullable<Particle>, outPosition: Vector3) => void;
+        /**
+         * Gets or sets the destination generator that will create the final destination of each particle.
+         *  * Index will be provided when used with GPU particle. Particle will be provided when used with CPU particles
+         */
+        particleDestinationGenerator: (index: number, particle: Nullable<Particle>, outDestination: Vector3) => void;
+        /**
+         * Creates a new instance CustomParticleEmitter
+         */
+        constructor();
+        /**
+         * Called by the particle System when the direction is computed for the created particle.
+         * @param worldMatrix is the world matrix of the particle system
+         * @param directionToUpdate is the direction vector to update with the result
+         * @param particle is the particle we are computed the direction for
+         */
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        /**
+         * Called by the particle System when the position is computed for the created particle.
+         * @param worldMatrix is the world matrix of the particle system
+         * @param positionToUpdate is the position vector to update with the result
+         * @param particle is the particle we are computed the position for
+         */
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        /**
+         * Clones the current emitter and returns a copy of it
+         * @returns the new emitter
+         */
+        clone(): CustomParticleEmitter;
+        /**
+         * Called by the GPUParticleSystem to setup the update shader
+         * @param effect defines the update shader
+         */
+        applyToShader(effect: Effect): void;
+        /**
+         * Returns a string to use to update the GPU particles update shader
+         * @returns a string containng the defines string
+         */
+        getEffectDefines(): string;
+        /**
+         * Returns the string "PointParticleEmitter"
+         * @returns a string containing the class name
+         */
+        getClassName(): string;
+        /**
+         * Serializes the particle system to a JSON object.
+         * @returns the JSON object
+         */
+        serialize(): any;
+        /**
+         * Parse properties from a JSON object
+         * @param serializationObject defines the JSON object
+         */
+        parse(serializationObject: any): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Interface representing a particle system in Babylon.js.
      * This groups the common functionalities that needs to be implemented in order to create a particle system.
      * A particle system represents a way to manage particles from their emission to their animation and rendering.
@@ -64047,6 +64112,8 @@ declare module BABYLON {
          * Avoids computing bones velocities and computes only mesh's velocity itself (position, rotation, scaling).
          */
         excludedSkinnedMeshesFromVelocity: AbstractMesh[];
+        /** Gets or sets a boolean indicating if transparent meshes should be rendered */
+        renderTransparentMeshes: boolean;
         private _scene;
         private _multiRenderTarget;
         private _ratio;
