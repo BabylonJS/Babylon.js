@@ -6,6 +6,10 @@ import { IDisposable } from '../../scene';
  */
 export interface IWebXRFeature extends IDisposable {
     /**
+     * Is this feature attached
+     */
+    attached: boolean;
+    /**
      * Attach the feature to the session
      * Will usually be called by the features manager
      *
@@ -121,8 +125,7 @@ export class WebXRFeaturesManager implements IDisposable {
         [name: string]: {
             featureImplementation: IWebXRFeature,
             version: number,
-            enabled: boolean,
-            attached: boolean
+            enabled: boolean
         }
     } = {};
 
@@ -136,7 +139,7 @@ export class WebXRFeaturesManager implements IDisposable {
         this._xrSessionManager.onXRSessionInit.add(() => {
             this.getEnabledFeatures().forEach((featureName) => {
                 const feature = this._features[featureName];
-                if (feature.enabled && !feature.attached) {
+                if (feature.enabled && !feature.featureImplementation.attached) {
                     this.attachFeature(featureName);
                 }
             });
@@ -146,7 +149,7 @@ export class WebXRFeaturesManager implements IDisposable {
         this._xrSessionManager.onXRSessionEnded.add(() => {
             this.getEnabledFeatures().forEach((featureName) => {
                 const feature = this._features[featureName];
-                if (feature.enabled && feature.attached) {
+                if (feature.enabled && feature.featureImplementation.attached) {
                     // detach, but don't disable!
                     this.detachFeature(featureName);
                 }
@@ -193,7 +196,6 @@ export class WebXRFeaturesManager implements IDisposable {
 
             this._features[name] = {
                 featureImplementation: constructFunction(),
-                attached: false,
                 enabled: true,
                 version: versionToLoad
             };
@@ -203,7 +205,7 @@ export class WebXRFeaturesManager implements IDisposable {
         }
 
         // if session started already, request and enable
-        if (this._xrSessionManager.session && !feature.attached && attachIfPossible) {
+        if (this._xrSessionManager.session && !feature.featureImplementation.attached && attachIfPossible) {
             // enable feature
             this.attachFeature(name);
         }
@@ -234,9 +236,9 @@ export class WebXRFeaturesManager implements IDisposable {
      */
     public attachFeature(featureName: string) {
         const feature = this._features[featureName];
-        if (feature && feature.enabled && !feature.attached) {
+        if (feature && feature.enabled && !feature.featureImplementation.attached) {
             feature.featureImplementation.attach();
-            feature.attached = true;
+            feature.featureImplementation.attached = true;
         }
     }
 
@@ -246,9 +248,9 @@ export class WebXRFeaturesManager implements IDisposable {
      */
     public detachFeature(featureName: string) {
         const feature = this._features[featureName];
-        if (feature && feature.attached) {
+        if (feature && feature.featureImplementation.attached) {
             feature.featureImplementation.detach();
-            feature.attached = false;
+            feature.featureImplementation.attached = false;
         }
     }
 

@@ -59,6 +59,11 @@ export class WebXRHitTestLegacy implements IWebXRFeature {
     public static readonly Version = 1;
 
     /**
+     * Set to true when attached
+     */
+    public attached: boolean = false;
+
+    /**
      * Execute a hit test on the current running session using a select event returned from a transient input (such as touch)
      * @param event the (select) event to use to select with
      * @param referenceSpace the reference space to use for this hit test
@@ -95,6 +100,8 @@ export class WebXRHitTestLegacy implements IWebXRFeature {
      */
     public onHitTestResultObservable: Observable<IWebXRHitResult[]> = new Observable();
 
+    private _onSelectEnabled = false;
+    private _xrFrameObserver: Nullable<Observer<XRFrame>>;
     /**
      * Creates a new instance of the (legacy version) hit test feature
      * @param _xrSessionManager an instance of WebXRSessionManager
@@ -104,11 +111,9 @@ export class WebXRHitTestLegacy implements IWebXRFeature {
         /**
          * options to use when constructing this feature
          */
-        public readonly options: IWebXRHitTestOptions = {}) { }
+        public readonly options: IWebXRHitTestOptions = {}) {
 
-    private _onSelectEnabled = false;
-    private _xrFrameObserver: Nullable<Observer<XRFrame>>;
-    private _attached: boolean = false;
+    }
 
     /**
      * Populated with the last native XR Hit Results
@@ -132,7 +137,7 @@ export class WebXRHitTestLegacy implements IWebXRFeature {
             const mat = new Matrix();
             this._xrFrameObserver = this._xrSessionManager.onXRFrameObservable.add((frame) => {
                 // make sure we do nothing if (async) not attached
-                if (!this._attached) {
+                if (!this.attached) {
                     return;
                 }
                 let pose = frame.getViewerPose(this._xrSessionManager.referenceSpace);
@@ -149,7 +154,7 @@ export class WebXRHitTestLegacy implements IWebXRFeature {
                 WebXRHitTestLegacy.XRHitTestWithRay(this._xrSessionManager.session, ray, this._xrSessionManager.referenceSpace).then(this._onHitTestResults);
             });
         }
-        this._attached = true;
+        this.attached = true;
 
         return true;
     }
@@ -168,7 +173,7 @@ export class WebXRHitTestLegacy implements IWebXRFeature {
             this._xrSessionManager.onXRFrameObservable.remove(this._xrFrameObserver);
             this._xrFrameObserver = null;
         }
-        this._attached = false;
+        this.attached = false;
         return true;
     }
 

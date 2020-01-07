@@ -55,6 +55,11 @@ export class WebXRBackgroundRemover implements IWebXRFeature {
     public onBackgroundStateChangedObservable: Observable<boolean> = new Observable();
 
     /**
+     * Set to true when attached
+     */
+    public attached: boolean = false;
+
+    /**
      * constructs a new background remover module
      * @param _xrSessionManager the session manager for this module
      * @param options read-only options to be used in this module
@@ -76,6 +81,8 @@ export class WebXRBackgroundRemover implements IWebXRFeature {
     attach(): boolean {
         this._setBackgroundState(false);
 
+        this.attached = true;
+
         return true;
     }
 
@@ -87,6 +94,8 @@ export class WebXRBackgroundRemover implements IWebXRFeature {
      */
     detach(): boolean {
         this._setBackgroundState(true);
+
+        this.attached = false;
 
         return true;
     }
@@ -126,6 +135,7 @@ export class WebXRBackgroundRemover implements IWebXRFeature {
      * Dispose this feature and all of the resources attached
      */
     dispose(): void {
+        this.detach();
         this.onBackgroundStateChangedObservable.clear();
     }
 }
