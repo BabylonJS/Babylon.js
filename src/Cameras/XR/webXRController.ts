@@ -70,6 +70,9 @@ export class WebXRController {
         }
     }
 
+    /**
+     * Get this controllers unique id
+     */
     public get uniqueId() {
         return this._uniqueId;
     }

@@ -6,7 +6,6 @@ import { WebXRInput } from '../webXRInput';
 import { WebXRController } from '../webXRController';
 import { Scene } from '../../../scene';
 import { WebXRControllerComponent } from '../motionController/webXRControllerComponent';
-import { MotionControllerComponentType } from '../motionController/webXRAbstractController';
 import { Nullable } from '../../../types';
 import { Vector3 } from '../../../Maths/math.vector';
 import { Color3 } from '../../../Maths/math.color';
@@ -23,8 +22,14 @@ const Name = "xr-controller-pointer-selection";
  * Options interface for the pointer selection module
  */
 export interface IWebXRControllerPointerSelectionOptions {
+    /**
+     * the xr input to use with this pointer selection
+     */
     xrInput: WebXRInput;
-    overrideButtonId?: MotionControllerComponentType;
+    /**
+     * Different button type to use instead of the main component
+     */
+    overrideButtonId?: string;
 }
 
 /**
@@ -90,7 +95,7 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
     /**
      * constructs a new background remover module
      * @param _xrSessionManager the session manager for this module
-     * @param options read-only options to be used in this module
+     * @param _options read-only options to be used in this module
      */
     constructor(private _xrSessionManager: WebXRSessionManager, private readonly _options: IWebXRControllerPointerSelectionOptions) {
         this._scene = this._xrSessionManager.scene;
