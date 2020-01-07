@@ -81,11 +81,17 @@ export class WebXRAnchorSystem implements IWebXRFeature {
      */
     public onAnchorRemovedObservable: Observable<IWebXRAnchor> = new Observable();
 
+    private _attached: boolean = false;
+    /**
+     * Is this feature attached
+     */
+    public get attached() {
+        return this._attached;
+    }
     private _planeDetector: WebXRPlaneDetector;
     private _hitTestModule: WebXRHitTestLegacy;
 
     private _enabled: boolean = false;
-    private _attached: boolean = false;
     private _trackedAnchors: Array<IWebXRAnchor> = [];
     private _lastFrameDetected: XRAnchorSet = new Set();
     private _observerTracked: Nullable<Observer<XRFrame>>;
