@@ -3627,7 +3627,7 @@ export class ThinEngine {
         this._activeChannel = channel;
         const target = this._getTextureTarget(internalTexture);
         if (needToBind) {
-            this._bindTextureDirectly(target, internalTexture, isPartOfTextureArray);
+            this._bindTextureDirectly((internalTexture && internalTexture.isMultiview) ? this._gl.TEXTURE_2D_ARRAY : target, internalTexture, isPartOfTextureArray);
         }
 
         if (internalTexture && !internalTexture.isMultiview) {
