@@ -74,8 +74,14 @@ export class WebXRPlaneDetector implements IWebXRFeature {
      */
     public onPlaneUpdatedObservable: Observable<IWebXRPlane> = new Observable();
 
-    private _enabled: boolean = false;
     private _attached: boolean = false;
+    /**
+     * Is this feature attached
+     */
+    public get attached() {
+        return this._attached;
+    }
+    private _enabled: boolean = false;
     private _detectedPlanes: Array<IWebXRPlane> = [];
     private _lastFrameDetected: XRPlaneSet = new Set();
     private _observerTracked: Nullable<Observer<XRFrame>>;

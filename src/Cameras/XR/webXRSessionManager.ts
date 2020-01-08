@@ -42,6 +42,11 @@ export class WebXRSessionManager implements IDisposable {
     public onXRSessionInit: Observable<XRSession> = new Observable<XRSession>();
 
     /**
+     * Fires when the reference space changed
+     */
+    public onXRReferenceSpaceChanged: Observable<XRReferenceSpace> = new Observable();
+
+    /**
      * Underlying xr session
      */
     public session: XRSession;
@@ -52,12 +57,22 @@ export class WebXRSessionManager implements IDisposable {
      */
     public viewerReferenceSpace: XRReferenceSpace;
 
+    private _referenceSpace: XRReferenceSpace;
     /**
      * The current reference space used in this session. This reference space can constantly change!
      * It is mainly used to offset the camera's position.
      */
-    public referenceSpace: XRReferenceSpace;
+    public get referenceSpace(): XRReferenceSpace {
+        return this._referenceSpace;
+    }
 
+    /**
+     * Set a new reference space and triggers the observable
+     */
+    public set referenceSpace(newReferenceSpace: XRReferenceSpace) {
+        this._referenceSpace = newReferenceSpace;
+        this.onXRReferenceSpaceChanged.notifyObservers(this._referenceSpace);
+    }
     /**
      * The base reference space from which the session started. good if you want to reset your
      * reference space
