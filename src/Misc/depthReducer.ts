@@ -1,10 +1,8 @@
 import { Nullable } from "../types";
-import { Scene } from "../scene";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
 import { DepthRenderer } from "../Rendering/depthRenderer";
-import { Observer } from "./observable";
 
 import { MinMaxReducer } from "./minMaxReducer";
 
@@ -14,7 +12,7 @@ import { MinMaxReducer } from "./minMaxReducer";
 export class DepthReducer extends MinMaxReducer {
 
     private _depthRenderer: Nullable<DepthRenderer>;
-    private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
+    private _depthRendererId: string;
 
     /**
      * Gets the depth renderer used for the computation.
@@ -41,28 +39,24 @@ export class DepthReducer extends MinMaxReducer {
     public setDepthRenderer(depthRenderer: Nullable<DepthRenderer> = null, type: number = Constants.TEXTURETYPE_HALF_FLOAT, forceFullscreenViewport = true): void {
         const scene = this._camera.getScene();
 
-        if (this._onBeforeRenderObserver) {
-            scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
-            this._onBeforeRenderObserver = null;
-        }
-
         if (this._depthRenderer) {
+            delete scene._depthRenderer[this._depthRendererId];
+
             this._depthRenderer.dispose();
             this._depthRenderer = null;
         }
 
         if (depthRenderer === null) {
+            if (!scene._depthRenderer) {
+                scene._depthRenderer = {};
+            }
+
             depthRenderer = this._depthRenderer = new DepthRenderer(scene, type, this._camera, false);
             depthRenderer.enabled = false;
-        }
 
-        this._onBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
-            if (this.activated) {
-                // make sure the depth map is created first, before the shadow maps, as we need the results of the reduction
-                // to set the min/max value, and therefore the new frustum splits
-                (scene as any)._renderTargets.push(depthRenderer!.getDepthMap());
-            }
-        });
+            this._depthRendererId = "minmax" + this._camera.id;
+            scene._depthRenderer[this._depthRendererId] = depthRenderer;
+        }
 
         super.setSourceTexture(depthRenderer.getDepthMap(), true, type, forceFullscreenViewport);
     }
@@ -103,12 +97,9 @@ export class DepthReducer extends MinMaxReducer {
     public dispose(disposeAll = true): void {
         super.dispose(disposeAll);
 
-        if (this._onBeforeRenderObserver && disposeAll) {
-            this._camera.getScene().onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
-            this._onBeforeRenderObserver = null;
-        }
-
         if (this._depthRenderer && disposeAll) {
+            delete this._depthRenderer.getDepthMap().getScene()?._depthRenderer[this._depthRendererId];
+
             this._depthRenderer.dispose();
             this._depthRenderer = null;
         }
