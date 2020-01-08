@@ -3094,7 +3094,7 @@ export class ThinEngine {
             return this._gl.TEXTURE_CUBE_MAP;
         } else if (texture.is3D) {
             return this._gl.TEXTURE_3D;
-        } else if (texture.is2DArray) {
+        } else if (texture.is2DArray || texture.isMultiview) {
             return this._gl.TEXTURE_2D_ARRAY;
         }
         return this._gl.TEXTURE_2D;
