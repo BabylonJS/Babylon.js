@@ -27,6 +27,8 @@ import { IShadowGenerator } from './shadowGenerator';
 import { DirectionalLight } from '../directionalLight';
 
 import { BoundingInfo } from '../../Culling/boundingInfo';
+import { DepthRenderer } from '../../Rendering/depthRenderer';
+import { DepthReducer } from '../../Misc/depthReducer';
 
 interface ICascade {
     prevBreakDistance: number;
@@ -696,6 +698,89 @@ export class CascadedShadowGenerator implements IShadowGenerator {
      */
     public getCascadeViewMatrix(cascadeNum: number): Nullable<Matrix> {
         return cascadeNum >= 0 && cascadeNum < this._numCascades ? this._viewMatrices[cascadeNum] : null;
+    }
+
+    private _depthRenderer: Nullable<DepthRenderer>;
+    /**
+     * Sets the depth renderer to use when autoCalcDepthBounds is enabled.
+     *
+     * Note that if no depth renderer is set, a new one will be automatically created internally when necessary.
+     *
+     * You should call this function if you already have a depth renderer enabled in your scene, to avoid
+     * doing multiple depth rendering each frame. If you provide your own depth renderer, make sure it stores linear depth!
+     * @param depthRenderer The depth renderer to use when autoCalcDepthBounds is enabled. If you pass null or don't call this function at all, a depth renderer will be automatically created
+     */
+    public setDepthRenderer(depthRenderer: Nullable<DepthRenderer>): void {
+        this._depthRenderer = depthRenderer;
+
+        if (this._depthReducer) {
+            this._depthReducer.setDepthRenderer(this._depthRenderer);
+        }
+    }
+
+    private _depthReducer: Nullable<DepthReducer>;
+    private _autoCalcDepthBounds = false;
+
+    /**
+     * Gets or sets the autoCalcDepthBounds property.
+     *
+     * When enabled, a depth rendering pass is first performed (with an internally created depth renderer or with the one
+     * you provide by calling setDepthRenderer). Then, a min/max reducing is applied on the depth map to compute the
+     * minimal and maximal depth of the map and those values are used as inputs for the setMinMaxDistance() function.
+     * It can greatly enhance the shadow quality, at the expense of more GPU works.
+     * When using this option, you should increase the value of the lambda parameter, and even set it to 1 for best results.
+     */
+    public get autoCalcDepthBounds(): boolean {
+        return this._autoCalcDepthBounds;
+    }
+
+    public set autoCalcDepthBounds(value: boolean) {
+        const camera = this._scene.activeCamera;
+
+        if (!camera) {
+            return;
+        }
+
+        if (!value) {
+            if (this._depthReducer) {
+                this._depthReducer.deactivate();
+            }
+            this.setMinMaxDistance(0, 1);
+            return;
+        }
+
+        if (!this._depthReducer) {
+            this._depthReducer = new DepthReducer(camera);
+            this._depthReducer.onAfterReductionPerformed.add((minmax: { min: number, max: number}) => {
+                let min = minmax.min, max = minmax.max;
+                if (min >= max) {
+                    min = 0;
+                    max = 1;
+                }
+                if (min != this._minDistance || max != this._maxDistance) {
+                    this.setMinMaxDistance(min, max);
+                }
+            });
+            this._depthReducer.setDepthRenderer(this._depthRenderer);
+        }
+
+        this._depthReducer.activate();
+    }
+
+    /**
+     * Defines the refresh rate of the min/max computation used when autoCalcDepthBounds is set to true
+     * Use 0 to compute just once, 1 to compute on every frame, 2 to compute every two frames and so on...
+     * Note that if you provided your own depth renderer through a call to setDepthRenderer, you are responsible
+     * for setting the refresh rate on the renderer yourself!
+     */
+    public get autoCalcDepthBoundsRefreshRate(): number {
+        return this._depthReducer?.depthRenderer?.getDepthMap().refreshRate ?? -1;
+    }
+
+    public set autoCalcDepthBoundsRefreshRate(value: number) {
+        if (this._depthReducer?.depthRenderer) {
+            this._depthReducer.depthRenderer.getDepthMap().refreshRate = value;
+        }
     }
 
     /**

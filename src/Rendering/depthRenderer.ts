@@ -34,6 +34,9 @@ export class DepthRenderer {
     private _cachedDefines: string;
     private _camera: Nullable<Camera>;
 
+    /** Enable or disable the depth renderer. When disabled, the depth texture is not updated */
+    public enabled = true;
+
     /**
      * Specifiess that the depth renderer will only be used within
      * the camera it is created for.
