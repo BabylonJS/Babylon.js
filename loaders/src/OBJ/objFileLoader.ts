@@ -813,14 +813,14 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
 
                 //If this new material is in the same mesh
 
-                if (!isFirstMaterial) {
+                if (!isFirstMaterial || !hasMeshes) {
                     //Set the data for the previous mesh
                     addPreviousObjMesh();
                     //Create a new mesh
                     var objMesh: MeshObject =
                     //Set the name of the current obj mesh
                     {
-                        name: objMeshName + "_mm" + increment.toString(), //Set the name of the current obj mesh
+                        name: (objMeshName || "mesh") + "_mm" + increment.toString(), //Set the name of the current obj mesh
                         indices: undefined,
                         positions: undefined,
                         normals: undefined,
@@ -831,6 +831,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                     increment++;
                     //If meshes are already defined
                     meshesFromObj.push(objMesh);
+                    hasMeshes = true;
                 }
                 //Set the material name if the previous line define a mesh
 
