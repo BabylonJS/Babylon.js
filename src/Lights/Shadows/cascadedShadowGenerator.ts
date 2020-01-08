@@ -768,6 +768,22 @@ export class CascadedShadowGenerator implements IShadowGenerator {
     }
 
     /**
+     * Defines the refresh rate of the min/max computation used when autoCalcDepthBounds is set to true
+     * Use 0 to compute just once, 1 to compute on every frame, 2 to compute every two frames and so on...
+     * Note that if you provided your own depth renderer through a call to setDepthRenderer, you are responsible
+     * for setting the refresh rate on the renderer yourself!
+     */
+    public get autoCalcDepthBoundsRefreshRate(): number {
+        return this._depthReducer?.depthRenderer?.getDepthMap().refreshRate ?? -1;
+    }
+
+    public set autoCalcDepthBoundsRefreshRate(value: number) {
+        if (this._depthReducer?.depthRenderer) {
+            this._depthReducer.depthRenderer.getDepthMap().refreshRate = value;
+        }
+    }
+
+    /**
      * Create the cascade breaks according to the lambda, shadowMaxZ and min/max distance properties, as well as the camera near and far planes.
      * This function is automatically called when updating lambda, shadowMaxZ and min/max distances, however you should call it yourself if
      * you change the camera near/far planes!
