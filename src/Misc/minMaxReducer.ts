@@ -147,11 +147,13 @@ export class MinMaxReducer {
 
             if (w == 1 && h == 1) {
                 let func = (w: number, h: number, reduction: PostProcess) => {
-                    let buffer0 = new Float32Array(4 * w * h);
+                    let buffer = new Float32Array(4 * w * h),
+                        minmax = { min: 0, max: 0};
                     return () => {
-                        scene.getEngine()._readTexturePixels(reduction.inputTexture, w, h, -1, 0, buffer0);
-                        let min = buffer0[0], max = buffer0[1];
-                        this.onAfterReductionPerformed.notifyObservers({ min, max });
+                        scene.getEngine()._readTexturePixels(reduction.inputTexture, w, h, -1, 0, buffer);
+                        minmax.min = buffer[0];
+                        minmax.max = buffer[1];
+                        this.onAfterReductionPerformed.notifyObservers(minmax);
                     };
                 };
                 reduction.onAfterRenderObservable.add(func(w, h, reduction));
