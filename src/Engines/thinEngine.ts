@@ -132,14 +132,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-beta.18";
+        return "babylonjs@4.1.0-beta.19";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-beta.18";
+        return "4.1.0-beta.19";
     }
 
     /**
@@ -3094,7 +3094,7 @@ export class ThinEngine {
             return this._gl.TEXTURE_CUBE_MAP;
         } else if (texture.is3D) {
             return this._gl.TEXTURE_3D;
-        } else if (texture.is2DArray) {
+        } else if (texture.is2DArray || texture.isMultiview) {
             return this._gl.TEXTURE_2D_ARRAY;
         }
         return this._gl.TEXTURE_2D;
