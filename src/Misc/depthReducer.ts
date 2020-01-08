@@ -33,7 +33,7 @@ export class DepthReducer extends MinMaxReducer {
     }
 
     /**
-     * 
+     *
      * @param depthRenderer The depth renderer to use. If not provided, a new one will be created automatically
      * @param type The texture type of the depth map (default: TEXTURETYPE_HALF_FLOAT)
      * @param forceFullscreenViewport Forces the post processes used for the reduction to be applied without taking into account viewport (defaults to true)
