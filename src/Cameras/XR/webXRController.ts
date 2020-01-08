@@ -20,8 +20,6 @@ export class WebXRController {
      * Pointer which can be used to select objects or attach a visible laser to
      */
     public pointer: AbstractMesh;
-
-    private _gamepadMode = false;
     /**
      * If available, this is the gamepad object related to this controller.
      * Using this object it is possible to get click events and trackpad changes of the
@@ -145,7 +143,7 @@ export class WebXRController {
         if (this.grip) {
             this.grip.dispose();
         }
-        if (this.gamepadController && this._gamepadMode) {
+        if (this.gamepadController) {
             this.gamepadController.dispose();
         }
         this.pointer.dispose();

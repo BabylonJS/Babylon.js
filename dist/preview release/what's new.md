@@ -53,6 +53,7 @@
 - PNG support for browsers not supporting SVG ([RaananW](https://github.com/RaananW/))
 - Device orientation event permissions for iOS 13+ ([RaananW](https://github.com/RaananW/))
 - Added `DirectionalLight.autoCalcShadowZBounds` to automatically compute the `shadowMinZ` and `shadowMaxZ` values ([Popov72](https://github.com/Popov72))
+- Added `CascadedShadowGenerator.autoCalcDepthBounds` to improve the shadow quality rendering ([Popov72](https://github.com/Popov72))
 - Improved cascade blending in CSM shadow technic ([Popov72](https://github.com/Popov72))
 
 ### Engine
@@ -188,6 +189,7 @@
 - Teleportation and controller selection are now WebXR features. ([#7290](https://github.com/BabylonJS/Babylon.js/issues/7290)) ([RaananW](https://github.com/RaananW/))
 - Teleportation allows selecting direction before teleporting when using thumbstick/touchpad. ([#7290](https://github.com/BabylonJS/Babylon.js/issues/7290)) ([RaananW](https://github.com/RaananW/))
 - It is now possible to force a certain profile type for the controllers ([#7348](https://github.com/BabylonJS/Babylon.js/issues/7375)) ([RaananW](https://github.com/RaananW/))
+- WebXR camera is initialized on the first frame ([#7389](https://github.com/BabylonJS/Babylon.js/issues/7389)) ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
@@ -281,6 +283,7 @@
 - Fixed issue where textures exported using Safari web browser are Y mirrored. ([#7352](https://github.com/BabylonJS/Babylon.js/issues/7352)) ([Drigax](https://github.com/drigax))
 - Fix a bug when resizing a MRT ([Popov72](https://github.com/Popov72))
 - Fixed an infinite clone recursion bug in `InstancedMesh` due to `DeepCopier.DeepCopy` cloning `parent` ([Poolminer](https://github.com/Poolminer/))
+- Fixed an issue with multiview textures ([RaananW](https://github.com/RaananW/))
 
 ## Breaking changes
 
