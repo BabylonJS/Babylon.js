@@ -43,14 +43,16 @@ export class WebXRCamera extends FreeCamera {
             this._referenceQuaternion.copyFromFloats(0, 0, 0, 1);
             // first frame - camera's y position should be 0 for the correct offset
             this._firstFrame = true;
+
         });
 
         // Check transformation changes on each frame. Callback is added to be first so that the transformation will be
         // applied to the rest of the elements using the referenceSpace object
         this._xrSessionManager.onXRFrameObservable.add((frame) => {
-            if (!this._firstFrame) {
-                this._updateReferenceSpace();
+            if (this._firstFrame) {
+                this._updateFromXRSession();
             }
+            this._updateReferenceSpace();
             this._updateFromXRSession();
         }, undefined, true);
     }
@@ -83,16 +85,14 @@ export class WebXRCamera extends FreeCamera {
         this.rigCameras[1].outputRenderTarget = null;
     }
 
-    private _updateReferenceSpace(): boolean {
+    private _updateReferenceSpace() {
         // were position & rotation updated OUTSIDE of the xr update loop
         if (!this.position.equals(this._referencedPosition) || !this.rotationQuaternion.equals(this._referenceQuaternion)) {
             this.position.subtractToRef(this._referencedPosition, this._referencedPosition);
             this._referenceQuaternion.conjugateInPlace();
             this._referenceQuaternion.multiplyToRef(this.rotationQuaternion, this._referenceQuaternion);
             this._updateReferenceSpaceOffset(this._referencedPosition, this._referenceQuaternion.normalize());
-            return true;
         }
-        return false;
     }
 
     private _updateReferenceSpaceOffset(positionOffset: Vector3, rotationOffset?: Quaternion, ignoreHeight: boolean = false) {
@@ -180,12 +180,11 @@ export class WebXRCamera extends FreeCamera {
                 this._referenceQuaternion.copyFromFloats(0, 0, 0, 1);
                 // update the reference space so that the position will be correct
 
-                return this.update();
-
             }
-
-            this.rotationQuaternion.copyFrom(this._referenceQuaternion);
-            this.position.copyFrom(this._referencedPosition);
+            else {
+                this.rotationQuaternion.copyFrom(this._referenceQuaternion);
+                this.position.copyFrom(this._referencedPosition);
+            }
         }
 
         // Update camera rigs
