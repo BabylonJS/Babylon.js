@@ -3094,7 +3094,7 @@ export class ThinEngine {
             return this._gl.TEXTURE_CUBE_MAP;
         } else if (texture.is3D) {
             return this._gl.TEXTURE_3D;
-        } else if (texture.is2DArray) {
+        } else if (texture.is2DArray || texture.isMultiview) {
             return this._gl.TEXTURE_2D_ARRAY;
         }
         return this._gl.TEXTURE_2D;
@@ -3627,7 +3627,7 @@ export class ThinEngine {
         this._activeChannel = channel;
         const target = this._getTextureTarget(internalTexture);
         if (needToBind) {
-            this._bindTextureDirectly((internalTexture && internalTexture.isMultiview) ? this._gl.TEXTURE_2D_ARRAY : target, internalTexture, isPartOfTextureArray);
+            this._bindTextureDirectly(target, internalTexture, isPartOfTextureArray);
         }
 
         if (internalTexture && !internalTexture.isMultiview) {
