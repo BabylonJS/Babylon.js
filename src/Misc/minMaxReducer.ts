@@ -161,6 +161,20 @@ export class MinMaxReducer {
         }
     }
 
+    /**
+     * Defines the refresh rate of the computation.
+     * Use 0 to compute just once, 1 to compute on every frame, 2 to compute every two frames and so on...
+     */
+    public get refreshRate(): number {
+        return this._sourceTexture ? this._sourceTexture.refreshRate : -1;
+    }
+
+    public set refreshRate(value: number) {
+        if (this._sourceTexture) {
+            this._sourceTexture.refreshRate = value;
+        }
+    }
+
     protected _activated = false;
 
     /**
