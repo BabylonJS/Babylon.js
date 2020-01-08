@@ -1020,14 +1020,14 @@ var OBJFileLoader = /** @class */ (function () {
                 //Get the name of the material
                 materialNameFromObj = line.substring(7).trim();
                 //If this new material is in the same mesh
-                if (!isFirstMaterial) {
+                if (!isFirstMaterial || !hasMeshes) {
                     //Set the data for the previous mesh
                     addPreviousObjMesh();
                     //Create a new mesh
                     var objMesh = 
                     //Set the name of the current obj mesh
                     {
-                        name: objMeshName + "_mm" + increment.toString(),
+                        name: (objMeshName || "mesh") + "_mm" + increment.toString(),
                         indices: undefined,
                         positions: undefined,
                         normals: undefined,
@@ -1038,6 +1038,7 @@ var OBJFileLoader = /** @class */ (function () {
                     increment++;
                     //If meshes are already defined
                     meshesFromObj.push(objMesh);
+                    hasMeshes = true;
                 }
                 //Set the material name if the previous line define a mesh
                 if (hasMeshes && isFirstMaterial) {

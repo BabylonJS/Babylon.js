@@ -11362,9 +11362,9 @@ declare module BABYLON {
         static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER_DRAW: number;
         static readonly STEP_AFTERCAMERADRAW_LAYER: number;
         static readonly STEP_AFTERRENDER_AUDIO: number;
-        static readonly STEP_GATHERRENDERTARGETS_SHADOWGENERATOR: number;
-        static readonly STEP_GATHERRENDERTARGETS_GEOMETRYBUFFERRENDERER: number;
         static readonly STEP_GATHERRENDERTARGETS_DEPTHRENDERER: number;
+        static readonly STEP_GATHERRENDERTARGETS_GEOMETRYBUFFERRENDERER: number;
+        static readonly STEP_GATHERRENDERTARGETS_SHADOWGENERATOR: number;
         static readonly STEP_GATHERRENDERTARGETS_POSTPROCESSRENDERPIPELINEMANAGER: number;
         static readonly STEP_GATHERACTIVECAMERARENDERTARGETS_DEPTHRENDERER: number;
         static readonly STEP_POINTERMOVE_SPRITE: number;
@@ -43758,7 +43758,6 @@ declare module BABYLON {
          * Pointer which can be used to select objects or attach a visible laser to
          */
         pointer: AbstractMesh;
-        private _gamepadMode;
         /**
          * If available, this is the gamepad object related to this controller.
          * Using this object it is possible to get click events and trackpad changes of the
@@ -53990,6 +53989,191 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export var depthPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var depthVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * This represents a depth renderer in Babylon.
+     * A depth renderer will render to it's depth map every frame which can be displayed or used in post processing
+     */
+    export class DepthRenderer {
+        private _scene;
+        private _depthMap;
+        private _effect;
+        private readonly _storeNonLinearDepth;
+        private readonly _clearColor;
+        /** Get if the depth renderer is using packed depth or not */
+        readonly isPacked: boolean;
+        private _cachedDefines;
+        private _camera;
+        /** Enable or disable the depth renderer. When disabled, the depth texture is not updated */
+        enabled: boolean;
+        /**
+         * Specifiess that the depth renderer will only be used within
+         * the camera it is created for.
+         * This can help forcing its rendering during the camera processing.
+         */
+        useOnlyInActiveCamera: boolean;
+        /** @hidden */
+        static _SceneComponentInitialization: (scene: Scene) => void;
+        /**
+         * Instantiates a depth renderer
+         * @param scene The scene the renderer belongs to
+         * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
+         * @param camera The camera to be used to render the depth map (default: scene's active camera)
+         * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
+         */
+        constructor(scene: Scene, type?: number, camera?: Nullable<Camera>, storeNonLinearDepth?: boolean);
+        /**
+         * Creates the depth rendering effect and checks if the effect is ready.
+         * @param subMesh The submesh to be used to render the depth map of
+         * @param useInstances If multiple world instances should be used
+         * @returns if the depth renderer is ready to render the depth map
+         */
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        /**
+         * Gets the texture which the depth map will be written to.
+         * @returns The depth map texture
+         */
+        getDepthMap(): RenderTargetTexture;
+        /**
+         * Disposes of the depth renderer.
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var minmaxReduxPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * This class computes a min/max reduction from a texture: it means it computes the minimum
+     * and maximum values from all values of the texture.
+     * It is performed on the GPU for better performances, thanks to a succession of post processes.
+     * The source values are read from the red channel of the texture.
+     */
+    export class MinMaxReducer {
+        /**
+         * Observable triggered when the computation has been performed
+         */
+        onAfterReductionPerformed: Observable<{
+            min: number;
+            max: number;
+        }>;
+        protected _camera: Camera;
+        protected _sourceTexture: Nullable<RenderTargetTexture>;
+        protected _reductionSteps: Nullable<Array<PostProcess>>;
+        protected _postProcessManager: PostProcessManager;
+        protected _onAfterUnbindObserver: Nullable<Observer<RenderTargetTexture>>;
+        protected _forceFullscreenViewport: boolean;
+        /**
+         * Creates a min/max reducer
+         * @param camera The camera to use for the post processes
+         */
+        constructor(camera: Camera);
+        /**
+         * Gets the texture used to read the values from.
+         */
+        get sourceTexture(): Nullable<RenderTargetTexture>;
+        /**
+         * Sets the source texture to read the values from.
+         * One must indicate if the texture is a depth texture or not through the depthRedux parameter
+         * because in such textures '1' value must not be taken into account to compute the maximum
+         * as this value is used to clear the texture.
+         * Note that the computation is not activated by calling this function, you must call activate() for that!
+         * @param sourceTexture The texture to read the values from. The values should be in the red channel.
+         * @param depthRedux Indicates if the texture is a depth texture or not
+         * @param type The type of the textures created for the reduction (defaults to TEXTURETYPE_HALF_FLOAT)
+         * @param forceFullscreenViewport Forces the post processes used for the reduction to be applied without taking into account viewport (defaults to true)
+         */
+        setSourceTexture(sourceTexture: RenderTargetTexture, depthRedux: boolean, type?: number, forceFullscreenViewport?: boolean): void;
+        /**
+         * Defines the refresh rate of the computation.
+         * Use 0 to compute just once, 1 to compute on every frame, 2 to compute every two frames and so on...
+         */
+        get refreshRate(): number;
+        set refreshRate(value: number);
+        protected _activated: boolean;
+        /**
+         * Gets the activation status of the reducer
+         */
+        get activated(): boolean;
+        /**
+         * Activates the reduction computation.
+         * When activated, the observers registered in onAfterReductionPerformed are
+         * called after the compuation is performed
+         */
+        activate(): void;
+        /**
+         * Deactivates the reduction computation.
+         */
+        deactivate(): void;
+        /**
+         * Disposes the min/max reducer
+         * @param disposeAll true to dispose all the resources. You should always call this function with true as the parameter (or without any parameter as it is the default one). This flag is meant to be used internally.
+         */
+        dispose(disposeAll?: boolean): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * This class is a small wrapper around the MinMaxReducer class to compute the min/max values of a depth texture
+     */
+    export class DepthReducer extends MinMaxReducer {
+        private _depthRenderer;
+        private _depthRendererId;
+        /**
+         * Gets the depth renderer used for the computation.
+         * Note that the result is null if you provide your own renderer when calling setDepthRenderer.
+         */
+        get depthRenderer(): Nullable<DepthRenderer>;
+        /**
+         * Creates a depth reducer
+         * @param camera The camera used to render the depth texture
+         */
+        constructor(camera: Camera);
+        /**
+         * Sets the depth renderer to use to generate the depth map
+         * @param depthRenderer The depth renderer to use. If not provided, a new one will be created automatically
+         * @param type The texture type of the depth map (default: TEXTURETYPE_HALF_FLOAT)
+         * @param forceFullscreenViewport Forces the post processes used for the reduction to be applied without taking into account viewport (defaults to true)
+         */
+        setDepthRenderer(depthRenderer?: Nullable<DepthRenderer>, type?: number, forceFullscreenViewport?: boolean): void;
+        /** @hidden */
+        setSourceTexture(sourceTexture: RenderTargetTexture, depthRedux: boolean, type?: number, forceFullscreenViewport?: boolean): void;
+        /**
+         * Activates the reduction computation.
+         * When activated, the observers registered in onAfterReductionPerformed are
+         * called after the compuation is performed
+         */
+        activate(): void;
+        /**
+         * Deactivates the reduction computation.
+         */
+        deactivate(): void;
+        /**
+         * Disposes the depth reducer
+         * @param disposeAll true to dispose all the resources. You should always call this function with true as the parameter (or without any parameter as it is the default one). This flag is meant to be used internally.
+         */
+        dispose(disposeAll?: boolean): void;
+    }
+}
+declare module BABYLON {
     /**
      * A CSM implementation allowing casting shadows on large scenes.
      * Documentation : https://doc.babylonjs.com/babylon101/cascadedShadows
@@ -54348,6 +54532,38 @@ declare module BABYLON {
          * @returns the cascade view matrix
          */
         getCascadeViewMatrix(cascadeNum: number): Nullable<Matrix>;
+        private _depthRenderer;
+        /**
+         * Sets the depth renderer to use when autoCalcDepthBounds is enabled.
+         *
+         * Note that if no depth renderer is set, a new one will be automatically created internally when necessary.
+         *
+         * You should call this function if you already have a depth renderer enabled in your scene, to avoid
+         * doing multiple depth rendering each frame. If you provide your own depth renderer, make sure it stores linear depth!
+         * @param depthRenderer The depth renderer to use when autoCalcDepthBounds is enabled. If you pass null or don't call this function at all, a depth renderer will be automatically created
+         */
+        setDepthRenderer(depthRenderer: Nullable<DepthRenderer>): void;
+        private _depthReducer;
+        private _autoCalcDepthBounds;
+        /**
+         * Gets or sets the autoCalcDepthBounds property.
+         *
+         * When enabled, a depth rendering pass is first performed (with an internally created depth renderer or with the one
+         * you provide by calling setDepthRenderer). Then, a min/max reducing is applied on the depth map to compute the
+         * minimal and maximal depth of the map and those values are used as inputs for the setMinMaxDistance() function.
+         * It can greatly enhance the shadow quality, at the expense of more GPU works.
+         * When using this option, you should increase the value of the lambda parameter, and even set it to 1 for best results.
+         */
+        get autoCalcDepthBounds(): boolean;
+        set autoCalcDepthBounds(value: boolean);
+        /**
+         * Defines the refresh rate of the min/max computation used when autoCalcDepthBounds is set to true
+         * Use 0 to compute just once, 1 to compute on every frame, 2 to compute every two frames and so on...
+         * Note that if you provided your own depth renderer through a call to setDepthRenderer, you are responsible
+         * for setting the refresh rate on the renderer yourself!
+         */
+        get autoCalcDepthBoundsRefreshRate(): number;
+        set autoCalcDepthBoundsRefreshRate(value: number);
         /**
          * Create the cascade breaks according to the lambda, shadowMaxZ and min/max distance properties, as well as the camera near and far planes.
          * This function is automatically called when updating lambda, shadowMaxZ and min/max distances, however you should call it yourself if
@@ -65964,13 +66180,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export var depthVertexShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
     export var volumetricLightScatteringPixelShader: {
         name: string;
         shader: string;
@@ -66190,62 +66399,6 @@ declare module BABYLON {
         renderOcclusionBoundingBox(mesh: AbstractMesh): void;
         /**
          * Dispose and release the resources attached to this renderer.
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export var depthPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * This represents a depth renderer in Babylon.
-     * A depth renderer will render to it's depth map every frame which can be displayed or used in post processing
-     */
-    export class DepthRenderer {
-        private _scene;
-        private _depthMap;
-        private _effect;
-        private readonly _storeNonLinearDepth;
-        private readonly _clearColor;
-        /** Get if the depth renderer is using packed depth or not */
-        readonly isPacked: boolean;
-        private _cachedDefines;
-        private _camera;
-        /**
-         * Specifiess that the depth renderer will only be used within
-         * the camera it is created for.
-         * This can help forcing its rendering during the camera processing.
-         */
-        useOnlyInActiveCamera: boolean;
-        /** @hidden */
-        static _SceneComponentInitialization: (scene: Scene) => void;
-        /**
-         * Instantiates a depth renderer
-         * @param scene The scene the renderer belongs to
-         * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
-         * @param camera The camera to be used to render the depth map (default: scene's active camera)
-         * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
-         */
-        constructor(scene: Scene, type?: number, camera?: Nullable<Camera>, storeNonLinearDepth?: boolean);
-        /**
-         * Creates the depth rendering effect and checks if the effect is ready.
-         * @param subMesh The submesh to be used to render the depth map of
-         * @param useInstances If multiple world instances should be used
-         * @returns if the depth renderer is ready to render the depth map
-         */
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        /**
-         * Gets the texture which the depth map will be written to.
-         * @returns The depth map texture
-         */
-        getDepthMap(): RenderTargetTexture;
-        /**
-         * Disposes of the depth renderer.
          */
         dispose(): void;
     }
