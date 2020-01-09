@@ -706,23 +706,21 @@ export class BaseTexture implements IAnimatable {
      * Dispose the texture and release its associated resources.
      */
     public dispose(): void {
-        if (!this._scene) {
-            return;
-        }
+        if (this._scene) {
+            // Animations
+            if (this._scene.stopAnimation) {
+                this._scene.stopAnimation(this);
+            }
 
-        // Animations
-        if (this._scene.stopAnimation) {
-            this._scene.stopAnimation(this);
-        }
+            // Remove from scene
+            this._scene._removePendingData(this);
+            var index = this._scene.textures.indexOf(this);
 
-        // Remove from scene
-        this._scene._removePendingData(this);
-        var index = this._scene.textures.indexOf(this);
-
-        if (index >= 0) {
-            this._scene.textures.splice(index, 1);
+            if (index >= 0) {
+                this._scene.textures.splice(index, 1);
+            }
+            this._scene.onTextureRemovedObservable.notifyObservers(this);
         }
-        this._scene.onTextureRemovedObservable.notifyObservers(this);
 
         if (this._texture === undefined) {
             return;
