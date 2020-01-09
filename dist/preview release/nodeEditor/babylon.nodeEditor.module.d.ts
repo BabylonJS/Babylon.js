@@ -198,6 +198,7 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
     import { GraphNode } from "babylonjs-node-editor/diagram/graphNode";
     import { GraphCanvasComponent } from "babylonjs-node-editor/diagram/graphCanvas";
     import { Nullable } from 'babylonjs/types';
+    import { Observable } from 'babylonjs/Misc/observable';
     import { IFrameData } from "babylonjs-node-editor/nodeLocationInfo";
     import { Color3 } from 'babylonjs/Maths/math.color';
     export class GraphFrame {
@@ -229,6 +230,7 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _ports;
         private _controlledPorts;
         private _id;
+        onExpandStateChanged: Observable<GraphFrame>;
         private readonly CloseSVG;
         private readonly ExpandSVG;
         private readonly CollapseSVG;
@@ -1294,6 +1296,22 @@ declare module "babylonjs-node-editor/components/nodeList/nodeListComponent" {
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/diagram/properties/framePropertyComponent" {
+    import * as React from "react";
+    import { GraphFrame } from "babylonjs-node-editor/diagram/graphFrame";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    export interface IFramePropertyTabComponentProps {
+        globalState: GlobalState;
+        frame: GraphFrame;
+    }
+    export class FramePropertyTabComponent extends React.Component<IFramePropertyTabComponentProps> {
+        private onFrameExpandStateChangedObserver;
+        constructor(props: IFramePropertyTabComponentProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -1641,6 +1659,7 @@ declare module NODEEDITOR {
         private _ports;
         private _controlledPorts;
         private _id;
+        onExpandStateChanged: BABYLON.Observable<GraphFrame>;
         private readonly CloseSVG;
         private readonly ExpandSVG;
         private readonly CollapseSVG;
@@ -2557,6 +2576,19 @@ declare module NODEEDITOR {
         private static _Tooltips;
         constructor(props: INodeListComponentProps);
         filterContent(filter: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface IFramePropertyTabComponentProps {
+        globalState: GlobalState;
+        frame: GraphFrame;
+    }
+    export class FramePropertyTabComponent extends React.Component<IFramePropertyTabComponentProps> {
+        private onFrameExpandStateChangedObserver;
+        constructor(props: IFramePropertyTabComponentProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         render(): JSX.Element;
     }
 }
