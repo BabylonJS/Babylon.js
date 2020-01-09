@@ -300,16 +300,15 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
                         downTriggered = true;
                         // pointer up right after down, if disable on touch out
                         if (this._options.disablePointerUpOnTouchOut) {
-                            discMesh.isVisible = false;
                             this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
                         } else {
-                            discMesh.isVisible = false;
                             this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
                         }
-                        // timer = 0;
+                        discMesh.isVisible = false;
+                    } else {
+                        const scaleFactor = 1 - (timer / timeToSelect);
+                        discMesh.scaling.set(scaleFactor, scaleFactor, scaleFactor);
                     }
-                    const scaleFactor = 1 - (timer / timeToSelect);
-                    discMesh.scaling.set(scaleFactor, scaleFactor, scaleFactor);
                 } else {
                     if (downTriggered) {
                         if (!this._options.disablePointerUpOnTouchOut) {
