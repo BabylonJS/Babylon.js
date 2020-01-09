@@ -152,6 +152,8 @@ export class TexturePacker{
 
         this.options.updateInputMeshes = this.options.updateInputMeshes || true;
         this.options.disposeSources = this.options.disposeSources || true;
+        this._disposeList = [];
+
         this.options.fillBlanks = this.options.fillBlanks || true;
 
         if (this.options.fillBlanks === true) {
@@ -168,11 +170,13 @@ export class TexturePacker{
             this._paddingValue++;
         }
 
+        this.sets = {};
+        this.frames = [];
+
         /**
         * Create the promise and then run through the materials on the meshes.
         */
         this.promise = new Promise ((resolve, reject) => {
-            console.log("Promise Start");
             try {
                 let done = 0;
                 const doneCheck = (mat: Material) => {
@@ -182,8 +186,8 @@ export class TexturePacker{
                         for (let j = 0; j < this.options.map.length; j++) {
                             let index: string = this.options.map[j];
                             let t: Texture = (mat as any)[index];
-                            if (t !== null) {
 
+                            if (t !== null) {
                                 if (!(this.sets as any)[this.options.map[j]]) {
                                     (this.sets as any)[this.options.map[j]] = true;
                                 }
@@ -194,24 +198,26 @@ export class TexturePacker{
                             }
                         }
 
-                        if (done == this.meshes.length) {
+                        if (done === this.meshes.length) {
                             this._createFrames(resolve);
                         }
                     }
                 };
 
                 for (let i = 0; i < this.meshes.length; i++) {
+
                     let mesh = this.meshes[i];
                     let material: Nullable<Material> | Material = mesh.material;
+
                     if (!material) {
-                        return new Error('Mesh has no Material Assigned!');
+                        return new Error('Mesh has no Material assigned!');
                     }
 
                     material.forceCompilationAsync(mesh).then(() => {
                         doneCheck((material as Material));
                     });
-
                 }
+
             }catch (e) {
                 return reject(e);
             }
@@ -225,7 +231,7 @@ export class TexturePacker{
     * @param resolve The promises resolution function
     * @returns TexturePacker
     */
-    private _createFrames(resolve: Function) {
+    private _createFrames(resolve: () => void) {
 
         let dtSize = this._calculateSize();
         let dtUnits = (new Vector2(1, 1)).divide(dtSize);
@@ -257,7 +263,6 @@ export class TexturePacker{
         let tcs = baseSize + (2 * padding);
 
         const done = () => {
-            console.log("Compilation Done");
             this._calculateMeshUVFrames(baseSize, padding, dtSize, dtUnits, this.options.updateInputMeshes || false);
         };
 
@@ -281,7 +286,6 @@ export class TexturePacker{
 
                 const updateDt = () => {
                     doneCount++;
-                    console.log("Done/To:", doneCount, expecting);
                     let iDat = tcx.getImageData(0, 0, tcs, tcs);
                     //Update Set
                     let dt = (this.sets as any)[setName];
@@ -291,15 +295,13 @@ export class TexturePacker{
                     dt.update(false);
 
                         if (doneCount == expecting) {
-                            console.log('Done Making Frames');
                             done();
-                            resolve(this);
+                            resolve();
                         }
                 };
 
                 let setName = sKeys[j] || '_blank';
                 if ((mat as any)[setName] === null) {
-                    console.log("Blank Frame:", i, setName);
                     tcx.fillStyle = 'rgba(0,0,0,0)';
 
                     if (this.options.fillBlanks) {
@@ -311,14 +313,12 @@ export class TexturePacker{
                     updateDt();
 
                 }else {
-                    console.log("Generating Frame:", i, setName, offset);
                     let img = new Image();
                     img.src = (mat as any)[setName]!.url;
                     img.onload = () => {
                         tcx.fillStyle = 'rgba(0,0,0,0)';
                         tcx.fillRect(0, 0, tcs, tcs);
                         tempTexture.update(false);
-                        console.log("Image Loaded");
                         tcx.drawImage(
                             img,
                             0,
