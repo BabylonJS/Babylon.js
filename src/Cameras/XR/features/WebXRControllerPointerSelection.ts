@@ -30,6 +30,32 @@ export interface IWebXRControllerPointerSelectionOptions {
      * Different button type to use instead of the main component
      */
     overrideButtonId?: string;
+    /**
+     * The amount of time in miliseconds it takes between pick found something to a pointer down event.
+     * Used in gaze modes. Tracked pointer uses the trigger, screen uses touch events
+     * 3000 means 3 seconds between pointing at something and selecting it
+     */
+    timeToSelect?: number;
+
+    /**
+     * Disable the pointer up event when the xr controller in screen and gaze mode is disposed (meaning - when the user removed the finger from the screen)
+     * If not disabled, the last picked point will be used to execute a pointer up event
+     * If disabled, pointer up event will be triggered right after the pointer down event.
+     * Used in screen and gaze target ray mode only
+     */
+    disablePointerUpOnTouchOut: boolean;
+
+    /**
+     * For gaze mode (time to select instead of press)
+     */
+    forceGazeMode: boolean;
+
+    /**
+     * Factor to be applied to the pointer-moved function in the gaze mode. How sensitive should the gaze mode be when checking if the pointer moved
+     * to start a new countdown to the pointer down event.
+     * Defaults to 1.
+     */
+    gazeModePointerMovedFactor?: number;
 }
 
 /**
@@ -51,11 +77,11 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
     /**
      * This color will be set to the laser pointer when selection is triggered
      */
-    public onPickedLaserPointerColor: Color3 = new Color3(0.7, 0.7, 0.7);
+    public laserPointerPickedColor: Color3 = new Color3(0.7, 0.7, 0.7);
     /**
      * This color will be applied to the selection ring when selection is triggered
      */
-    public onPickedSelectionMeshColor: Color3 = new Color3(0.7, 0.7, 0.7);
+    public selectionMeshPickedColor: Color3 = new Color3(0.7, 0.7, 0.7);
     /**
      * default color of the selection ring
      */
@@ -76,6 +102,7 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
             xrController: WebXRController;
             selectionComponent?: WebXRControllerComponent;
             onButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
+            onFrameObserver?: Nullable<Observer<XRFrame>>;
             laserPointer: AbstractMesh;
             selectionMesh: AbstractMesh;
             pick: Nullable<PickingInfo>;
@@ -123,14 +150,6 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
                 // Every frame check collisions/input
                 controllerData.xrController.getWorldPointerRayToRef(this._tmpRay);
                 controllerData.pick = this._scene.pickWithRay(this._tmpRay);
-
-                if (controllerData.selectionComponent && controllerData.selectionComponent.pressed) {
-                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.onPickedSelectionMeshColor;
-                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.onPickedLaserPointerColor;
-                } else {
-                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
-                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.lasterPointerDefaultColor;
-                }
 
                 const pick = controllerData.pick;
 
@@ -187,17 +206,29 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
         return true;
     }
 
-    private _attachController = (xrController: WebXRController) => {
-        // only support tracker pointer
-        if (xrController.inputSource.targetRayMode !== "tracked-pointer") {
-            return;
-        }
+    /**
+     * Get the xr controller that correlates to the pointer id in the pointer event
+     *
+     * @param id the pointer id to search for
+     * @returns the controller that correlates to this id or null if not found
+     */
+    public getXRControllerByPointerId(id: number): Nullable<WebXRController> {
+        const keys = Object.keys(this._controllers);
 
-        if (this._controllers[xrController.uniqueId] || !xrController.gamepadController) {
+        for (let i = 0; i < keys.length; ++i) {
+            if (this._controllers[keys[i]].id === id) {
+                return this._controllers[keys[i]].xrController;
+            }
+        }
+        return null;
+    }
+
+    private _attachController = (xrController: WebXRController) => {
+        if (this._controllers[xrController.uniqueId]) {
             // already attached
             return;
         }
-
+        // only support tracker pointer
         const { laserPointer, selectionMesh } = this._generateNewMeshPair(xrController);
 
         // get two new meshes
@@ -208,6 +239,124 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
             pick: null,
             id: WebXRControllerPointerSelection._idCounter++
         };
+        switch (xrController.inputSource.targetRayMode) {
+            case "tracked-pointer":
+                return this._attachTrackedPointerRayMode(xrController);
+            case "gaze":
+                return this._attachGazeMode(xrController);
+            case "screen":
+                return this._attachScreenRayMode(xrController);
+        }
+    }
+
+    private _attachScreenRayMode(xrController: WebXRController) {
+        const controllerData = this._controllers[xrController.uniqueId];
+        let downTriggered = false;
+        controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
+            if (!controllerData.pick || (this._options.disablePointerUpOnTouchOut && downTriggered)) { return; }
+            if (!downTriggered) {
+                this._scene.simulatePointerDown(controllerData.pick, { pointerId: controllerData.id });
+                downTriggered = true;
+                if (this._options.disablePointerUpOnTouchOut) {
+                    this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                }
+            } else {
+                this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
+            }
+        });
+        xrController.onDisposeObservable.addOnce(() => {
+            if (controllerData.pick && downTriggered && !this._options.disablePointerUpOnTouchOut) {
+                this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+            }
+        });
+    }
+
+    private _attachGazeMode(xrController: WebXRController) {
+        const controllerData = this._controllers[xrController.uniqueId];
+        // attached when touched, detaches when raised
+        const timeToSelect = this._options.timeToSelect || 3000;
+        let oldPick = new PickingInfo();
+        let discMesh = TorusBuilder.CreateTorus("selection", {
+            diameter: 0.0035 * 15,
+            thickness: 0.0025 * 6,
+            tessellation: 20
+        }, this._scene);
+        discMesh.isVisible = false;
+        discMesh.isPickable = false;
+        discMesh.parent = controllerData.selectionMesh;
+        let timer = 0;
+        let downTriggered = false;
+        controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
+            if (!controllerData.pick) { return; }
+            discMesh.isVisible = false;
+            if (controllerData.pick.hit) {
+                if (!this._pickingMoved(oldPick, controllerData.pick)) {
+                    if (timer > timeToSelect / 10) {
+                        discMesh.isVisible = true;
+                    }
+
+                    timer += this._scene.getEngine().getDeltaTime();
+                    if (timer >= timeToSelect) {
+                        this._scene.simulatePointerDown(controllerData.pick, { pointerId: controllerData.id });
+                        downTriggered = true;
+                        // pointer up right after down, if disable on touch out
+                        if (this._options.disablePointerUpOnTouchOut) {
+                            this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                        } else {
+                            this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
+                        }
+                        discMesh.isVisible = false;
+                    } else {
+                        const scaleFactor = 1 - (timer / timeToSelect);
+                        discMesh.scaling.set(scaleFactor, scaleFactor, scaleFactor);
+                    }
+                } else {
+                    if (downTriggered) {
+                        if (!this._options.disablePointerUpOnTouchOut) {
+                            this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                        }
+                    }
+                    downTriggered = false;
+                    timer = 0;
+                }
+            } else {
+                downTriggered = false;
+                timer = 0;
+            }
+
+            oldPick = controllerData.pick;
+        });
+        xrController.onDisposeObservable.addOnce(() => {
+            if (controllerData.pick && !this._options.disablePointerUpOnTouchOut && downTriggered) {
+                this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+            }
+            discMesh.dispose();
+        });
+    }
+    private _tmpVectorForPickCompare = new Vector3();
+
+    private _pickingMoved(oldPick: PickingInfo, newPick: PickingInfo) {
+        if (!oldPick.hit || !newPick.hit) { return true; }
+        if (!oldPick.pickedMesh || !oldPick.pickedPoint || !newPick.pickedMesh || !newPick.pickedPoint) { return true; }
+        if (oldPick.pickedMesh !== newPick.pickedMesh) { return true; }
+        oldPick.pickedPoint?.subtractToRef(newPick.pickedPoint, this._tmpVectorForPickCompare);
+        this._tmpVectorForPickCompare.set(Math.abs(this._tmpVectorForPickCompare.x), Math.abs(this._tmpVectorForPickCompare.y), Math.abs(this._tmpVectorForPickCompare.z));
+        const delta = (this._options.gazeModePointerMovedFactor || 1) * 0.01 / newPick.distance;
+        const length = this._tmpVectorForPickCompare.length();
+        if (length > delta) { return true; }
+        return false;
+
+    }
+
+    private _attachTrackedPointerRayMode(xrController: WebXRController) {
+        if (!xrController.gamepadController) {
+            return;
+        }
+
+        if (this._options.forceGazeMode) {
+            return this._attachGazeMode(xrController);
+        }
+
         const controllerData = this._controllers[xrController.uniqueId];
 
         if (this._options.overrideButtonId) {
@@ -218,6 +367,16 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
         }
 
         let observer: Nullable<Observer<XRFrame>> = null;
+
+        controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
+            if (controllerData.selectionComponent && controllerData.selectionComponent.pressed) {
+                (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
+                (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
+            } else {
+                (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
+                (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.lasterPointerDefaultColor;
+            }
+        });
 
         controllerData.onButtonChangedObserver = controllerData.selectionComponent.onButtonStateChanged.add((component) => {
             if (component.changes.pressed) {
@@ -237,7 +396,6 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
                 }
             }
         });
-
     }
 
     private _detachController(xrControllerUniqueId: string) {
@@ -247,6 +405,9 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
             if (controllerData.onButtonChangedObserver) {
                 controllerData.selectionComponent.onButtonStateChanged.remove(controllerData.onButtonChangedObserver);
             }
+        }
+        if (controllerData.onFrameObserver) {
+            this._xrSessionManager.onXRFrameObservable.remove(controllerData.onFrameObserver);
         }
         controllerData.selectionMesh.dispose();
         controllerData.laserPointer.dispose();
