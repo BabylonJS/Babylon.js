@@ -210,6 +210,7 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
      * Get the xr controller that correlates to the pointer id in the pointer event
      *
      * @param id the pointer id to search for
+     * @returns the controller that correlates to this id or null if not found
      */
     public getXRControllerByPointerId(id: number): Nullable<WebXRController> {
         const keys = Object.keys(this._controllers);
