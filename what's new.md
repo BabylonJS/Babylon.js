@@ -205,7 +205,6 @@
 - Sometimes duplicate controller models are loaded in VR ([TrevorDev](https://github.com/TrevorDev))
 - Particle emit rate and start size over time do not reset on every particle system start ([TrevorDev](https://github.com/TrevorDev))
 - SSAO2 now correctly takes diffuse texture alpha value into account ([CraigFeldspar](https://github.com/CraigFeldspar))
-- Screenshot height and width is now forced to be integers to prevent mismatch with openGL context ([jekelija](https://github.com/jekelija))
 
 ### Core Engine
 

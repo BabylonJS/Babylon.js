@@ -285,6 +285,7 @@
 - Fix a bug when resizing a MRT ([Popov72](https://github.com/Popov72))
 - Fixed an infinite clone recursion bug in `InstancedMesh` due to `DeepCopier.DeepCopy` cloning `parent` ([Poolminer](https://github.com/Poolminer/))
 - Fixed an issue with multiview textures ([RaananW](https://github.com/RaananW/))
+- Screenshot height and width is now forced to be integers to prevent mismatch with openGL context ([jekelija](https://github.com/jekelija))
 
 ## Breaking changes
 
