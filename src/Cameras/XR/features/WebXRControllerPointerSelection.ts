@@ -44,6 +44,18 @@ export interface IWebXRControllerPointerSelectionOptions {
      * Used in screen and gaze target ray mode only
      */
     disablePointerUpOnTouchOut: boolean;
+
+    /**
+     * For gaze mode (time to select instead of press)
+     */
+    forceGazeMode: boolean;
+
+    /**
+     * Factor to be applied to the pointer-moved function in the gaze mode. How sensitive should the gaze mode be when checking if the pointer moved
+     * to start a new countdown to the pointer down event.
+     * Defaults to 1.
+     */
+    gazeModePointerMovedFactor?: number;
 }
 
 /**
@@ -231,7 +243,7 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
                 return this._attachTrackedPointerRayMode(xrController);
             case "gaze":
                 return this._attachGazeMode(xrController);
-                case "screen":
+            case "screen":
                 return this._attachScreenRayMode(xrController);
         }
     }
@@ -275,24 +287,38 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
         let downTriggered = false;
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
             if (!controllerData.pick) { return; }
+            discMesh.isVisible = false;
             if (controllerData.pick.hit) {
-                discMesh.isVisible = true;
-            } else {
-                discMesh.isVisible = false;
-            }
-            if (controllerData.pick.hit && controllerData.pick.pickedMesh === oldPick.pickedMesh) {
-                timer += this._scene.getEngine().getDeltaTime();
-                if (timer >= timeToSelect) {
-                    this._scene.simulatePointerDown(controllerData.pick, { pointerId: controllerData.id });
-                    downTriggered = true;
-                    // pointer up right after down, if disable on touch out
-                    if (this._options.disablePointerUpOnTouchOut) {
-                        this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                if (!this._pickingMoved(oldPick, controllerData.pick)) {
+                    if (timer > timeToSelect / 10) {
+                        discMesh.isVisible = true;
                     }
+
+                    timer += this._scene.getEngine().getDeltaTime();
+                    if (timer >= timeToSelect) {
+                        this._scene.simulatePointerDown(controllerData.pick, { pointerId: controllerData.id });
+                        downTriggered = true;
+                        // pointer up right after down, if disable on touch out
+                        if (this._options.disablePointerUpOnTouchOut) {
+                            discMesh.isVisible = false;
+                            this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                        } else {
+                            discMesh.isVisible = false;
+                            this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
+                        }
+                        // timer = 0;
+                    }
+                    const scaleFactor = 1 - (timer / timeToSelect);
+                    discMesh.scaling.set(scaleFactor, scaleFactor, scaleFactor);
+                } else {
+                    if (downTriggered) {
+                        if (!this._options.disablePointerUpOnTouchOut) {
+                            this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                        }
+                    }
+                    downTriggered = false;
                     timer = 0;
                 }
-                const scaleFactor = 1 - (timer / timeToSelect);
-                discMesh.scaling.set(scaleFactor, scaleFactor, scaleFactor);
             } else {
                 downTriggered = false;
                 timer = 0;
@@ -307,10 +333,28 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
             discMesh.dispose();
         });
     }
+    private _tmpVectorForPickCompare = new Vector3();
+
+    private _pickingMoved(oldPick: PickingInfo, newPick: PickingInfo) {
+        if (!oldPick.hit || !newPick.hit) { return true; }
+        if (!oldPick.pickedMesh || !oldPick.pickedPoint || !newPick.pickedMesh || !newPick.pickedPoint) { return true; }
+        if (oldPick.pickedMesh !== newPick.pickedMesh) { return true; }
+        oldPick.pickedPoint?.subtractToRef(newPick.pickedPoint, this._tmpVectorForPickCompare);
+        this._tmpVectorForPickCompare.set(Math.abs(this._tmpVectorForPickCompare.x), Math.abs(this._tmpVectorForPickCompare.y), Math.abs(this._tmpVectorForPickCompare.z));
+        const delta = (this._options.gazeModePointerMovedFactor || 1) * 0.01 / newPick.distance;
+        const length = this._tmpVectorForPickCompare.length();
+        if (length > delta) { return true; }
+        return false;
+
+    }
 
     private _attachTrackedPointerRayMode(xrController: WebXRController) {
         if (!xrController.gamepadController) {
             return;
+        }
+
+        if (this._options.forceGazeMode) {
+            return this._attachGazeMode(xrController);
         }
 
         const controllerData = this._controllers[xrController.uniqueId];
