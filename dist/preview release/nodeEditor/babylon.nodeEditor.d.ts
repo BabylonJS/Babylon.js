@@ -150,6 +150,7 @@ declare module NODEEDITOR {
         private _ports;
         private _controlledPorts;
         private _id;
+        onExpandStateChanged: BABYLON.Observable<GraphFrame>;
         private readonly CloseSVG;
         private readonly ExpandSVG;
         private readonly CollapseSVG;
@@ -1066,6 +1067,19 @@ declare module NODEEDITOR {
         private static _Tooltips;
         constructor(props: INodeListComponentProps);
         filterContent(filter: string): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface IFramePropertyTabComponentProps {
+        globalState: GlobalState;
+        frame: GraphFrame;
+    }
+    export class FramePropertyTabComponent extends React.Component<IFramePropertyTabComponentProps> {
+        private onFrameExpandStateChangedObserver;
+        constructor(props: IFramePropertyTabComponentProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         render(): JSX.Element;
     }
 }
