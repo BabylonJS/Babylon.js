@@ -422,7 +422,6 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
     private _updatePointerDistance(_laserPointer: AbstractMesh, distance: number = 100) {
         _laserPointer.scaling.y = distance;
         _laserPointer.position.z = distance / 2;
-        console.log(distance, _laserPointer.position);
     }
 
     /**
