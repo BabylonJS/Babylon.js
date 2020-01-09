@@ -1293,6 +1293,21 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
             this._particles.push(particle);
 
+            // Life time
+            if (this.targetStopDuration && this._lifeTimeGradients && this._lifeTimeGradients.length > 0) {
+                let ratio = Scalar.Clamp(this._actualFrame / this.targetStopDuration);
+                GradientHelper.GetCurrentGradient(ratio, this._lifeTimeGradients, (currentGradient, nextGradient) => {
+                    let factorGradient1 = (<FactorGradient>currentGradient);
+                    let factorGradient2 = (<FactorGradient>nextGradient);
+                    let lifeTime1 = factorGradient1.getFactor();
+                    let lifeTime2 = factorGradient2.getFactor();
+                    let gradient = (ratio - factorGradient1.gradient) / (factorGradient2.gradient - factorGradient1.gradient);
+                    particle.lifeTime = Scalar.Lerp(lifeTime1, lifeTime2, gradient);
+                });
+            } else {
+                particle.lifeTime = Scalar.RandomRange(this.minLifeTime, this.maxLifeTime);
+            }
+
             // Emitter
             let emitPower = Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
 
@@ -1321,21 +1336,6 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             }
 
             particle.direction.scaleInPlace(emitPower);
-
-            // Life time
-            if (this.targetStopDuration && this._lifeTimeGradients && this._lifeTimeGradients.length > 0) {
-                let ratio = Scalar.Clamp(this._actualFrame / this.targetStopDuration);
-                GradientHelper.GetCurrentGradient(ratio, this._lifeTimeGradients, (currentGradient, nextGradient) => {
-                    let factorGradient1 = (<FactorGradient>currentGradient);
-                    let factorGradient2 = (<FactorGradient>nextGradient);
-                    let lifeTime1 = factorGradient1.getFactor();
-                    let lifeTime2 = factorGradient2.getFactor();
-                    let gradient = (ratio - factorGradient1.gradient) / (factorGradient2.gradient - factorGradient1.gradient);
-                    particle.lifeTime = Scalar.Lerp(lifeTime1, lifeTime2, gradient);
-                });
-            } else {
-                particle.lifeTime = Scalar.RandomRange(this.minLifeTime, this.maxLifeTime);
-            }
 
             // Size
             if (!this._sizeGradients || this._sizeGradients.length === 0) {
@@ -1493,7 +1493,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
     /** @hidden */
     public static _GetEffectCreationOptions(isAnimationSheetEnabled = false): string[] {
-        var effectCreationOption = ["invView", "view", "projection", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "textureMask", "translationPivot", "eyePosition"];
+        var effectCreationOption = ["invView", "view", "projection", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "textureMask", "translationPivot", "eyePosition"];
 
         if (isAnimationSheetEnabled) {
             effectCreationOption.push("particlesInfos");
@@ -1524,6 +1524,14 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         if (this._scene.clipPlane4) {
             defines.push("#define CLIPPLANE4");
+        }
+
+        if (this._scene.clipPlane5) {
+            defines.push("#define CLIPPLANE5");
+        }
+
+        if (this._scene.clipPlane6) {
+            defines.push("#define CLIPPLANE6");
         }
 
         if (this._isAnimationSheetEnabled) {
@@ -1763,7 +1771,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             effect.setTexture("rampSampler", this._rampGradientsTexture);
         }
 
-        if (this._scene.clipPlane || this._scene.clipPlane2 || this._scene.clipPlane3 || this._scene.clipPlane4) {
+        if (this._scene.clipPlane || this._scene.clipPlane2 || this._scene.clipPlane3 || this._scene.clipPlane4 || this._scene.clipPlane5 || this._scene.clipPlane6) {
             var invView = viewMatrix.clone();
             invView.invert();
             effect.setMatrix("invView", invView);

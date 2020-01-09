@@ -1,6 +1,5 @@
 #version 300 es
 
-
 uniform mat4 view;
 uniform mat4 projection;
 uniform vec2 translationPivot;
@@ -27,7 +26,7 @@ in vec2 uv;
 out vec2 vUV;
 out vec4 vColor;
 
-#if defined(CLIPPLANE) || defined(CLIPPLANE2) || defined(CLIPPLANE3) || defined(CLIPPLANE4)
+#if defined(CLIPPLANE) || defined(CLIPPLANE2) || defined(CLIPPLANE3) || defined(CLIPPLANE4) || defined(CLIPPLANE5) || defined(CLIPPLANE6)
 uniform mat4 invView;
 #endif
 
@@ -45,9 +44,9 @@ uniform vec3 sheetInfos;
 #endif
 
 #ifdef BILLBOARD
-	uniform vec3 eyePosition;	
+	uniform vec3 eyePosition;
 #endif
-	
+
 vec3 rotate(vec3 yaxis, vec3 rotatedCorner) {
 	vec3 xaxis = normalize(cross(vec3(0., 1.0, 0.), yaxis));
 	vec3 zaxis = normalize(cross(yaxis, xaxis));
@@ -76,7 +75,7 @@ vec3 rotateAlign(vec3 toCamera, vec3 rotatedCorner) {
 	mat3 rotMatrix =  mat3(row0, row1, row2);
 
 	vec3 alignedCorner = rotMatrix * rotatedCorner;
-	return (position + worldOffset) + alignedCorner; 
+	return (position + worldOffset) + alignedCorner;
 }
 #endif
 
@@ -89,7 +88,7 @@ void main() {
 		vec2 uvScale = sheetInfos.xy;
 		vec2 uvOffset = vec2(uv.x , 1.0 - uv.y);
 		vUV = (uvOffset + vec2(columnOffset, rowOffset)) * uvScale;
-	#else	
+	#else
    	vUV = uv;
 	#endif
   float ratio = age / life;
@@ -98,14 +97,14 @@ void main() {
 #else
 	vColor = color * vec4(1.0 - ratio) + colorDead * vec4(ratio);
 #endif
-  
+
   vec2 cornerPos = (offset - translationPivot) * size.yz * size.x + translationPivot;
 
 #ifdef BILLBOARD
 	vec4 rotatedCorner;
 	rotatedCorner.w = 0.;
 
-	#ifdef BILLBOARDY	
+	#ifdef BILLBOARDY
 		rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);
 		rotatedCorner.z = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
 		rotatedCorner.y = 0.;
@@ -114,16 +113,16 @@ void main() {
 		yaxis.y = 0.;
 		vec3 worldPos = rotate(normalize(yaxis), rotatedCorner.xyz);
 
-		vec4 viewPosition = (view * vec4(worldPos, 1.0)); 
+		vec4 viewPosition = (view * vec4(worldPos, 1.0));
 	#elif defined(BILLBOARDSTRETCHED)
 		rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);
 		rotatedCorner.y = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
 		rotatedCorner.z = 0.;
 
-		vec3 toCamera = (position + worldOffset) - eyePosition;	
+		vec3 toCamera = (position + worldOffset) - eyePosition;
 		vec3 worldPos = rotateAlign(toCamera, rotatedCorner.xyz);
-		
-		vec4 viewPosition = (view * vec4(worldPos, 1.0)); 	
+
+		vec4 viewPosition = (view * vec4(worldPos, 1.0));
 	#else
 		// Rotate
 		rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);
@@ -145,13 +144,13 @@ void main() {
 	vec3 worldPos = rotate(yaxis, rotatedCorner);
 
   // Expand position
-  vec4 viewPosition = view * vec4(worldPos, 1.0);  
+  vec4 viewPosition = view * vec4(worldPos, 1.0);
 #endif
 	gl_Position = projection * viewPosition;
 
 	// Clip plane
-#if defined(CLIPPLANE) || defined(CLIPPLANE2) || defined(CLIPPLANE3) || defined(CLIPPLANE4)
+#if defined(CLIPPLANE) || defined(CLIPPLANE2) || defined(CLIPPLANE3) || defined(CLIPPLANE4) || defined(CLIPPLANE5) || defined(CLIPPLANE6)
 	vec4 worldPos = invView * viewPosition;
-#endif  
+#endif
 	#include<clipPlaneVertex>
 }

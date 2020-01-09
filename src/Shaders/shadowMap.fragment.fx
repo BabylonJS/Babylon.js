@@ -12,6 +12,10 @@ uniform sampler2D diffuseSampler;
 uniform vec3 biasAndScale;
 uniform vec2 depthValues;
 
+#ifdef DEPTHCLAMP
+varying float z;
+#endif
+
 void main(void)
 {
 #ifdef ALPHATEST
@@ -20,6 +24,11 @@ void main(void)
 #endif
 
     float depth = vDepthMetric;
+
+#ifdef DEPTHCLAMP
+    depth = clamp(((z + depthValues.x) / (depthValues.y)) + biasAndScale.x, 0.0, 1.0);
+    gl_FragDepth = depth;
+#endif
 
 #ifdef ESM
     depth = clamp(exp(-min(87., biasAndScale.z * depth)), 0., 1.);

@@ -471,7 +471,7 @@ export class ShaderMaterial extends Material {
      */
     public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
         if (this._effect && this.isFrozen) {
-            if (this._wasPreviouslyReady) {
+            if (this._effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -594,7 +594,7 @@ export class ShaderMaterial extends Material {
         }
 
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        this._effect._wasPreviouslyReady = true;
 
         return true;
     }

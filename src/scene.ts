@@ -92,7 +92,7 @@ export interface SceneOptions {
      * Defines that each mesh of the scene should keep up-to-date a map of referencing cloned meshes for fast diposing
      * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
      */
-    useClonedMeshhMap?: boolean;
+    useClonedMeshMap?: boolean;
 
     /** Defines if the creation of the scene should impact the engine (Eg. UtilityLayer's scene) */
     virtual?: boolean;
@@ -258,6 +258,20 @@ export class Scene extends AbstractScene implements IAnimatable {
         return this._forceWireframe;
     }
 
+    private _skipFrustumClipping = false;
+    /**
+     * Gets or sets a boolean indicating if we should skip the frustum clipping part of the active meshes selection
+     */
+    public set skipFrustumClipping(value: boolean) {
+        if (this._skipFrustumClipping === value) {
+            return;
+        }
+        this._skipFrustumClipping = value;
+    }
+    public get skipFrustumClipping(): boolean {
+        return this._skipFrustumClipping;
+    }
+
     private _forcePointsCloud = false;
     /**
      * Gets or sets a boolean indicating if all rendering must be done in point cloud
@@ -292,6 +306,16 @@ export class Scene extends AbstractScene implements IAnimatable {
      * Gets or sets the active clipplane 4
      */
     public clipPlane4: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 5
+     */
+    public clipPlane5: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 6
+     */
+    public clipPlane6: Nullable<Plane>;
 
     /**
      * Gets or sets a boolean indicating if animations are enabled
@@ -1162,7 +1186,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     /** @hidden */
     public readonly useMaterialMeshMap: boolean;
     /** @hidden */
-    public readonly useClonedMeshhMap: boolean;
+    public readonly useClonedMeshMap: boolean;
 
     private _externalData: StringDictionary<Object>;
     private _uid: Nullable<string>;
@@ -1347,8 +1371,17 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     constructor(engine: Engine, options?: SceneOptions) {
         super();
+
+        const fullOptions = {
+            useGeometryUniqueIdsMap: true,
+            useMaterialMeshMap: true,
+            useClonedMeshMap: true,
+            virtual: false,
+            ...options
+        };
+
         this._engine = engine || EngineStore.LastCreatedEngine;
-        if (!options || !options.virtual) {
+        if (!fullOptions.virtual) {
             EngineStore._LastCreatedScene = this;
             this._engine.scenes.push(this);
         }
@@ -1375,12 +1408,12 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         this.setDefaultCandidateProviders();
 
-        if (options && options.useGeometryUniqueIdsMap === true) {
+        if (fullOptions.useGeometryUniqueIdsMap) {
             this.geometriesByUniqueId = {};
         }
 
-        this.useMaterialMeshMap = options && options.useGeometryUniqueIdsMap || false;
-        this.useClonedMeshhMap = options && options.useClonedMeshhMap || false;
+        this.useMaterialMeshMap = fullOptions.useMaterialMeshMap;
+        this.useClonedMeshMap = fullOptions.useClonedMeshMap;
 
         if (!options || !options.virtual) {
             this._engine.onNewSceneAddedObservable.notifyObservers(this);
@@ -3193,7 +3226,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh, initialMesh: AbstractMesh): void {
-        if (initialMesh.hasInstances || initialMesh.isAnInstance || this.dispatchAllSubMeshesOfActiveMeshes || mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
+        if (initialMesh.hasInstances || initialMesh.isAnInstance || this.dispatchAllSubMeshesOfActiveMeshes || this._skipFrustumClipping || mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
             for (let step of this._evaluateSubMeshStage) {
                 step.action(mesh, subMesh);
             }
@@ -3432,7 +3465,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
             mesh._preActivate();
 
-            if (mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && (mesh.alwaysSelectAsActiveMesh || mesh.isInFrustum(this._frustumPlanes))) {
+            if (mesh.isVisible && mesh.visibility > 0 && ((mesh.layerMask & this.activeCamera.layerMask) !== 0) && (this._skipFrustumClipping || mesh.alwaysSelectAsActiveMesh || mesh.isInFrustum(this._frustumPlanes))) {
                 this._activeMeshes.push(mesh);
                 this.activeCamera._activeMeshes.push(mesh);
 

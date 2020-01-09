@@ -138,8 +138,17 @@ compileAndRun = function(parent, fpsLabel) {
             }
 
             engine = engine;
+            var sceneToRender;
+            if(scene.then) {
+                scene.then(s => {
+                    sceneToRender = s;
+                });
+            } else {
+                sceneToRender = scene;
+            }
+
             engine.runRenderLoop(function () {
-                if (engine.scenes.length === 0) {
+                if (!sceneToRender) {
                     return;
                 }
 
@@ -147,10 +156,9 @@ compileAndRun = function(parent, fpsLabel) {
                     engine.resize();
                 }
 
-                var scene = engine.scenes[0];
 
-                if (scene.activeCamera || scene.activeCameras.length > 0) {
-                    scene.render();
+                if (sceneToRender.activeCamera || sceneToRender.activeCameras.length > 0) {
+                    sceneToRender.render();
                 }
 
                 fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";

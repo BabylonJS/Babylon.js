@@ -186,18 +186,21 @@ export class Constants {
     /** FLOAT_32_UNSIGNED_INT_24_8_REV */
     public static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = 15;
 
-    /** nearest is mag = nearest and min = nearest and mip = nearest */
+    /** nearest is mag = nearest and min = nearest and no mip */
     public static readonly TEXTURE_NEAREST_SAMPLINGMODE = 1;
-    /** Bilinear is mag = linear and min = linear and mip = nearest */
+    /** mag = nearest and min = nearest and mip = none */
+    public static readonly TEXTURE_NEAREST_NEAREST = 1;
+
+    /** Bilinear is mag = linear and min = linear and no mip */
     public static readonly TEXTURE_BILINEAR_SAMPLINGMODE = 2;
+    /** mag = linear and min = linear and mip = none */
+    public static readonly TEXTURE_LINEAR_LINEAR = 2;
+
     /** Trilinear is mag = linear and min = linear and mip = linear */
     public static readonly TEXTURE_TRILINEAR_SAMPLINGMODE = 3;
-    /** nearest is mag = nearest and min = nearest and mip = linear */
-    public static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR = 1;
-    /** Bilinear is mag = linear and min = linear and mip = nearest */
-    public static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST = 2;
     /** Trilinear is mag = linear and min = linear and mip = linear */
     public static readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR = 3;
+
     /** mag = nearest and min = nearest and mip = nearest */
     public static readonly TEXTURE_NEAREST_NEAREST_MIPNEAREST = 4;
     /** mag = nearest and min = linear and mip = nearest */
@@ -206,14 +209,14 @@ export class Constants {
     public static readonly TEXTURE_NEAREST_LINEAR_MIPLINEAR = 6;
     /** mag = nearest and min = linear and mip = none */
     public static readonly TEXTURE_NEAREST_LINEAR = 7;
-    /** mag = nearest and min = nearest and mip = none */
-    public static readonly TEXTURE_NEAREST_NEAREST = 8;
+    /** nearest is mag = nearest and min = nearest and mip = linear */
+    public static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR = 8;
     /** mag = linear and min = nearest and mip = nearest */
     public static readonly TEXTURE_LINEAR_NEAREST_MIPNEAREST = 9;
     /** mag = linear and min = nearest and mip = linear */
     public static readonly TEXTURE_LINEAR_NEAREST_MIPLINEAR = 10;
-    /** mag = linear and min = linear and mip = none */
-    public static readonly TEXTURE_LINEAR_LINEAR = 11;
+    /** Bilinear is mag = linear and min = linear and mip = nearest */
+    public static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST = 11;
     /** mag = linear and min = nearest and mip = none */
     public static readonly TEXTURE_LINEAR_NEAREST = 12;
 

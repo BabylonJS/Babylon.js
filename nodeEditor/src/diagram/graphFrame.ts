@@ -6,8 +6,12 @@ import { NodeLink } from './nodeLink';
 import { IFrameData } from '../nodeLocationInfo';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { NodePort } from './nodePort';
+import { SerializationTools } from '../serializationTools';
+import { StringTools } from '../stringTools';
 
 export class GraphFrame {
+    private readonly CollapsedWidth = 200;
+    private static _FrameCounter = 0;
     private _name: string;
     private _color: Color3;
     private _x = 0;
@@ -33,10 +37,15 @@ export class GraphFrame {
     private _isCollapsed = false;
     private _ports: NodePort[] = [];
     private _controlledPorts: NodePort[] = [];
+    private _id: number;
 
     private readonly CloseSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><g id="Layer_2" data-name="Layer 2"><path d="M16,15l5.85,5.84-1,1L15,15.93,9.15,21.78l-1-1L14,15,8.19,9.12l1-1L15,14l5.84-5.84,1,1Z"/></g></svg>`;
     private readonly ExpandSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><g id="Layer_2" data-name="Layer 2"><path d="M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-6.75,6.75H11.06V14.44h3.38V11.06h1.12v3.38h3.38v1.12H15.56v3.38H14.44Z"/></g></svg>`;
     private readonly CollapseSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><g id="Layer_2" data-name="Layer 2"><path d="M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-2.25,6.75H11.06V14.44h7.88Z"/></g></svg>`;
+
+    public get id() {
+        return this._id;
+    }
 
     public get isCollapsed() {
         return this._isCollapsed;
@@ -62,7 +71,7 @@ export class GraphFrame {
         if (value) {
             this.element.classList.add("collapsed");
                         
-            this._moveFrame((this.width - 200) / 2, 0);
+            this._moveFrame((this.width - this.CollapsedWidth) / 2, 0);
 
             for (var node of this._nodes) {
                 node.isVisible = false;
@@ -129,11 +138,20 @@ export class GraphFrame {
                 node.isVisible = true;
             }
                         
-            this._moveFrame(-(this.width - 200) / 2, 0);
+            this._moveFrame(-(this.width - this.CollapsedWidth) / 2, 0);
         }
 
         this.cleanAccumulation();
         this._ownerCanvas._frameIsMoving = false;
+
+        // UI        
+        if (this._isCollapsed) {                
+            this._headerCollapseElement.innerHTML = this.ExpandSVG;
+            this._headerCollapseElement.title = "Expand";   
+        } else {
+            this._headerCollapseElement.innerHTML = this.CollapseSVG;
+            this._headerCollapseElement.title = "Collapse";   
+        }
     }
 
     public get nodes() {
@@ -165,9 +183,9 @@ export class GraphFrame {
     }
 
     public set x(value: number) {
-        // if (this._x === value) {
-        //     return;
-        // }
+        if (this._x === value) {
+            return;
+        }
         this._x = value;
         
         this._gridAlignedX = this._ownerCanvas.getGridPosition(value);
@@ -179,9 +197,9 @@ export class GraphFrame {
     }
 
     public set y(value: number) {
-        // if (this._y === value) {
-        //     return;
-        // }
+        if (this._y === value) {
+            return;
+        }
 
         this._y = value;
 
@@ -220,6 +238,8 @@ export class GraphFrame {
     }
 
     public constructor(candidate: Nullable<HTMLDivElement>, canvas: GraphCanvasComponent, doNotCaptureNodes = false) {
+        this._id = GraphFrame._FrameCounter++;
+
         this._ownerCanvas = canvas;
         const root = canvas.frameContainer;
         this.element = root.ownerDocument!.createElement("div");        
@@ -254,14 +274,6 @@ export class GraphFrame {
             evt.stopPropagation();
             this._headerCollapseElement.classList.remove("down");
             this.isCollapsed = !this.isCollapsed;
-
-            if (this.isCollapsed) {                
-                this._headerCollapseElement.innerHTML = this.ExpandSVG;
-                this._headerCollapseElement.title = "Expand";   
-            } else {
-                this._headerCollapseElement.innerHTML = this.CollapseSVG;
-                this._headerCollapseElement.title = "Collapse";   
-            }
         });
         this._headerCollapseElement.innerHTML = this.CollapseSVG;
         this._headerElement.appendChild(this._headerCollapseElement);
@@ -376,18 +388,24 @@ export class GraphFrame {
 
         this._ownerCanvas._frameIsMoving = true;
 
+        this.move(this._ownerCanvas.getGridPosition(this.x), this._ownerCanvas.getGridPosition(this.y))
+    }    
+
+    public move(newX: number, newY: number, align = true) {
         let oldX = this.x;
         let oldY = this.y;
 
-        this.x = this._ownerCanvas.getGridPosition(this.x);
-        this.y = this._ownerCanvas.getGridPosition(this.y); 
+        this.x = newX;
+        this.y = newY; 
 
         for (var selectedNode of this._nodes) {
             selectedNode.x += this.x - oldX;
             selectedNode.y += this.y - oldY;
-            selectedNode.cleanAccumulation(true);
+            if (align) {
+                selectedNode.cleanAccumulation(true);
+            }
         }
-    }    
+    }
 
     private _onUp(evt: PointerEvent) {
         evt.stopPropagation();
@@ -401,13 +419,13 @@ export class GraphFrame {
     }
 
     private _moveFrame(offsetX: number, offsetY: number) {
+        this.x += offsetX;
+        this.y += offsetY;
+
         for (var selectedNode of this._nodes) {
             selectedNode.x += offsetX;
             selectedNode.y += offsetY;
         }
-
-        this.x += offsetX;
-        this.y += offsetY;
     }
 
     private _onMove(evt: PointerEvent) {
@@ -447,12 +465,20 @@ export class GraphFrame {
             height: this._height,
             color: this._color.asArray(),
             name: this.name,
-            isCollapsed: this.isCollapsed
+            isCollapsed: this.isCollapsed,
+            blocks: this.nodes.map(n => n.block.uniqueId)
         }
     }
 
-    public static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent) {
+    public export() {
+        const state = this._ownerCanvas.globalState;
+        const json = SerializationTools.Serialize(state.nodeMaterial, state, this.nodes.map(n => n.block));
+        StringTools.DownloadAsFile(state.hostDocument, json, this._name + ".json");
+    }
+
+    public static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {[key: number]: number}) {
         let newFrame = new GraphFrame(null, canvas, true);
+        const isCollapsed = !!serializationData.isCollapsed;
 
         newFrame.x = serializationData.x;
         newFrame.y = serializationData.y;
@@ -461,9 +487,33 @@ export class GraphFrame {
         newFrame.name = serializationData.name;
         newFrame.color = Color3.FromArray(serializationData.color);
 
-        newFrame.refresh();
+        if (serializationData.blocks && map) {
+            for (var blockId of serializationData.blocks) {
+                let actualId = map[blockId];
+                let node = canvas.nodes.filter(n => n.block.uniqueId === actualId);
 
-        newFrame.isCollapsed = !!serializationData.isCollapsed;
+                if (node.length) {
+                    newFrame.nodes.push(node[0]);
+                }
+            }
+        } else {
+            newFrame.refresh();
+        }
+
+        newFrame.isCollapsed = isCollapsed;
+
+        if (isCollapsed) {
+            canvas._frameIsMoving = true;
+            newFrame._moveFrame(-(newFrame.width - newFrame.CollapsedWidth) / 2, 0);
+            let diff = serializationData.x - newFrame.x;
+            newFrame._moveFrame(diff, 0);
+            newFrame.cleanAccumulation();
+            
+            for (var selectedNode of newFrame.nodes) {
+                selectedNode.refresh();
+            }
+            canvas._frameIsMoving = false;
+        }
 
         return newFrame;
     }

@@ -404,29 +404,13 @@ export class Tools {
      * @param scriptId defines the id of the script element
      * @returns a promise request object
      */
-    public static LoadScriptAsync(scriptUrl: string, scriptId?: string): Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
-            if (!DomManagement.IsWindowObjectExist()) {
-                resolve(false);
-                return;
-            }
-            var head = document.getElementsByTagName('head')[0];
-            var script = document.createElement('script');
-            script.setAttribute('type', 'text/javascript');
-            script.setAttribute('src', scriptUrl);
-            if (scriptId) {
-                script.id = scriptId;
-            }
-
-            script.onload = () => {
-                resolve(true);
-            };
-
-            script.onerror = (e) => {
-                resolve(false);
-            };
-
-            head.appendChild(script);
+    public static LoadScriptAsync(scriptUrl: string, scriptId?: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.LoadScript(scriptUrl, () => {
+                resolve();
+            }, (message, exception) => {
+                reject(exception);
+            });
         });
     }
 
@@ -1113,6 +1097,14 @@ export class Tools {
                 resolve();
             }, delay);
         });
+    }
+
+    /**
+     * Utility function to detect if the current user agent is Safari
+     * @returns whether or not the current user agent is safari
+     */
+    public static IsSafari() : boolean {
+        return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     }
 }
 

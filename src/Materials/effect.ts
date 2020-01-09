@@ -113,6 +113,12 @@ export class Effect implements IDisposable {
     public _onBindObservable: Nullable<Observable<Effect>> = null;
 
     /**
+     * @hidden
+     * Specifies if the effect was previously ready
+     */
+    public _wasPreviouslyReady = false;
+
+    /**
      * Observable that will be called when effect is bound.
      */
     public get onBindObservable(): Observable<Effect> {
