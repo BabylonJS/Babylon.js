@@ -19370,7 +19370,7 @@ declare module BABYLON {
          *
          * Returns the clone.
          */
-        clone(name: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<AbstractMesh>;
+        clone(name: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean): InstancedMesh;
         /**
          * Disposes the InstancedMesh.
          * Returns nothing.
@@ -19820,7 +19820,7 @@ declare module BABYLON {
         /**
          * Returns a new LineMesh object cloned from the current one.
          */
-        clone(name: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<AbstractMesh>;
+        clone(name: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean): LinesMesh;
         /**
          * Creates a new InstancedLinesMesh object from the mesh model.
          * @see http://doc.babylonjs.com/how_to/how_to_use_instances
@@ -24720,7 +24720,7 @@ declare module BABYLON {
          * @param clonePhysicsImpostor allows/denies the cloning in the same time of the original mesh `body` used by the physics engine, if any (default `true`)
          * @returns a new mesh
          */
-        clone(name?: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean, clonePhysicsImpostor?: boolean): Nullable<AbstractMesh>;
+        clone(name?: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean, clonePhysicsImpostor?: boolean): Mesh;
         /**
          * Releases resources associated with this mesh.
          * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
@@ -43887,6 +43887,29 @@ declare module BABYLON {
          * Different button type to use instead of the main component
          */
         overrideButtonId?: string;
+        /**
+         * The amount of time in miliseconds it takes between pick found something to a pointer down event.
+         * Used in gaze modes. Tracked pointer uses the trigger, screen uses touch events
+         * 3000 means 3 seconds between pointing at something and selecting it
+         */
+        timeToSelect?: number;
+        /**
+         * Disable the pointer up event when the xr controller in screen and gaze mode is disposed (meaning - when the user removed the finger from the screen)
+         * If not disabled, the last picked point will be used to execute a pointer up event
+         * If disabled, pointer up event will be triggered right after the pointer down event.
+         * Used in screen and gaze target ray mode only
+         */
+        disablePointerUpOnTouchOut: boolean;
+        /**
+         * For gaze mode (time to select instead of press)
+         */
+        forceGazeMode: boolean;
+        /**
+         * Factor to be applied to the pointer-moved function in the gaze mode. How sensitive should the gaze mode be when checking if the pointer moved
+         * to start a new countdown to the pointer down event.
+         * Defaults to 1.
+         */
+        gazeModePointerMovedFactor?: number;
     }
     /**
      * A module that will enable pointer selection for motion controllers of XR Input Sources
@@ -43907,11 +43930,11 @@ declare module BABYLON {
         /**
          * This color will be set to the laser pointer when selection is triggered
          */
-        onPickedLaserPointerColor: Color3;
+        laserPointerPickedColor: Color3;
         /**
          * This color will be applied to the selection ring when selection is triggered
          */
-        onPickedSelectionMeshColor: Color3;
+        selectionMeshPickedColor: Color3;
         /**
          * default color of the selection ring
          */
@@ -43950,7 +43973,19 @@ declare module BABYLON {
          * @returns true if successful.
          */
         detach(): boolean;
+        /**
+         * Get the xr controller that correlates to the pointer id in the pointer event
+         *
+         * @param id the pointer id to search for
+         * @returns the controller that correlates to this id or null if not found
+         */
+        getXRControllerByPointerId(id: number): Nullable<WebXRController>;
         private _attachController;
+        private _attachScreenRayMode;
+        private _attachGazeMode;
+        private _tmpVectorForPickCompare;
+        private _pickingMoved;
+        private _attachTrackedPointerRayMode;
         private _detachController;
         private _generateNewMeshPair;
         private _convertNormalToDirectionOfRay;
@@ -44175,6 +44210,15 @@ declare module BABYLON {
              */
             disableAnimation?: boolean;
         };
+        /**
+         * Disable using the thumbstick and use the main component (usuallly trigger) on long press.
+         * This will be automatically true if the controller doesnt have a thumbstick or touchpad.
+         */
+        useMainComponentOnly?: boolean;
+        /**
+         * If main component is used (no thumbstick), how long should the "long press" take before teleporting
+         */
+        timeToTeleport?: number;
     }
     /**
      * This is a teleportation feature to be used with webxr-enabled motion controllers.
@@ -44277,6 +44321,7 @@ declare module BABYLON {
         dispose(): void;
         private _currentTeleportationControllerId;
         private _attachController;
+        private _teleportForward;
         private _detachController;
         private createDefaultTargetMesh;
         private setTargetMeshVisibility;
