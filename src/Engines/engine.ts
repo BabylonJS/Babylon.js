@@ -1630,40 +1630,6 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Sets the frame buffer Depth / Stencil attachement of the render target to the defined depth stencil texture.
-     * @param renderTarget The render target to set the frame buffer for
-     */
-    public setFrameBufferDepthStencilTexture(renderTarget: RenderTargetTexture): void {
-        // Create the framebuffer
-        var internalTexture = renderTarget.getInternalTexture();
-        if (!internalTexture || !internalTexture._framebuffer || !renderTarget.depthStencilTexture) {
-            return;
-        }
-
-        var gl = this._gl;
-        var depthStencilTexture = renderTarget.depthStencilTexture;
-
-        this._bindUnboundFramebuffer(internalTexture._framebuffer);
-        if (depthStencilTexture.isCube) {
-            if (depthStencilTexture._generateStencilBuffer) {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture._webGLTexture, 0);
-            }
-            else {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture._webGLTexture, 0);
-            }
-        }
-        else {
-            if (depthStencilTexture._generateStencilBuffer) {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture._webGLTexture, 0);
-            }
-            else {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture._webGLTexture, 0);
-            }
-        }
-        this._bindUnboundFramebuffer(null);
-    }
-
-    /**
      * Update a dynamic index buffer
      * @param indexBuffer defines the target index buffer
      * @param indices defines the data to update
@@ -1751,7 +1717,6 @@ export class Engine extends ThinEngine {
         texture.samples = samples;
         texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(texture._generateStencilBuffer, texture._generateDepthBuffer, texture.width, texture.height, samples);
 
-        gl.bindRenderbuffer(gl.RENDERBUFFER, null);
         this._bindUnboundFramebuffer(null);
 
         return samples;

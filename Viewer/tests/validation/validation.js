@@ -286,11 +286,14 @@ function init() {
     BABYLON.SceneLoader.ShowLoadingScreen = false;
     BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental = true;
 
-    // Draco configuration
     BABYLON.DracoCompression.Configuration.decoder = {
         wasmUrl: "../../dist/preview%20release/draco_wasm_wrapper_gltf.js",
         wasmBinaryUrl: "../../dist/preview%20release/draco_decoder_gltf.wasm",
         fallbackUrl: "../../dist/preview%20release/draco_decoder_gltf.js"
+    };
+
+    BABYLON.GLTFValidation.Configuration = {
+        url: "../../dist/preview%20release/gltf_validator.js"
     };
 
     viewerElement = document.createElement("babylon");

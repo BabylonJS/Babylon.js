@@ -417,7 +417,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             // Source mesh
             this._internalMeshDataInfo._source = source;
-            if (scene.useClonedMeshhMap) {
+            if (scene.useClonedMeshMap) {
                 if (!source._internalMeshDataInfo.meshMap) {
                     source._internalMeshDataInfo.meshMap = {};
                 }
@@ -2201,7 +2201,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param clonePhysicsImpostor allows/denies the cloning in the same time of the original mesh `body` used by the physics engine, if any (default `true`)
      * @returns a new mesh
      */
-    public clone(name: string = "", newParent: Nullable<Node> = null, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true): Nullable<AbstractMesh> {
+    public clone(name: string = "", newParent: Nullable<Node> = null, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true): Mesh {
         return new Mesh(name, this.getScene(), newParent, this, doNotCloneChildren, clonePhysicsImpostor);
     }
 
@@ -2236,7 +2236,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Sources
-        if (this._scene.useClonedMeshhMap) {
+        if (this._scene.useClonedMeshMap) {
             if (internalDataInfo.meshMap) {
                 for (const uniqueId in internalDataInfo.meshMap) {
                     const mesh = internalDataInfo.meshMap[uniqueId];

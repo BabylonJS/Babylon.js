@@ -85,9 +85,9 @@ export class GraphNode {
     }
 
     public set x(value: number) {
-        // if (this._x === value) {
-        //     return;
-        // }
+        if (this._x === value) {
+            return;
+        }
         this._x = value;
         
         this._gridAlignedX = this._ownerCanvas.getGridPosition(value);
@@ -102,9 +102,9 @@ export class GraphNode {
     }
 
     public set y(value: number) {
-        // if (this._y === value) {
-        //     return;
-        // }
+        if (this._y === value) {
+            return;
+        }
 
         this._y = value;
 
@@ -183,7 +183,11 @@ export class GraphNode {
             this.isSelected = overlap;
         });
 
-        this._onFrameCreatedObserver = this._globalState.onFrameCreated.add(frame => {            
+        this._onFrameCreatedObserver = this._globalState.onFrameCreated.add(frame => {      
+            if (this._ownerCanvas.frames.some(f => f.nodes.indexOf(this) !== -1)) {
+                return;
+            }
+            
             if (this.isOverlappingFrame(frame)) {
                 frame.nodes.push(this);
             }

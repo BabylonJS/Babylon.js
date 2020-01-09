@@ -67,7 +67,7 @@ class ZipTool {
         }
 
         if (textures[index].isCube) {
-            if (textures[index].name.indexOf("dds") === -1) {
+            if (textures[index].name.indexOf("dds") === -1 && textures[index].name.indexOf(".env") === -1) {
                 if (textures[index]._extensions) {
                     for (var i = 0; i < 6; i++) {
                         textures.push({ name: textures[index].name + textures[index]._extensions[i] });

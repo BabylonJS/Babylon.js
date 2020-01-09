@@ -16,11 +16,7 @@ import { WebRequest } from "babylonjs/Misc/webRequest";
 import { IFileRequest } from "babylonjs/Misc/fileRequest";
 import { Logger } from 'babylonjs/Misc/logger';
 import { DataReader, IDataBuffer } from 'babylonjs/Misc/dataReader';
-
-/**
- * glTF validator object
- */
-declare var GLTFValidator: GLTF2.IGLTFValidator;
+import { GLTFValidation } from './glTFValidation';
 
 /**
  * Mode that determines the coordinate system to use.
@@ -522,7 +518,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         }
 
         return scene._requestFile(url, (data, response) => {
-            this._validateAsync(scene, data, Tools.GetFolderPath(url), Tools.GetFilename(url));
+            this._validate(scene, data, Tools.GetFolderPath(url), Tools.GetFilename(url));
             onSuccess({ json: this._parseJson(data as string) }, response);
         }, onProgress, true, false, onError);
     }
@@ -530,7 +526,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     /** @hidden */
     public readFile(scene: Scene, file: File, onSuccess: (data: any) => void, onProgress?: (ev: ProgressEvent) => any, useArrayBuffer?: boolean, onError?: (error: any) => void): IFileRequest {
         return scene._readFile(file, (data) => {
-            this._validateAsync(scene, data, "file:", file.name);
+            this._validate(scene, data, "file:", file.name);
             if (useArrayBuffer) {
                 const arrayBuffer = data as ArrayBuffer;
                 this._unpackBinaryAsync(new DataReader({
@@ -608,7 +604,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
     /** @hidden */
     public directLoad(scene: Scene, data: string): any {
-        this._validateAsync(scene, data);
+        this._validate(scene, data);
         return { json: this._parseJson(data) };
     }
 
@@ -647,36 +643,21 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         });
     }
 
-    private _validateAsync(scene: Scene, data: string | ArrayBuffer, rootUrl = "", fileName?: string): Promise<void> {
-        if (!this.validate || typeof GLTFValidator === "undefined") {
-            return Promise.resolve();
+    private _validate(scene: Scene, data: string | ArrayBuffer, rootUrl = "", fileName = ""): void {
+        if (!this.validate) {
+            return;
         }
 
         this._startPerformanceCounter("Validate JSON");
-
-        const options: GLTF2.IGLTFValidationOptions = {
-            externalResourceFunction: (uri) => {
-                return this.preprocessUrlAsync(rootUrl + uri)
-                    .then((url) => scene._loadFileAsync(url, undefined, true, true))
-                    .then((data) => new Uint8Array(data as ArrayBuffer));
-            }
-        };
-
-        if (fileName) {
-            options.uri = (rootUrl === "file:" ? fileName : rootUrl + fileName);
-        }
-
-        const promise = (data instanceof ArrayBuffer)
-            ? GLTFValidator.validateBytes(new Uint8Array(data), options)
-            : GLTFValidator.validateString(data, options);
-
-        return promise.then((result) => {
+        GLTFValidation.ValidateAsync(data, rootUrl, fileName, (uri) => {
+            return this.preprocessUrlAsync(rootUrl + uri).then((url) => (scene._loadFileAsync(url, undefined, true, true) as Promise<ArrayBuffer>));
+        }).then((result) => {
             this._endPerformanceCounter("Validate JSON");
             this.onValidatedObservable.notifyObservers(result);
             this.onValidatedObservable.clear();
         }, (reason) => {
             this._endPerformanceCounter("Validate JSON");
-            Tools.Warn(`Failed to validate: ${reason}`);
+            Tools.Warn(`Failed to validate: ${reason.message}`);
             this.onValidatedObservable.clear();
         });
     }

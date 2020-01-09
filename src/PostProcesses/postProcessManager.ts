@@ -110,7 +110,7 @@ export class PostProcessManager {
                 postProcesses[index + 1].activate(this._scene.activeCamera, targetTexture);
             } else {
                 if (targetTexture) {
-                    engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, forceFullscreenViewport, undefined, lodLevel);
+                    engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, forceFullscreenViewport, lodLevel);
                 } else {
                     engine.restoreDefaultFramebuffer();
                 }

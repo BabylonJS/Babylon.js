@@ -107,6 +107,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                         this.forceUpdate();
                                     }} />
                             }
+                            {/* <ButtonLineComponent label="Export" onClick={() => {
+                                        this.state.currentFrame!.export();
+                                    }} /> */}
                         </LineContainerComponent>
                     </div>
                 </div>
@@ -127,6 +130,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 <div>
                     <LineContainerComponent title="GENERAL">
                         <TextLineComponent label="Version" value={Engine.Version}/>
+                        <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open('https://doc.babylonjs.com/how_to/node_material', '_blank')}/>
                         <ButtonLineComponent label="Reset to default" onClick={() => {
                             this.props.globalState.nodeMaterial!.setToDefault();
                             this.props.globalState.onResetRequiredObservable.notifyObservers();

@@ -56,6 +56,9 @@ export class GeometryBufferRenderer {
      */
     public excludedSkinnedMeshesFromVelocity: AbstractMesh[] = [];
 
+    /** Gets or sets a boolean indicating if transparent meshes should be rendered */
+    public renderTransparentMeshes = false;
+
     private _scene: Scene;
     private _multiRenderTarget: MultiRenderTarget;
     private _ratio: number;
@@ -430,6 +433,12 @@ export class GeometryBufferRenderer {
 
             for (index = 0; index < alphaTestSubMeshes.length; index++) {
                 renderSubMesh(alphaTestSubMeshes.data[index]);
+            }
+
+            if (this.renderTransparentMeshes) {
+                for (index = 0; index < transparentSubMeshes.length; index++) {
+                    renderSubMesh(transparentSubMeshes.data[index]);
+                }
             }
         };
     }

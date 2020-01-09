@@ -52778,6 +52778,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "GENERAL" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_15__["TextLineComponent"], { label: "Version", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["Engine"].Version }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_15__["TextLineComponent"], { label: "Help", value: "doc.babylonjs.com", underline: true, onLink: function () { return window.open('https://doc.babylonjs.com/how_to/node_material', '_blank'); } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Reset to default", onClick: function () {
                             _this.props.globalState.nodeMaterial.setToDefault();
                             _this.props.globalState.onResetRequiredObservable.notifyObservers();
@@ -53720,10 +53721,22 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         graph.graph().rankdir = "LR";
         // Build dagre graph
         this._nodes.forEach(function (node) {
+            if (_this._frames.some(function (f) { return f.nodes.indexOf(node) !== -1; })) {
+                return;
+            }
             graph.setNode(node.id.toString(), {
                 id: node.id,
+                type: "node",
                 width: node.width,
                 height: node.height
+            });
+        });
+        this._frames.forEach(function (frame) {
+            graph.setNode(frame.id.toString(), {
+                id: frame.id,
+                type: "frame",
+                width: frame.element.clientWidth,
+                height: frame.element.clientHeight
             });
         });
         this._nodes.forEach(function (node) {
@@ -53732,7 +53745,11 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                     return;
                 }
                 output.endpoints.forEach(function (endpoint) {
-                    graph.setEdge(node.id.toString(), endpoint.ownerBlock.uniqueId.toString());
+                    var sourceFrames = _this._frames.filter(function (f) { return f.nodes.indexOf(node) !== -1; });
+                    var targetFrames = _this._frames.filter(function (f) { return f.nodes.some(function (n) { return n.block === endpoint.ownerBlock; }); });
+                    var sourceId = sourceFrames.length > 0 ? sourceFrames[0].id : node.id;
+                    var targetId = targetFrames.length > 0 ? targetFrames[0].id : endpoint.ownerBlock.uniqueId;
+                    graph.setEdge(sourceId.toString(), targetId.toString());
                 });
             });
         });
@@ -53741,12 +53758,23 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         // Update graph
         var dagreNodes = graph.nodes().map(function (node) { return graph.node(node); });
         dagreNodes.forEach(function (dagreNode) {
-            for (var _i = 0, _a = _this._nodes; _i < _a.length; _i++) {
-                var node = _a[_i];
-                if (node.id === dagreNode.id) {
-                    node.x = dagreNode.x - dagreNode.width / 2;
-                    node.y = dagreNode.y - dagreNode.height / 2;
-                    node.cleanAccumulation();
+            if (dagreNode.type === "node") {
+                for (var _i = 0, _a = _this._nodes; _i < _a.length; _i++) {
+                    var node = _a[_i];
+                    if (node.id === dagreNode.id) {
+                        node.x = dagreNode.x - dagreNode.width / 2;
+                        node.y = dagreNode.y - dagreNode.height / 2;
+                        node.cleanAccumulation();
+                        return;
+                    }
+                }
+                return;
+            }
+            for (var _b = 0, _c = _this._frames; _b < _c.length; _b++) {
+                var frame = _c[_b];
+                if (frame.id === dagreNode.id) {
+                    frame.move(dagreNode.x - dagreNode.width / 2, dagreNode.y - dagreNode.height / 2, false);
+                    frame.cleanAccumulation();
                     return;
                 }
             }
@@ -53912,6 +53940,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             this._frames.push(newFrame);
             this._frameCandidate.parentElement.removeChild(this._frameCandidate);
             this._frameCandidate = null;
+            this.props.globalState.onSelectionChangedObservable.notifyObservers(newFrame);
         }
     };
     GraphCanvasComponent.prototype.onWheel = function (evt) {
@@ -54031,7 +54060,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         if (editorData.frames) {
             for (var _a = 0, _b = editorData.frames; _a < _b.length; _a++) {
                 var frameData = _b[_a];
-                var frame = _graphFrame__WEBPACK_IMPORTED_MODULE_7__["GraphFrame"].Parse(frameData, this);
+                var frame = _graphFrame__WEBPACK_IMPORTED_MODULE_7__["GraphFrame"].Parse(frameData, this, editorData.map);
                 this._frames.push(frame);
             }
         }
@@ -54065,12 +54094,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _nodePort__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./nodePort */ "./diagram/nodePort.ts");
+/* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../serializationTools */ "./serializationTools.ts");
+/* harmony import */ var _stringTools__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../stringTools */ "./stringTools.ts");
+
+
 
 
 var GraphFrame = /** @class */ (function () {
     function GraphFrame(candidate, canvas, doNotCaptureNodes) {
         var _this = this;
         if (doNotCaptureNodes === void 0) { doNotCaptureNodes = false; }
+        this.CollapsedWidth = 200;
         this._x = 0;
         this._y = 0;
         this._gridAlignedX = 0;
@@ -54084,6 +54118,7 @@ var GraphFrame = /** @class */ (function () {
         this.CloseSVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 30 30\"><g id=\"Layer_2\" data-name=\"Layer 2\"><path d=\"M16,15l5.85,5.84-1,1L15,15.93,9.15,21.78l-1-1L14,15,8.19,9.12l1-1L15,14l5.84-5.84,1,1Z\"/></g></svg>";
         this.ExpandSVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 30 30\"><g id=\"Layer_2\" data-name=\"Layer 2\"><path d=\"M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-6.75,6.75H11.06V14.44h3.38V11.06h1.12v3.38h3.38v1.12H15.56v3.38H14.44Z\"/></g></svg>";
         this.CollapseSVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 30 30\"><g id=\"Layer_2\" data-name=\"Layer 2\"><path d=\"M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-2.25,6.75H11.06V14.44h7.88Z\"/></g></svg>";
+        this._id = GraphFrame._FrameCounter++;
         this._ownerCanvas = canvas;
         var root = canvas.frameContainer;
         this.element = root.ownerDocument.createElement("div");
@@ -54114,14 +54149,6 @@ var GraphFrame = /** @class */ (function () {
             evt.stopPropagation();
             _this._headerCollapseElement.classList.remove("down");
             _this.isCollapsed = !_this.isCollapsed;
-            if (_this.isCollapsed) {
-                _this._headerCollapseElement.innerHTML = _this.ExpandSVG;
-                _this._headerCollapseElement.title = "Expand";
-            }
-            else {
-                _this._headerCollapseElement.innerHTML = _this.CollapseSVG;
-                _this._headerCollapseElement.title = "Collapse";
-            }
         });
         this._headerCollapseElement.innerHTML = this.CollapseSVG;
         this._headerElement.appendChild(this._headerCollapseElement);
@@ -54173,6 +54200,13 @@ var GraphFrame = /** @class */ (function () {
             this.refresh();
         }
     }
+    Object.defineProperty(GraphFrame.prototype, "id", {
+        get: function () {
+            return this._id;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(GraphFrame.prototype, "isCollapsed", {
         get: function () {
             return this._isCollapsed;
@@ -54186,7 +54220,7 @@ var GraphFrame = /** @class */ (function () {
             // Need to delegate the outside ports to the frame
             if (value) {
                 this.element.classList.add("collapsed");
-                this._moveFrame((this.width - 200) / 2, 0);
+                this._moveFrame((this.width - this.CollapsedWidth) / 2, 0);
                 for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
                     var node = _a[_i];
                     node.isVisible = false;
@@ -54253,10 +54287,19 @@ var GraphFrame = /** @class */ (function () {
                     var node = _l[_k];
                     node.isVisible = true;
                 }
-                this._moveFrame(-(this.width - 200) / 2, 0);
+                this._moveFrame(-(this.width - this.CollapsedWidth) / 2, 0);
             }
             this.cleanAccumulation();
             this._ownerCanvas._frameIsMoving = false;
+            // UI        
+            if (this._isCollapsed) {
+                this._headerCollapseElement.innerHTML = this.ExpandSVG;
+                this._headerCollapseElement.title = "Expand";
+            }
+            else {
+                this._headerCollapseElement.innerHTML = this.CollapseSVG;
+                this._headerCollapseElement.title = "Collapse";
+            }
         },
         enumerable: true,
         configurable: true
@@ -54303,9 +54346,9 @@ var GraphFrame = /** @class */ (function () {
             return this._x;
         },
         set: function (value) {
-            // if (this._x === value) {
-            //     return;
-            // }
+            if (this._x === value) {
+                return;
+            }
             this._x = value;
             this._gridAlignedX = this._ownerCanvas.getGridPosition(value);
             this.element.style.left = this._gridAlignedX + "px";
@@ -54318,9 +54361,9 @@ var GraphFrame = /** @class */ (function () {
             return this._y;
         },
         set: function (value) {
-            // if (this._y === value) {
-            //     return;
-            // }
+            if (this._y === value) {
+                return;
+            }
             this._y = value;
             this._gridAlignedY = this._ownerCanvas.getGridPosition(value);
             this.element.style.top = this._gridAlignedY + "px";
@@ -54400,15 +54443,21 @@ var GraphFrame = /** @class */ (function () {
         this._headerTextElement.setPointerCapture(evt.pointerId);
         this._ownerCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
         this._ownerCanvas._frameIsMoving = true;
+        this.move(this._ownerCanvas.getGridPosition(this.x), this._ownerCanvas.getGridPosition(this.y));
+    };
+    GraphFrame.prototype.move = function (newX, newY, align) {
+        if (align === void 0) { align = true; }
         var oldX = this.x;
         var oldY = this.y;
-        this.x = this._ownerCanvas.getGridPosition(this.x);
-        this.y = this._ownerCanvas.getGridPosition(this.y);
+        this.x = newX;
+        this.y = newY;
         for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
             var selectedNode = _a[_i];
             selectedNode.x += this.x - oldX;
             selectedNode.y += this.y - oldY;
-            selectedNode.cleanAccumulation(true);
+            if (align) {
+                selectedNode.cleanAccumulation(true);
+            }
         }
     };
     GraphFrame.prototype._onUp = function (evt) {
@@ -54420,13 +54469,13 @@ var GraphFrame = /** @class */ (function () {
         this._ownerCanvas._frameIsMoving = false;
     };
     GraphFrame.prototype._moveFrame = function (offsetX, offsetY) {
+        this.x += offsetX;
+        this.y += offsetY;
         for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
             var selectedNode = _a[_i];
             selectedNode.x += offsetX;
             selectedNode.y += offsetY;
         }
-        this.x += offsetX;
-        this.y += offsetY;
     };
     GraphFrame.prototype._onMove = function (evt) {
         if (this._mouseStartPointX === null || this._mouseStartPointY === null || evt.ctrlKey) {
@@ -54455,21 +54504,56 @@ var GraphFrame = /** @class */ (function () {
             height: this._height,
             color: this._color.asArray(),
             name: this.name,
-            isCollapsed: this.isCollapsed
+            isCollapsed: this.isCollapsed,
+            blocks: this.nodes.map(function (n) { return n.block.uniqueId; })
         };
     };
-    GraphFrame.Parse = function (serializationData, canvas) {
+    GraphFrame.prototype.export = function () {
+        var state = this._ownerCanvas.globalState;
+        var json = _serializationTools__WEBPACK_IMPORTED_MODULE_2__["SerializationTools"].Serialize(state.nodeMaterial, state, this.nodes.map(function (n) { return n.block; }));
+        _stringTools__WEBPACK_IMPORTED_MODULE_3__["StringTools"].DownloadAsFile(state.hostDocument, json, this._name + ".json");
+    };
+    GraphFrame.Parse = function (serializationData, canvas, map) {
         var newFrame = new GraphFrame(null, canvas, true);
+        var isCollapsed = !!serializationData.isCollapsed;
         newFrame.x = serializationData.x;
         newFrame.y = serializationData.y;
         newFrame.width = serializationData.width;
         newFrame.height = serializationData.height;
         newFrame.name = serializationData.name;
         newFrame.color = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(serializationData.color);
-        newFrame.refresh();
-        newFrame.isCollapsed = !!serializationData.isCollapsed;
+        if (serializationData.blocks && map) {
+            var _loop_1 = function () {
+                var actualId = map[blockId];
+                var node = canvas.nodes.filter(function (n) { return n.block.uniqueId === actualId; });
+                if (node.length) {
+                    newFrame.nodes.push(node[0]);
+                }
+            };
+            for (var _i = 0, _a = serializationData.blocks; _i < _a.length; _i++) {
+                var blockId = _a[_i];
+                _loop_1();
+            }
+        }
+        else {
+            newFrame.refresh();
+        }
+        newFrame.isCollapsed = isCollapsed;
+        if (isCollapsed) {
+            canvas._frameIsMoving = true;
+            newFrame._moveFrame(-(newFrame.width - newFrame.CollapsedWidth) / 2, 0);
+            var diff = serializationData.x - newFrame.x;
+            newFrame._moveFrame(diff, 0);
+            newFrame.cleanAccumulation();
+            for (var _b = 0, _c = newFrame.nodes; _b < _c.length; _b++) {
+                var selectedNode = _c[_b];
+                selectedNode.refresh();
+            }
+            canvas._frameIsMoving = false;
+        }
         return newFrame;
     };
+    GraphFrame._FrameCounter = 0;
     return GraphFrame;
 }());
 
@@ -54538,6 +54622,9 @@ var GraphNode = /** @class */ (function () {
             _this.isSelected = overlap;
         });
         this._onFrameCreatedObserver = this._globalState.onFrameCreated.add(function (frame) {
+            if (_this._ownerCanvas.frames.some(function (f) { return f.nodes.indexOf(_this) !== -1; })) {
+                return;
+            }
             if (_this.isOverlappingFrame(frame)) {
                 frame.nodes.push(_this);
             }
@@ -54604,9 +54691,9 @@ var GraphNode = /** @class */ (function () {
             return this._x;
         },
         set: function (value) {
-            // if (this._x === value) {
-            //     return;
-            // }
+            if (this._x === value) {
+                return;
+            }
             this._x = value;
             this._gridAlignedX = this._ownerCanvas.getGridPosition(value);
             this._visual.style.left = this._gridAlignedX + "px";
@@ -54621,9 +54708,9 @@ var GraphNode = /** @class */ (function () {
             return this._y;
         },
         set: function (value) {
-            // if (this._y === value) {
-            //     return;
-            // }
+            if (this._y === value) {
+                return;
+            }
             this._y = value;
             this._gridAlignedY = this._ownerCanvas.getGridPosition(value);
             this._visual.style.top = this._gridAlignedY + "px";
@@ -55019,8 +55106,11 @@ var NodeLink = /** @class */ (function () {
             this._path.setAttribute("stroke-linecap", "round");
         }
         else {
-            this._path.setAttribute("d", "M" + startX + "," + startY + " C" + (startX + 80) + "," + startY + " " + (endX - 80) + "," + endY + " " + endX + "," + endY);
-            this._selectionPath.setAttribute("d", "M" + startX + "," + startY + " C" + (startX + 80) + "," + startY + " " + (endX - 80) + "," + endY + " " + endX + "," + endY);
+            var deltaX = endX - startX;
+            var deltaY = endY - startY;
+            var tangentLength = Math.min(Math.sqrt(deltaX * deltaX + deltaY * deltaY) * 0.5, 300);
+            this._path.setAttribute("d", "M" + startX + "," + startY + " C" + (startX + tangentLength) + "," + startY + " " + (endX - tangentLength) + "," + endY + " " + endX + "," + endY);
+            this._selectionPath.setAttribute("d", "M" + startX + "," + startY + " C" + (startX + tangentLength) + "," + startY + " " + (endX - tangentLength) + "," + endY + " " + endX + "," + endY);
         }
         this._path.setAttribute("stroke", this._portA.element.style.backgroundColor);
     };
@@ -55037,7 +55127,6 @@ var NodeLink = /** @class */ (function () {
         }
         if (this._nodeB) {
             this._nodeA.links.splice(this._nodeA.links.indexOf(this), 1);
-            this._nodeB.links.splice(this._nodeB.links.indexOf(this), 1);
             this._nodeB.links.splice(this._nodeB.links.indexOf(this), 1);
             this._graphCanvas.links.splice(this._graphCanvas.links.indexOf(this), 1);
             this._portA.connectionPoint.disconnectFrom(this._portB.connectionPoint);
@@ -57044,11 +57133,11 @@ var SerializationTools = /** @class */ (function () {
         }
         globalState.storeEditorData(material.editorData);
     };
-    SerializationTools.Serialize = function (material, globalState) {
+    SerializationTools.Serialize = function (material, globalState, selectedBlocks) {
         var bufferSerializationState = babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers;
         babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers = _dataStorage__WEBPACK_IMPORTED_MODULE_1__["DataStorage"].ReadBoolean("EmbedTextures", true);
         this.UpdateLocations(material, globalState);
-        var serializationObject = material.serialize();
+        var serializationObject = material.serialize(selectedBlocks);
         babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].SerializeBuffers = bufferSerializationState;
         return JSON.stringify(serializationObject, undefined, 2);
     };

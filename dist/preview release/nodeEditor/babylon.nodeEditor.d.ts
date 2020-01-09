@@ -84,6 +84,7 @@ declare module NODEEDITOR {
         color: number[];
         name: string;
         isCollapsed: boolean;
+        blocks: number[];
     }
     export interface IEditorData {
         locations: INodeLocationInfo[];
@@ -91,10 +92,38 @@ declare module NODEEDITOR {
         y: number;
         zoom: number;
         frames?: IFrameData[];
+        map?: {
+            [key: number]: number;
+        };
+    }
+}
+declare module NODEEDITOR {
+    export class SerializationTools {
+        static UpdateLocations(material: BABYLON.NodeMaterial, globalState: GlobalState): void;
+        static Serialize(material: BABYLON.NodeMaterial, globalState: GlobalState, selectedBlocks?: BABYLON.NodeMaterialBlock[]): string;
+        static Deserialize(serializationObject: any, globalState: GlobalState): void;
+    }
+}
+declare module NODEEDITOR {
+    export class StringTools {
+        private static _SaveAs;
+        private static _Click;
+        /**
+         * Gets the base math type of node material block connection point.
+         * @param type Type to parse.
+         */
+        static GetBaseType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
+        /**
+         * Download a string into a file that will be saved locally by the browser
+         * @param content defines the string to download locally as a file
+         */
+        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
     }
 }
 declare module NODEEDITOR {
     export class GraphFrame {
+        private readonly CollapsedWidth;
+        private static _FrameCounter;
         private _name;
         private _color;
         private _x;
@@ -120,9 +149,11 @@ declare module NODEEDITOR {
         private _isCollapsed;
         private _ports;
         private _controlledPorts;
+        private _id;
         private readonly CloseSVG;
         private readonly ExpandSVG;
         private readonly CollapseSVG;
+        get id(): number;
         get isCollapsed(): boolean;
         private _createInputPort;
         set isCollapsed(value: boolean);
@@ -146,12 +177,16 @@ declare module NODEEDITOR {
         syncNode(node: GraphNode): void;
         cleanAccumulation(): void;
         private _onDown;
+        move(newX: number, newY: number, align?: boolean): void;
         private _onUp;
         private _moveFrame;
         private _onMove;
         dispose(): void;
         serialize(): IFrameData;
-        static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent): GraphFrame;
+        export(): void;
+        static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {
+            [key: number]: number;
+        }): GraphFrame;
     }
 }
 declare module NODEEDITOR {
@@ -802,22 +837,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class StringTools {
-        private static _SaveAs;
-        private static _Click;
-        /**
-         * Gets the base math type of node material block connection point.
-         * @param type Type to parse.
-         */
-        static GetBaseType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
-        /**
-         * Download a string into a file that will be saved locally by the browser
-         * @param content defines the string to download locally as a file
-         */
-        static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
-    }
-}
-declare module NODEEDITOR {
     export class InputDisplayManager implements IDisplayManager {
         getHeaderClass(block: BABYLON.NodeMaterialBlock): "" | "constant" | "inspector";
         shouldDisplayPortLabels(block: BABYLON.NodeMaterialBlock): boolean;
@@ -1048,13 +1067,6 @@ declare module NODEEDITOR {
         constructor(props: INodeListComponentProps);
         filterContent(filter: string): void;
         render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    export class SerializationTools {
-        static UpdateLocations(material: BABYLON.NodeMaterial, globalState: GlobalState): void;
-        static Serialize(material: BABYLON.NodeMaterial, globalState: GlobalState): string;
-        static Deserialize(serializationObject: any, globalState: GlobalState): void;
     }
 }
 declare module NODEEDITOR {

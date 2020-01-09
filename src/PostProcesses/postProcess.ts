@@ -136,6 +136,7 @@ export class PostProcess {
     private _options: number | PostProcessOptions;
     private _reusable = false;
     private _textureType: number;
+    private _textureFormat: number;
     /**
     * Smart array of input and output textures for the post process.
     * @hidden
@@ -301,12 +302,14 @@ export class PostProcess {
      * @param vertexUrl The url of the vertex shader to be used. (default: "postprocess")
      * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
      * @param blockCompilation If the shader should not be compiled imediatly. (default: false)
+     * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
      */
     constructor(
         /** Name of the PostProcess. */
         public name: string,
         fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>,
-        samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess", indexParameters?: any, blockCompilation = false) {
+        samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess",
+        indexParameters?: any, blockCompilation = false, textureFormat = Constants.TEXTUREFORMAT_RGBA) {
         if (camera != null) {
             this._camera = camera;
             this._scene = camera.getScene();
@@ -324,6 +327,7 @@ export class PostProcess {
         this.renderTargetSamplingMode = samplingMode ? samplingMode : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         this._reusable = reusable || false;
         this._textureType = textureType;
+        this._textureFormat = textureFormat;
 
         this._samplers = samplers || [];
         this._samplers.push("textureSampler");
@@ -453,6 +457,11 @@ export class PostProcess {
         var desiredWidth = ((<PostProcessOptions>this._options).width || requiredWidth);
         var desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;
 
+        const needMipMaps =
+            this.renderTargetSamplingMode !== Constants.TEXTURE_NEAREST_LINEAR &&
+            this.renderTargetSamplingMode !== Constants.TEXTURE_NEAREST_NEAREST &&
+            this.renderTargetSamplingMode !== Constants.TEXTURE_LINEAR_LINEAR;
+
         if (!this._shareOutputWithPostProcess && !this._forcedOutputTexture) {
 
             if (this.adaptScaleToCurrentViewport) {
@@ -464,7 +473,7 @@ export class PostProcess {
                 }
             }
 
-            if (this.renderTargetSamplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE || this.alwaysForcePOT) {
+            if (needMipMaps || this.alwaysForcePOT) {
                 if (!(<PostProcessOptions>this._options).width) {
                     desiredWidth = engine.needPOTTextures ? Engine.GetExponentOfTwo(desiredWidth, maxSize, this.scaleMode) : desiredWidth;
                 }
@@ -484,19 +493,14 @@ export class PostProcess {
                 this.width = desiredWidth;
                 this.height = desiredHeight;
 
-                const needMipMaps = this.renderTargetSamplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE ||
-                                    this.renderTargetSamplingMode === Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR ||
-                                    this.renderTargetSamplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR ||
-                                    this.renderTargetSamplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR ||
-                                    this.renderTargetSamplingMode === Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR;
-
                 let textureSize = { width: this.width, height: this.height };
                 let textureOptions = {
                     generateMipMaps: needMipMaps,
                     generateDepthBuffer: forceDepthStencil || camera._postProcesses.indexOf(this) === 0,
                     generateStencilBuffer: (forceDepthStencil || camera._postProcesses.indexOf(this) === 0) && this._engine.isStencilEnable,
                     samplingMode: this.renderTargetSamplingMode,
-                    type: this._textureType
+                    type: this._textureType,
+                    format: this._textureFormat
                 };
 
                 this._textures.push(this._engine.createRenderTargetTexture(textureSize, textureOptions));

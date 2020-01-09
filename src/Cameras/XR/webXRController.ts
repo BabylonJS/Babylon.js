@@ -1,12 +1,15 @@
-import { Nullable } from "../../types";
 import { Observable } from "../../Misc/observable";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Quaternion, Vector3 } from '../../Maths/math.vector';
 import { Ray } from '../../Culling/ray';
 import { Scene } from '../../scene';
-import { WebVRController } from '../../Gamepads/Controllers/webVRController';
+import { WebXRAbstractMotionController } from './motionController/webXRAbstractController';
+import { WebXRMotionControllerManager } from './motionController/webXRMotionControllerManager';
+
+let idCount = 0;
+
 /**
- * Represents an XR input
+ * Represents an XR controller
  */
 export class WebXRController {
     /**
@@ -17,14 +20,12 @@ export class WebXRController {
      * Pointer which can be used to select objects or attach a visible laser to
      */
     public pointer: AbstractMesh;
-
-    private _gamepadMode = false;
     /**
      * If available, this is the gamepad object related to this controller.
      * Using this object it is possible to get click events and trackpad changes of the
      * webxr controller that is currently being used.
      */
-    public gamepadController?: WebVRController;
+    public gamepadController?: WebXRAbstractMotionController;
 
     /**
      * Event that fires when the controller is removed/disposed
@@ -34,33 +35,44 @@ export class WebXRController {
     private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3();
 
+    private _uniqueId: string;
     /**
      * Creates the controller
      * @see https://doc.babylonjs.com/how_to/webxr
      * @param scene the scene which the controller should be associated to
      * @param inputSource the underlying input source for the controller
-     * @param parentContainer parent that the controller meshes should be children of
+     * @param controllerProfile An optional controller profile for this input. This will override the xrInput profile.
      */
     constructor(
         private scene: Scene,
         /** The underlying input source for the controller  */
         public inputSource: XRInputSource,
-        private parentContainer: Nullable<AbstractMesh> = null) {
+        controllerProfile?: string) {
+        this._uniqueId = `${idCount++}-${inputSource.targetRayMode}-${inputSource.handedness}`;
+
         this.pointer = new AbstractMesh("controllerPointer", scene);
         this.pointer.rotationQuaternion = new Quaternion();
-        if (parentContainer) {
-            parentContainer.addChild(this.pointer);
-        }
 
         if (this.inputSource.gripSpace) {
             this.grip = new AbstractMesh("controllerGrip", this.scene);
             this.grip.rotationQuaternion = new Quaternion();
-            if (this.parentContainer) {
-                this.parentContainer.addChild(this.grip);
-            }
-        } else if (this.inputSource.gamepad) {
-            this._gamepadMode = true;
         }
+
+        // for now only load motion controllers if gamepad available
+        if (this.inputSource.gamepad) {
+            this.gamepadController = WebXRMotionControllerManager.GetMotionControllerWithXRInput(inputSource, scene, controllerProfile);
+            // if the model is loaded, do your thing
+            this.gamepadController.onModelLoadedObservable.addOnce(() => {
+                this.gamepadController!.rootMesh!.parent = this.pointer;
+            });
+        }
+    }
+
+    /**
+     * Get this controllers unique id
+     */
+    public get uniqueId() {
+        return this._uniqueId;
     }
 
     /**
@@ -97,9 +109,7 @@ export class WebXRController {
         }
         if (this.gamepadController) {
             // either update buttons only or also position, if in gamepad mode
-            this.gamepadController.isXR = !this._gamepadMode;
-            this.gamepadController.update();
-            this.gamepadController.isXR = true;
+            this.gamepadController.updateFromXRFrame(xrFrame);
         }
     }
 
@@ -109,11 +119,11 @@ export class WebXRController {
      */
     public getWorldPointerRayToRef(result: Ray) {
         // Force update to ensure picked point is synced with ray
-        let worldMatrix = this.pointer.computeWorldMatrix(true);
+        let worldMatrix = this.pointer.computeWorldMatrix();
         worldMatrix.decompose(undefined, this._tmpQuaternion, undefined);
         this._tmpVector.set(0, 0, 1);
         this._tmpVector.rotateByQuaternionToRef(this._tmpQuaternion, this._tmpVector);
-        result.origin = this.pointer.absolutePosition;
+        result.origin.copyFrom(this.pointer.absolutePosition);
         result.direction.copyFrom(this._tmpVector);
         result.length = 1000;
     }
@@ -133,7 +143,7 @@ export class WebXRController {
         if (this.grip) {
             this.grip.dispose();
         }
-        if (this.gamepadController && this._gamepadMode) {
+        if (this.gamepadController) {
             this.gamepadController.dispose();
         }
         this.pointer.dispose();

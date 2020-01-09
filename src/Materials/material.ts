@@ -521,12 +521,6 @@ export class Material implements IAnimatable {
     public _effect: Nullable<Effect> = null;
 
     /**
-     * @hidden
-     * Specifies if the material was previously ready
-     */
-    public _wasPreviouslyReady = false;
-
-    /**
      * Specifies if uniform buffers should be used
      */
     private _useUBO: boolean = false;
@@ -624,7 +618,7 @@ export class Material implements IAnimatable {
      * Locks updates for the material
      */
     public freeze(): void {
-        this._wasPreviouslyReady = false;
+        this.markDirty();
         this.checkReadyOnlyOnce = true;
     }
 
@@ -632,7 +626,7 @@ export class Material implements IAnimatable {
      * Unlocks updates for the material
      */
     public unfreeze(): void {
-        this._wasPreviouslyReady = false;
+        this.markDirty();
         this.checkReadyOnlyOnce = false;
     }
 
@@ -710,7 +704,23 @@ export class Material implements IAnimatable {
      * Marks the material to indicate that it needs to be re-calculated
      */
     public markDirty(): void {
-        this._wasPreviouslyReady = false;
+        const meshes = this.getScene().meshes;
+        for (var mesh of meshes) {
+            if (!mesh.subMeshes) {
+                continue;
+            }
+            for (var subMesh of mesh.subMeshes) {
+                if (subMesh.getMaterial() !== this) {
+                    continue;
+                }
+
+                if (!subMesh.effect) {
+                    continue;
+                }
+
+                subMesh.effect._wasPreviouslyReady = false;
+            }
+        }
     }
 
     /** @hidden */

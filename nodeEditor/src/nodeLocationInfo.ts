@@ -11,7 +11,8 @@ export interface IFrameData {
     height: number;
     color: number[];
     name: string,
-    isCollapsed: boolean
+    isCollapsed: boolean,
+    blocks: number[]
 }
 
 export interface IEditorData {
@@ -20,4 +21,5 @@ export interface IEditorData {
     y: number;
     zoom: number;
     frames?: IFrameData[];
+    map?: {[key: number]: number};
 }

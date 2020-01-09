@@ -1,3 +1,34 @@
+declare module "babylonjs-loaders/glTF/glTFValidation" {
+    import * as GLTF2 from 'babylonjs-gltf2interface';
+    /**
+     * Configuration for glTF validation
+     */
+    export interface IGLTFValidationConfiguration {
+        /**
+         * The url of the glTF validator.
+         */
+        url: string;
+    }
+    /**
+     * glTF validation
+     */
+    export class GLTFValidation {
+        /**
+         * The configuration. Defaults to `{ url: "https://preview.babylonjs.com/gltf_validator.js" }`.
+         */
+        static Configuration: IGLTFValidationConfiguration;
+        private static _LoadScriptPromise;
+        /**
+         * Validate a glTF asset using the glTF-Validator.
+         * @param data The JSON of a glTF or the array buffer of a binary glTF
+         * @param rootUrl The root url for the glTF
+         * @param fileName The file name for the glTF
+         * @param getExternalResource The callback to get external resources for the glTF validator
+         * @returns A promise that resolves with the glTF validation results once complete
+         */
+        static ValidateAsync(data: string | ArrayBuffer, rootUrl: string, fileName: string, getExternalResource: (uri: string) => Promise<ArrayBuffer>): Promise<GLTF2.IGLTFValidationResults>;
+    }
+}
 declare module "babylonjs-loaders/glTF/glTFFileLoader" {
     import * as GLTF2 from "babylonjs-gltf2interface";
     import { Nullable } from "babylonjs/types";
@@ -324,7 +355,7 @@ declare module "babylonjs-loaders/glTF/glTFFileLoader" {
          * @returns a promise that resolves when the asset is completely loaded.
          */
         whenCompleteAsync(): Promise<void>;
-        private _validateAsync;
+        private _validate;
         private _getLoader;
         private _parseJson;
         private _unpackBinaryAsync;
@@ -2184,24 +2215,22 @@ declare module "babylonjs-loaders/glTF/2.0/index" {
 }
 declare module "babylonjs-loaders/glTF/index" {
     export * from "babylonjs-loaders/glTF/glTFFileLoader";
+    export * from "babylonjs-loaders/glTF/glTFValidation";
     import * as GLTF1 from "babylonjs-loaders/glTF/1.0/index";
     import * as GLTF2 from "babylonjs-loaders/glTF/2.0/index";
     export { GLTF1, GLTF2 };
 }
-declare module "babylonjs-loaders/OBJ/objFileLoader" {
-    import { Vector2 } from "babylonjs/Maths/math";
-    import { AnimationGroup } from "babylonjs/Animations/animationGroup";
-    import { Skeleton } from "babylonjs/Bones/skeleton";
-    import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
+declare module "babylonjs-loaders/OBJ/mtlFileLoader" {
     import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
-    import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-    import { ISceneLoaderPluginAsync, SceneLoaderProgressEvent, ISceneLoaderPluginFactory, ISceneLoaderPlugin } from "babylonjs/Loading/sceneLoader";
-    import { AssetContainer } from "babylonjs/assetContainer";
     import { Scene } from "babylonjs/scene";
     /**
      * Class reading and parsing the MTL file bundled with the obj file.
      */
     export class MTLFileLoader {
+        /**
+         * Invert Y-Axis of referenced textures on load
+         */
+        static INVERT_TEXTURE_Y: boolean;
         /**
          * All material loaded from the mtl will be set here
          */
@@ -2229,6 +2258,16 @@ declare module "babylonjs-loaders/OBJ/objFileLoader" {
          */
         private static _getTexture;
     }
+}
+declare module "babylonjs-loaders/OBJ/objFileLoader" {
+    import { Vector2 } from "babylonjs/Maths/math";
+    import { AnimationGroup } from "babylonjs/Animations/animationGroup";
+    import { Skeleton } from "babylonjs/Bones/skeleton";
+    import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
+    import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+    import { ISceneLoaderPluginAsync, SceneLoaderProgressEvent, ISceneLoaderPluginFactory, ISceneLoaderPlugin } from "babylonjs/Loading/sceneLoader";
+    import { AssetContainer } from "babylonjs/assetContainer";
+    import { Scene } from "babylonjs/scene";
     /**
      * Options for loading OBJ/MTL files
      */
@@ -2282,7 +2321,8 @@ declare module "babylonjs-loaders/OBJ/objFileLoader" {
         /**
          * Invert Y-Axis of referenced textures on load
          */
-        static INVERT_TEXTURE_Y: boolean;
+        static get INVERT_TEXTURE_Y(): boolean;
+        static set INVERT_TEXTURE_Y(value: boolean);
         /**
          * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
          */
@@ -2423,6 +2463,7 @@ declare module "babylonjs-loaders/OBJ/objFileLoader" {
     }
 }
 declare module "babylonjs-loaders/OBJ/index" {
+    export * from "babylonjs-loaders/OBJ/mtlFileLoader";
     export * from "babylonjs-loaders/OBJ/objFileLoader";
 }
 declare module "babylonjs-loaders/STL/stlFileLoader" {
@@ -2502,6 +2543,7 @@ declare module "babylonjs-loaders/index" {
 }
 declare module "babylonjs-loaders/legacy/legacy-glTF" {
     export * from "babylonjs-loaders/glTF/glTFFileLoader";
+    export * from "babylonjs-loaders/glTF/glTFValidation";
 }
 declare module "babylonjs-loaders/legacy/legacy-glTF1" {
     import * as GLTF1 from "babylonjs-loaders/glTF/1.0/index";
@@ -2540,6 +2582,36 @@ declare module "babylonjs-loaders/legacy/legacy" {
 }
 declare module "babylonjs-loaders" {
     export * from "babylonjs-loaders/legacy/legacy";
+}
+declare module BABYLON {
+    /**
+     * Configuration for glTF validation
+     */
+    export interface IGLTFValidationConfiguration {
+        /**
+         * The url of the glTF validator.
+         */
+        url: string;
+    }
+    /**
+     * glTF validation
+     */
+    export class GLTFValidation {
+        /**
+         * The configuration. Defaults to `{ url: "https://preview.babylonjs.com/gltf_validator.js" }`.
+         */
+        static Configuration: IGLTFValidationConfiguration;
+        private static _LoadScriptPromise;
+        /**
+         * Validate a glTF asset using the glTF-Validator.
+         * @param data The JSON of a glTF or the array buffer of a binary glTF
+         * @param rootUrl The root url for the glTF
+         * @param fileName The file name for the glTF
+         * @param getExternalResource The callback to get external resources for the glTF validator
+         * @returns A promise that resolves with the glTF validation results once complete
+         */
+        static ValidateAsync(data: string | ArrayBuffer, rootUrl: string, fileName: string, getExternalResource: (uri: string) => Promise<ArrayBuffer>): Promise<BABYLON.GLTF2.IGLTFValidationResults>;
+    }
 }
 declare module BABYLON {
     /**
@@ -2851,7 +2923,7 @@ declare module BABYLON {
          * @returns a promise that resolves when the asset is completely loaded.
          */
         whenCompleteAsync(): Promise<void>;
-        private _validateAsync;
+        private _validate;
         private _getLoader;
         private _parseJson;
         private _unpackBinaryAsync;
@@ -4537,6 +4609,10 @@ declare module BABYLON {
      */
     export class MTLFileLoader {
         /**
+         * Invert Y-Axis of referenced textures on load
+         */
+        static INVERT_TEXTURE_Y: boolean;
+        /**
          * All material loaded from the mtl will be set here
          */
         materials: StandardMaterial[];
@@ -4563,6 +4639,8 @@ declare module BABYLON {
          */
         private static _getTexture;
     }
+}
+declare module BABYLON {
     /**
      * Options for loading OBJ/MTL files
      */
@@ -4616,7 +4694,8 @@ declare module BABYLON {
         /**
          * Invert Y-Axis of referenced textures on load
          */
-        static INVERT_TEXTURE_Y: boolean;
+        static get INVERT_TEXTURE_Y(): boolean;
+        static set INVERT_TEXTURE_Y(value: boolean);
         /**
          * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
          */

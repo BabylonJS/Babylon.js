@@ -185,7 +185,7 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 },{}],2:[function(require,module,exports){
-window.GLTFValidator = require('gltf-validator');
+GLTFValidator = require('gltf-validator');
 },{"gltf-validator":4}],3:[function(require,module,exports){
 (function (process,global,__filename,__argument0,__argument1,__argument2,__argument3,__dirname){
 var self=Object.create(global);self.scheduleImmediate=self.setImmediate?function(e){global.setImmediate(e)}:function(e){setTimeout(e,0)},self.require=require,self.exports=exports,self.process=process,self.__dirname=__dirname,self.__filename=__filename,global.window||(self.location={get href(){return"file://"+(e=process.cwd(),"win32"!=process.platform?e:"/"+e.replace(/\\/g,"/"))+"/";var e}},function(){var e=null;self.document={get currentScript(){return null==e&&(e={src:function(){try{throw new Error}catch(n){var e=n.stack,r=new RegExp("^ *at [^(]*\\((.*):[0-9]*:[0-9]*\\)$","mg"),l=null;do{var t=r.exec(e);null!=t&&(l=t)}while(null!=t);return l[1]}}()}),e}}}(),self.dartDeferredLibraryLoader=function(e,r,l){try{load(e),r()}catch(e){l(e)}});(function(){var supportsDirectProtoAccess=function(){var z=function(){}
