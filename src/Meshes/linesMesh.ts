@@ -14,7 +14,6 @@ import { MaterialHelper } from '../Materials/materialHelper';
 import "../Shaders/color.fragment";
 import "../Shaders/color.vertex";
 
-
 /**
  * Line mesh
  * @see https://doc.babylonjs.com/babylon101/parametric_shapes
