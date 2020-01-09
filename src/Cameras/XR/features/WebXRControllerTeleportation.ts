@@ -65,6 +65,17 @@ export interface IWebXRTeleportationOptions {
          */
         disableAnimation?: boolean;
     };
+
+    /**
+     * Disable using the thumbstick and use the main component (usuallly trigger) on long press.
+     * This will be automatically true if the controller doesnt have a thumbstick or touchpad.
+     */
+    useMainComponentOnly?: boolean;
+
+    /**
+     * If main component is used (no thumbstick), how long should the "long press" take before teleporting
+     */
+    timeToTeleport?: number;
 }
 
 /**
@@ -325,20 +336,48 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
         // motion controller support
         if (xrController.gamepadController) {
             const movementController = xrController.gamepadController.getComponent(WebXRControllerComponent.THUMBSTICK) || xrController.gamepadController.getComponent(WebXRControllerComponent.TOUCHPAD);
-            if (!movementController) {
+            if (!movementController || this._options.useMainComponentOnly) {
                 // use trigger to move on long press
+                const mainComponent = xrController.gamepadController.getMainComponent();
+                if (!mainComponent) {
+                    return;
+                }
+                controllerData.onButtonChangedObserver = mainComponent.onButtonStateChanged.add(() => {
+                    // did "pressed" changed?
+                    if (mainComponent.changes.pressed) {
+                        if (mainComponent.changes.pressed.current) {
+                            // simulate "forward" thumbstick push
+                            controllerData.teleportationState.forward = true;
+                            this._currentTeleportationControllerId = controllerData.xrController.uniqueId;
+                            controllerData.teleportationState.baseRotation = this._options.xrInput.xrCamera.rotationQuaternion.toEulerAngles().y;
+                            controllerData.teleportationState.currentRotation = 0;
+                            const timeToSelect = this._options.timeToTeleport || 3000;
+                            let timer = 0;
+                            const observer = this._xrSessionManager.onXRFrameObservable.add(() => {
+                                if (!mainComponent.pressed) {
+                                    this._xrSessionManager.onXRFrameObservable.remove(observer);
+                                    return;
+                                }
+                                timer += this._xrSessionManager.scene.getEngine().getDeltaTime();
+                                if (timer >= timeToSelect && this._currentTeleportationControllerId === controllerData.xrController.uniqueId && controllerData.teleportationState.forward) {
+                                    this._teleportForward(xrController.uniqueId);
+                                }
+
+                                // failsafe
+                                if (timer >= timeToSelect) {
+                                    this._xrSessionManager.onXRFrameObservable.remove(observer);
+                                }
+                            });
+                        } else {
+                            controllerData.teleportationState.forward = false;
+                            this._currentTeleportationControllerId = "";
+                        }
+                    }
+                });
             } else {
                 controllerData.onButtonChangedObserver = movementController.onButtonStateChanged.add(() => {
                     if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId && controllerData.teleportationState.forward && !movementController.touched) {
-                        controllerData.teleportationState.forward = false;
-                        this._currentTeleportationControllerId = "";
-                        // do the movement forward here
-                        if (this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.isVisible) {
-                            const height = this._options.xrInput.xrCamera.position.y - this._options.teleportationTargetMesh.position.y;
-                            this._options.xrInput.xrCamera.position.copyFrom(this._options.teleportationTargetMesh.position);
-                            this._options.xrInput.xrCamera.position.y += height;
-                            this._options.xrInput.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, controllerData.teleportationState.currentRotation, 0));
-                        }
+                        this._teleportForward(xrController.uniqueId);
                     }
                 });
                 // use thumbstick (or touchpad if thumbstick not available)
@@ -390,6 +429,8 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
                                     setTimeout(() => {
                                         controllerData.teleportationState.currentRotation = Math.atan2(axesData.x, -axesData.y);
                                     });
+                                } else {
+                                    controllerData.teleportationState.currentRotation = 0;
                                 }
                             }
                         }
@@ -398,6 +439,19 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
                     }
                 });
             }
+        }
+    }
+
+    private _teleportForward(controllerId: string) {
+        const controllerData = this._controllers[controllerId];
+        controllerData.teleportationState.forward = false;
+        this._currentTeleportationControllerId = "";
+        // do the movement forward here
+        if (this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.isVisible) {
+            const height = this._options.xrInput.xrCamera.position.y - this._options.teleportationTargetMesh.position.y;
+            this._options.xrInput.xrCamera.position.copyFrom(this._options.teleportationTargetMesh.position);
+            this._options.xrInput.xrCamera.position.y += height;
+            this._options.xrInput.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, controllerData.teleportationState.currentRotation, 0));
         }
     }
 
