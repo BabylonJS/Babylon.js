@@ -1224,7 +1224,7 @@ export class TransformNode extends Node {
      * @param doNotCloneChildren Do not clone children hierarchy
      * @returns the new transform node
      */
-    public clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean): TransformNode {
+    public clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean):Nullable<TransformNode> {
         var result = SerializationHelper.Clone(() => new TransformNode(name, this.getScene()), this);
 
         result.name = name;
