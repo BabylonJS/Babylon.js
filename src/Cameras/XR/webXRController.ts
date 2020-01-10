@@ -8,7 +8,14 @@ import { WebXRMotionControllerManager } from './motionController/webXRMotionCont
 
 let idCount = 0;
 
+/**
+ * Configuration options for the WebXR controller creation
+ */
 export interface IWebXRControllerOptions {
+    /**
+     * Force a specific controller type for this controller.
+     * This can be used when creating your own profile or when testing different controllers
+     */
     forceControllerProfile?: string;
 }
 
@@ -45,7 +52,7 @@ export class WebXRController {
      * @see https://doc.babylonjs.com/how_to/webxr
      * @param _scene the scene which the controller should be associated to
      * @param inputSource the underlying input source for the controller
-     * @param controllerProfile An optional controller profile for this input. This will override the xrInput profile.
+     * @param _options options for this controller creation
      */
     constructor(
         private _scene: Scene,
