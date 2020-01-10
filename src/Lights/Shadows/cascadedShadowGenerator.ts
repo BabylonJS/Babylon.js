@@ -421,6 +421,21 @@ export class CascadedShadowGenerator implements IShadowGenerator {
                 this._scbiMin.minimizeInPlace(boundingBox.minimumWorld);
                 this._scbiMax.maximizeInPlace(boundingBox.maximumWorld);
             }
+
+            const meshes = this._scene.meshes;
+            for (let meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
+                const mesh = meshes[meshIndex];
+
+                if (!mesh || !mesh.isVisible || !mesh.isEnabled || !mesh.receiveShadows) {
+                    continue;
+                }
+
+                const boundingInfo = mesh.getBoundingInfo(),
+                      boundingBox = boundingInfo.boundingBox;
+
+                this._scbiMin.minimizeInPlace(boundingBox.minimumWorld);
+                this._scbiMax.maximizeInPlace(boundingBox.maximumWorld);
+            }
         }
 
         this._shadowCastersBoundingInfo.reConstruct(this._scbiMin, this._scbiMax);
@@ -628,6 +643,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             return;
         }
         this._shadowMaxZ = value;
+        this._light._markMeshesAsLightDirty();
         this._breaksAreDirty = true;
     }
 
@@ -664,11 +680,20 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         this._depthClamp = value;
     }
 
+    private _cascadeBlendPercentage: number = 0.1;
+
     /**
      * Gets or sets the percentage of blending between two cascades (value between 0. and 1.).
      * It defaults to 0.1 (10% blending).
      */
-    public cascadeBlendPercentage: number = 0.1;
+    public get cascadeBlendPercentage(): number {
+        return this._cascadeBlendPercentage;
+    }
+
+    public set cascadeBlendPercentage(value: number) {
+        this._cascadeBlendPercentage = value;
+        this._light._markMeshesAsLightDirty();
+    }
 
     private _lambda = 0.5;
 
@@ -1506,6 +1531,10 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             defines["SHADOWCSMUSESHADOWMAXZ" + lightIndex] = true;
         }
 
+        if (this.cascadeBlendPercentage === 0) {
+            defines["SHADOWCSMNOBLEND" + lightIndex] = true;
+        }
+
         if (this.useContactHardeningShadow) {
             defines["SHADOWPCSS" + lightIndex] = true;
             if (this._filteringQuality === CascadedShadowGenerator.QUALITY_LOW) {
@@ -1644,6 +1673,11 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         if (this._freezeShadowCastersBoundingInfoObservable) {
             this._scene.onBeforeRenderObservable.remove(this._freezeShadowCastersBoundingInfoObservable);
             this._freezeShadowCastersBoundingInfoObservable = null;
+        }
+
+        if (this._depthReducer) {
+            this._depthReducer.dispose();
+            this._depthReducer = null;
         }
     }
 

@@ -42354,7 +42354,7 @@ declare module BABYLON {
          * @param xrSession xr session
          * @returns a promise that will resolve once the XR Layer has been created
          */
-        initializeXRLayerAsync(xrSession: XRSession): Promise<void>;
+        initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer>;
     }
 }
 declare module BABYLON {
@@ -42365,11 +42365,16 @@ declare module BABYLON {
         /**
          * Options for this XR Layer output
          */
-        canvasOptions: XRWebGLLayerOptions;
+        canvasOptions?: XRWebGLLayerOptions;
         /**
          * CSS styling for a newly created canvas (if not provided)
          */
         newCanvasCssStyle?: string;
+        /**
+         * An optional canvas in case you wish to create it yourself and provide it here.
+         * If not provided, a new canvas will be created
+         */
+        canvasElement?: HTMLCanvasElement;
         /**
          * Get the default values of the configuration object
          * @returns default values of this configuration object
@@ -42380,11 +42385,11 @@ declare module BABYLON {
      * Creates a canvas that is added/removed from the webpage when entering/exiting XR
      */
     export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
-        private configuration;
+        private _options;
         private _engine;
         private _canvas;
         /**
-         * xrpresent context of the canvas which can be used to display/mirror xr content
+         * Rendering context of the canvas which can be used to display/mirror xr content
          */
         canvasContext: WebGLRenderingContext;
         /**
@@ -42396,15 +42401,13 @@ declare module BABYLON {
          * @param xrSession xr session
          * @returns a promise that will resolve once the XR Layer has been created
          */
-        initializeXRLayerAsync(xrSession: any): any;
+        initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer>;
         /**
          * Initializes the canvas to be added/removed upon entering/exiting xr
-         * @param engine the Babylon engine
-         * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
-         * @param onStateChangedObservable the mechanism by which the canvas will be added/removed based on XR state
-         * @param configuration optional configuration for this canvas output. defaults will be used if not provided
+         * @param _xrSessionManager The XR Session manager
+         * @param _options optional configuration for this canvas output. defaults will be used if not provided
          */
-        constructor(engine: ThinEngine, canvas?: HTMLCanvasElement, onStateChangedObservable?: Observable<WebXRState>, configuration?: WebXRManagedOutputCanvasOptions);
+        constructor(_xrSessionManager: WebXRSessionManager, _options?: WebXRManagedOutputCanvasOptions);
         /**
          * Disposes of the object
          */
@@ -42504,6 +42507,10 @@ declare module BABYLON {
          */
         setReferenceSpaceAsync(referenceSpace: XRReferenceSpaceType): Promise<void>;
         /**
+         * Resets the reference space to the one started the session
+         */
+        resetReferenceSpace(): void;
+        /**
          * Updates the render state of the session
          * @param state state to set
          * @returns a promise that resolves once the render state has been updated
@@ -42537,7 +42544,7 @@ declare module BABYLON {
          * @param options optional options to provide when creating a new render target
          * @returns a WebXR render target to which the session can render
          */
-        getWebXRRenderTarget(onStateChangedObservable?: Observable<WebXRState>, options?: WebXRManagedOutputCanvasOptions): WebXRRenderTarget;
+        getWebXRRenderTarget(options?: WebXRManagedOutputCanvasOptions): WebXRRenderTarget;
         /**
          * @hidden
          * Converts the render layer of xrSession to a render target
@@ -42545,15 +42552,15 @@ declare module BABYLON {
          * @param scene scene the new render target should be created for
          * @param baseLayer the webgl layer to create the render target for
          */
-        static _CreateRenderTargetTextureFromSession(session: XRSession, scene: Scene, baseLayer: XRWebGLLayer): RenderTargetTexture;
+        static _CreateRenderTargetTextureFromSession(_session: XRSession, scene: Scene, baseLayer: XRWebGLLayer): RenderTargetTexture;
         /**
          * Disposes of the session manager
          */
         dispose(): void;
         /**
-         * Gets a promise returning true when fullfiled if the given session mode is supported
+         * Returns a promise that resolves with a boolean indicating if the provided session mode is supported by this browser
          * @param sessionMode defines the session to test
-         * @returns a promise
+         * @returns a promise with boolean as final value
          */
         static IsSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean>;
     }
@@ -42581,6 +42588,12 @@ declare module BABYLON {
          */
         constructor(name: string, scene: Scene, _xrSessionManager: WebXRSessionManager);
         private _updateNumberOfRigCameras;
+        /**
+         * Sets this camera's transformation based on a non-vr camera
+         * @param otherCamera the non-vr camera to copy the transformation from
+         * @param resetToBaseReferenceSpace should XR reset to the base reference space
+         */
+        setTransformationFromNonVRCamera(otherCamera: Camera, resetToBaseReferenceSpace?: boolean): void;
         /** @hidden */
         _updateForDualEyeDebugging(): void;
         private _updateReferenceSpace;
@@ -42678,6 +42691,7 @@ declare module BABYLON {
         constructor(_xrSessionManager: WebXRSessionManager);
         /**
          * Enable a feature using its name and a version. This will enable it in the scene, and will be responsible to attach it when the session starts.
+         * If used twice, the old version will be disposed and a new one will be constructed. This way you can re-enable with different configuration.
          *
          * @param featureName the name of the feature to load or the class of the feature
          * @param version optional version to load. if not provided the latest version will be enabled
@@ -42690,6 +42704,7 @@ declare module BABYLON {
         }, version?: number | string, moduleOptions?: any, attachIfPossible?: boolean): IWebXRFeature;
         /**
          * Used to disable an already-enabled feature
+         * The feature will be disposed and will be recreated once enabled.
          * @param featureName the feature to disable
          * @returns true if disable was successful
          */
@@ -43744,12 +43759,23 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Configuration options for the WebXR controller creation
+     */
+    export interface IWebXRControllerOptions {
+        /**
+         * Force a specific controller type for this controller.
+         * This can be used when creating your own profile or when testing different controllers
+         */
+        forceControllerProfile?: string;
+    }
+    /**
      * Represents an XR controller
      */
     export class WebXRController {
-        private scene;
+        private _scene;
         /** The underlying input source for the controller  */
         inputSource: XRInputSource;
+        private _options;
         /**
          * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if thats the case only the pointer from the head will be availible
          */
@@ -43774,13 +43800,13 @@ declare module BABYLON {
         /**
          * Creates the controller
          * @see https://doc.babylonjs.com/how_to/webxr
-         * @param scene the scene which the controller should be associated to
+         * @param _scene the scene which the controller should be associated to
          * @param inputSource the underlying input source for the controller
-         * @param controllerProfile An optional controller profile for this input. This will override the xrInput profile.
+         * @param _options options for this controller creation
          */
-        constructor(scene: Scene, 
+        constructor(_scene: Scene, 
         /** The underlying input source for the controller  */
-        inputSource: XRInputSource, controllerProfile?: string);
+        inputSource: XRInputSource, _options?: IWebXRControllerOptions);
         /**
          * Get this controllers unique id
          */
@@ -43796,11 +43822,6 @@ declare module BABYLON {
          * @param result the resulting ray
          */
         getWorldPointerRayToRef(result: Ray): void;
-        /**
-         * Get the scene associated with this controller
-         * @returns the scene object
-         */
-        getScene(): Scene;
         /**
          * Disposes of the object
          */
@@ -43945,6 +43966,8 @@ declare module BABYLON {
         lasterPointerDefaultColor: Color3;
         private static _idCounter;
         private _observerTracked;
+        private _observerControllerAdded;
+        private _observerControllerRemoved;
         private _attached;
         private _tmpRay;
         private _controllers;
@@ -44264,6 +44287,8 @@ declare module BABYLON {
          */
         backwardsTeleportationDistance: number;
         private _observerTracked;
+        private _observerControllerAdded;
+        private _observerControllerRemoved;
         private _attached;
         /**
          * Is this feature attached
@@ -54557,11 +54582,13 @@ declare module BABYLON {
          */
         get depthClamp(): boolean;
         set depthClamp(value: boolean);
+        private _cascadeBlendPercentage;
         /**
          * Gets or sets the percentage of blending between two cascades (value between 0. and 1.).
          * It defaults to 0.1 (10% blending).
          */
-        cascadeBlendPercentage: number;
+        get cascadeBlendPercentage(): number;
+        set cascadeBlendPercentage(value: number);
         private _lambda;
         /**
          * Gets or set the lambda parameter.
