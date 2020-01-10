@@ -123,6 +123,8 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
     public backwardsTeleportationDistance: number = 0.5;
 
     private _observerTracked: Nullable<Observer<XRFrame>>;
+    private _observerControllerAdded: Nullable<Observer<WebXRController>>;
+    private _observerControllerRemoved: Nullable<Observer<WebXRController>>;
 
     private _attached: boolean = false;
     /**
@@ -216,8 +218,8 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
     attach(): boolean {
 
         this._options.xrInput.controllers.forEach(this._attachController);
-        this._options.xrInput.onControllerAddedObservable.add(this._attachController);
-        this._options.xrInput.onControllerRemovedObservable.add((controller) => {
+        this._observerControllerAdded = this._options.xrInput.onControllerAddedObservable.add(this._attachController);
+        this._observerControllerRemoved = this._options.xrInput.onControllerRemovedObservable.add((controller) => {
             // REMOVE the controller
             this._detachController(controller.uniqueId);
         });
@@ -303,6 +305,13 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
         Object.keys(this._controllers).forEach((controllerId) => {
             this._detachController(controllerId);
         });
+
+        if (this._observerControllerAdded) {
+            this._options.xrInput.onControllerAddedObservable.remove(this._observerControllerAdded);
+        }
+        if (this._observerControllerRemoved) {
+            this._options.xrInput.onControllerRemovedObservable.remove(this._observerControllerRemoved);
+        }
 
         return true;
     }
