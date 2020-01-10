@@ -16,7 +16,7 @@
 - Added support for Offscreen canvas [Doc](https://doc.babylonjs.com/how_to/using_offscreen_canvas) ([Deltakosh](https://github.com/deltakosh/)
 - Added support for multiple canvases with one engine [Doc](https://doc.babylonjs.com/how_to/multi_canvases) ([Deltakosh](https://github.com/deltakosh/)
 - Added useReverseDepthBuffer to Engine which can provide greater z depth for distant objects without the cost of a logarithmic depth buffer ([BenAdams](https://github.com/benaadams/))
-- Added the "Cascaded Shadow Mapping" (CSM) shadow rendering technic ([Popov72](https://github.com/Popov72) (initiated by [lockphase](https://github.com/lockphase/)))
+- Added the "Cascaded Shadow Mapping" (CSM) shadow rendering technique ([Popov72](https://github.com/Popov72) (initiated by [lockphase](https://github.com/lockphase/)))
 
 ## Updates
 
@@ -54,7 +54,8 @@
 - Device orientation event permissions for iOS 13+ ([RaananW](https://github.com/RaananW/))
 - Added `DirectionalLight.autoCalcShadowZBounds` to automatically compute the `shadowMinZ` and `shadowMaxZ` values ([Popov72](https://github.com/Popov72))
 - Added `CascadedShadowGenerator.autoCalcDepthBounds` to improve the shadow quality rendering ([Popov72](https://github.com/Popov72))
-- Improved cascade blending in CSM shadow technic ([Popov72](https://github.com/Popov72))
+- Improved cascade blending in CSM shadow technique ([Popov72](https://github.com/Popov72))
+- Speed optimization when cascade blending is not used in CSM shadow technique ([Popov72](https://github.com/Popov72))
 
 ### Engine
 
