@@ -94,6 +94,8 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
     private static _idCounter = 0;
 
     private _observerTracked: Nullable<Observer<XRFrame>>;
+    private _observerControllerAdded: Nullable<Observer<WebXRController>>;
+    private _observerControllerRemoved: Nullable<Observer<WebXRController>>;
     private _attached: boolean = false;
     private _tmpRay = new Ray(new Vector3(), new Vector3());
 
@@ -200,6 +202,13 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
         Object.keys(this._controllers).forEach((controllerId) => {
             this._detachController(controllerId);
         });
+
+        if (this._observerControllerAdded) {
+            this._options.xrInput.onControllerAddedObservable.remove(this._observerControllerAdded);
+        }
+        if (this._observerControllerRemoved) {
+            this._options.xrInput.onControllerRemovedObservable.remove(this._observerControllerRemoved);
+        }
 
         this._attached = false;
 

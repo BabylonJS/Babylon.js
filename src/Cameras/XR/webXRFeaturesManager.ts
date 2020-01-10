@@ -159,6 +159,7 @@ export class WebXRFeaturesManager implements IDisposable {
 
     /**
      * Enable a feature using its name and a version. This will enable it in the scene, and will be responsible to attach it when the session starts.
+     * If used twice, the old version will be disposed and a new one will be constructed. This way you can re-enable with different configuration.
      *
      * @param featureName the name of the feature to load or the class of the feature
      * @param version optional version to load. if not provided the latest version will be enabled
@@ -192,7 +193,6 @@ export class WebXRFeaturesManager implements IDisposable {
         /* If the feature is already enabled, detach and dispose it, and create a new one */
         if (feature) {
             this.disableFeature(name);
-            feature.featureImplementation.dispose();
         }
 
         this._features[name] = {
@@ -212,6 +212,7 @@ export class WebXRFeaturesManager implements IDisposable {
 
     /**
      * Used to disable an already-enabled feature
+     * The feature will be disposed and will be recreated once enabled.
      * @param featureName the feature to disable
      * @returns true if disable was successful
      */
@@ -221,6 +222,7 @@ export class WebXRFeaturesManager implements IDisposable {
         if (feature && feature.enabled) {
             feature.enabled = false;
             this.detachFeature(name);
+            feature.featureImplementation.dispose();
             return true;
         }
         return false;
