@@ -421,6 +421,21 @@ export class CascadedShadowGenerator implements IShadowGenerator {
                 this._scbiMin.minimizeInPlace(boundingBox.minimumWorld);
                 this._scbiMax.maximizeInPlace(boundingBox.maximumWorld);
             }
+
+            const meshes = this._scene.meshes;
+            for (let meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
+                const mesh = meshes[meshIndex];
+
+                if (!mesh || !mesh.isVisible || !mesh.isEnabled || !mesh.receiveShadows) {
+                    continue;
+                }
+
+                const boundingInfo = mesh.getBoundingInfo(),
+                      boundingBox = boundingInfo.boundingBox;
+
+                this._scbiMin.minimizeInPlace(boundingBox.minimumWorld);
+                this._scbiMax.maximizeInPlace(boundingBox.maximumWorld);
+            }
         }
 
         this._shadowCastersBoundingInfo.reConstruct(this._scbiMin, this._scbiMax);
