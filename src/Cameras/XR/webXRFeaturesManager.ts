@@ -270,7 +270,10 @@ export class WebXRFeaturesManager implements IDisposable {
      * dispose this features manager
      */
     dispose(): void {
-        this.getEnabledFeatures().forEach((feature) => this._features[feature].featureImplementation.dispose());
+        this.getEnabledFeatures().forEach((feature) => {
+            this.disableFeature(feature);
+            this._features[feature].featureImplementation.dispose();
+        });
     }
 
 }

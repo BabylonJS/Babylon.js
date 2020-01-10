@@ -4,7 +4,7 @@ import { Nullable } from "../../types";
 import { IDisposable, Scene } from "../../scene";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
-import { WebXRRenderTarget, WebXRState } from './webXRTypes';
+import { WebXRRenderTarget } from './webXRTypes';
 import { WebXRManagedOutputCanvas, WebXRManagedOutputCanvasOptions } from './webXRManagedOutputCanvas';
 
 interface IRenderTargetProvider {
@@ -186,6 +186,13 @@ export class WebXRSessionManager implements IDisposable {
     }
 
     /**
+     * Resets the reference space to the one started the session
+     */
+    public resetReferenceSpace() {
+        this.referenceSpace = this.baseReferenceSpace;
+    }
+
+    /**
      * Updates the render state of the session
      * @param state state to set
      * @returns a promise that resolves once the render state has been updated
@@ -202,27 +209,28 @@ export class WebXRSessionManager implements IDisposable {
      * @returns a promise that will resolve once rendering has started
      */
     public startRenderingToXRAsync() {
+        const engine = this.scene.getEngine();
         // Tell the engine's render loop to be driven by the xr session's refresh rate and provide xr pose information
-        this.scene.getEngine().customAnimationFrameRequester = {
+        engine.customAnimationFrameRequester = {
             requestAnimationFrame: this.session.requestAnimationFrame.bind(this.session),
             renderFunction: (timestamp: number, xrFrame: Nullable<XRFrame>) => {
                 if (this._sessionEnded) {
                     return;
                 }
-                // Store the XR frame in the manager to be consumed by the XR camera to update pose
+                // Store the XR frame and timestamp in the session manager
                 this.currentFrame = xrFrame;
                 this.currentTimestamp = timestamp;
                 if (xrFrame) {
                     this.onXRFrameObservable.notifyObservers(xrFrame);
                     // only run the render loop if a frame exists
-                    this.scene.getEngine()._renderLoop();
+                    engine._renderLoop();
                 }
             }
         };
 
         if (this._xrNavigator.xr.native) {
             this._rttProvider = this._xrNavigator.xr.getNativeRenderTargetProvider(this.session, (width: number, height: number) => {
-                return this.scene.getEngine().createRenderTargetTexture({ width: width, height: height }, false);
+                return engine.createRenderTargetTexture({ width: width, height: height }, false);
             });
         } else {
             // Create render target texture from xr's webgl render target
@@ -230,8 +238,8 @@ export class WebXRSessionManager implements IDisposable {
         }
 
         // Stop window's animation frame and trigger sessions animation frame
-        if (window.cancelAnimationFrame) { window.cancelAnimationFrame(this.scene.getEngine()._frameHandler); }
-        this.scene.getEngine()._renderLoop();
+        if (window.cancelAnimationFrame) { window.cancelAnimationFrame(engine._frameHandler); }
+        engine._renderLoop();
         return Promise.resolve();
     }
 
@@ -272,12 +280,15 @@ export class WebXRSessionManager implements IDisposable {
      * @param options optional options to provide when creating a new render target
      * @returns a WebXR render target to which the session can render
      */
-    public getWebXRRenderTarget(onStateChangedObservable?: Observable<WebXRState>, options?: WebXRManagedOutputCanvasOptions): WebXRRenderTarget {
+    public getWebXRRenderTarget(options?: WebXRManagedOutputCanvasOptions): WebXRRenderTarget {
+        const engine = this.scene.getEngine();
         if (this._xrNavigator.xr.native) {
-            return this._xrNavigator.xr.getWebXRRenderTarget(this.scene.getEngine());
+            return this._xrNavigator.xr.getWebXRRenderTarget(engine);
         }
         else {
-            return new WebXRManagedOutputCanvas(this.scene.getEngine(), this.scene.getEngine().getRenderingCanvas() as HTMLCanvasElement, onStateChangedObservable!, options);
+            options = options || {};
+            options.canvasElement = engine.getRenderingCanvas() || undefined;
+            return new WebXRManagedOutputCanvas(this, options);
         }
     }
 
@@ -288,7 +299,7 @@ export class WebXRSessionManager implements IDisposable {
      * @param scene scene the new render target should be created for
      * @param baseLayer the webgl layer to create the render target for
      */
-    public static _CreateRenderTargetTextureFromSession(session: XRSession, scene: Scene, baseLayer: XRWebGLLayer) {
+    public static _CreateRenderTargetTextureFromSession(_session: XRSession, scene: Scene, baseLayer: XRWebGLLayer) {
         if (!baseLayer) {
             throw "no layer";
         }
@@ -309,14 +320,20 @@ export class WebXRSessionManager implements IDisposable {
      * Disposes of the session manager
      */
     public dispose() {
+        // disposing without leaving XR? Exit XR first
+        if (!this._sessionEnded) {
+            this.exitXRAsync();
+        }
         this.onXRFrameObservable.clear();
         this.onXRSessionEnded.clear();
+        this.onXRReferenceSpaceChanged.clear();
+        this.onXRSessionInit.clear();
     }
 
     /**
-     * Gets a promise returning true when fullfiled if the given session mode is supported
+     * Returns a promise that resolves with a boolean indicating if the provided session mode is supported by this browser
      * @param sessionMode defines the session to test
-     * @returns a promise
+     * @returns a promise with boolean as final value
      */
     public static IsSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean> {
         if (!(navigator as any).xr) {

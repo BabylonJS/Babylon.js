@@ -1,7 +1,6 @@
 import { Nullable } from "../../types";
 import { Observable } from "../../Misc/observable";
 import { IDisposable, Scene } from "../../scene";
-import { Quaternion } from "../../Maths/math.vector";
 import { Camera } from "../../Cameras/camera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { WebXRCamera } from "./webXRCamera";
@@ -161,17 +160,14 @@ export class WebXRExperienceHelper implements IDisposable {
     public dispose() {
         this.camera.dispose();
         this.onStateChangedObservable.clear();
+        this.onInitialXRPoseSetObservable.clear();
         this.sessionManager.dispose();
+        this.scene.activeCamera = this._nonVRCamera;
     }
 
     private _nonXRToXRCamera() {
         this.scene.activeCamera = this.camera;
-        const mat = this._nonVRCamera!.computeWorldMatrix();
-        mat.decompose(undefined, this.camera.rotationQuaternion, this.camera.position);
-        // set the ground level
-        this.camera.position.y = 0;
-        Quaternion.FromEulerAnglesToRef(0, this.camera.rotationQuaternion.toEulerAngles().y, 0, this.camera.rotationQuaternion);
-
+        this.camera.setTransformationFromNonVRCamera(this._nonVRCamera!);
         this.onInitialXRPoseSetObservable.notifyObservers(this.camera);
     }
 }
