@@ -24,9 +24,7 @@ endif()
 
 set(SKIP_GLSLANG_INSTALL OFF CACHE BOOL "Skip installation")
 set(ENABLE_SPVREMAPPER OFF CACHE BOOL "Enables building of SPVRemapper")
-set(ENABLE_AMD_EXTENSIONS OFF CACHE BOOL "Enables support of AMD-specific extensions")
 set(ENABLE_GLSLANG_BINARIES OFF CACHE BOOL "Builds glslangValidator and spirv-remap")
-set(ENABLE_NV_EXTENSIONS OFF CACHE BOOL "Enables support of Nvidia-specific extensions")
 set(ENABLE_HLSL OFF CACHE BOOL "Enables HLSL input support")
 set(ENABLE_OPT OFF CACHE BOOL "Enables spirv-opt capability if present")
 
