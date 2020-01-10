@@ -1674,6 +1674,11 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             this._scene.onBeforeRenderObservable.remove(this._freezeShadowCastersBoundingInfoObservable);
             this._freezeShadowCastersBoundingInfoObservable = null;
         }
+
+        if (this._depthReducer) {
+            this._depthReducer.dispose();
+            this._depthReducer = null;
+        }
     }
 
     /**
