@@ -1,7 +1,7 @@
 import { GraphNode } from './graphNode';
 import { GraphCanvasComponent } from './graphCanvas';
 import { Nullable } from 'babylonjs/types';
-import { Observer } from 'babylonjs/Misc/observable';
+import { Observer, Observable } from 'babylonjs/Misc/observable';
 import { NodeLink } from './nodeLink';
 import { IFrameData } from '../nodeLocationInfo';
 import { Color3 } from 'babylonjs/Maths/math.color';
@@ -38,6 +38,8 @@ export class GraphFrame {
     private _ports: NodePort[] = [];
     private _controlledPorts: NodePort[] = [];
     private _id: number;
+
+    public onExpandStateChanged = new Observable<GraphFrame>();
 
     private readonly CloseSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><g id="Layer_2" data-name="Layer 2"><path d="M16,15l5.85,5.84-1,1L15,15.93,9.15,21.78l-1-1L14,15,8.19,9.12l1-1L15,14l5.84-5.84,1,1Z"/></g></svg>`;
     private readonly ExpandSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><g id="Layer_2" data-name="Layer 2"><path d="M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-6.75,6.75H11.06V14.44h3.38V11.06h1.12v3.38h3.38v1.12H15.56v3.38H14.44Z"/></g></svg>`;
@@ -152,6 +154,8 @@ export class GraphFrame {
             this._headerCollapseElement.innerHTML = this.CollapseSVG;
             this._headerCollapseElement.title = "Collapse";   
         }
+
+        this.onExpandStateChanged.notifyObservers(this);
     }
 
     public get nodes() {
@@ -452,9 +456,10 @@ export class GraphFrame {
         }
 
         this.element.parentElement!.removeChild(this.element);
-
         
         this._ownerCanvas.frames.splice(this._ownerCanvas.frames.indexOf(this), 1);
+
+        this.onExpandStateChanged.clear();
     }
 
     public serialize(): IFrameData {

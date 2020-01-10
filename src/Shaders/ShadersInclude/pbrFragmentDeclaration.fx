@@ -117,7 +117,7 @@ uniform mat4 view;
 
     #ifdef SS_THICKNESSANDMASK_TEXTURE
         uniform vec2 vThicknessInfos;
-        uniform mat4 thicknessMatrix;;
+        uniform mat4 thicknessMatrix;
     #endif
 
     uniform vec2 vThicknessParam;
