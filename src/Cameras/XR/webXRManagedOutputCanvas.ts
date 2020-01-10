@@ -1,7 +1,7 @@
 import { Nullable } from "../../types";
-import { Observable } from "../../Misc/observable";
 import { ThinEngine } from '../../Engines/thinEngine';
-import { WebXRState, WebXRRenderTarget } from "./webXRTypes";
+import { WebXRRenderTarget } from "./webXRTypes";
+import { WebXRSessionManager } from './webXRSessionManager';
 
 /**
  * COnfiguration object for WebXR output canvas
@@ -10,12 +10,18 @@ export class WebXRManagedOutputCanvasOptions {
     /**
      * Options for this XR Layer output
      */
-    public canvasOptions: XRWebGLLayerOptions;
+    public canvasOptions?: XRWebGLLayerOptions;
 
     /**
      * CSS styling for a newly created canvas (if not provided)
      */
     public newCanvasCssStyle?: string;
+
+    /**
+     * An optional canvas in case you wish to create it yourself and provide it here.
+     * If not provided, a new canvas will be created
+     */
+    public canvasElement?: HTMLCanvasElement;
 
     /**
      * Get the default values of the configuration object
@@ -46,7 +52,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     private _canvas: Nullable<HTMLCanvasElement> = null;
 
     /**
-     * xrpresent context of the canvas which can be used to display/mirror xr content
+     * Rendering context of the canvas which can be used to display/mirror xr content
      */
     public canvasContext: WebGLRenderingContext;
     /**
@@ -59,16 +65,16 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
      * @param xrSession xr session
      * @returns a promise that will resolve once the XR Layer has been created
      */
-    public initializeXRLayerAsync(xrSession: any) {
+    public initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer> {
 
         const createLayer = () => {
-            return this.xrLayer = new XRWebGLLayer(xrSession, this.canvasContext, this.configuration.canvasOptions);
+            return new XRWebGLLayer(xrSession, this.canvasContext, this._options.canvasOptions);
         };
 
         // support canvases without makeXRCompatible
         if (!(this.canvasContext as any).makeXRCompatible) {
             this.xrLayer = createLayer();
-            return Promise.resolve(true);
+            return Promise.resolve(this.xrLayer);
         }
 
         return (this.canvasContext as any).makeXRCompatible().then(() => {
@@ -79,29 +85,26 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
 
     /**
      * Initializes the canvas to be added/removed upon entering/exiting xr
-     * @param engine the Babylon engine
-     * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
-     * @param onStateChangedObservable the mechanism by which the canvas will be added/removed based on XR state
-     * @param configuration optional configuration for this canvas output. defaults will be used if not provided
+     * @param _xrSessionManager The XR Session manager
+     * @param _options optional configuration for this canvas output. defaults will be used if not provided
      */
-    constructor(engine: ThinEngine, canvas?: HTMLCanvasElement, onStateChangedObservable?: Observable<WebXRState>, private configuration: WebXRManagedOutputCanvasOptions = WebXRManagedOutputCanvasOptions.GetDefaults()) {
-        this._engine = engine;
-        if (!canvas) {
-            canvas = document.createElement('canvas');
-            canvas.style.cssText = this.configuration.newCanvasCssStyle || "position:absolute; bottom:0px;right:0px;";
+    constructor(_xrSessionManager: WebXRSessionManager, private _options: WebXRManagedOutputCanvasOptions = WebXRManagedOutputCanvasOptions.GetDefaults()) {
+        this._engine = _xrSessionManager.scene.getEngine();
+        if (!_options.canvasElement) {
+            const canvas = document.createElement('canvas');
+            canvas.style.cssText = this._options.newCanvasCssStyle || "position:absolute; bottom:0px;right:0px;";
+            this._setManagedOutputCanvas(canvas);
+        } else {
+            this._setManagedOutputCanvas(_options.canvasElement);
         }
-        this._setManagedOutputCanvas(canvas);
 
-        if (onStateChangedObservable) {
-            onStateChangedObservable.add((stateInfo) => {
-                if (stateInfo == WebXRState.ENTERING_XR) {
-                    // The canvas is added to the screen before entering XR because currently the xr session must be initialized while the canvas is added render properly
-                    this._addCanvas();
-                } else if (stateInfo == WebXRState.NOT_IN_XR) {
-                    this._removeCanvas();
-                }
-            });
-        }
+        _xrSessionManager.onXRSessionInit.add(() => {
+            this._addCanvas();
+        });
+
+        _xrSessionManager.onXRSessionEnded.add(() => {
+            this._removeCanvas();
+        });
     }
     /**
      * Disposes of the object
@@ -118,9 +121,9 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
             (this.canvasContext as any) = null;
         } else {
             this._canvas = canvas;
-            this.canvasContext = <any>this._canvas.getContext('webgl');
+            this.canvasContext = <any>this._canvas.getContext('webgl2');
             if (!this.canvasContext) {
-                this.canvasContext = <any>this._canvas.getContext('webgl2');
+                this.canvasContext = <any>this._canvas.getContext('webgl');
             }
         }
     }
