@@ -289,6 +289,7 @@
 - Screenshot height and width is now forced to be integers to prevent mismatch with openGL context ([jekelija](https://github.com/jekelija))
 - Fix shadow bound calculation in CSM shadow technique ([Popov72](https://github.com/Popov72))
 - Disposing of the depthReducer used in CSM ([Popov72](https://github.com/Popov72))
+- Fixed an issue with teleportation detach and attach ([#7419](https://github.com/BabylonJS/Babylon.js/issues/7419)) ([RaananW](https://github.com/RaananW/))
 
 ## Breaking changes
 
