@@ -73,6 +73,23 @@ export class WebXRCamera extends FreeCamera {
         }
     }
 
+    /**
+     * Sets this camera's transformation based on a non-vr camera
+     * @param otherCamera the non-vr camera to copy the transformation from
+     * @param resetToBaseReferenceSpace should XR reset to the base reference space
+     */
+    public setTransformationFromNonVRCamera(otherCamera: Camera, resetToBaseReferenceSpace: boolean = true) {
+        const mat = otherCamera.computeWorldMatrix();
+        mat.decompose(undefined, this.rotationQuaternion, this.position);
+        // set the ground level
+        this.position.y = 0;
+        Quaternion.FromEulerAnglesToRef(0, this.rotationQuaternion.toEulerAngles().y, 0, this.rotationQuaternion);
+        this._firstFrame = true;
+        if (resetToBaseReferenceSpace) {
+            this._xrSessionManager.resetReferenceSpace();
+        }
+    }
+
     /** @hidden */
     public _updateForDualEyeDebugging(/*pupilDistance = 0.01*/) {
         // Create initial camera rigs
