@@ -311,8 +311,6 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
                         // pointer up right after down, if disable on touch out
                         if (this._options.disablePointerUpOnTouchOut) {
                             this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
-                        } else {
-                            this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
                         }
                         discMesh.isVisible = false;
                     } else {
@@ -332,6 +330,8 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
                 downTriggered = false;
                 timer = 0;
             }
+
+            this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
 
             oldPick = controllerData.pick;
         });
@@ -375,8 +375,6 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
             controllerData.selectionComponent = xrController.gamepadController.getMainComponent();
         }
 
-        let observer: Nullable<Observer<XRFrame>> = null;
-
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
             if (controllerData.selectionComponent && controllerData.selectionComponent.pressed) {
                 (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
@@ -384,6 +382,10 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
             } else {
                 (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
                 (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.lasterPointerDefaultColor;
+            }
+
+            if (controllerData.pick) {
+                this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
             }
         });
 
@@ -393,13 +395,7 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
                 if (controllerData.pick) {
                     if (pressed) {
                         this._scene.simulatePointerDown(controllerData.pick, { pointerId: controllerData.id });
-                        observer = this._xrSessionManager.onXRFrameObservable.add(() => {
-                            if (controllerData.pick) {
-                                this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
-                            }
-                        });
                     } else {
-                        this._xrSessionManager.onXRFrameObservable.remove(observer);
                         this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
                     }
                 }
