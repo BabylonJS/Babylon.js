@@ -95,7 +95,7 @@ export class WebXRDefaultExperience {
             }
 
             // Create the WebXR output target
-            result.renderTarget = result.baseExperience.sessionManager.getWebXRRenderTarget(xrHelper.onStateChangedObservable, options.outputCanvasOptions);
+            result.renderTarget = result.baseExperience.sessionManager.getWebXRRenderTarget(options.outputCanvasOptions);
 
             if (!options.disableDefaultUI) {
                 if (options.uiOptions) {
