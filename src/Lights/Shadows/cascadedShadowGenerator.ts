@@ -665,12 +665,12 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         this._depthClamp = value;
     }
 
+    private _cascadeBlendPercentage: number = 0.1;
+
     /**
      * Gets or sets the percentage of blending between two cascades (value between 0. and 1.).
      * It defaults to 0.1 (10% blending).
      */
-    private _cascadeBlendPercentage: number = 0.1;
-
     public get cascadeBlendPercentage(): number {
         return this._cascadeBlendPercentage;
     }
