@@ -2671,7 +2671,7 @@ export class ThinEngine {
         var minFilter = gl.NEAREST;
 
         switch (samplingMode) {
-            case Constants.TEXTURE_BILINEAR_SAMPLINGMODE:
+            case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
                 magFilter = gl.LINEAR;
                 if (generateMipMaps) {
                     minFilter = gl.LINEAR_MIPMAP_NEAREST;
@@ -2679,7 +2679,7 @@ export class ThinEngine {
                     minFilter = gl.LINEAR;
                 }
                 break;
-            case Constants.TEXTURE_TRILINEAR_SAMPLINGMODE:
+            case Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR:
                 magFilter = gl.LINEAR;
                 if (generateMipMaps) {
                     minFilter = gl.LINEAR_MIPMAP_LINEAR;
@@ -2687,7 +2687,7 @@ export class ThinEngine {
                     minFilter = gl.LINEAR;
                 }
                 break;
-            case Constants.TEXTURE_NEAREST_SAMPLINGMODE:
+            case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
                 magFilter = gl.NEAREST;
                 if (generateMipMaps) {
                     minFilter = gl.NEAREST_MIPMAP_LINEAR;
