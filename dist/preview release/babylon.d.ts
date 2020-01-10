@@ -42691,6 +42691,7 @@ declare module BABYLON {
         constructor(_xrSessionManager: WebXRSessionManager);
         /**
          * Enable a feature using its name and a version. This will enable it in the scene, and will be responsible to attach it when the session starts.
+         * If used twice, the old version will be disposed and a new one will be constructed. This way you can re-enable with different configuration.
          *
          * @param featureName the name of the feature to load or the class of the feature
          * @param version optional version to load. if not provided the latest version will be enabled
@@ -42703,6 +42704,7 @@ declare module BABYLON {
         }, version?: number | string, moduleOptions?: any, attachIfPossible?: boolean): IWebXRFeature;
         /**
          * Used to disable an already-enabled feature
+         * The feature will be disposed and will be recreated once enabled.
          * @param featureName the feature to disable
          * @returns true if disable was successful
          */
@@ -43964,6 +43966,8 @@ declare module BABYLON {
         lasterPointerDefaultColor: Color3;
         private static _idCounter;
         private _observerTracked;
+        private _observerControllerAdded;
+        private _observerControllerRemoved;
         private _attached;
         private _tmpRay;
         private _controllers;
@@ -44283,6 +44287,8 @@ declare module BABYLON {
          */
         backwardsTeleportationDistance: number;
         private _observerTracked;
+        private _observerControllerAdded;
+        private _observerControllerRemoved;
         private _attached;
         /**
          * Is this feature attached
