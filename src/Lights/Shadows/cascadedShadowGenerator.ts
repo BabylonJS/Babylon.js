@@ -628,6 +628,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             return;
         }
         this._shadowMaxZ = value;
+        this._light._markMeshesAsLightDirty();
         this._breaksAreDirty = true;
     }
 
@@ -668,7 +669,16 @@ export class CascadedShadowGenerator implements IShadowGenerator {
      * Gets or sets the percentage of blending between two cascades (value between 0. and 1.).
      * It defaults to 0.1 (10% blending).
      */
-    public cascadeBlendPercentage: number = 0.1;
+    private _cascadeBlendPercentage: number = 0.1;
+
+    public get cascadeBlendPercentage(): number {
+        return this._cascadeBlendPercentage;
+    }
+
+    public set cascadeBlendPercentage(value: number) {
+        this._cascadeBlendPercentage = value;
+        this._light._markMeshesAsLightDirty();
+    }
 
     private _lambda = 0.5;
 
@@ -1504,6 +1514,10 @@ export class CascadedShadowGenerator implements IShadowGenerator {
 
         if (camera && this._shadowMaxZ < camera.maxZ) {
             defines["SHADOWCSMUSESHADOWMAXZ" + lightIndex] = true;
+        }
+
+        if (this.cascadeBlendPercentage === 0) {
+            defines["SHADOWCSMNOBLEND" + lightIndex] = true;
         }
 
         if (this.useContactHardeningShadow) {
