@@ -8,6 +8,10 @@ import { WebXRMotionControllerManager } from './motionController/webXRMotionCont
 
 let idCount = 0;
 
+export interface IWebXRControllerOptions {
+    forceControllerProfile?: string;
+}
+
 /**
  * Represents an XR controller
  */
@@ -39,28 +43,28 @@ export class WebXRController {
     /**
      * Creates the controller
      * @see https://doc.babylonjs.com/how_to/webxr
-     * @param scene the scene which the controller should be associated to
+     * @param _scene the scene which the controller should be associated to
      * @param inputSource the underlying input source for the controller
      * @param controllerProfile An optional controller profile for this input. This will override the xrInput profile.
      */
     constructor(
-        private scene: Scene,
+        private _scene: Scene,
         /** The underlying input source for the controller  */
         public inputSource: XRInputSource,
-        controllerProfile?: string) {
-        this._uniqueId = `${idCount++}-${inputSource.targetRayMode}-${inputSource.handedness}`;
+        private _options: IWebXRControllerOptions = {}) {
+        this._uniqueId = `controller-${idCount++}-${inputSource.targetRayMode}-${inputSource.handedness}`;
 
-        this.pointer = new AbstractMesh("controllerPointer", scene);
+        this.pointer = new AbstractMesh(`${this._uniqueId}-pointer`, _scene);
         this.pointer.rotationQuaternion = new Quaternion();
 
         if (this.inputSource.gripSpace) {
-            this.grip = new AbstractMesh("controllerGrip", this.scene);
+            this.grip = new AbstractMesh(`${this._uniqueId}-grip`, this._scene);
             this.grip.rotationQuaternion = new Quaternion();
         }
 
         // for now only load motion controllers if gamepad available
         if (this.inputSource.gamepad) {
-            this.gamepadController = WebXRMotionControllerManager.GetMotionControllerWithXRInput(inputSource, scene, controllerProfile);
+            this.gamepadController = WebXRMotionControllerManager.GetMotionControllerWithXRInput(inputSource, _scene, this._options.forceControllerProfile);
             // if the model is loaded, do your thing
             this.gamepadController.onModelLoadedObservable.addOnce(() => {
                 this.gamepadController!.rootMesh!.parent = this.pointer;
@@ -87,7 +91,7 @@ export class WebXRController {
         if (pose) {
             this.pointer.position.copyFrom(<any>(pose.transform.position));
             this.pointer.rotationQuaternion!.copyFrom(<any>(pose.transform.orientation));
-            if (!this.scene.useRightHandedSystem) {
+            if (!this._scene.useRightHandedSystem) {
                 this.pointer.position.z *= -1;
                 this.pointer.rotationQuaternion!.z *= -1;
                 this.pointer.rotationQuaternion!.w *= -1;
@@ -100,7 +104,7 @@ export class WebXRController {
             if (pose) {
                 this.grip.position.copyFrom(<any>(pose.transform.position));
                 this.grip.rotationQuaternion!.copyFrom(<any>(pose.transform.orientation));
-                if (!this.scene.useRightHandedSystem) {
+                if (!this._scene.useRightHandedSystem) {
                     this.grip.position.z *= -1;
                     this.grip.rotationQuaternion!.z *= -1;
                     this.grip.rotationQuaternion!.w *= -1;
@@ -118,7 +122,6 @@ export class WebXRController {
      * @param result the resulting ray
      */
     public getWorldPointerRayToRef(result: Ray) {
-        // Force update to ensure picked point is synced with ray
         let worldMatrix = this.pointer.computeWorldMatrix();
         worldMatrix.decompose(undefined, this._tmpQuaternion, undefined);
         this._tmpVector.set(0, 0, 1);
@@ -126,14 +129,6 @@ export class WebXRController {
         result.origin.copyFrom(this.pointer.absolutePosition);
         result.direction.copyFrom(this._tmpVector);
         result.length = 1000;
-    }
-
-    /**
-     * Get the scene associated with this controller
-     * @returns the scene object
-     */
-    public getScene() {
-        return this.scene;
     }
 
     /**
