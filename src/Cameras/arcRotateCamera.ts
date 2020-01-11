@@ -1118,6 +1118,7 @@ export class ArcRotateCamera extends TargetCamera {
             case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
             case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
             case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
+            case Camera.RIG_MODE_STEREOSCOPIC_INTERLACED:
             case Camera.RIG_MODE_VR:
                 alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? 1 : -1);
                 break;
@@ -1145,6 +1146,7 @@ export class ArcRotateCamera extends TargetCamera {
             case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
             case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
             case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
+            case Camera.RIG_MODE_STEREOSCOPIC_INTERLACED:
             case Camera.RIG_MODE_VR:
                 camLeft.alpha = this.alpha - this._cameraRigParams.stereoHalfAngle;
                 camRight.alpha = this.alpha + this._cameraRigParams.stereoHalfAngle;
