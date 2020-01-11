@@ -13,10 +13,10 @@ import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 
 interface ICommonShadowLightPropertyGridComponentProps {
-    globalState: GlobalState,
-    light: IShadowLight,
-    lockObject: LockObject,
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>
+    globalState: GlobalState;
+    light: IShadowLight;
+    lockObject: LockObject;
+    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class CommonShadowLightPropertyGridComponent extends React.Component<ICommonShadowLightPropertyGridComponentProps> {
@@ -29,7 +29,7 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
         const scene = light.getScene();
         let generator = new ShadowGenerator(512, light);
 
-        scene.meshes.forEach(m => {
+        scene.meshes.forEach((m) => {
             generator.addShadowCaster(m);
             m.receiveShadows = true;
         });
