@@ -83,6 +83,7 @@
 - Added support for `Material.depthFunction` property ([Popov72](https://github.com/Popov72))
 - Added an optional config option `initialTab` ([ycw](https://github.com/ycw/))
 - Added support for ImportAnimations ([noalak](https://github.com/noalak/))
+- Added support for Cascaded Shadow Maps ([Popov72](https://github.com/Popov72))
 
 ### Tools
 
