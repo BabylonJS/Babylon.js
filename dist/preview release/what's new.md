@@ -56,6 +56,7 @@
 - Added `CascadedShadowGenerator.autoCalcDepthBounds` to improve the shadow quality rendering ([Popov72](https://github.com/Popov72))
 - Improved cascade blending in CSM shadow technique ([Popov72](https://github.com/Popov72))
 - Speed optimization when cascade blending is not used in CSM shadow technique ([Popov72](https://github.com/Popov72))
+- Added `RenderTargetTexture.getCustomRenderList` to overload the render list at rendering time (and possibly for each layer (2DArray) / face (Cube)) ([Popov72](https://github.com/Popov72))
 
 ### Engine
 
