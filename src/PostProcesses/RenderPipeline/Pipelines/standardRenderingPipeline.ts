@@ -20,6 +20,7 @@ import { Scene } from "../../../scene";
 import { Constants } from "../../../Engines/constants";
 import { _TypeStore } from '../../../Misc/typeStore';
 import { MotionBlurPostProcess } from "../../motionBlurPostProcess";
+import { ScreenSpaceReflectionPostProcess } from "../../screenSpaceReflectionPostProcess";
 
 declare type Animation = import("../../../Animations/animation").Animation;
 
@@ -128,6 +129,10 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
      * The Fast Approximate Anti-Aliasing post process which attemps to remove aliasing from an image.
      */
     public fxaaPostProcess: Nullable<FxaaPostProcess> = null;
+    /**
+     * Post-process used to simulate realtime reflections using the screen space and geometry renderer.
+     */
+    public screenSpaceReflectionPostProcess: Nullable<ScreenSpaceReflectionPostProcess> = null;
 
     // Values
 
@@ -353,6 +358,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     private _hdrEnabled: boolean = false;
     private _motionBlurEnabled: boolean = false;
     private _fxaaEnabled: boolean = false;
+    private _screenSpaceReflectionsEnabled: boolean = false;
 
     private _motionBlurSamples: number = 64.0;
     private _volumetricLightStepsCount: number = 50.0;
@@ -492,6 +498,23 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     }
 
     /**
+     * Specifies if screen space reflections are enabled.
+     */
+    @serialize()
+    public get screenSpaceReflectionsEnabled(): boolean {
+        return this._screenSpaceReflectionsEnabled;
+    }
+
+    public set screenSpaceReflectionsEnabled(enabled: boolean) {
+        if (this._screenSpaceReflectionsEnabled === enabled) {
+            return;
+        }
+
+        this._screenSpaceReflectionsEnabled = enabled;
+        this._buildPipeline();
+    }
+
+    /**
      * Specifies the number of steps used to calculate the volumetric lights
      * Typically in interval [50, 200]
      */
@@ -587,28 +610,34 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         this._reset();
 
         // Create pass post-process
+        if (this._screenSpaceReflectionsEnabled) {
+            this.screenSpaceReflectionPostProcess = new ScreenSpaceReflectionPostProcess("HDRPass", scene, ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, this._floatTextureType);
+            this.screenSpaceReflectionPostProcess.onApplyObservable.add(() => {
+                this._currentDepthOfFieldSource = this.screenSpaceReflectionPostProcess;
+            });
+            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRScreenSpaceReflections", () => this.screenSpaceReflectionPostProcess, true));
+        }
+
         if (!this._basePostProcess) {
-            this.originalPostProcess = new PostProcess("HDRPass", "standard", [], [], ratio, null, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", this._floatTextureType);
-            this.originalPostProcess.onApply = () => {
-                this._currentDepthOfFieldSource = this.originalPostProcess;
-            };
+            this.originalPostProcess = new PostProcess("HDRPass", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", this._floatTextureType);
         }
         else {
             this.originalPostProcess = this._basePostProcess;
         }
 
-        if (this._bloomEnabled || this._vlsEnabled || this._lensFlareEnabled || this._depthOfFieldEnabled || this._motionBlurEnabled) {
-            this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRPassPostProcess", () => { return this.originalPostProcess; }, true));
-        }
+        this.originalPostProcess.autoClear = !this.screenSpaceReflectionPostProcess;
+        this.originalPostProcess.onApplyObservable.add(() => {
+            this._currentDepthOfFieldSource = this.originalPostProcess;
+        });
 
-        this._currentDepthOfFieldSource = this.originalPostProcess;
+        this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRPassPostProcess", () => this.originalPostProcess, true));
 
         if (this._bloomEnabled) {
             // Create down sample X4 post-process
-            this._createDownSampleX4PostProcess(scene, ratio / 2);
+            this._createDownSampleX4PostProcess(scene, ratio / 4);
 
             // Create bright pass post-process
-            this._createBrightPassPostProcess(scene, ratio / 2);
+            this._createBrightPassPostProcess(scene, ratio / 4);
 
             // Create gaussian blur post-processes (down sampling blurs)
             this._createBlurPostProcesses(scene, ratio / 4, 1);
@@ -682,7 +711,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     // Down Sample X4 Post-Processs
     private _createDownSampleX4PostProcess(scene: Scene, ratio: number): void {
         var downSampleX4Offsets = new Array<number>(32);
-        this.downSampleX4PostProcess = new PostProcess("HDRDownSampleX4", "standard", ["dsOffsets"], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define DOWN_SAMPLE_X4", Constants.TEXTURETYPE_UNSIGNED_INT);
+        this.downSampleX4PostProcess = new PostProcess("HDRDownSampleX4", "standard", ["dsOffsets"], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define DOWN_SAMPLE_X4", this._floatTextureType);
 
         this.downSampleX4PostProcess.onApply = (effect: Effect) => {
             var id = 0;
@@ -707,7 +736,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     // Brightpass Post-Process
     private _createBrightPassPostProcess(scene: Scene, ratio: number): void {
         var brightOffsets = new Array<number>(8);
-        this.brightPassPostProcess = new PostProcess("HDRBrightPass", "standard", ["dsOffsets", "brightThreshold"], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define BRIGHT_PASS", Constants.TEXTURETYPE_UNSIGNED_INT);
+        this.brightPassPostProcess = new PostProcess("HDRBrightPass", "standard", ["dsOffsets", "brightThreshold"], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define BRIGHT_PASS", this._floatTextureType);
 
         this.brightPassPostProcess.onApply = (effect: Effect) => {
             var sU = (1.0 / (<PostProcess>this.brightPassPostProcess).width);
@@ -734,8 +763,8 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     private _createBlurPostProcesses(scene: Scene, ratio: number, indice: number, blurWidthKey: string = "blurWidth"): void {
         var engine = scene.getEngine();
 
-        var blurX = new BlurPostProcess("HDRBlurH" + "_" + indice, new Vector2(1, 0), (<any>this)[blurWidthKey], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Constants.TEXTURETYPE_UNSIGNED_INT);
-        var blurY = new BlurPostProcess("HDRBlurV" + "_" + indice, new Vector2(0, 1), (<any>this)[blurWidthKey], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Constants.TEXTURETYPE_UNSIGNED_INT);
+        var blurX = new BlurPostProcess("HDRBlurH" + "_" + indice, new Vector2(1, 0), (<any>this)[blurWidthKey], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, this._floatTextureType);
+        var blurY = new BlurPostProcess("HDRBlurV" + "_" + indice, new Vector2(0, 1), (<any>this)[blurWidthKey], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, this._floatTextureType);
 
         blurX.onActivateObservable.add(() => {
             let dw = blurX.width / engine.getRenderWidth();
@@ -756,7 +785,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
 
     // Create texture adder post-process
     private _createTextureAdderPostProcess(scene: Scene, ratio: number): void {
-        this.textureAdderPostProcess = new PostProcess("HDRTextureAdder", "standard", ["exposure"], ["otherSampler", "lensSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define TEXTURE_ADDER", Constants.TEXTURETYPE_UNSIGNED_INT);
+        this.textureAdderPostProcess = new PostProcess("HDRTextureAdder", "standard", ["exposure"], ["otherSampler", "lensSampler"], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define TEXTURE_ADDER", this._floatTextureType);
         this.textureAdderPostProcess.onApply = (effect: Effect) => {
             effect.setTextureFromPostProcess("otherSampler", this._vlsEnabled ? this._currentDepthOfFieldSource : this.originalPostProcess);
             effect.setTexture("lensSampler", this.lensTexture);
@@ -1004,7 +1033,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
                 return;
             }
 
-            effect.setTextureFromPostProcess("otherSampler", this._currentDepthOfFieldSource);
+            effect.setTextureFromPostProcess("otherSampler", this.lensFlarePostProcess);
             effect.setTexture("lensDirtSampler", this.lensFlareDirtTexture);
             effect.setTexture("lensStarSampler", this.lensStarTexture);
 
@@ -1100,11 +1129,11 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             var camera = this._cameras[i];
 
             if (this.originalPostProcess) { this.originalPostProcess.dispose(camera); }
+            if (this.screenSpaceReflectionPostProcess) { this.screenSpaceReflectionPostProcess.dispose(camera); }
 
             if (this.downSampleX4PostProcess) { this.downSampleX4PostProcess.dispose(camera); }
             if (this.brightPassPostProcess) { this.brightPassPostProcess.dispose(camera); }
             if (this.textureAdderPostProcess) { this.textureAdderPostProcess.dispose(camera); }
-            if (this.textureAdderFinalPostProcess) { this.textureAdderFinalPostProcess.dispose(camera); }
 
             if (this.volumetricLightPostProcess) { this.volumetricLightPostProcess.dispose(camera); }
             if (this.volumetricLightSmoothXPostProcess) { this.volumetricLightSmoothXPostProcess.dispose(camera); }
@@ -1156,6 +1185,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         this.depthOfFieldPostProcess = null;
         this.motionBlurPostProcess = null;
         this.fxaaPostProcess = null;
+        this.screenSpaceReflectionPostProcess = null;
 
         this.luminanceDownSamplePostProcesses = [];
         this.blurHPostProcesses = [];
@@ -1184,6 +1214,10 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             serializationObject.sourceLightId = this.sourceLight.id;
         }
 
+        if (this.screenSpaceReflectionPostProcess) {
+            serializationObject.screenSpaceReflectionPostProcess = SerializationHelper.Serialize(this.screenSpaceReflectionPostProcess);
+        }
+
         serializationObject.customType = "StandardRenderingPipeline";
 
         return serializationObject;
@@ -1201,6 +1235,10 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
 
         if (source.sourceLightId) {
             p.sourceLight = <SpotLight | DirectionalLight>scene.getLightByID(source.sourceLightId);
+        }
+
+        if (source.screenSpaceReflectionPostProcess) {
+            SerializationHelper.Parse(() => p.screenSpaceReflectionPostProcess, source.screenSpaceReflectionPostProcess, scene, rootUrl);
         }
 
         return p;
