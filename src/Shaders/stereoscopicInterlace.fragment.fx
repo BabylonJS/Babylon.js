@@ -18,8 +18,8 @@ void main(void)
 #ifdef IS_STEREOSCOPIC_HORIZ
             useCamB = vUV.x > 0.5;
             useCamA = !useCamB;
-	          texCoord1 = vec2(useCamB ? (vUV.x - 0.5) * 2.0 : vUV.x * 2.0, vUV.y);
-	          texCoord2 = vec2(texCoord1.x + stepSize.x, vUV.y);
+            texCoord1 = vec2(useCamB ? (vUV.x - 0.5) * 2.0 : vUV.x * 2.0, vUV.y);
+            texCoord2 = vec2(texCoord1.x + stepSize.x, vUV.y);
 #else
 #ifdef IS_STEREOSCOPIC_INTERLACED
             float rowNum = floor(vUV.y / stepSize.y);
