@@ -492,6 +492,15 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         this._breaksAreDirty = true;
     }
 
+    /** Gets the minimal and maximal distances used in the cascade break computation */
+    public get minDistance(): number {
+        return this._minDistance;
+    }
+
+    public get maxDistance(): number {
+        return this._maxDistance;
+    }
+
     /**
      * Gets the class name of that object
      * @returns "ShadowGenerator"
@@ -765,6 +774,8 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         if (!camera) {
             return;
         }
+
+        this._autoCalcDepthBounds = value;
 
         if (!value) {
             if (this._depthReducer) {
