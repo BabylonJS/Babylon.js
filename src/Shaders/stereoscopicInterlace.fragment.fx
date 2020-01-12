@@ -4,7 +4,6 @@ varying vec2 vUV;
 uniform sampler2D camASampler;
 uniform sampler2D textureSampler;
 uniform vec2 stepSize;
-// Updated for STEREOSCOPIC_INTERLACED
 
 void main(void)
 {
@@ -17,22 +16,22 @@ void main(void)
     vec3 frag2;
     
 #ifdef IS_STEREOSCOPIC_HORIZ
-	    useCamB = vUV.x > 0.5;
-        useCamA = !useCamB;
-	    texCoord1 = vec2(useCamB ? (vUV.x - 0.5) * 2.0 : vUV.x * 2.0, vUV.y);
-	    texCoord2 = vec2(texCoord1.x + stepSize.x, vUV.y);
+            useCamB = vUV.x > 0.5;
+            useCamA = !useCamB;
+	          texCoord1 = vec2(useCamB ? (vUV.x - 0.5) * 2.0 : vUV.x * 2.0, vUV.y);
+	          texCoord2 = vec2(texCoord1.x + stepSize.x, vUV.y);
 #else
 #ifdef IS_STEREOSCOPIC_INTERLACED
-	    float rowNum = floor(vUV.y / stepSize.y);
-        useCamA = mod(rowNum,2.0) == 1.0;
-        useCamB = mod(rowNum,2.0) == 0.0;
-	    texCoord1 = vec2(vUV.x, vUV.y);
-	    texCoord2 = vec2(vUV.x, vUV.y);
+            float rowNum = floor(vUV.y / stepSize.y);
+            useCamA = mod(rowNum,2.0) == 1.0;
+            useCamB = mod(rowNum,2.0) == 0.0;
+            texCoord1 = vec2(vUV.x, vUV.y);
+            texCoord2 = vec2(vUV.x, vUV.y);
 #else
-	    useCamB = vUV.y > 0.5;
-        useCamA = !useCamB;
-	    texCoord1 = vec2(vUV.x, useCamB ? (vUV.y - 0.5) * 2.0 : vUV.y * 2.0);
-	    texCoord2 = vec2(vUV.x, texCoord1.y + stepSize.y);
+            useCamB = vUV.y > 0.5;
+            useCamA = !useCamB;
+            texCoord1 = vec2(vUV.x, useCamB ? (vUV.y - 0.5) * 2.0 : vUV.y * 2.0);
+            texCoord2 = vec2(vUV.x, texCoord1.y + stepSize.y);
 #endif
 #endif
     
