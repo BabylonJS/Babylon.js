@@ -260,12 +260,12 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         state.compilationString += `#ifdef TANGENT\r\n`;
         state.compilationString += `${this._declareOutput(tangentOutput, state)} = ${tangent.associatedVariableName};\r\n`;
         state.compilationString += `#else\r\n`;
-        state.compilationString += `${this._declareOutput(tangentOutput, state)} = vec3(0., 0., 0.);\r\n`;        
+        state.compilationString += `${this._declareOutput(tangentOutput, state)} = vec3(0., 0., 0.);\r\n`;
         state.compilationString += `#endif\r\n`;
         state.compilationString += `#ifdef UV1\r\n`;
         state.compilationString += `${this._declareOutput(uvOutput, state)} = ${uv.associatedVariableName};\r\n`;
         state.compilationString += `#else\r\n`;
-        state.compilationString += `${this._declareOutput(uvOutput, state)} = vec2(0., 0.);\r\n`;             
+        state.compilationString += `${this._declareOutput(uvOutput, state)} = vec2(0., 0.);\r\n`;
         state.compilationString += `#endif\r\n`;
 
         // Repeatable content
