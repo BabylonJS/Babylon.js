@@ -162,11 +162,11 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
 
                     bodyConfig.rotShape.push(0, 0, 0);
                 } else {
-                    let localPosition = i.object.getAbsolutePosition().subtract(impostor.object.getAbsolutePosition());
+                    let localPosition = i.object.position.clone();
                     bodyConfig.posShape.push(localPosition.x);
                     bodyConfig.posShape.push(localPosition.y);
                     bodyConfig.posShape.push(localPosition.z);
-                    bodyConfig.pos.push(0, 0, 0);
+                    // bodyConfig.pos.push(0, 0, 0);
 
                     bodyConfig.rotShape.push(rot.x * radToDeg);
                     bodyConfig.rotShape.push(rot.y * radToDeg);
