@@ -83,6 +83,7 @@
 - Added support for `Material.depthFunction` property ([Popov72](https://github.com/Popov72))
 - Added an optional config option `initialTab` ([ycw](https://github.com/ycw/))
 - Added support for ImportAnimations ([noalak](https://github.com/noalak/))
+- Added support for Cascaded Shadow Maps ([Popov72](https://github.com/Popov72))
 
 ### Tools
 
@@ -179,7 +180,7 @@
 - Added support to teleport the camera at constant speed in the VRExperienceHelper class ([https://github.com/LeoRodz](https://github.com/LeoRodz))
 - VRExperienceHelper has now an XR fallback to force XR usage (Beta) ([RaananW](https://github.com/RaananW/))
 - Added option to change the teleportation easing function in the VRExperienceHelper class ([https://github.com/LeoRodz](https://github.com/LeoRodz))
-- Windows motion controller mapping corrected to XR ([RaananW](https://github.com/RaananW/))
+- Windows motion controller mapping corrected to XR (xr-standard) ([RaananW](https://github.com/RaananW/))
 - Pointer-Event simulation for screen target ray mode ([RaananW](https://github.com/RaananW/))
 - New observable that triggers when a session was initialized ([RaananW](https://github.com/RaananW/))
 - WebXR teleportation can now be disabled after initialized ([RaananW](https://github.com/RaananW/))

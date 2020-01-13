@@ -32,6 +32,8 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
     render() {
         const material = this.props.material;
 
+        material.depthFunction = material.depthFunction ?? 0;
+
         var orientationOptions = [
             { label: "Clockwise", value: Material.ClockWiseSideOrientation },
             { label: "Counterclockwise", value: Material.CounterClockWiseSideOrientation }
@@ -55,6 +57,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
         ];
 
         var depthfunctionOptions = [
+            { label: "<Engine Default>", value: 0 },
             { label: "Never", value: Engine.NEVER },
             { label: "Always", value: Engine.ALWAYS },
             { label: "Equal", value: Engine.EQUAL },
@@ -87,7 +90,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                     <ButtonLineComponent label="Dispose" onClick={() => {
                         material.dispose();
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                    }} />                       
+                    }} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="TRANSPARENCY">
                     <SliderLineComponent label="Alpha" target={material} propertyName="alpha" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
