@@ -2,7 +2,7 @@ trigger:
 - preview
 
 jobs:
-- job: Netlify Static Deploy
+- job: NetlifyStaticDeploy
   displayName: 'Deploy'
   pool:
     vmImage: 'Ubuntu-16.04'
