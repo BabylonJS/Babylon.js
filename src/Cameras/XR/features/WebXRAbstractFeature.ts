@@ -3,8 +3,17 @@ import { Observer, Observable, EventState } from '../../../Misc/observable';
 import { Nullable } from '../../../types';
 import { WebXRSessionManager } from '../webXRSessionManager';
 
+/**
+ * This is the base class for all WebXR features.
+ * Since most features require almost the same resources and callbacks, this class can be used to simplify the development
+ * Note that since the features manager is using the `IWebXRFeature` you are in no way obligated to use this class
+ */
 export abstract class WebXRAbstractFeature implements IWebXRFeature {
 
+    /**
+     * Construct a new (abstract) webxr feature
+     * @param _xrSessionManager the xr session manager for this feature
+     */
     constructor(protected _xrSessionManager: WebXRSessionManager) {
 
     }

@@ -199,7 +199,7 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRFe
      * Dispose this feature and all of the resources attached
      */
     dispose(): void {
-        super.dispose(); ;
+        super.dispose();
         this.onHitTestResultObservable.clear();
     }
 }
