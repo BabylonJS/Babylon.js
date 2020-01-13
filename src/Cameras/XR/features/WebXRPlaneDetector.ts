@@ -1,9 +1,9 @@
 import { WebXRFeaturesManager, IWebXRFeature } from '../webXRFeaturesManager';
 import { TransformNode } from '../../../Meshes/transformNode';
 import { WebXRSessionManager } from '../webXRSessionManager';
-import { Observable, Observer } from '../../../Misc/observable';
+import { Observable } from '../../../Misc/observable';
 import { Vector3, Matrix } from '../../../Maths/math.vector';
-import { Nullable } from '../../../types';
+import { WebXRAbstractFeature } from './WebXRAbstractFeature';
 
 const Name = "xr-plane-detector";
 
@@ -47,7 +47,7 @@ let planeIdProvider = 0;
  * The plane detector is used to detect planes in the real world when in AR
  * For more information see https://github.com/immersive-web/real-world-geometry/
  */
-export class WebXRPlaneDetector implements IWebXRFeature {
+export class WebXRPlaneDetector extends WebXRAbstractFeature implements IWebXRFeature {
 
     /**
      * The module's name
@@ -74,24 +74,17 @@ export class WebXRPlaneDetector implements IWebXRFeature {
      */
     public onPlaneUpdatedObservable: Observable<IWebXRPlane> = new Observable();
 
-    private _attached: boolean = false;
-    /**
-     * Is this feature attached
-     */
-    public get attached() {
-        return this._attached;
-    }
     private _enabled: boolean = false;
     private _detectedPlanes: Array<IWebXRPlane> = [];
     private _lastFrameDetected: XRPlaneSet = new Set();
-    private _observerTracked: Nullable<Observer<XRFrame>>;
 
     /**
      * construct a new Plane Detector
      * @param _xrSessionManager an instance of xr Session manager
      * @param _options configuration to use when constructing this feature
      */
-    constructor(private _xrSessionManager: WebXRSessionManager, private _options: IWebXRPlaneDetectorOptions = {}) {
+    constructor(_xrSessionManager: WebXRSessionManager, private _options: IWebXRPlaneDetectorOptions = {}) {
+        super(_xrSessionManager);
         if (this._xrSessionManager.session) {
             this._xrSessionManager.session.updateWorldTrackingState({ planeDetectionState: { enabled: true } });
             this._enabled = true;
@@ -103,76 +96,47 @@ export class WebXRPlaneDetector implements IWebXRFeature {
         }
     }
 
-    /**
-     * attach this feature
-     * Will usually be called by the features manager
-     *
-     * @returns true if successful.
-     */
-    attach(): boolean {
+    protected _onXRFrame(frame: XRFrame) {
+        if (!this.attached || !this._enabled || !frame) { return; }
+        // const timestamp = this.xrSessionManager.currentTimestamp;
 
-        this._observerTracked = this._xrSessionManager.onXRFrameObservable.add(() => {
-            const frame = this._xrSessionManager.currentFrame;
-            if (!this._attached || !this._enabled || !frame) { return; }
-            // const timestamp = this.xrSessionManager.currentTimestamp;
-
-            const detectedPlanes = frame.worldInformation.detectedPlanes;
-            if (detectedPlanes && detectedPlanes.size) {
-                this._detectedPlanes.filter((plane) => !detectedPlanes.has(plane.xrPlane)).map((plane) => {
-                    const index = this._detectedPlanes.indexOf(plane);
-                    this._detectedPlanes.splice(index, 1);
-                    this.onPlaneRemovedObservable.notifyObservers(plane);
-                });
-                // now check for new ones
-                detectedPlanes.forEach((xrPlane) => {
-                    if (!this._lastFrameDetected.has(xrPlane)) {
-                        const newPlane: Partial<IWebXRPlane> = {
-                            id: planeIdProvider++,
-                            xrPlane: xrPlane,
-                            polygonDefinition: []
-                        };
-                        const plane = this._updatePlaneWithXRPlane(xrPlane, newPlane, frame);
-                        this._detectedPlanes.push(plane);
-                        this.onPlaneAddedObservable.notifyObservers(plane);
-                    } else {
-                        // updated?
-                        if (xrPlane.lastChangedTime === this._xrSessionManager.currentTimestamp) {
-                            let index = this.findIndexInPlaneArray(xrPlane);
-                            const plane = this._detectedPlanes[index];
-                            this._updatePlaneWithXRPlane(xrPlane, plane, frame);
-                            this.onPlaneUpdatedObservable.notifyObservers(plane);
-                        }
+        const detectedPlanes = frame.worldInformation.detectedPlanes;
+        if (detectedPlanes && detectedPlanes.size) {
+            this._detectedPlanes.filter((plane) => !detectedPlanes.has(plane.xrPlane)).map((plane) => {
+                const index = this._detectedPlanes.indexOf(plane);
+                this._detectedPlanes.splice(index, 1);
+                this.onPlaneRemovedObservable.notifyObservers(plane);
+            });
+            // now check for new ones
+            detectedPlanes.forEach((xrPlane) => {
+                if (!this._lastFrameDetected.has(xrPlane)) {
+                    const newPlane: Partial<IWebXRPlane> = {
+                        id: planeIdProvider++,
+                        xrPlane: xrPlane,
+                        polygonDefinition: []
+                    };
+                    const plane = this._updatePlaneWithXRPlane(xrPlane, newPlane, frame);
+                    this._detectedPlanes.push(plane);
+                    this.onPlaneAddedObservable.notifyObservers(plane);
+                } else {
+                    // updated?
+                    if (xrPlane.lastChangedTime === this._xrSessionManager.currentTimestamp) {
+                        let index = this.findIndexInPlaneArray(xrPlane);
+                        const plane = this._detectedPlanes[index];
+                        this._updatePlaneWithXRPlane(xrPlane, plane, frame);
+                        this.onPlaneUpdatedObservable.notifyObservers(plane);
                     }
-                });
-                this._lastFrameDetected = detectedPlanes;
-            }
-        });
-
-        this._attached = true;
-        return true;
-    }
-
-    /**
-     * detach this feature.
-     * Will usually be called by the features manager
-     *
-     * @returns true if successful.
-     */
-    detach(): boolean {
-        this._attached = false;
-
-        if (this._observerTracked) {
-            this._xrSessionManager.onXRFrameObservable.remove(this._observerTracked);
+                }
+            });
+            this._lastFrameDetected = detectedPlanes;
         }
-
-        return true;
     }
 
     /**
      * Dispose this feature and all of the resources attached
      */
     dispose(): void {
-        this.detach();
+        super.dispose();
         this.onPlaneAddedObservable.clear();
         this.onPlaneRemovedObservable.clear();
         this.onPlaneUpdatedObservable.clear();

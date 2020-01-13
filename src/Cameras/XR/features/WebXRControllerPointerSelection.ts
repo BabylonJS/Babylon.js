@@ -15,6 +15,7 @@ import { CylinderBuilder } from '../../../Meshes/Builders/cylinderBuilder';
 import { TorusBuilder } from '../../../Meshes/Builders/torusBuilder';
 import { Ray } from '../../../Culling/ray';
 import { PickingInfo } from '../../../Collisions/pickingInfo';
+import { WebXRAbstractFeature } from './WebXRAbstractFeature';
 
 const Name = "xr-controller-pointer-selection";
 
@@ -61,7 +62,7 @@ export interface IWebXRControllerPointerSelectionOptions {
 /**
  * A module that will enable pointer selection for motion controllers of XR Input Sources
  */
-export class WebXRControllerPointerSelection implements IWebXRFeature {
+export class WebXRControllerPointerSelection extends WebXRAbstractFeature implements IWebXRFeature {
 
     /**
      * The module's name
@@ -93,10 +94,6 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
 
     private static _idCounter = 0;
 
-    private _observerTracked: Nullable<Observer<XRFrame>>;
-    private _observerControllerAdded: Nullable<Observer<WebXRController>>;
-    private _observerControllerRemoved: Nullable<Observer<WebXRController>>;
-    private _attached: boolean = false;
     private _tmpRay = new Ray(new Vector3(), new Vector3());
 
     private _controllers: {
@@ -112,13 +109,6 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
         };
     } = {};
 
-    /**
-     * Is this feature attached
-     */
-    public get attached() {
-        return this._attached;
-    }
-
     private _scene: Scene;
 
     /**
@@ -126,7 +116,8 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
      * @param _xrSessionManager the session manager for this module
      * @param _options read-only options to be used in this module
      */
-    constructor(private _xrSessionManager: WebXRSessionManager, private readonly _options: IWebXRControllerPointerSelectionOptions) {
+    constructor(_xrSessionManager: WebXRSessionManager, private readonly _options: IWebXRControllerPointerSelectionOptions) {
+        super(_xrSessionManager);
         this._scene = this._xrSessionManager.scene;
     }
 
@@ -137,52 +128,14 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
      * @returns true if successful.
      */
     attach(): boolean {
+        super.attach();
 
         this._options.xrInput.controllers.forEach(this._attachController);
-        this._options.xrInput.onControllerAddedObservable.add(this._attachController);
-        this._options.xrInput.onControllerRemovedObservable.add((controller) => {
+        this._addNewAttachObserver(this._options.xrInput.onControllerAddedObservable, this._attachController);
+        this._addNewAttachObserver(this._options.xrInput.onControllerRemovedObservable, (controller) => {
             // REMOVE the controller
             this._detachController(controller.uniqueId);
         });
-
-        this._observerTracked = this._xrSessionManager.onXRFrameObservable.add(() => {
-            Object.keys(this._controllers).forEach((id) => {
-                const controllerData = this._controllers[id];
-
-                // Every frame check collisions/input
-                controllerData.xrController.getWorldPointerRayToRef(this._tmpRay);
-                controllerData.pick = this._scene.pickWithRay(this._tmpRay);
-
-                const pick = controllerData.pick;
-
-                if (pick && pick.pickedPoint && pick.hit) {
-                    // Update laser state
-                    this._updatePointerDistance(controllerData.laserPointer, pick.distance);
-
-                    // Update cursor state
-                    controllerData.selectionMesh.position.copyFrom(pick.pickedPoint);
-                    controllerData.selectionMesh.scaling.x = Math.sqrt(pick.distance);
-                    controllerData.selectionMesh.scaling.y = Math.sqrt(pick.distance);
-                    controllerData.selectionMesh.scaling.z = Math.sqrt(pick.distance);
-
-                    // To avoid z-fighting
-                    let pickNormal = this._convertNormalToDirectionOfRay(pick.getNormal(true), this._tmpRay);
-                    let deltaFighting = 0.001;
-                    controllerData.selectionMesh.position.copyFrom(pick.pickedPoint);
-                    if (pickNormal) {
-                        let axis1 = Vector3.Cross(Axis.Y, pickNormal);
-                        let axis2 = Vector3.Cross(pickNormal, axis1);
-                        Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, controllerData.selectionMesh.rotation);
-                        controllerData.selectionMesh.position.addInPlace(pickNormal.scale(deltaFighting));
-                    }
-                    controllerData.selectionMesh.isVisible = true;
-                } else {
-                    controllerData.selectionMesh.isVisible = false;
-                }
-            });
-        });
-
-        this._attached = true;
 
         return true;
     }
@@ -194,23 +147,11 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
      * @returns true if successful.
      */
     detach(): boolean {
-
-        if (this._observerTracked) {
-            this._xrSessionManager.onXRFrameObservable.remove(this._observerTracked);
-        }
+        super.detach();
 
         Object.keys(this._controllers).forEach((controllerId) => {
             this._detachController(controllerId);
         });
-
-        if (this._observerControllerAdded) {
-            this._options.xrInput.onControllerAddedObservable.remove(this._observerControllerAdded);
-        }
-        if (this._observerControllerRemoved) {
-            this._options.xrInput.onControllerRemovedObservable.remove(this._observerControllerRemoved);
-        }
-
-        this._attached = false;
 
         return true;
     }
@@ -230,6 +171,43 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
             }
         }
         return null;
+    }
+
+    protected _onXRFrame(_xrFrame: XRFrame) {
+        Object.keys(this._controllers).forEach((id) => {
+            const controllerData = this._controllers[id];
+
+            // Every frame check collisions/input
+            controllerData.xrController.getWorldPointerRayToRef(this._tmpRay);
+            controllerData.pick = this._scene.pickWithRay(this._tmpRay);
+
+            const pick = controllerData.pick;
+
+            if (pick && pick.pickedPoint && pick.hit) {
+                // Update laser state
+                this._updatePointerDistance(controllerData.laserPointer, pick.distance);
+
+                // Update cursor state
+                controllerData.selectionMesh.position.copyFrom(pick.pickedPoint);
+                controllerData.selectionMesh.scaling.x = Math.sqrt(pick.distance);
+                controllerData.selectionMesh.scaling.y = Math.sqrt(pick.distance);
+                controllerData.selectionMesh.scaling.z = Math.sqrt(pick.distance);
+
+                // To avoid z-fighting
+                let pickNormal = this._convertNormalToDirectionOfRay(pick.getNormal(true), this._tmpRay);
+                let deltaFighting = 0.001;
+                controllerData.selectionMesh.position.copyFrom(pick.pickedPoint);
+                if (pickNormal) {
+                    let axis1 = Vector3.Cross(Axis.Y, pickNormal);
+                    let axis2 = Vector3.Cross(pickNormal, axis1);
+                    Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, controllerData.selectionMesh.rotation);
+                    controllerData.selectionMesh.position.addInPlace(pickNormal.scale(deltaFighting));
+                }
+                controllerData.selectionMesh.isVisible = true;
+            } else {
+                controllerData.selectionMesh.isVisible = false;
+            }
+        });
     }
 
     private _attachController = (xrController: WebXRController) => {
@@ -471,13 +449,6 @@ export class WebXRControllerPointerSelection implements IWebXRFeature {
     private _updatePointerDistance(_laserPointer: AbstractMesh, distance: number = 100) {
         _laserPointer.scaling.y = distance;
         _laserPointer.position.z = distance / 2;
-    }
-
-    /**
-     * Dispose this feature and all of the resources attached
-     */
-    dispose(): void {
-        this.detach();
     }
 }
 
