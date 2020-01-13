@@ -20,6 +20,7 @@ import { TorusBuilder } from '../../../Meshes/Builders/torusBuilder';
 import { PickingInfo } from '../../../Collisions/pickingInfo';
 import { Curve3 } from '../../../Maths/math.path';
 import { LinesBuilder } from '../../../Meshes/Builders/linesBuilder';
+import { WebXRAbstractFeature } from './WebXRAbstractFeature';
 
 const Name = "xr-controller-teleportation";
 
@@ -83,7 +84,7 @@ export interface IWebXRTeleportationOptions {
  * When enabled and attached, the feature will allow a user to move aroundand rotate in the scene using
  * the input of the attached controllers.
  */
-export class WebXRMotionControllerTeleportation implements IWebXRFeature {
+export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature implements IWebXRFeature {
     /**
      * The module's name
      */
@@ -121,18 +122,6 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
      * Distance to travel when moving backwards
      */
     public backwardsTeleportationDistance: number = 0.5;
-
-    private _observerTracked: Nullable<Observer<XRFrame>>;
-    private _observerControllerAdded: Nullable<Observer<WebXRController>>;
-    private _observerControllerRemoved: Nullable<Observer<WebXRController>>;
-
-    private _attached: boolean = false;
-    /**
-     * Is this feature attached
-     */
-    public get attached() {
-        return this._attached;
-    }
 
     /**
      * Add a new mesh to the floor meshes array
@@ -188,7 +177,8 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
      * @param _xrSessionManager an instance of WebXRSessionManager
      * @param _options configuration object for this feature
      */
-    constructor(private _xrSessionManager: WebXRSessionManager, private _options: IWebXRTeleportationOptions) {
+    constructor(_xrSessionManager: WebXRSessionManager, private _options: IWebXRTeleportationOptions) {
+        super(_xrSessionManager);
         // create default mesh if not provided
         if (!this._options.teleportationTargetMesh) {
             this.createDefaultTargetMesh();
@@ -209,25 +199,40 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
         this._selectionFeature = selectionFeature;
     }
 
-    /**
-     * attach this feature
-     * Will usually be called by the features manager
-     *
-     * @returns true if successful.
-     */
-    attach(): boolean {
+    public attach(): boolean {
+        super.attach();
 
         this._options.xrInput.controllers.forEach(this._attachController);
-        this._observerControllerAdded = this._options.xrInput.onControllerAddedObservable.add(this._attachController);
-        this._observerControllerRemoved = this._options.xrInput.onControllerRemovedObservable.add((controller) => {
+        this._addNewAttachObserver(this._options.xrInput.onControllerAddedObservable, this._attachController);
+        this._addNewAttachObserver(this._options.xrInput.onControllerRemovedObservable, (controller) => {
             // REMOVE the controller
             this._detachController(controller.uniqueId);
         });
 
-        this._observerTracked = this._xrSessionManager.onXRFrameObservable.add(() => {
-            const frame = this._xrSessionManager.currentFrame;
+        return true;
+    }
+
+    public detach(): boolean {
+        super.detach();
+
+        Object.keys(this._controllers).forEach((controllerId) => {
+            this._detachController(controllerId);
+        });
+
+        this.setTargetMeshVisibility(false);
+
+        return true;
+    }
+
+    public dispose(): void {
+        super.dispose();
+        this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.dispose(false, true);
+    }
+
+    protected _onXRFrame(_xrFrame: XRFrame) {
+        const frame = this._xrSessionManager.currentFrame;
             const scene = this._xrSessionManager.scene;
-            if (!this._attached || !frame) { return; }
+            if (!this.attach || !frame) { return; }
 
             // render target if needed
             const targetMesh = this._options.teleportationTargetMesh;
@@ -283,45 +288,6 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
             } else {
                 this.setTargetMeshVisibility(false);
             }
-        });
-
-        this._attached = true;
-        return true;
-    }
-
-    /**
-     * detach this feature.
-     * Will usually be called by the features manager
-     *
-     * @returns true if successful.
-     */
-    detach(): boolean {
-        this._attached = false;
-
-        if (this._observerTracked) {
-            this._xrSessionManager.onXRFrameObservable.remove(this._observerTracked);
-        }
-
-        Object.keys(this._controllers).forEach((controllerId) => {
-            this._detachController(controllerId);
-        });
-
-        if (this._observerControllerAdded) {
-            this._options.xrInput.onControllerAddedObservable.remove(this._observerControllerAdded);
-        }
-        if (this._observerControllerRemoved) {
-            this._options.xrInput.onControllerRemovedObservable.remove(this._observerControllerRemoved);
-        }
-
-        return true;
-    }
-
-    /**
-     * Dispose this feature and all of the resources attached
-     */
-    dispose(): void {
-        this.detach();
-        this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.dispose(false, true);
     }
 
     private _currentTeleportationControllerId: string;
