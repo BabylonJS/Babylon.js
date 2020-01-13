@@ -8,7 +8,7 @@ jobs:
     vmImage: 'Ubuntu-16.04'
     demands: npm
   steps:
-  - script: 'npm install -g netlify'
+  - script: 'npm install netlify-cli'
     displayName: 'npm install netlify'
   - script: 'netlify link --id=220a52f0-ea85-4244-8342-8ec149cd78d6'
     displayName: 'netlify link babylonjscontrollers'
