@@ -10,12 +10,12 @@ jobs:
   steps:
   - script: 'npm install netlify'
     displayName: 'npm install netlify'
-  - script: 'netlify link --id=220a52f0-ea85-4244-8342-8ec149cd78d6'
+  - script: 'npx netlify link --id=220a52f0-ea85-4244-8342-8ec149cd78d6'
     displayName: 'netlify link babylonjscontrollers'
     env:
       AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
       NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
-  - script: 'netlify deploy --prod --dir=assets/meshes/controllers'
+  - script: 'npx netlify deploy --prod --dir=assets/meshes/controllers'
     displayName: 'netlify link babylonjscontrollers'
     env:
       AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
