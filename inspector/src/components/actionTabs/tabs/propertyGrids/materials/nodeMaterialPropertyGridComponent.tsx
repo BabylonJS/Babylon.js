@@ -74,18 +74,22 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
             case NodeMaterialBlockConnectionPointTypes.Float:
                     let cantDisplaySlider = (isNaN(block.min) || isNaN(block.max) || block.min === block.max);
                     return (
-                        <>
+                        <div key={block.name}>                            
                             {
-                                cantDisplaySlider &&
+                                block.isBoolean &&
+                                <CheckBoxLineComponent key={block.name} label={block.name} target={block} propertyName="value" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                            }
+                            {
+                                !block.isBoolean && cantDisplaySlider &&
                                 <FloatLineComponent key={block.name} lockObject={this.props.lockObject} label={block.name} target={block} propertyName="value" 
                                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                                 />
                             }        
                             {
-                                !cantDisplaySlider &&
+                                !block.isBoolean && !cantDisplaySlider &&
                                 <SliderLineComponent key={block.name} label={block.name} target={block} propertyName="value" step={(block.max - block.min) / 100.0} minimum={block.min} maximum={block.max} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                             }
-                        </>
+                        </div>
                     );  
             case NodeMaterialBlockConnectionPointTypes.Color3:
             case NodeMaterialBlockConnectionPointTypes.Color4:

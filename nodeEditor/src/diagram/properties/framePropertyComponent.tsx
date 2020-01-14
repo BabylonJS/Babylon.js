@@ -45,7 +45,7 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
             <div>
                 <LineContainerComponent title="GENERAL">
                     <TextInputLineComponent globalState={this.props.globalState} label="Name" propertyName="name" target={this.props.frame} />
-                    <Color3LineComponent label="Color" target={this.props.frame} propertyName="color"></Color3LineComponent>
+                    <Color3LineComponent globalState={this.props.globalState} label="Color" target={this.props.frame} propertyName="color"></Color3LineComponent>
                     {
                         !this.props.frame.isCollapsed &&
                         <ButtonLineComponent label="Collapse" onClick={() => {
