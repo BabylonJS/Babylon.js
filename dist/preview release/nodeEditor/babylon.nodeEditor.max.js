@@ -56633,11 +56633,8 @@ var GraphEditor = /** @class */ (function (_super) {
         }, false);
         return _this;
     }
-    /**
-     * Creates a node and recursivly creates its parent nodes from it's input
-     * @param nodeMaterialBlock
-     */
-    GraphEditor.prototype.createNodeFromObject = function (block) {
+    GraphEditor.prototype.createNodeFromObject = function (block, recursion) {
+        if (recursion === void 0) { recursion = true; }
         if (this._blocks.indexOf(block) !== -1) {
             return this._graphCanvas.nodes.filter(function (n) { return n.block === block; })[0];
         }
@@ -56652,7 +56649,7 @@ var GraphEditor = /** @class */ (function (_super) {
         if (block.inputs.length) {
             for (var _i = 0, _a = block.inputs; _i < _a.length; _i++) {
                 var input = _a[_i];
-                if (input.isConnected) {
+                if (input.isConnected && recursion) {
                     this.createNodeFromObject(input.sourceBlock);
                 }
             }
@@ -56660,7 +56657,7 @@ var GraphEditor = /** @class */ (function (_super) {
         // Graph
         var node = this._graphCanvas.appendBlock(block);
         // Links
-        if (block.inputs.length) {
+        if (block.inputs.length && recursion) {
             for (var _b = 0, _c = block.inputs; _b < _c.length; _b++) {
                 var input = _c[_b];
                 if (input.isConnected) {
@@ -56745,7 +56742,7 @@ var GraphEditor = /** @class */ (function (_super) {
             if (!clone) {
                 return;
             }
-            var newNode = this.createNodeFromObject(clone);
+            var newNode = this.createNodeFromObject(clone, false);
             var x = 0;
             var y = 0;
             if (originalNode) {

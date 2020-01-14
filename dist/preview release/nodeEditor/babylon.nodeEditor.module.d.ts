@@ -1454,11 +1454,7 @@ declare module "babylonjs-node-editor/graphEditor" {
         private _mouseLocationX;
         private _mouseLocationY;
         private _onWidgetKeyUpPointer;
-        /**
-         * Creates a node and recursivly creates its parent nodes from it's input
-         * @param nodeMaterialBlock
-         */
-        createNodeFromObject(block: NodeMaterialBlock): GraphNode;
+        createNodeFromObject(block: NodeMaterialBlock, recursion?: boolean): GraphNode;
         addValueNode(type: string): GraphNode;
         componentDidMount(): void;
         componentWillUnmount(): void;
@@ -2719,11 +2715,7 @@ declare module NODEEDITOR {
         private _mouseLocationX;
         private _mouseLocationY;
         private _onWidgetKeyUpPointer;
-        /**
-         * Creates a node and recursivly creates its parent nodes from it's input
-         * @param nodeMaterialBlock
-         */
-        createNodeFromObject(block: BABYLON.NodeMaterialBlock): GraphNode;
+        createNodeFromObject(block: BABYLON.NodeMaterialBlock, recursion?: boolean): GraphNode;
         addValueNode(type: string): GraphNode;
         componentDidMount(): void;
         componentWillUnmount(): void;
