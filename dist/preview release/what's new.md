@@ -292,6 +292,7 @@
 - Fix shadow bound calculation in CSM shadow technique ([Popov72](https://github.com/Popov72))
 - Disposing of the depthReducer used in CSM ([Popov72](https://github.com/Popov72))
 - Fixed an issue with teleportation detach and attach ([#7419](https://github.com/BabylonJS/Babylon.js/issues/7419)) ([RaananW](https://github.com/RaananW/))
+- Physics compound calculations were incorrect ([#7407](https://github.com/BabylonJS/Babylon.js/issues/7407)) ([RaananW](https://github.com/RaananW/))
 
 ## Breaking changes
 
