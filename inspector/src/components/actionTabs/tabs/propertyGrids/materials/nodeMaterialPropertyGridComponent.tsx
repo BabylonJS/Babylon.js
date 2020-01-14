@@ -56,7 +56,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                     textureBlocks.map((textureBlock, i) => {
                         return (
                             <TextureLinkLineComponent label={textureBlock.name} 
-                                key={i} 
+                                key={"nodematText" + i} 
                                 texture={textureBlock.texture} 
                                 material={material} 
                                 onTextureCreated={texture => textureBlock.texture = texture}
@@ -147,9 +147,9 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                     }           
                 </LineContainerComponent>
                 {
-                    namedGroups.map(name => {
+                    namedGroups.map((name, i) => {
                         return (
-                            <LineContainerComponent globalState={this.props.globalState} title={name.toUpperCase()}>
+                            <LineContainerComponent key={"inputValue" + i} globalState={this.props.globalState} title={name.toUpperCase()}>
                             {
                                 configurableInputBlocks.filter(block => block.groupInInspector === name).map(block => {
                                     return this.renderInputBlock(block);
