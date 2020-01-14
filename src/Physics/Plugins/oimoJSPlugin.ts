@@ -102,7 +102,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
             var bodyConfig: any = {
                 name: impostor.uniqueId,
                 //Oimo must have mass, also for static objects.
-                config: [impostor.getParam("mass") || 1, impostor.getParam("friction"), impostor.getParam("restitution")],
+                config: [impostor.getParam("mass") || 0.001, impostor.getParam("friction"), impostor.getParam("restitution")],
                 size: [],
                 type: [],
                 pos: [],
@@ -143,10 +143,15 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                 var oldQuaternion = i.object.rotationQuaternion;
                 globalQuaternion = oldQuaternion.clone();
 
+                i.object.rotationQuaternion.set(0, 0, 0, 1);
+                i.object.computeWorldMatrix(true);
+
                 var rot = oldQuaternion.toEulerAngles();
                 var extendSize = i.getObjectExtendSize();
 
                 const radToDeg = 57.295779513082320876;
+
+                console.log(i.object.position, extendSize);
 
                 if (i === impostor) {
                     var center = impostor.getObjectCenter();
@@ -166,12 +171,15 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                     bodyConfig.posShape.push(localPosition.x);
                     bodyConfig.posShape.push(localPosition.y);
                     bodyConfig.posShape.push(localPosition.z);
+
                     // bodyConfig.pos.push(0, 0, 0);
 
                     bodyConfig.rotShape.push(rot.x * radToDeg);
                     bodyConfig.rotShape.push(rot.y * radToDeg);
                     bodyConfig.rotShape.push(rot.z * radToDeg);
                 }
+
+                i.object.rotationQuaternion.copyFrom(globalQuaternion);
 
                 // register mesh
                 switch (i.type) {
@@ -225,7 +233,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                 //actually not needed, but hey...
                 i.object.rotationQuaternion = oldQuaternion;
             });
-
+            console.log(bodyConfig);
             impostor.physicsBody = this.world.add(bodyConfig);
             // set the quaternion, ignoring the previously defined (euler) rotation
             impostor.physicsBody.resetQuaternion(globalQuaternion);
@@ -328,13 +336,15 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
 
     public setTransformationFromPhysicsBody(impostor: PhysicsImpostor) {
         if (!impostor.physicsBody.sleeping) {
-            //TODO check that
-            /*if (impostor.physicsBody.shapes.next) {
-                var parentShape = this._getLastShape(impostor.physicsBody);
-                impostor.object.position.copyFrom(parentShape.position);
-                console.log(parentShape.position);
-            } else {*/
-            impostor.object.position.copyFrom(impostor.physicsBody.getPosition());
+            if (impostor.physicsBody.shapes.next) {
+                let parent = impostor.physicsBody.shapes;
+                while (parent.next) {
+                    parent = parent.next;
+                }
+                impostor.object.position.copyFrom(parent.position);
+            } else {
+                impostor.object.position.copyFrom(impostor.physicsBody.getPosition());
+            }
             //}
 
             if (impostor.object.rotationQuaternion) {
@@ -345,6 +355,10 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
 
     public setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion) {
         var body = impostor.physicsBody;
+        // disable bidirectional for compound meshes
+        if (impostor.physicsBody.shapes.next) {
+            return;
+        }
         body.position.copy(newPosition);
         body.orientation.copy(newRotation);
         body.syncShapes();
