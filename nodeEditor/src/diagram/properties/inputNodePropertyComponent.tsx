@@ -19,6 +19,7 @@ import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { GenericPropertyTabComponent } from './genericNodePropertyComponent';
 import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
 import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
+import { Color4PropertyTabComponent } from '../../components/propertyTab/properties/color4PropertyTabComponent';
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -75,9 +76,12 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     <Vector2PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
                 );
             case NodeMaterialBlockConnectionPointTypes.Color3:
-            case NodeMaterialBlockConnectionPointTypes.Color4:
                 return (
                     <Color3PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
+                );
+            case NodeMaterialBlockConnectionPointTypes.Color4:
+                return (
+                    <Color4PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
                 );
             case NodeMaterialBlockConnectionPointTypes.Vector3:
                 return (
