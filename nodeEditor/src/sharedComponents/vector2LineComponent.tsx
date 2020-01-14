@@ -6,6 +6,7 @@ import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
+import { GlobalState } from '../globalState';
 
 interface IVector2LineComponentProps {
     label: string;
@@ -14,6 +15,7 @@ interface IVector2LineComponentProps {
     step?: number;
     onChange?: (newvalue: Vector2) => void;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    globalState: GlobalState;
 }
 
 export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, { isExpanded: boolean, value: Vector2 }> {
@@ -104,8 +106,8 @@ export class Vector2LineComponent extends React.Component<IVector2LineComponentP
                 {
                     this.state.isExpanded &&
                     <div className="secondLine">
-                        <NumericInputComponent label="x" step={this.props.step} value={this.state.value.x} onChange={value => this.updateStateX(value)} />
-                        <NumericInputComponent label="y" step={this.props.step} value={this.state.value.y} onChange={value => this.updateStateY(value)} />
+                        <NumericInputComponent globalState={this.props.globalState} label="x" step={this.props.step} value={this.state.value.x} onChange={value => this.updateStateX(value)} />
+                        <NumericInputComponent globalState={this.props.globalState} label="y" step={this.props.step} value={this.state.value.y} onChange={value => this.updateStateY(value)} />
                     </div>
                 }
             </div>

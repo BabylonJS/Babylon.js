@@ -2,9 +2,8 @@
 
 ## Major updates
 
-- WIP: Node Material (NEED DOC OR SAMPLES) ([Deltakosh](https://github.com/deltakosh/))
-- WIP: Node material editor (NEED OR AND VIDEOS) ([Deltakosh](https://github.com/deltakosh/) / [TrevorDev](https://github.com/TrevorDev))
-- WIP: WebGPU support (NEED DOC OR SAMPLES) ([Sebavan](https://github.com/sebavan/))
+- Node Material and Node material editor [Doc](https://doc.babylonjs.com/how_to/node_material) ([Deltakosh](https://github.com/deltakosh/) / [TrevorDev](https://github.com/TrevorDev))
+- WebGPU support [Doc](https://doc.babylonjs.com/extensions/webgpu) ([Sebavan](https://github.com/sebavan/))
 - .basis texture file format support [Doc](https://doc.babylonjs.com/resources/multi-platform_compressed_textures#basis-file-format) ([TrevorDev](https://github.com/TrevorDev))
 - WIP: Recast navigation mesh and crowd of moving agents [Demo](https://www.babylonjs-playground.com/#AJTRIL) ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Added Points Cloud Particle System ([JohnK](https://github.com/BabylonJSGuide/))
@@ -17,6 +16,7 @@
 - Added support for multiple canvases with one engine [Doc](https://doc.babylonjs.com/how_to/multi_canvases) ([Deltakosh](https://github.com/deltakosh/)
 - Added useReverseDepthBuffer to Engine which can provide greater z depth for distant objects without the cost of a logarithmic depth buffer ([BenAdams](https://github.com/benaadams/))
 - Added the "Cascaded Shadow Mapping" (CSM) shadow rendering technique ([Popov72](https://github.com/Popov72) (initiated by [lockphase](https://github.com/lockphase/)))
+- Screen space reflections post-process [Doc](https://doc.babylonjs.com/how_to/using_screenspacereflectionspostprocess) ([julien-moreau](https://github.com/julien-moreau))
 
 ## Updates
 
@@ -292,6 +292,7 @@
 - Fix shadow bound calculation in CSM shadow technique ([Popov72](https://github.com/Popov72))
 - Disposing of the depthReducer used in CSM ([Popov72](https://github.com/Popov72))
 - Fixed an issue with teleportation detach and attach ([#7419](https://github.com/BabylonJS/Babylon.js/issues/7419)) ([RaananW](https://github.com/RaananW/))
+- Physics compound calculations were incorrect ([#7407](https://github.com/BabylonJS/Babylon.js/issues/7407)) ([RaananW](https://github.com/RaananW/))
 
 ## Breaking changes
 

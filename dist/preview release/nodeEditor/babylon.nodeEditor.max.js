@@ -52413,7 +52413,7 @@ var Color3PropertyTabComponent = /** @class */ (function (_super) {
     }
     Color3PropertyTabComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Color3LineComponent"], { label: "Value", target: this.props.inputBlock, propertyName: "value", onChange: function () {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Color3LineComponent"], { globalState: this.props.globalState, label: "Value", target: this.props.inputBlock, propertyName: "value", onChange: function () {
                 _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
             } }));
     };
@@ -52483,7 +52483,7 @@ var MatrixPropertyTabComponent = /** @class */ (function (_super) {
     }
     MatrixPropertyTabComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_matrixLineComponent__WEBPACK_IMPORTED_MODULE_2__["MatrixLineComponent"], { label: "Value", target: this.props.inputBlock, propertyName: "value", onChange: function () {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_matrixLineComponent__WEBPACK_IMPORTED_MODULE_2__["MatrixLineComponent"], { globalState: this.props.globalState, label: "Value", target: this.props.inputBlock, propertyName: "value", onChange: function () {
                 _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
             }, mode: this.props.inputBlock.matrixMode, onModeChange: function (mode) {
                 _this.props.inputBlock.matrixMode = mode;
@@ -52520,7 +52520,7 @@ var Vector2PropertyTabComponent = /** @class */ (function (_super) {
     }
     Vector2PropertyTabComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector2LineComponent"], { label: "Value", target: this.props.inputBlock, propertyName: "value", onChange: function () {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector2LineComponent"], { globalState: this.props.globalState, label: "Value", target: this.props.inputBlock, propertyName: "value", onChange: function () {
                 _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
             } }));
     };
@@ -52555,7 +52555,7 @@ var Vector3PropertyTabComponent = /** @class */ (function (_super) {
     }
     Vector3PropertyTabComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector3LineComponent"], { label: "Value", target: this.props.inputBlock, propertyName: "value", onChange: function () {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector3LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector3LineComponent"], { globalState: this.props.globalState, label: "Value", target: this.props.inputBlock, propertyName: "value", onChange: function () {
                 _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
             } }));
     };
@@ -52590,7 +52590,7 @@ var Vector4PropertyTabComponent = /** @class */ (function (_super) {
     }
     Vector4PropertyTabComponent.prototype.render = function () {
         var _this = this;
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector4LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector4LineComponent"], { label: "Value", target: this.props.inputBlock, propertyName: "value", onChange: function () {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector4LineComponent__WEBPACK_IMPORTED_MODULE_2__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Value", target: this.props.inputBlock, propertyName: "value", onChange: function () {
                 _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
             } }));
     };
@@ -55339,7 +55339,7 @@ var FramePropertyTabComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: this.props.frame }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_3__["Color3LineComponent"], { label: "Color", target: this.props.frame, propertyName: "color" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_3__["Color3LineComponent"], { globalState: this.props.globalState, label: "Color", target: this.props.frame, propertyName: "color" }),
                     !this.props.frame.isCollapsed &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Collapse", onClick: function () {
                                 _this.props.frame.isCollapsed = true;
@@ -55553,6 +55553,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./genericNodePropertyComponent */ "./diagram/properties/genericNodePropertyComponent.tsx");
 /* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
+/* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
+
 
 
 
@@ -55582,15 +55584,28 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
             case babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_12__["NodeMaterialBlockConnectionPointTypes"].Float: {
                 var cantDisplaySlider = (isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max);
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { label: "Min", target: inputBlock, propertyName: "min", onChange: function () {
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__["CheckBoxLineComponent"], { label: "Is boolean", target: inputBlock, propertyName: "isBoolean", onValueChanged: function () {
                             _this.forceUpdate();
                         } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { label: "Max", target: inputBlock, propertyName: "max", onChange: function () {
-                            _this.forceUpdate();
-                        } }),
-                    cantDisplaySlider &&
+                    inputBlock.isBoolean &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_15__["CheckBoxLineComponent"], { label: "Value", isSelected: function () {
+                                return inputBlock.value === 1;
+                            }, onSelect: function (value) {
+                                inputBlock.value = value ? 1 : 0;
+                                _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                                _this.forceUpdate();
+                            } }),
+                    !inputBlock.isBoolean &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { label: "Min", target: inputBlock, propertyName: "min", onChange: function () {
+                                _this.forceUpdate();
+                            } }),
+                    !inputBlock.isBoolean &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { label: "Max", target: inputBlock, propertyName: "max", onChange: function () {
+                                _this.forceUpdate();
+                            } }),
+                    !inputBlock.isBoolean && cantDisplaySlider &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_floatPropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["FloatPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }),
-                    !cantDisplaySlider &&
+                    !inputBlock.isBoolean && !cantDisplaySlider &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Value", target: inputBlock, propertyName: "value", step: (inputBlock.max - inputBlock.min) / 100.0, minimum: inputBlock.min, maximum: inputBlock.max, onChange: function () {
                                 _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             } })));
@@ -55919,8 +55934,8 @@ var RemapPropertyTabComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_4__["GenericPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "PROPERTIES" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector2LineComponent"], { label: "From", propertyName: "sourceRange", target: remapBlock, onChange: function () { return _this.forceRebuild(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector2LineComponent"], { label: "To", propertyName: "targetRange", target: remapBlock, onChange: function () { return _this.forceRebuild(); } }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector2LineComponent"], { globalState: this.props.globalState, label: "From", propertyName: "sourceRange", target: remapBlock, onChange: function () { return _this.forceRebuild(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector2LineComponent"], { globalState: this.props.globalState, label: "To", propertyName: "targetRange", target: remapBlock, onChange: function () { return _this.forceRebuild(); } }))));
     };
     return RemapPropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -57431,9 +57446,9 @@ var Color3LineComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
             this.state.isExpanded &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { label: "r", value: this.state.color.r, onChange: function (value) { return _this.updateStateR(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { label: "g", value: this.state.color.g, onChange: function (value) { return _this.updateStateG(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { label: "b", value: this.state.color.b, onChange: function (value) { return _this.updateStateB(value); } }))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "r", value: this.state.color.r, onChange: function (value) { return _this.updateStateR(value); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "g", value: this.state.color.g, onChange: function (value) { return _this.updateStateG(value); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { globalState: this.props.globalState, label: "b", value: this.state.color.b, onChange: function (value) { return _this.updateStateB(value); } }))));
     };
     return Color3LineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -57788,10 +57803,10 @@ var MatrixLineComponent = /** @class */ (function (_super) {
                     } })),
             this.state.mode === 0 &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { label: "Row #0", value: this.state.value.getRow(0), onChange: function (value) { return _this.updateRow(value, 0); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { label: "Row #1", value: this.state.value.getRow(1), onChange: function (value) { return _this.updateRow(value, 1); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { label: "Row #2", value: this.state.value.getRow(2), onChange: function (value) { return _this.updateRow(value, 2); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { label: "Row #3", value: this.state.value.getRow(3), onChange: function (value) { return _this.updateRow(value, 3); } })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Row #0", value: this.state.value.getRow(0), onChange: function (value) { return _this.updateRow(value, 0); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Row #1", value: this.state.value.getRow(1), onChange: function (value) { return _this.updateRow(value, 1); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Row #2", value: this.state.value.getRow(2), onChange: function (value) { return _this.updateRow(value, 2); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_vector4LineComponent__WEBPACK_IMPORTED_MODULE_3__["Vector4LineComponent"], { globalState: this.props.globalState, label: "Row #3", value: this.state.value.getRow(3), onChange: function (value) { return _this.updateRow(value, 3); } })),
             this.state.mode !== 0 &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Angle", minimum: 0, maximum: 2 * Math.PI, useEuler: true, step: 0.1, directValue: this.state.angle, onChange: function (value) { return _this.updateBasedOnMode(value); } }))));
@@ -57898,7 +57913,9 @@ var NumericInputComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric" },
             this.props.label &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "numeric-label" }, this.props.label + ": "),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", step: this.props.step, className: "numeric-input", value: this.state.value, onChange: function (evt) { return _this.updateValue(evt); } })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "number", onFocus: function () { return _this.props.globalState.blockKeyboardEvents = true; }, onBlur: function (evt) {
+                    _this.props.globalState.blockKeyboardEvents = false;
+                }, step: this.props.step, className: "numeric-input", value: this.state.value, onChange: function (evt) { return _this.updateValue(evt); } })));
     };
     NumericInputComponent.defaultProps = {
         step: 1,
@@ -58570,8 +58587,8 @@ var Vector2LineComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
             this.state.isExpanded &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }))));
     };
     Vector2LineComponent.defaultProps = {
         step: 0.001,
@@ -58670,9 +58687,9 @@ var Vector3LineComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
             this.state.isExpanded &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "z", step: this.props.step, value: this.state.value.z, onChange: function (value) { return _this.updateStateZ(value); } }))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "z", step: this.props.step, value: this.state.value.z, onChange: function (value) { return _this.updateStateZ(value); } }))));
     };
     Vector3LineComponent.defaultProps = {
         step: 0.001,
@@ -58781,10 +58798,10 @@ var Vector4LineComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "expand hoverIcon", onClick: function () { return _this.switchExpandState(); }, title: "Expand" }, chevron)),
             this.state.isExpanded &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "z", step: this.props.step, value: this.state.value.z, onChange: function (value) { return _this.updateStateZ(value); } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { label: "w", step: this.props.step, value: this.state.value.w, onChange: function (value) { return _this.updateStateW(value); } }))));
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "x", step: this.props.step, value: this.state.value.x, onChange: function (value) { return _this.updateStateX(value); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "y", step: this.props.step, value: this.state.value.y, onChange: function (value) { return _this.updateStateY(value); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "z", step: this.props.step, value: this.state.value.z, onChange: function (value) { return _this.updateStateZ(value); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_numericInputComponent__WEBPACK_IMPORTED_MODULE_2__["NumericInputComponent"], { globalState: this.props.globalState, label: "w", step: this.props.step, value: this.state.value.w, onChange: function (value) { return _this.updateStateW(value); } }))));
     };
     Vector4LineComponent.defaultProps = {
         step: 0.001,
