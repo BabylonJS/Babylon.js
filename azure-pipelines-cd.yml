@@ -37,18 +37,18 @@ jobs:
       AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
       NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
 # playground
-  - script: 'npx netlify unlink'
-    displayName: 'netlify unlink'
-  - script: 'npx netlify link --id=9161d5f0-b208-4b86-a281-9300386f6c94'
-    displayName: 'netlify link babylonjs-playground'
-    env:
-      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
-      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
-  - script: 'npx netlify deploy --prod --dir=Playground/'
-    displayName: 'netlify deploy babylonjs-playground'
-    env:
-      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
-      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+#  - script: 'npx netlify unlink'
+#    displayName: 'netlify unlink'
+#  - script: 'npx netlify link --id=9161d5f0-b208-4b86-a281-9300386f6c94'
+#    displayName: 'netlify link babylonjs-playground'
+#    env:
+#      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+#      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+#  - script: 'npx netlify deploy --prod --dir=Playground/'
+#    displayName: 'netlify deploy babylonjs-playground'
+#    env:
+#      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+#      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
 # babylonjs-preview
   - script: 'npx netlify unlink'
     displayName: 'netlify unlink'
