@@ -893,7 +893,9 @@ export class NodeMaterial extends PushMaterial {
     public getActiveTextures(): BaseTexture[] {
         var activeTextures = super.getActiveTextures();
 
-        activeTextures.push(...this._sharedData.textureBlocks.filter((tb) => tb.texture).map((tb) => tb.texture!));
+        if (this._sharedData) {
+            activeTextures.push(...this._sharedData.textureBlocks.filter((tb) => tb.texture).map((tb) => tb.texture!));
+        }
 
         return activeTextures;
     }
