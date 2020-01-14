@@ -57099,6 +57099,9 @@ declare module BABYLON {
     }
     /** @hidden */
     export class NodeMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+        NORMAL: boolean;
+        TANGENT: boolean;
+        UV1: boolean;
         /** BONES */
         NUM_BONE_INFLUENCERS: number;
         BonesPerMesh: number;
@@ -57153,8 +57156,10 @@ declare module BABYLON {
         private _cachedWorldViewProjectionMatrix;
         private _optimizers;
         private _animationFrame;
-        /** Define the URl to load node editor script */
+        /** Define the Url to load node editor script */
         static EditorURL: string;
+        /** Define the Url to load snippets */
+        static SnippetUrl: string;
         private BJSNODEMATERIALEDITOR;
         /** Get the inspector from bundle or global */
         private _getGlobalNodeMaterialEditor;
@@ -57399,6 +57404,14 @@ declare module BABYLON {
          * @returns a new node material
          */
         static Parse(source: any, scene: Scene, rootUrl?: string): NodeMaterial;
+        /**
+         * Creates a node material from a snippet saved by the node material editor
+         * @param snippetId defines the snippet to load
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @returns a promise that will resolve to the new node material
+         */
+        static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl?: string): Promise<NodeMaterial>;
         /**
          * Creates a new node material set to default basic configuration
          * @param name defines the name of the material

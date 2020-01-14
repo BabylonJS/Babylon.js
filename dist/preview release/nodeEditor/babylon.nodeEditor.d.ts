@@ -370,6 +370,7 @@ declare module NODEEDITOR {
         value: number;
         step?: number;
         onChange: (value: number) => void;
+        globalState: GlobalState;
     }
     export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
         value: string;
@@ -394,6 +395,7 @@ declare module NODEEDITOR {
         step?: number;
         onChange?: (newvalue: BABYLON.Vector2) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        globalState: GlobalState;
     }
     export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
         isExpanded: boolean;
@@ -431,6 +433,7 @@ declare module NODEEDITOR {
         propertyName: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         onChange?: () => void;
+        globalState: GlobalState;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
@@ -468,6 +471,7 @@ declare module NODEEDITOR {
         step?: number;
         onChange?: (newvalue: BABYLON.Vector3) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        globalState: GlobalState;
     }
     export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
         isExpanded: boolean;
@@ -509,6 +513,7 @@ declare module NODEEDITOR {
         step?: number;
         onChange?: (newvalue: BABYLON.Vector4) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        globalState: GlobalState;
     }
     export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, {
         isExpanded: boolean;
@@ -584,6 +589,7 @@ declare module NODEEDITOR {
         onModeChange?: (mode: number) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         mode?: number;
+        globalState: GlobalState;
     }
     export class MatrixLineComponent extends React.Component<IMatrixLineComponentProps, {
         value: BABYLON.Matrix;
