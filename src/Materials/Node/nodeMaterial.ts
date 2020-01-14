@@ -656,11 +656,19 @@ export class NodeMaterial extends PushMaterial {
     }
 
     private _prepareDefinesForAttributes(mesh: AbstractMesh, defines: NodeMaterialDefines) {
+        let oldNormal = defines["NORMAL"];
+        let oldTangent = defines["TANGENT"];
+        let oldUV1 = defines["UV1"];
+
         defines["NORMAL"] = mesh.isVerticesDataPresent(VertexBuffer.NormalKind);
 
         defines["TANGENT"] = mesh.isVerticesDataPresent(VertexBuffer.TangentKind);
 
         defines["UV1"] = mesh.isVerticesDataPresent(VertexBuffer.UVKind);
+
+        if (oldNormal !== defines["NORMAL"] || oldTangent !== defines["TANGENT"] || oldUV1 !== defines["UV1"]) {
+            defines.markAsAttributesDirty();
+        }
     }
 
     /**
