@@ -23772,7 +23772,7 @@ declare module BABYLON {
          */
         getObjectCenter(): Vector3;
         /**
-         * Get a specific parametes from the options parameter
+         * Get a specific parameter from the options parameters
          * @param paramName The object parameter name
          * @returns The object parameter
          */
@@ -57956,6 +57956,8 @@ declare module BABYLON {
         min: number;
         /** Gets or set a value used to limit the range of float values */
         max: number;
+        /** Gets or set a value indicating that this input can only get 0 and 1 values */
+        isBoolean: boolean;
         /** Gets or sets a value used by the Node Material editor to determine how to configure the current value if it is a matrix */
         matrixMode: number;
         /** @hidden */

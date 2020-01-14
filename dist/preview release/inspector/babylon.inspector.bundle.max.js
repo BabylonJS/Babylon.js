@@ -45271,7 +45271,7 @@ var NodeMaterialPropertyGridComponent = /** @class */ (function (_super) {
             return null;
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TEXTURES" }, textureBlocks.map(function (textureBlock, i) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextureLinkLineComponent"], { label: textureBlock.name, key: i, texture: textureBlock.texture, material: material, onTextureCreated: function (texture) { return textureBlock.texture = texture; }, onSelectionChangedObservable: _this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }));
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextureLinkLineComponent"], { label: textureBlock.name, key: "nodematText" + i, texture: textureBlock.texture, material: material, onTextureCreated: function (texture) { return textureBlock.texture = texture; }, onSelectionChangedObservable: _this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }));
         })));
     };
     NodeMaterialPropertyGridComponent.prototype.renderInputBlock = function (block) {
@@ -45319,8 +45319,8 @@ var NodeMaterialPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "INPUTS" }, configurableInputBlocks.filter(function (block) { return !block.groupInInspector; }).map(function (block) {
                 return _this.renderInputBlock(block);
             })),
-            namedGroups.map(function (name) {
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: _this.props.globalState, title: name.toUpperCase() }, configurableInputBlocks.filter(function (block) { return block.groupInInspector === name; }).map(function (block) {
+            namedGroups.map(function (name, i) {
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { key: "inputValue" + i, globalState: _this.props.globalState, title: name.toUpperCase() }, configurableInputBlocks.filter(function (block) { return block.groupInInspector === name; }).map(function (block) {
                     return _this.renderInputBlock(block);
                 })));
             })));

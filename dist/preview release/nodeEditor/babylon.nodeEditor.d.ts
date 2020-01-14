@@ -679,14 +679,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        renderValue(globalState: GlobalState): JSX.Element | null;
-        setDefaultValue(): void;
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
     export interface ICheckBoxLineComponentProps {
         label: string;
         target?: any;
@@ -707,6 +699,14 @@ declare module NODEEDITOR {
             isSelected: boolean;
         }): boolean;
         onChange(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        renderValue(globalState: GlobalState): JSX.Element | null;
+        setDefaultValue(): void;
         render(): JSX.Element;
     }
 }

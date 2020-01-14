@@ -829,17 +829,6 @@ declare module "babylonjs-node-editor/diagram/properties/genericNodePropertyComp
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-node-editor/diagram/properties/inputNodePropertyComponent" {
-    import * as React from "react";
-    import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
-    export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        renderValue(globalState: GlobalState): JSX.Element | null;
-        setDefaultValue(): void;
-        render(): JSX.Element;
-    }
-}
 declare module "babylonjs-node-editor/sharedComponents/checkBoxLineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -864,6 +853,17 @@ declare module "babylonjs-node-editor/sharedComponents/checkBoxLineComponent" {
             isSelected: boolean;
         }): boolean;
         onChange(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/diagram/properties/inputNodePropertyComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
+    export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        renderValue(globalState: GlobalState): JSX.Element | null;
+        setDefaultValue(): void;
         render(): JSX.Element;
     }
 }
@@ -2188,14 +2188,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        renderValue(globalState: GlobalState): JSX.Element | null;
-        setDefaultValue(): void;
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
     export interface ICheckBoxLineComponentProps {
         label: string;
         target?: any;
@@ -2216,6 +2208,14 @@ declare module NODEEDITOR {
             isSelected: boolean;
         }): boolean;
         onChange(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        renderValue(globalState: GlobalState): JSX.Element | null;
+        setDefaultValue(): void;
         render(): JSX.Element;
     }
 }
