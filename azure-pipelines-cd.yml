@@ -24,6 +24,8 @@ jobs:
       AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
       NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
 # Sandbox
+  - script: 'netlify unlink'
+    displayName: 'netlify unlink'
   - script: 'npx netlify link --id=4deda23f-f382-458b-897e-2f2111b5f263'
     displayName: 'netlify link babylonjs-sandbox'
     env:
@@ -35,6 +37,8 @@ jobs:
       AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
       NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
 # playground
+  - script: 'netlify unlink'
+    displayName: 'netlify unlink'
   - script: 'npx netlify link --id=9161d5f0-b208-4b86-a281-9300386f6c94'
     displayName: 'netlify link babylonjs-playground'
     env:
@@ -46,6 +50,8 @@ jobs:
       AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
       NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
 # babylonjs-preview
+  - script: 'netlify unlink'
+    displayName: 'netlify unlink'
   - script: 'npx netlify link --id=e1c1c520-e3a4-4d5b-91e6-254f1bea1b6b'
     displayName: 'netlify link babylonjs-preview'
     env:
@@ -57,6 +63,8 @@ jobs:
       AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
       NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
 # assets-babylonjs
+  - script: 'netlify unlink'
+    displayName: 'netlify unlink'
   - script: 'npx netlify link --id=bd58224a-5f56-42de-afd2-ffa72b85fd71'
     displayName: 'netlify link assets-babylonjs'
     env:
@@ -70,6 +78,8 @@ jobs:
 # nodeeditor
   - script: 'npm install --prefix Tools/Gulp && npx gulp nodeEditor --gulpfile ./Tools/Gulp/gulpfile.js'
     displayName: 'gulp build nodeeditor'
+  - script: 'netlify unlink'
+    displayName: 'netlify unlink'
   - script: 'npx netlify link --id=d232f0dc-cdb2-473e-b0f5-91fb1dd1d398'
     displayName: 'netlify link nodeeditor'
     env:
@@ -83,6 +93,8 @@ jobs:
 # viewer-babylonjs
   - script: 'npm install --prefix Tools/Gulp && npx gulp viewer --gulpfile ./Tools/Gulp/gulpfile.js'
     displayName: 'gulp build viewer-babylonjs'
+  - script: 'netlify unlink'
+    displayName: 'netlify unlink'
   - script: 'npx netlify link --id=a32b113f-8187-43ab-9133-8844521f26f4'
     displayName: 'netlify link viewer-babylonjs'
     env:
