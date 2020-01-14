@@ -197,7 +197,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
 
             if (hasUVs) {
                 injectionCode += `#ifdef MORPHTARGETS_UV\r\n`;
-                injectionCode += `${uvOutput.associatedVariableName}.xyz += (uv_${index} - ${uv.associatedVariableName}.xyz) * morphTargetInfluences[${index}];\r\n`;
+                injectionCode += `${uvOutput.associatedVariableName}.xy += (uv_${index} - ${uv.associatedVariableName}.xy) * morphTargetInfluences[${index}];\r\n`;
                 injectionCode += `#endif\r\n`;
             }
 
