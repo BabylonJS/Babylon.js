@@ -11,11 +11,13 @@ import { Material } from "../Materials/material";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { Scene } from "../scene";
 import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Color4 } from '../Maths/math.color';
+import { StandardMaterial } from '../Materials/standardMaterial';
+import { PBRMaterial } from '../Materials/PBR/pbrMaterial';
 
 import "../Shaders/geometry.fragment";
 import "../Shaders/geometry.vertex";
 import { _DevTools } from '../Misc/devTools';
-import { Color4 } from '../Maths/math.color';
 
 /** @hidden */
 interface ISavedTransformationMatrix {
@@ -37,6 +39,11 @@ export class GeometryBufferRenderer {
      * using getIndex(GeometryBufferRenderer.VELOCITY_TEXTURE_INDEX)
      */
     public static readonly VELOCITY_TEXTURE_TYPE = 2;
+    /**
+     * Constant used to retrieve the reflectivity texture index in the G-Buffer textures array
+     * using the getIndex(GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE)
+     */
+    public static readonly REFLECTIVITY_TEXTURE_TYPE = 3;
 
     /**
      * Dictionary used to store the previous transformation matrices of each rendered mesh
@@ -57,16 +64,18 @@ export class GeometryBufferRenderer {
     public excludedSkinnedMeshesFromVelocity: AbstractMesh[] = [];
 
     /** Gets or sets a boolean indicating if transparent meshes should be rendered */
-    public renderTransparentMeshes = false;
+    public renderTransparentMeshes = true;
 
     private _scene: Scene;
     private _multiRenderTarget: MultiRenderTarget;
     private _ratio: number;
     private _enablePosition: boolean = false;
     private _enableVelocity: boolean = false;
+    private _enableReflectivity: boolean = false;
 
     private _positionIndex: number = -1;
     private _velocityIndex: number = -1;
+    private _reflectivityIndex: number = -1;
 
     protected _effect: Effect;
     protected _cachedDefines: string;
@@ -95,6 +104,7 @@ export class GeometryBufferRenderer {
         switch (textureType) {
             case GeometryBufferRenderer.POSITION_TEXTURE_TYPE: return this._positionIndex;
             case GeometryBufferRenderer.VELOCITY_TEXTURE_TYPE: return this._velocityIndex;
+            case GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE: return this._reflectivityIndex;
             default: return -1;
         }
     }
@@ -132,6 +142,22 @@ export class GeometryBufferRenderer {
             this._previousTransformationMatrices = {};
         }
 
+        this.dispose();
+        this._createRenderTargets();
+    }
+
+    /**
+     * Gets a boolean indicating if objects roughness are enabled in the G buffer.
+     */
+    public get enableReflectivity(): boolean {
+        return this._enableReflectivity;
+    }
+
+    /**
+     * Sets wether or not objects roughness are enabled for the G buffer.
+     */
+    public set enableReflectivity(enable: boolean) {
+        this._enableReflectivity = enable;
         this.dispose();
         this._createRenderTargets();
     }
@@ -178,28 +204,49 @@ export class GeometryBufferRenderer {
      * @returns true if ready otherwise false
      */
     public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
-        var material: any = subMesh.getMaterial();
+        var material = <any> subMesh.getMaterial();
 
         if (material && material.disableDepthWrite) {
             return false;
         }
 
         var defines = [];
-
         var attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
-
         var mesh = subMesh.getMesh();
 
         // Alpha test
-        if (material && material.needAlphaTesting()) {
-            defines.push("#define ALPHATEST");
-            if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                attribs.push(VertexBuffer.UVKind);
-                defines.push("#define UV1");
+        if (material) {
+            let needUv = false;
+            if (material.needAlphaBlending()) {
+                defines.push("#define ALPHATEST");
+                needUv = true;
             }
-            if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                attribs.push(VertexBuffer.UV2Kind);
-                defines.push("#define UV2");
+
+            if (material.bumpTexture && StandardMaterial.BumpTextureEnabled) {
+                defines.push("#define BUMP");
+                needUv = true;
+            }
+
+            if (this._enableReflectivity) {
+                if (material instanceof StandardMaterial && material.specularTexture) {
+                    defines.push("#define HAS_SPECULAR");
+                    needUv = true;
+                } else if (material instanceof PBRMaterial && material.reflectivityTexture) {
+                    defines.push("#define HAS_REFLECTIVITY");
+                    needUv = true;
+                }
+            }
+
+            if (needUv) {
+                defines.push("#define NEED_UV");
+                if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                    attribs.push(VertexBuffer.UVKind);
+                    defines.push("#define UV1");
+                }
+                if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
+                    attribs.push(VertexBuffer.UV2Kind);
+                    defines.push("#define UV2");
+                }
             }
         }
 
@@ -215,6 +262,11 @@ export class GeometryBufferRenderer {
             if (this.excludedSkinnedMeshesFromVelocity.indexOf(mesh) === -1) {
                 defines.push("#define BONES_VELOCITY_ENABLED");
             }
+        }
+
+        if (this._enableReflectivity) {
+            defines.push("#define REFLECTIVITY");
+            defines.push("#define REFLECTIVITY_INDEX " + this._reflectivityIndex);
         }
 
         // Bones
@@ -260,10 +312,13 @@ export class GeometryBufferRenderer {
             this._cachedDefines = join;
             this._effect = this._scene.getEngine().createEffect("geometry",
                 attribs,
-                ["world", "mBones", "viewProjection", "diffuseMatrix", "view", "previousWorld", "previousViewProjection", "mPreviousBones", "morphTargetInfluences"],
-                ["diffuseSampler"], join,
+                [
+                    "world", "mBones", "viewProjection", "diffuseMatrix", "view", "previousWorld", "previousViewProjection", "mPreviousBones",
+                    "morphTargetInfluences", "bumpMatrix", "reflectivityMatrix", "vTangentSpaceParams", "vBumpInfos"
+                ],
+                ["diffuseSampler", "bumpSampler", "reflectivitySampler"], join,
                 undefined, undefined, undefined,
-                { buffersCount: this._enablePosition ? 3 : 2, maxSimultaneousMorphTargets: numMorphInfluencers });
+                { buffersCount: this._multiRenderTarget.textures.length - 1, maxSimultaneousMorphTargets: numMorphInfluencers });
         }
 
         return this._effect.isReady();
@@ -312,6 +367,11 @@ export class GeometryBufferRenderer {
             count++;
         }
 
+        if (this._enableReflectivity) {
+            this._reflectivityIndex = count;
+            count++;
+        }
+
         this._multiRenderTarget = new MultiRenderTarget("gBuffer",
             { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio }, count, this._scene,
             { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_FLOAT });
@@ -334,7 +394,7 @@ export class GeometryBufferRenderer {
             var mesh = subMesh.getRenderingMesh();
             var scene = this._scene;
             var engine = scene.getEngine();
-            let material = subMesh.getMaterial();
+            let material = <any> subMesh.getMaterial();
 
             if (!material) {
                 return;
@@ -374,13 +434,33 @@ export class GeometryBufferRenderer {
                 this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
                 this._effect.setMatrix("view", scene.getViewMatrix());
 
-                // Alpha test
-                if (material && material.needAlphaTesting()) {
-                    var alphaTexture = material.getAlphaTestTexture();
+                if (material) {
+                    // Alpha test
+                    if (material.needAlphaTesting()) {
+                        var alphaTexture = material.getAlphaTestTexture();
+                        if (alphaTexture) {
+                            this._effect.setTexture("diffuseSampler", alphaTexture);
+                            this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        }
+                    }
 
-                    if (alphaTexture) {
-                        this._effect.setTexture("diffuseSampler", alphaTexture);
-                        this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                    // Bump
+                    if (material.bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled) {
+                        this._effect.setFloat3("vBumpInfos", material.bumpTexture.coordinatesIndex, 1.0 / material.bumpTexture.level, material.parallaxScaleBias);
+                        this._effect.setMatrix("bumpMatrix", material.bumpTexture.getTextureMatrix());
+                        this._effect.setTexture("bumpSampler", material.bumpTexture);
+                        this._effect.setFloat2("vTangentSpaceParams", material.invertNormalMapX ? -1.0 : 1.0, material.invertNormalMapY ? -1.0 : 1.0);
+                    }
+
+                    // Roughness
+                    if (this._enableReflectivity) {
+                        if (material instanceof StandardMaterial && material.specularTexture) {
+                            this._effect.setMatrix("reflectivityMatrix", material.specularTexture.getTextureMatrix());
+                            this._effect.setTexture("reflectivitySampler", material.specularTexture);
+                        } else if (material instanceof PBRMaterial && material.reflectivityTexture) {
+                            this._effect.setMatrix("reflectivityMatrix", material.reflectivityTexture.getTextureMatrix());
+                            this._effect.setTexture("reflectivitySampler", material.reflectivityTexture);
+                        }
                     }
                 }
 

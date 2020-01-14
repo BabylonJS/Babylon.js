@@ -41409,10 +41409,11 @@ var OptionsLineComponent = /** @class */ (function (_super) {
     };
     OptionsLineComponent.prototype.render = function () {
         var _this = this;
+        var _a;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "listLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "options" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: this.state.value || "" }, this.props.options.map(function (option) {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: (_a = this.state.value, (_a !== null && _a !== void 0 ? _a : "")) }, this.props.options.map(function (option) {
                     return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: option.label, value: option.value }, option.label));
                 })))));
     };
@@ -44578,51 +44579,109 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
 var CommonShadowLightPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommonShadowLightPropertyGridComponent, _super);
     function CommonShadowLightPropertyGridComponent(props) {
-        return _super.call(this, props) || this;
+        var _this = _super.call(this, props) || this;
+        _this._internals = {
+            generatorType: 0,
+            mapSize: 1024,
+        };
+        return _this;
     }
     CommonShadowLightPropertyGridComponent.prototype.createShadowGenerator = function () {
         var light = this.props.light;
         var scene = light.getScene();
-        var generator = new babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"](512, light);
+        var internals = this._internals;
+        var generator = internals.generatorType === 0 ? new babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"](internals.mapSize, light) : new babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["CascadedShadowGenerator"](internals.mapSize, light);
         scene.meshes.forEach(function (m) {
             generator.addShadowCaster(m);
             m.receiveShadows = true;
         });
         this.forceUpdate();
     };
+    CommonShadowLightPropertyGridComponent.prototype.disposeShadowGenerator = function () {
+        var _a;
+        var light = this.props.light;
+        (_a = light.getShadowGenerator()) === null || _a === void 0 ? void 0 : _a.dispose();
+        this.forceUpdate();
+    };
     CommonShadowLightPropertyGridComponent.prototype.render = function () {
         var _this = this;
         var light = this.props.light;
+        var internals = this._internals;
         var generator = light.getShadowGenerator() || null;
-        var blurModeOptions = [
-            { label: "None", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_NONE },
-            { label: "PCF", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_PCF },
-            { label: "PCSS", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_PCSS },
-            { label: "Poisson", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_POISSONSAMPLING },
-            { label: "Exponential", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_EXPONENTIALSHADOWMAP },
-            { label: "Blurred exponential", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLUREXPONENTIALSHADOWMAP },
-            { label: "Close exponential", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_CLOSEEXPONENTIALSHADOWMAP },
-            { label: "Blurred close exponential", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLURCLOSEEXPONENTIALSHADOWMAP },
+        var csmGenerator = generator instanceof babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["CascadedShadowGenerator"];
+        var camera = light.getScene().activeCamera;
+        var typeGeneratorOptions = [
+            { label: "Shadow Generator", value: 0 }
         ];
+        if (light instanceof babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["DirectionalLight"]) {
+            typeGeneratorOptions.push({ label: "Cascaded Shadow Generator", value: 1 });
+        }
+        var mapSizeOptions = [
+            { label: "2048x2048", value: 2048 },
+            { label: "1024x1024", value: 1024 },
+            { label: "512x512", value: 512 },
+            { label: "256x256", value: 256 },
+        ];
+        var blurModeOptions;
+        if (generator instanceof babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["CascadedShadowGenerator"]) {
+            blurModeOptions = [
+                { label: "None", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_NONE },
+                { label: "PCF", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_PCF },
+                { label: "PCSS", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_PCSS },
+            ];
+        }
+        else {
+            blurModeOptions = [
+                { label: "None", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_NONE },
+                { label: "PCF", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_PCF },
+                { label: "PCSS", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_PCSS },
+                { label: "Poisson", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_POISSONSAMPLING },
+                { label: "Exponential", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_EXPONENTIALSHADOWMAP },
+                { label: "Blurred exponential", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLUREXPONENTIALSHADOWMAP },
+                { label: "Close exponential", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_CLOSEEXPONENTIALSHADOWMAP },
+                { label: "Blurred close exponential", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLURCLOSEEXPONENTIALSHADOWMAP },
+            ];
+        }
         var filteringQualityOptions = [
             { label: "Low", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].QUALITY_LOW },
             { label: "Medium", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].QUALITY_MEDIUM },
-            { label: "High", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].QUALITY_HIGH }
+            { label: "High", value: babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].QUALITY_HIGH },
         ];
+        var numCascadesOptions = [
+            { label: "2", value: 2 },
+            { label: "3", value: 3 },
+            { label: "4", value: 4 },
+        ];
+        var near = camera ? camera.minZ : 0, far = camera ? camera.maxZ : 0;
         var filter = generator ? generator.filter : 0;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "SHADOWS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Shadows enabled", target: light, propertyName: "shadowEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Shadows near plane", target: light, propertyName: "shadowMinZ", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Shadows far plane", target: light, propertyName: "shadowMaxZ", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                !csmGenerator && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Shadows near plane", target: light, propertyName: "shadowMinZ", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Shadows far plane", target: light, propertyName: "shadowMaxZ", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))),
             generator == null &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "SHADOW GENERATOR" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Type", options: typeGeneratorOptions, target: internals, propertyName: "generatorType" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Map size", options: mapSizeOptions, target: internals, propertyName: "mapSize" }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__["ButtonLineComponent"], { label: "Create generator", onClick: function () { return _this.createShadowGenerator(); } })),
             generator !== null &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "SHADOW GENERATOR" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__["ButtonLineComponent"], { label: "Dispose generator", onClick: function () { return _this.disposeShadowGenerator(); } }),
+                    csmGenerator && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_5__["OptionsLineComponent"], { label: "Num cascades", options: numCascadesOptions, target: generator, propertyName: "numCascades", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Debug mode", target: generator, propertyName: "debug", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Stabilize cascades", target: generator, propertyName: "stabilizeCascades", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Lambda", minimum: 0, maximum: 1.0, step: 0.01, target: generator, propertyName: "lambda", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Cascade blend", minimum: 0, maximum: 1.0, step: 0.01, target: generator, propertyName: "cascadeBlendPercentage", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Depth clamp", target: generator, propertyName: "depthClamp", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Auto-Calc depth bounds", target: generator, propertyName: "autoCalcDepthBounds", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Shadow MaxZ", minimum: near, maximum: far, step: 0.5, target: generator, propertyName: "shadowMaxZ", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, digits: 4, step: "0.0001", label: "Bias", target: generator, propertyName: "bias", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Normal bias", target: generator, propertyName: "normalBias", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Darkness", target: generator, minimum: 0, maximum: 1, step: 0.01, propertyName: "darkness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -44636,18 +44695,20 @@ var CommonShadowLightPropertyGridComponent = /** @class */ (function (_super) {
                             }, target: generator, propertyName: "filteringQuality", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                     (filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_PCSS) &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Penumbra ratio", minimum: 0, maximum: 0.5, step: 0.001, target: generator, propertyName: "contactHardeningLightSizeUVRatio", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                    (filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLUREXPONENTIALSHADOWMAP || filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLURCLOSEEXPONENTIALSHADOWMAP) &&
+                    !csmGenerator && (filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLUREXPONENTIALSHADOWMAP || filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLURCLOSEEXPONENTIALSHADOWMAP) &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Use kernel blur", target: generator, propertyName: "useKernelBlur", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                    (filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLUREXPONENTIALSHADOWMAP || filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLURCLOSEEXPONENTIALSHADOWMAP) &&
+                    (generator instanceof babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"]) && (filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLUREXPONENTIALSHADOWMAP || filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLURCLOSEEXPONENTIALSHADOWMAP) &&
                         !generator.useKernelBlur &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Blur box offset", target: generator, propertyName: "blurBoxOffset", minimum: 1, maximum: 64, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                    (filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLUREXPONENTIALSHADOWMAP || filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLURCLOSEEXPONENTIALSHADOWMAP) &&
+                    (generator instanceof babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"]) && (filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLUREXPONENTIALSHADOWMAP || filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLURCLOSEEXPONENTIALSHADOWMAP) &&
                         generator.useKernelBlur &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Blur kernel", target: generator, propertyName: "blurKernel", minimum: 1, maximum: 64, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                    (filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLUREXPONENTIALSHADOWMAP || filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_EXPONENTIALSHADOWMAP) &&
+                    (generator instanceof babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"]) && (filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLUREXPONENTIALSHADOWMAP || filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_EXPONENTIALSHADOWMAP) &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_4__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Depth scale", target: generator, propertyName: "depthScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                    (filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLUREXPONENTIALSHADOWMAP || filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_EXPONENTIALSHADOWMAP) &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Blur scale", target: generator, propertyName: "blurScale", minimum: 1, maximum: 4, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+                    (generator instanceof babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"]) && (filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_BLUREXPONENTIALSHADOWMAP || filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_EXPONENTIALSHADOWMAP) &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Blur scale", target: generator, propertyName: "blurScale", minimum: 1, maximum: 4, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    csmGenerator && (filter === babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"].FILTER_PCSS) &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Penumbra darkness", minimum: 0, maximum: 1.0, step: 0.01, target: generator, propertyName: "penumbraDarkness", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return CommonShadowLightPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -44674,6 +44735,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/color3LineComponent */ "./components/actionTabs/lines/color3LineComponent.tsx");
 /* harmony import */ var _lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/vector3LineComponent */ "./components/actionTabs/lines/vector3LineComponent.tsx");
 /* harmony import */ var _commonShadowLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./commonShadowLightPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/lights/commonShadowLightPropertyGridComponent.tsx");
+/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var babylonjs_Lights_Shadows_cascadedShadowGenerator__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! babylonjs/Lights/Shadows/cascadedShadowGenerator */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Lights_Shadows_cascadedShadowGenerator__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Lights_Shadows_cascadedShadowGenerator__WEBPACK_IMPORTED_MODULE_8__);
+
+
 
 
 
@@ -44688,13 +44754,17 @@ var DirectionalLightPropertyGridComponent = /** @class */ (function (_super) {
     }
     DirectionalLightPropertyGridComponent.prototype.render = function () {
         var light = this.props.light;
+        var generator = light.getShadowGenerator() || null;
+        var hideAutoCalcShadowZBounds = generator instanceof babylonjs_Lights_Shadows_cascadedShadowGenerator__WEBPACK_IMPORTED_MODULE_8__["CascadedShadowGenerator"];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonLightPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, light: light, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "SETUP" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Diffuse", target: light, propertyName: "diffuse", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Specular", target: light, propertyName: "specular", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Vector3LineComponent"], { label: "Position", target: light, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Vector3LineComponent"], { label: "Direction", target: light, propertyName: "direction", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_5__["Vector3LineComponent"], { label: "Direction", target: light, propertyName: "direction", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                !hideAutoCalcShadowZBounds &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_7__["CheckBoxLineComponent"], { label: "Auto Calc Shadow ZBounds", target: light, propertyName: "autoCalcShadowZBounds", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonShadowLightPropertyGridComponent__WEBPACK_IMPORTED_MODULE_6__["CommonShadowLightPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, light: light, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     return DirectionalLightPropertyGridComponent;
@@ -44985,7 +45055,9 @@ var CommonMaterialPropertyGridComponent = /** @class */ (function (_super) {
     }
     CommonMaterialPropertyGridComponent.prototype.render = function () {
         var _this = this;
+        var _a;
         var material = this.props.material;
+        material.depthFunction = (_a = material.depthFunction, (_a !== null && _a !== void 0 ? _a : 0));
         var orientationOptions = [
             { label: "Clockwise", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Material"].ClockWiseSideOrientation },
             { label: "Counterclockwise", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Material"].CounterClockWiseSideOrientation }
@@ -45006,6 +45078,7 @@ var CommonMaterialPropertyGridComponent = /** @class */ (function (_super) {
             { label: "Pre-multiplied", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Constants"].ALPHA_PREMULTIPLIED },
         ];
         var depthfunctionOptions = [
+            { label: "<Engine Default>", value: 0 },
             { label: "Never", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].NEVER },
             { label: "Always", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].ALWAYS },
             { label: "Equal", value: babylonjs_Materials_material__WEBPACK_IMPORTED_MODULE_2__["Engine"].EQUAL },

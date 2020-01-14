@@ -723,8 +723,10 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class CommonShadowLightPropertyGridComponent extends React.Component<ICommonShadowLightPropertyGridComponentProps> {
+        private _internals;
         constructor(props: ICommonShadowLightPropertyGridComponentProps);
         createShadowGenerator(): void;
+        disposeShadowGenerator(): void;
         render(): JSX.Element;
     }
 }

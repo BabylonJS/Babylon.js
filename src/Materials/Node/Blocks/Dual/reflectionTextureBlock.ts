@@ -57,7 +57,7 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
 
         this.registerInput("position", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
-        this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
+        this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment); // Flagging as fragment as the normal can be changed by fragment code
         this.registerInput("world", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
 
         this.registerInput("cameraPosition", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Fragment);
@@ -239,11 +239,6 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
             state.compilationString += `${worldPosVaryingName} = ${this.worldPosition.associatedVariableName};\r\n`;
         }
 
-        let worldNormalVaryingName = "v_" + this.worldNormal.associatedVariableName;
-        if (state._emitVaryingFromString(worldNormalVaryingName, "vec4")) {
-            state.compilationString += `${worldNormalVaryingName} = ${this.worldNormal.associatedVariableName};\r\n`;
-        }
-
         this._positionUVWName = state._getFreeVariableName("positionUVW");
         this._directionWName = state._getFreeVariableName("directionW");
 
@@ -329,7 +324,7 @@ export class ReflectionTextureBlock extends NodeMaterialBlock {
 
         // Code
         let worldPos = `v_${this.worldPosition.associatedVariableName}`;
-        let worldNormal = "v_" + this.worldNormal.associatedVariableName + ".xyz";
+        let worldNormal = this.worldNormal.associatedVariableName + ".xyz";
         let reflectionMatrix = this._reflectionMatrixName;
         let direction = `normalize(${this._directionWName})`;
         let positionUVW = `${this._positionUVWName}`;
