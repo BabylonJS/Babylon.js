@@ -608,10 +608,8 @@ export class CascadedShadowGenerator implements IShadowGenerator {
     private _effect: Effect;
 
     private _cascades: Array<ICascade>;
-    private _cachedPosition: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
     private _cachedDirection: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
     private _cachedDefines: string;
-    private _currentRenderID: Array<number>;
     private _mapSize: number;
     private _currentLayer = 0;
     private _textureType: number;
@@ -733,6 +731,15 @@ export class CascadedShadowGenerator implements IShadowGenerator {
      */
     public getCascadeViewMatrix(cascadeNum: number): Nullable<Matrix> {
         return cascadeNum >= 0 && cascadeNum < this._numCascades ? this._viewMatrices[cascadeNum] : null;
+    }
+
+    /**
+     * Gets the projection matrix corresponding to a given cascade
+     * @param cascadeNum cascade to retrieve the projection matrix from
+     * @returns the cascade projection matrix
+     */
+    public getCascadeProjectionMatrix(cascadeNum: number): Nullable<Matrix> {
+        return cascadeNum >= 0 && cascadeNum < this._numCascades ? this._projectionMatrices[cascadeNum] : null;
     }
 
     private _depthRenderer: Nullable<DepthRenderer>;
@@ -871,21 +878,15 @@ export class CascadedShadowGenerator implements IShadowGenerator {
      * @returns The transform matrix used to create the CSM shadow map
      */
     public getCSMTransformMatrix(cascadeIndex: number): Matrix {
+        return this._transformMatrices[cascadeIndex];
+    }
+
+    private _computeMatrices(): void {
         var scene = this._scene;
-        if (this._currentRenderID[cascadeIndex] === scene.getRenderId()) {
-            return this._transformMatrices[cascadeIndex];
-        }
 
         let camera = scene.activeCamera;
         if (!camera) {
-            return this._transformMatrices[cascadeIndex];
-        }
-
-        this._currentRenderID[cascadeIndex] = scene.getRenderId();
-
-        var lightPosition = this._light.position;
-        if (this._light.computeTransformedInformation()) {
-            lightPosition = this._light.transformedPosition;
+            return;
         }
 
         Vector3.NormalizeToRef(this._light.getShadowDirection(0), this._lightDirection);
@@ -893,10 +894,9 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             this._lightDirection.z = 0.0000000000001; // Required to avoid perfectly perpendicular light
         }
 
-        if (this._light.needProjectionMatrixCompute() || !this._cachedPosition || !this._cachedDirection || !lightPosition.equals(this._cachedPosition) || !this._lightDirection.equals(this._cachedDirection)) {
-            this._cachedPosition.copyFrom(lightPosition);
-            this._cachedDirection.copyFrom(this._lightDirection);
+        this._cachedDirection.copyFrom(this._lightDirection);
 
+        for (let cascadeIndex = 0; cascadeIndex < this._numCascades; ++cascadeIndex) {
             this._computeFrustumInWorldSpace(cascadeIndex);
             this._computeCascadeFrustum(cascadeIndex);
 
@@ -948,11 +948,9 @@ export class CascadedShadowGenerator implements IShadowGenerator {
 
             this._projectionMatrices[cascadeIndex].multiplyToRef(matrix, this._projectionMatrices[cascadeIndex]);
             this._viewMatrices[cascadeIndex].multiplyToRef(this._projectionMatrices[cascadeIndex], this._transformMatrices[cascadeIndex]);
+
+            this._transformMatrices[cascadeIndex].copyToArray(this._transformMatricesAsArray, cascadeIndex * 16);
         }
-
-        this._transformMatrices[cascadeIndex].copyToArray(this._transformMatricesAsArray, cascadeIndex * 16);
-
-        return this._transformMatrices[cascadeIndex];
     }
 
     // Get the 8 points of the view frustum in world space
@@ -1030,8 +1028,6 @@ export class CascadedShadowGenerator implements IShadowGenerator {
                 this._cascadeMaxExtents[cascadeIndex].maximizeInPlace(tmpv1);
             }
         }
-
-        return;
     }
 
     /** @hidden */
@@ -1102,7 +1098,6 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         this._transformMatricesAsArray = new Float32Array(this._numCascades * 16);
         this._viewSpaceFrustumsZ = new Array(this._numCascades);
         this._frustumLengths = new Array(this._numCascades);
-        this._currentRenderID = new Array(this._numCascades);
         this._lightSizeUVCorrection = new Array(this._numCascades * 2);
         this._depthCorrection = new Array(this._numCascades);
 
@@ -1157,6 +1152,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             if (this._breaksAreDirty) {
                 this._splitFrustum();
             }
+            this._computeMatrices();
         });
 
         // Record Face Index before render.
