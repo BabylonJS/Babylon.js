@@ -147,7 +147,7 @@ export class TexturePacker{
         this.options.layout = this.options.layout || TexturePacker.LAYOUT_STRIP;
 
         if (this.options.layout === TexturePacker.LAYOUT_COLNUM) {
-            this.options.colcount = this.options.colcount || 4;
+            this.options.colcount = this.options.colcount || 8;
         }
 
         this.options.updateInputMeshes = this.options.updateInputMeshes || true;
@@ -207,7 +207,7 @@ export class TexturePacker{
                 for (let i = 0; i < this.meshes.length; i++) {
 
                     let mesh = this.meshes[i];
-                    let material: Nullable<Material> | Material = mesh.material;
+                    let material: Nullable<Material> = mesh.material;
 
                     if (!material) {
                         return new Error('Mesh has no Material assigned!');
