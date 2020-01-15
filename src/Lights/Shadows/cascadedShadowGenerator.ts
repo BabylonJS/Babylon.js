@@ -61,6 +61,11 @@ export class CascadedShadowGenerator implements IShadowGenerator {
     ];
 
     /**
+     * Name of the CSM class
+     */
+    public static readonly CLASSNAME = "CascadedShadowGenerator";
+
+    /**
      * Defines the default number of cascades used by the CSM.
      */
     public static readonly DEFAULT_CASCADES_COUNT = 4;
@@ -507,7 +512,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
      * @returns "ShadowGenerator"
      */
     public getClassName(): string {
-        return "CascadedShadowGenerator";
+        return CascadedShadowGenerator.CLASSNAME;
     }
 
     /**

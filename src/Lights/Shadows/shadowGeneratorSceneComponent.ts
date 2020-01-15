@@ -12,7 +12,7 @@ AbstractScene.AddParser(SceneComponentConstants.NAME_SHADOWGENERATOR, (parsedDat
     if (parsedData.shadowGenerators !== undefined && parsedData.shadowGenerators !== null) {
         for (var index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
             var parsedShadowGenerator = parsedData.shadowGenerators[index];
-            if (parsedShadowGenerator.className === 'CascadedShadowGenerator') {
+            if (parsedShadowGenerator.className === CascadedShadowGenerator.CLASSNAME) {
                 CascadedShadowGenerator.Parse(parsedShadowGenerator, scene);
             } else {
                 ShadowGenerator.Parse(parsedShadowGenerator, scene);
