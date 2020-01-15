@@ -65,6 +65,10 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         {
                             !inputBlock.isBoolean && !cantDisplaySlider &&
                             <SliderLineComponent label="Value" target={inputBlock} propertyName="value" step={(inputBlock.max - inputBlock.min) / 100.0} minimum={inputBlock.min} maximum={inputBlock.max} onChange={() => {
+                                if (inputBlock.isConstant) {
+                                    this.props.globalState.onRebuildRequiredObservable.notifyObservers();    
+                                }
+
                                 this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             }}/>
                         }
