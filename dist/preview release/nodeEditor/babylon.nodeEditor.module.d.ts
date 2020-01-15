@@ -868,6 +868,52 @@ declare module "babylonjs-node-editor/sharedComponents/checkBoxLineComponent" {
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/sharedComponents/color4LineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { Color4 } from "babylonjs/Maths/math";
+    import { PropertyChangedEvent } from "babylonjs-node-editor/sharedComponents/propertyChangedEvent";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    export interface IColor4LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        onChange?: () => void;
+        globalState: GlobalState;
+    }
+    export class Color4LineComponent extends React.Component<IColor4LineComponentProps, {
+        isExpanded: boolean;
+        color: Color4;
+    }> {
+        private _localChange;
+        constructor(props: IColor4LineComponentProps);
+        shouldComponentUpdate(nextProps: IColor4LineComponentProps, nextState: {
+            color: Color4;
+        }): boolean;
+        onChange(newValue: string): void;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: Color4): void;
+        updateStateR(value: number): void;
+        updateStateG(value: number): void;
+        updateStateB(value: number): void;
+        updateStateA(value: number): void;
+        copyToClipboard(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/components/propertyTab/properties/color4PropertyTabComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+    interface IColor4PropertyTabComponentProps {
+        globalState: GlobalState;
+        inputBlock: InputBlock;
+    }
+    export class Color4PropertyTabComponent extends React.Component<IColor4PropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/diagram/properties/inputNodePropertyComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -1454,11 +1500,7 @@ declare module "babylonjs-node-editor/graphEditor" {
         private _mouseLocationX;
         private _mouseLocationY;
         private _onWidgetKeyUpPointer;
-        /**
-         * Creates a node and recursivly creates its parent nodes from it's input
-         * @param nodeMaterialBlock
-         */
-        createNodeFromObject(block: NodeMaterialBlock): GraphNode;
+        createNodeFromObject(block: NodeMaterialBlock, recursion?: boolean): GraphNode;
         addValueNode(type: string): GraphNode;
         componentDidMount(): void;
         componentWillUnmount(): void;
@@ -2230,6 +2272,44 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface IColor4LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        onChange?: () => void;
+        globalState: GlobalState;
+    }
+    export class Color4LineComponent extends React.Component<IColor4LineComponentProps, {
+        isExpanded: boolean;
+        color: BABYLON.Color4;
+    }> {
+        private _localChange;
+        constructor(props: IColor4LineComponentProps);
+        shouldComponentUpdate(nextProps: IColor4LineComponentProps, nextState: {
+            color: BABYLON.Color4;
+        }): boolean;
+        onChange(newValue: string): void;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Color4): void;
+        updateStateR(value: number): void;
+        updateStateG(value: number): void;
+        updateStateB(value: number): void;
+        updateStateA(value: number): void;
+        copyToClipboard(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IColor4PropertyTabComponentProps {
+        globalState: GlobalState;
+        inputBlock: BABYLON.InputBlock;
+    }
+    export class Color4PropertyTabComponent extends React.Component<IColor4PropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
         constructor(props: IPropertyComponentProps);
         renderValue(globalState: GlobalState): JSX.Element | null;
@@ -2719,11 +2799,7 @@ declare module NODEEDITOR {
         private _mouseLocationX;
         private _mouseLocationY;
         private _onWidgetKeyUpPointer;
-        /**
-         * Creates a node and recursivly creates its parent nodes from it's input
-         * @param nodeMaterialBlock
-         */
-        createNodeFromObject(block: BABYLON.NodeMaterialBlock): GraphNode;
+        createNodeFromObject(block: BABYLON.NodeMaterialBlock, recursion?: boolean): GraphNode;
         addValueNode(type: string): GraphNode;
         componentDidMount(): void;
         componentWillUnmount(): void;

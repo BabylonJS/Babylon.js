@@ -709,6 +709,44 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface IColor4LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        onChange?: () => void;
+        globalState: GlobalState;
+    }
+    export class Color4LineComponent extends React.Component<IColor4LineComponentProps, {
+        isExpanded: boolean;
+        color: BABYLON.Color4;
+    }> {
+        private _localChange;
+        constructor(props: IColor4LineComponentProps);
+        shouldComponentUpdate(nextProps: IColor4LineComponentProps, nextState: {
+            color: BABYLON.Color4;
+        }): boolean;
+        onChange(newValue: string): void;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Color4): void;
+        updateStateR(value: number): void;
+        updateStateG(value: number): void;
+        updateStateB(value: number): void;
+        updateStateA(value: number): void;
+        copyToClipboard(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IColor4PropertyTabComponentProps {
+        globalState: GlobalState;
+        inputBlock: BABYLON.InputBlock;
+    }
+    export class Color4PropertyTabComponent extends React.Component<IColor4PropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
         constructor(props: IPropertyComponentProps);
         renderValue(globalState: GlobalState): JSX.Element | null;
@@ -1198,11 +1236,7 @@ declare module NODEEDITOR {
         private _mouseLocationX;
         private _mouseLocationY;
         private _onWidgetKeyUpPointer;
-        /**
-         * Creates a node and recursivly creates its parent nodes from it's input
-         * @param nodeMaterialBlock
-         */
-        createNodeFromObject(block: BABYLON.NodeMaterialBlock): GraphNode;
+        createNodeFromObject(block: BABYLON.NodeMaterialBlock, recursion?: boolean): GraphNode;
         addValueNode(type: string): GraphNode;
         componentDidMount(): void;
         componentWillUnmount(): void;
