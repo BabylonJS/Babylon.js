@@ -53,6 +53,9 @@ export class TexturePackerFrame implements ITexturePackerFrame{
 
     /**
     * Initializes a texture package frame.
+    * @param id The numerical frame identifier
+    * @param scale Scalar Vector2 for UV frame
+    * @param offset Vector2 for the frame position in UV units.
     * @returns TexturePackerFrame
     */
     constructor(id: number, scale: Vector2, offset: Vector2) {
