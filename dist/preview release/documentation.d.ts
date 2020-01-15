@@ -19370,7 +19370,7 @@ declare module BABYLON {
          *
          * Returns the clone.
          */
-        clone(name: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<AbstractMesh>;
+        clone(name: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean): InstancedMesh;
         /**
          * Disposes the InstancedMesh.
          * Returns nothing.
@@ -19820,7 +19820,7 @@ declare module BABYLON {
         /**
          * Returns a new LineMesh object cloned from the current one.
          */
-        clone(name: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<AbstractMesh>;
+        clone(name: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean): LinesMesh;
         /**
          * Creates a new InstancedLinesMesh object from the mesh model.
          * @see http://doc.babylonjs.com/how_to/how_to_use_instances
@@ -20297,6 +20297,14 @@ declare module BABYLON {
         */
         get renderList(): Nullable<Array<AbstractMesh>>;
         set renderList(value: Nullable<Array<AbstractMesh>>);
+        /**
+         * Use this function to overload the renderList array at rendering time.
+         * Return null to render with the curent renderList, else return the list of meshes to use for rendering.
+         * For 2DArray RTT, layerOrFace is the index of the layer that is going to be rendered, else it is the faceIndex of
+         * the cube (if the RTT is a cube, else layerOrFace=0).
+         * The renderList passed to the function is the current render list (the one that will be used if the function returns null)
+        */
+        getCustomRenderList: (layerOrFace: number, renderList: Nullable<Immutable<Array<AbstractMesh>>>) => Nullable<Array<AbstractMesh>>;
         private _hookArray;
         /**
          * Define if particles should be rendered in your texture.
@@ -20545,6 +20553,7 @@ declare module BABYLON {
         } | {
             ratio: number;
         }): void;
+        private _defaultRenderListPrepared;
         /**
          * Renders all the objects from the render list into the texture.
          * @param useCameraPostProcess Define if camera post processes should be used during the rendering
@@ -20552,6 +20561,7 @@ declare module BABYLON {
          */
         render(useCameraPostProcess?: boolean, dumpForDebug?: boolean): void;
         private _bestReflectionRenderTargetDimension;
+        private _prepareRenderingManager;
         /**
          * @hidden
          * @param faceIndex face index to bind to if this is a cubetexture
@@ -23762,7 +23772,7 @@ declare module BABYLON {
          */
         getObjectCenter(): Vector3;
         /**
-         * Get a specific parametes from the options parameter
+         * Get a specific parameter from the options parameters
          * @param paramName The object parameter name
          * @returns The object parameter
          */
@@ -24720,7 +24730,7 @@ declare module BABYLON {
          * @param clonePhysicsImpostor allows/denies the cloning in the same time of the original mesh `body` used by the physics engine, if any (default `true`)
          * @returns a new mesh
          */
-        clone(name?: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean, clonePhysicsImpostor?: boolean): Nullable<AbstractMesh>;
+        clone(name?: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean, clonePhysicsImpostor?: boolean): Mesh;
         /**
          * Releases resources associated with this mesh.
          * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
@@ -25289,6 +25299,10 @@ declare module BABYLON {
          * Defines that both eyes of the camera will be rendered over under each other.
          */
         static readonly RIG_MODE_STEREOSCOPIC_OVERUNDER: number;
+        /**
+         * Defines that both eyes of the camera will be rendered on successive lines interlaced for passive 3d monitors.
+         */
+        static readonly RIG_MODE_STEREOSCOPIC_INTERLACED: number;
         /**
          * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
          */
@@ -41633,6 +41647,24 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * StereoscopicInterlacePostProcessI used to render stereo views from a rigged camera with support for alternate line interlacing
+     */
+    export class StereoscopicInterlacePostProcessI extends PostProcess {
+        private _stepSize;
+        private _passedProcess;
+        /**
+         * Initializes a StereoscopicInterlacePostProcessI
+         * @param name The name of the effect.
+         * @param rigCameras The rig cameras to be appled to the post process
+         * @param isStereoscopicHoriz If the rendered results are horizontal or vertical
+         * @param isStereoscopicInterlaced If the rendered results are alternate line interlaced
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         */
+        constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, isStereoscopicInterlaced: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean);
+    }
+    /**
      * StereoscopicInterlacePostProcess used to render stereo views from a rigged camera
      */
     export class StereoscopicInterlacePostProcess extends PostProcess {
@@ -42354,7 +42386,7 @@ declare module BABYLON {
          * @param xrSession xr session
          * @returns a promise that will resolve once the XR Layer has been created
          */
-        initializeXRLayerAsync(xrSession: XRSession): Promise<void>;
+        initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer>;
     }
 }
 declare module BABYLON {
@@ -42365,11 +42397,16 @@ declare module BABYLON {
         /**
          * Options for this XR Layer output
          */
-        canvasOptions: XRWebGLLayerOptions;
+        canvasOptions?: XRWebGLLayerOptions;
         /**
          * CSS styling for a newly created canvas (if not provided)
          */
         newCanvasCssStyle?: string;
+        /**
+         * An optional canvas in case you wish to create it yourself and provide it here.
+         * If not provided, a new canvas will be created
+         */
+        canvasElement?: HTMLCanvasElement;
         /**
          * Get the default values of the configuration object
          * @returns default values of this configuration object
@@ -42380,11 +42417,11 @@ declare module BABYLON {
      * Creates a canvas that is added/removed from the webpage when entering/exiting XR
      */
     export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
-        private configuration;
+        private _options;
         private _engine;
         private _canvas;
         /**
-         * xrpresent context of the canvas which can be used to display/mirror xr content
+         * Rendering context of the canvas which can be used to display/mirror xr content
          */
         canvasContext: WebGLRenderingContext;
         /**
@@ -42396,15 +42433,13 @@ declare module BABYLON {
          * @param xrSession xr session
          * @returns a promise that will resolve once the XR Layer has been created
          */
-        initializeXRLayerAsync(xrSession: any): any;
+        initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer>;
         /**
          * Initializes the canvas to be added/removed upon entering/exiting xr
-         * @param engine the Babylon engine
-         * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
-         * @param onStateChangedObservable the mechanism by which the canvas will be added/removed based on XR state
-         * @param configuration optional configuration for this canvas output. defaults will be used if not provided
+         * @param _xrSessionManager The XR Session manager
+         * @param _options optional configuration for this canvas output. defaults will be used if not provided
          */
-        constructor(engine: ThinEngine, canvas?: HTMLCanvasElement, onStateChangedObservable?: Observable<WebXRState>, configuration?: WebXRManagedOutputCanvasOptions);
+        constructor(_xrSessionManager: WebXRSessionManager, _options?: WebXRManagedOutputCanvasOptions);
         /**
          * Disposes of the object
          */
@@ -42504,6 +42539,10 @@ declare module BABYLON {
          */
         setReferenceSpaceAsync(referenceSpace: XRReferenceSpaceType): Promise<void>;
         /**
+         * Resets the reference space to the one started the session
+         */
+        resetReferenceSpace(): void;
+        /**
          * Updates the render state of the session
          * @param state state to set
          * @returns a promise that resolves once the render state has been updated
@@ -42537,7 +42576,7 @@ declare module BABYLON {
          * @param options optional options to provide when creating a new render target
          * @returns a WebXR render target to which the session can render
          */
-        getWebXRRenderTarget(onStateChangedObservable?: Observable<WebXRState>, options?: WebXRManagedOutputCanvasOptions): WebXRRenderTarget;
+        getWebXRRenderTarget(options?: WebXRManagedOutputCanvasOptions): WebXRRenderTarget;
         /**
          * @hidden
          * Converts the render layer of xrSession to a render target
@@ -42545,15 +42584,15 @@ declare module BABYLON {
          * @param scene scene the new render target should be created for
          * @param baseLayer the webgl layer to create the render target for
          */
-        static _CreateRenderTargetTextureFromSession(session: XRSession, scene: Scene, baseLayer: XRWebGLLayer): RenderTargetTexture;
+        static _CreateRenderTargetTextureFromSession(_session: XRSession, scene: Scene, baseLayer: XRWebGLLayer): RenderTargetTexture;
         /**
          * Disposes of the session manager
          */
         dispose(): void;
         /**
-         * Gets a promise returning true when fullfiled if the given session mode is supported
+         * Returns a promise that resolves with a boolean indicating if the provided session mode is supported by this browser
          * @param sessionMode defines the session to test
-         * @returns a promise
+         * @returns a promise with boolean as final value
          */
         static IsSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean>;
     }
@@ -42581,6 +42620,12 @@ declare module BABYLON {
          */
         constructor(name: string, scene: Scene, _xrSessionManager: WebXRSessionManager);
         private _updateNumberOfRigCameras;
+        /**
+         * Sets this camera's transformation based on a non-vr camera
+         * @param otherCamera the non-vr camera to copy the transformation from
+         * @param resetToBaseReferenceSpace should XR reset to the base reference space
+         */
+        setTransformationFromNonVRCamera(otherCamera: Camera, resetToBaseReferenceSpace?: boolean): void;
         /** @hidden */
         _updateForDualEyeDebugging(): void;
         private _updateReferenceSpace;
@@ -42678,6 +42723,7 @@ declare module BABYLON {
         constructor(_xrSessionManager: WebXRSessionManager);
         /**
          * Enable a feature using its name and a version. This will enable it in the scene, and will be responsible to attach it when the session starts.
+         * If used twice, the old version will be disposed and a new one will be constructed. This way you can re-enable with different configuration.
          *
          * @param featureName the name of the feature to load or the class of the feature
          * @param version optional version to load. if not provided the latest version will be enabled
@@ -42690,6 +42736,7 @@ declare module BABYLON {
         }, version?: number | string, moduleOptions?: any, attachIfPossible?: boolean): IWebXRFeature;
         /**
          * Used to disable an already-enabled feature
+         * The feature will be disposed and will be recreated once enabled.
          * @param featureName the feature to disable
          * @returns true if disable was successful
          */
@@ -43744,12 +43791,23 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Configuration options for the WebXR controller creation
+     */
+    export interface IWebXRControllerOptions {
+        /**
+         * Force a specific controller type for this controller.
+         * This can be used when creating your own profile or when testing different controllers
+         */
+        forceControllerProfile?: string;
+    }
+    /**
      * Represents an XR controller
      */
     export class WebXRController {
-        private scene;
+        private _scene;
         /** The underlying input source for the controller  */
         inputSource: XRInputSource;
+        private _options;
         /**
          * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if thats the case only the pointer from the head will be availible
          */
@@ -43774,13 +43832,13 @@ declare module BABYLON {
         /**
          * Creates the controller
          * @see https://doc.babylonjs.com/how_to/webxr
-         * @param scene the scene which the controller should be associated to
+         * @param _scene the scene which the controller should be associated to
          * @param inputSource the underlying input source for the controller
-         * @param controllerProfile An optional controller profile for this input. This will override the xrInput profile.
+         * @param _options options for this controller creation
          */
-        constructor(scene: Scene, 
+        constructor(_scene: Scene, 
         /** The underlying input source for the controller  */
-        inputSource: XRInputSource, controllerProfile?: string);
+        inputSource: XRInputSource, _options?: IWebXRControllerOptions);
         /**
          * Get this controllers unique id
          */
@@ -43796,11 +43854,6 @@ declare module BABYLON {
          * @param result the resulting ray
          */
         getWorldPointerRayToRef(result: Ray): void;
-        /**
-         * Get the scene associated with this controller
-         * @returns the scene object
-         */
-        getScene(): Scene;
         /**
          * Disposes of the object
          */
@@ -43876,6 +43929,55 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * This is the base class for all WebXR features.
+     * Since most features require almost the same resources and callbacks, this class can be used to simplify the development
+     * Note that since the features manager is using the `IWebXRFeature` you are in no way obligated to use this class
+     */
+    export abstract class WebXRAbstractFeature implements IWebXRFeature {
+        protected _xrSessionManager: WebXRSessionManager;
+        /**
+         * Construct a new (abstract) webxr feature
+         * @param _xrSessionManager the xr session manager for this feature
+         */
+        constructor(_xrSessionManager: WebXRSessionManager);
+        private _attached;
+        private _removeOnDetach;
+        /**
+         * Is this feature attached
+         */
+        get attached(): boolean;
+        /**
+         * attach this feature
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+        /**
+         * Code in this function will be executed on each xrFrame received from the browser.
+         * This function will not execute after the feature is detached.
+         * @param _xrFrame the current frame
+         */
+        protected _onXRFrame(_xrFrame: XRFrame): void;
+        /**
+         * This is used to register callbacks that will automatically be removed when detach is called.
+         * @param observable the observable to which the observer will be attached
+         * @param callback the callback to register
+         */
+        protected _addNewAttachObserver<T>(observable: Observable<T>, callback: (eventData: T, eventState: EventState) => void): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Options interface for the pointer selection module
      */
     export interface IWebXRControllerPointerSelectionOptions {
@@ -43887,12 +43989,34 @@ declare module BABYLON {
          * Different button type to use instead of the main component
          */
         overrideButtonId?: string;
+        /**
+         * The amount of time in miliseconds it takes between pick found something to a pointer down event.
+         * Used in gaze modes. Tracked pointer uses the trigger, screen uses touch events
+         * 3000 means 3 seconds between pointing at something and selecting it
+         */
+        timeToSelect?: number;
+        /**
+         * Disable the pointer up event when the xr controller in screen and gaze mode is disposed (meaning - when the user removed the finger from the screen)
+         * If not disabled, the last picked point will be used to execute a pointer up event
+         * If disabled, pointer up event will be triggered right after the pointer down event.
+         * Used in screen and gaze target ray mode only
+         */
+        disablePointerUpOnTouchOut: boolean;
+        /**
+         * For gaze mode (time to select instead of press)
+         */
+        forceGazeMode: boolean;
+        /**
+         * Factor to be applied to the pointer-moved function in the gaze mode. How sensitive should the gaze mode be when checking if the pointer moved
+         * to start a new countdown to the pointer down event.
+         * Defaults to 1.
+         */
+        gazeModePointerMovedFactor?: number;
     }
     /**
      * A module that will enable pointer selection for motion controllers of XR Input Sources
      */
-    export class WebXRControllerPointerSelection implements IWebXRFeature {
-        private _xrSessionManager;
+    export class WebXRControllerPointerSelection extends WebXRAbstractFeature implements IWebXRFeature {
         private readonly _options;
         /**
          * The module's name
@@ -43907,11 +44031,11 @@ declare module BABYLON {
         /**
          * This color will be set to the laser pointer when selection is triggered
          */
-        onPickedLaserPointerColor: Color3;
+        laserPointerPickedColor: Color3;
         /**
          * This color will be applied to the selection ring when selection is triggered
          */
-        onPickedSelectionMeshColor: Color3;
+        selectionMeshPickedColor: Color3;
         /**
          * default color of the selection ring
          */
@@ -43921,14 +44045,8 @@ declare module BABYLON {
          */
         lasterPointerDefaultColor: Color3;
         private static _idCounter;
-        private _observerTracked;
-        private _attached;
         private _tmpRay;
         private _controllers;
-        /**
-         * Is this feature attached
-         */
-        get attached(): boolean;
         private _scene;
         /**
          * constructs a new background remover module
@@ -43950,15 +44068,24 @@ declare module BABYLON {
          * @returns true if successful.
          */
         detach(): boolean;
+        /**
+         * Get the xr controller that correlates to the pointer id in the pointer event
+         *
+         * @param id the pointer id to search for
+         * @returns the controller that correlates to this id or null if not found
+         */
+        getXRControllerByPointerId(id: number): Nullable<WebXRController>;
+        protected _onXRFrame(_xrFrame: XRFrame): void;
         private _attachController;
+        private _attachScreenRayMode;
+        private _attachGazeMode;
+        private _tmpVectorForPickCompare;
+        private _pickingMoved;
+        private _attachTrackedPointerRayMode;
         private _detachController;
         private _generateNewMeshPair;
         private _convertNormalToDirectionOfRay;
         private _updatePointerDistance;
-        /**
-         * Dispose this feature and all of the resources attached
-         */
-        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -44175,14 +44302,22 @@ declare module BABYLON {
              */
             disableAnimation?: boolean;
         };
+        /**
+         * Disable using the thumbstick and use the main component (usuallly trigger) on long press.
+         * This will be automatically true if the controller doesnt have a thumbstick or touchpad.
+         */
+        useMainComponentOnly?: boolean;
+        /**
+         * If main component is used (no thumbstick), how long should the "long press" take before teleporting
+         */
+        timeToTeleport?: number;
     }
     /**
      * This is a teleportation feature to be used with webxr-enabled motion controllers.
      * When enabled and attached, the feature will allow a user to move aroundand rotate in the scene using
      * the input of the attached controllers.
      */
-    export class WebXRMotionControllerTeleportation implements IWebXRFeature {
-        private _xrSessionManager;
+    export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature implements IWebXRFeature {
         private _options;
         /**
          * The module's name
@@ -44219,12 +44354,6 @@ declare module BABYLON {
          * Distance to travel when moving backwards
          */
         backwardsTeleportationDistance: number;
-        private _observerTracked;
-        private _attached;
-        /**
-         * Is this feature attached
-         */
-        get attached(): boolean;
         /**
          * Add a new mesh to the floor meshes array
          * @param mesh the mesh to use as floor mesh
@@ -44257,26 +44386,13 @@ declare module BABYLON {
          * @param selectionFeature the feature to disable when forward movement is enabled
          */
         setSelectionFeature(selectionFeature: IWebXRFeature): void;
-        /**
-         * attach this feature
-         * Will usually be called by the features manager
-         *
-         * @returns true if successful.
-         */
         attach(): boolean;
-        /**
-         * detach this feature.
-         * Will usually be called by the features manager
-         *
-         * @returns true if successful.
-         */
         detach(): boolean;
-        /**
-         * Dispose this feature and all of the resources attached
-         */
         dispose(): void;
+        protected _onXRFrame(_xrFrame: XRFrame): void;
         private _currentTeleportationControllerId;
         private _attachController;
+        private _teleportForward;
         private _detachController;
         private createDefaultTargetMesh;
         private setTargetMeshVisibility;
@@ -44805,8 +44921,7 @@ declare module BABYLON {
      * Hit test (or raycasting) is used to interact with the real world.
      * For further information read here - https://github.com/immersive-web/hit-test
      */
-    export class WebXRHitTestLegacy implements IWebXRFeature {
-        private _xrSessionManager;
+    export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRFeature {
         /**
          * options to use when constructing this feature
          */
@@ -44821,11 +44936,6 @@ declare module BABYLON {
          * This number does not correspond to the webxr specs version
          */
         static readonly Version: number;
-        private _attached;
-        /**
-         * Is this feature attached
-         */
-        get attached(): boolean;
         /**
          * Execute a hit test on the current running session using a select event returned from a transient input (such as touch)
          * @param event the (select) event to use to select with
@@ -44848,7 +44958,6 @@ declare module BABYLON {
          */
         onHitTestResultObservable: Observable<IWebXRHitResult[]>;
         private _onSelectEnabled;
-        private _xrFrameObserver;
         /**
          * Creates a new instance of the (legacy version) hit test feature
          * @param _xrSessionManager an instance of WebXRSessionManager
@@ -44878,6 +44987,10 @@ declare module BABYLON {
          */
         detach(): boolean;
         private _onHitTestResults;
+        private _origin;
+        private _direction;
+        private _mat;
+        protected _onXRFrame(frame: XRFrame): void;
         private _onSelect;
         /**
          * Dispose this feature and all of the resources attached
@@ -44922,8 +45035,7 @@ declare module BABYLON {
      * The plane detector is used to detect planes in the real world when in AR
      * For more information see https://github.com/immersive-web/real-world-geometry/
      */
-    export class WebXRPlaneDetector implements IWebXRFeature {
-        private _xrSessionManager;
+    export class WebXRPlaneDetector extends WebXRAbstractFeature implements IWebXRFeature {
         private _options;
         /**
          * The module's name
@@ -44948,35 +45060,16 @@ declare module BABYLON {
          * This can execute N times every frame
          */
         onPlaneUpdatedObservable: Observable<IWebXRPlane>;
-        private _attached;
-        /**
-         * Is this feature attached
-         */
-        get attached(): boolean;
         private _enabled;
         private _detectedPlanes;
         private _lastFrameDetected;
-        private _observerTracked;
         /**
          * construct a new Plane Detector
          * @param _xrSessionManager an instance of xr Session manager
          * @param _options configuration to use when constructing this feature
          */
         constructor(_xrSessionManager: WebXRSessionManager, _options?: IWebXRPlaneDetectorOptions);
-        /**
-         * attach this feature
-         * Will usually be called by the features manager
-         *
-         * @returns true if successful.
-         */
-        attach(): boolean;
-        /**
-         * detach this feature.
-         * Will usually be called by the features manager
-         *
-         * @returns true if successful.
-         */
-        detach(): boolean;
+        protected _onXRFrame(frame: XRFrame): void;
         /**
          * Dispose this feature and all of the resources attached
          */
@@ -45031,8 +45124,7 @@ declare module BABYLON {
      * will use the frame to create an anchor and not the session or a detected plane
      * For further information see https://github.com/immersive-web/anchors/
      */
-    export class WebXRAnchorSystem implements IWebXRFeature {
-        private _xrSessionManager;
+    export class WebXRAnchorSystem extends WebXRAbstractFeature implements IWebXRFeature {
         private _options;
         /**
          * The module's name
@@ -45057,17 +45149,11 @@ declare module BABYLON {
          * Observers registered here will be executed when an anchor was removed from the session
          */
         onAnchorRemovedObservable: Observable<IWebXRAnchor>;
-        private _attached;
-        /**
-         * Is this feature attached
-         */
-        get attached(): boolean;
         private _planeDetector;
         private _hitTestModule;
         private _enabled;
         private _trackedAnchors;
         private _lastFrameDetected;
-        private _observerTracked;
         /**
          * constructs a new anchor system
          * @param _xrSessionManager an instance of WebXRSessionManager
@@ -45103,6 +45189,7 @@ declare module BABYLON {
          * Dispose this feature and all of the resources attached
          */
         dispose(): void;
+        protected _onXRFrame(frame: XRFrame): void;
         private _onSelect;
         /**
          * Add anchor at a specific XR point.
@@ -45151,8 +45238,7 @@ declare module BABYLON {
     /**
      * A module that will automatically disable background meshes when entering AR and will enable them when leaving AR.
      */
-    export class WebXRBackgroundRemover implements IWebXRFeature {
-        private _xrSessionManager;
+    export class WebXRBackgroundRemover extends WebXRAbstractFeature implements IWebXRFeature {
         /**
          * read-only options to be used in this module
          */
@@ -45171,11 +45257,6 @@ declare module BABYLON {
          * registered observers will be triggered when the background state changes
          */
         onBackgroundStateChangedObservable: Observable<boolean>;
-        private _attached;
-        /**
-         * Is this feature attached
-         */
-        get attached(): boolean;
         /**
          * constructs a new background remover module
          * @param _xrSessionManager the session manager for this module
@@ -54411,6 +54492,10 @@ declare module BABYLON {
          * @param max maximal distance for the breaks (default to 1.)
          */
         setMinMaxDistance(min: number, max: number): void;
+        /** Gets the minimal distance used in the cascade break computation */
+        get minDistance(): number;
+        /** Gets the maximal distance used in the cascade break computation */
+        get maxDistance(): number;
         /**
          * Gets the class name of that object
          * @returns "ShadowGenerator"
@@ -54464,10 +54549,8 @@ declare module BABYLON {
         private _lightDirection;
         private _effect;
         private _cascades;
-        private _cachedPosition;
         private _cachedDirection;
         private _cachedDefines;
-        private _currentRenderID;
         private _mapSize;
         private _currentLayer;
         private _textureType;
@@ -54512,11 +54595,13 @@ declare module BABYLON {
          */
         get depthClamp(): boolean;
         set depthClamp(value: boolean);
+        private _cascadeBlendPercentage;
         /**
          * Gets or sets the percentage of blending between two cascades (value between 0. and 1.).
          * It defaults to 0.1 (10% blending).
          */
-        cascadeBlendPercentage: number;
+        get cascadeBlendPercentage(): number;
+        set cascadeBlendPercentage(value: number);
         private _lambda;
         /**
          * Gets or set the lambda parameter.
@@ -54532,6 +54617,12 @@ declare module BABYLON {
          * @returns the cascade view matrix
          */
         getCascadeViewMatrix(cascadeNum: number): Nullable<Matrix>;
+        /**
+         * Gets the projection matrix corresponding to a given cascade
+         * @param cascadeNum cascade to retrieve the projection matrix from
+         * @returns the cascade projection matrix
+         */
+        getCascadeProjectionMatrix(cascadeNum: number): Nullable<Matrix>;
         private _depthRenderer;
         /**
          * Sets the depth renderer to use when autoCalcDepthBounds is enabled.
@@ -54578,6 +54669,7 @@ declare module BABYLON {
          * @returns The transform matrix used to create the CSM shadow map
          */
         getCSMTransformMatrix(cascadeIndex: number): Matrix;
+        private _computeMatrices;
         private _computeFrustumInWorldSpace;
         private _computeCascadeFrustum;
         /** @hidden */
@@ -57007,6 +57099,9 @@ declare module BABYLON {
     }
     /** @hidden */
     export class NodeMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+        NORMAL: boolean;
+        TANGENT: boolean;
+        UV1: boolean;
         /** BONES */
         NUM_BONE_INFLUENCERS: number;
         BonesPerMesh: number;
@@ -57061,8 +57156,10 @@ declare module BABYLON {
         private _cachedWorldViewProjectionMatrix;
         private _optimizers;
         private _animationFrame;
-        /** Define the URl to load node editor script */
+        /** Define the Url to load node editor script */
         static EditorURL: string;
+        /** Define the Url to load snippets */
+        static SnippetUrl: string;
         private BJSNODEMATERIALEDITOR;
         /** Get the inspector from bundle or global */
         private _getGlobalNodeMaterialEditor;
@@ -57307,6 +57404,14 @@ declare module BABYLON {
          * @returns a new node material
          */
         static Parse(source: any, scene: Scene, rootUrl?: string): NodeMaterial;
+        /**
+         * Creates a node material from a snippet saved by the node material editor
+         * @param snippetId defines the snippet to load
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @returns a promise that will resolve to the new node material
+         */
+        static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl?: string): Promise<NodeMaterial>;
         /**
          * Creates a new node material set to default basic configuration
          * @param name defines the name of the material
@@ -57864,6 +57969,8 @@ declare module BABYLON {
         min: number;
         /** Gets or set a value used to limit the range of float values */
         max: number;
+        /** Gets or set a value indicating that this input can only get 0 and 1 values */
+        isBoolean: boolean;
         /** Gets or sets a value used by the Node Material editor to determine how to configure the current value if it is a matrix */
         matrixMode: number;
         /** @hidden */
@@ -64559,6 +64666,11 @@ declare module BABYLON {
          */
         static readonly VELOCITY_TEXTURE_TYPE: number;
         /**
+         * Constant used to retrieve the reflectivity texture index in the G-Buffer textures array
+         * using the getIndex(GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE)
+         */
+        static readonly REFLECTIVITY_TEXTURE_TYPE: number;
+        /**
          * Dictionary used to store the previous transformation matrices of each rendered mesh
          * in order to compute objects velocities when enableVelocity is set to "true"
          * @hidden
@@ -64586,8 +64698,10 @@ declare module BABYLON {
         private _ratio;
         private _enablePosition;
         private _enableVelocity;
+        private _enableReflectivity;
         private _positionIndex;
         private _velocityIndex;
+        private _reflectivityIndex;
         protected _effect: Effect;
         protected _cachedDefines: string;
         /**
@@ -64621,6 +64735,14 @@ declare module BABYLON {
          * Sets wether or not objects velocities are enabled for the G buffer.
          */
         set enableVelocity(enable: boolean);
+        /**
+         * Gets a boolean indicating if objects roughness are enabled in the G buffer.
+         */
+        get enableReflectivity(): boolean;
+        /**
+         * Sets wether or not objects roughness are enabled for the G buffer.
+         */
+        set enableReflectivity(enable: boolean);
         /**
          * Gets the scene associated with the buffer.
          */
@@ -65778,6 +65900,86 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var screenSpaceReflectionPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * The ScreenSpaceReflectionPostProcess performs realtime reflections using only and only the available informations on the screen (positions and normals).
+     * Basically, the screen space reflection post-process will compute reflections according the material's reflectivity.
+     */
+    export class ScreenSpaceReflectionPostProcess extends PostProcess {
+        /**
+         * Gets or sets a reflection threshold mainly used to adjust the reflection's height.
+         */
+        threshold: number;
+        /**
+         * Gets or sets the current reflection strength. 1.0 is an ideal value but can be increased/decreased for particular results.
+         */
+        strength: number;
+        /**
+         * Gets or sets the falloff exponent used while computing fresnel. More the exponent is high, more the reflections will be discrete.
+         */
+        reflectionSpecularFalloffExponent: number;
+        /**
+         * Gets or sets the step size used to iterate until the effect finds the color of the reflection's pixel. Typically in interval [0.1, 1.0]
+         */
+        step: number;
+        /**
+         * Gets or sets the factor applied when computing roughness. Default value is 0.2.
+         */
+        roughnessFactor: number;
+        private _geometryBufferRenderer;
+        private _enableSmoothReflections;
+        private _reflectionSamples;
+        private _smoothSteps;
+        /**
+         * Creates a new instance of ScreenSpaceReflectionPostProcess.
+         * @param name The name of the effect.
+         * @param scene The scene containing the objects to calculate reflections.
+         * @param options The required width/height ratio to downsize to before computing the render pass.
+         * @param camera The camera to apply the render pass to.
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         * @param textureType Type of textures used when performing the post process. (default: 0)
+         * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
+         */
+        constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean);
+        /**
+         * Gets wether or not smoothing reflections is enabled.
+         * Enabling smoothing will require more GPU power and can generate a drop in FPS.
+         */
+        get enableSmoothReflections(): boolean;
+        /**
+         * Sets wether or not smoothing reflections is enabled.
+         * Enabling smoothing will require more GPU power and can generate a drop in FPS.
+         */
+        set enableSmoothReflections(enabled: boolean);
+        /**
+         * Gets the number of samples taken while computing reflections. More samples count is high,
+         * more the post-process wil require GPU power and can generate a drop in FPS. Basically in interval [25, 100].
+         */
+        get reflectionSamples(): number;
+        /**
+         * Sets the number of samples taken while computing reflections. More samples count is high,
+         * more the post-process wil require GPU power and can generate a drop in FPS. Basically in interval [25, 100].
+         */
+        set reflectionSamples(samples: number);
+        /**
+         * Gets the number of samples taken while smoothing reflections. More samples count is high,
+         * more the post-process will require GPU power and can generate a drop in FPS.
+         * Default value (5.0) work pretty well in all cases but can be adjusted.
+         */
+        get smoothSteps(): number;
+        set smoothSteps(steps: number);
+        private _updateEffectDefines;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
     export var standardPixelShader: {
         name: string;
         shader: string;
@@ -65883,6 +66085,10 @@ declare module BABYLON {
          * The Fast Approximate Anti-Aliasing post process which attemps to remove aliasing from an image.
          */
         fxaaPostProcess: Nullable<FxaaPostProcess>;
+        /**
+         * Post-process used to simulate realtime reflections using the screen space and geometry renderer.
+         */
+        screenSpaceReflectionPostProcess: Nullable<ScreenSpaceReflectionPostProcess>;
         /**
          * Represents the brightness threshold in order to configure the illuminated surfaces
          */
@@ -66030,6 +66236,7 @@ declare module BABYLON {
         private _hdrEnabled;
         private _motionBlurEnabled;
         private _fxaaEnabled;
+        private _screenSpaceReflectionsEnabled;
         private _motionBlurSamples;
         private _volumetricLightStepsCount;
         private _samples;
@@ -66074,6 +66281,11 @@ declare module BABYLON {
          */
         get fxaaEnabled(): boolean;
         set fxaaEnabled(enabled: boolean);
+        /**
+         * Specifies if screen space reflections are enabled.
+         */
+        get screenSpaceReflectionsEnabled(): boolean;
+        set screenSpaceReflectionsEnabled(enabled: boolean);
         /**
          * Specifies the number of steps used to calculate the volumetric lights
          * Typically in interval [50, 200]

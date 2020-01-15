@@ -865,8 +865,10 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lig
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class CommonShadowLightPropertyGridComponent extends React.Component<ICommonShadowLightPropertyGridComponentProps> {
+        private _internals;
         constructor(props: ICommonShadowLightPropertyGridComponentProps);
         createShadowGenerator(): void;
+        disposeShadowGenerator(): void;
         render(): JSX.Element;
     }
 }
@@ -3081,8 +3083,10 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class CommonShadowLightPropertyGridComponent extends React.Component<ICommonShadowLightPropertyGridComponentProps> {
+        private _internals;
         constructor(props: ICommonShadowLightPropertyGridComponentProps);
         createShadowGenerator(): void;
+        disposeShadowGenerator(): void;
         render(): JSX.Element;
     }
 }

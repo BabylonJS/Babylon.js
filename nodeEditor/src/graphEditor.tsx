@@ -46,11 +46,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     private _mouseLocationY = 0;
     private _onWidgetKeyUpPointer: any;
 
-    /**
-     * Creates a node and recursivly creates its parent nodes from it's input
-     * @param nodeMaterialBlock 
-     */
-    public createNodeFromObject(block: NodeMaterialBlock) {
+    public createNodeFromObject(block: NodeMaterialBlock, recursion = true) {
         if (this._blocks.indexOf(block) !== -1) {        
             return this._graphCanvas.nodes.filter(n => n.block === block)[0];
         }
@@ -68,7 +64,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         // Connections
         if (block.inputs.length) {
             for (var input of block.inputs) {
-                if (input.isConnected) {
+                if (input.isConnected && recursion) {
                     this.createNodeFromObject(input.sourceBlock!);
                 }
             }
@@ -78,7 +74,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         const node = this._graphCanvas.appendBlock(block);
 
         // Links
-        if (block.inputs.length) {
+        if (block.inputs.length && recursion) {
             for (var input of block.inputs) {
                 if (input.isConnected) {
                     this._graphCanvas.connectPorts(input.connectedPoint!, input);
@@ -308,7 +304,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                 return;
             }
             
-            let newNode = this.createNodeFromObject(clone);
+            let newNode = this.createNodeFromObject(clone, false);
 
             let x = 0;
             let y = 0;

@@ -42,5 +42,5 @@ export interface WebXRRenderTarget extends IDisposable {
      * @param xrSession xr session
      * @returns a promise that will resolve once the XR Layer has been created
      */
-    initializeXRLayerAsync(xrSession: XRSession) : Promise<void>;
+    initializeXRLayerAsync(xrSession: XRSession) : Promise<XRWebGLLayer>;
 }

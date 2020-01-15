@@ -150,6 +150,7 @@ declare module NODEEDITOR {
         private _ports;
         private _controlledPorts;
         private _id;
+        onExpandStateChanged: BABYLON.Observable<GraphFrame>;
         private readonly CloseSVG;
         private readonly ExpandSVG;
         private readonly CollapseSVG;
@@ -369,6 +370,7 @@ declare module NODEEDITOR {
         value: number;
         step?: number;
         onChange: (value: number) => void;
+        globalState: GlobalState;
     }
     export class NumericInputComponent extends React.Component<INumericInputComponentProps, {
         value: string;
@@ -393,6 +395,7 @@ declare module NODEEDITOR {
         step?: number;
         onChange?: (newvalue: BABYLON.Vector2) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        globalState: GlobalState;
     }
     export class Vector2LineComponent extends React.Component<IVector2LineComponentProps, {
         isExpanded: boolean;
@@ -430,6 +433,7 @@ declare module NODEEDITOR {
         propertyName: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         onChange?: () => void;
+        globalState: GlobalState;
     }
     export class Color3LineComponent extends React.Component<IColor3LineComponentProps, {
         isExpanded: boolean;
@@ -467,6 +471,7 @@ declare module NODEEDITOR {
         step?: number;
         onChange?: (newvalue: BABYLON.Vector3) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        globalState: GlobalState;
     }
     export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
         isExpanded: boolean;
@@ -508,6 +513,7 @@ declare module NODEEDITOR {
         step?: number;
         onChange?: (newvalue: BABYLON.Vector4) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        globalState: GlobalState;
     }
     export class Vector4LineComponent extends React.Component<IVector4LineComponentProps, {
         isExpanded: boolean;
@@ -583,6 +589,7 @@ declare module NODEEDITOR {
         onModeChange?: (mode: number) => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         mode?: number;
+        globalState: GlobalState;
     }
     export class MatrixLineComponent extends React.Component<IMatrixLineComponentProps, {
         value: BABYLON.Matrix;
@@ -678,14 +685,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        renderValue(globalState: GlobalState): JSX.Element | null;
-        setDefaultValue(): void;
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
     export interface ICheckBoxLineComponentProps {
         label: string;
         target?: any;
@@ -706,6 +705,52 @@ declare module NODEEDITOR {
             isSelected: boolean;
         }): boolean;
         onChange(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface IColor4LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        onChange?: () => void;
+        globalState: GlobalState;
+    }
+    export class Color4LineComponent extends React.Component<IColor4LineComponentProps, {
+        isExpanded: boolean;
+        color: BABYLON.Color4;
+    }> {
+        private _localChange;
+        constructor(props: IColor4LineComponentProps);
+        shouldComponentUpdate(nextProps: IColor4LineComponentProps, nextState: {
+            color: BABYLON.Color4;
+        }): boolean;
+        onChange(newValue: string): void;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Color4): void;
+        updateStateR(value: number): void;
+        updateStateG(value: number): void;
+        updateStateB(value: number): void;
+        updateStateA(value: number): void;
+        copyToClipboard(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface IColor4PropertyTabComponentProps {
+        globalState: GlobalState;
+        inputBlock: BABYLON.InputBlock;
+    }
+    export class Color4PropertyTabComponent extends React.Component<IColor4PropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        renderValue(globalState: GlobalState): JSX.Element | null;
+        setDefaultValue(): void;
         render(): JSX.Element;
     }
 }
@@ -1070,6 +1115,19 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface IFramePropertyTabComponentProps {
+        globalState: GlobalState;
+        frame: GraphFrame;
+    }
+    export class FramePropertyTabComponent extends React.Component<IFramePropertyTabComponentProps> {
+        private onFrameExpandStateChangedObserver;
+        constructor(props: IFramePropertyTabComponentProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
@@ -1178,11 +1236,7 @@ declare module NODEEDITOR {
         private _mouseLocationX;
         private _mouseLocationY;
         private _onWidgetKeyUpPointer;
-        /**
-         * Creates a node and recursivly creates its parent nodes from it's input
-         * @param nodeMaterialBlock
-         */
-        createNodeFromObject(block: BABYLON.NodeMaterialBlock): GraphNode;
+        createNodeFromObject(block: BABYLON.NodeMaterialBlock, recursion?: boolean): GraphNode;
         addValueNode(type: string): GraphNode;
         componentDidMount(): void;
         componentWillUnmount(): void;

@@ -132,14 +132,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-beta.19";
+        return "babylonjs@4.1.0-beta.20";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-beta.19";
+        return "4.1.0-beta.20";
     }
 
     /**
@@ -2671,7 +2671,7 @@ export class ThinEngine {
         var minFilter = gl.NEAREST;
 
         switch (samplingMode) {
-            case Constants.TEXTURE_BILINEAR_SAMPLINGMODE:
+            case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
                 magFilter = gl.LINEAR;
                 if (generateMipMaps) {
                     minFilter = gl.LINEAR_MIPMAP_NEAREST;
@@ -2679,7 +2679,7 @@ export class ThinEngine {
                     minFilter = gl.LINEAR;
                 }
                 break;
-            case Constants.TEXTURE_TRILINEAR_SAMPLINGMODE:
+            case Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR:
                 magFilter = gl.LINEAR;
                 if (generateMipMaps) {
                     minFilter = gl.LINEAR_MIPMAP_LINEAR;
@@ -2687,7 +2687,7 @@ export class ThinEngine {
                     minFilter = gl.LINEAR;
                 }
                 break;
-            case Constants.TEXTURE_NEAREST_SAMPLINGMODE:
+            case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
                 magFilter = gl.NEAREST;
                 if (generateMipMaps) {
                     minFilter = gl.NEAREST_MIPMAP_LINEAR;

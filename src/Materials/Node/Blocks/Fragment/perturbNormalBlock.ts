@@ -30,7 +30,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Neutral);
+        super(name, NodeMaterialBlockTargets.Fragment);
 
         // Vertex
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false);
