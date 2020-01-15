@@ -159,6 +159,7 @@ export class WebXRFeaturesManager implements IDisposable {
 
     /**
      * Enable a feature using its name and a version. This will enable it in the scene, and will be responsible to attach it when the session starts.
+     * If used twice, the old version will be disposed and a new one will be constructed. This way you can re-enable with different configuration.
      *
      * @param featureName the name of the feature to load or the class of the feature
      * @param version optional version to load. if not provided the latest version will be enabled
@@ -183,26 +184,22 @@ export class WebXRFeaturesManager implements IDisposable {
         }
         // check if already initialized
         const feature = this._features[name];
-        if (!feature || !feature.featureImplementation || feature.version !== versionToLoad) {
-            const constructFunction = WebXRFeaturesManager.ConstructFeature(name, versionToLoad, this._xrSessionManager, moduleOptions);
-            if (!constructFunction) {
-                // report error?
-                throw new Error(`feature not found - ${name}`);
-            }
-
-            if (feature) {
-                this.disableFeature(name);
-            }
-
-            this._features[name] = {
-                featureImplementation: constructFunction(),
-                enabled: true,
-                version: versionToLoad
-            };
-        } else {
-            // make sure it is enabled now:
-            feature.enabled = true;
+        const constructFunction = WebXRFeaturesManager.ConstructFeature(name, versionToLoad, this._xrSessionManager, moduleOptions);
+        if (!constructFunction) {
+            // report error?
+            throw new Error(`feature not found - ${name}`);
         }
+
+        /* If the feature is already enabled, detach and dispose it, and create a new one */
+        if (feature) {
+            this.disableFeature(name);
+        }
+
+        this._features[name] = {
+            featureImplementation: constructFunction(),
+            enabled: true,
+            version: versionToLoad
+        };
 
         // if session started already, request and enable
         if (this._xrSessionManager.session && !feature.featureImplementation.attached && attachIfPossible) {
@@ -215,6 +212,7 @@ export class WebXRFeaturesManager implements IDisposable {
 
     /**
      * Used to disable an already-enabled feature
+     * The feature will be disposed and will be recreated once enabled.
      * @param featureName the feature to disable
      * @returns true if disable was successful
      */
@@ -224,6 +222,7 @@ export class WebXRFeaturesManager implements IDisposable {
         if (feature && feature.enabled) {
             feature.enabled = false;
             this.detachFeature(name);
+            feature.featureImplementation.dispose();
             return true;
         }
         return false;
@@ -273,7 +272,10 @@ export class WebXRFeaturesManager implements IDisposable {
      * dispose this features manager
      */
     dispose(): void {
-        this.getEnabledFeatures().forEach((feature) => this._features[feature].featureImplementation.dispose());
+        this.getEnabledFeatures().forEach((feature) => {
+            this.disableFeature(feature);
+            this._features[feature].featureImplementation.dispose();
+        });
     }
 
 }

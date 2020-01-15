@@ -421,6 +421,21 @@ export class CascadedShadowGenerator implements IShadowGenerator {
                 this._scbiMin.minimizeInPlace(boundingBox.minimumWorld);
                 this._scbiMax.maximizeInPlace(boundingBox.maximumWorld);
             }
+
+            const meshes = this._scene.meshes;
+            for (let meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
+                const mesh = meshes[meshIndex];
+
+                if (!mesh || !mesh.isVisible || !mesh.isEnabled || !mesh.receiveShadows) {
+                    continue;
+                }
+
+                const boundingInfo = mesh.getBoundingInfo(),
+                      boundingBox = boundingInfo.boundingBox;
+
+                this._scbiMin.minimizeInPlace(boundingBox.minimumWorld);
+                this._scbiMax.maximizeInPlace(boundingBox.maximumWorld);
+            }
         }
 
         this._shadowCastersBoundingInfo.reConstruct(this._scbiMin, this._scbiMax);
@@ -475,6 +490,16 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         this._minDistance = min;
         this._maxDistance = max;
         this._breaksAreDirty = true;
+    }
+
+    /** Gets the minimal distance used in the cascade break computation */
+    public get minDistance(): number {
+        return this._minDistance;
+    }
+
+    /** Gets the maximal distance used in the cascade break computation */
+    public get maxDistance(): number {
+        return this._maxDistance;
     }
 
     /**
@@ -583,10 +608,8 @@ export class CascadedShadowGenerator implements IShadowGenerator {
     private _effect: Effect;
 
     private _cascades: Array<ICascade>;
-    private _cachedPosition: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
     private _cachedDirection: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
     private _cachedDefines: string;
-    private _currentRenderID: Array<number>;
     private _mapSize: number;
     private _currentLayer = 0;
     private _textureType: number;
@@ -628,6 +651,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             return;
         }
         this._shadowMaxZ = value;
+        this._light._markMeshesAsLightDirty();
         this._breaksAreDirty = true;
     }
 
@@ -664,11 +688,20 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         this._depthClamp = value;
     }
 
+    private _cascadeBlendPercentage: number = 0.1;
+
     /**
      * Gets or sets the percentage of blending between two cascades (value between 0. and 1.).
      * It defaults to 0.1 (10% blending).
      */
-    public cascadeBlendPercentage: number = 0.1;
+    public get cascadeBlendPercentage(): number {
+        return this._cascadeBlendPercentage;
+    }
+
+    public set cascadeBlendPercentage(value: number) {
+        this._cascadeBlendPercentage = value;
+        this._light._markMeshesAsLightDirty();
+    }
 
     private _lambda = 0.5;
 
@@ -698,6 +731,15 @@ export class CascadedShadowGenerator implements IShadowGenerator {
      */
     public getCascadeViewMatrix(cascadeNum: number): Nullable<Matrix> {
         return cascadeNum >= 0 && cascadeNum < this._numCascades ? this._viewMatrices[cascadeNum] : null;
+    }
+
+    /**
+     * Gets the projection matrix corresponding to a given cascade
+     * @param cascadeNum cascade to retrieve the projection matrix from
+     * @returns the cascade projection matrix
+     */
+    public getCascadeProjectionMatrix(cascadeNum: number): Nullable<Matrix> {
+        return cascadeNum >= 0 && cascadeNum < this._numCascades ? this._projectionMatrices[cascadeNum] : null;
     }
 
     private _depthRenderer: Nullable<DepthRenderer>;
@@ -740,6 +782,8 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         if (!camera) {
             return;
         }
+
+        this._autoCalcDepthBounds = value;
 
         if (!value) {
             if (this._depthReducer) {
@@ -834,21 +878,15 @@ export class CascadedShadowGenerator implements IShadowGenerator {
      * @returns The transform matrix used to create the CSM shadow map
      */
     public getCSMTransformMatrix(cascadeIndex: number): Matrix {
+        return this._transformMatrices[cascadeIndex];
+    }
+
+    private _computeMatrices(): void {
         var scene = this._scene;
-        if (this._currentRenderID[cascadeIndex] === scene.getRenderId()) {
-            return this._transformMatrices[cascadeIndex];
-        }
 
         let camera = scene.activeCamera;
         if (!camera) {
-            return this._transformMatrices[cascadeIndex];
-        }
-
-        this._currentRenderID[cascadeIndex] = scene.getRenderId();
-
-        var lightPosition = this._light.position;
-        if (this._light.computeTransformedInformation()) {
-            lightPosition = this._light.transformedPosition;
+            return;
         }
 
         Vector3.NormalizeToRef(this._light.getShadowDirection(0), this._lightDirection);
@@ -856,10 +894,9 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             this._lightDirection.z = 0.0000000000001; // Required to avoid perfectly perpendicular light
         }
 
-        if (this._light.needProjectionMatrixCompute() || !this._cachedPosition || !this._cachedDirection || !lightPosition.equals(this._cachedPosition) || !this._lightDirection.equals(this._cachedDirection)) {
-            this._cachedPosition.copyFrom(lightPosition);
-            this._cachedDirection.copyFrom(this._lightDirection);
+        this._cachedDirection.copyFrom(this._lightDirection);
 
+        for (let cascadeIndex = 0; cascadeIndex < this._numCascades; ++cascadeIndex) {
             this._computeFrustumInWorldSpace(cascadeIndex);
             this._computeCascadeFrustum(cascadeIndex);
 
@@ -911,11 +948,9 @@ export class CascadedShadowGenerator implements IShadowGenerator {
 
             this._projectionMatrices[cascadeIndex].multiplyToRef(matrix, this._projectionMatrices[cascadeIndex]);
             this._viewMatrices[cascadeIndex].multiplyToRef(this._projectionMatrices[cascadeIndex], this._transformMatrices[cascadeIndex]);
+
+            this._transformMatrices[cascadeIndex].copyToArray(this._transformMatricesAsArray, cascadeIndex * 16);
         }
-
-        this._transformMatrices[cascadeIndex].copyToArray(this._transformMatricesAsArray, cascadeIndex * 16);
-
-        return this._transformMatrices[cascadeIndex];
     }
 
     // Get the 8 points of the view frustum in world space
@@ -993,8 +1028,6 @@ export class CascadedShadowGenerator implements IShadowGenerator {
                 this._cascadeMaxExtents[cascadeIndex].maximizeInPlace(tmpv1);
             }
         }
-
-        return;
     }
 
     /** @hidden */
@@ -1065,7 +1098,6 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         this._transformMatricesAsArray = new Float32Array(this._numCascades * 16);
         this._viewSpaceFrustumsZ = new Array(this._numCascades);
         this._frustumLengths = new Array(this._numCascades);
-        this._currentRenderID = new Array(this._numCascades);
         this._lightSizeUVCorrection = new Array(this._numCascades * 2);
         this._depthCorrection = new Array(this._numCascades);
 
@@ -1120,6 +1152,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             if (this._breaksAreDirty) {
                 this._splitFrustum();
             }
+            this._computeMatrices();
         });
 
         // Record Face Index before render.
@@ -1506,6 +1539,10 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             defines["SHADOWCSMUSESHADOWMAXZ" + lightIndex] = true;
         }
 
+        if (this.cascadeBlendPercentage === 0) {
+            defines["SHADOWCSMNOBLEND" + lightIndex] = true;
+        }
+
         if (this.useContactHardeningShadow) {
             defines["SHADOWPCSS" + lightIndex] = true;
             if (this._filteringQuality === CascadedShadowGenerator.QUALITY_LOW) {
@@ -1644,6 +1681,11 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         if (this._freezeShadowCastersBoundingInfoObservable) {
             this._scene.onBeforeRenderObservable.remove(this._freezeShadowCastersBoundingInfoObservable);
             this._freezeShadowCastersBoundingInfoObservable = null;
+        }
+
+        if (this._depthReducer) {
+            this._depthReducer.dispose();
+            this._depthReducer = null;
         }
     }
 

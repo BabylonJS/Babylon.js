@@ -24,8 +24,8 @@ export class RemapPropertyTabComponent extends React.Component<IPropertyComponen
             <div>                
                 <GenericPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
                 <LineContainerComponent title="PROPERTIES">
-                  <Vector2LineComponent label="From" propertyName="sourceRange" target={remapBlock} onChange={() => this.forceRebuild()} />
-                  <Vector2LineComponent label="To" propertyName="targetRange" target={remapBlock} onChange={() => this.forceRebuild()} />
+                  <Vector2LineComponent globalState={this.props.globalState} label="From" propertyName="sourceRange" target={remapBlock} onChange={() => this.forceRebuild()} />
+                  <Vector2LineComponent globalState={this.props.globalState} label="To" propertyName="targetRange" target={remapBlock} onChange={() => this.forceRebuild()} />
                 </LineContainerComponent>
             </div>
         );

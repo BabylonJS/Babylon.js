@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus, faCopy } from "@fortawesome/free-solid-svg-icons";
 import { GlobalState } from '../globalState';
 
-export interface IColor3LineComponentProps {
+export interface IColor4LineComponentProps {
     label: string;
     target: any;
     propertyName: string;
@@ -16,15 +16,15 @@ export interface IColor3LineComponentProps {
     globalState: GlobalState;
 }
 
-export class Color3LineComponent extends React.Component<IColor3LineComponentProps, { isExpanded: boolean, color: Color3 }> {
+export class Color4LineComponent extends React.Component<IColor4LineComponentProps, { isExpanded: boolean, color: Color4 }> {
     private _localChange = false;
-    constructor(props: IColor3LineComponentProps) {
+    constructor(props: IColor4LineComponentProps) {
         super(props);
 
         this.state = { isExpanded: false, color: this.props.target[this.props.propertyName].clone() };
     }
 
-    shouldComponentUpdate(nextProps: IColor3LineComponentProps, nextState: { color: Color3 }) {
+    shouldComponentUpdate(nextProps: IColor4LineComponentProps, nextState: { color: Color4 }) {
         const currentState = nextProps.target[nextProps.propertyName];
 
         if (!currentState.equals(nextState.color) || this._localChange) {
@@ -48,13 +48,9 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
             });
         }
 
-        if (this.props.target[this.props.propertyName].getClassName() === "Color4") {
-            this.props.target[this.props.propertyName] = new Color4(newColor.r, newColor.g, newColor.b, 1.0);
-        } else {
-            this.props.target[this.props.propertyName] = newColor;
-        }
+        this.props.target[this.props.propertyName] = new Color4(newColor.r, newColor.g, newColor.b, this.props.target[this.props.propertyName].a);
 
-        this.setState({ color: newColor });
+        this.setState({ color: this.props.target[this.props.propertyName] });
 
         if (this.props.onChange) {
             this.props.onChange();
@@ -66,7 +62,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         this.setState({ isExpanded: !this.state.isExpanded });
     }
 
-    raiseOnPropertyChanged(previousValue: Color3) {
+    raiseOnPropertyChanged(previousValue: Color4) {
         if (!this.props.onPropertyChangedObservable) {
             return;
         }
@@ -108,6 +104,18 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
         const store = this.state.color.clone();
         this.props.target[this.props.propertyName].b = value;
         this.state.color.b = value;
+        this.props.target[this.props.propertyName] = this.state.color;
+        this.setState({ color: this.state.color });
+
+        this.raiseOnPropertyChanged(store);
+    }
+
+    updateStateA(value: number) {
+        this._localChange = true;
+
+        const store = this.state.color.clone();
+        this.props.target[this.props.propertyName].a = value;
+        this.state.color.a = value;
         this.props.target[this.props.propertyName] = this.state.color;
         this.setState({ color: this.state.color });
 
@@ -157,6 +165,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
                         <NumericInputComponent globalState={this.props.globalState} label="r" value={this.state.color.r} onChange={value => this.updateStateR(value)} />
                         <NumericInputComponent globalState={this.props.globalState} label="g" value={this.state.color.g} onChange={value => this.updateStateG(value)} />
                         <NumericInputComponent globalState={this.props.globalState} label="b" value={this.state.color.b} onChange={value => this.updateStateB(value)} />
+                        <NumericInputComponent globalState={this.props.globalState} label="a" value={this.state.color.a} onChange={value => this.updateStateA(value)} />
                     </div>
                 }
             </div>

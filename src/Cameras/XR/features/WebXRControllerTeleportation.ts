@@ -20,6 +20,7 @@ import { TorusBuilder } from '../../../Meshes/Builders/torusBuilder';
 import { PickingInfo } from '../../../Collisions/pickingInfo';
 import { Curve3 } from '../../../Maths/math.path';
 import { LinesBuilder } from '../../../Meshes/Builders/linesBuilder';
+import { WebXRAbstractFeature } from './WebXRAbstractFeature';
 
 const Name = "xr-controller-teleportation";
 
@@ -65,6 +66,17 @@ export interface IWebXRTeleportationOptions {
          */
         disableAnimation?: boolean;
     };
+
+    /**
+     * Disable using the thumbstick and use the main component (usuallly trigger) on long press.
+     * This will be automatically true if the controller doesnt have a thumbstick or touchpad.
+     */
+    useMainComponentOnly?: boolean;
+
+    /**
+     * If main component is used (no thumbstick), how long should the "long press" take before teleporting
+     */
+    timeToTeleport?: number;
 }
 
 /**
@@ -72,7 +84,7 @@ export interface IWebXRTeleportationOptions {
  * When enabled and attached, the feature will allow a user to move aroundand rotate in the scene using
  * the input of the attached controllers.
  */
-export class WebXRMotionControllerTeleportation implements IWebXRFeature {
+export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature implements IWebXRFeature {
     /**
      * The module's name
      */
@@ -110,16 +122,6 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
      * Distance to travel when moving backwards
      */
     public backwardsTeleportationDistance: number = 0.5;
-
-    private _observerTracked: Nullable<Observer<XRFrame>>;
-
-    private _attached: boolean = false;
-    /**
-     * Is this feature attached
-     */
-    public get attached() {
-        return this._attached;
-    }
 
     /**
      * Add a new mesh to the floor meshes array
@@ -175,7 +177,8 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
      * @param _xrSessionManager an instance of WebXRSessionManager
      * @param _options configuration object for this feature
      */
-    constructor(private _xrSessionManager: WebXRSessionManager, private _options: IWebXRTeleportationOptions) {
+    constructor(_xrSessionManager: WebXRSessionManager, private _options: IWebXRTeleportationOptions) {
+        super(_xrSessionManager);
         // create default mesh if not provided
         if (!this._options.teleportationTargetMesh) {
             this.createDefaultTargetMesh();
@@ -196,25 +199,40 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
         this._selectionFeature = selectionFeature;
     }
 
-    /**
-     * attach this feature
-     * Will usually be called by the features manager
-     *
-     * @returns true if successful.
-     */
-    attach(): boolean {
+    public attach(): boolean {
+        super.attach();
 
         this._options.xrInput.controllers.forEach(this._attachController);
-        this._options.xrInput.onControllerAddedObservable.add(this._attachController);
-        this._options.xrInput.onControllerRemovedObservable.add((controller) => {
+        this._addNewAttachObserver(this._options.xrInput.onControllerAddedObservable, this._attachController);
+        this._addNewAttachObserver(this._options.xrInput.onControllerRemovedObservable, (controller) => {
             // REMOVE the controller
             this._detachController(controller.uniqueId);
         });
 
-        this._observerTracked = this._xrSessionManager.onXRFrameObservable.add(() => {
-            const frame = this._xrSessionManager.currentFrame;
+        return true;
+    }
+
+    public detach(): boolean {
+        super.detach();
+
+        Object.keys(this._controllers).forEach((controllerId) => {
+            this._detachController(controllerId);
+        });
+
+        this.setTargetMeshVisibility(false);
+
+        return true;
+    }
+
+    public dispose(): void {
+        super.dispose();
+        this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.dispose(false, true);
+    }
+
+    protected _onXRFrame(_xrFrame: XRFrame) {
+        const frame = this._xrSessionManager.currentFrame;
             const scene = this._xrSessionManager.scene;
-            if (!this._attached || !frame) { return; }
+            if (!this.attach || !frame) { return; }
 
             // render target if needed
             const targetMesh = this._options.teleportationTargetMesh;
@@ -270,38 +288,6 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
             } else {
                 this.setTargetMeshVisibility(false);
             }
-        });
-
-        this._attached = true;
-        return true;
-    }
-
-    /**
-     * detach this feature.
-     * Will usually be called by the features manager
-     *
-     * @returns true if successful.
-     */
-    detach(): boolean {
-        this._attached = false;
-
-        if (this._observerTracked) {
-            this._xrSessionManager.onXRFrameObservable.remove(this._observerTracked);
-        }
-
-        Object.keys(this._controllers).forEach((controllerId) => {
-            this._detachController(controllerId);
-        });
-
-        return true;
-    }
-
-    /**
-     * Dispose this feature and all of the resources attached
-     */
-    dispose(): void {
-        this.detach();
-        this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.dispose(false, true);
     }
 
     private _currentTeleportationControllerId: string;
@@ -325,20 +311,48 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
         // motion controller support
         if (xrController.gamepadController) {
             const movementController = xrController.gamepadController.getComponent(WebXRControllerComponent.THUMBSTICK) || xrController.gamepadController.getComponent(WebXRControllerComponent.TOUCHPAD);
-            if (!movementController) {
+            if (!movementController || this._options.useMainComponentOnly) {
                 // use trigger to move on long press
+                const mainComponent = xrController.gamepadController.getMainComponent();
+                if (!mainComponent) {
+                    return;
+                }
+                controllerData.onButtonChangedObserver = mainComponent.onButtonStateChanged.add(() => {
+                    // did "pressed" changed?
+                    if (mainComponent.changes.pressed) {
+                        if (mainComponent.changes.pressed.current) {
+                            // simulate "forward" thumbstick push
+                            controllerData.teleportationState.forward = true;
+                            this._currentTeleportationControllerId = controllerData.xrController.uniqueId;
+                            controllerData.teleportationState.baseRotation = this._options.xrInput.xrCamera.rotationQuaternion.toEulerAngles().y;
+                            controllerData.teleportationState.currentRotation = 0;
+                            const timeToSelect = this._options.timeToTeleport || 3000;
+                            let timer = 0;
+                            const observer = this._xrSessionManager.onXRFrameObservable.add(() => {
+                                if (!mainComponent.pressed) {
+                                    this._xrSessionManager.onXRFrameObservable.remove(observer);
+                                    return;
+                                }
+                                timer += this._xrSessionManager.scene.getEngine().getDeltaTime();
+                                if (timer >= timeToSelect && this._currentTeleportationControllerId === controllerData.xrController.uniqueId && controllerData.teleportationState.forward) {
+                                    this._teleportForward(xrController.uniqueId);
+                                }
+
+                                // failsafe
+                                if (timer >= timeToSelect) {
+                                    this._xrSessionManager.onXRFrameObservable.remove(observer);
+                                }
+                            });
+                        } else {
+                            controllerData.teleportationState.forward = false;
+                            this._currentTeleportationControllerId = "";
+                        }
+                    }
+                });
             } else {
                 controllerData.onButtonChangedObserver = movementController.onButtonStateChanged.add(() => {
                     if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId && controllerData.teleportationState.forward && !movementController.touched) {
-                        controllerData.teleportationState.forward = false;
-                        this._currentTeleportationControllerId = "";
-                        // do the movement forward here
-                        if (this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.isVisible) {
-                            const height = this._options.xrInput.xrCamera.position.y - this._options.teleportationTargetMesh.position.y;
-                            this._options.xrInput.xrCamera.position.copyFrom(this._options.teleportationTargetMesh.position);
-                            this._options.xrInput.xrCamera.position.y += height;
-                            this._options.xrInput.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, controllerData.teleportationState.currentRotation, 0));
-                        }
+                        this._teleportForward(xrController.uniqueId);
                     }
                 });
                 // use thumbstick (or touchpad if thumbstick not available)
@@ -390,6 +404,8 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
                                     setTimeout(() => {
                                         controllerData.teleportationState.currentRotation = Math.atan2(axesData.x, -axesData.y);
                                     });
+                                } else {
+                                    controllerData.teleportationState.currentRotation = 0;
                                 }
                             }
                         }
@@ -398,6 +414,19 @@ export class WebXRMotionControllerTeleportation implements IWebXRFeature {
                     }
                 });
             }
+        }
+    }
+
+    private _teleportForward(controllerId: string) {
+        const controllerData = this._controllers[controllerId];
+        controllerData.teleportationState.forward = false;
+        this._currentTeleportationControllerId = "";
+        // do the movement forward here
+        if (this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.isVisible) {
+            const height = this._options.xrInput.xrCamera.position.y - this._options.teleportationTargetMesh.position.y;
+            this._options.xrInput.xrCamera.position.copyFrom(this._options.teleportationTargetMesh.position);
+            this._options.xrInput.xrCamera.position.y += height;
+            this._options.xrInput.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, controllerData.teleportationState.currentRotation, 0));
         }
     }
 
