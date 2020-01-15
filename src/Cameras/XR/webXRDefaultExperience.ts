@@ -13,7 +13,7 @@ import { WebXRMotionControllerTeleportation } from './features/WebXRControllerTe
  */
 export class WebXRDefaultExperienceOptions {
     /**
-     * Floor meshes that should be used for teleporting
+     * Floor meshes that will be used for teleporting
      */
     public floorMeshes?: Array<AbstractMesh>;
 
@@ -36,6 +36,11 @@ export class WebXRDefaultExperienceOptions {
      * Disable the controller mesh-loading. Can be used if you want to load your own meshes
      */
     public inputOptions?: IWebXRInputOptions;
+
+    /**
+     * Should teleportation not initialize. defaults to false.
+     */
+    public disableTeleportation?: boolean;
 }
 
 /**
@@ -86,7 +91,8 @@ export class WebXRDefaultExperience {
                 xrInput: result.input
             });
 
-            if (options.floorMeshes) {
+            // Add default teleportation, including rotation
+            if (!options.disableTeleportation) {
                 result.teleportation = <WebXRMotionControllerTeleportation>result.baseExperience.featuresManager.enableFeature(WebXRMotionControllerTeleportation.Name, "latest", {
                     floorMeshes: options.floorMeshes,
                     xrInput: result.input
