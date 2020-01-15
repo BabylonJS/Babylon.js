@@ -342,6 +342,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         }
 
         try {
+            this.props.globalState.nodeMaterial.options.emitComments = true;
             this.props.globalState.nodeMaterial.build(true);
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node material build successful", false));
         }
