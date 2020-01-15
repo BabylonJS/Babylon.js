@@ -146,6 +146,20 @@ export interface ICrowd {
     agentGoto(index: number, destination: Vector3): void;
 
     /**
+     * Teleport the agent to a new position
+     * @param index agent index returned by addAgent
+     * @param destination targeted world position
+     */
+    agentTeleport(index: number, destination: Vector3): void;
+
+    /**
+     * Update agent parameters
+     * @param index agent index returned by addAgent
+     * @param parameters agent parameters
+     */
+    updateAgentParameters(index: number, parameters: IAgentParameters): void;
+
+    /**
      * Set the Bounding box extent for doing spatial queries (getClosestPoint, getRandomPointAround, ...)
      * The queries will try to find a solution within those bounds
      * default is (1,1,1)
