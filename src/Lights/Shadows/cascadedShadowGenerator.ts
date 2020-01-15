@@ -1701,32 +1701,29 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             return serializationObject;
         }
 
+        serializationObject.className = this.getClassName();
         serializationObject.lightId = this._light.id;
         serializationObject.mapSize = shadowMap.getRenderSize();
         serializationObject.forceBackFacesOnly = this.forceBackFacesOnly;
         serializationObject.darkness = this.getDarkness();
         serializationObject.transparencyShadow = this._transparencyShadow;
         serializationObject.frustumEdgeFalloff = this.frustumEdgeFalloff;
+        serializationObject.numCascades = this._numCascades;
+        serializationObject.stabilizeCascades = this.stabilizeCascades;
+        serializationObject.depthClamp = this._depthClamp;
+        serializationObject.lambda = this._lambda;
+        serializationObject.freezeShadowCastersBoundingInfo = this._freezeShadowCastersBoundingInfo;
+        serializationObject.shadowMaxZ = this._shadowMaxZ;
+        serializationObject.cascadeBlendPercentage = this.cascadeBlendPercentage;
+
         serializationObject.bias = this.bias;
         serializationObject.normalBias = this.normalBias;
+
         serializationObject.usePercentageCloserFiltering = this.usePercentageCloserFiltering;
         serializationObject.useContactHardeningShadow = this.useContactHardeningShadow;
-        serializationObject.contactHardeningLightSizeUVRatio = this.contactHardeningLightSizeUVRatio;
         serializationObject.filteringQuality = this.filteringQuality;
-
-        serializationObject.numCascades = this._numCascades;
-        serializationObject.debug = this._debug;
-        serializationObject.stabilizeCascades = this.stabilizeCascades;
-        serializationObject.lambda = this._lambda;
-        serializationObject.cascadeBlendPercentage = this.cascadeBlendPercentage;
-        serializationObject.depthClamp = this._depthClamp;
-        serializationObject.autoCalcDepthBounds = this.autoCalcDepthBounds;
-        serializationObject.shadowMaxZ = this._shadowMaxZ;
+        serializationObject.contactHardeningLightSizeUVRatio = this.contactHardeningLightSizeUVRatio;
         serializationObject.penumbraDarkness = this.penumbraDarkness;
-
-        serializationObject.freezeShadowCastersBoundingInfo = this._freezeShadowCastersBoundingInfo;
-        serializationObject.minDistance = this.minDistance;
-        serializationObject.maxDistance = this.maxDistance;
 
         serializationObject.renderList = [];
         if (shadowMap.renderList) {
@@ -1764,18 +1761,19 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             });
         }
 
-        shadowGenerator.forceBackFacesOnly = !!parsedShadowGenerator.forceBackFacesOnly;
-
-        if (parsedShadowGenerator.darkness !== undefined) {
-            shadowGenerator.setDarkness(parsedShadowGenerator.darkness);
+        if (parsedShadowGenerator.usePercentageCloserFiltering) {
+            shadowGenerator.usePercentageCloserFiltering = true;
+        }
+        else if (parsedShadowGenerator.useContactHardeningShadow) {
+            shadowGenerator.useContactHardeningShadow = true;
         }
 
-        if (parsedShadowGenerator.transparencyShadow) {
-            shadowGenerator.setTransparencyShadow(true);
+        if (parsedShadowGenerator.filteringQuality !== undefined) {
+            shadowGenerator.filteringQuality = parsedShadowGenerator.filteringQuality;
         }
 
-        if (parsedShadowGenerator.frustumEdgeFalloff !== undefined) {
-            shadowGenerator.frustumEdgeFalloff = parsedShadowGenerator.frustumEdgeFalloff;
+        if (parsedShadowGenerator.contactHardeningLightSizeUVRatio !== undefined) {
+            shadowGenerator.contactHardeningLightSizeUVRatio = parsedShadowGenerator.contactHardeningLightSizeUVRatio;
         }
 
         if (parsedShadowGenerator.bias !== undefined) {
@@ -1786,62 +1784,50 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             shadowGenerator.normalBias = parsedShadowGenerator.normalBias;
         }
 
-        if (parsedShadowGenerator.usePercentageCloserFiltering) {
-            shadowGenerator.usePercentageCloserFiltering = true;
-        } else if (parsedShadowGenerator.useContactHardeningShadow) {
-            shadowGenerator.useContactHardeningShadow = true;
+        if (parsedShadowGenerator.frustumEdgeFalloff !== undefined) {
+            shadowGenerator.frustumEdgeFalloff = parsedShadowGenerator.frustumEdgeFalloff;
         }
 
-        if (parsedShadowGenerator.contactHardeningLightSizeUVRatio !== undefined) {
-            shadowGenerator.contactHardeningLightSizeUVRatio = parsedShadowGenerator.contactHardeningLightSizeUVRatio;
+        if (parsedShadowGenerator.darkness !== undefined) {
+            shadowGenerator.setDarkness(parsedShadowGenerator.darkness);
         }
 
-        if (parsedShadowGenerator.filteringQuality !== undefined) {
-            shadowGenerator.filteringQuality = parsedShadowGenerator.filteringQuality;
+        if (parsedShadowGenerator.transparencyShadow) {
+            shadowGenerator.setTransparencyShadow(true);
         }
 
-        if (parsedShadowGenerator.numCascades !== undefined) {
-            shadowGenerator.numCascades = parsedShadowGenerator.numCascades;
-        }
-
-        if (parsedShadowGenerator.debug !== undefined) {
-            shadowGenerator.debug = parsedShadowGenerator.debug;
-        }
+        shadowGenerator.forceBackFacesOnly = !!parsedShadowGenerator.forceBackFacesOnly;
 
         if (parsedShadowGenerator.stabilizeCascades !== undefined) {
             shadowGenerator.stabilizeCascades = parsedShadowGenerator.stabilizeCascades;
-        }
-
-        if (parsedShadowGenerator.lambda !== undefined) {
-            shadowGenerator.lambda = parsedShadowGenerator.lambda;
-        }
-
-        if (parsedShadowGenerator.cascadeBlendPercentage !== undefined) {
-            shadowGenerator.cascadeBlendPercentage = parsedShadowGenerator.cascadeBlendPercentage;
         }
 
         if (parsedShadowGenerator.depthClamp !== undefined) {
              shadowGenerator.depthClamp = parsedShadowGenerator.depthClamp;
         }
 
-        if (parsedShadowGenerator.autoCalcDepthBounds !== undefined) {
-            shadowGenerator.autoCalcDepthBounds = parsedShadowGenerator.autoCalcDepthBounds;
-        }
-
-        if (parsedShadowGenerator.shadowMaxZ !== undefined) {
-            shadowGenerator.shadowMaxZ = parsedShadowGenerator.shadowMaxZ;
-        }
-
-        if (parsedShadowGenerator.penumbraDarkness !== undefined) {
-            shadowGenerator.penumbraDarkness = parsedShadowGenerator.penumbraDarkness;
+        if (parsedShadowGenerator.lambda !== undefined) {
+             shadowGenerator.lambda = parsedShadowGenerator.lambda;
         }
 
         if (parsedShadowGenerator.freezeShadowCastersBoundingInfo !== undefined) {
             shadowGenerator.freezeShadowCastersBoundingInfo = parsedShadowGenerator.freezeShadowCastersBoundingInfo;
         }
 
-        if (parsedShadowGenerator.minDistance !== undefined && parsedShadowGenerator.maxDistance !== undefined) {
-            shadowGenerator.setMinMaxDistance(parsedShadowGenerator.minDistance, parsedShadowGenerator.maxDistance);
+        if (parsedShadowGenerator.shadowMaxZ !== undefined) {
+             shadowGenerator.shadowMaxZ = parsedShadowGenerator.shadowMaxZ;
+        }
+
+        if (parsedShadowGenerator.cascadeBlendPercentage !== undefined) {
+             shadowGenerator.cascadeBlendPercentage = parsedShadowGenerator.cascadeBlendPercentage;
+        }
+
+        if (parsedShadowGenerator.penumbraDarkness !== undefined) {
+            shadowGenerator.penumbraDarkness = parsedShadowGenerator.penumbraDarkness;
+        }
+
+        if (parsedShadowGenerator.numCascades !== undefined) {
+            shadowGenerator.numCascades = parsedShadowGenerator.numCascades;
         }
 
         return shadowGenerator;
