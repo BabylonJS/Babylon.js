@@ -44272,8 +44272,9 @@ declare module BABYLON {
          * A list of meshes to use as floor meshes.
          * Meshes can be added and removed after initializing the feature using the
          * addFloorMesh and removeFloorMesh functions
+         * If empty, rotation will still work
          */
-        floorMeshes: AbstractMesh[];
+        floorMeshes?: AbstractMesh[];
         /**
          * Provide your own teleportation mesh instead of babylon's wonderful doughnut.
          * If you want to support rotation, make sure your mesh has a direction indicator.
@@ -44371,6 +44372,7 @@ declare module BABYLON {
         removeFloorMeshByName(name: string): void;
         private _tmpRay;
         private _tmpVector;
+        private _floorMeshes;
         private _controllers;
         /**
          * constructs a new anchor system
@@ -44407,7 +44409,7 @@ declare module BABYLON {
      */
     export class WebXRDefaultExperienceOptions {
         /**
-         * Floor meshes that should be used for teleporting
+         * Floor meshes that will be used for teleporting
          */
         floorMeshes?: Array<AbstractMesh>;
         /**
@@ -44426,6 +44428,10 @@ declare module BABYLON {
          * Disable the controller mesh-loading. Can be used if you want to load your own meshes
          */
         inputOptions?: IWebXRInputOptions;
+        /**
+         * Should teleportation not initialize. defaults to false.
+         */
+        disableTeleportation?: boolean;
     }
     /**
      * Default experience which provides a similar setup to the previous webVRExperience
@@ -62074,6 +62080,18 @@ declare module BABYLON {
          */
         agentGoto(index: number, destination: Vector3): void;
         /**
+         * Teleport the agent to a new position
+         * @param index agent index returned by addAgent
+         * @param destination targeted world position
+         */
+        agentTeleport(index: number, destination: Vector3): void;
+        /**
+         * Update agent parameters
+         * @param index agent index returned by addAgent
+         * @param parameters agent parameters
+         */
+        updateAgentParameters(index: number, parameters: IAgentParameters): void;
+        /**
          * Set the Bounding box extent for doing spatial queries (getClosestPoint, getRandomPointAround, ...)
          * The queries will try to find a solution within those bounds
          * default is (1,1,1)
@@ -62343,6 +62361,18 @@ declare module BABYLON {
          * @param destination targeted world position
          */
         agentGoto(index: number, destination: Vector3): void;
+        /**
+         * Teleport the agent to a new position
+         * @param index agent index returned by addAgent
+         * @param destination targeted world position
+         */
+        agentTeleport(index: number, destination: Vector3): void;
+        /**
+         * Update agent parameters
+         * @param index agent index returned by addAgent
+         * @param parameters agent parameters
+         */
+        updateAgentParameters(index: number, parameters: IAgentParameters): void;
         /**
          * remove a particular agent previously created
          * @param index agent index returned by addAgent
