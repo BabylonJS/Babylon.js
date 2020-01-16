@@ -36,7 +36,7 @@ export class WebXRController {
      * Using this object it is possible to get click events and trackpad changes of the
      * webxr controller that is currently being used.
      */
-    public gamepadController?: WebXRAbstractMotionController;
+    public motionController?: WebXRAbstractMotionController;
 
     /**
      * Event that fires when the controller is removed/disposed
@@ -71,10 +71,10 @@ export class WebXRController {
 
         // for now only load motion controllers if gamepad available
         if (this.inputSource.gamepad) {
-            this.gamepadController = WebXRMotionControllerManager.GetMotionControllerWithXRInput(inputSource, _scene, this._options.forceControllerProfile);
+            this.motionController = WebXRMotionControllerManager.GetMotionControllerWithXRInput(inputSource, _scene, this._options.forceControllerProfile);
             // if the model is loaded, do your thing
-            this.gamepadController.onModelLoadedObservable.addOnce(() => {
-                this.gamepadController!.rootMesh!.parent = this.pointer;
+            this.motionController.onModelLoadedObservable.addOnce(() => {
+                this.motionController!.rootMesh!.parent = this.pointer;
             });
         }
     }
@@ -118,9 +118,9 @@ export class WebXRController {
                 }
             }
         }
-        if (this.gamepadController) {
+        if (this.motionController) {
             // either update buttons only or also position, if in gamepad mode
-            this.gamepadController.updateFromXRFrame(xrFrame);
+            this.motionController.updateFromXRFrame(xrFrame);
         }
     }
 
@@ -145,8 +145,8 @@ export class WebXRController {
         if (this.grip) {
             this.grip.dispose();
         }
-        if (this.gamepadController) {
-            this.gamepadController.dispose();
+        if (this.motionController) {
+            this.motionController.dispose();
         }
         this.pointer.dispose();
         this.onDisposeObservable.notifyObservers({});
