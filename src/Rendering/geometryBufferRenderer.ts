@@ -7,7 +7,6 @@ import { SmartArray } from "../Misc/smartArray";
 import { Texture } from "../Materials/Textures/texture";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
 import { Effect } from "../Materials/effect";
-import { Material } from "../Materials/material";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { Scene } from "../scene";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -429,7 +428,7 @@ export class GeometryBufferRenderer {
 
             if (this.isReady(subMesh, hardwareInstancedRendering)) {
                 engine.enableEffect(this._effect);
-                mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
+                mesh._bind(subMesh, this._effect, material.fillMode);
 
                 this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
                 this._effect.setMatrix("view", scene.getViewMatrix());
@@ -482,7 +481,7 @@ export class GeometryBufferRenderer {
                 }
 
                 // Draw
-                mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
+                mesh._processRendering(subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
                     (isInstance, world) => this._effect.setMatrix("world", world));
             }
 

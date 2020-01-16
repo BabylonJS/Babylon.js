@@ -8,7 +8,6 @@ import { SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
 
-import { Material } from "../../Materials/material";
 import { MaterialHelper } from "../../Materials/materialHelper";
 import { Effect } from "../../Materials/effect";
 import { Texture } from "../../Materials/Textures/texture";
@@ -1251,7 +1250,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
         var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
         if (this.isReady(subMesh, hardwareInstancedRendering)) {
             engine.enableEffect(this._effect);
-            mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
+            mesh._bind(subMesh, this._effect, material.fillMode);
 
             this._effect.setFloat3("biasAndScale", this.bias, this.normalBias, 0);
 
@@ -1301,7 +1300,7 @@ export class CascadedShadowGenerator implements IShadowGenerator {
             this.onBeforeShadowMapRenderObservable.notifyObservers(this._effect);
 
             // Draw
-            mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
+            mesh._processRendering(subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
                 (isInstance, world) => this._effect.setMatrix("world", world));
 
             if (this.forceBackFacesOnly) {

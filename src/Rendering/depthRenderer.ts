@@ -8,7 +8,6 @@ import { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Effect } from "../Materials/effect";
-import { Material } from "../Materials/material";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
@@ -121,7 +120,7 @@ export class DepthRenderer {
             var camera = this._camera || scene.activeCamera;
             if (this.isReady(subMesh, hardwareInstancedRendering) && camera) {
                 engine.enableEffect(this._effect);
-                mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
+                mesh._bind(subMesh, this._effect, material.fillMode);
 
                 this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
@@ -146,7 +145,7 @@ export class DepthRenderer {
                 MaterialHelper.BindMorphTargetParameters(mesh, this._effect);
 
                 // Draw
-                mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
+                mesh._processRendering(subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
                     (isInstance, world) => this._effect.setMatrix("world", world));
             }
         };

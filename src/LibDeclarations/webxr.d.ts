@@ -55,6 +55,11 @@ interface XRInputSource {
     profiles: Array<string>;
 }
 
+interface XRSessionInit {
+    optionalFeatures?: XRReferenceSpaceType[];
+    requiredFeatures?: XRReferenceSpaceType[];
+}
+
 interface XRSession extends XRAnchorCreator {
     addEventListener: Function;
     removeEventListener: Function;
