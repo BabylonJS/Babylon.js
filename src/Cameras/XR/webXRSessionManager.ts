@@ -207,7 +207,6 @@ export class WebXRSessionManager implements IDisposable {
 
     /**
      * Starts rendering to the xr layer
-     * @returns a promise that will resolve once rendering has started
      */
     public runXRRenderLoop() {
         const engine = this.scene.getEngine();
