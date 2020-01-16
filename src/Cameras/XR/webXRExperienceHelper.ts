@@ -62,8 +62,9 @@ export class WebXRExperienceHelper implements IDisposable {
         return helper.sessionManager.initializeAsync().then(() => {
             helper._supported = true;
             return helper;
-        }).catch(() => {
-            return helper;
+        }).catch((e) => {
+            helper.dispose();
+            throw e;
         });
     }
 
