@@ -716,9 +716,9 @@ export class VRExperienceHelper {
 
         // check for VR support:
 
-        const supportsVR = 'getVRDisplays' in navigator;
+        const vrSupported = 'getVRDisplays' in navigator;
         // no VR support? force XR
-        if (!supportsVR) {
+        if (!vrSupported) {
             webVROptions.useXR = true;
         }
 
