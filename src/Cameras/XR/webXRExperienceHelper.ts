@@ -166,7 +166,9 @@ export class WebXRExperienceHelper implements IDisposable {
         this.onStateChangedObservable.clear();
         this.onInitialXRPoseSetObservable.clear();
         this.sessionManager.dispose();
-        this.scene.activeCamera = this._nonVRCamera;
+        if (this._nonVRCamera) {
+            this.scene.activeCamera = this._nonVRCamera;
+        }
     }
 
     private _nonXRToXRCamera() {

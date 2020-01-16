@@ -118,7 +118,7 @@ export class WebXRDefaultExperience {
         }).then(() => {
             return result;
         }).catch((error) => {
-            Logger.Error("Error initializing XR.");
+            Logger.Error("Error initializing XR");
             Logger.Error(error);
             return result;
         });
