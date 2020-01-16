@@ -714,6 +714,14 @@ export class VRExperienceHelper {
         this._scene = scene;
         this._inputElement = scene.getEngine().getInputElement();
 
+        // check for VR support:
+
+        const supportsVR = 'getVRDisplays' in navigator;
+        // no VR support? force XR
+        if (!supportsVR) {
+            webVROptions.useXR = true;
+        }
+
         // Parse options
         if (webVROptions.createFallbackVRDeviceOrientationFreeCamera === undefined) {
             webVROptions.createFallbackVRDeviceOrientationFreeCamera = true;
