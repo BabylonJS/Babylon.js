@@ -205,7 +205,9 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature imp
     }
 
     public attach(): boolean {
-        super.attach();
+        if (!super.attach()) {
+            return false;
+        }
 
         this._options.xrInput.controllers.forEach(this._attachController);
         this._addNewAttachObserver(this._options.xrInput.onControllerAddedObservable, this._attachController);
@@ -218,7 +220,9 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature imp
     }
 
     public detach(): boolean {
-        super.detach();
+        if (!super.detach()) {
+            return false;
+        }
 
         Object.keys(this._controllers).forEach((controllerId) => {
             this._detachController(controllerId);
