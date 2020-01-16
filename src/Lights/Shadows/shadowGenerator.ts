@@ -10,8 +10,6 @@ import { Mesh } from "../../Meshes/mesh";
 
 import { IShadowLight } from "../../Lights/shadowLight";
 import { Light } from "../../Lights/light";
-
-import { Material } from "../../Materials/material";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { MaterialHelper } from "../../Materials/materialHelper";
 import { Effect } from "../../Materials/effect";
