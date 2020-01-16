@@ -21,14 +21,17 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
     constructor(props: IColor4LineComponentProps) {
         super(props);
 
-        this.state = { isExpanded: false, color: this.props.target[this.props.propertyName].clone() };
+        let value = this.props.target[this.props.propertyName];
+        let currentColor = value.getClassName() === "Color4" ? value.clone() : new Color4(value.r, value.g, value.b, 1.0);
+        this.state = { isExpanded: false, color: currentColor };
     }
 
     shouldComponentUpdate(nextProps: IColor4LineComponentProps, nextState: { color: Color4 }) {
-        const currentState = nextProps.target[nextProps.propertyName];
+        let value = this.props.target[this.props.propertyName];
+        let currentColor = value.getClassName() === "Color4" ? value : new Color4(value.r, value.g, value.b, 1.0);
 
-        if (!currentState.equals(nextState.color) || this._localChange) {
-            nextState.color = currentState.clone();
+        if (!currentColor.equals(nextState.color) || this._localChange) {
+            nextState.color = currentColor.clone();
             this._localChange = false;
             return true;
         }
@@ -141,7 +144,7 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
     render() {
 
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />
-        const colorAsColor3 = this.state.color.getClassName() === "Color3" ? this.state.color : new Color3(this.state.color.r, this.state.color.g, this.state.color.b);
+        const colorAsColor3 = new Color3(this.state.color.r, this.state.color.g, this.state.color.b);
 
         return (
             <div className="color3Line">
