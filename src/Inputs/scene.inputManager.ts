@@ -162,13 +162,14 @@ export class InputManager {
 
     private _processPointerMove(pickResult: Nullable<PickingInfo>, evt: PointerEvent) {
         let scene = this._scene;
-        var canvas = scene.getEngine().getInputElement();
+        let engine = scene.getEngine();
+        var canvas = engine.getInputElement();
 
         if (!canvas) {
             return;
         }
 
-        canvas.tabIndex = 1;
+        canvas.tabIndex = engine.canvasTabIndex;
 
         // Restore pointer
         if (!scene.doNotHandleCursors) {
