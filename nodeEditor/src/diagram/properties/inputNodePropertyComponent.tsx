@@ -42,6 +42,9 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 return inputBlock.value === 1
                             }} onSelect={(value) => {
                                 inputBlock.value = value ? 1 : 0;
+                                if (inputBlock.isConstant) {
+                                    this.props.globalState.onRebuildRequiredObservable.notifyObservers();    
+                                }
                                 this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                                 this.forceUpdate();
                             }}/>
