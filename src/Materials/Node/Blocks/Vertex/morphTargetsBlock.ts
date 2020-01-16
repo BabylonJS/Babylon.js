@@ -20,7 +20,6 @@ import "../../../../Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration";
  */
 export class MorphTargetsBlock extends NodeMaterialBlock {
     private _repeatableContentAnchor: string;
-    private _repeatebleContentGenerated = 0;
 
     /**
      * Create a new MorphTargetsBlock
@@ -154,7 +153,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
-        if (mesh && this._repeatebleContentGenerated) {
+        if (mesh && mesh.morphTargetManager && mesh.morphTargetManager.numInfluencers > 0) {
             MaterialHelper.BindMorphTargetParameters(mesh, effect);
         }
     }
@@ -170,7 +169,6 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         let uvOutput = this.uvOutput;
         let state = vertexShaderState;
         let repeatCount = defines.NUM_MORPH_INFLUENCERS as number;
-        this._repeatebleContentGenerated = repeatCount;
 
         var manager = (<Mesh>mesh).morphTargetManager;
         var hasNormals = manager && manager.supportsNormals && defines["NORMAL"];
