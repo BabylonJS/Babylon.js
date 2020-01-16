@@ -131,7 +131,7 @@ export class WebXRSessionManager implements IDisposable {
      * @param xrSessionInit defines optional and required values to pass to the session builder
      * @returns a promise which will resolve once the session has been initialized
      */
-    public initializeSessionAsync(xrSessionMode: XRSessionMode, xrSessionInit: XRSessionInit = {}): Promise<XRSession> {
+    public initializeSessionAsync(xrSessionMode: XRSessionMode = 'immersive-vr', xrSessionInit: XRSessionInit = {}): Promise<XRSession> {
         return this._xrNavigator.xr.requestSession(xrSessionMode, xrSessionInit).then((session: XRSession) => {
             this.session = session;
             this.onXRSessionInit.notifyObservers(session);
@@ -160,7 +160,7 @@ export class WebXRSessionManager implements IDisposable {
      * @param referenceSpace space to set
      * @returns a promise that will resolve once the reference space has been set
      */
-    public setReferenceSpaceAsync(referenceSpace: XRReferenceSpaceType) {
+    public setReferenceSpaceAsync(referenceSpace: XRReferenceSpaceType = "local-floor"): Promise<XRReferenceSpace> {
         return this.session.requestReferenceSpace(referenceSpace).then((referenceSpace: XRReferenceSpace) => {
             return referenceSpace;
         }, (rejectionReason) => {
@@ -182,6 +182,7 @@ export class WebXRSessionManager implements IDisposable {
             this.session.requestReferenceSpace("viewer").then((referenceSpace: XRReferenceSpace) => {
                 this.viewerReferenceSpace = referenceSpace;
             });
+            return this.referenceSpace;
         });
     }
 
