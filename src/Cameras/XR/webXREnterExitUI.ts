@@ -80,7 +80,7 @@ export class WebXREnterExitUI implements IDisposable {
     public static CreateAsync(scene: Scene, helper: WebXRExperienceHelper, options: WebXREnterExitUIOptions): Promise<WebXREnterExitUI> {
         var ui = new WebXREnterExitUI(scene, options);
         var supportedPromises = ui._buttons.map((btn) => {
-            return helper.sessionManager.supportsSessionAsync(btn.sessionMode);
+            return helper.sessionManager.isSessionSupportedAsync(btn.sessionMode);
         });
         helper.onStateChangedObservable.add((state) => {
             if (state == WebXRState.NOT_IN_XR) {

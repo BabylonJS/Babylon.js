@@ -34,9 +34,12 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
     /**
      * attach this feature
      *
-     * @returns true if successful.
+     * @returns true if successful, false is failed or already attached
      */
     public attach(): boolean {
+        if (this.attached) {
+            return false;
+        }
         this._attached = true;
         this._addNewAttachObserver(this._xrSessionManager.onXRFrameObservable, (frame) => this._onXRFrame(frame));
         return true;
@@ -45,9 +48,12 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
     /**
      * detach this feature.
      *
-     * @returns true if successful.
+     * @returns true if successful, false if failed or already detached
      */
     public detach(): boolean {
+        if (!this._attached) {
+            return false;
+        }
         this._attached = false;
         this._removeOnDetach.forEach((toRemove) => {
             toRemove.observable.remove(toRemove.observer);
