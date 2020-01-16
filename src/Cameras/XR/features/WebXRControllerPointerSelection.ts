@@ -349,7 +349,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature implem
     }
 
     private _attachTrackedPointerRayMode(xrController: WebXRController) {
-        if (!xrController.gamepadController) {
+        if (!xrController.motionController) {
             return;
         }
 
@@ -360,10 +360,10 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature implem
         const controllerData = this._controllers[xrController.uniqueId];
 
         if (this._options.overrideButtonId) {
-            controllerData.selectionComponent = xrController.gamepadController.getComponent(this._options.overrideButtonId);
+            controllerData.selectionComponent = xrController.motionController.getComponent(this._options.overrideButtonId);
         }
         if (!controllerData.selectionComponent) {
-            controllerData.selectionComponent = xrController.gamepadController.getMainComponent();
+            controllerData.selectionComponent = xrController.motionController.getMainComponent();
         }
 
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {

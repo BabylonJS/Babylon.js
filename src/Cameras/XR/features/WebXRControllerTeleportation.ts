@@ -318,11 +318,11 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature imp
         };
         const controllerData = this._controllers[xrController.uniqueId];
         // motion controller support
-        if (xrController.gamepadController) {
-            const movementController = xrController.gamepadController.getComponent(WebXRControllerComponent.THUMBSTICK) || xrController.gamepadController.getComponent(WebXRControllerComponent.TOUCHPAD);
+        if (xrController.motionController) {
+            const movementController = xrController.motionController.getComponent(WebXRControllerComponent.THUMBSTICK) || xrController.motionController.getComponent(WebXRControllerComponent.TOUCHPAD);
             if (!movementController || this._options.useMainComponentOnly) {
                 // use trigger to move on long press
-                const mainComponent = xrController.gamepadController.getMainComponent();
+                const mainComponent = xrController.motionController.getMainComponent();
                 if (!mainComponent) {
                     return;
                 }
