@@ -100,13 +100,16 @@ export class WebXRExperienceHelper implements IDisposable {
      */
     public enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget = this.sessionManager.getWebXRRenderTarget()): Promise<WebXRSessionManager> {
         if (!this._supported) {
-            throw "XR session not supported by this browser";
+            throw "XR not available";
         }
         this._setState(WebXRState.ENTERING_XR);
         let sessionCreationOptions = {
             optionalFeatures: (referenceSpaceType !== "viewer" && referenceSpaceType !== "local") ? [referenceSpaceType] : []
         };
-        return this.sessionManager.initializeSessionAsync(sessionMode, sessionCreationOptions).then(() => {
+        // make sure that the session mode is supported
+        return this.sessionManager.isSessionSupportedAsync(sessionMode).then(() => {
+            return this.sessionManager.initializeSessionAsync(sessionMode, sessionCreationOptions);
+        }).then(() => {
             return this.sessionManager.setReferenceSpaceAsync(referenceSpaceType);
         }).then(() => {
             return renderTarget.initializeXRLayerAsync(this.sessionManager.session);

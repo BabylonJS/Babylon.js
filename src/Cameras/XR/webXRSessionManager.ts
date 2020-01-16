@@ -120,7 +120,7 @@ export class WebXRSessionManager implements IDisposable {
         // Check if the browser supports webXR
         this._xrNavigator = navigator;
         if (!this._xrNavigator.xr) {
-            return Promise.reject("webXR not supported by this browser");
+            return Promise.reject("WebXR not available");
         }
         return Promise.resolve();
     }
@@ -269,7 +269,7 @@ export class WebXRSessionManager implements IDisposable {
      * @param sessionMode session mode to check if supported eg. immersive-vr
      * @returns true if supported
      */
-    public supportsSessionAsync(sessionMode: XRSessionMode) {
+    public isSessionSupportedAsync(sessionMode: XRSessionMode) {
         return WebXRSessionManager.IsSessionSupportedAsync(sessionMode);
     }
 
