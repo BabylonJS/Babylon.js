@@ -258,8 +258,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
         state.compilationString += `#ifdef ${this._defineName}\r\n`;
         state.compilationString += `${this._transformedUVName} = vec2(${this._textureTransformName} * vec4(${uvInput.associatedVariableName}.xy, 1.0, 0.0));\r\n`;
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#ifdef ${this._mainUVDefineName}\r\n`;
+        state.compilationString += `#elif defined(${this._mainUVDefineName})\r\n`;
         state.compilationString += `${this._mainUVName} = ${uvInput.associatedVariableName}.xy;\r\n`;
         state.compilationString += `#endif\r\n`;
 
@@ -295,8 +294,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
         state.compilationString += `#ifdef ${this._defineName}\r\n`;
         state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${this._transformedUVName});\r\n`;
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#ifdef ${this._mainUVDefineName}\r\n`;
+        state.compilationString += `#elif defined(${this._mainUVDefineName})\r\n`;
         state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${this._mainUVName});\r\n`;
         state.compilationString += `#endif\r\n`;
     }

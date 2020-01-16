@@ -14,7 +14,7 @@ export class ColorMergerBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Fragment);
+        super(name, NodeMaterialBlockTargets.Neutral);
 
         this.registerInput("rgb ", NodeMaterialBlockConnectionPointTypes.Color3, true);
         this.registerInput("r", NodeMaterialBlockConnectionPointTypes.Float, true);
