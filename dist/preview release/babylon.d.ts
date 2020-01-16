@@ -54269,6 +54269,10 @@ declare module BABYLON {
     export class CascadedShadowGenerator implements IShadowGenerator {
         private static readonly frustumCornersNDCSpace;
         /**
+         * Name of the CSM class
+         */
+        static readonly CLASSNAME: string;
+        /**
          * Defines the default number of cascades used by the CSM.
          */
         static readonly DEFAULT_CASCADES_COUNT: number;
