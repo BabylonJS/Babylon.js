@@ -979,7 +979,7 @@ export class ShadowGenerator implements IShadowGenerator {
         var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
         if (this.isReady(subMesh, hardwareInstancedRendering)) {
             engine.enableEffect(this._effect);
-            mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
+            mesh._bind(subMesh, this._effect, material.fillMode);
 
             this._effect.setFloat3("biasAndScale", this.bias, this.normalBias, this.depthScale);
 
@@ -1034,7 +1034,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this.onBeforeShadowMapRenderObservable.notifyObservers(this._effect);
 
             // Draw
-            mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
+            mesh._processRendering(subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
                 (isInstance, world) => this._effect.setMatrix("world", world));
 
             if (this.forceBackFacesOnly) {

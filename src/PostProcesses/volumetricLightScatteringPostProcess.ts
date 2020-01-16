@@ -330,7 +330,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
                 }
 
                 engine.enableEffect(effect);
-                mesh._bind(subMesh, effect, Material.TriangleFillMode);
+                mesh._bind(subMesh, effect, material.fillMode);
 
                 if (mesh === this.mesh) {
                     material.bind(mesh.getWorldMatrix(), mesh);
