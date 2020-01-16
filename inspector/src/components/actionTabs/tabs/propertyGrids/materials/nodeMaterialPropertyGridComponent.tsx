@@ -19,6 +19,7 @@ import { TextureLinkLineComponent } from '../../../lines/textureLinkLineComponen
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+import { Color4LineComponent } from '../../../lines/color4LineComponent';
 
 interface INodeMaterialPropertyGridComponentProps {
     globalState: GlobalState;
@@ -92,13 +93,17 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                         </div>
                     );  
             case NodeMaterialBlockConnectionPointTypes.Color3:
-            case NodeMaterialBlockConnectionPointTypes.Color4:
                 return (
                     <Color3LineComponent key={block.name} label={block.name} target={block} propertyName="value" 
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 )     
+            case NodeMaterialBlockConnectionPointTypes.Color4:
+                return (
+                    <Color4LineComponent key={block.name} label={block.name} target={block} propertyName="value" 
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                )                         
             case NodeMaterialBlockConnectionPointTypes.Vector2:
-                    return (
+                return (
                         <Vector2LineComponent key={block.name} label={block.name} target={block} propertyName="value" 
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     )                                

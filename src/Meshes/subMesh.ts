@@ -373,6 +373,8 @@ export class SubMesh extends BaseSubMesh implements ICullable {
         if (!material) {
             return null;
         }
+        let step = 3;
+        let checkStopper = false;
 
         switch (material.fillMode) {
             case Constants.MATERIAL_PointListDrawMode:
@@ -380,8 +382,13 @@ export class SubMesh extends BaseSubMesh implements ICullable {
             case Constants.MATERIAL_LineLoopDrawMode:
             case Constants.MATERIAL_LineStripDrawMode:
             case Constants.MATERIAL_TriangleFanDrawMode:
-            case Constants.MATERIAL_TriangleStripDrawMode:
                 return null;
+            case Constants.MATERIAL_TriangleStripDrawMode:
+                step = 1;
+                checkStopper = true;
+                break;
+            default:
+                break;
         }
 
         // LineMesh first as it's also a Mesh...
@@ -398,7 +405,7 @@ export class SubMesh extends BaseSubMesh implements ICullable {
                 return this._intersectUnIndexedTriangles(ray, positions, indices, fastCheck, trianglePredicate);
             }
 
-            return this._intersectTriangles(ray, positions, indices, fastCheck, trianglePredicate);
+            return this._intersectTriangles(ray, positions, indices, step, checkStopper, fastCheck, trianglePredicate);
         }
     }
 
@@ -455,13 +462,35 @@ export class SubMesh extends BaseSubMesh implements ICullable {
 
     /** @hidden */
     private _intersectTriangles(ray: Ray, positions: Vector3[], indices: IndicesArray,
+        step: number, checkStopper: boolean,
         fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<IntersectionInfo> {
         var intersectInfo: Nullable<IntersectionInfo> = null;
+
         // Triangles test
-        for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += 3) {
-            var p0 = positions[indices[index]];
-            var p1 = positions[indices[index + 1]];
-            var p2 = positions[indices[index + 2]];
+        let faceID = -1;
+        for (var index = this.indexStart; index < this.indexStart + this.indexCount; index += step) {
+            faceID++;
+            const indexA = indices[index];
+            const indexB = indices[index + 1];
+            const indexC = indices[index + 2];
+
+            if (checkStopper) {
+                if (indexA === 0xFFFFFFFF) {
+                    continue;
+                }
+                if (indexB === 0xFFFFFFFF) {
+                    index += 1;
+                    continue;
+                }
+                if (indexC === 0xFFFFFFFF) {
+                    index += 2;
+                    continue;
+                }
+            }
+
+            var p0 = positions[indexA];
+            var p1 = positions[indexB];
+            var p2 = positions[indexC];
 
             if (trianglePredicate && !trianglePredicate(p0, p1, p2, ray)) {
                 continue;
@@ -476,7 +505,7 @@ export class SubMesh extends BaseSubMesh implements ICullable {
 
                 if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {
                     intersectInfo = currentIntersectInfo;
-                    intersectInfo.faceId = index / 3;
+                    intersectInfo.faceId = faceID;
 
                     if (fastCheck) {
                         break;

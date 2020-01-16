@@ -761,7 +761,7 @@ export abstract class EffectLayer {
             }
 
             // Draw
-            mesh._processRendering(subMesh, this._effectLayerMapGenerationEffect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
+            mesh._processRendering(subMesh, this._effectLayerMapGenerationEffect, material.fillMode, batch, hardwareInstancedRendering,
                 (isInstance, world) => this._effectLayerMapGenerationEffect.setMatrix("world", world));
         } else {
             // Need to reset refresh rate of the main map

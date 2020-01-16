@@ -33226,6 +33226,8 @@ declare module BABYLON {
         private _deltaTime;
         /** @hidden */
         _drawCalls: PerfCounter;
+        /** Gets or sets the tab index to set to the rendering canvas. 1 is the minimum value to set to be able to capture keyboard events */
+        canvasTabIndex: number;
         /**
          * Turn this value on if you want to pause FPS computation when in background
          */

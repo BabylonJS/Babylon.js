@@ -6,7 +6,6 @@ import { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";
 import { Effect } from "../Materials/effect";
-import { Material } from "../Materials/material";
 import { MaterialHelper } from "../Materials/materialHelper";
 
 import "../Shaders/outline.fragment";
@@ -190,7 +189,7 @@ export class OutlineRenderer implements ISceneComponent {
         // Morph targets
         MaterialHelper.BindMorphTargetParameters(mesh, this._effect);
 
-        mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
+        mesh._bind(subMesh, this._effect, material.fillMode);
 
         // Alpha test
         if (material && material.needAlphaTesting()) {
@@ -203,7 +202,7 @@ export class OutlineRenderer implements ISceneComponent {
 
         engine.setZOffset(-this.zOffset);
 
-        mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
+        mesh._processRendering(subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
             (isInstance, world) => { this._effect.setMatrix("world", world); });
 
         engine.setZOffset(0);

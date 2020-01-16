@@ -92,6 +92,15 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature implem
      */
     public lasterPointerDefaultColor: Color3 = new Color3(0.5, 0.5, 0.5);
 
+    /**
+     * Should the laser pointer be displayed
+     */
+    public displayLaserPointer: boolean = true;
+    /**
+     * Should the selection mesh be displayed (The ring at the end of the laser pointer)
+     */
+    public displaySelectionMesh: boolean = true;
+
     private static _idCounter = 0;
 
     private _tmpRay = new Ray(new Vector3(), new Vector3());
@@ -128,7 +137,9 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature implem
      * @returns true if successful.
      */
     attach(): boolean {
-        super.attach();
+        if (!super.attach()) {
+            return false;
+        }
 
         this._options.xrInput.controllers.forEach(this._attachController);
         this._addNewAttachObserver(this._options.xrInput.onControllerAddedObservable, this._attachController);
@@ -147,7 +158,9 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature implem
      * @returns true if successful.
      */
     detach(): boolean {
-        super.detach();
+        if (!super.detach()) {
+            return false;
+        }
 
         Object.keys(this._controllers).forEach((controllerId) => {
             this._detachController(controllerId);
@@ -203,7 +216,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature implem
                     Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, controllerData.selectionMesh.rotation);
                     controllerData.selectionMesh.position.addInPlace(pickNormal.scale(deltaFighting));
                 }
-                controllerData.selectionMesh.isVisible = true;
+                controllerData.selectionMesh.isVisible = true && this.displaySelectionMesh;
             } else {
                 controllerData.selectionMesh.isVisible = false;
             }
@@ -336,7 +349,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature implem
     }
 
     private _attachTrackedPointerRayMode(xrController: WebXRController) {
-        if (!xrController.gamepadController) {
+        if (!xrController.motionController) {
             return;
         }
 
@@ -347,10 +360,10 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature implem
         const controllerData = this._controllers[xrController.uniqueId];
 
         if (this._options.overrideButtonId) {
-            controllerData.selectionComponent = xrController.gamepadController.getComponent(this._options.overrideButtonId);
+            controllerData.selectionComponent = xrController.motionController.getComponent(this._options.overrideButtonId);
         }
         if (!controllerData.selectionComponent) {
-            controllerData.selectionComponent = xrController.gamepadController.getMainComponent();
+            controllerData.selectionComponent = xrController.motionController.getMainComponent();
         }
 
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
@@ -361,6 +374,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature implem
                 (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
                 (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.lasterPointerDefaultColor;
             }
+
+            controllerData.laserPointer.isVisible = this.displayLaserPointer;
 
             if (controllerData.pick) {
                 this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });

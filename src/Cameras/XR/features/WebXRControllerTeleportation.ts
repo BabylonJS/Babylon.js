@@ -205,7 +205,9 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature imp
     }
 
     public attach(): boolean {
-        super.attach();
+        if (!super.attach()) {
+            return false;
+        }
 
         this._options.xrInput.controllers.forEach(this._attachController);
         this._addNewAttachObserver(this._options.xrInput.onControllerAddedObservable, this._attachController);
@@ -218,7 +220,9 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature imp
     }
 
     public detach(): boolean {
-        super.detach();
+        if (!super.detach()) {
+            return false;
+        }
 
         Object.keys(this._controllers).forEach((controllerId) => {
             this._detachController(controllerId);
@@ -314,11 +318,11 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature imp
         };
         const controllerData = this._controllers[xrController.uniqueId];
         // motion controller support
-        if (xrController.gamepadController) {
-            const movementController = xrController.gamepadController.getComponent(WebXRControllerComponent.THUMBSTICK) || xrController.gamepadController.getComponent(WebXRControllerComponent.TOUCHPAD);
+        if (xrController.motionController) {
+            const movementController = xrController.motionController.getComponent(WebXRControllerComponent.THUMBSTICK) || xrController.motionController.getComponent(WebXRControllerComponent.TOUCHPAD);
             if (!movementController || this._options.useMainComponentOnly) {
                 // use trigger to move on long press
-                const mainComponent = xrController.gamepadController.getMainComponent();
+                const mainComponent = xrController.motionController.getMainComponent();
                 if (!mainComponent) {
                     return;
                 }

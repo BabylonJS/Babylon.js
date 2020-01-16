@@ -7,6 +7,7 @@ import { WebXREnterExitUI, WebXREnterExitUIOptions } from './webXREnterExitUI';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { WebXRManagedOutputCanvasOptions } from './webXRManagedOutputCanvas';
 import { WebXRMotionControllerTeleportation } from './features/WebXRControllerTeleportation';
+import { Logger } from '../../Misc/logger';
 
 /**
  * Options for the default xr helper
@@ -115,6 +116,10 @@ export class WebXRDefaultExperience {
                 return;
             }
         }).then(() => {
+            return result;
+        }).catch((error) => {
+            Logger.Error("Error initializing XR");
+            Logger.Error(error);
             return result;
         });
     }

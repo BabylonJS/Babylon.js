@@ -86,8 +86,8 @@ export class WebXRInput implements IDisposable {
             if (sources.indexOf(input) === -1) {
                 let controller = new WebXRController(this.xrSessionManager.scene, input, { forceControllerProfile: this.options.forceInputProfile });
                 this.controllers.push(controller);
-                if (!this.options.doNotLoadControllerMeshes && controller.gamepadController) {
-                    controller.gamepadController.loadModel();
+                if (!this.options.doNotLoadControllerMeshes && controller.motionController) {
+                    controller.motionController.loadModel();
                 }
                 this.onControllerAddedObservable.notifyObservers(controller);
             }
