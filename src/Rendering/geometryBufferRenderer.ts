@@ -7,7 +7,6 @@ import { SmartArray } from "../Misc/smartArray";
 import { Texture } from "../Materials/Textures/texture";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
 import { Effect } from "../Materials/effect";
-import { Material } from "../Materials/material";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { Scene } from "../scene";
 import { AbstractMesh } from "../Meshes/abstractMesh";

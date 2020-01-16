@@ -8,7 +8,6 @@ import { SubMesh } from "../../Meshes/subMesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
 
-import { Material } from "../../Materials/material";
 import { MaterialHelper } from "../../Materials/materialHelper";
 import { Effect } from "../../Materials/effect";
 import { Texture } from "../../Materials/Textures/texture";

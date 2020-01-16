@@ -1675,6 +1675,38 @@ declare module "babylonjs-inspector/components/actionTabs/lines/vector4LineCompo
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/lines/color4LineComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { Color4 } from "babylonjs/Maths/math";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    export interface IColor4LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        onChange?: () => void;
+    }
+    export class Color4LineComponent extends React.Component<IColor4LineComponentProps, {
+        isExpanded: boolean;
+        color: Color4;
+    }> {
+        private _localChange;
+        constructor(props: IColor4LineComponentProps);
+        shouldComponentUpdate(nextProps: IColor4LineComponentProps, nextState: {
+            color: Color4;
+        }): boolean;
+        onChange(newValue: string): void;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: Color4): void;
+        updateStateR(value: number): void;
+        updateStateG(value: number): void;
+        updateStateB(value: number): void;
+        updateStateA(value: number): void;
+        copyToClipboard(): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/nodeMaterialPropertyGridComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -3650,6 +3682,34 @@ declare module INSPECTOR {
         updateStateY(value: number): void;
         updateStateZ(value: number): void;
         updateStateW(value: number): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export interface IColor4LineComponentProps {
+        label: string;
+        target: any;
+        propertyName: string;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        onChange?: () => void;
+    }
+    export class Color4LineComponent extends React.Component<IColor4LineComponentProps, {
+        isExpanded: boolean;
+        color: BABYLON.Color4;
+    }> {
+        private _localChange;
+        constructor(props: IColor4LineComponentProps);
+        shouldComponentUpdate(nextProps: IColor4LineComponentProps, nextState: {
+            color: BABYLON.Color4;
+        }): boolean;
+        onChange(newValue: string): void;
+        switchExpandState(): void;
+        raiseOnPropertyChanged(previousValue: BABYLON.Color4): void;
+        updateStateR(value: number): void;
+        updateStateG(value: number): void;
+        updateStateB(value: number): void;
+        updateStateA(value: number): void;
+        copyToClipboard(): void;
         render(): JSX.Element;
     }
 }
