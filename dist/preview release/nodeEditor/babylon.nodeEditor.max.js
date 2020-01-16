@@ -52484,6 +52484,9 @@ var FloatPropertyTabComponent = /** @class */ (function (_super) {
     FloatPropertyTabComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_2__["FloatLineComponent"], { label: "Value", target: this.props.inputBlock, propertyName: "value", onChange: function () {
+                if (_this.props.inputBlock.isConstant) {
+                    _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                }
                 _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
             } }));
     };
@@ -55629,6 +55632,9 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                                 return inputBlock.value === 1;
                             }, onSelect: function (value) {
                                 inputBlock.value = value ? 1 : 0;
+                                if (inputBlock.isConstant) {
+                                    _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                                }
                                 _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                                 _this.forceUpdate();
                             } }),
