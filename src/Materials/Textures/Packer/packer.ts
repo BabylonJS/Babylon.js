@@ -146,7 +146,7 @@ export class TexturePacker{
         this.options.uvsOut = this.options.uvsOut || VertexBuffer.UVKind;
         this.options.layout = this.options.layout || TexturePacker.LAYOUT_STRIP;
 
-        if (this.options.layout === TexturePacker.LAYOUT_COLNUM) {
+        if ( this.options.layout === TexturePacker.LAYOUT_COLNUM ) {
             this.options.colcount = this.options.colcount || 8;
         }
 
@@ -166,7 +166,7 @@ export class TexturePacker{
         this._paddingValue = Math.ceil(this.options.frameSize * this.options.paddingRatio);
 
         //Make it an even padding Number.
-        if (this._paddingValue % 2 !== 0) {
+        if ( this._paddingValue % 2 !== 0 ) {
             this._paddingValue++;
         }
 
@@ -176,50 +176,50 @@ export class TexturePacker{
         /**
         * Create the promise and then run through the materials on the meshes.
         */
-        this.promise = new Promise ((resolve, reject) => {
+        this.promise = new Promise ( ( resolve, reject ) => {
             try {
                 let done = 0;
-                const doneCheck = (mat: Material) => {
+                const doneCheck = ( mat: Material ) => {
                     done++;
                     //Check Status of all Textures on all meshes, till they are ready.
-                    if (this.options.map) {
-                        for (let j = 0; j < this.options.map.length; j++) {
+                    if ( this.options.map ) {
+                        for ( let j = 0; j < this.options.map.length; j++ ) {
                             let index: string = this.options.map[j];
-                            let t: Texture = (mat as any)[index];
+                            let t: Texture = ( mat as any )[index];
 
-                            if (t !== null) {
-                                if (!(this.sets as any)[this.options.map[j]]) {
-                                    (this.sets as any)[this.options.map[j]] = true;
+                            if ( t !== null ) {
+                                if ( !( this.sets as any )[this.options.map[j]] ) {
+                                    ( this.sets as any )[this.options.map[j]] = true;
                                 }
 
-                                if (this.options.disposeSources) {
-                                    this._disposeList.push(t);
+                                if ( this.options.disposeSources ) {
+                                    this._disposeList.push( t );
                                 }
                             }
                         }
 
-                        if (done === this.meshes.length) {
-                            this._createFrames(resolve);
+                        if ( done === this.meshes.length ) {
+                            this._createFrames( resolve );
                         }
                     }
                 };
 
-                for (let i = 0; i < this.meshes.length; i++) {
+                for ( let i = 0; i < this.meshes.length; i++ ) {
 
                     let mesh = this.meshes[i];
-                    let material: Nullable<Material> = mesh.material;
+                    let material: Nullable< Material > = mesh.material;
 
                     if (!material) {
                         return new Error('Mesh has no Material assigned!');
                     }
 
-                    material.forceCompilationAsync(mesh).then(() => {
-                        doneCheck((material as Material));
+                    material.forceCompilationAsync( mesh ).then( () => {
+                        doneCheck( ( material as Material ) );
                     });
                 }
 
-            }catch (e) {
-                return reject(e);
+            }catch ( e ) {
+                return reject( e );
             }
         });
 
@@ -231,20 +231,20 @@ export class TexturePacker{
     * @param resolve The promises resolution function
     * @returns TexturePacker
     */
-    private _createFrames(resolve: () => void) {
+    private _createFrames( resolve: () => void ) {
 
         let dtSize = this._calculateSize();
-        let dtUnits = (new Vector2(1, 1)).divide(dtSize);
+        let dtUnits = ( new Vector2( 1, 1 ) ).divide( dtSize );
         let doneCount = 0;
         let expecting = this._disposeList.length;
         let meshLength = this.meshes.length;
 
-        let sKeys = Object.keys(this.sets);
-        for (let i = 0; i < sKeys.length; i++) {
+        let sKeys = Object.keys( this.sets );
+        for ( let i = 0; i < sKeys.length; i++ ) {
             let setName = sKeys[i];
 
-            let dt = new DynamicTexture(this.name + '.TexturePack.' + setName + 'Set',
-                    {width: dtSize.x, height: dtSize.y},
+            let dt = new DynamicTexture( this.name + '.TexturePack.' + setName + 'Set',
+                    { width: dtSize.x, height: dtSize.y },
                     this.scene,
                     true, //Generate Mips
                     Texture.TRILINEAR_SAMPLINGMODE,
@@ -253,21 +253,21 @@ export class TexturePacker{
 
             let dtx = dt.getContext();
             dtx.fillStyle = 'rgba(0,0,0,0)';
-            dtx.fillRect(0, 0, dtSize.x, dtSize.y) ;
-            dt.update();
-            (this.sets as any)[setName] = dt;
+            dtx.fillRect( 0, 0, dtSize.x, dtSize.y ) ;
+            dt.update( false );
+            ( this.sets as any )[setName] = dt;
         }
 
         let baseSize = this.options.frameSize || 256;
         let padding = this._paddingValue;
-        let tcs = baseSize + (2 * padding);
+        let tcs = baseSize + ( 2 * padding );
 
         const done = () => {
-            this._calculateMeshUVFrames(baseSize, padding, dtSize, dtUnits, this.options.updateInputMeshes || false);
+            this._calculateMeshUVFrames( baseSize, padding, dtSize, dtUnits, this.options.updateInputMeshes || false );
         };
 
         //Update the Textures
-        for (let i = 0; i < meshLength; i++) {
+        for ( let i = 0; i < meshLength; i++ ) {
             let m = this.meshes[i];
             let mat = m.material;
 
@@ -276,8 +276,8 @@ export class TexturePacker{
             //Then apply the texture to the center and the 8 offsets
             //Copy the Context and place in the correct frame on the DT
 
-            for (let j = 0; j < sKeys.length; j++) {
-                let tempTexture = new DynamicTexture('temp', tcs, this.scene, true);
+            for ( let j = 0; j < sKeys.length; j++ ) {
+                let tempTexture = new DynamicTexture( 'temp', tcs, this.scene, true );
                 let tcx = tempTexture.getContext();
 
                 //tempTexture.update(false)
@@ -286,152 +286,57 @@ export class TexturePacker{
 
                 const updateDt = () => {
                     doneCount++;
-                    let iDat = tcx.getImageData(0, 0, tcs, tcs);
+                    let iDat = tcx.getImageData( 0, 0, tcs, tcs );
                     //Update Set
-                    let dt = (this.sets as any)[setName];
+                    let dt = ( this.sets as any )[setName];
                     let dtx = dt.getContext();
-                    dtx.putImageData(iDat, dtSize.x * offset.x, dtSize.y * offset.y);
+                    dtx.putImageData( iDat, dtSize.x * offset.x, dtSize.y * offset.y );
                     tempTexture.dispose();
-                    dt.update(false);
-
-                        if (doneCount == expecting) {
-                            done();
-                            resolve();
-                        }
+                    dt.update( true );
+                    
+                    if ( doneCount == expecting ) {
+                        done();
+                        resolve();
+                    }
                 };
 
                 let setName = sKeys[j] || '_blank';
-                if ((mat as any)[setName] === null) {
+                if ( ( mat as any )[setName] === null ) {
                     tcx.fillStyle = 'rgba(0,0,0,0)';
 
-                    if (this.options.fillBlanks) {
-                        tcx.fillStyle = (this.options.customFillColor as string);
+                    if ( this.options.fillBlanks ) {
+                        tcx.fillStyle = ( this.options.customFillColor as string );
                     }
 
-                    tcx.fillRect(0, 0, tcs, tcs);
-                    tempTexture.update(false);
+                    tcx.fillRect( 0, 0, tcs, tcs );
+                    tempTexture.update( false );
                     updateDt();
 
                 }else {
                     let img = new Image();
-                    img.src = (mat as any)[setName]!.url;
+                    img.src = ( mat as any )[setName]!.url;
                     img.onload = () => {
                         tcx.fillStyle = 'rgba(0,0,0,0)';
-                        tcx.fillRect(0, 0, tcs, tcs);
-                        tempTexture.update(false);
-                        tcx.drawImage(
+                        tcx.fillRect( 0, 0, tcs, tcs );
+                        tempTexture.update( false );
+                        
+                        let cellOffsets = [ 0,0, 1,0, 1,1, 0,1, -1,1, -1,0, -1-1, 0,-1, 1,-1]
+                        
+                        for(let i=0; i<9; i++){
+                            tcx.drawImage(
                             img,
                             0,
                             0,
                             img.width,
                             img.height,
-                            padding,
-                            padding,
+                            padding + ( baseSize * cellOffsets[i]),
+                            padding + ( baseSize * cellOffsets[i + 1]),
                             baseSize,
                             baseSize
-                        );
-
-                        //Right
-                        tcx.drawImage(
-                            img,
-                            0,
-                            0,
-                            img.width,
-                            img.height,
-                            padding + baseSize,
-                            padding,
-                            baseSize,
-                            baseSize
-                        );
-                        //RightBottom
-                        tcx.drawImage(
-                            img,
-                            0,
-                            0,
-                            img.width,
-                            img.height,
-                            padding + baseSize,
-                            padding + baseSize,
-                            baseSize,
-                            baseSize
-                        );
-                        //Bottom
-                        tcx.drawImage(
-                            img,
-                            0,
-                            0,
-                            img.width,
-                            img.height,
-                            padding,
-                            padding + baseSize,
-                            baseSize,
-                            baseSize
-                        );
-                        //BottomLeft
-                        tcx.drawImage(
-                            img,
-                            0,
-                            0,
-                            img.width,
-                            img.height,
-                            padding - baseSize,
-                            padding + baseSize,
-                            baseSize,
-                            baseSize
-                        );
-                        //Left
-                        tcx.drawImage(
-                            img,
-                            0,
-                            0,
-                            img.width,
-                            img.height,
-                            padding - baseSize,
-                            padding,
-                            baseSize,
-                            baseSize
-                        );
-                        //LeftTop
-                        tcx.drawImage(
-                            img,
-                            0,
-                            0,
-                            img.width,
-                            img.height,
-                            padding - baseSize,
-                            padding - baseSize,
-                            baseSize,
-                            baseSize
-                        );
-                        //Top
-                        tcx.drawImage(
-                            img,
-                            0,
-                            0,
-                            img.width,
-                            img.height,
-                            padding,
-                            padding - baseSize,
-                            baseSize,
-                            baseSize
-                        );
-                        //TopRight
-                        tcx.drawImage(
-                            img,
-                            0,
-                            0,
-                            img.width,
-                            img.height,
-                            padding + baseSize,
-                            padding - baseSize,
-                            baseSize,
-                            baseSize
-                        );
-
+                            );
+                        } 
                         updateDt();
-
                     };
-
                 }
             }
         }
