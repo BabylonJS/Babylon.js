@@ -714,6 +714,14 @@ export class VRExperienceHelper {
         this._scene = scene;
         this._inputElement = scene.getEngine().getInputElement();
 
+        // check for VR support:
+
+        const vrSupported = 'getVRDisplays' in navigator;
+        // no VR support? force XR
+        if (!vrSupported) {
+            webVROptions.useXR = true;
+        }
+
         // Parse options
         if (webVROptions.createFallbackVRDeviceOrientationFreeCamera === undefined) {
             webVROptions.createFallbackVRDeviceOrientationFreeCamera = true;
@@ -800,38 +808,16 @@ export class VRExperienceHelper {
                             switch (state) {
                                 case WebXRState.ENTERING_XR:
                                     this.onEnteringVRObservable.notifyObservers(this);
-                                    if (this._interactionsEnabled) {
-                                        this._scene.registerBeforeRender(this.beforeRender);
+                                    if (!this._interactionsEnabled) {
+                                        this.xr.pointerSelection.detach();
                                     }
-                                    if (this._displayLaserPointer) {
-                                        [this._leftController, this._rightController].forEach((controller) => {
-                                            if (controller) {
-                                                controller._activatePointer();
-                                            }
-                                        });
-                                    }
+                                    this.xr.pointerSelection.displayLaserPointer = this._displayLaserPointer;
                                     break;
                                 case WebXRState.EXITING_XR:
                                     this.onExitingVRObservable.notifyObservers(this);
-                                    if (this._interactionsEnabled) {
-                                        this._scene.unregisterBeforeRender(this.beforeRender);
-                                        this._cameraGazer._gazeTracker.isVisible = false;
-                                        if (this._leftController) {
-                                            this._leftController._gazeTracker.isVisible = false;
-                                        }
-                                        if (this._rightController) {
-                                            this._rightController._gazeTracker.isVisible = false;
-                                        }
-                                    }
 
                                     // resize to update width and height when exiting vr exits fullscreen
                                     this._scene.getEngine().resize();
-
-                                    [this._leftController, this._rightController].forEach((controller) => {
-                                        if (controller) {
-                                            controller._deactivatePointer();
-                                        }
-                                    });
                                     break;
                                 case WebXRState.IN_XR:
                                     this._hasEnteredVR = true;
@@ -1332,6 +1318,14 @@ export class VRExperienceHelper {
         if (!this._interactionsEnabled) {
             this._interactionsRequested = true;
 
+            // in XR it is enabled by default, but just to make sure, re-attach
+            if (this.xr) {
+                if (this.xr.baseExperience.state === WebXRState.IN_XR) {
+                    this.xr.pointerSelection.attach();
+                }
+                return;
+            }
+
             if (this._leftController) {
                 this._enableInteractionOnController(this._leftController);
             }
@@ -1444,6 +1438,9 @@ export class VRExperienceHelper {
                     }
                 }
                 if (this.xr) {
+                    floorMeshes.forEach((mesh) => {
+                        this.xr.teleportation.addFloorMesh(mesh);
+                    });
                     if (!this.xr.teleportation.attached) {
                         this.xr.teleportation.attach();
                     }
@@ -1463,17 +1460,6 @@ export class VRExperienceHelper {
                     };
                     this._scene.registerBeforeRender(waitForXr);
                     return;
-                }
-            }
-
-            if (this.xr && vrTeleportationOptions.floorMeshes) {
-                if (!this.xr.teleportation.attached) {
-                    this.xr.teleportation.attach();
-                }
-                return;
-            } else {
-                if (this.webVROptions.useXR && !this.xrTestDone) {
-
                 }
             }
 

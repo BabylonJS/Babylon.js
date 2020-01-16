@@ -121,7 +121,9 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRFe
      * @returns true if successful.
      */
     attach(): boolean {
-        super.attach();
+        if (!super.attach()) {
+            return false;
+        }
         if (this.options.testOnPointerDownOnly) {
             this._xrSessionManager.session.addEventListener('select', this._onSelect, false);
         }
@@ -136,7 +138,9 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRFe
      * @returns true if successful.
      */
     detach(): boolean {
-        super.detach();
+        if (!super.detach()) {
+            return false;
+        }
         // disable select
         this._onSelectEnabled = false;
         this._xrSessionManager.session.removeEventListener('select', this._onSelect);
