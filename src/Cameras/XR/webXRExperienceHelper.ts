@@ -113,8 +113,8 @@ export class WebXRExperienceHelper implements IDisposable {
         }).then(() => {
             return this.sessionManager.updateRenderStateAsync({ depthFar: this.camera.maxZ, depthNear: this.camera.minZ, baseLayer: renderTarget.xrLayer! });
         }).then(() => {
-            return this.sessionManager.startRenderingToXRAsync();
-        }).then(() => {
+            // run the render loop
+            this.sessionManager.runXRRenderLoop();
             // Cache pre xr scene settings
             this._originalSceneAutoClear = this.scene.autoClear;
             this._nonVRCamera = this.scene.activeCamera;

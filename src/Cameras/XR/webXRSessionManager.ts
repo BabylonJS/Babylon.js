@@ -208,7 +208,7 @@ export class WebXRSessionManager implements IDisposable {
      * Starts rendering to the xr layer
      * @returns a promise that will resolve once rendering has started
      */
-    public startRenderingToXRAsync() {
+    public runXRRenderLoop() {
         const engine = this.scene.getEngine();
         // Tell the engine's render loop to be driven by the xr session's refresh rate and provide xr pose information
         engine.customAnimationFrameRequester = {
@@ -240,7 +240,6 @@ export class WebXRSessionManager implements IDisposable {
         // Stop window's animation frame and trigger sessions animation frame
         if (window.cancelAnimationFrame) { window.cancelAnimationFrame(engine._frameHandler); }
         engine._renderLoop();
-        return Promise.resolve();
     }
 
     /**
