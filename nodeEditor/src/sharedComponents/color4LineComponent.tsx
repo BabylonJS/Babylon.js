@@ -66,6 +66,10 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
     }
 
     raiseOnPropertyChanged(previousValue: Color4) {
+        if (this.props.onChange) {
+            this.props.onChange();
+        }
+
         if (!this.props.onPropertyChangedObservable) {
             return;
         }

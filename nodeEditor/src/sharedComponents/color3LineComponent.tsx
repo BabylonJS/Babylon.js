@@ -67,6 +67,10 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
     }
 
     raiseOnPropertyChanged(previousValue: Color3) {
+        if (this.props.onChange) {
+            this.props.onChange();
+        }
+
         if (!this.props.onPropertyChangedObservable) {
             return;
         }
