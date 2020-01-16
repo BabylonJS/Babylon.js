@@ -103,7 +103,7 @@ export class WebXRExperienceHelper implements IDisposable {
             throw "XR not available";
         }
         this._setState(WebXRState.ENTERING_XR);
-        let sessionCreationOptions = {
+        let sessionCreationOptions: XRSessionInit = {
             optionalFeatures: (referenceSpaceType !== "viewer" && referenceSpaceType !== "local") ? [referenceSpaceType] : []
         };
         // make sure that the session mode is supported
