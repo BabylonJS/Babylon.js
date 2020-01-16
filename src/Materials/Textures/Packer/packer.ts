@@ -340,17 +340,6 @@ export class TexturePacker{
 
                         tcx.setTransform(1, 0, 0, 1, 0, 0);
 
-                        /*tempTexture.update( false );
-                        let iDat = tcx.getImageData( 0, 0, tcs, tcs );
-                        tcx.fillStyle = 'rgba(0,0,0,0)';
-                        tcx.fillRect( 0, 0, tcs, tcs );
-                        tempTexture.update( false );
-
-                        tcx.setTransform(1, 0, 0, -1, 0, 0);
-                        tcx.putImageData( iDat, 0, -tcs );
-                        tcx.setTransform(1, 0, 0, 1, 0, 0);
-                        tempTexture.update( false );*/
-
                         updateDt();
                     };
                 }
