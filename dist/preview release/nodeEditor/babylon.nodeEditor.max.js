@@ -55644,6 +55644,9 @@ var InputPropertyTabComponent = /** @class */ (function (_super) {
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_properties_floatPropertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["FloatPropertyTabComponent"], { globalState: globalState, inputBlock: inputBlock }),
                     !inputBlock.isBoolean && !cantDisplaySlider &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Value", target: inputBlock, propertyName: "value", step: (inputBlock.max - inputBlock.min) / 100.0, minimum: inputBlock.min, maximum: inputBlock.max, onChange: function () {
+                                if (inputBlock.isConstant) {
+                                    _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                                }
                                 _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                             } })));
             }
@@ -56811,6 +56814,7 @@ var GraphEditor = /** @class */ (function (_super) {
             return;
         }
         try {
+            this.props.globalState.nodeMaterial.options.emitComments = true;
             this.props.globalState.nodeMaterial.build(true);
             this.props.globalState.onLogRequiredObservable.notifyObservers(new _components_log_logComponent__WEBPACK_IMPORTED_MODULE_5__["LogEntry"]("Node material build successful", false));
         }
@@ -57521,13 +57525,16 @@ var Color4LineComponent = /** @class */ (function (_super) {
     function Color4LineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
-        _this.state = { isExpanded: false, color: _this.props.target[_this.props.propertyName].clone() };
+        var value = _this.props.target[_this.props.propertyName];
+        var currentColor = value.getClassName() === "Color4" ? value.clone() : new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color4"](value.r, value.g, value.b, 1.0);
+        _this.state = { isExpanded: false, color: currentColor };
         return _this;
     }
     Color4LineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        var currentState = nextProps.target[nextProps.propertyName];
-        if (!currentState.equals(nextState.color) || this._localChange) {
-            nextState.color = currentState.clone();
+        var value = this.props.target[this.props.propertyName];
+        var currentColor = value.getClassName() === "Color4" ? value : new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color4"](value.r, value.g, value.b, 1.0);
+        if (!currentColor.equals(nextState.color) || this._localChange) {
+            nextState.color = currentColor.clone();
             this._localChange = false;
             return true;
         }
@@ -57617,7 +57624,7 @@ var Color4LineComponent = /** @class */ (function (_super) {
     Color4LineComponent.prototype.render = function () {
         var _this = this;
         var chevron = this.state.isExpanded ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__["faMinus"] }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_5__["faPlus"] });
-        var colorAsColor3 = this.state.color.getClassName() === "Color3" ? this.state.color : new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"](this.state.color.r, this.state.color.g, this.state.color.b);
+        var colorAsColor3 = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"](this.state.color.r, this.state.color.g, this.state.color.b);
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color3Line" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "firstLine" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),

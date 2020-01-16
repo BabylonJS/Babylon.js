@@ -368,6 +368,48 @@ export class RecastJSCrowd implements ICrowd {
     }
 
     /**
+     * Teleport the agent to a new position
+     * @param index agent index returned by addAgent
+     * @param destination targeted world position
+     */
+    agentTeleport(index: number, destination: Vector3): void {
+        this.recastCrowd.agentTeleport(index, new this.bjsRECASTPlugin.bjsRECAST.Vec3(destination.x, destination.y, destination.z));
+    }
+
+    /**
+     * Update agent parameters
+     * @param index agent index returned by addAgent
+     * @param parameters agent parameters
+     */
+    updateAgentParameters(index: number, parameters: IAgentParameters): void {
+        var agentParams = this.recastCrowd.getAgentParameters(index);
+
+        if (parameters.radius !== undefined) {
+            agentParams.radius = parameters.radius;
+        }
+        if (parameters.height !== undefined) {
+            agentParams.height = parameters.height;
+        }
+        if (parameters.maxAcceleration !== undefined) {
+            agentParams.maxAcceleration = parameters.maxAcceleration;
+        }
+        if (parameters.maxSpeed !== undefined) {
+            agentParams.maxSpeed = parameters.maxSpeed;
+        }
+        if (parameters.collisionQueryRange !== undefined) {
+            agentParams.collisionQueryRange = parameters.collisionQueryRange;
+        }
+        if (parameters.pathOptimizationRange !== undefined) {
+            agentParams.pathOptimizationRange = parameters.pathOptimizationRange;
+        }
+        if (parameters.separationWeight !== undefined) {
+            agentParams.separationWeight = parameters.separationWeight;
+        }
+
+        this.recastCrowd.setAgentParameters(index, agentParams);
+    }
+
+    /**
      * remove a particular agent previously created
      * @param index agent index returned by addAgent
      */
