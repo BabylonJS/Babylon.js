@@ -91,6 +91,11 @@ export class NodeMaterialConnectionPoint {
         this._associatedVariableName = value;
     }
 
+    /** Get the inner type (ie AutoDetect for isntance instead of the inferred one) */
+    public get innerType() {
+        return this._type;
+    }
+
     /**
      * Gets or sets the connection point type (default is float)
      */
@@ -330,7 +335,7 @@ export class NodeMaterialConnectionPoint {
             }
         }
 
-        if (this.type !== connectionPoint.type && connectionPoint.type !== NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+        if (this.type !== connectionPoint.type && connectionPoint.innerType !== NodeMaterialBlockConnectionPointTypes.AutoDetect) {
             // Equivalents
             switch (this.type) {
                 case NodeMaterialBlockConnectionPointTypes.Vector3: {
