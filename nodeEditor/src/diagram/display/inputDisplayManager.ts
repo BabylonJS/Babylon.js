@@ -62,6 +62,7 @@ export class InputDisplayManager implements IDisplayManager {
     public updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void {
         let value = "";
         let inputBlock = block as InputBlock;
+        let isFat = false;
 
         if (inputBlock.isAttribute) {
             value = "mesh." + inputBlock.name;
@@ -75,6 +76,7 @@ export class InputDisplayManager implements IDisplayManager {
                     break;
                 case NodeMaterialSystemValues.WorldViewProjection:
                     value = "World x View x Projection";
+                    isFat = true;
                     break;
                 case NodeMaterialSystemValues.View:
                     value = "View";
@@ -121,5 +123,9 @@ export class InputDisplayManager implements IDisplayManager {
 
         contentArea.innerHTML = value;
         contentArea.classList.add("input-block");
+
+        if (isFat) {
+            contentArea.classList.add("fat");
+        }
     }
 }
