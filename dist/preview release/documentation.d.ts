@@ -42530,16 +42530,16 @@ declare module BABYLON {
         /**
          * Initializes an xr session
          * @param xrSessionMode mode to initialize
-         * @param optionalFeatures defines optional values to pass to the session builder
+         * @param xrSessionInit defines optional and required values to pass to the session builder
          * @returns a promise which will resolve once the session has been initialized
          */
-        initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures?: any): Promise<XRSession>;
+        initializeSessionAsync(xrSessionMode?: XRSessionMode, xrSessionInit?: XRSessionInit): Promise<XRSession>;
         /**
          * Sets the reference space on the xr session
          * @param referenceSpace space to set
          * @returns a promise that will resolve once the reference space has been set
          */
-        setReferenceSpaceAsync(referenceSpace: XRReferenceSpaceType): Promise<void>;
+        setReferenceSpaceAsync(referenceSpace?: XRReferenceSpaceType): Promise<XRReferenceSpace>;
         /**
          * Resets the reference space to the one started the session
          */
@@ -42552,9 +42552,8 @@ declare module BABYLON {
         updateRenderStateAsync(state: XRRenderState): Promise<void>;
         /**
          * Starts rendering to the xr layer
-         * @returns a promise that will resolve once rendering has started
          */
-        startRenderingToXRAsync(): Promise<void>;
+        runXRRenderLoop(): void;
         /**
          * Gets the correct render target texture to be rendered this frame for this eye
          * @param eye the eye for which to get the render target
@@ -42571,7 +42570,7 @@ declare module BABYLON {
          * @param sessionMode session mode to check if supported eg. immersive-vr
          * @returns true if supported
          */
-        supportsSessionAsync(sessionMode: XRSessionMode): Promise<boolean>;
+        isSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean>;
         /**
          * Creates a WebXRRenderTarget object for the XR session
          * @param onStateChangedObservable optional, mechanism for enabling/disabling XR rendering canvas, used only on Web
@@ -42831,7 +42830,7 @@ declare module BABYLON {
          * @param renderTarget the output canvas that will be used to enter XR mode
          * @returns promise that resolves after xr mode has entered
          */
-        enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget): Promise<WebXRSessionManager>;
+        enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget?: WebXRRenderTarget): Promise<WebXRSessionManager>;
         /**
          * Disposes of the experience helper
          */
@@ -43823,7 +43822,7 @@ declare module BABYLON {
          * Using this object it is possible to get click events and trackpad changes of the
          * webxr controller that is currently being used.
          */
-        gamepadController?: WebXRAbstractMotionController;
+        motionController?: WebXRAbstractMotionController;
         /**
          * Event that fires when the controller is removed/disposed
          */
@@ -43951,13 +43950,13 @@ declare module BABYLON {
         /**
          * attach this feature
          *
-         * @returns true if successful.
+         * @returns true if successful, false is failed or already attached
          */
         attach(): boolean;
         /**
          * detach this feature.
          *
-         * @returns true if successful.
+         * @returns true if successful, false if failed or already detached
          */
         detach(): boolean;
         /**
@@ -44046,6 +44045,14 @@ declare module BABYLON {
          * Default color of the laser pointer
          */
         lasterPointerDefaultColor: Color3;
+        /**
+         * Should the laser pointer be displayed
+         */
+        displayLaserPointer: boolean;
+        /**
+         * Should the selection mesh be displayed (The ring at the end of the laser pointer)
+         */
+        displaySelectionMesh: boolean;
         private static _idCounter;
         private _tmpRay;
         private _controllers;
@@ -58360,7 +58367,6 @@ declare module BABYLON {
      */
     export class MorphTargetsBlock extends NodeMaterialBlock {
         private _repeatableContentAnchor;
-        private _repeatebleContentGenerated;
         /**
          * Create a new MorphTargetsBlock
          * @param name defines the block name
@@ -69386,6 +69392,11 @@ interface XRInputSource {
     gripSpace: XRSpace | undefined;
     gamepad: Gamepad | undefined;
     profiles: Array<string>;
+}
+
+interface XRSessionInit {
+    optionalFeatures?: XRReferenceSpaceType[];
+    requiredFeatures?: XRReferenceSpaceType[];
 }
 
 interface XRSession extends XRAnchorCreator {
