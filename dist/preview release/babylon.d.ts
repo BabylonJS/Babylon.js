@@ -44053,6 +44053,14 @@ declare module BABYLON {
          * Should the selection mesh be displayed (The ring at the end of the laser pointer)
          */
         displaySelectionMesh: boolean;
+        /**
+         * Disable lighting on the laser pointer (so it will always be visible)
+         */
+        disablePointerLighting: boolean;
+        /**
+         * Disable lighting on the selection mesh (so it will always be visible)
+         */
+        disableSelectionMeshLighting: boolean;
         private static _idCounter;
         private _tmpRay;
         private _controllers;
@@ -44877,6 +44885,11 @@ declare module BABYLON {
          * @param pickedColor the new laser color when picked mesh detected
          */
         setLaserColor(color: Color3, pickedColor?: Color3): void;
+        /**
+         * Set lighting enabled / disabled on the laser pointer of both controllers
+         * @param enabled should the lighting be enabled on the laser pointer
+         */
+        setLaserLightingState(enabled?: boolean): void;
         /**
          * Permanently set new colors for the gaze pointer
          * @param color the new gaze color
