@@ -58180,6 +58180,8 @@ declare module BABYLON {
          */
         get associatedVariableName(): string;
         set associatedVariableName(value: string);
+        /** Get the inner type (ie AutoDetect for isntance instead of the inferred one) */
+        get innerType(): NodeMaterialBlockConnectionPointTypes;
         /**
          * Gets or sets the connection point type (default is float)
          */

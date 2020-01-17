@@ -968,6 +968,7 @@ declare module "babylonjs-node-editor/diagram/properties/gradientStepComponent" 
         lineIndex: number;
         onDelete: () => void;
         onUpdateStep: () => void;
+        onCheckForReOrder: () => void;
     }
     export class GradientStepComponent extends React.Component<IGradientStepComponentProps, {
         gradient: number;
@@ -975,6 +976,7 @@ declare module "babylonjs-node-editor/diagram/properties/gradientStepComponent" 
         constructor(props: IGradientStepComponentProps);
         updateColor(color: string): void;
         updateStep(gradient: number): void;
+        onPointerUp(): void;
         render(): JSX.Element;
     }
 }
@@ -998,6 +1000,7 @@ declare module "babylonjs-node-editor/diagram/properties/gradientNodePropertyCom
         forceRebuild(): void;
         deleteStep(step: GradientBlockColorStep): void;
         addNewStep(): void;
+        checkForReOrder(): void;
         render(): JSX.Element;
     }
 }
@@ -2349,6 +2352,7 @@ declare module NODEEDITOR {
         lineIndex: number;
         onDelete: () => void;
         onUpdateStep: () => void;
+        onCheckForReOrder: () => void;
     }
     export class GradientStepComponent extends React.Component<IGradientStepComponentProps, {
         gradient: number;
@@ -2356,6 +2360,7 @@ declare module NODEEDITOR {
         constructor(props: IGradientStepComponentProps);
         updateColor(color: string): void;
         updateStep(gradient: number): void;
+        onPointerUp(): void;
         render(): JSX.Element;
     }
 }
@@ -2375,6 +2380,7 @@ declare module NODEEDITOR {
         forceRebuild(): void;
         deleteStep(step: BABYLON.GradientBlockColorStep): void;
         addNewStep(): void;
+        checkForReOrder(): void;
         render(): JSX.Element;
     }
 }

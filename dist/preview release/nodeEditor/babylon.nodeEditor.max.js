@@ -55527,6 +55527,19 @@ var GradientPropertyTabComponent = /** @class */ (function (_super) {
         this.forceRebuild();
         this.forceUpdate();
     };
+    GradientPropertyTabComponent.prototype.checkForReOrder = function () {
+        var gradientBlock = this.props.block;
+        gradientBlock.colorSteps.sort(function (a, b) {
+            if (a.step === b.step) {
+                return 0;
+            }
+            if (a.step > b.step) {
+                return 1;
+            }
+            return -1;
+        });
+        this.forceUpdate();
+    };
     GradientPropertyTabComponent.prototype.render = function () {
         var _this = this;
         var gradientBlock = this.props.block;
@@ -55535,7 +55548,7 @@ var GradientPropertyTabComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "STEPS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Add new step", onClick: function () { return _this.addNewStep(); } }),
                 gradientBlock.colorSteps.map(function (c, i) {
-                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gradientStepComponent__WEBPACK_IMPORTED_MODULE_4__["GradientStepComponent"], { globalState: _this.props.globalState, onUpdateStep: function () { return _this.forceRebuild(); }, key: c.step, lineIndex: i, step: c, onDelete: function () { return _this.deleteStep(c); } }));
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_gradientStepComponent__WEBPACK_IMPORTED_MODULE_4__["GradientStepComponent"], { globalState: _this.props.globalState, onCheckForReOrder: function () { return _this.checkForReOrder(); }, onUpdateStep: function () { return _this.forceRebuild(); }, key: "step-" + i, lineIndex: i, step: c, onDelete: function () { return _this.deleteStep(c); } }));
                 }))));
     };
     return GradientPropertyTabComponent;
@@ -55584,6 +55597,9 @@ var GradientStepComponent = /** @class */ (function (_super) {
         this.setState({ gradient: gradient });
         this.props.onUpdateStep();
     };
+    GradientStepComponent.prototype.onPointerUp = function () {
+        this.props.onCheckForReOrder();
+    };
     GradientStepComponent.prototype.render = function () {
         var _this = this;
         var step = this.props.step;
@@ -55592,7 +55608,7 @@ var GradientStepComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "color", value: step.color.toHexString(), onChange: function (evt) { return _this.updateColor(evt.target.value); } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "step-value" }, step.step.toFixed(2)),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "step-slider" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { className: "range", type: "range", step: 0.01, min: 0, max: 1.0, value: step.step, onChange: function (evt) { return _this.updateStep(parseFloat(evt.target.value)); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { className: "range", type: "range", step: 0.01, min: 0, max: 1.0, value: step.step, onPointerUp: function (evt) { return _this.onPointerUp(); }, onChange: function (evt) { return _this.updateStep(parseFloat(evt.target.value)); } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "gradient-delete", onClick: function () { return _this.props.onDelete(); } },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faTrash"] }))));
     };
