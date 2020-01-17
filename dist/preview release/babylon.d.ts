@@ -57738,6 +57738,8 @@ declare module BABYLON {
         private _isFinalMerger;
         private _isInput;
         protected _isUnique: boolean;
+        /** Gets or sets a boolean indicating that only one input can be connected at a time */
+        inputsAreExclusive: boolean;
         /** @hidden */
         _codeVariableName: string;
         /** @hidden */

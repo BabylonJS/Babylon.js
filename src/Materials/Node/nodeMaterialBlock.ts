@@ -24,6 +24,9 @@ export class NodeMaterialBlock {
     private _isInput = false;
     protected _isUnique = false;
 
+    /** Gets or sets a boolean indicating that only one input can be connected at a time */
+    public inputsAreExclusive = false;
+
     /** @hidden */
     public _codeVariableName = "";
 
