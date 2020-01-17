@@ -11,6 +11,7 @@ interface IGradientStepComponentProps {
     lineIndex: number;
     onDelete: () => void;
     onUpdateStep: () => void;
+    onCheckForReOrder: () => void;
 }
 
 export class GradientStepComponent extends React.Component<IGradientStepComponentProps, {gradient: number}> {
@@ -36,6 +37,10 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
         this.props.onUpdateStep();
     }
 
+    onPointerUp() {
+        this.props.onCheckForReOrder();
+    }
+
     render() {
         let step = this.props.step;
 
@@ -50,6 +55,7 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
                 </div>
                 <div className="step-slider">
                     <input className="range" type="range" step={0.01} min={0} max={1.0} value={step.step}
+                        onPointerUp={evt => this.onPointerUp()}
                         onChange={evt => this.updateStep(parseFloat(evt.target.value))} />
                 </div>
                 <div className="gradient-delete" onClick={() => this.props.onDelete()}>
