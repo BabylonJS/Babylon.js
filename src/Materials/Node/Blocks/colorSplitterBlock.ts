@@ -25,6 +25,8 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
         this.registerOutput("g", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("b", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("a", NodeMaterialBlockConnectionPointTypes.Float);
+
+        this.inputsAreExclusive = true;
     }
 
     /**
