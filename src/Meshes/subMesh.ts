@@ -474,18 +474,9 @@ export class SubMesh extends BaseSubMesh implements ICullable {
             const indexB = indices[index + 1];
             const indexC = indices[index + 2];
 
-            if (checkStopper) {
-                if (indexA === 0xFFFFFFFF) {
-                    continue;
-                }
-                if (indexB === 0xFFFFFFFF) {
-                    index += 1;
-                    continue;
-                }
-                if (indexC === 0xFFFFFFFF) {
-                    index += 2;
-                    continue;
-                }
+            if (checkStopper && indexC === 0xFFFFFFFF) {
+                index += 2;
+                continue;
             }
 
             var p0 = positions[indexA];
