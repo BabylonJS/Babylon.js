@@ -215,6 +215,10 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
                 if (hasTangents) {
                     state.attributes.push(VertexBuffer.TangentKind + index);
                 }
+
+                if (hasUVs) {
+                    state.attributes.push(VertexBuffer.UVKind + "_" + index);
+                }
             }
         }
     }
