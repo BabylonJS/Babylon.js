@@ -71,7 +71,7 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
         if (rootMesh) {
             rootMesh.setParent(this.rootMesh);
         }
-        let min = {
+        /*let min = {
             x: 0,
             y: 0,
             z: 0
@@ -107,9 +107,8 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
             }
         });
 
-        console.log(min, max, { x: max.x + min.x, y: max.y + min.y, z: max.z + min.z });
+        console.log(min, max, { x: max.x + min.x, y: max.y + min.y, z: max.z + min.z });*/
         const center = Mesh.Center(this.rootMesh.getChildMeshes());
-        console.log(center);
         this.rootMesh.position.subtractInPlace(center.scaleInPlace(2));
         this.rootMesh.position.z *= -1;
 
