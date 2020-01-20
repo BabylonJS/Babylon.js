@@ -63,6 +63,7 @@ export class InputDisplayManager implements IDisplayManager {
         let value = "";
         let inputBlock = block as InputBlock;
         let isFat = false;
+        let smallFont = false;
 
         if (inputBlock.isAttribute) {
             value = "mesh." + inputBlock.name;
@@ -115,6 +116,7 @@ export class InputDisplayManager implements IDisplayManager {
                     value = `(${vec3Value.x.toFixed(2)}, ${vec3Value.y.toFixed(2)}, ${vec3Value.z.toFixed(2)})`;
                     break;
                 case NodeMaterialBlockConnectionPointTypes.Vector4:
+                    smallFont = true;
                     let vec4Value = inputBlock.value as Vector4
                     value = `(${vec4Value.x.toFixed(2)}, ${vec4Value.y.toFixed(2)}, ${vec4Value.z.toFixed(2)}, ${vec4Value.w.toFixed(2)})`;
                     break;                        
@@ -126,6 +128,10 @@ export class InputDisplayManager implements IDisplayManager {
 
         if (isFat) {
             contentArea.classList.add("fat");
+        }
+
+        if (smallFont) {
+            contentArea.classList.add("small-font");
         }
     }
 }
