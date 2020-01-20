@@ -17,6 +17,17 @@ export interface IWebXRControllerOptions {
      * This can be used when creating your own profile or when testing different controllers
      */
     forceControllerProfile?: string;
+
+    /**
+     * Do not load the controller mesh, in case a different mesh needs to be loaded.
+     */
+    doNotLoadControllerMesh?: boolean;
+
+    /**
+     * Should the controller mesh be animated when a user interacts with it
+     * The pressed buttons / thumbstick and touchpad animations will be disabled
+     */
+    disableMotionControllerAnimation?: boolean;
 }
 
 /**
@@ -37,6 +48,11 @@ export class WebXRController {
      * webxr controller that is currently being used.
      */
     public motionController?: WebXRAbstractMotionController;
+
+    /**
+     * Observers registered here will trigger when a motion controller profile was assigned to this xr controller
+     */
+    public onMotionControllerProfileLoaded = new Observable<WebXRAbstractMotionController>();
 
     /**
      * Event that fires when the controller is removed/disposed
@@ -71,10 +87,18 @@ export class WebXRController {
 
         // for now only load motion controllers if gamepad available
         if (this.inputSource.gamepad) {
-            this.motionController = WebXRMotionControllerManager.GetMotionControllerWithXRInput(inputSource, _scene, this._options.forceControllerProfile);
-            // if the model is loaded, do your thing
-            this.motionController.onModelLoadedObservable.addOnce(() => {
-                this.motionController!.rootMesh!.parent = this.pointer;
+            WebXRMotionControllerManager.GetMotionControllerWithXRInput(inputSource, _scene, this._options.forceControllerProfile).then((motionController) => {
+                this.motionController = motionController;
+                this.onMotionControllerProfileLoaded.notifyObservers(motionController);
+                // should the model be loaded?
+                if (!this._options.doNotLoadControllerMesh) {
+                    this.motionController.loadModel().then((success) => {
+                        if (success) {
+                            this.motionController!.rootMesh!.parent = this.pointer;
+                            this.motionController!.disableAnimation = !!this._options.disableMotionControllerAnimation;
+                        }
+                    });
+                }
             });
         }
     }
@@ -148,6 +172,7 @@ export class WebXRController {
         if (this.motionController) {
             this.motionController.dispose();
         }
+        this.onMotionControllerProfileLoaded.clear();
         this.pointer.dispose();
         this.onDisposeObservable.notifyObservers({});
     }

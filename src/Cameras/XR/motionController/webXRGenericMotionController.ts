@@ -11,20 +11,54 @@ import { Quaternion } from '../../../Maths/math.vector';
 
 // https://github.com/immersive-web/webxr-input-profiles/blob/master/packages/registry/profiles/generic/generic-trigger-touchpad-thumbstick.json
 const GenericTriggerLayout: IMotionControllerLayoutMap = {
-    "left-right-none": {
+    "left": {
         "selectComponentId": "xr-standard-trigger",
         "components": {
-            "xr-standard-trigger": { "type": "trigger" }
+            "xr-standard-trigger": {
+                "type": "trigger",
+                "gamepadIndices": {
+                    "button": 0
+                },
+                "rootNodeName": "xr_standard_trigger",
+                "visualResponses": {}
+            }
         },
-        "gamepad": {
-            "mapping": "xr-standard",
-            "buttons": [
-                "xr-standard-trigger"
-            ],
-            "axes": []
-        }
+        "gamepadMapping": "xr-standard",
+        "rootNodeName": "generic-trigger-left",
+        "assetPath": "left.glb"
+    },
+    "right": {
+        "selectComponentId": "xr-standard-trigger",
+        "components": {
+            "xr-standard-trigger": {
+                "type": "trigger",
+                "gamepadIndices": {
+                    "button": 0
+                },
+                "rootNodeName": "xr_standard_trigger",
+                "visualResponses": {}
+            }
+        },
+        "gamepadMapping": "xr-standard",
+        "rootNodeName": "generic-trigger-right",
+        "assetPath": "right.glb"
+    },
+    "none": {
+        "selectComponentId": "xr-standard-trigger",
+        "components": {
+            "xr-standard-trigger": {
+                "type": "trigger",
+                "gamepadIndices": {
+                    "button": 0
+                },
+                "rootNodeName": "xr_standard_trigger",
+                "visualResponses": {}
+            }
+        },
+        "gamepadMapping": "xr-standard",
+        "rootNodeName": "generic-trigger-none",
+        "assetPath": "none.glb"
     }
-
 };
 
 // TODO support all generic models with xr-standard mapping at:
