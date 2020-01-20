@@ -12,11 +12,6 @@ import { Viewport } from '../../Maths/math.viewport';
  */
 export class WebXRCamera extends FreeCamera {
 
-    /**
-     * Is the camera in debug mode. Used when using an emulator
-     */
-    public debugMode = false;
-
     private _firstFrame = false;
     private _referencedPosition: Vector3 = new Vector3();
     private _referenceQuaternion: Quaternion = Quaternion.Identity();
@@ -89,6 +84,12 @@ export class WebXRCamera extends FreeCamera {
             this._xrSessionManager.resetReferenceSpace();
         }
     }
+
+    /**
+     * @hidden
+     * Is the camera in debug mode. Used when using an emulator
+     */
+    public _debugMode = false;
 
     /** @hidden */
     public _updateForDualEyeDebugging(/*pupilDistance = 0.01*/) {
@@ -250,7 +251,8 @@ export class WebXRCamera extends FreeCamera {
                 currentRig.viewport.x = viewport.x / width;
                 currentRig.viewport.y = viewport.y / height;
             }
-            if (this.debugMode) {
+            // if set to debug mode, render both eyes
+            if (this._debugMode) {
                 this._updateForDualEyeDebugging();
             }
 
