@@ -59,6 +59,7 @@
 - Added `RenderTargetTexture.getCustomRenderList` to overload the render list at rendering time (and possibly for each layer (2DArray) / face (Cube)) ([Popov72](https://github.com/Popov72))
 - Make sure all properties of CascadedShadowMap class are serialized/parsed ([Popov72](https://github.com/Popov72))
 - Added `textures/opacity.png` file to the Playground ([Popov72](https://github.com/Popov72))
+- Refactored the shadow generators code ([Popov72](https://github.com/Popov72))
 
 ### Engine
 
@@ -111,6 +112,8 @@
 - Added absolute scaling and rotation getters ([haroldma](https://github.com/haroldma))
 - Added `BILLBOARDMODE_USE_POSITION` flag to billboards allowing use of camera positioning instead of orientation for mesh rotation ([delaneyj](https://github.com/delaneyj))
 - Added accessor functions for `SubMesh._materialDefines` ([Popov72](https://github.com/Popov72))
+- Generator type used in `TrailMesh` constructor is now `TransformNode` instead of `AbstrachMesh` ([Popov72](https://github.com/Popov72))
+- Added the `useVertexAlpha` options to `MeshBuilder.CreateDashedLines` ([Popov72](https://github.com/Popov72))
 
 ### Physics
 
@@ -137,6 +140,7 @@
 - Added support for 8 bone influences to glTF loader ([zeux](https://github.com/zeux))
 - Added support for animations import from separate files ([noalak](https://github.com/noalak/))
 - Use web workers to validate glTF to avoid blocking the main thread. ([bghgary](https://github.com/bghgary))
+- Update glTF validator to 2.0.0-dev.3.1. ([bghgary](https://github.com/bghgary))
 
 ### Materials
 
