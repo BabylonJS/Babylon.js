@@ -132,14 +132,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.1.0-beta.21";
+        return "babylonjs@4.1.0-beta.22";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.1.0-beta.21";
+        return "4.1.0-beta.22";
     }
 
     /**
@@ -1590,7 +1590,8 @@ export class ThinEngine {
         }
     }
 
-    private _bindIndexBufferWithCache(indexBuffer: Nullable<DataBuffer>): void {
+    /** @hidden */
+    public _bindIndexBufferWithCache(indexBuffer: Nullable<DataBuffer>): void {
         if (indexBuffer == null) {
             return;
         }
@@ -3141,7 +3142,7 @@ export class ThinEngine {
             this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_T, this._getTextureWrapMode(wrapV), texture);
             texture._cachedWrapV = wrapV;
         }
-        if (wrapR) {
+        if ((texture.is2DArray || texture.is3D) && wrapR) {
             this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_R, this._getTextureWrapMode(wrapR), texture);
             texture._cachedWrapR = wrapR;
         }
