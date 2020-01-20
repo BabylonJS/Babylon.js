@@ -7,36 +7,367 @@ import {
 import { WebXRMotionControllerManager } from './webXRMotionControllerManager';
 import { AbstractMesh } from '../../../Meshes/abstractMesh';
 import { Scene } from '../../../scene';
-import { Logger } from '../../../Misc/logger';
 import { Mesh } from '../../../Meshes/mesh';
 import { Quaternion } from '../../../Maths/math.vector';
 import { SceneLoader } from '../../../Loading/sceneLoader';
 
 // https://github.com/immersive-web/webxr-input-profiles/blob/master/packages/registry/profiles/microsoft/microsoft-mixed-reality.json
 const MixedRealityProfile: IMotionControllerLayoutMap = {
-    "left-right": {
+    "left": {
         "selectComponentId": "xr-standard-trigger",
         "components": {
-            "xr-standard-trigger": { "type": "trigger" },
-            "xr-standard-squeeze": { "type": "squeeze" },
-            "xr-standard-touchpad": { "type": "touchpad" },
-            "xr-standard-thumbstick": { "type": "thumbstick" }
+            "xr-standard-trigger": {
+                "type": "trigger",
+                "gamepadIndices": {
+                    "button": 0
+                },
+                "rootNodeName": "xr_standard_trigger",
+                "visualResponses": {
+                    "xr_standard_trigger_pressed": {
+                        "componentProperty": "button",
+                        "states": [
+                            "default",
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "transform",
+                        "valueNodeName": "xr_standard_trigger_pressed_value",
+                        "minNodeName": "xr_standard_trigger_pressed_min",
+                        "maxNodeName": "xr_standard_trigger_pressed_max"
+                    }
+                }
+            },
+            "xr-standard-squeeze": {
+                "type": "squeeze",
+                "gamepadIndices": {
+                    "button": 1
+                },
+                "rootNodeName": "xr_standard_squeeze",
+                "visualResponses": {
+                    "xr_standard_squeeze_pressed": {
+                        "componentProperty": "button",
+                        "states": [
+                            "default",
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "transform",
+                        "valueNodeName": "xr_standard_squeeze_pressed_value",
+                        "minNodeName": "xr_standard_squeeze_pressed_min",
+                        "maxNodeName": "xr_standard_squeeze_pressed_max"
+                    }
+                }
+            },
+            "xr-standard-touchpad": {
+                "type": "touchpad",
+                "gamepadIndices": {
+                    "button": 2,
+                    "xAxis": 0,
+                    "yAxis": 1
+                },
+                "rootNodeName": "xr_standard_touchpad",
+                "visualResponses": {
+                    "xr_standard_touchpad_pressed": {
+                        "componentProperty": "button",
+                        "states": [
+                            "default",
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "transform",
+                        "valueNodeName": "xr_standard_touchpad_pressed_value",
+                        "minNodeName": "xr_standard_touchpad_pressed_min",
+                        "maxNodeName": "xr_standard_touchpad_pressed_max"
+                    },
+                    "xr_standard_touchpad_xaxis_pressed": {
+                        "componentProperty": "xAxis",
+                        "states": [
+                            "default",
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "transform",
+                        "valueNodeName": "xr_standard_touchpad_xaxis_pressed_value",
+                        "minNodeName": "xr_standard_touchpad_xaxis_pressed_min",
+                        "maxNodeName": "xr_standard_touchpad_xaxis_pressed_max"
+                    },
+                    "xr_standard_touchpad_yaxis_pressed": {
+                        "componentProperty": "yAxis",
+                        "states": [
+                            "default",
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "transform",
+                        "valueNodeName": "xr_standard_touchpad_yaxis_pressed_value",
+                        "minNodeName": "xr_standard_touchpad_yaxis_pressed_min",
+                        "maxNodeName": "xr_standard_touchpad_yaxis_pressed_max"
+                    },
+                    "xr_standard_touchpad_xaxis_touched": {
+                        "componentProperty": "xAxis",
+                        "states": [
+                            "default",
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "transform",
+                        "valueNodeName": "xr_standard_touchpad_xaxis_touched_value",
+                        "minNodeName": "xr_standard_touchpad_xaxis_touched_min",
+                        "maxNodeName": "xr_standard_touchpad_xaxis_touched_max"
+                    },
+                    "xr_standard_touchpad_yaxis_touched": {
+                        "componentProperty": "yAxis",
+                        "states": [
+                            "default",
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "transform",
+                        "valueNodeName": "xr_standard_touchpad_yaxis_touched_value",
+                        "minNodeName": "xr_standard_touchpad_yaxis_touched_min",
+                        "maxNodeName": "xr_standard_touchpad_yaxis_touched_max"
+                    },
+                    "xr_standard_touchpad_axes_touched": {
+                        "componentProperty": "state",
+                        "states": [
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "visibility",
+                        "valueNodeName": "xr_standard_touchpad_axes_touched_value"
+                    }
+                },
+                "touchPointNodeName": "xr_standard_touchpad_axes_touched_value"
+            },
+            "xr-standard-thumbstick": {
+                "type": "thumbstick",
+                "gamepadIndices": {
+                    "button": 3,
+                    "xAxis": 2,
+                    "yAxis": 3
+                },
+                "rootNodeName": "xr_standard_thumbstick",
+                "visualResponses": {
+                    "xr_standard_thumbstick_pressed": {
+                        "componentProperty": "button",
+                        "states": [
+                            "default",
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "transform",
+                        "valueNodeName": "xr_standard_thumbstick_pressed_value",
+                        "minNodeName": "xr_standard_thumbstick_pressed_min",
+                        "maxNodeName": "xr_standard_thumbstick_pressed_max"
+                    },
+                    "xr_standard_thumbstick_xaxis_pressed": {
+                        "componentProperty": "xAxis",
+                        "states": [
+                            "default",
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "transform",
+                        "valueNodeName": "xr_standard_thumbstick_xaxis_pressed_value",
+                        "minNodeName": "xr_standard_thumbstick_xaxis_pressed_min",
+                        "maxNodeName": "xr_standard_thumbstick_xaxis_pressed_max"
+                    },
+                    "xr_standard_thumbstick_yaxis_pressed": {
+                        "componentProperty": "yAxis",
+                        "states": [
+                            "default",
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "transform",
+                        "valueNodeName": "xr_standard_thumbstick_yaxis_pressed_value",
+                        "minNodeName": "xr_standard_thumbstick_yaxis_pressed_min",
+                        "maxNodeName": "xr_standard_thumbstick_yaxis_pressed_max"
+                    }
+                }
+            }
         },
-        "gamepad": {
-            "mapping": "xr-standard",
-            "buttons": [
-                "xr-standard-trigger",
-                "xr-standard-squeeze",
-                "xr-standard-touchpad",
-                "xr-standard-thumbstick"
-            ],
-            "axes": [
-                { "componentId": "xr-standard-touchpad", "axis": "x-axis" },
-                { "componentId": "xr-standard-touchpad", "axis": "y-axis" },
-                { "componentId": "xr-standard-thumbstick", "axis": "x-axis" },
-                { "componentId": "xr-standard-thumbstick", "axis": "y-axis" }
-            ]
-        }
+        "gamepadMapping": "xr-standard",
+        "rootNodeName": "microsoft-mixed-reality-left",
+        "assetPath": "left.glb"
+    },
+    "right": {
+        "selectComponentId": "xr-standard-trigger",
+        "components": {
+            "xr-standard-trigger": {
+                "type": "trigger",
+                "gamepadIndices": {
+                    "button": 0
+                },
+                "rootNodeName": "xr_standard_trigger",
+                "visualResponses": {
+                    "xr_standard_trigger_pressed": {
+                        "componentProperty": "button",
+                        "states": [
+                            "default",
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "transform",
+                        "valueNodeName": "xr_standard_trigger_pressed_value",
+                        "minNodeName": "xr_standard_trigger_pressed_min",
+                        "maxNodeName": "xr_standard_trigger_pressed_max"
+                    }
+                }
+            },
+            "xr-standard-squeeze": {
+                "type": "squeeze",
+                "gamepadIndices": {
+                    "button": 1
+                },
+                "rootNodeName": "xr_standard_squeeze",
+                "visualResponses": {
+                    "xr_standard_squeeze_pressed": {
+                        "componentProperty": "button",
+                        "states": [
+                            "default",
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "transform",
+                        "valueNodeName": "xr_standard_squeeze_pressed_value",
+                        "minNodeName": "xr_standard_squeeze_pressed_min",
+                        "maxNodeName": "xr_standard_squeeze_pressed_max"
+                    }
+                }
+            },
+            "xr-standard-touchpad": {
+                "type": "touchpad",
+                "gamepadIndices": {
+                    "button": 2,
+                    "xAxis": 0,
+                    "yAxis": 1
+                },
+                "rootNodeName": "xr_standard_touchpad",
+                "visualResponses": {
+                    "xr_standard_touchpad_pressed": {
+                        "componentProperty": "button",
+                        "states": [
+                            "default",
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "transform",
+                        "valueNodeName": "xr_standard_touchpad_pressed_value",
+                        "minNodeName": "xr_standard_touchpad_pressed_min",
+                        "maxNodeName": "xr_standard_touchpad_pressed_max"
+                    },
+                    "xr_standard_touchpad_xaxis_pressed": {
+                        "componentProperty": "xAxis",
+                        "states": [
+                            "default",
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "transform",
+                        "valueNodeName": "xr_standard_touchpad_xaxis_pressed_value",
+                        "minNodeName": "xr_standard_touchpad_xaxis_pressed_min",
+                        "maxNodeName": "xr_standard_touchpad_xaxis_pressed_max"
+                    },
+                    "xr_standard_touchpad_yaxis_pressed": {
+                        "componentProperty": "yAxis",
+                        "states": [
+                            "default",
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "transform",
+                        "valueNodeName": "xr_standard_touchpad_yaxis_pressed_value",
+                        "minNodeName": "xr_standard_touchpad_yaxis_pressed_min",
+                        "maxNodeName": "xr_standard_touchpad_yaxis_pressed_max"
+                    },
+                    "xr_standard_touchpad_xaxis_touched": {
+                        "componentProperty": "xAxis",
+                        "states": [
+                            "default",
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "transform",
+                        "valueNodeName": "xr_standard_touchpad_xaxis_touched_value",
+                        "minNodeName": "xr_standard_touchpad_xaxis_touched_min",
+                        "maxNodeName": "xr_standard_touchpad_xaxis_touched_max"
+                    },
+                    "xr_standard_touchpad_yaxis_touched": {
+                        "componentProperty": "yAxis",
+                        "states": [
+                            "default",
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "transform",
+                        "valueNodeName": "xr_standard_touchpad_yaxis_touched_value",
+                        "minNodeName": "xr_standard_touchpad_yaxis_touched_min",
+                        "maxNodeName": "xr_standard_touchpad_yaxis_touched_max"
+                    },
+                    "xr_standard_touchpad_axes_touched": {
+                        "componentProperty": "state",
+                        "states": [
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "visibility",
+                        "valueNodeName": "xr_standard_touchpad_axes_touched_value"
+                    }
+                },
+                "touchPointNodeName": "xr_standard_touchpad_axes_touched_value"
+            },
+            "xr-standard-thumbstick": {
+                "type": "thumbstick",
+                "gamepadIndices": {
+                    "button": 3,
+                    "xAxis": 2,
+                    "yAxis": 3
+                },
+                "rootNodeName": "xr_standard_thumbstick",
+                "visualResponses": {
+                    "xr_standard_thumbstick_pressed": {
+                        "componentProperty": "button",
+                        "states": [
+                            "default",
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "transform",
+                        "valueNodeName": "xr_standard_thumbstick_pressed_value",
+                        "minNodeName": "xr_standard_thumbstick_pressed_min",
+                        "maxNodeName": "xr_standard_thumbstick_pressed_max"
+                    },
+                    "xr_standard_thumbstick_xaxis_pressed": {
+                        "componentProperty": "xAxis",
+                        "states": [
+                            "default",
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "transform",
+                        "valueNodeName": "xr_standard_thumbstick_xaxis_pressed_value",
+                        "minNodeName": "xr_standard_thumbstick_xaxis_pressed_min",
+                        "maxNodeName": "xr_standard_thumbstick_xaxis_pressed_max"
+                    },
+                    "xr_standard_thumbstick_yaxis_pressed": {
+                        "componentProperty": "yAxis",
+                        "states": [
+                            "default",
+                            "touched",
+                            "pressed"
+                        ],
+                        "valueNodeProperty": "transform",
+                        "valueNodeName": "xr_standard_thumbstick_yaxis_pressed_value",
+                        "minNodeName": "xr_standard_thumbstick_yaxis_pressed_min",
+                        "maxNodeName": "xr_standard_thumbstick_yaxis_pressed_max"
+                    }
+                }
+            }
+        },
+        "gamepadMapping": "xr-standard",
+        "rootNodeName": "microsoft-mixed-reality-right",
+        "assetPath": "right.glb"
     }
 };
 
@@ -118,7 +449,7 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
     }
 
     protected _processLoadedModel(_meshes: AbstractMesh[]): void {
-        if (!this.rootMesh) { return; }
+        /*if (!this.rootMesh) { return; }
 
         // Button Meshes
         for (let i = 0; i < this.layout.gamepad!.buttons.length; i++) {
@@ -145,7 +476,7 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
                     const comp = this.getComponent(buttonName);
                     if (comp) {
                         comp.onButtonStateChanged.add((component) => {
-                            this._lerpButtonTransform(buttonMap, component.value);
+                            this._lerpTransform(buttonMap, component.value);
                         }, undefined, true);
                     }
                 } else {
@@ -181,7 +512,7 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
                 if (comp) {
                     comp.onAxisValueChanged.add((axisValues) => {
                         const value = axisData.axis === "x-axis" ? axisValues.x : axisValues.y;
-                        this._lerpAxisTransform(axisMap, value);
+                        this._lerpTransform(axisMap, value, true);
                     }, undefined, true);
                 }
 
@@ -189,16 +520,7 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
                 // If we didn't find the mesh, it simply means this button won't have transforms applied as mapped button value changes.
                 Logger.Warn('Missing axis submesh under mesh with name: ' + axisMap.rootNodeName);
             }
-        }
-    }
-
-    // Look through all children recursively. This will return null if no mesh exists with the given name.
-    private _getChildByName(node: AbstractMesh, name: string): AbstractMesh {
-        return <AbstractMesh>node.getChildren((n) => n.name === name, false)[0];
-    }
-    // Look through only immediate children. This will return null if no mesh exists with the given name.
-    private _getImmediateChildByName(node: AbstractMesh, name: string): AbstractMesh {
-        return <AbstractMesh>node.getChildren((n) => n.name == name, true)[0];
+        }*/
     }
 
     protected _getFilenameAndPath(): { filename: string; path: string; } {

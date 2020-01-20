@@ -349,51 +349,50 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature implem
     }
 
     private _attachTrackedPointerRayMode(xrController: WebXRController) {
-        if (!xrController.motionController) {
-            return;
-        }
-
-        if (this._options.forceGazeMode) {
-            return this._attachGazeMode(xrController);
-        }
-
-        const controllerData = this._controllers[xrController.uniqueId];
-
-        if (this._options.overrideButtonId) {
-            controllerData.selectionComponent = xrController.motionController.getComponent(this._options.overrideButtonId);
-        }
-        if (!controllerData.selectionComponent) {
-            controllerData.selectionComponent = xrController.motionController.getMainComponent();
-        }
-
-        controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
-            if (controllerData.selectionComponent && controllerData.selectionComponent.pressed) {
-                (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
-                (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
-            } else {
-                (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
-                (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.lasterPointerDefaultColor;
+        xrController.onMotionControllerProfileLoaded.add((motionController) => {
+            if (this._options.forceGazeMode) {
+                return this._attachGazeMode(xrController);
             }
 
-            controllerData.laserPointer.isVisible = this.displayLaserPointer;
+            const controllerData = this._controllers[xrController.uniqueId];
 
-            if (controllerData.pick) {
-                this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
+            if (this._options.overrideButtonId) {
+                controllerData.selectionComponent = motionController.getComponent(this._options.overrideButtonId);
             }
-        });
+            if (!controllerData.selectionComponent) {
+                controllerData.selectionComponent = motionController.getMainComponent();
+            }
 
-        controllerData.onButtonChangedObserver = controllerData.selectionComponent.onButtonStateChanged.add((component) => {
-            if (component.changes.pressed) {
-                const pressed = component.changes.pressed.current;
+            controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
+                if (controllerData.selectionComponent && controllerData.selectionComponent.pressed) {
+                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
+                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
+                } else {
+                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
+                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.lasterPointerDefaultColor;
+                }
+
+                controllerData.laserPointer.isVisible = this.displayLaserPointer;
+
                 if (controllerData.pick) {
-                    if (pressed) {
-                        this._scene.simulatePointerDown(controllerData.pick, { pointerId: controllerData.id });
-                    } else {
-                        this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                    this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
+                }
+            });
+
+            controllerData.onButtonChangedObserver = controllerData.selectionComponent.onButtonStateChanged.add((component) => {
+                if (component.changes.pressed) {
+                    const pressed = component.changes.pressed.current;
+                    if (controllerData.pick) {
+                        if (pressed) {
+                            this._scene.simulatePointerDown(controllerData.pick, { pointerId: controllerData.id });
+                        } else {
+                            this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                        }
                     }
                 }
-            }
+            });
         });
+
     }
 
     private _detachController(xrControllerUniqueId: string) {

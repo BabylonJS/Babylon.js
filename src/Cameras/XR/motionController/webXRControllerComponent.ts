@@ -177,6 +177,10 @@ export class WebXRControllerComponent implements IDisposable {
 
         if (this.isButton()) {
             const button = nativeController.buttons[this._buttonIndex];
+            // defensive, in case a profile was forced
+            if (!button) {
+                return;
+            }
             if (this._currentValue !== button.value) {
                 this.changes.value = {
                     current: button.value,
