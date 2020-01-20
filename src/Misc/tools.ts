@@ -352,11 +352,11 @@ export class Tools {
      * @param url the file url to load
      * @returns a promise containing an ArrayBuffer corrisponding to the loaded file
      */
-    public static LoadFileAsync(url: string): Promise<ArrayBuffer> {
+    public static LoadFileAsync(url: string, useArrayBuffer: boolean = true): Promise<ArrayBuffer | string> {
         return new Promise((resolve, reject) => {
             FileTools.LoadFile(url, (data) => {
-                resolve(data as ArrayBuffer);
-            }, undefined, undefined, true, (request, exception) => {
+                resolve(data);
+            }, undefined, undefined, useArrayBuffer, (request, exception) => {
                 reject(exception);
             });
         });
@@ -1103,7 +1103,7 @@ export class Tools {
      * Utility function to detect if the current user agent is Safari
      * @returns whether or not the current user agent is safari
      */
-    public static IsSafari() : boolean {
+    public static IsSafari(): boolean {
         return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     }
 }
