@@ -59,6 +59,7 @@
 - Added `RenderTargetTexture.getCustomRenderList` to overload the render list at rendering time (and possibly for each layer (2DArray) / face (Cube)) ([Popov72](https://github.com/Popov72))
 - Make sure all properties of CascadedShadowMap class are serialized/parsed ([Popov72](https://github.com/Popov72))
 - Added `textures/opacity.png` file to the Playground ([Popov72](https://github.com/Popov72))
+- Refactored the shadow generators code ([Popov72](https://github.com/Popov72))
 
 ### Engine
 

@@ -127,11 +127,3 @@ ShadowGenerator._SceneComponentInitialization = (scene: Scene) => {
         scene._addComponent(component);
     }
 };
-
-CascadedShadowGenerator._SceneComponentInitialization = (scene: Scene) => {
-    let component = scene._getComponent(SceneComponentConstants.NAME_SHADOWGENERATOR);
-    if (!component) {
-        component = new ShadowGeneratorSceneComponent(scene);
-        scene._addComponent(component);
-    }
-};
