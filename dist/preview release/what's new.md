@@ -112,6 +112,7 @@
 - Added absolute scaling and rotation getters ([haroldma](https://github.com/haroldma))
 - Added `BILLBOARDMODE_USE_POSITION` flag to billboards allowing use of camera positioning instead of orientation for mesh rotation ([delaneyj](https://github.com/delaneyj))
 - Added accessor functions for `SubMesh._materialDefines` ([Popov72](https://github.com/Popov72))
+- Added the `useVertexAlpha` options to `MeshBuilder.CreateDashedLines` ([Popov72](https://github.com/Popov72))
 
 ### Physics
 
