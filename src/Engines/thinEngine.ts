@@ -1590,7 +1590,8 @@ export class ThinEngine {
         }
     }
 
-    private _bindIndexBufferWithCache(indexBuffer: Nullable<DataBuffer>): void {
+    /** @hidden */
+    public _bindIndexBufferWithCache(indexBuffer: Nullable<DataBuffer>): void {
         if (indexBuffer == null) {
             return;
         }
@@ -3141,7 +3142,7 @@ export class ThinEngine {
             this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_T, this._getTextureWrapMode(wrapV), texture);
             texture._cachedWrapV = wrapV;
         }
-        if (wrapR) {
+        if ((texture.is2DArray || texture.is3D) && wrapR) {
             this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_R, this._getTextureWrapMode(wrapR), texture);
             texture._cachedWrapR = wrapR;
         }
