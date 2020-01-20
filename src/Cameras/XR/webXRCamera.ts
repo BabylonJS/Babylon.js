@@ -85,12 +85,6 @@ export class WebXRCamera extends FreeCamera {
         }
     }
 
-    /**
-     * @hidden
-     * Is the camera in debug mode. Used when using an emulator
-     */
-    public _debugMode = false;
-
     /** @hidden */
     public _updateForDualEyeDebugging(/*pupilDistance = 0.01*/) {
         // Create initial camera rigs
@@ -250,10 +244,6 @@ export class WebXRCamera extends FreeCamera {
                 currentRig.viewport.height = viewport.height / height;
                 currentRig.viewport.x = viewport.x / width;
                 currentRig.viewport.y = viewport.y / height;
-            }
-            // if set to debug mode, render both eyes
-            if (this._debugMode) {
-                this._updateForDualEyeDebugging();
             }
 
             // Set cameras to render to the session's render target
