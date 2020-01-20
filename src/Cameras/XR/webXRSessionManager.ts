@@ -139,17 +139,18 @@ export class WebXRSessionManager implements IDisposable {
 
             // handle when the session is ended (By calling session.end or device ends its own session eg. pressing home button on phone)
             this.session.addEventListener("end", () => {
+                const engine = this.scene.getEngine();
                 this._sessionEnded = true;
                 // Remove render target texture and notify frame obervers
                 this._rttProvider = null;
 
                 // Restore frame buffer to avoid clear on xr framebuffer after session end
-                this.scene.getEngine().restoreDefaultFramebuffer();
+                engine.restoreDefaultFramebuffer();
 
                 // Need to restart render loop as after the session is ended the last request for new frame will never call callback
-                this.scene.getEngine().customAnimationFrameRequester = null;
+                engine.customAnimationFrameRequester = null;
                 this.onXRSessionEnded.notifyObservers(null);
-                this.scene.getEngine()._renderLoop();
+                engine._renderLoop();
             }, { once: true });
             return this.session;
         });
@@ -157,11 +158,11 @@ export class WebXRSessionManager implements IDisposable {
 
     /**
      * Sets the reference space on the xr session
-     * @param referenceSpace space to set
+     * @param referenceSpaceType space to set
      * @returns a promise that will resolve once the reference space has been set
      */
-    public setReferenceSpaceAsync(referenceSpace: XRReferenceSpaceType = "local-floor"): Promise<XRReferenceSpace> {
-        return this.session.requestReferenceSpace(referenceSpace).then((referenceSpace: XRReferenceSpace) => {
+    public setReferenceSpaceTypeAsync(referenceSpaceType: XRReferenceSpaceType = "local-floor"): Promise<XRReferenceSpace> {
+        return this.session.requestReferenceSpace(referenceSpaceType).then((referenceSpace: XRReferenceSpace) => {
             return referenceSpace;
         }, (rejectionReason) => {
             Logger.Error("XR.requestReferenceSpace failed for the following reason: ");

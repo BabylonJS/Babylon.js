@@ -110,7 +110,7 @@ export class WebXRExperienceHelper implements IDisposable {
         return this.sessionManager.isSessionSupportedAsync(sessionMode).then(() => {
             return this.sessionManager.initializeSessionAsync(sessionMode, sessionCreationOptions);
         }).then(() => {
-            return this.sessionManager.setReferenceSpaceAsync(referenceSpaceType);
+            return this.sessionManager.setReferenceSpaceTypeAsync(referenceSpaceType);
         }).then(() => {
             return renderTarget.initializeXRLayerAsync(this.sessionManager.session);
         }).then(() => {
