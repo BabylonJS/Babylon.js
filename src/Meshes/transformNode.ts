@@ -1168,6 +1168,10 @@ export class TransformNode extends Node {
         return this._worldMatrix;
     }
 
+    /**
+     * Resets this nodeTransform's local matrix to Matrix.Identity().
+     * @param independentOfChildren indicates if all child nodeTransform's world-space transform should be preserved.
+     */
     public resetLocalMatrix(independentOfChildren : boolean = true): void
     {
         this.computeWorldMatrix();
