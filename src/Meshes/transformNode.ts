@@ -1177,7 +1177,7 @@ export class TransformNode extends Node {
         this.computeWorldMatrix();
         if (independentOfChildren) {
             let children = this.getChildren();
-            for(let i = 0; i < children.length; ++i){
+            for (let i = 0; i < children.length; ++i) {
                 let child = children[i] as TransformNode;
                 if (child) {
                     child.computeWorldMatrix();
