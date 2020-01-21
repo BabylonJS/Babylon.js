@@ -1168,6 +1168,42 @@ export class TransformNode extends Node {
         return this._worldMatrix;
     }
 
+    /**
+     * Resets this nodeTransform's local matrix to Matrix.Identity().
+     * @param independentOfChildren indicates if all child nodeTransform's world-space transform should be preserved.
+     */
+    public resetLocalMatrix(independentOfChildren : boolean = true): void
+    {
+        this.computeWorldMatrix();
+        if (independentOfChildren) {
+            let children = this.getChildren();
+            for (let i = 0; i < children.length; ++i) {
+                let child = children[i] as TransformNode;
+                if (child) {
+                    child.computeWorldMatrix();
+                    let bakedMatrix = TmpVectors.Matrix[0];
+                    child._localMatrix.multiplyToRef(this._localMatrix, bakedMatrix);
+                    let tmpRotationQuaternion = TmpVectors.Quaternion[0];
+                    bakedMatrix.decompose(child.scaling, tmpRotationQuaternion, child.position);
+                    if (child.rotationQuaternion) {
+                        child.rotationQuaternion = tmpRotationQuaternion;
+                    } else {
+                        tmpRotationQuaternion.toEulerAnglesToRef(child.rotation);
+                    }
+                }
+            }
+        }
+        this.scaling.copyFromFloats(1, 1, 1);
+        this.position.copyFromFloats(0, 0, 0);
+        this.rotation.copyFromFloats(0, 0, 0);
+
+        //only if quaternion is already set
+        if (this.rotationQuaternion) {
+            this.rotationQuaternion = Quaternion.Identity();
+        }
+        this._worldMatrix = Matrix.Identity();
+    }
+
     protected _afterComputeWorldMatrix(): void {
     }
 
