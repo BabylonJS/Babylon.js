@@ -38,7 +38,7 @@ export interface ITexturePackerOptions{
     /**
 	 * number of columns if using custom column count layout(2).  This defaults to 4.
 	 */
-    colcount?: number;
+    colnum?: number;
 
     /**
 	 * flag to update the input meshes to the new packed texture after compilation. Defaults to true.
@@ -147,7 +147,9 @@ export class TexturePacker{
         this.options.layout = this.options.layout || TexturePacker.LAYOUT_STRIP;
 
         if (this.options.layout === TexturePacker.LAYOUT_COLNUM) {
-            this.options.colcount = this.options.colcount || 8;
+            this.options.colnum = this.options.colnum || 8;
+        }else{
+            this.options.colnum = 1;
         }
 
         this.options.updateInputMeshes = this.options.updateInputMeshes || true;
@@ -371,6 +373,15 @@ export class TexturePacker{
                 let size = (baseSize * sqrtCount) + (2 * padding * sqrtCount);
                 return new Vector2(size, size);
             break;
+            case 2 :
+                //COLNUM
+                let cols = this.options.colnum || 1;
+                let rowCnt = Math.max(1, Math.ceil(meshLength / cols));
+                return new Vector2(
+                    (baseSize * cols) + (2 * padding * cols),
+                    (baseSize * rowCnt) + (2 * padding * rowCnt)
+                );
+            break;
         }
 
         return Vector2.Zero();
@@ -417,7 +428,7 @@ export class TexturePacker{
     private _getFrameOffset(index: number): Vector2 {
 
         let meshLength = this.meshes.length;
-        let uvStep;
+        let uvStep, yStep, xStep;
 
         switch (this.options.layout){
             case 0 :
@@ -431,10 +442,19 @@ export class TexturePacker{
             case 1 :
                 //POWER2
                 let sqrtCount = Math.max(2, Math.ceil(Math.sqrt(meshLength)));
-                let yStep = Math.floor(index / sqrtCount);
-                let xStep = index - (yStep * sqrtCount);
+                yStep = Math.floor(index / sqrtCount);
+                xStep = index - (yStep * sqrtCount);
                 uvStep = 1 / sqrtCount;
                 return new Vector2(xStep * uvStep , yStep * uvStep);
+            break;
+            case 2 :
+                //COLNUM
+                let cols = this.options.colnum || 1;
+                let rowCnt = Math.max(1, Math.ceil(meshLength / cols));
+                xStep = Math.floor(index / rowCnt);
+                yStep = index - (xStep * rowCnt);
+                uvStep = new Vector2(1 / cols, 1 / rowCnt);               
+                return new Vector2(xStep * uvStep.x , yStep * uvStep.y);
             break;
         }
 
