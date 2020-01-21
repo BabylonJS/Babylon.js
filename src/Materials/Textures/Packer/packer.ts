@@ -126,7 +126,7 @@ export class TexturePacker{
     public frames: TexturePackerFrame[];
 
     /** The List of textures to purge from memory after compilation */
-    private _disposeList: Texture[];
+    private _disposeList: (Texture | DynamicTexture)[];  
 
     /** The padding value from Math.ceil(frameSize * paddingRatio) */
     private _paddingValue: number;
@@ -210,7 +210,7 @@ export class TexturePacker{
                     if (this.options.map) {
                         for (let j = 0; j < this.options.map.length; j++) {
                             let index: string = this.options.map[j];
-                            let t: Texture = (mat as any)[index];
+                            let t: (Texture | DynamicTexture) = (mat as any)[index];
 
                             if (t !== null) {
                                 if (!(this.sets as any)[this.options.map[j]]) {
@@ -339,8 +339,17 @@ export class TexturePacker{
                     updateDt();
 
                 }else {
-                    let img = new Image();
-                    img.src = (mat as any)[setName]!.url;
+                    
+                    let setTexture = (mat as any)[setName];
+                    let img = new Image(); 
+                    
+                    if(setTexture instanceof DynamicTexture){
+                        img.src = setTexture.getContext().canvas.toDataURL("image/png");
+                    }else{
+                        img.src = setTexture!.url;
+                    }                    
+                    
+                    
                     img.onload = () => {
                         tcx.fillStyle = 'rgba(0,0,0,0)';
                         tcx.fillRect(0, 0, tcs, tcs);
