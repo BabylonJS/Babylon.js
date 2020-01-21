@@ -1,12 +1,3 @@
-//import { Engine } from "../../../Engines/engine";
-//import { Constants } from "../../../Engines/constants";
-//import { AbstractMesh } from "../../../Meshes/abstractMesh";
-//import { VertexBuffer } from "../../../Meshes/buffer";
-//import { Scene } from "../../../scene";
-//import { Material } from "../../material";
-//import { Texture } from "../texture";
-//import { DynamicTexture } from "../dynamicTexture";
-//import { Nullable } from "../../../types";
 import { Vector2 } from "../../../Maths/math.vector";
 
 /**
