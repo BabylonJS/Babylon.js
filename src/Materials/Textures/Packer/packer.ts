@@ -8,6 +8,7 @@ import { Texture } from "../texture";
 import { DynamicTexture } from "../dynamicTexture";
 import { Nullable } from "../../../types";
 import { Vector2 } from "../../../Maths/math.vector";
+import { Color3, Color4 } from "../../../Maths/math.color";
 import { TexturePackerFrame } from "./frame";
 
 /**
@@ -69,6 +70,16 @@ export interface ITexturePackerOptions{
 	 * Ratio of the value to add padding wise to each cell.  Defaults to 0.0115
 	 */
     paddingRatio?: number;
+    
+    /**
+	 * Number that declares the fill method for the padding gutter.
+	 */
+    paddingMode?: number;
+    
+    /**
+	 * If in SUBUV_COLOR padding mode what color to use.
+	 */
+    paddingColor?: Color3 | Color4;
 
 }
 
@@ -78,12 +89,20 @@ export interface ITexturePackerOptions{
  */
 export class TexturePacker{
 
-    /** mag = nearest and min = nearest and mip = nearest */
+    /** Packer Layout Constant 0 */
     public static readonly LAYOUT_STRIP = Constants.LAYOUT_STRIP;
-    /** mag = nearest and min = linear and mip = nearest */
+    /** Packer Layout Constant 1 */
     public static readonly LAYOUT_POWER2 = Constants.LAYOUT_POWER2;
-    /** mag = nearest and min = linear and mip = linear */
+    /** Packer Layout Constant 2 */
     public static readonly LAYOUT_COLNUM = Constants.LAYOUT_COLNUM;
+    
+    /** Packer Layout Constant 0 */
+    public static readonly SUBUV_WRAP = Constants.SUBUV_WRAP;
+    /** Packer Layout Constant 1 */
+    public static readonly SUBUV_EXTEND = Constants.SUBUV_EXTEND;
+    /** Packer Layout Constant 2 */
+    public static readonly SUBUV_COLOR = Constants.SUBUV_COLOR;
+    
 
     /** The Name of the Texture Package */
     public name: string;
@@ -148,8 +167,6 @@ export class TexturePacker{
 
         if (this.options.layout === TexturePacker.LAYOUT_COLNUM) {
             this.options.colnum = this.options.colnum || 8;
-        }else{
-            this.options.colnum = 1;
         }
 
         this.options.updateInputMeshes = this.options.updateInputMeshes || true;
@@ -170,6 +187,12 @@ export class TexturePacker{
         //Make it an even padding Number.
         if (this._paddingValue % 2 !== 0) {
             this._paddingValue++;
+        }
+        
+        this.options.paddingMode = this.options.paddingMode || TexturePacker.SUBUV_WRAP;
+        
+        if (this.options.paddingMode === TexturePacker.SUBUV_COLOR) {
+            this.options.paddingColor = this.options.paddingColor || new Color4(0,0,0,1.0);
         }
 
         this.sets = {};
@@ -324,21 +347,112 @@ export class TexturePacker{
                         tempTexture.update(false);
 
                         tcx.setTransform(1, 0, 0, -1, 0, 0);
-
                         let cellOffsets = [ 0, 0, 1, 0, 1, 1, 0, 1, -1, 1, -1, 0, -1 - 1, 0, -1, 1, -1];
-                        for (let i = 0; i < 9; i++) {
-                            tcx.drawImage(
-                            img,
-                            0,
-                            0,
-                            img.width,
-                            img.height,
-                            (padding) + (baseSize * cellOffsets[i]),
-                            ((padding) + (baseSize * cellOffsets[i + 1])) - tcs,
-                            baseSize,
-                            baseSize
-                            );
+                        switch(this.options.paddingMode){
+                            //Wrap Mode
+                            case 0:                                
+                                for(let i = 0; i < 9; i++) {
+                                    tcx.drawImage(
+                                        img,
+                                        0,
+                                        0,
+                                        img.width,
+                                        img.height,
+                                        (padding) + (baseSize * cellOffsets[i]),
+                                        ((padding) + (baseSize * cellOffsets[i + 1])) - tcs,
+                                        baseSize,
+                                        baseSize
+                                    );
+                                }
+                            break;
+                            //Extend Mode
+                            case 1: 
+                                for(let i = 0; i < padding; i++){
+                                    tcx.drawImage(
+                                        img,
+                                        0,
+                                        0,
+                                        img.width,
+                                        img.height,
+                                        i + (baseSize * cellOffsets[0]),
+                                        padding - tcs,
+                                        baseSize,
+                                        baseSize
+                                    );
+                                    
+                                    tcx.drawImage(
+                                        img,
+                                        0,
+                                        0,
+                                        img.width,
+                                        img.height,
+                                        (padding * 2) - i,
+                                        padding - tcs,
+                                        baseSize,
+                                        baseSize
+                                    );
+                                    
+                                    tcx.drawImage(
+                                        img,
+                                        0,
+                                        0,
+                                        img.width,
+                                        img.height,
+                                        padding,
+                                        i - tcs,
+                                        baseSize,
+                                        baseSize
+                                    );
+                                    
+                                    tcx.drawImage(
+                                        img,
+                                        0,
+                                        0,
+                                        img.width,
+                                        img.height,
+                                        padding,
+                                        (padding * 2) - i - tcs,
+                                        baseSize,
+                                        baseSize
+                                    );                                    
+                                }                                                           
+                                
+                                tcx.drawImage(
+                                    img,
+                                    0,
+                                    0,
+                                    img.width,
+                                    img.height,
+                                    (padding) + (baseSize * cellOffsets[0]),
+                                    ((padding) + (baseSize * cellOffsets[1])) - tcs,
+                                    baseSize,
+                                    baseSize
+                                );
+                            
+                            break;
+                            //Color Mode
+                            case 2:
+                            
+                               tcx.fillStyle = (this.options.paddingColor || Color3.Black()).toHexString();
+                               tcx.fillRect(0, 0, tcs, -tcs);
+                               tcx.clearRect(padding, padding, baseSize, baseSize);
+                               tcx.drawImage(
+                                    img,
+                                    0,
+                                    0,
+                                    img.width,
+                                    img.height,
+                                    (padding) + (baseSize * cellOffsets[0]),
+                                    ((padding) + (baseSize * cellOffsets[1])) - tcs,
+                                    baseSize,
+                                    baseSize
+                                );
+                            
+                            
+                            break;
                         }
+
+                        
 
                         tcx.setTransform(1, 0, 0, 1, 0, 0);
 
@@ -407,7 +521,7 @@ export class TexturePacker{
                 baseSize / dtSize.y,
             );
 
-            let pOffset: Vector2 = dtUnits.clone().scale(padding * 0.5);
+            let pOffset: Vector2 = dtUnits.clone().scale(padding);
             let frameOffset: Vector2 = this._getFrameOffset(i);
             let offset: Vector2 = frameOffset.add(pOffset);
 
