@@ -55,6 +55,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
             return -1;
         });
 
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
         this.forceUpdate();
     }
 
