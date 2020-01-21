@@ -41,6 +41,23 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
         this.forceUpdate();
     }
 
+    checkForReOrder() {
+        let gradientBlock = this.props.block as GradientBlock;
+        gradientBlock.colorSteps.sort((a, b) => {
+            if (a.step === b.step) {
+                return 0;
+            }
+
+            if (a.step > b.step) {
+                return 1;
+            }
+
+            return -1;
+        });
+
+        this.forceUpdate();
+    }
+
     render() {
         let gradientBlock = this.props.block as GradientBlock;
       
@@ -53,8 +70,9 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
                         gradientBlock.colorSteps.map((c, i) => {
                             return (
                                 <GradientStepComponent globalState={this.props.globalState} 
+                                onCheckForReOrder={() => this.checkForReOrder()}
                                 onUpdateStep={() => this.forceRebuild()}
-                                key={c.step} lineIndex={i} step={c} onDelete={() => this.deleteStep(c)}/>
+                                key={"step-" + i} lineIndex={i} step={c} onDelete={() => this.deleteStep(c)}/>
                             )
                         })
                     }

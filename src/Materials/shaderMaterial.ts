@@ -651,6 +651,10 @@ export class ShaderMaterial extends Material {
                 }
             }
 
+            if (this.getScene().activeCamera && this._options.uniforms.indexOf("cameraPosition") !== -1) {
+                this._effect.setVector3("cameraPosition", this.getScene().activeCamera!.globalPosition);
+            }
+
             // Bones
             MaterialHelper.BindBonesParameters(mesh, this._effect);
 

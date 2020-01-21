@@ -9470,6 +9470,10 @@ declare module BABYLON {
      */
     export class ShadowGenerator implements IShadowGenerator {
         /**
+         * Name of the shadow generator class
+         */
+        static CLASSNAME: string;
+        /**
          * Shadow generator mode None: no filtering applied.
          */
         static readonly FILTER_NONE: number;
@@ -9559,7 +9563,7 @@ declare module BABYLON {
          * Can be used to update internal effect state (that you can get from the onAfterShadowMapRenderObservable)
          */
         onAfterShadowMapRenderMeshObservable: Observable<Mesh>;
-        private _bias;
+        protected _bias: number;
         /**
          * Gets the bias: offset applied on the depth preventing acnea (in light direction).
          */
@@ -9568,7 +9572,7 @@ declare module BABYLON {
          * Sets the bias: offset applied on the depth preventing acnea (in light direction).
          */
         set bias(bias: number);
-        private _normalBias;
+        protected _normalBias: number;
         /**
          * Gets the normalBias: offset applied on the depth preventing acnea (along side the normal direction and proportinal to the light/normal angle).
          */
@@ -9577,7 +9581,7 @@ declare module BABYLON {
          * Sets the normalBias: offset applied on the depth preventing acnea (along side the normal direction and proportinal to the light/normal angle).
          */
         set normalBias(normalBias: number);
-        private _blurBoxOffset;
+        protected _blurBoxOffset: number;
         /**
          * Gets the blur box offset: offset applied during the blur pass.
          * Only useful if useKernelBlur = false
@@ -9588,7 +9592,7 @@ declare module BABYLON {
          * Only useful if useKernelBlur = false
          */
         set blurBoxOffset(value: number);
-        private _blurScale;
+        protected _blurScale: number;
         /**
          * Gets the blur scale: scale of the blurred texture compared to the main shadow map.
          * 2 means half of the size.
@@ -9599,7 +9603,7 @@ declare module BABYLON {
          * 2 means half of the size.
          */
         set blurScale(value: number);
-        private _blurKernel;
+        protected _blurKernel: number;
         /**
          * Gets the blur kernel: kernel size of the blur pass.
          * Only useful if useKernelBlur = true
@@ -9610,7 +9614,7 @@ declare module BABYLON {
          * Only useful if useKernelBlur = true
          */
         set blurKernel(value: number);
-        private _useKernelBlur;
+        protected _useKernelBlur: boolean;
         /**
          * Gets whether the blur pass is a kernel blur (if true) or box blur.
          * Only useful in filtered mode (useBlurExponentialShadowMap...)
@@ -9621,7 +9625,7 @@ declare module BABYLON {
          * Only useful in filtered mode (useBlurExponentialShadowMap...)
          */
         set useKernelBlur(value: boolean);
-        private _depthScale;
+        protected _depthScale: number;
         /**
          * Gets the depth scale used in ESM mode.
          */
@@ -9631,7 +9635,8 @@ declare module BABYLON {
          * This can override the scale stored on the light.
          */
         set depthScale(value: number);
-        private _filter;
+        protected _validateFilter(filter: number): number;
+        protected _filter: number;
         /**
          * Gets the current mode of the shadow generator (normal, PCF, ESM...).
          * The returned value is a number equal to one of the available mode defined in ShadowMap.FILTER_x like _FILTER_NONE
@@ -9694,7 +9699,7 @@ declare module BABYLON {
          * Sets the current filter to "PCF" (percentage closer filtering).
          */
         set usePercentageCloserFiltering(value: boolean);
-        private _filteringQuality;
+        protected _filteringQuality: number;
         /**
          * Gets the PCF or PCSS Quality.
          * Only valid if usePercentageCloserFiltering or usePercentageCloserFiltering is true.
@@ -9713,7 +9718,7 @@ declare module BABYLON {
          * Sets the current filter to "PCSS" (contact hardening).
          */
         set useContactHardeningShadow(value: boolean);
-        private _contactHardeningLightSizeUVRatio;
+        protected _contactHardeningLightSizeUVRatio: number;
         /**
          * Gets the Light Size (in shadow map uv unit) used in PCSS to determine the blocker search area and the penumbra size.
          * Using a ratio helps keeping shape stability independently of the map size.
@@ -9734,7 +9739,7 @@ declare module BABYLON {
          * Only valid if useContactHardeningShadow is true.
          */
         set contactHardeningLightSizeUVRatio(contactHardeningLightSizeUVRatio: number);
-        private _darkness;
+        protected _darkness: number;
         /** Gets or sets the actual darkness of a shadow */
         get darkness(): number;
         set darkness(value: number);
@@ -9750,7 +9755,7 @@ declare module BABYLON {
          * @returns the shadow generator allowing fluent coding.
          */
         setDarkness(darkness: number): ShadowGenerator;
-        private _transparencyShadow;
+        protected _transparencyShadow: boolean;
         /** Gets or sets the ability to have transparent shadow  */
         get transparencyShadow(): boolean;
         set transparencyShadow(value: boolean);
@@ -9760,8 +9765,8 @@ declare module BABYLON {
          * @returns the shadow generator allowing fluent coding
          */
         setTransparencyShadow(transparent: boolean): ShadowGenerator;
-        private _shadowMap;
-        private _shadowMap2;
+        protected _shadowMap: Nullable<RenderTargetTexture>;
+        protected _shadowMap2: Nullable<RenderTargetTexture>;
         /**
          * Gets the main RTT containing the shadow map (usually storing depth from the light point of view).
          * @returns The render target texture if present otherwise, null
@@ -9793,10 +9798,9 @@ declare module BABYLON {
         removeShadowCaster(mesh: AbstractMesh, includeDescendants?: boolean): ShadowGenerator;
         /**
          * Controls the extent to which the shadows fade out at the edge of the frustum
-         * Used only by directionals and spots
          */
         frustumEdgeFalloff: number;
-        private _light;
+        protected _light: IShadowLight;
         /**
          * Returns the associated light object.
          * @returns the light generating the shadow
@@ -9808,26 +9812,26 @@ declare module BABYLON {
          * It might on the other hand introduce peter panning.
          */
         forceBackFacesOnly: boolean;
-        private _scene;
-        private _lightDirection;
-        private _effect;
-        private _viewMatrix;
-        private _projectionMatrix;
-        private _transformMatrix;
-        private _cachedPosition;
-        private _cachedDirection;
-        private _cachedDefines;
-        private _currentRenderID;
-        private _boxBlurPostprocess;
-        private _kernelBlurXPostprocess;
-        private _kernelBlurYPostprocess;
-        private _blurPostProcesses;
-        private _mapSize;
-        private _currentFaceIndex;
-        private _currentFaceIndexCache;
-        private _textureType;
-        private _defaultTextureMatrix;
-        private _storedUniqueId;
+        protected _scene: Scene;
+        protected _lightDirection: Vector3;
+        protected _effect: Effect;
+        protected _viewMatrix: Matrix;
+        protected _projectionMatrix: Matrix;
+        protected _transformMatrix: Matrix;
+        protected _cachedPosition: Vector3;
+        protected _cachedDirection: Vector3;
+        protected _cachedDefines: string;
+        protected _currentRenderID: number;
+        protected _boxBlurPostprocess: Nullable<PostProcess>;
+        protected _kernelBlurXPostprocess: Nullable<PostProcess>;
+        protected _kernelBlurYPostprocess: Nullable<PostProcess>;
+        protected _blurPostProcesses: PostProcess[];
+        protected _mapSize: number;
+        protected _currentFaceIndex: number;
+        protected _currentFaceIndexCache: number;
+        protected _textureType: number;
+        protected _defaultTextureMatrix: Matrix;
+        protected _storedUniqueId: Nullable<number>;
         /** @hidden */
         static _SceneComponentInitialization: (scene: Scene) => void;
         /**
@@ -9840,12 +9844,14 @@ declare module BABYLON {
          * @param usefulFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
          */
         constructor(mapSize: number, light: IShadowLight, usefulFloatFirst?: boolean);
-        private _initializeGenerator;
-        private _initializeShadowMap;
-        private _initializeBlurRTTAndPostProcesses;
-        private _renderForShadowMap;
-        private _renderSubMeshForShadowMap;
-        private _applyFilterValues;
+        protected _initializeGenerator(): void;
+        protected _createTargetRenderTexture(): void;
+        protected _initializeShadowMap(): void;
+        protected _initializeBlurRTTAndPostProcesses(): void;
+        protected _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void;
+        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect): void;
+        protected _renderSubMeshForShadowMap(subMesh: SubMesh): void;
+        protected _applyFilterValues(): void;
         /**
          * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
          * @param onCompiled Callback triggered at the and of the effects compilation
@@ -9862,6 +9868,7 @@ declare module BABYLON {
         forceCompilationAsync(options?: Partial<{
             useInstances: boolean;
         }>): Promise<void>;
+        protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void;
         /**
          * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
          * @param subMesh The submesh we want to render in the shadow map
@@ -9893,8 +9900,8 @@ declare module BABYLON {
          * Cube and 2D textures for instance.
          */
         recreateShadowMap(): void;
-        private _disposeBlurPostProcesses;
-        private _disposeRTTandPostProcesses;
+        protected _disposeBlurPostProcesses(): void;
+        protected _disposeRTTandPostProcesses(): void;
         /**
          * Disposes the ShadowGenerator.
          * Returns nothing.
@@ -9909,9 +9916,10 @@ declare module BABYLON {
          * Parses a serialized ShadowGenerator and returns a new ShadowGenerator.
          * @param parsedShadowGenerator The JSON object to parse
          * @param scene The scene to create the shadow map for
+         * @param constr A function that builds a shadow generator or undefined to create an instance of the default shadow generator
          * @returns The parsed shadow generator
          */
-        static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator;
+        static Parse(parsedShadowGenerator: any, scene: Scene, constr?: (mapSize: number, light: IShadowLight) => ShadowGenerator): ShadowGenerator;
     }
 }
 declare module BABYLON {
@@ -31240,7 +31248,8 @@ declare module BABYLON {
          */
         updateArrayBuffer(data: Float32Array): void;
         private _vertexAttribPointer;
-        private _bindIndexBufferWithCache;
+        /** @hidden */
+        _bindIndexBufferWithCache(indexBuffer: Nullable<DataBuffer>): void;
         private _bindVertexBuffersAttributes;
         /**
          * Records a vertex array object
@@ -33226,6 +33235,8 @@ declare module BABYLON {
         private _deltaTime;
         /** @hidden */
         _drawCalls: PerfCounter;
+        /** Gets or sets the tab index to set to the rendering canvas. 1 is the minimum value to set to be able to capture keyboard events */
+        canvasTabIndex: number;
         /**
          * Turn this value on if you want to pause FPS computation when in background
          */
@@ -42528,16 +42539,16 @@ declare module BABYLON {
         /**
          * Initializes an xr session
          * @param xrSessionMode mode to initialize
-         * @param optionalFeatures defines optional values to pass to the session builder
+         * @param xrSessionInit defines optional and required values to pass to the session builder
          * @returns a promise which will resolve once the session has been initialized
          */
-        initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures?: any): Promise<XRSession>;
+        initializeSessionAsync(xrSessionMode?: XRSessionMode, xrSessionInit?: XRSessionInit): Promise<XRSession>;
         /**
          * Sets the reference space on the xr session
          * @param referenceSpace space to set
          * @returns a promise that will resolve once the reference space has been set
          */
-        setReferenceSpaceAsync(referenceSpace: XRReferenceSpaceType): Promise<void>;
+        setReferenceSpaceAsync(referenceSpace?: XRReferenceSpaceType): Promise<XRReferenceSpace>;
         /**
          * Resets the reference space to the one started the session
          */
@@ -42550,9 +42561,8 @@ declare module BABYLON {
         updateRenderStateAsync(state: XRRenderState): Promise<void>;
         /**
          * Starts rendering to the xr layer
-         * @returns a promise that will resolve once rendering has started
          */
-        startRenderingToXRAsync(): Promise<void>;
+        runXRRenderLoop(): void;
         /**
          * Gets the correct render target texture to be rendered this frame for this eye
          * @param eye the eye for which to get the render target
@@ -42569,7 +42579,7 @@ declare module BABYLON {
          * @param sessionMode session mode to check if supported eg. immersive-vr
          * @returns true if supported
          */
-        supportsSessionAsync(sessionMode: XRSessionMode): Promise<boolean>;
+        isSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean>;
         /**
          * Creates a WebXRRenderTarget object for the XR session
          * @param onStateChangedObservable optional, mechanism for enabling/disabling XR rendering canvas, used only on Web
@@ -42829,7 +42839,7 @@ declare module BABYLON {
          * @param renderTarget the output canvas that will be used to enter XR mode
          * @returns promise that resolves after xr mode has entered
          */
-        enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget): Promise<WebXRSessionManager>;
+        enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget?: WebXRRenderTarget): Promise<WebXRSessionManager>;
         /**
          * Disposes of the experience helper
          */
@@ -43821,7 +43831,7 @@ declare module BABYLON {
          * Using this object it is possible to get click events and trackpad changes of the
          * webxr controller that is currently being used.
          */
-        gamepadController?: WebXRAbstractMotionController;
+        motionController?: WebXRAbstractMotionController;
         /**
          * Event that fires when the controller is removed/disposed
          */
@@ -43949,13 +43959,13 @@ declare module BABYLON {
         /**
          * attach this feature
          *
-         * @returns true if successful.
+         * @returns true if successful, false is failed or already attached
          */
         attach(): boolean;
         /**
          * detach this feature.
          *
-         * @returns true if successful.
+         * @returns true if successful, false if failed or already detached
          */
         detach(): boolean;
         /**
@@ -44044,6 +44054,22 @@ declare module BABYLON {
          * Default color of the laser pointer
          */
         lasterPointerDefaultColor: Color3;
+        /**
+         * Should the laser pointer be displayed
+         */
+        displayLaserPointer: boolean;
+        /**
+         * Should the selection mesh be displayed (The ring at the end of the laser pointer)
+         */
+        displaySelectionMesh: boolean;
+        /**
+         * Disable lighting on the laser pointer (so it will always be visible)
+         */
+        disablePointerLighting: boolean;
+        /**
+         * Disable lighting on the selection mesh (so it will always be visible)
+         */
+        disableSelectionMeshLighting: boolean;
         private static _idCounter;
         private _tmpRay;
         private _controllers;
@@ -44241,6 +44267,7 @@ declare module BABYLON {
          * * The parameter `dashSize` is the size of the dashes relatively the dash number (positive float, default 3)
          * * The parameter `gapSize` is the size of the gap between two successive dashes relatively the dash number (positive float, default 1)
          * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need the alpha blending (faster)
          * * When updating an instance, remember that only point positions can change, not the number of points
          * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
          * @param name defines the name of the mesh
@@ -44256,6 +44283,7 @@ declare module BABYLON {
             dashNb?: number;
             updatable?: boolean;
             instance?: LinesMesh;
+            useVertexAlpha?: boolean;
         }, scene?: Nullable<Scene>): LinesMesh;
     }
 }
@@ -44868,6 +44896,11 @@ declare module BABYLON {
          * @param pickedColor the new laser color when picked mesh detected
          */
         setLaserColor(color: Color3, pickedColor?: Color3): void;
+        /**
+         * Set lighting enabled / disabled on the laser pointer of both controllers
+         * @param enabled should the lighting be enabled on the laser pointer
+         */
+        setLaserLightingState(enabled?: boolean): void;
         /**
          * Permanently set new colors for the gaze pointer
          * @param color the new gaze color
@@ -54266,12 +54299,12 @@ declare module BABYLON {
      * Documentation : https://doc.babylonjs.com/babylon101/cascadedShadows
      * Based on: https://github.com/TheRealMJP/Shadows and https://johanmedestrom.wordpress.com/2016/03/18/opengl-cascaded-shadow-maps/
      */
-    export class CascadedShadowGenerator implements IShadowGenerator {
+    export class CascadedShadowGenerator extends ShadowGenerator {
         private static readonly frustumCornersNDCSpace;
         /**
          * Name of the CSM class
          */
-        static readonly CLASSNAME: string;
+        static CLASSNAME: string;
         /**
          * Defines the default number of cascades used by the CSM.
          */
@@ -54284,175 +54317,11 @@ declare module BABYLON {
          * Defines the maximum number of cascades used by the CSM.
          */
         static readonly MAX_CASCADES_COUNT: number;
-        /**
-         * Shadow generator mode None: no filtering applied.
-         */
-        static readonly FILTER_NONE: number;
-        /**
-         * Shadow generator mode PCF: Percentage Closer Filtering
-         * benefits from Webgl 2 shadow samplers. Fallback to Poisson Sampling in Webgl 1
-         * (https://developer.nvidia.com/gpugems/GPUGems/gpugems_ch11.html)
-         */
-        static readonly FILTER_PCF: number;
-        /**
-         * Shadow generator mode PCSS: Percentage Closering Soft Shadow.
-         * benefits from Webgl 2 shadow samplers. Fallback to Poisson Sampling in Webgl 1
-         * Contact Hardening
-         */
-        static readonly FILTER_PCSS: number;
-        /**
-         * Reserved for PCF and PCSS
-         * Highest Quality.
-         *
-         * Execute PCF on a 5*5 kernel improving a lot the shadow aliasing artifacts.
-         *
-         * Execute PCSS with 32 taps blocker search and 64 taps PCF.
-         */
-        static readonly QUALITY_HIGH: number;
-        /**
-         * Reserved for PCF and PCSS
-         * Good tradeoff for quality/perf cross devices
-         *
-         * Execute PCF on a 3*3 kernel.
-         *
-         * Execute PCSS with 16 taps blocker search and 32 taps PCF.
-         */
-        static readonly QUALITY_MEDIUM: number;
-        /**
-         * Reserved for PCF and PCSS
-         * The lowest quality but the fastest.
-         *
-         * Execute PCF on a 1*1 kernel.
-         *
-         * Execute PCSS with 16 taps blocker search and 16 taps PCF.
-         */
-        static readonly QUALITY_LOW: number;
-        private static readonly _CLEARONE;
-        /**
-         * Observable triggered before the shadow is rendered. Can be used to update internal effect state
-         */
-        onBeforeShadowMapRenderObservable: Observable<Effect>;
-        /**
-         * Observable triggered after the shadow is rendered. Can be used to restore internal effect state
-         */
-        onAfterShadowMapRenderObservable: Observable<Effect>;
-        /**
-         * Observable triggered before a mesh is rendered in the shadow map.
-         * Can be used to update internal effect state (that you can get from the onBeforeShadowMapRenderObservable)
-         */
-        onBeforeShadowMapRenderMeshObservable: Observable<Mesh>;
-        /**
-         * Observable triggered after a mesh is rendered in the shadow map.
-         * Can be used to update internal effect state (that you can get from the onAfterShadowMapRenderObservable)
-         */
-        onAfterShadowMapRenderMeshObservable: Observable<Mesh>;
-        private _bias;
-        /**
-         * Gets the bias: offset applied on the depth preventing acnea (in light direction).
-         */
-        get bias(): number;
-        /**
-         * Sets the bias: offset applied on the depth preventing acnea (in light direction).
-         */
-        set bias(bias: number);
-        private _normalBias;
-        /**
-         * Gets the normalBias: offset applied on the depth preventing acnea (along side the normal direction and proportinal to the light/normal angle).
-         */
-        get normalBias(): number;
-        /**
-         * Sets the normalBias: offset applied on the depth preventing acnea (along side the normal direction and proportinal to the light/normal angle).
-         */
-        set normalBias(normalBias: number);
-        private _filter;
-        /**
-         * Gets the current mode of the shadow generator (normal, PCF, PCSS...).
-         * The returned value is a number equal to one of the available mode defined in ShadowMap.FILTER_x like _FILTER_NONE
-         */
-        get filter(): number;
-        /**
-         * Sets the current mode of the shadow generator (normal, PCF, PCSS...).
-         * The returned value is a number equal to one of the available mode defined in ShadowMap.FILTER_x like _FILTER_NONE
-         */
-        set filter(value: number);
-        /**
-         * Gets if the current filter is set to "PCF" (percentage closer filtering).
-         */
-        get usePercentageCloserFiltering(): boolean;
-        /**
-         * Sets the current filter to "PCF" (percentage closer filtering).
-         */
-        set usePercentageCloserFiltering(value: boolean);
-        private _filteringQuality;
-        /**
-         * Gets the PCF or PCSS Quality.
-         * Only valid if usePercentageCloserFiltering or usePercentageCloserFiltering is true.
-         */
-        get filteringQuality(): number;
-        /**
-         * Sets the PCF or PCSS Quality.
-         * Only valid if usePercentageCloserFiltering or usePercentageCloserFiltering is true.
-         */
-        set filteringQuality(filteringQuality: number);
-        /**
-         * Gets if the current filter is set to "PCSS" (contact hardening).
-         */
-        get useContactHardeningShadow(): boolean;
-        /**
-         * Sets the current filter to "PCSS" (contact hardening).
-         */
-        set useContactHardeningShadow(value: boolean);
-        private _contactHardeningLightSizeUVRatio;
-        /**
-         * Gets the Light Size (in shadow map uv unit) used in PCSS to determine the blocker search area and the penumbra size.
-         * Using a ratio helps keeping shape stability independently of the map size.
-         *
-         * It does not account for the light projection as it was having too much
-         * instability during the light setup or during light position changes.
-         *
-         * Only valid if useContactHardeningShadow is true.
-         */
-        get contactHardeningLightSizeUVRatio(): number;
-        /**
-         * Sets the Light Size (in shadow map uv unit) used in PCSS to determine the blocker search area and the penumbra size.
-         * Using a ratio helps keeping shape stability independently of the map size.
-         *
-         * It does not account for the light projection as it was having too much
-         * instability during the light setup or during light position changes.
-         *
-         * Only valid if useContactHardeningShadow is true.
-         */
-        set contactHardeningLightSizeUVRatio(contactHardeningLightSizeUVRatio: number);
-        private _darkness;
-        /** Gets or sets the actual darkness of a shadow */
-        get darkness(): number;
-        set darkness(value: number);
-        /**
-         * Returns the darkness value (float). This can only decrease the actual darkness of a shadow.
-         * 0 means strongest and 1 would means no shadow.
-         * @returns the darkness.
-         */
-        getDarkness(): number;
-        /**
-         * Sets the darkness value (float). This can only decrease the actual darkness of a shadow.
-         * @param darkness The darkness value 0 means strongest and 1 would means no shadow.
-         * @returns the shadow generator allowing fluent coding.
-         */
-        setDarkness(darkness: number): CascadedShadowGenerator;
+        protected _validateFilter(filter: number): number;
         /**
          * Gets or sets the actual darkness of the soft shadows while using PCSS filtering (value between 0. and 1.)
          */
         penumbraDarkness: number;
-        private _transparencyShadow;
-        /** Gets or sets the ability to have transparent shadow  */
-        get transparencyShadow(): boolean;
-        set transparencyShadow(value: boolean);
-        /**
-         * Sets the ability to have transparent shadow (boolean).
-         * @param transparent True if transparent else False
-         * @returns the shadow generator allowing fluent coding
-         */
-        setTransparencyShadow(transparent: boolean): CascadedShadowGenerator;
         private _numCascades;
         /**
          * Gets or set the number of cascades used by the CSM.
@@ -54464,13 +54333,7 @@ declare module BABYLON {
          * The trade off is that you loose some precision in the shadow rendering when enabling this setting.
          */
         stabilizeCascades: boolean;
-        private _shadowMap;
-        /**
-         * Gets the main RTT containing the shadow map (usually storing depth from the light point of view).
-         * @returns The render target texture if present otherwise, null
-         */
-        getShadowMap(): Nullable<RenderTargetTexture>;
-        protected _freezeShadowCastersBoundingInfo: boolean;
+        private _freezeShadowCastersBoundingInfo;
         private _freezeShadowCastersBoundingInfoObservable;
         /**
          * Enables or disables the shadow casters bounding info computation.
@@ -54508,39 +54371,9 @@ declare module BABYLON {
         get maxDistance(): number;
         /**
          * Gets the class name of that object
-         * @returns "ShadowGenerator"
+         * @returns "CascadedShadowGenerator"
          */
         getClassName(): string;
-        /**
-         * Helper function to add a mesh and its descendants to the list of shadow casters.
-         * @param mesh Mesh to add
-         * @param includeDescendants boolean indicating if the descendants should be added. Default to true
-         * @returns the Shadow Generator itself
-         */
-        addShadowCaster(mesh: AbstractMesh, includeDescendants?: boolean): CascadedShadowGenerator;
-        /**
-         * Helper function to remove a mesh and its descendants from the list of shadow casters
-         * @param mesh Mesh to remove
-         * @param includeDescendants boolean indicating if the descendants should be removed. Default to true
-         * @returns the Shadow Generator itself
-         */
-        removeShadowCaster(mesh: AbstractMesh, includeDescendants?: boolean): CascadedShadowGenerator;
-        /**
-         * Controls the extent to which the shadows fade out at the edge of the frustum
-         */
-        frustumEdgeFalloff: number;
-        private _light;
-        /**
-         * Returns the associated light object.
-         * @returns the light generating the shadow
-         */
-        getLight(): DirectionalLight;
-        /**
-         * If true the shadow map is generated by rendering the back face of the mesh instead of the front face.
-         * This can help with self-shadowing as the geometry making up the back of objects is slightly offset.
-         * It might on the other hand introduce peter panning.
-         */
-        forceBackFacesOnly: boolean;
         private _cascadeMinExtents;
         private _cascadeMaxExtents;
         /**
@@ -54555,17 +54388,8 @@ declare module BABYLON {
          * @returns the maximum cascade extents
          */
         getCascadeMaxExtents(cascadeIndex: number): Nullable<Vector3>;
-        private _scene;
-        private _lightDirection;
-        private _effect;
         private _cascades;
-        private _cachedDirection;
-        private _cachedDefines;
-        private _mapSize;
         private _currentLayer;
-        private _textureType;
-        private _defaultTextureMatrix;
-        private _storedUniqueId;
         private _viewSpaceFrustumsZ;
         private _viewMatrices;
         private _projectionMatrices;
@@ -54633,6 +54457,12 @@ declare module BABYLON {
          * @returns the cascade projection matrix
          */
         getCascadeProjectionMatrix(cascadeNum: number): Nullable<Matrix>;
+        /**
+         * Gets the transformation matrix corresponding to a given cascade
+         * @param cascadeNum cascade to retrieve the transformation matrix from
+         * @returns the cascade transformation matrix
+         */
+        getCascadeTransformMatrix(cascadeNum: number): Nullable<Matrix>;
         private _depthRenderer;
         /**
          * Sets the depth renderer to use when autoCalcDepthBounds is enabled.
@@ -54672,13 +54502,6 @@ declare module BABYLON {
          */
         splitFrustum(): void;
         private _splitFrustum;
-        /**
-         * Gets the CSM transformation matrix used to project the meshes into the map from the light point of view.
-         * (eq to view projection * shadow projection matrices)
-         * @param cascadeIndex index number of the cascaded shadow map
-         * @returns The transform matrix used to create the CSM shadow map
-         */
-        getCSMTransformMatrix(cascadeIndex: number): Matrix;
         private _computeMatrices;
         private _computeFrustumInWorldSpace;
         private _computeCascadeFrustum;
@@ -54694,34 +54517,11 @@ declare module BABYLON {
          * @param usefulFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
          */
         constructor(mapSize: number, light: DirectionalLight, usefulFloatFirst?: boolean);
-        private _initializeGenerator;
-        private _initializeShadowMap;
-        private _renderForShadowMap;
-        private _renderSubMeshForShadowMap;
-        private _applyFilterValues;
-        /**
-         * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
-         * @param onCompiled Callback triggered at the and of the effects compilation
-         * @param options Sets of optional options forcing the compilation with different modes
-         */
-        forceCompilation(onCompiled?: (generator: IShadowGenerator) => void, options?: Partial<{
-            useInstances: boolean;
-        }>): void;
-        /**
-         * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
-         * @param options Sets of optional options forcing the compilation with different modes
-         * @returns A promise that resolves when the compilation completes
-         */
-        forceCompilationAsync(options?: Partial<{
-            useInstances: boolean;
-        }>): Promise<void>;
-        /**
-         * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
-         * @param subMesh The submesh we want to render in the shadow map
-         * @param useInstances Defines wether will draw in the map using instances
-         * @returns true if ready otherwise, false
-         */
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        protected _initializeGenerator(): void;
+        protected _createTargetRenderTexture(): void;
+        protected _initializeShadowMap(): void;
+        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect): void;
+        protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void;
         /**
          * Prepare all the defines in a material relying on a shadow map at the specified light index.
          * @param defines Defines of the material we want to update
@@ -54742,12 +54542,6 @@ declare module BABYLON {
          */
         getTransformMatrix(): Matrix;
         /**
-         * Recreates the shadow map dependencies like RTT and post processes. This can be used during the switch between
-         * Cube and 2D textures for instance.
-         */
-        recreateShadowMap(): void;
-        private _disposeRTT;
-        /**
          * Disposes the ShadowGenerator.
          * Returns nothing.
          */
@@ -54763,7 +54557,7 @@ declare module BABYLON {
          * @param scene The scene to create the shadow map for
          * @returns The parsed shadow generator
          */
-        static Parse(parsedShadowGenerator: any, scene: Scene): CascadedShadowGenerator;
+        static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator;
     }
 }
 declare module BABYLON {
@@ -57491,7 +57285,6 @@ declare module BABYLON {
         autoConfigure(material: NodeMaterial): void;
         initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
-        private _getTextureBase;
         isReady(): boolean;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         private get _isMixed();
@@ -57730,6 +57523,8 @@ declare module BABYLON {
         private _isFinalMerger;
         private _isInput;
         protected _isUnique: boolean;
+        /** Gets or sets a boolean indicating that only one input can be connected at a time */
+        inputsAreExclusive: boolean;
         /** @hidden */
         _codeVariableName: string;
         /** @hidden */
@@ -58157,6 +57952,8 @@ declare module BABYLON {
          */
         get associatedVariableName(): string;
         set associatedVariableName(value: string);
+        /** Get the inner type (ie AutoDetect for isntance instead of the inferred one) */
+        get innerType(): NodeMaterialBlockConnectionPointTypes;
         /**
          * Gets or sets the connection point type (default is float)
          */
@@ -58358,7 +58155,6 @@ declare module BABYLON {
      */
     export class MorphTargetsBlock extends NodeMaterialBlock {
         private _repeatableContentAnchor;
-        private _repeatebleContentGenerated;
         /**
          * Create a new MorphTargetsBlock
          * @param name defines the block name
@@ -60609,13 +60405,13 @@ declare module BABYLON {
         /**
          * @constructor
          * @param name The value used by scene.getMeshByName() to do a lookup.
-         * @param generator The mesh to generate a trail.
+         * @param generator The mesh or transform node to generate a trail.
          * @param scene The scene to add this mesh to.
          * @param diameter Diameter of trailing mesh. Default is 1.
          * @param length Length of trailing mesh. Default is 60.
          * @param autoStart Automatically start trailing mesh. Default true.
          */
-        constructor(name: string, generator: AbstractMesh, scene: Scene, diameter?: number, length?: number, autoStart?: boolean);
+        constructor(name: string, generator: TransformNode, scene: Scene, diameter?: number, length?: number, autoStart?: boolean);
         /**
          * "TrailMesh"
          * @returns "TrailMesh"
@@ -60640,7 +60436,7 @@ declare module BABYLON {
          * @param newGenerator use new generator object for cloned trail mesh
          * @returns a new mesh
          */
-        clone(name: string | undefined, newGenerator: AbstractMesh): TrailMesh;
+        clone(name: string | undefined, newGenerator: TransformNode): TrailMesh;
         /**
          * Serializes this trail mesh
          * @param serializationObject object to write serialization to
@@ -69384,6 +69180,11 @@ interface XRInputSource {
     gripSpace: XRSpace | undefined;
     gamepad: Gamepad | undefined;
     profiles: Array<string>;
+}
+
+interface XRSessionInit {
+    optionalFeatures?: XRReferenceSpaceType[];
+    requiredFeatures?: XRReferenceSpaceType[];
 }
 
 interface XRSession extends XRAnchorCreator {

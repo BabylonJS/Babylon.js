@@ -221,7 +221,7 @@
             height: 100%;  
             overflow: visible; 
             pointer-events: none;
-            z-index: 1;
+            z-index: 2;
             
             .link {
                 stroke-width: 4px;    
@@ -357,6 +357,14 @@
                         font-size: 18px;
                         font-weight: bold;
                         margin: 0 10px;
+
+                        &.fat {
+                            height: 54px;
+                        }
+
+                        &.small-font {                            
+                            font-size: 17px;
+                        }
                     }
 
                     &.output-block {
