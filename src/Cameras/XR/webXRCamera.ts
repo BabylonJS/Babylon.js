@@ -73,7 +73,10 @@ export class WebXRCamera extends FreeCamera {
      * @param otherCamera the non-vr camera to copy the transformation from
      * @param resetToBaseReferenceSpace should XR reset to the base reference space
      */
-    public setTransformationFromNonVRCamera(otherCamera: Camera, resetToBaseReferenceSpace: boolean = true) {
+    public setTransformationFromNonVRCamera(otherCamera: Camera = this.getScene().activeCamera!, resetToBaseReferenceSpace: boolean = true) {
+        if (!otherCamera || otherCamera === this) {
+            return;
+        }
         const mat = otherCamera.computeWorldMatrix();
         mat.decompose(undefined, this.rotationQuaternion, this.position);
         // set the ground level
