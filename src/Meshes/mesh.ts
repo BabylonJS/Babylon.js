@@ -1504,7 +1504,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const onlyForInstances = isInIntermediateRendering ? this._internalAbstractMeshDataInfo._onlyForInstancesIntermediate : this._internalAbstractMeshDataInfo._onlyForInstances;
         let batchCache = this._instanceDataStorage.batchCache;
         batchCache.mustReturn = false;
-        batchCache.renderSelf[subMeshId] = !onlyForInstances && this.isEnabled() && this.isVisible;
+        batchCache.renderSelf[subMeshId] = isReplacementMode || (!onlyForInstances && this.isEnabled() && this.isVisible);
         batchCache.visibleInstances[subMeshId] = null;
 
         if (this._instanceDataStorage.visibleInstances && !isReplacementMode) {

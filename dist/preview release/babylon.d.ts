@@ -61769,7 +61769,7 @@ declare module BABYLON {
          * @param meshes array of all the geometry used to compute the navigatio mesh
          * @param parameters bunch of parameters used to filter geometry
          */
-        createMavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters): void;
+        createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters): void;
         /**
          * Create a navigation mesh debug mesh
          * @param scene is where the mesh will be added
@@ -62033,7 +62033,7 @@ declare module BABYLON {
          * @param meshes array of all the geometry used to compute the navigatio mesh
          * @param parameters bunch of parameters used to filter geometry
          */
-        createMavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters): void;
+        createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters): void;
         /**
          * Create a navigation mesh debug mesh
          * @param scene is where the mesh will be added
