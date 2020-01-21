@@ -1175,17 +1175,17 @@ export class TransformNode extends Node {
     public resetLocalMatrix(independentOfChildren : boolean = true): void
     {
         this.computeWorldMatrix();
-        if (independentOfChildren){
+        if (independentOfChildren) {
             let children = this.getChildren();
             for(let i = 0; i < children.length; ++i){
                 let child = children[i] as TransformNode;
-                if (child){
+                if (child) {
                     child.computeWorldMatrix();
                     let bakedMatrix = TmpVectors.Matrix[0];
                     child._localMatrix.multiplyToRef(this._localMatrix, bakedMatrix);
                     let tmpRotationQuaternion = TmpVectors.Quaternion[0];
                     bakedMatrix.decompose(child.scaling, tmpRotationQuaternion, child.position);
-                    if (child.rotationQuaternion){
+                    if (child.rotationQuaternion) {
                         child.rotationQuaternion = tmpRotationQuaternion;
                     } else {
                         tmpRotationQuaternion.toEulerAnglesToRef(child.rotation);
