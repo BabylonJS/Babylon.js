@@ -109,9 +109,6 @@ export class TexturePacker{
 
     /** The scene scope of the TexturePacker */
     public scene: Scene;
-    
-    /** The return promise */
-    public then: Function;
 
     /** The Meshes to target */
     public meshes: AbstractMesh[];
@@ -245,17 +242,13 @@ export class TexturePacker{
                         doneCheck((material as Material));
                     });
                 }
-
             }catch (e) {
                 return reject(e);
             }
         });
-    
-    this.then = ()=>{return this.promise.then};        
-    //Return the Promise and expect user to interact with a then, statement.
-    return this;
+       
+        return this;
     }
-
     /**
     * Starts the package process
     * @param resolve The promises resolution function
@@ -552,7 +545,12 @@ export class TexturePacker{
             }
         }
     }
-
+    
+    /**
+    * Calculates the frames Offset.
+    * @param index of the frame
+    * @returns Vector2
+    */
     private _getFrameOffset(index: number): Vector2 {
 
         let meshLength = this.meshes.length;
@@ -588,7 +586,13 @@ export class TexturePacker{
 
         return Vector2.Zero();
     }
-
+    
+    /**
+    * Updates a Mesh to the frame data
+    * @param mesh that is the target
+    * @param frameID or the frame index
+    * @returns void
+    */
     private _updateMeshUV(mesh: AbstractMesh, frameID: number): void {
         let frame: TexturePackerFrame = (this.frames as any)[frameID];
         let uvIn = mesh.getVerticesData(this.options.uvsIn || VertexBuffer.UVKind);
@@ -608,7 +612,12 @@ export class TexturePacker{
 
         mesh.setVerticesData(this.options.uvsOut || VertexBuffer.UVKind, uvOut);
     }
-
+    
+    /**
+    * Updates a Meshs materials to use the texture packer channels
+    * @param m is the mesh to target
+    * @returns void
+    */
     private _updateTextureRefrences(m: AbstractMesh): void {
         let mat = m.material;
         let sKeys = Object.keys(this.sets);
@@ -622,5 +631,28 @@ export class TexturePacker{
             }
         }
     }
-
+    
+    
+    /**
+    * Returns the promised then
+    * @returns Function
+    */
+    public then(success = (): void => {}, error = (): void => {}): void{
+        this.promise.then(
+            success, error
+        )       
+    }
+    
+    /**
+    * Updates a Meshs materials to use the texture packer channels
+    * @param m is the mesh to target
+    * @returns void
+    */
+    public dispose(): void {
+        let sKeys = Object.keys(this.sets);
+        for (let i = 0; i < sKeys.length; i++) {
+            let setName = sKeys[i];
+            (this.sets as any)[setName].dispose()
+        }
+    }
 }
