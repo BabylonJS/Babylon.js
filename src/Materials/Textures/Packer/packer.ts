@@ -107,8 +107,11 @@ export class TexturePacker{
     /** The Name of the Texture Package */
     public name: string;
 
-   /** The scene scope of the TexturePacker */
+    /** The scene scope of the TexturePacker */
     public scene: Scene;
+    
+    /** The return promise */
+    public then: Function;
 
     /** The Meshes to target */
     public meshes: AbstractMesh[];
@@ -247,8 +250,9 @@ export class TexturePacker{
                 return reject(e);
             }
         });
-        
-    //Return the Promise and expect user to interact with a then, statment.
+    
+    this.then = ()=>{return this.promise.then};        
+    //Return the Promise and expect user to interact with a then, statement.
     return this;
     }
 
