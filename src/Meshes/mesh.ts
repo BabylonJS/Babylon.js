@@ -2153,16 +2153,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @see http://doc.babylonjs.com/resources/baking_transformations
      * @returns the current mesh
      */
-    public bakeCurrentTransformIntoVertices(): Mesh {
+    public bakeCurrentTransformIntoVertices(bakeIndependenlyOfChildren : boolean = true): Mesh {
         this.bakeTransformIntoVertices(this.computeWorldMatrix(true));
-        this.scaling.copyFromFloats(1, 1, 1);
-        this.position.copyFromFloats(0, 0, 0);
-        this.rotation.copyFromFloats(0, 0, 0);
-        //only if quaternion is already set
-        if (this.rotationQuaternion) {
-            this.rotationQuaternion = Quaternion.Identity();
-        }
-        this._worldMatrix = Matrix.Identity();
+        this.resetLocalMatrix(bakeIndependenlyOfChildren);
         return this;
     }
 
