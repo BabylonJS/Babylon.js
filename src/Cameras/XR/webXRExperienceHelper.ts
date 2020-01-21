@@ -62,8 +62,9 @@ export class WebXRExperienceHelper implements IDisposable {
         return helper.sessionManager.initializeAsync().then(() => {
             helper._supported = true;
             return helper;
-        }).catch(() => {
-            return helper;
+        }).catch((e) => {
+            helper.dispose();
+            throw e;
         });
     }
 
@@ -97,23 +98,26 @@ export class WebXRExperienceHelper implements IDisposable {
      * @param renderTarget the output canvas that will be used to enter XR mode
      * @returns promise that resolves after xr mode has entered
      */
-    public enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget): Promise<WebXRSessionManager> {
+    public enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget = this.sessionManager.getWebXRRenderTarget()): Promise<WebXRSessionManager> {
         if (!this._supported) {
-            throw "XR session not supported by this browser";
+            throw "XR not available";
         }
         this._setState(WebXRState.ENTERING_XR);
-        let sessionCreationOptions = {
+        let sessionCreationOptions: XRSessionInit = {
             optionalFeatures: (referenceSpaceType !== "viewer" && referenceSpaceType !== "local") ? [referenceSpaceType] : []
         };
-        return this.sessionManager.initializeSessionAsync(sessionMode, sessionCreationOptions).then(() => {
+        // make sure that the session mode is supported
+        return this.sessionManager.isSessionSupportedAsync(sessionMode).then(() => {
+            return this.sessionManager.initializeSessionAsync(sessionMode, sessionCreationOptions);
+        }).then(() => {
             return this.sessionManager.setReferenceSpaceAsync(referenceSpaceType);
         }).then(() => {
             return renderTarget.initializeXRLayerAsync(this.sessionManager.session);
         }).then(() => {
             return this.sessionManager.updateRenderStateAsync({ depthFar: this.camera.maxZ, depthNear: this.camera.minZ, baseLayer: renderTarget.xrLayer! });
         }).then(() => {
-            return this.sessionManager.startRenderingToXRAsync();
-        }).then(() => {
+            // run the render loop
+            this.sessionManager.runXRRenderLoop();
             // Cache pre xr scene settings
             this._originalSceneAutoClear = this.scene.autoClear;
             this._nonVRCamera = this.scene.activeCamera;
@@ -162,7 +166,9 @@ export class WebXRExperienceHelper implements IDisposable {
         this.onStateChangedObservable.clear();
         this.onInitialXRPoseSetObservable.clear();
         this.sessionManager.dispose();
-        this.scene.activeCamera = this._nonVRCamera;
+        if (this._nonVRCamera) {
+            this.scene.activeCamera = this._nonVRCamera;
+        }
     }
 
     private _nonXRToXRCamera() {

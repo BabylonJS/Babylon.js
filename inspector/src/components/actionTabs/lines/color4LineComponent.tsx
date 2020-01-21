@@ -1,11 +1,10 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
 import { Color3, Color4 } from "babylonjs/Maths/math";
-import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus, faCopy } from "@fortawesome/free-solid-svg-icons";
-import { GlobalState } from '../globalState';
+import { PropertyChangedEvent } from '../../propertyChangedEvent';
 
 export interface IColor4LineComponentProps {
     label: string;
@@ -13,7 +12,6 @@ export interface IColor4LineComponentProps {
     propertyName: string;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     onChange?: () => void;
-    globalState: GlobalState;
 }
 
 export class Color4LineComponent extends React.Component<IColor4LineComponentProps, { isExpanded: boolean, color: Color4 }> {
@@ -66,10 +64,6 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
     }
 
     raiseOnPropertyChanged(previousValue: Color4) {
-        if (this.props.onChange) {
-            this.props.onChange();
-        }
-
         if (!this.props.onPropertyChangedObservable) {
             return;
         }
@@ -169,10 +163,10 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
                 {
                     this.state.isExpanded &&
                     <div className="secondLine">
-                        <NumericInputComponent globalState={this.props.globalState} label="r" value={this.state.color.r} onChange={value => this.updateStateR(value)} />
-                        <NumericInputComponent globalState={this.props.globalState} label="g" value={this.state.color.g} onChange={value => this.updateStateG(value)} />
-                        <NumericInputComponent globalState={this.props.globalState} label="b" value={this.state.color.b} onChange={value => this.updateStateB(value)} />
-                        <NumericInputComponent globalState={this.props.globalState} label="a" value={this.state.color.a} onChange={value => this.updateStateA(value)} />
+                        <NumericInputComponent label="r" value={this.state.color.r} onChange={value => this.updateStateR(value)} />
+                        <NumericInputComponent label="g" value={this.state.color.g} onChange={value => this.updateStateG(value)} />
+                        <NumericInputComponent label="b" value={this.state.color.b} onChange={value => this.updateStateB(value)} />
+                        <NumericInputComponent label="a" value={this.state.color.a} onChange={value => this.updateStateA(value)} />
                     </div>
                 }
             </div>

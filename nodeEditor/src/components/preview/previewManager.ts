@@ -258,7 +258,10 @@ export class PreviewManager {
                     });                    
                     return;                   
                 case PreviewMeshType.Plane:
-                    this._meshes.push(Mesh.CreateGround("dummy-plane", 2, 2, 128, this._scene));
+                    let plane = Mesh.CreateGround("dummy-plane", 2, 2, 128, this._scene);
+                    plane.scaling.y = -1;
+                    plane.rotation.x = Math.PI;
+                    this._meshes.push(plane);
                     break;    
                 case PreviewMeshType.ShaderBall:
                     SceneLoader.AppendAsync("https://models.babylonjs.com/", "shaderBall.glb", this._scene).then(() => {     
