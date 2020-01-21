@@ -247,8 +247,9 @@ export class TexturePacker{
                 return reject(e);
             }
         });
-
-    return;
+        
+    //Return the Promise and expect user to interact with a then, statment.
+    return this;
     }
 
     /**
