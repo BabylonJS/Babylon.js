@@ -60,7 +60,7 @@ export interface IWebXRControllerPointerSelectionOptions {
 /**
  * A module that will enable pointer selection for motion controllers of XR Input Sources
  */
-export class WebXRControllerPointerSelection extends WebXRAbstractFeature implements IWebXRFeature {
+export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
     /**
      * The module's name

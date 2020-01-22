@@ -83,7 +83,7 @@ export interface IWebXRTeleportationOptions {
  * When enabled and attached, the feature will allow a user to move aroundand rotate in the scene using
  * the input of the attached controllers.
  */
-export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature implements IWebXRFeature {
+export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     /**
      * The module's name
      */
