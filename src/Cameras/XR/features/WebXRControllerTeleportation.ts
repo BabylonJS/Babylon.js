@@ -1,4 +1,4 @@
-import { IWebXRFeature, WebXRFeaturesManager } from '../webXRFeaturesManager';
+import { IWebXRFeature, WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager';
 import { Observer } from '../../../Misc/observable';
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { Nullable } from '../../../types';
@@ -21,8 +21,6 @@ import { PickingInfo } from '../../../Collisions/pickingInfo';
 import { Curve3 } from '../../../Maths/math.path';
 import { LinesBuilder } from '../../../Meshes/Builders/linesBuilder';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-
-const Name = "xr-controller-teleportation";
 
 /**
  * The options container for the teleportation module
@@ -85,11 +83,11 @@ export interface IWebXRTeleportationOptions {
  * When enabled and attached, the feature will allow a user to move aroundand rotate in the scene using
  * the input of the attached controllers.
  */
-export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature implements IWebXRFeature {
+export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     /**
      * The module's name
      */
-    public static readonly Name = Name;
+    public static readonly Name = WebXRFeatureName.TELEPORTATION;
     /**
      * The (Babylon) version of this module.
      * This is an integer representing the implementation version.

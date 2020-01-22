@@ -486,7 +486,10 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                     readAsync: (byteOffset: number, byteLength: number) => {
                         return new Promise<ArrayBufferView>((resolve, reject) => {
                             fileRequests.push(scene._requestFile(url, (data, webRequest) => {
-                                dataBuffer.byteLength = Number(webRequest!.getResponseHeader("Content-Range")!.split("/")[1]);
+                                const contentRange = webRequest!.getResponseHeader("Content-Range");
+                                if (contentRange) {
+                                    dataBuffer.byteLength = Number(contentRange.split("/")[1]);
+                                }
                                 resolve(new Uint8Array(data as ArrayBuffer));
                             }, onProgress, true, true, (error) => {
                                 reject(error);
@@ -727,18 +730,18 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             }
 
             const length = dataReader.readUint32();
-            if (length !== dataReader.buffer.byteLength) {
+            if (dataReader.buffer.byteLength != 0 && length !== dataReader.buffer.byteLength) {
                 throw new Error(`Length in header does not match actual data length: ${length} != ${dataReader.buffer.byteLength}`);
             }
 
             let unpacked: Promise<IGLTFLoaderData>;
             switch (version) {
                 case 1: {
-                    unpacked = this._unpackBinaryV1Async(dataReader);
+                    unpacked = this._unpackBinaryV1Async(dataReader, length);
                     break;
                 }
                 case 2: {
-                    unpacked = this._unpackBinaryV2Async(dataReader);
+                    unpacked = this._unpackBinaryV2Async(dataReader, length);
                     break;
                 }
                 default: {
@@ -752,7 +755,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         });
     }
 
-    private _unpackBinaryV1Async(dataReader: DataReader): Promise<IGLTFLoaderData> {
+    private _unpackBinaryV1Async(dataReader: DataReader, length: number): Promise<IGLTFLoaderData> {
         const ContentFormat = {
             JSON: 0
         };
@@ -764,7 +767,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             throw new Error(`Unexpected content format: ${contentFormat}`);
         }
 
-        const bodyLength = dataReader.buffer.byteLength - dataReader.byteOffset;
+        const bodyLength = length - dataReader.byteOffset;
 
         const data: IGLTFLoaderData = { json: this._parseJson(dataReader.readString(contentLength)), bin: null };
         if (bodyLength !== 0) {
@@ -778,37 +781,26 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         return Promise.resolve(data);
     }
 
-    private _unpackBinaryV2Async(dataReader: DataReader): Promise<IGLTFLoaderData> {
+    private _unpackBinaryV2Async(dataReader: DataReader, length: number): Promise<IGLTFLoaderData> {
         const ChunkFormat = {
             JSON: 0x4E4F534A,
             BIN: 0x004E4942
         };
 
-        // Read the JSON chunk header.
-        const chunkLength = dataReader.readUint32();
-        const chunkFormat = dataReader.readUint32();
-        if (chunkFormat !== ChunkFormat.JSON) {
-            throw new Error("First chunk format is not JSON");
-        }
+        const data: IGLTFLoaderData = { json: {}, bin: null };
 
-        // Bail if there are no other chunks.
-        if (dataReader.byteOffset + chunkLength === dataReader.buffer.byteLength) {
-            return dataReader.loadAsync(chunkLength).then(() => {
-                return { json: this._parseJson(dataReader.readString(chunkLength)), bin: null };
-            });
-        }
+        const readAsync = (): Promise<IGLTFLoaderData> => {
+            const chunkLength = dataReader.readUint32();
+            const chunkFormat = dataReader.readUint32();
 
-        // Read the JSON chunk and the length and type of the next chunk.
-        return dataReader.loadAsync(chunkLength + 8).then(() => {
-            const data: IGLTFLoaderData = { json: this._parseJson(dataReader.readString(chunkLength)), bin: null };
+            const finalChunk = (dataReader.byteOffset + chunkLength + 8 > length);
 
-            const readAsync = (): Promise<IGLTFLoaderData> => {
-                const chunkLength = dataReader.readUint32();
-                const chunkFormat = dataReader.readUint32();
-
+            // Read the chunk and (if available) the length and type of the next chunk.
+            return dataReader.loadAsync(finalChunk ? chunkLength : chunkLength + 8).then(() => {
                 switch (chunkFormat) {
                     case ChunkFormat.JSON: {
-                        throw new Error("Unexpected JSON chunk");
+                        data.json = this._parseJson(dataReader.readString(chunkLength));
+                        break;
                     }
                     case ChunkFormat.BIN: {
                         const startByteOffset = dataReader.byteOffset;
@@ -826,15 +818,15 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                     }
                 }
 
-                if (dataReader.byteOffset !== dataReader.buffer.byteLength) {
-                    return dataReader.loadAsync(8).then(readAsync);
+                if (finalChunk) {
+                    return data;
                 }
 
-                return Promise.resolve(data);
-            };
+                return readAsync();
+            });
+        };
 
-            return readAsync();
-        });
+        return readAsync();
     }
 
     private static _parseVersion(version: string): Nullable<{ major: number, minor: number }> {
