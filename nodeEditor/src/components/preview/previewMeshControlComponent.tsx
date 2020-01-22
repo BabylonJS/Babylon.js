@@ -2,12 +2,13 @@
 import * as React from "react";
 import { GlobalState } from '../../globalState';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCircle, faRing, faCube, faHockeyPuck, faSquareFull, faPlus, faDotCircle } from '@fortawesome/free-solid-svg-icons';
+import { faCircle, faRing, faCube, faHockeyPuck, faSquareFull, faPlus, faDotCircle, faWindowRestore } from '@fortawesome/free-solid-svg-icons';
 import { PreviewMeshType } from './previewMeshType';
 import { DataStorage } from '../../dataStorage';
 
 interface IPreviewMeshControlComponent {
     globalState: GlobalState;
+    togglePreviewAreaComponent: () => void;
 }
 
 export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
@@ -36,6 +37,10 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
             this.forceUpdate();
         }
         (document.getElementById("file-picker")! as HTMLInputElement).value = "";
+    }
+
+    onPopUp() {
+        this.props.togglePreviewAreaComponent();
     }
 
     render() {
@@ -70,13 +75,18 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
                     title="Preview with a shader ball"  
                     onClick={() => this.changeMeshType(PreviewMeshType.ShaderBall)} className={"button" + (this.props.globalState.previewMeshType === PreviewMeshType.ShaderBall ? " selected" : "")}>
                     <FontAwesomeIcon icon={faDotCircle} />
-                </div>                           
+                </div>   
                 <div className={"button align"} title="Preview with a custom mesh" >
                     <label htmlFor="file-picker" id="file-picker-label">
                         <FontAwesomeIcon icon={faPlus} />
                     </label>
                     <input ref="file-picker" id="file-picker" type="file" onChange={evt => this.useCustomMesh(evt)} accept=".gltf, .glb, .babylon, .obj"/>
                 </div>
+                <div
+                    title="Open preview in new window" id="preview-new-window"
+                    onClick={() => this.onPopUp()} className="button">
+                    <FontAwesomeIcon icon={faWindowRestore} />
+                </div>                          
             </div>
         );
 
