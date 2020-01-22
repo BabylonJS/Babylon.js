@@ -126,6 +126,10 @@ export class WebXRBackgroundRemover extends WebXRAbstractFeature implements IWeb
         super.dispose();
         this.onBackgroundStateChangedObservable.clear();
     }
+
+    protected _onXRFrame(_xrFrame: XRFrame) {
+        // no-op
+    }
 }
 
 //register the plugin
