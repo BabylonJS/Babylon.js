@@ -26,6 +26,18 @@ export interface IWebXRFeature extends IDisposable {
 }
 
 /**
+ * A list of the currently available features without referencing them
+ */
+export const WebXRFeatureName: { [globalName: string]: string } = {
+    HIT_TEST: "xr-hit-test",
+    ANCHOR_SYSTEM: "xr-anchor-system",
+    BACKGROUND_REMOVER: "xr-background-remover",
+    POINTER_SELECTION: "xr-controller-pointer-selection",
+    TELEPORTATION: "xr-controller-teleportation",
+    PLANE_DETECTION: "xr-plane-detection"
+};
+
+/**
  * Defining the constructor of a feature. Used to register the modules.
  */
 export type WebXRFeatureConstructor = (xrSessionManager: WebXRSessionManager, options?: any) => (() => IWebXRFeature);

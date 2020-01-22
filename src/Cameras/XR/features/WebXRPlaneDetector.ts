@@ -1,11 +1,9 @@
-import { WebXRFeaturesManager, IWebXRFeature } from '../webXRFeaturesManager';
+import { WebXRFeaturesManager, IWebXRFeature, WebXRFeatureName } from '../webXRFeaturesManager';
 import { TransformNode } from '../../../Meshes/transformNode';
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { Observable } from '../../../Misc/observable';
 import { Vector3, Matrix } from '../../../Maths/math.vector';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-
-const Name = "xr-plane-detector";
 
 /**
  * Options used in the plane detector module
@@ -52,7 +50,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature implements IWebXRFe
     /**
      * The module's name
      */
-    public static readonly Name = Name;
+    public static readonly Name = WebXRFeatureName.PLANE_DETECTION;
     /**
      * The (Babylon) version of this module.
      * This is an integer representing the implementation version.

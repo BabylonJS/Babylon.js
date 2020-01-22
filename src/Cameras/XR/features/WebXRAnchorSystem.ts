@@ -1,4 +1,4 @@
-import { IWebXRFeature, WebXRFeaturesManager } from '../webXRFeaturesManager';
+import { IWebXRFeature, WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager';
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { Observable } from '../../../Misc/observable';
 import { Matrix } from '../../../Maths/math.vector';
@@ -6,8 +6,6 @@ import { TransformNode } from '../../../Meshes/transformNode';
 import { WebXRPlaneDetector } from './WebXRPlaneDetector';
 import { WebXRHitTestLegacy } from './WebXRHitTestLegacy';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-
-const Name = "xr-anchor-system";
 
 /**
  * Configuration options of the anchor system
@@ -59,7 +57,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature implements IWebXRFea
     /**
      * The module's name
      */
-    public static readonly Name = Name;
+    public static readonly Name = WebXRFeatureName.ANCHOR_SYSTEM;
     /**
      * The (Babylon) version of this module.
      * This is an integer representing the implementation version.
