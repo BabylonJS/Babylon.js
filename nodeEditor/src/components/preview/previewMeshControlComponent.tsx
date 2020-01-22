@@ -13,9 +13,6 @@ interface IPreviewMeshControlComponent {
 
 export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
 
-    // private _EmbedHost: Nullable<HTMLElement>;
-
-
     changeMeshType(newOne: PreviewMeshType) {
         if (this.props.globalState.previewMeshType === newOne) {
             return;
