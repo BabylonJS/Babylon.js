@@ -1,4 +1,4 @@
-import { WebXRFeaturesManager, IWebXRFeature } from "../webXRFeaturesManager";
+import { WebXRFeaturesManager, IWebXRFeature, WebXRFeatureName } from "../webXRFeaturesManager";
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { AbstractMesh } from '../../../Meshes/abstractMesh';
 import { Observer } from '../../../Misc/observable';
@@ -16,8 +16,6 @@ import { TorusBuilder } from '../../../Meshes/Builders/torusBuilder';
 import { Ray } from '../../../Culling/ray';
 import { PickingInfo } from '../../../Collisions/pickingInfo';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-
-const Name = "xr-controller-pointer-selection";
 
 /**
  * Options interface for the pointer selection module
@@ -67,7 +65,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature implem
     /**
      * The module's name
      */
-    public static readonly Name = Name;
+    public static readonly Name = WebXRFeatureName.POINTER_SELECTION;
     /**
      * The (Babylon) version of this module.
      * This is an integer representing the implementation version.

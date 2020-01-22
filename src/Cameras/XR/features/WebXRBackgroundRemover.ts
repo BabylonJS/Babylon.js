@@ -1,10 +1,8 @@
-import { WebXRFeaturesManager, IWebXRFeature } from "../webXRFeaturesManager";
+import { WebXRFeaturesManager, IWebXRFeature, WebXRFeatureName } from "../webXRFeaturesManager";
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { AbstractMesh } from '../../../Meshes/abstractMesh';
 import { Observable } from '../../../Misc/observable';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-
-const Name = "xr-background-remover";
 
 /**
  * Options interface for the background remover plugin
@@ -42,7 +40,7 @@ export class WebXRBackgroundRemover extends WebXRAbstractFeature implements IWeb
     /**
      * The module's name
      */
-    public static readonly Name = Name;
+    public static readonly Name = WebXRFeatureName.BACKGROUND_REMOVER;
     /**
      * The (Babylon) version of this module.
      * This is an integer representing the implementation version.
