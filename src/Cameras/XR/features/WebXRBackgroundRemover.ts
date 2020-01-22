@@ -1,10 +1,8 @@
-import { WebXRFeaturesManager, IWebXRFeature } from "../webXRFeaturesManager";
+import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { AbstractMesh } from '../../../Meshes/abstractMesh';
 import { Observable } from '../../../Misc/observable';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-
-const Name = "xr-background-remover";
 
 /**
  * Options interface for the background remover plugin
@@ -37,12 +35,12 @@ export interface IWebXRBackgroundRemoverOptions {
 /**
  * A module that will automatically disable background meshes when entering AR and will enable them when leaving AR.
  */
-export class WebXRBackgroundRemover extends WebXRAbstractFeature implements IWebXRFeature {
+export class WebXRBackgroundRemover extends WebXRAbstractFeature {
 
     /**
      * The module's name
      */
-    public static readonly Name = Name;
+    public static readonly Name = WebXRFeatureName.BACKGROUND_REMOVER;
     /**
      * The (Babylon) version of this module.
      * This is an integer representing the implementation version.
@@ -127,6 +125,10 @@ export class WebXRBackgroundRemover extends WebXRAbstractFeature implements IWeb
     dispose(): void {
         super.dispose();
         this.onBackgroundStateChangedObservable.clear();
+    }
+
+    protected _onXRFrame(_xrFrame: XRFrame) {
+        // no-op
     }
 }
 
