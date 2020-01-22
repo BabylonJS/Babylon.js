@@ -23,6 +23,9 @@ export class WebXRExperienceHelper implements IDisposable {
     public state: WebXRState = WebXRState.NOT_IN_XR;
 
     private _setState(val: WebXRState) {
+        if (this.state === val) {
+            return;
+        }
         this.state = val;
         this.onStateChangedObservable.notifyObservers(this.state);
     }
@@ -63,6 +66,7 @@ export class WebXRExperienceHelper implements IDisposable {
             helper._supported = true;
             return helper;
         }).catch((e) => {
+            helper._setState(WebXRState.NOT_IN_XR);
             helper.dispose();
             throw e;
         });
@@ -154,6 +158,7 @@ export class WebXRExperienceHelper implements IDisposable {
         }).catch((e: any) => {
             console.log(e);
             console.log(e.message);
+            this._setState(WebXRState.NOT_IN_XR);
             throw (e);
         });
     }
