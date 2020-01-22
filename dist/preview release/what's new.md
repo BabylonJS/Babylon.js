@@ -59,6 +59,7 @@
 - Added `RenderTargetTexture.getCustomRenderList` to overload the render list at rendering time (and possibly for each layer (2DArray) / face (Cube)) ([Popov72](https://github.com/Popov72))
 - Make sure all properties of CascadedShadowMap class are serialized/parsed ([Popov72](https://github.com/Popov72))
 - Added `textures/opacity.png` file to the Playground ([Popov72](https://github.com/Popov72))
+- Refactored the shadow generators code ([Popov72](https://github.com/Popov72))
 
 ### Engine
 
@@ -111,6 +112,8 @@
 - Added absolute scaling and rotation getters ([haroldma](https://github.com/haroldma))
 - Added `BILLBOARDMODE_USE_POSITION` flag to billboards allowing use of camera positioning instead of orientation for mesh rotation ([delaneyj](https://github.com/delaneyj))
 - Added accessor functions for `SubMesh._materialDefines` ([Popov72](https://github.com/Popov72))
+- Generator type used in `TrailMesh` constructor is now `TransformNode` instead of `AbstrachMesh` ([Popov72](https://github.com/Popov72))
+- Added the `useVertexAlpha` options to `MeshBuilder.CreateDashedLines` ([Popov72](https://github.com/Popov72))
 
 ### Physics
 
@@ -137,6 +140,7 @@
 - Added support for 8 bone influences to glTF loader ([zeux](https://github.com/zeux))
 - Added support for animations import from separate files ([noalak](https://github.com/noalak/))
 - Use web workers to validate glTF to avoid blocking the main thread. ([bghgary](https://github.com/bghgary))
+- Update glTF validator to 2.0.0-dev.3.1. ([bghgary](https://github.com/bghgary))
 
 ### Materials
 
@@ -189,13 +193,14 @@
 - WebXR teleportation can now be disabled after initialized or before created ([RaananW](https://github.com/RaananW/))
 - New Features Manager for WebXR features ([RaananW](https://github.com/RaananW/))
 - New features - Plane detection, Hit Test, Background remover ([RaananW](https://github.com/RaananW/))
-- Camera's API is Babylon-conform (position, rotationQuaternion, world matrix, direction etc') ([#7239](https://github.com/BabylonJS/Babylon.js/issues/7239)) ([RaananW](https://github.com/RaananW/))
+- XR Camera's API is Babylon-conform (position, rotationQuaternion, world matrix, direction etc') ([#7239](https://github.com/BabylonJS/Babylon.js/issues/7239)) ([RaananW](https://github.com/RaananW/))
 - XR Input now using standard profiles and completely separated from the gamepad class ([#7348](https://github.com/BabylonJS/Babylon.js/issues/7348)) ([RaananW](https://github.com/RaananW/))
 - Teleportation and controller selection are now WebXR features. ([#7290](https://github.com/BabylonJS/Babylon.js/issues/7290)) ([RaananW](https://github.com/RaananW/))
 - Teleportation allows selecting direction before teleporting when using thumbstick or touchpad. ([#7290](https://github.com/BabylonJS/Babylon.js/issues/7290)) ([RaananW](https://github.com/RaananW/))
 - It is now possible to force a certain profile type for the controllers ([#7348](https://github.com/BabylonJS/Babylon.js/issues/7375)) ([RaananW](https://github.com/RaananW/))
 - WebXR camera is initialized on the first frame ([#7389](https://github.com/BabylonJS/Babylon.js/issues/7389)) ([RaananW](https://github.com/RaananW/))
 - Selection has gaze mode (which can be forced) and touch-screen support ([#7395](https://github.com/BabylonJS/Babylon.js/issues/7395)) ([RaananW](https://github.com/RaananW/))
+- Laser pointers can be excluded from lighting influence so that they are always visible in both WebXR and WebVR ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
@@ -307,3 +312,4 @@
 - The glTF2 exporter extension no longer ignores childless empty nodes.([drigax](https://github.com/drigax))
 - Default culling strategy changed to CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY ([Deltakosh](https://github.com/deltakosh/))
 - `MaterialHelper.BindLight` and `MaterialHelper.BindLights` do not need the usePhysicalLight anymore ([Sebavan](https://github.com/sebavan/))
+- `Mesh.bakeTransformIntoVertices` now preserves child world-space transforms([drigax](https://github.com/drigax))

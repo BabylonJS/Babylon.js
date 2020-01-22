@@ -712,6 +712,16 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             });
         }
 
+        if (pointB.ownerBlock.inputsAreExclusive) { // Disconnect all inputs if block has exclusive inputs
+            pointB.ownerBlock.inputs.forEach(i => {
+                let links = nodeB.getLinksForConnectionPoint(i);
+
+                links.forEach(link => {
+                    link.dispose();
+                });
+            })
+        }
+
         pointA.connectTo(pointB);
         this.connectPorts(pointA, pointB);
 
