@@ -10,12 +10,17 @@ export interface IWebXRFeature extends IDisposable {
      */
     attached: boolean;
     /**
+     * Should auto-attach be disabled?
+     */
+    disableAutoAttach: boolean;
+    /**
      * Attach the feature to the session
      * Will usually be called by the features manager
      *
+     * @param force should attachment be forced (even when already attached)
      * @returns true if successful.
      */
-    attach(): boolean;
+    attach(force?: boolean): boolean;
     /**
      * Detach the feature from the session
      * Will usually be called by the features manager
@@ -151,7 +156,7 @@ export class WebXRFeaturesManager implements IDisposable {
         this._xrSessionManager.onXRSessionInit.add(() => {
             this.getEnabledFeatures().forEach((featureName) => {
                 const feature = this._features[featureName];
-                if (feature.enabled && !feature.featureImplementation.attached) {
+                if (feature.enabled && !feature.featureImplementation.attached && !feature.featureImplementation.disableAutoAttach) {
                     this.attachFeature(featureName);
                 }
             });
@@ -194,7 +199,7 @@ export class WebXRFeaturesManager implements IDisposable {
                 // try loading the number the string represents
                 versionToLoad = +version;
             }
-            if (versionToLoad === -1 ||  isNaN(versionToLoad)) {
+            if (versionToLoad === -1 || isNaN(versionToLoad)) {
                 throw new Error(`feature not found - ${name} (${version})`);
             }
         } else {
@@ -219,10 +224,14 @@ export class WebXRFeaturesManager implements IDisposable {
             version: versionToLoad
         };
 
-        // if session started already, request and enable
-        if (this._xrSessionManager.session && !feature.featureImplementation.attached && attachIfPossible) {
-            // enable feature
-            this.attachFeature(name);
+        if (attachIfPossible) {
+            // if session started already, request and enable
+            if (this._xrSessionManager.session && !feature.featureImplementation.attached && attachIfPossible) {
+                // enable feature
+                this.attachFeature(name);
+            }
+        } else {
+            this._features[name].featureImplementation.disableAutoAttach = true;
         }
 
         return this._features[name].featureImplementation;
