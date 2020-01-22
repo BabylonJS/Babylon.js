@@ -61,7 +61,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, State> {
     private _mouseLocationY = 0;
     private _onWidgetKeyUpPointer: any;
 
-    private _PreviewHost: Nullable<HTMLElement>;
+    private _previewHost: Nullable<HTMLElement>;
     private _popUpWindow: Window;
 
 
@@ -698,19 +698,19 @@ export class GraphEditor extends React.Component<IGraphEditorProps, State> {
 
             parentControl.appendChild(host);
 
-            this._PreviewHost = host;
+            this._previewHost = host;
 
             if (!options.overlay) {
-                this._PreviewHost.style.position = "relative";
+                this._previewHost.style.position = "relative";
             }
         }
 
-        if (this._PreviewHost) {
+        if (this._previewHost) {
             const PreviewAreaComponentHost = React.createElement(PreviewAreaComponent, {
                 globalState: this.props.globalState,
                 width: 200
             });
-            ReactDOM.render(PreviewAreaComponentHost, this._PreviewHost);
+            ReactDOM.render(PreviewAreaComponentHost, this._previewHost);
         }
     }
 
