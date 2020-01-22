@@ -14476,6 +14476,11 @@ declare module BABYLON {
          * @returns the world matrix
          */
         computeWorldMatrix(force?: boolean): Matrix;
+        /**
+         * Resets this nodeTransform's local matrix to Matrix.Identity().
+         * @param independentOfChildren indicates if all child nodeTransform's world-space transform should be preserved.
+         */
+        resetLocalMatrix(independentOfChildren?: boolean): void;
         protected _afterComputeWorldMatrix(): void;
         /**
         * If you'd like to be called back after the mesh position, rotation or scaling has been updated.
@@ -24720,9 +24725,10 @@ declare module BABYLON {
          * This method returns nothing but really modifies the mesh even if it's originally not set as updatable.
          * Note that, under the hood, this method sets a new VertexBuffer each call.
          * @see http://doc.babylonjs.com/resources/baking_transformations
+         * @param bakeIndependenlyOfChildren indicates whether to preserve all child nodes' World Matrix during baking
          * @returns the current mesh
          */
-        bakeCurrentTransformIntoVertices(): Mesh;
+        bakeCurrentTransformIntoVertices(bakeIndependenlyOfChildren?: boolean): Mesh;
         /** @hidden */
         get _positions(): Nullable<Vector3[]>;
         /** @hidden */

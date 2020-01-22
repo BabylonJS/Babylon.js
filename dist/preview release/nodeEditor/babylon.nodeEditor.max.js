@@ -55543,6 +55543,7 @@ var GradientPropertyTabComponent = /** @class */ (function (_super) {
             }
             return -1;
         });
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
         this.forceUpdate();
     };
     GradientPropertyTabComponent.prototype.render = function () {
