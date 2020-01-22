@@ -13,7 +13,6 @@ import { MaterialHelper } from '../Materials/materialHelper';
 
 import "../Shaders/color.fragment";
 import "../Shaders/color.vertex";
-import { AbstractMesh } from './abstractMesh';
 
 /**
  * Line mesh
@@ -224,7 +223,7 @@ export class LinesMesh extends Mesh {
     /**
      * Returns a new LineMesh object cloned from the current one.
      */
-    public clone(name: string, newParent: Nullable<Node> = null, doNotCloneChildren?: boolean): Nullable<AbstractMesh> {
+    public clone(name: string, newParent: Nullable<Node> = null, doNotCloneChildren?: boolean): LinesMesh {
         return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
     }
 

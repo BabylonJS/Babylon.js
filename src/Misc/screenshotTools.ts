@@ -251,6 +251,17 @@ export class ScreenshotTools {
             width = size;
         }
 
+        // When creating the image data from the CanvasRenderingContext2D, the width and height is clamped to the size of the _gl context
+        // On certain GPUs, it seems as if the _gl context truncates to an integer automatically. Therefore, if a user tries to pass the width of their canvas element
+        // and it happens to be a float (1000.5 x 600.5 px), the engine.readPixels will return a different size array than context.createImageData
+        // to resolve this, we truncate the floats here to ensure the same size
+        if (width) {
+            width = Math.floor(width);
+        }
+        if (height) {
+            height = Math.floor(height);
+        }
+
         return { height: height | 0, width: width | 0 };
     }
 }

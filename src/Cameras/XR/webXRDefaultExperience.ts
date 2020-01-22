@@ -1,22 +1,22 @@
 import { WebXRExperienceHelper } from "./webXRExperienceHelper";
 import { Scene } from '../../scene';
-import { WebXRInput } from './webXRInput';
-import { WebXRControllerModelLoader } from './webXRControllerModelLoader';
-import { WebXRControllerPointerSelection } from './webXRControllerPointerSelection';
-import { WebXRControllerTeleportation } from './webXRControllerTeleportation';
+import { WebXRInput, IWebXRInputOptions } from './webXRInput';
+import { WebXRControllerPointerSelection } from './features/WebXRControllerPointerSelection';
 import { WebXRRenderTarget } from './webXRTypes';
 import { WebXREnterExitUI, WebXREnterExitUIOptions } from './webXREnterExitUI';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { WebXRManagedOutputCanvasOptions } from './webXRManagedOutputCanvas';
+import { WebXRMotionControllerTeleportation } from './features/WebXRControllerTeleportation';
+import { Logger } from '../../Misc/logger';
 
 /**
  * Options for the default xr helper
  */
 export class WebXRDefaultExperienceOptions {
     /**
-     * Floor meshes that should be used for teleporting
+     * Floor meshes that will be used for teleporting
      */
-    public floorMeshes: Array<AbstractMesh>;
+    public floorMeshes?: Array<AbstractMesh>;
 
     /**
      * Enable or disable default UI to enter XR
@@ -32,6 +32,16 @@ export class WebXRDefaultExperienceOptions {
      * optional UI options. This can be used among other to change session mode and reference space type
      */
     public uiOptions?: WebXREnterExitUIOptions;
+
+    /**
+     * Disable the controller mesh-loading. Can be used if you want to load your own meshes
+     */
+    public inputOptions?: IWebXRInputOptions;
+
+    /**
+     * Should teleportation not initialize. defaults to false.
+     */
+    public disableTeleportation?: boolean;
 }
 
 /**
@@ -47,17 +57,13 @@ export class WebXRDefaultExperience {
      */
     public input: WebXRInput;
     /**
-     * Loads the controller models
-     */
-    public controllerModelLoader: WebXRControllerModelLoader;
-    /**
      * Enables laser pointer and selection
      */
     public pointerSelection: WebXRControllerPointerSelection;
     /**
      * Enables teleportation
      */
-    public teleportation: WebXRControllerTeleportation;
+    public teleportation: WebXRMotionControllerTeleportation;
     /**
      * Enables ui for entering/exiting xr
      */
@@ -73,7 +79,7 @@ export class WebXRDefaultExperience {
      * @param options options for basic configuration
      * @returns resulting WebXRDefaultExperience
      */
-    public static CreateAsync(scene: Scene, options: WebXRDefaultExperienceOptions) {
+    public static CreateAsync(scene: Scene, options: WebXRDefaultExperienceOptions = {}) {
         var result = new WebXRDefaultExperience();
 
         // Create base experience
@@ -81,16 +87,22 @@ export class WebXRDefaultExperience {
             result.baseExperience = xrHelper;
 
             // Add controller support
-            result.input = new WebXRInput(xrHelper);
-            result.controllerModelLoader = new WebXRControllerModelLoader(result.input);
-            result.pointerSelection = new WebXRControllerPointerSelection(result.input);
+            result.input = new WebXRInput(xrHelper.sessionManager, xrHelper.camera, options.inputOptions);
+            result.pointerSelection = <WebXRControllerPointerSelection>result.baseExperience.featuresManager.enableFeature(WebXRControllerPointerSelection.Name, "latest", {
+                xrInput: result.input
+            });
 
-            if (options.floorMeshes) {
-                result.teleportation = new WebXRControllerTeleportation(result.input, options.floorMeshes);
+            // Add default teleportation, including rotation
+            if (!options.disableTeleportation) {
+                result.teleportation = <WebXRMotionControllerTeleportation>result.baseExperience.featuresManager.enableFeature(WebXRMotionControllerTeleportation.Name, "latest", {
+                    floorMeshes: options.floorMeshes,
+                    xrInput: result.input
+                });
+                result.teleportation.setSelectionFeature(result.pointerSelection);
             }
 
             // Create the WebXR output target
-            result.renderTarget = result.baseExperience.sessionManager.getWebXRRenderTarget(xrHelper.onStateChangedObservable, options.outputCanvasOptions);
+            result.renderTarget = result.baseExperience.sessionManager.getWebXRRenderTarget(options.outputCanvasOptions);
 
             if (!options.disableDefaultUI) {
                 if (options.uiOptions) {
@@ -104,6 +116,10 @@ export class WebXRDefaultExperience {
                 return;
             }
         }).then(() => {
+            return result;
+        }).catch((error) => {
+            Logger.Error("Error initializing XR");
+            Logger.Error(error);
             return result;
         });
     }

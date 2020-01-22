@@ -6,9 +6,6 @@ var currentScene;
 var config;
 var justOnce;
 
-var threshold = 25;
-var errorRatio = 2.5;
-
 // Overload the random to make it deterministic
 var seed = 100000,
     constant = Math.pow(2, 13) + 1,
@@ -23,7 +20,7 @@ Math.random = function() {
     return seed / maximum;
 }
 
-function compare(renderData, referenceCanvas) {
+function compare(renderData, referenceCanvas, threshold, errorRatio) {
     var width = referenceCanvas.width;
     var height = referenceCanvas.height;
     var size = width * height * 4;
@@ -98,7 +95,7 @@ function saveRenderImage(data, canvas) {
     return screenshotCanvas.toDataURL();
 }
 
-function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done) {
+function evaluate(test, resultCanvas, result, renderImage, waitRing, done) {
     var renderData = getRenderData(canvas, engine);
     var testRes = true;
 
@@ -113,7 +110,10 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done
 
         // Visual check
         if (!test.onlyVisual) {
-            if (compare(renderData, resultCanvas)) {
+            var info = engine.getGlInfo();
+            var defaultErrorRatio = 2.5
+
+            if (compare(renderData, resultCanvas, test.threshold || 25, test.errorRatio || defaultErrorRatio)) {
                 result.classList.add("failed");
                 result.innerHTML = "×";
                 testRes = false;
@@ -153,7 +153,7 @@ function processCurrentScene(test, resultCanvas, result, renderImage, index, wai
 
                 if (renderCount === 0) {
                     engine.stopRenderLoop();
-                    evaluate(test, resultCanvas, result, renderImage, index, waitRing, done);
+                    evaluate(test, resultCanvas, result, renderImage, waitRing, done);
                 }
             }
             catch (e) {

@@ -67,7 +67,7 @@ export class NativeShaderProcessor extends WebGL2ShaderProcessor {
             throw new Error("Can't find bgfx name mapping");
         }
         attribute = attribute.replace(name, newName);
-        this._replacements.push({ searchValue: new RegExp(`\\b${name}\\b`), replaceValue: `${newName}` });
+        this._replacements.push({ searchValue: new RegExp(`\\b${name}\\b`, 'g'), replaceValue: `${newName}` });
         return `layout(location=${location}) ${super.attributeProcessor(attribute)}`;
     }
 
@@ -135,7 +135,7 @@ export class NativeShaderProcessor extends WebGL2ShaderProcessor {
 
    public postProcessor(code: string, defines: string[], isFragment: boolean): string {
         code = super.postProcessor(code, defines, isFragment);
-        code = code.replace("<UNIFORM>", `uniform Frame {\n${this._uniforms.join("\n")}\n};`);
+        code = code.replace("<UNIFORM>", `layout(binding=0) uniform Frame {\n${this._uniforms.join("\n")}\n};`);
         code = code.replace("out vec4 glFragColor", "layout(location=0) out vec4 glFragColor");
         return code;
     }

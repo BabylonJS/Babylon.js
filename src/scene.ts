@@ -92,7 +92,7 @@ export interface SceneOptions {
      * Defines that each mesh of the scene should keep up-to-date a map of referencing cloned meshes for fast diposing
      * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
      */
-    useClonedMeshhMap?: boolean;
+    useClonedMeshMap?: boolean;
 
     /** Defines if the creation of the scene should impact the engine (Eg. UtilityLayer's scene) */
     virtual?: boolean;
@@ -1186,7 +1186,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     /** @hidden */
     public readonly useMaterialMeshMap: boolean;
     /** @hidden */
-    public readonly useClonedMeshhMap: boolean;
+    public readonly useClonedMeshMap: boolean;
 
     private _externalData: StringDictionary<Object>;
     private _uid: Nullable<string>;
@@ -1371,8 +1371,17 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     constructor(engine: Engine, options?: SceneOptions) {
         super();
+
+        const fullOptions = {
+            useGeometryUniqueIdsMap: true,
+            useMaterialMeshMap: true,
+            useClonedMeshMap: true,
+            virtual: false,
+            ...options
+        };
+
         this._engine = engine || EngineStore.LastCreatedEngine;
-        if (!options || !options.virtual) {
+        if (!fullOptions.virtual) {
             EngineStore._LastCreatedScene = this;
             this._engine.scenes.push(this);
         }
@@ -1399,12 +1408,12 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         this.setDefaultCandidateProviders();
 
-        if (options && options.useGeometryUniqueIdsMap === true) {
+        if (fullOptions.useGeometryUniqueIdsMap) {
             this.geometriesByUniqueId = {};
         }
 
-        this.useMaterialMeshMap = options && options.useGeometryUniqueIdsMap || false;
-        this.useClonedMeshhMap = options && options.useClonedMeshhMap || false;
+        this.useMaterialMeshMap = fullOptions.useMaterialMeshMap;
+        this.useClonedMeshMap = fullOptions.useClonedMeshMap;
 
         if (!options || !options.virtual) {
             this._engine.onNewSceneAddedObservable.notifyObservers(this);

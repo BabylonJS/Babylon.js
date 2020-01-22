@@ -4,7 +4,7 @@ import { Nullable } from "../../types";
 import { IDisposable, Scene } from "../../scene";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
-import { WebXRRenderTarget, WebXRState } from './webXRTypes';
+import { WebXRRenderTarget } from './webXRTypes';
 import { WebXRManagedOutputCanvas, WebXRManagedOutputCanvasOptions } from './webXRManagedOutputCanvas';
 
 interface IRenderTargetProvider {
@@ -42,14 +42,48 @@ export class WebXRSessionManager implements IDisposable {
     public onXRSessionInit: Observable<XRSession> = new Observable<XRSession>();
 
     /**
+     * Fires when the reference space changed
+     */
+    public onXRReferenceSpaceChanged: Observable<XRReferenceSpace> = new Observable();
+
+    /**
      * Underlying xr session
      */
     public session: XRSession;
 
     /**
-     * Type of reference space used when creating the session
+     * The viewer (head position) reference space. This can be used to get the XR world coordinates
+     * or get the offset the player is currently at.
      */
-    public referenceSpace: XRReferenceSpace;
+    public viewerReferenceSpace: XRReferenceSpace;
+
+    private _referenceSpace: XRReferenceSpace;
+    /**
+     * The current reference space used in this session. This reference space can constantly change!
+     * It is mainly used to offset the camera's position.
+     */
+    public get referenceSpace(): XRReferenceSpace {
+        return this._referenceSpace;
+    }
+
+    /**
+     * Set a new reference space and triggers the observable
+     */
+    public set referenceSpace(newReferenceSpace: XRReferenceSpace) {
+        this._referenceSpace = newReferenceSpace;
+        this.onXRReferenceSpaceChanged.notifyObservers(this._referenceSpace);
+    }
+    /**
+     * The base reference space from which the session started. good if you want to reset your
+     * reference space
+     */
+    public baseReferenceSpace: XRReferenceSpace;
+
+    /**
+     * Used just in case of a failure to initialize an immersive session.
+     * The viewer reference space is compensated using this height, creating a kind of "viewer-floor" reference space
+     */
+    public defaultHeightCompensation = 1.7;
 
     /**
      * Current XR frame
@@ -86,7 +120,7 @@ export class WebXRSessionManager implements IDisposable {
         // Check if the browser supports webXR
         this._xrNavigator = navigator;
         if (!this._xrNavigator.xr) {
-            return Promise.reject("webXR not supported by this browser");
+            return Promise.reject("WebXR not available");
         }
         return Promise.resolve();
     }
@@ -94,11 +128,11 @@ export class WebXRSessionManager implements IDisposable {
     /**
      * Initializes an xr session
      * @param xrSessionMode mode to initialize
-     * @param optionalFeatures defines optional values to pass to the session builder
+     * @param xrSessionInit defines optional and required values to pass to the session builder
      * @returns a promise which will resolve once the session has been initialized
      */
-    public initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures: any = {}): Promise<XRSession> {
-        return this._xrNavigator.xr.requestSession(xrSessionMode, optionalFeatures).then((session: XRSession) => {
+    public initializeSessionAsync(xrSessionMode: XRSessionMode = 'immersive-vr', xrSessionInit: XRSessionInit = {}): Promise<XRSession> {
+        return this._xrNavigator.xr.requestSession(xrSessionMode, xrSessionInit).then((session: XRSession) => {
             this.session = session;
             this.onXRSessionInit.notifyObservers(session);
             this._sessionEnded = false;
@@ -126,21 +160,37 @@ export class WebXRSessionManager implements IDisposable {
      * @param referenceSpace space to set
      * @returns a promise that will resolve once the reference space has been set
      */
-    public setReferenceSpaceAsync(referenceSpace: XRReferenceSpaceType) {
+    public setReferenceSpaceAsync(referenceSpace: XRReferenceSpaceType = "local-floor"): Promise<XRReferenceSpace> {
         return this.session.requestReferenceSpace(referenceSpace).then((referenceSpace: XRReferenceSpace) => {
-            this.referenceSpace = referenceSpace;
+            return referenceSpace;
         }, (rejectionReason) => {
             Logger.Error("XR.requestReferenceSpace failed for the following reason: ");
             Logger.Error(rejectionReason);
             Logger.Log("Defaulting to universally-supported \"viewer\" reference space type.");
 
             return this.session.requestReferenceSpace("viewer").then((referenceSpace: XRReferenceSpace) => {
-                this.referenceSpace = referenceSpace;
+                const heightCompensation = new XRRigidTransform({ x: 0, y: -this.defaultHeightCompensation, z: 0 });
+                return referenceSpace.getOffsetReferenceSpace(heightCompensation);
             }, (rejectionReason) => {
                 Logger.Error(rejectionReason);
                 throw "XR initialization failed: required \"viewer\" reference space type not supported.";
             });
+        }).then((referenceSpace) => {
+            // initialize the base and offset (currently the same)
+            this.referenceSpace = this.baseReferenceSpace = referenceSpace;
+
+            this.session.requestReferenceSpace("viewer").then((referenceSpace: XRReferenceSpace) => {
+                this.viewerReferenceSpace = referenceSpace;
+            });
+            return this.referenceSpace;
         });
+    }
+
+    /**
+     * Resets the reference space to the one started the session
+     */
+    public resetReferenceSpace() {
+        this.referenceSpace = this.baseReferenceSpace;
     }
 
     /**
@@ -157,29 +207,30 @@ export class WebXRSessionManager implements IDisposable {
 
     /**
      * Starts rendering to the xr layer
-     * @returns a promise that will resolve once rendering has started
      */
-    public startRenderingToXRAsync() {
+    public runXRRenderLoop() {
+        const engine = this.scene.getEngine();
         // Tell the engine's render loop to be driven by the xr session's refresh rate and provide xr pose information
-        this.scene.getEngine().customAnimationFrameRequester = {
+        engine.customAnimationFrameRequester = {
             requestAnimationFrame: this.session.requestAnimationFrame.bind(this.session),
             renderFunction: (timestamp: number, xrFrame: Nullable<XRFrame>) => {
                 if (this._sessionEnded) {
                     return;
                 }
-                // Store the XR frame in the manager to be consumed by the XR camera to update pose
+                // Store the XR frame and timestamp in the session manager
                 this.currentFrame = xrFrame;
                 this.currentTimestamp = timestamp;
                 if (xrFrame) {
                     this.onXRFrameObservable.notifyObservers(xrFrame);
+                    // only run the render loop if a frame exists
+                    engine._renderLoop();
                 }
-                this.scene.getEngine()._renderLoop();
             }
         };
 
         if (this._xrNavigator.xr.native) {
             this._rttProvider = this._xrNavigator.xr.getNativeRenderTargetProvider(this.session, (width: number, height: number) => {
-                return this.scene.getEngine().createRenderTargetTexture({ width: width, height: height }, false);
+                return engine.createRenderTargetTexture({ width: width, height: height }, false);
             });
         } else {
             // Create render target texture from xr's webgl render target
@@ -187,9 +238,8 @@ export class WebXRSessionManager implements IDisposable {
         }
 
         // Stop window's animation frame and trigger sessions animation frame
-        if (window.cancelAnimationFrame) { window.cancelAnimationFrame(this.scene.getEngine()._frameHandler); }
-        this.scene.getEngine()._renderLoop();
-        return Promise.resolve();
+        if (window.cancelAnimationFrame) { window.cancelAnimationFrame(engine._frameHandler); }
+        engine._renderLoop();
     }
 
     /**
@@ -219,7 +269,7 @@ export class WebXRSessionManager implements IDisposable {
      * @param sessionMode session mode to check if supported eg. immersive-vr
      * @returns true if supported
      */
-    public supportsSessionAsync(sessionMode: XRSessionMode) {
+    public isSessionSupportedAsync(sessionMode: XRSessionMode) {
         return WebXRSessionManager.IsSessionSupportedAsync(sessionMode);
     }
 
@@ -229,12 +279,15 @@ export class WebXRSessionManager implements IDisposable {
      * @param options optional options to provide when creating a new render target
      * @returns a WebXR render target to which the session can render
      */
-    public getWebXRRenderTarget(onStateChangedObservable?: Observable<WebXRState>, options?: WebXRManagedOutputCanvasOptions): WebXRRenderTarget {
+    public getWebXRRenderTarget(options?: WebXRManagedOutputCanvasOptions): WebXRRenderTarget {
+        const engine = this.scene.getEngine();
         if (this._xrNavigator.xr.native) {
-            return this._xrNavigator.xr.getWebXRRenderTarget(this.scene.getEngine());
+            return this._xrNavigator.xr.getWebXRRenderTarget(engine);
         }
         else {
-            return new WebXRManagedOutputCanvas(this.scene.getEngine(), this.scene.getEngine().getRenderingCanvas() as HTMLCanvasElement, onStateChangedObservable!, options);
+            options = options || {};
+            options.canvasElement = engine.getRenderingCanvas() || undefined;
+            return new WebXRManagedOutputCanvas(this, options);
         }
     }
 
@@ -245,7 +298,7 @@ export class WebXRSessionManager implements IDisposable {
      * @param scene scene the new render target should be created for
      * @param baseLayer the webgl layer to create the render target for
      */
-    public static _CreateRenderTargetTextureFromSession(session: XRSession, scene: Scene, baseLayer: XRWebGLLayer) {
+    public static _CreateRenderTargetTextureFromSession(_session: XRSession, scene: Scene, baseLayer: XRWebGLLayer) {
         if (!baseLayer) {
             throw "no layer";
         }
@@ -266,14 +319,20 @@ export class WebXRSessionManager implements IDisposable {
      * Disposes of the session manager
      */
     public dispose() {
+        // disposing without leaving XR? Exit XR first
+        if (!this._sessionEnded) {
+            this.exitXRAsync();
+        }
         this.onXRFrameObservable.clear();
         this.onXRSessionEnded.clear();
+        this.onXRReferenceSpaceChanged.clear();
+        this.onXRSessionInit.clear();
     }
 
     /**
-     * Gets a promise returning true when fullfiled if the given session mode is supported
+     * Returns a promise that resolves with a boolean indicating if the provided session mode is supported by this browser
      * @param sessionMode defines the session to test
-     * @returns a promise
+     * @returns a promise with boolean as final value
      */
     public static IsSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean> {
         if (!(navigator as any).xr) {

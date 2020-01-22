@@ -343,6 +343,11 @@ export class MaterialHelper {
 
         // Shadows
         defines["SHADOW" + lightIndex] = false;
+        defines["SHADOWCSM" + lightIndex] = false;
+        defines["SHADOWCSMDEBUG" + lightIndex] = false;
+        defines["SHADOWCSMNUM_CASCADES" + lightIndex] = false;
+        defines["SHADOWCSMUSESHADOWMAXZ" + lightIndex] = false;
+        defines["SHADOWCSMNOBLEND" + lightIndex] = false;
         defines["SHADOWPCF" + lightIndex] = false;
         defines["SHADOWPCSS" + lightIndex] = false;
         defines["SHADOWPOISSON" + lightIndex] = false;
@@ -421,6 +426,11 @@ export class MaterialHelper {
                 defines["DIRLIGHT" + index] = false;
                 defines["SPOTLIGHT" + index] = false;
                 defines["SHADOW" + index] = false;
+                defines["SHADOWCSM" + index] = false;
+                defines["SHADOWCSMDEBUG" + index] = false;
+                defines["SHADOWCSMNUM_CASCADES" + index] = false;
+                defines["SHADOWCSMUSESHADOWMAXZ" + index] = false;
+                defines["SHADOWCSMNOBLEND" + index] = false;
                 defines["SHADOWPCF" + index] = false;
                 defines["SHADOWPCSS" + index] = false;
                 defines["SHADOWPOISSON" + index] = false;
@@ -476,6 +486,15 @@ export class MaterialHelper {
 
         samplersList.push("shadowSampler" + lightIndex);
         samplersList.push("depthSampler" + lightIndex);
+
+        uniformsList.push(
+            "viewFrustumZ" + lightIndex,
+            "cascadeBlendFactor" + lightIndex,
+            "lightSizeUVCorrection" + lightIndex,
+            "depthCorrection" + lightIndex,
+            "penumbraDarkness" + lightIndex,
+            "frustumLengths" + lightIndex,
+        );
 
         if (projectedLightTexture) {
             samplersList.push("projectionLightSampler" + lightIndex);
@@ -675,11 +694,10 @@ export class MaterialHelper {
      * @param scene The scene where the light belongs to
      * @param effect The effect we are binding the data to
      * @param useSpecular Defines if specular is supported
-     * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
      * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      */
-    public static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff = false, rebuildInParallel = false): void {
-        light.bindLight(lightIndex, scene, effect, useSpecular, usePhysicalLightFalloff, rebuildInParallel);
+    public static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel = false): void {
+        light._bindLight(lightIndex, scene, effect, useSpecular, rebuildInParallel);
     }
 
     /**
@@ -689,16 +707,15 @@ export class MaterialHelper {
      * @param effect The effect we are binding the data to
      * @param defines The generated defines for the effect
      * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
-     * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
      * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      */
-    public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, usePhysicalLightFalloff = false, rebuildInParallel = false): void {
+    public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, rebuildInParallel = false): void {
         let len = Math.min(mesh.lightSources.length, maxSimultaneousLights);
 
         for (var i = 0; i < len; i++) {
 
             let light = mesh.lightSources[i];
-            this.BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], usePhysicalLightFalloff, rebuildInParallel);
+            this.BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], rebuildInParallel);
         }
     }
 

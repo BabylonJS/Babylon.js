@@ -1,11 +1,11 @@
 import { IWebXRFeature, WebXRFeaturesManager } from '../webXRFeaturesManager';
 import { WebXRSessionManager } from '../webXRSessionManager';
-import { Observable, Observer } from '../../../Misc/observable';
+import { Observable } from '../../../Misc/observable';
 import { Matrix } from '../../../Maths/math.vector';
 import { TransformNode } from '../../../Meshes/transformNode';
 import { WebXRPlaneDetector } from './WebXRPlaneDetector';
-import { Nullable } from '../../../types';
 import { WebXRHitTestLegacy } from './WebXRHitTestLegacy';
+import { WebXRAbstractFeature } from './WebXRAbstractFeature';
 
 const Name = "xr-anchor-system";
 
@@ -54,7 +54,7 @@ let anchorIdProvider = 0;
  * will use the frame to create an anchor and not the session or a detected plane
  * For further information see https://github.com/immersive-web/anchors/
  */
-export class WebXRAnchorSystem implements IWebXRFeature {
+export class WebXRAnchorSystem extends WebXRAbstractFeature implements IWebXRFeature {
 
     /**
      * The module's name
@@ -85,17 +85,16 @@ export class WebXRAnchorSystem implements IWebXRFeature {
     private _hitTestModule: WebXRHitTestLegacy;
 
     private _enabled: boolean = false;
-    private _attached: boolean = false;
     private _trackedAnchors: Array<IWebXRAnchor> = [];
     private _lastFrameDetected: XRAnchorSet = new Set();
-    private _observerTracked: Nullable<Observer<XRFrame>>;
 
     /**
      * constructs a new anchor system
      * @param _xrSessionManager an instance of WebXRSessionManager
      * @param _options configuration object for this feature
      */
-    constructor(private _xrSessionManager: WebXRSessionManager, private _options: IWebXRAnchorSystemOptions = {}) {
+    constructor(_xrSessionManager: WebXRSessionManager, private _options: IWebXRAnchorSystemOptions = {}) {
+        super(_xrSessionManager);
     }
 
     /**
@@ -123,47 +122,12 @@ export class WebXRAnchorSystem implements IWebXRFeature {
      * @returns true if successful.
      */
     attach(): boolean {
-        this._observerTracked = this._xrSessionManager.onXRFrameObservable.add(() => {
-            const frame = this._xrSessionManager.currentFrame;
-            if (!this._attached || !this._enabled || !frame) { return; }
-            // const timestamp = this.xrSessionManager.currentTimestamp;
-
-            const trackedAnchors = frame.trackedAnchors;
-            if (trackedAnchors && trackedAnchors.size) {
-                this._trackedAnchors.filter((anchor) => !trackedAnchors.has(anchor.xrAnchor)).map((anchor) => {
-                    const index = this._trackedAnchors.indexOf(anchor);
-                    this._trackedAnchors.splice(index, 1);
-                    this.onAnchorRemovedObservable.notifyObservers(anchor);
-                });
-                // now check for new ones
-                trackedAnchors.forEach((xrAnchor) => {
-                    if (!this._lastFrameDetected.has(xrAnchor)) {
-                        const newAnchor: Partial<IWebXRAnchor> = {
-                            id: anchorIdProvider++,
-                            xrAnchor: xrAnchor
-                        };
-                        const plane = this._updateAnchorWithXRFrame(xrAnchor, newAnchor, frame);
-                        this._trackedAnchors.push(plane);
-                        this.onAnchorAddedObservable.notifyObservers(plane);
-                    } else {
-                        // updated?
-                        if (xrAnchor.lastChangedTime === this._xrSessionManager.currentTimestamp) {
-                            let index = this._findIndexInAnchorArray(xrAnchor);
-                            const anchor = this._trackedAnchors[index];
-                            this._updateAnchorWithXRFrame(xrAnchor, anchor, frame);
-                            this.onAnchorUpdatedObservable.notifyObservers(anchor);
-                        }
-                    }
-                });
-                this._lastFrameDetected = trackedAnchors;
-            }
-        });
-
+        if (!super.attach()) {
+            return false;
+        }
         if (this._options.addAnchorOnSelect) {
             this._xrSessionManager.session.addEventListener('select', this._onSelect, false);
         }
-
-        this._attached = true;
         return true;
     }
 
@@ -174,13 +138,11 @@ export class WebXRAnchorSystem implements IWebXRFeature {
      * @returns true if successful.
      */
     detach(): boolean {
-        this._attached = false;
+        if (!super.detach()) {
+            return false;
+        }
 
         this._xrSessionManager.session.removeEventListener('select', this._onSelect);
-
-        if (this._observerTracked) {
-            this._xrSessionManager.onXRFrameObservable.remove(this._observerTracked);
-        }
 
         return true;
     }
@@ -189,10 +151,44 @@ export class WebXRAnchorSystem implements IWebXRFeature {
      * Dispose this feature and all of the resources attached
      */
     dispose(): void {
-        this.detach();
+        super.dispose();
         this.onAnchorAddedObservable.clear();
         this.onAnchorRemovedObservable.clear();
         this.onAnchorUpdatedObservable.clear();
+    }
+
+    protected _onXRFrame(frame: XRFrame) {
+        if (!this.attached || !this._enabled || !frame) { return; }
+
+        const trackedAnchors = frame.trackedAnchors;
+        if (trackedAnchors && trackedAnchors.size) {
+            this._trackedAnchors.filter((anchor) => !trackedAnchors.has(anchor.xrAnchor)).map((anchor) => {
+                const index = this._trackedAnchors.indexOf(anchor);
+                this._trackedAnchors.splice(index, 1);
+                this.onAnchorRemovedObservable.notifyObservers(anchor);
+            });
+            // now check for new ones
+            trackedAnchors.forEach((xrAnchor) => {
+                if (!this._lastFrameDetected.has(xrAnchor)) {
+                    const newAnchor: Partial<IWebXRAnchor> = {
+                        id: anchorIdProvider++,
+                        xrAnchor: xrAnchor
+                    };
+                    const plane = this._updateAnchorWithXRFrame(xrAnchor, newAnchor, frame);
+                    this._trackedAnchors.push(plane);
+                    this.onAnchorAddedObservable.notifyObservers(plane);
+                } else {
+                    // updated?
+                    if (xrAnchor.lastChangedTime === this._xrSessionManager.currentTimestamp) {
+                        let index = this._findIndexInAnchorArray(xrAnchor);
+                        const anchor = this._trackedAnchors[index];
+                        this._updateAnchorWithXRFrame(xrAnchor, anchor, frame);
+                        this.onAnchorUpdatedObservable.notifyObservers(anchor);
+                    }
+                }
+            });
+            this._lastFrameDetected = trackedAnchors;
+        }
     }
 
     private _onSelect = (event: XRInputSourceEvent) => {

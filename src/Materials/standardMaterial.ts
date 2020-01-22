@@ -778,7 +778,7 @@ export class StandardMaterial extends PushMaterial {
      */
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
         if (subMesh.effect && this.isFrozen) {
-            if (this._wasPreviouslyReady) {
+            if (subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -1194,7 +1194,7 @@ export class StandardMaterial extends PushMaterial {
         }
 
         defines._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
 
         return true;
     }
@@ -1490,7 +1490,7 @@ export class StandardMaterial extends PushMaterial {
         if (mustRebind || !this.isFrozen) {
             // Lights
             if (scene.lightsEnabled && !this._disableLighting) {
-                MaterialHelper.BindLights(scene, mesh, effect, defines, this._maxSimultaneousLights, false, this._rebuildInParallel);
+                MaterialHelper.BindLights(scene, mesh, effect, defines, this._maxSimultaneousLights, this._rebuildInParallel);
             }
 
             // View

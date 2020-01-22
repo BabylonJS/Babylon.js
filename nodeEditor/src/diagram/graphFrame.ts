@@ -1,13 +1,16 @@
 import { GraphNode } from './graphNode';
 import { GraphCanvasComponent } from './graphCanvas';
 import { Nullable } from 'babylonjs/types';
-import { Observer } from 'babylonjs/Misc/observable';
+import { Observer, Observable } from 'babylonjs/Misc/observable';
 import { NodeLink } from './nodeLink';
 import { IFrameData } from '../nodeLocationInfo';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { NodePort } from './nodePort';
+import { SerializationTools } from '../serializationTools';
+import { StringTools } from '../stringTools';
 
 export class GraphFrame {
+    private readonly CollapsedWidth = 200;
     private static _FrameCounter = 0;
     private _name: string;
     private _color: Color3;
@@ -35,6 +38,8 @@ export class GraphFrame {
     private _ports: NodePort[] = [];
     private _controlledPorts: NodePort[] = [];
     private _id: number;
+
+    public onExpandStateChanged = new Observable<GraphFrame>();
 
     private readonly CloseSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><g id="Layer_2" data-name="Layer 2"><path d="M16,15l5.85,5.84-1,1L15,15.93,9.15,21.78l-1-1L14,15,8.19,9.12l1-1L15,14l5.84-5.84,1,1Z"/></g></svg>`;
     private readonly ExpandSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"><g id="Layer_2" data-name="Layer 2"><path d="M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-6.75,6.75H11.06V14.44h3.38V11.06h1.12v3.38h3.38v1.12H15.56v3.38H14.44Z"/></g></svg>`;
@@ -68,7 +73,7 @@ export class GraphFrame {
         if (value) {
             this.element.classList.add("collapsed");
                         
-            this._moveFrame((this.width - 200) / 2, 0);
+            this._moveFrame((this.width - this.CollapsedWidth) / 2, 0);
 
             for (var node of this._nodes) {
                 node.isVisible = false;
@@ -135,7 +140,7 @@ export class GraphFrame {
                 node.isVisible = true;
             }
                         
-            this._moveFrame(-(this.width - 200) / 2, 0);
+            this._moveFrame(-(this.width - this.CollapsedWidth) / 2, 0);
         }
 
         this.cleanAccumulation();
@@ -149,6 +154,8 @@ export class GraphFrame {
             this._headerCollapseElement.innerHTML = this.CollapseSVG;
             this._headerCollapseElement.title = "Collapse";   
         }
+
+        this.onExpandStateChanged.notifyObservers(this);
     }
 
     public get nodes() {
@@ -416,13 +423,13 @@ export class GraphFrame {
     }
 
     private _moveFrame(offsetX: number, offsetY: number) {
+        this.x += offsetX;
+        this.y += offsetY;
+
         for (var selectedNode of this._nodes) {
             selectedNode.x += offsetX;
             selectedNode.y += offsetY;
         }
-
-        this.x += offsetX;
-        this.y += offsetY;
     }
 
     private _onMove(evt: PointerEvent) {
@@ -449,9 +456,10 @@ export class GraphFrame {
         }
 
         this.element.parentElement!.removeChild(this.element);
-
         
         this._ownerCanvas.frames.splice(this._ownerCanvas.frames.indexOf(this), 1);
+
+        this.onExpandStateChanged.clear();
     }
 
     public serialize(): IFrameData {
@@ -467,8 +475,15 @@ export class GraphFrame {
         }
     }
 
+    public export() {
+        const state = this._ownerCanvas.globalState;
+        const json = SerializationTools.Serialize(state.nodeMaterial, state, this.nodes.map(n => n.block));
+        StringTools.DownloadAsFile(state.hostDocument, json, this._name + ".json");
+    }
+
     public static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {[key: number]: number}) {
         let newFrame = new GraphFrame(null, canvas, true);
+        const isCollapsed = !!serializationData.isCollapsed;
 
         newFrame.x = serializationData.x;
         newFrame.y = serializationData.y;
@@ -490,7 +505,20 @@ export class GraphFrame {
             newFrame.refresh();
         }
 
-        newFrame.isCollapsed = !!serializationData.isCollapsed;
+        newFrame.isCollapsed = isCollapsed;
+
+        if (isCollapsed) {
+            canvas._frameIsMoving = true;
+            newFrame._moveFrame(-(newFrame.width - newFrame.CollapsedWidth) / 2, 0);
+            let diff = serializationData.x - newFrame.x;
+            newFrame._moveFrame(diff, 0);
+            newFrame.cleanAccumulation();
+            
+            for (var selectedNode of newFrame.nodes) {
+                selectedNode.refresh();
+            }
+            canvas._frameIsMoving = false;
+        }
 
         return newFrame;
     }

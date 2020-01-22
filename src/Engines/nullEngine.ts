@@ -647,7 +647,6 @@ export class NullEngine extends Engine {
      * @param requiredWidth The width of the target to render to
      * @param requiredHeight The height of the target to render to
      * @param forceFullscreenViewport Forces the viewport to be the entire texture/screen if true
-     * @param depthStencilTexture The depth stencil texture to use to render
      * @param lodLevel defines le lod level to bind to the frame buffer
      */
     public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {

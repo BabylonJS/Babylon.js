@@ -78,6 +78,10 @@ export class Camera extends Node {
      */
     public static readonly RIG_MODE_STEREOSCOPIC_OVERUNDER = 13;
     /**
+     * Defines that both eyes of the camera will be rendered on successive lines interlaced for passive 3d monitors.
+     */
+    public static readonly RIG_MODE_STEREOSCOPIC_INTERLACED = 14;
+    /**
      * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
      */
     public static readonly RIG_MODE_VR = 20;
@@ -1003,7 +1007,8 @@ export class Camera extends Node {
             case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
             case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
             case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
-                Camera._setStereoscopicRigMode(this);
+            case Camera.RIG_MODE_STEREOSCOPIC_INTERLACED:
+                    Camera._setStereoscopicRigMode(this);
                 break;
             case Camera.RIG_MODE_VR:
                 Camera._setVRRigMode(this, rigParams);

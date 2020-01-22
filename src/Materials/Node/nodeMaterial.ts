@@ -28,6 +28,7 @@ import { SerializationHelper } from '../../Misc/decorators';
 import { TextureBlock } from './Blocks/Dual/textureBlock';
 import { ReflectionTextureBlock } from './Blocks/Dual/reflectionTextureBlock';
 import { EffectFallbacks } from '../effectFallbacks';
+import { WebRequest } from '../../Misc/webRequest';
 
 // declare NODEEDITOR namespace for compilation issue
 declare var NODEEDITOR: any;
@@ -43,6 +44,10 @@ export interface INodeMaterialEditorOptions {
 
 /** @hidden */
 export class NodeMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+    public NORMAL = false;
+    public TANGENT = false;
+    public UV1 = false;
+
     /** BONES */
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
@@ -114,8 +119,11 @@ export class NodeMaterial extends PushMaterial {
     private _optimizers = new Array<NodeMaterialOptimizer>();
     private _animationFrame = -1;
 
-    /** Define the URl to load node editor script */
+    /** Define the Url to load node editor script */
     public static EditorURL = `https://unpkg.com/babylonjs-node-editor@${Engine.Version}/babylon.nodeEditor.js`;
+
+    /** Define the Url to load snippets */
+    public static SnippetUrl = "https://snippet.babylonjs.com";
 
     private BJSNODEMATERIALEDITOR = this._getGlobalNodeMaterialEditor();
 
@@ -656,15 +664,19 @@ export class NodeMaterial extends PushMaterial {
     }
 
     private _prepareDefinesForAttributes(mesh: AbstractMesh, defines: NodeMaterialDefines) {
-        if (!defines._areAttributesDirty) {
-            return;
-        }
+        let oldNormal = defines["NORMAL"];
+        let oldTangent = defines["TANGENT"];
+        let oldUV1 = defines["UV1"];
 
         defines["NORMAL"] = mesh.isVerticesDataPresent(VertexBuffer.NormalKind);
 
         defines["TANGENT"] = mesh.isVerticesDataPresent(VertexBuffer.TangentKind);
 
         defines["UV1"] = mesh.isVerticesDataPresent(VertexBuffer.UVKind);
+
+        if (oldNormal !== defines["NORMAL"] || oldTangent !== defines["TANGENT"] || oldUV1 !== defines["UV1"]) {
+            defines.markAsAttributesDirty();
+        }
     }
 
     /**
@@ -694,7 +706,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         if (subMesh.effect && this.isFrozen) {
-            if (this._wasPreviouslyReady) {
+            if (subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -810,7 +822,7 @@ export class NodeMaterial extends PushMaterial {
         }
 
         defines._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
 
         return true;
     }
@@ -870,7 +882,7 @@ export class NodeMaterial extends PushMaterial {
 
         if (mustRebind) {
             let sharedData = this._sharedData;
-            if (effect && scene.getCachedMaterial() !== this) {
+            if (effect && scene.getCachedEffect() !== effect) {
                 // Bindable blocks
                 for (var block of sharedData.bindableBlocks) {
                     block.bind(effect, this, mesh);
@@ -893,7 +905,9 @@ export class NodeMaterial extends PushMaterial {
     public getActiveTextures(): BaseTexture[] {
         var activeTextures = super.getActiveTextures();
 
-        activeTextures.push(...this._sharedData.textureBlocks.filter((tb) => tb.texture).map((tb) => tb.texture!));
+        if (this._sharedData) {
+            activeTextures.push(...this._sharedData.textureBlocks.filter((tb) => tb.texture).map((tb) => tb.texture!));
+        }
 
         return activeTextures;
     }
@@ -1130,26 +1144,30 @@ export class NodeMaterial extends PushMaterial {
      * Serializes this material in a JSON representation
      * @returns the serialized material object
      */
-    public serialize(): any {
-        var serializationObject = SerializationHelper.Serialize(this);
-        serializationObject.customType = "BABYLON.NodeMaterial";
-
-        serializationObject.outputNodes = [];
+    public serialize(selectedBlocks?: NodeMaterialBlock[]): any {
+        var serializationObject = selectedBlocks ? {} : SerializationHelper.Serialize(this);
         serializationObject.editorData = JSON.parse(JSON.stringify(this.editorData)); // Copy
 
         let blocks: NodeMaterialBlock[] = [];
 
-        // Outputs
-        for (var outputNode of this._vertexOutputNodes) {
-            this._gatherBlocks(outputNode, blocks);
-            serializationObject.outputNodes.push(outputNode.uniqueId);
-        }
+        if (selectedBlocks) {
+            blocks = selectedBlocks;
+        } else {
+            serializationObject.customType = "BABYLON.NodeMaterial";
+            serializationObject.outputNodes = [];
 
-        for (var outputNode of this._fragmentOutputNodes) {
-            this._gatherBlocks(outputNode, blocks);
-
-            if (serializationObject.outputNodes.indexOf(outputNode.uniqueId) === -1) {
+            // Outputs
+            for (var outputNode of this._vertexOutputNodes) {
+                this._gatherBlocks(outputNode, blocks);
                 serializationObject.outputNodes.push(outputNode.uniqueId);
+            }
+
+            for (var outputNode of this._fragmentOutputNodes) {
+                this._gatherBlocks(outputNode, blocks);
+
+                if (serializationObject.outputNodes.indexOf(outputNode.uniqueId) === -1) {
+                    serializationObject.outputNodes.push(outputNode.uniqueId);
+                }
             }
         }
 
@@ -1160,11 +1178,13 @@ export class NodeMaterial extends PushMaterial {
             serializationObject.blocks.push(block.serialize());
         }
 
-        for (var block of this.attachedBlocks) {
-            if (blocks.indexOf(block) !== -1) {
-                continue;
+        if (!selectedBlocks) {
+            for (var block of this.attachedBlocks) {
+                if (blocks.indexOf(block) !== -1) {
+                    continue;
+                }
+                serializationObject.blocks.push(block.serialize());
             }
-            serializationObject.blocks.push(block.serialize());
         }
 
         return serializationObject;
@@ -1278,6 +1298,41 @@ export class NodeMaterial extends PushMaterial {
         nodeMaterial.build();
 
         return nodeMaterial;
+    }
+
+    /**
+     * Creates a node material from a snippet saved by the node material editor
+     * @param snippetId defines the snippet to load
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new node material
+     */
+    public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<NodeMaterial> {
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                        let serializationObject = JSON.parse(snippet.nodeMaterial);
+                        let nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(snippetId, scene), serializationObject, scene, rootUrl);
+
+                        nodeMaterial.loadFromSerialization(serializationObject);
+                        try {
+                            nodeMaterial.build(true);
+                            resolve(nodeMaterial);
+                        } catch (err) {
+                            reject(err);
+                        }
+                    } else {
+                        reject("Unable to load the snippet " + snippetId);
+                    }
+                }
+            });
+
+            request.open("GET", this.SnippetUrl + "/" + snippetId.replace("#", "/"));
+            request.send();
+        });
     }
 
     /**

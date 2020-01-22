@@ -19,6 +19,7 @@ import { TextureLinkLineComponent } from '../../../lines/textureLinkLineComponen
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+import { Color4LineComponent } from '../../../lines/color4LineComponent';
 
 interface INodeMaterialPropertyGridComponentProps {
     globalState: GlobalState;
@@ -56,7 +57,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                     textureBlocks.map((textureBlock, i) => {
                         return (
                             <TextureLinkLineComponent label={textureBlock.name} 
-                                key={i} 
+                                key={"nodematText" + i} 
                                 texture={textureBlock.texture} 
                                 material={material} 
                                 onTextureCreated={texture => textureBlock.texture = texture}
@@ -74,27 +75,35 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
             case NodeMaterialBlockConnectionPointTypes.Float:
                     let cantDisplaySlider = (isNaN(block.min) || isNaN(block.max) || block.min === block.max);
                     return (
-                        <>
+                        <div key={block.name}>                            
                             {
-                                cantDisplaySlider &&
+                                block.isBoolean &&
+                                <CheckBoxLineComponent key={block.name} label={block.name} target={block} propertyName="value" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                            }
+                            {
+                                !block.isBoolean && cantDisplaySlider &&
                                 <FloatLineComponent key={block.name} lockObject={this.props.lockObject} label={block.name} target={block} propertyName="value" 
                                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                                 />
                             }        
                             {
-                                !cantDisplaySlider &&
+                                !block.isBoolean && !cantDisplaySlider &&
                                 <SliderLineComponent key={block.name} label={block.name} target={block} propertyName="value" step={(block.max - block.min) / 100.0} minimum={block.min} maximum={block.max} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                             }
-                        </>
+                        </div>
                     );  
             case NodeMaterialBlockConnectionPointTypes.Color3:
-            case NodeMaterialBlockConnectionPointTypes.Color4:
                 return (
                     <Color3LineComponent key={block.name} label={block.name} target={block} propertyName="value" 
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 )     
+            case NodeMaterialBlockConnectionPointTypes.Color4:
+                return (
+                    <Color4LineComponent key={block.name} label={block.name} target={block} propertyName="value" 
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                )                         
             case NodeMaterialBlockConnectionPointTypes.Vector2:
-                    return (
+                return (
                         <Vector2LineComponent key={block.name} label={block.name} target={block} propertyName="value" 
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     )                                
@@ -147,9 +156,9 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                     }           
                 </LineContainerComponent>
                 {
-                    namedGroups.map(name => {
+                    namedGroups.map((name, i) => {
                         return (
-                            <LineContainerComponent globalState={this.props.globalState} title={name.toUpperCase()}>
+                            <LineContainerComponent key={"inputValue" + i} globalState={this.props.globalState} title={name.toUpperCase()}>
                             {
                                 configurableInputBlocks.filter(block => block.groupInInspector === name).map(block => {
                                     return this.renderInputBlock(block);
