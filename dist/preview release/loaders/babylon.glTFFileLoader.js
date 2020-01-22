@@ -6905,7 +6905,10 @@ var GLTFFileLoader = /** @class */ (function () {
                     readAsync: function (byteOffset, byteLength) {
                         return new Promise(function (resolve, reject) {
                             fileRequests_1.push(scene._requestFile(url, function (data, webRequest) {
-                                dataBuffer_1.byteLength = Number(webRequest.getResponseHeader("Content-Range").split("/")[1]);
+                                var contentRange = webRequest.getResponseHeader("Content-Range");
+                                if (contentRange) {
+                                    dataBuffer_1.byteLength = Number(contentRange.split("/")[1]);
+                                }
                                 resolve(new Uint8Array(data));
                             }, onProgress, true, true, function (error) {
                                 reject(error);
@@ -7116,17 +7119,17 @@ var GLTFFileLoader = /** @class */ (function () {
                 _this._log("Binary version: " + version);
             }
             var length = dataReader.readUint32();
-            if (length !== dataReader.buffer.byteLength) {
+            if (dataReader.buffer.byteLength != 0 && length !== dataReader.buffer.byteLength) {
                 throw new Error("Length in header does not match actual data length: " + length + " != " + dataReader.buffer.byteLength);
             }
             var unpacked;
             switch (version) {
                 case 1: {
-                    unpacked = _this._unpackBinaryV1Async(dataReader);
+                    unpacked = _this._unpackBinaryV1Async(dataReader, length);
                     break;
                 }
                 case 2: {
-                    unpacked = _this._unpackBinaryV2Async(dataReader);
+                    unpacked = _this._unpackBinaryV2Async(dataReader, length);
                     break;
                 }
                 default: {
@@ -7137,7 +7140,7 @@ var GLTFFileLoader = /** @class */ (function () {
             return unpacked;
         });
     };
-    GLTFFileLoader.prototype._unpackBinaryV1Async = function (dataReader) {
+    GLTFFileLoader.prototype._unpackBinaryV1Async = function (dataReader, length) {
         var ContentFormat = {
             JSON: 0
         };
@@ -7146,7 +7149,7 @@ var GLTFFileLoader = /** @class */ (function () {
         if (contentFormat !== ContentFormat.JSON) {
             throw new Error("Unexpected content format: " + contentFormat);
         }
-        var bodyLength = dataReader.buffer.byteLength - dataReader.byteOffset;
+        var bodyLength = length - dataReader.byteOffset;
         var data = { json: this._parseJson(dataReader.readString(contentLength)), bin: null };
         if (bodyLength !== 0) {
             var startByteOffset_1 = dataReader.byteOffset;
@@ -7157,33 +7160,23 @@ var GLTFFileLoader = /** @class */ (function () {
         }
         return Promise.resolve(data);
     };
-    GLTFFileLoader.prototype._unpackBinaryV2Async = function (dataReader) {
+    GLTFFileLoader.prototype._unpackBinaryV2Async = function (dataReader, length) {
         var _this = this;
         var ChunkFormat = {
             JSON: 0x4E4F534A,
             BIN: 0x004E4942
         };
-        // Read the JSON chunk header.
-        var chunkLength = dataReader.readUint32();
-        var chunkFormat = dataReader.readUint32();
-        if (chunkFormat !== ChunkFormat.JSON) {
-            throw new Error("First chunk format is not JSON");
-        }
-        // Bail if there are no other chunks.
-        if (dataReader.byteOffset + chunkLength === dataReader.buffer.byteLength) {
-            return dataReader.loadAsync(chunkLength).then(function () {
-                return { json: _this._parseJson(dataReader.readString(chunkLength)), bin: null };
-            });
-        }
-        // Read the JSON chunk and the length and type of the next chunk.
-        return dataReader.loadAsync(chunkLength + 8).then(function () {
-            var data = { json: _this._parseJson(dataReader.readString(chunkLength)), bin: null };
-            var readAsync = function () {
-                var chunkLength = dataReader.readUint32();
-                var chunkFormat = dataReader.readUint32();
+        var data = { json: {}, bin: null };
+        var readAsync = function () {
+            var chunkLength = dataReader.readUint32();
+            var chunkFormat = dataReader.readUint32();
+            var finalChunk = (dataReader.byteOffset + chunkLength + 8 > length);
+            // Read the chunk and (if available) the length and type of the next chunk.
+            return dataReader.loadAsync(finalChunk ? chunkLength : chunkLength + 8).then(function () {
                 switch (chunkFormat) {
                     case ChunkFormat.JSON: {
-                        throw new Error("Unexpected JSON chunk");
+                        data.json = _this._parseJson(dataReader.readString(chunkLength));
+                        break;
                     }
                     case ChunkFormat.BIN: {
                         var startByteOffset_2 = dataReader.byteOffset;
@@ -7200,13 +7193,13 @@ var GLTFFileLoader = /** @class */ (function () {
                         break;
                     }
                 }
-                if (dataReader.byteOffset !== dataReader.buffer.byteLength) {
-                    return dataReader.loadAsync(8).then(readAsync);
+                if (finalChunk) {
+                    return data;
                 }
-                return Promise.resolve(data);
-            };
-            return readAsync();
-        });
+                return readAsync();
+            });
+        };
+        return readAsync();
     };
     GLTFFileLoader._parseVersion = function (version) {
         if (version === "1.0" || version === "1.0.1") {

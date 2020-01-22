@@ -42551,10 +42551,10 @@ declare module BABYLON {
         initializeSessionAsync(xrSessionMode?: XRSessionMode, xrSessionInit?: XRSessionInit): Promise<XRSession>;
         /**
          * Sets the reference space on the xr session
-         * @param referenceSpace space to set
+         * @param referenceSpaceType space to set
          * @returns a promise that will resolve once the reference space has been set
          */
-        setReferenceSpaceAsync(referenceSpace?: XRReferenceSpaceType): Promise<XRReferenceSpace>;
+        setReferenceSpaceTypeAsync(referenceSpaceType?: XRReferenceSpaceType): Promise<XRReferenceSpace>;
         /**
          * Resets the reference space to the one started the session
          */
@@ -42620,10 +42620,6 @@ declare module BABYLON {
      */
     export class WebXRCamera extends FreeCamera {
         private _xrSessionManager;
-        /**
-         * Is the camera in debug mode. Used when using an emulator
-         */
-        debugMode: boolean;
         private _firstFrame;
         private _referencedPosition;
         private _referenceQuaternion;
@@ -42641,7 +42637,7 @@ declare module BABYLON {
          * @param otherCamera the non-vr camera to copy the transformation from
          * @param resetToBaseReferenceSpace should XR reset to the base reference space
          */
-        setTransformationFromNonVRCamera(otherCamera: Camera, resetToBaseReferenceSpace?: boolean): void;
+        setTransformationFromNonVRCamera(otherCamera?: Camera, resetToBaseReferenceSpace?: boolean): void;
         /** @hidden */
         _updateForDualEyeDebugging(): void;
         private _updateReferenceSpace;
@@ -42659,12 +42655,17 @@ declare module BABYLON {
          */
         attached: boolean;
         /**
+         * Should auto-attach be disabled?
+         */
+        disableAutoAttach: boolean;
+        /**
          * Attach the feature to the session
          * Will usually be called by the features manager
          *
+         * @param force should attachment be forced (even when already attached)
          * @returns true if successful.
          */
-        attach(): boolean;
+        attach(force?: boolean): boolean;
         /**
          * Detach the feature from the session
          * Will usually be called by the features manager
@@ -42672,6 +42673,35 @@ declare module BABYLON {
          * @returns true if successful.
          */
         detach(): boolean;
+    }
+    /**
+     * A list of the currently available features without referencing them
+     */
+    export class WebXRFeatureName {
+        /**
+         * The name of the hit test feature
+         */
+        static HIT_TEST: string;
+        /**
+         * The name of the anchor system feature
+         */
+        static ANCHOR_SYSTEM: string;
+        /**
+         * The name of the background remover feature
+         */
+        static BACKGROUND_REMOVER: string;
+        /**
+         * The name of the pointer selection feature
+         */
+        static POINTER_SELECTION: string;
+        /**
+         * The name of the teleportation feature
+         */
+        static TELEPORTATION: string;
+        /**
+         * The name of the plane detection feature
+         */
+        static PLANE_DETECTION: string;
     }
     /**
      * Defining the constructor of a feature. Used to register the modules.
@@ -43963,11 +43993,16 @@ declare module BABYLON {
          */
         get attached(): boolean;
         /**
+         * Should auto-attach be disabled?
+         */
+        disableAutoAttach: boolean;
+        /**
          * attach this feature
          *
+         * @param force should attachment be forced (even when already attached)
          * @returns true if successful, false is failed or already attached
          */
-        attach(): boolean;
+        attach(force?: boolean): boolean;
         /**
          * detach this feature.
          *
@@ -43983,7 +44018,7 @@ declare module BABYLON {
          * This function will not execute after the feature is detached.
          * @param _xrFrame the current frame
          */
-        protected _onXRFrame(_xrFrame: XRFrame): void;
+        protected abstract _onXRFrame(_xrFrame: XRFrame): void;
         /**
          * This is used to register callbacks that will automatically be removed when detach is called.
          * @param observable the observable to which the observer will be attached
@@ -44032,7 +44067,7 @@ declare module BABYLON {
     /**
      * A module that will enable pointer selection for motion controllers of XR Input Sources
      */
-    export class WebXRControllerPointerSelection extends WebXRAbstractFeature implements IWebXRFeature {
+    export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         private readonly _options;
         /**
          * The module's name
@@ -44352,7 +44387,7 @@ declare module BABYLON {
      * When enabled and attached, the feature will allow a user to move aroundand rotate in the scene using
      * the input of the attached controllers.
      */
-    export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature implements IWebXRFeature {
+    export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         private _options;
         /**
          * The module's name
@@ -44966,7 +45001,7 @@ declare module BABYLON {
      * Hit test (or raycasting) is used to interact with the real world.
      * For further information read here - https://github.com/immersive-web/hit-test
      */
-    export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRFeature {
+    export class WebXRHitTestLegacy extends WebXRAbstractFeature {
         /**
          * options to use when constructing this feature
          */
@@ -45080,7 +45115,7 @@ declare module BABYLON {
      * The plane detector is used to detect planes in the real world when in AR
      * For more information see https://github.com/immersive-web/real-world-geometry/
      */
-    export class WebXRPlaneDetector extends WebXRAbstractFeature implements IWebXRFeature {
+    export class WebXRPlaneDetector extends WebXRAbstractFeature {
         private _options;
         /**
          * The module's name
@@ -45169,7 +45204,7 @@ declare module BABYLON {
      * will use the frame to create an anchor and not the session or a detected plane
      * For further information see https://github.com/immersive-web/anchors/
      */
-    export class WebXRAnchorSystem extends WebXRAbstractFeature implements IWebXRFeature {
+    export class WebXRAnchorSystem extends WebXRAbstractFeature {
         private _options;
         /**
          * The module's name
@@ -45283,7 +45318,7 @@ declare module BABYLON {
     /**
      * A module that will automatically disable background meshes when entering AR and will enable them when leaving AR.
      */
-    export class WebXRBackgroundRemover extends WebXRAbstractFeature implements IWebXRFeature {
+    export class WebXRBackgroundRemover extends WebXRAbstractFeature {
         /**
          * read-only options to be used in this module
          */
@@ -45331,6 +45366,7 @@ declare module BABYLON {
          * Dispose this feature and all of the resources attached
          */
         dispose(): void;
+        protected _onXRFrame(_xrFrame: XRFrame): void;
     }
 }
 declare module BABYLON {
