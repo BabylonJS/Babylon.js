@@ -24,6 +24,9 @@ export class NodeMaterialBlock {
     private _isInput = false;
     protected _isUnique = false;
 
+    /** Gets or sets a boolean indicating that only one input can be connected at a time */
+    public inputsAreExclusive = false;
+
     /** @hidden */
     public _codeVariableName = "";
 
@@ -413,6 +416,7 @@ export class NodeMaterialBlock {
         const otherBlockWasGeneratedInVertexShader = block._buildTarget === NodeMaterialBlockTargets.Vertex && block.target !== NodeMaterialBlockTargets.VertexAndFragment;
 
         if (localBlockIsFragment && (
+            ((block.target & block._buildTarget) === 0) ||
             ((block.target & input.target) === 0) ||
             (this.target !== NodeMaterialBlockTargets.VertexAndFragment && otherBlockWasGeneratedInVertexShader)
             )) { // context switch! We need a varying
@@ -541,7 +545,7 @@ export class NodeMaterialBlock {
 
         // Get unique name
         let nameAsVariableName = this.name.replace(/[^A-Za-z_]+/g, "");
-        this._codeVariableName = nameAsVariableName;
+        this._codeVariableName = nameAsVariableName || `${this.getClassName()}_${this.uniqueId}`;
 
         if (uniqueNames.indexOf(this._codeVariableName) !== -1) {
             let index = 0;

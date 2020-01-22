@@ -542,7 +542,7 @@ var FurMaterial = /** @class */ (function (_super) {
     // Methods
     FurMaterial.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -659,7 +659,7 @@ var FurMaterial = /** @class */ (function (_super) {
             return false;
         }
         this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
         return true;
     };
     FurMaterial.prototype.bindForSubMesh = function (world, mesh, subMesh) {

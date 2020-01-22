@@ -21,7 +21,8 @@ import { GraphCanvasComponent } from './diagram/graphCanvas';
 import { GraphNode } from './diagram/graphNode';
 import { GraphFrame } from './diagram/graphFrame';
 import * as ReactDOM from 'react-dom';
-import { IInspectorOptions } from 'babylonjs';
+import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
+
 
 require("./main.scss");
 
@@ -72,7 +73,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, State> {
      * Creates a node and recursivly creates its parent nodes from it's input
      * @param nodeMaterialBlock 
      */
-    public createNodeFromObject(block: NodeMaterialBlock) {
+    public createNodeFromObject(block: NodeMaterialBlock, recursion = true) {
         if (this._blocks.indexOf(block) !== -1) {        
             return this._graphCanvas.nodes.filter(n => n.block === block)[0];
         }
@@ -90,7 +91,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, State> {
         // Connections
         if (block.inputs.length) {
             for (var input of block.inputs) {
-                if (input.isConnected) {
+                if (input.isConnected && recursion) {
                     this.createNodeFromObject(input.sourceBlock!);
                 }
             }
@@ -100,7 +101,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, State> {
         const node = this._graphCanvas.appendBlock(block);
 
         // Links
-        if (block.inputs.length) {
+        if (block.inputs.length && recursion) {
             for (var input of block.inputs) {
                 if (input.isConnected) {
                     this._graphCanvas.connectPorts(input.connectedPoint!, input);
@@ -334,7 +335,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, State> {
                 return;
             }
             
-            let newNode = this.createNodeFromObject(clone);
+            let newNode = this.createNodeFromObject(clone, false);
 
             let x = 0;
             let y = 0;
@@ -372,6 +373,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, State> {
         }
 
         try {
+            this.props.globalState.nodeMaterial.options.emitComments = true;
             this.props.globalState.nodeMaterial.build(true);
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node material build successful", false));
         }

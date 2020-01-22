@@ -768,16 +768,16 @@ declare module BABYLON {
         static readonly TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV: number;
         /** FLOAT_32_UNSIGNED_INT_24_8_REV */
         static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV: number;
-        /** nearest is mag = nearest and min = nearest and mip = nearest */
+        /** nearest is mag = nearest and min = nearest and no mip */
         static readonly TEXTURE_NEAREST_SAMPLINGMODE: number;
-        /** Bilinear is mag = linear and min = linear and mip = nearest */
+        /** mag = nearest and min = nearest and mip = none */
+        static readonly TEXTURE_NEAREST_NEAREST: number;
+        /** Bilinear is mag = linear and min = linear and no mip */
         static readonly TEXTURE_BILINEAR_SAMPLINGMODE: number;
+        /** mag = linear and min = linear and mip = none */
+        static readonly TEXTURE_LINEAR_LINEAR: number;
         /** Trilinear is mag = linear and min = linear and mip = linear */
         static readonly TEXTURE_TRILINEAR_SAMPLINGMODE: number;
-        /** nearest is mag = nearest and min = nearest and mip = linear */
-        static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR: number;
-        /** Bilinear is mag = linear and min = linear and mip = nearest */
-        static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST: number;
         /** Trilinear is mag = linear and min = linear and mip = linear */
         static readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR: number;
         /** mag = nearest and min = nearest and mip = nearest */
@@ -788,14 +788,14 @@ declare module BABYLON {
         static readonly TEXTURE_NEAREST_LINEAR_MIPLINEAR: number;
         /** mag = nearest and min = linear and mip = none */
         static readonly TEXTURE_NEAREST_LINEAR: number;
-        /** mag = nearest and min = nearest and mip = none */
-        static readonly TEXTURE_NEAREST_NEAREST: number;
+        /** nearest is mag = nearest and min = nearest and mip = linear */
+        static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR: number;
         /** mag = linear and min = nearest and mip = nearest */
         static readonly TEXTURE_LINEAR_NEAREST_MIPNEAREST: number;
         /** mag = linear and min = nearest and mip = linear */
         static readonly TEXTURE_LINEAR_NEAREST_MIPLINEAR: number;
-        /** mag = linear and min = linear and mip = none */
-        static readonly TEXTURE_LINEAR_LINEAR: number;
+        /** Bilinear is mag = linear and min = linear and mip = nearest */
+        static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST: number;
         /** mag = linear and min = nearest and mip = none */
         static readonly TEXTURE_LINEAR_NEAREST: number;
         /** Explicit coordinates mode */
@@ -1461,6 +1461,18 @@ declare module BABYLON {
         private static _PreparePreProcessors;
         private static _ProcessShaderConversion;
         private static _ProcessIncludes;
+        /**
+         * Loads a file from a url
+         * @param url url to load
+         * @param onSuccess callback called when the file successfully loads
+         * @param onProgress callback called while file is loading (if the server supports this mode)
+         * @param offlineProvider defines the offline provider for caching
+         * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+         * @param onError callback called when the file fails to load
+         * @returns a file request object
+         * @hidden
+         */
+        static _FileToolsLoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest;
     }
 }
 declare module BABYLON {
@@ -2411,6 +2423,11 @@ declare module BABYLON {
          * @returns a new Vector3
          */
         negate(): Vector3;
+        /**
+         * Negate this vector in place
+         * @returns this
+         */
+        negateInPlace(): Vector3;
         /**
          * Multiplies the Vector3 coordinates by the float "scale"
          * @param scale defines the multiplier factor
@@ -3482,6 +3499,13 @@ declare module BABYLON {
          * @return true if the current quaternion and the given one coordinates are strictly equals
          */
         equals(otherQuaternion: DeepImmutable<Quaternion>): boolean;
+        /**
+         * Gets a boolean if two quaternions are equals (using an epsilon value)
+         * @param otherQuaternion defines the other quaternion
+         * @param epsilon defines the minimal distance to consider equality
+         * @returns true if the given quaternion coordinates are close to the current ones by a distance of epsilon.
+         */
+        equalsWithEpsilon(otherQuaternion: DeepImmutable<Quaternion>, epsilon?: number): boolean;
         /**
          * Clone the current quaternion
          * @returns a new quaternion copied from the current one
@@ -7725,8 +7749,9 @@ declare module BABYLON {
          * @param url the url of the texture
          * @param forcedExtension defines the extension to use
          * @param onLoad callback called when the texture is loaded  (defaults to null)
+         * @param prefiltered Defines whether the updated texture is prefiltered or not
          */
-        updateURL(url: string, forcedExtension?: string, onLoad?: () => void): void;
+        updateURL(url: string, forcedExtension?: string, onLoad?: () => void, prefiltered?: boolean): void;
         /**
          * Delays loading of the cube texture
          * @param forcedExtension defines the extension to use
@@ -8417,6 +8442,7 @@ declare module BABYLON {
             createRenderTargetTexture(size: number | {
                 width: number;
                 height: number;
+                layers?: number;
             }, options: boolean | RenderTargetCreationOptions): InternalTexture;
             /**
              * Creates a depth stencil texture.
@@ -8428,11 +8454,13 @@ declare module BABYLON {
             createDepthStencilTexture(size: number | {
                 width: number;
                 height: number;
+                layers?: number;
             }, options: DepthTextureCreationOptions): InternalTexture;
             /** @hidden */
             _createDepthStencilTexture(size: number | {
                 width: number;
                 height: number;
+                layers?: number;
             }, options: DepthTextureCreationOptions): InternalTexture;
         }
 }
@@ -8871,7 +8899,7 @@ declare module BABYLON {
          * Also use as the light direction on spot and directional lights.
          */
         set direction(value: Vector3);
-        private _shadowMinZ;
+        protected _shadowMinZ: number;
         /**
          * Gets the shadow projection clipping minimum z value.
          */
@@ -8880,7 +8908,7 @@ declare module BABYLON {
          * Sets the shadow projection clipping minimum z value.
          */
         set shadowMinZ(value: number);
-        private _shadowMaxZ;
+        protected _shadowMaxZ: number;
         /**
          * Sets the shadow projection clipping maximum z value.
          */
@@ -9209,10 +9237,9 @@ declare module BABYLON {
          * @param scene The scene where the light belongs to
          * @param effect The effect we are binding the data to
          * @param useSpecular Defines if specular is supported
-         * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
          * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
          */
-        static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff?: boolean, rebuildInParallel?: boolean): void;
+        static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel?: boolean): void;
         /**
          * Binds the lights information from the scene to the effect for the given mesh.
          * @param scene The scene the lights belongs to
@@ -9220,10 +9247,9 @@ declare module BABYLON {
          * @param effect The effect we are binding the data to
          * @param defines The generated defines for the effect
          * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
-         * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
          * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
          */
-        static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights?: number, usePhysicalLightFalloff?: boolean, rebuildInParallel?: boolean): void;
+        static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights?: number, rebuildInParallel?: boolean): void;
         private static _tempFogColor;
         /**
          * Binds the fog information from the scene to the effect for the given mesh.
@@ -9380,11 +9406,6 @@ declare module BABYLON {
          */
         getShadowMap(): Nullable<RenderTargetTexture>;
         /**
-         * Gets the RTT used during rendering (can be a blurred version of the shadow map or the shadow map itself).
-         * @returns The render target texture if the shadow map is present otherwise, null
-         */
-        getShadowMapForRendering(): Nullable<RenderTargetTexture>;
-        /**
          * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
          * @param subMesh The submesh we want to render in the shadow map
          * @param useInstances Defines wether will draw in the map using instances
@@ -9421,7 +9442,7 @@ declare module BABYLON {
          * @param onCompiled Callback triggered at the and of the effects compilation
          * @param options Sets of optional options forcing the compilation with different modes
          */
-        forceCompilation(onCompiled?: (generator: ShadowGenerator) => void, options?: Partial<{
+        forceCompilation(onCompiled?: (generator: IShadowGenerator) => void, options?: Partial<{
             useInstances: boolean;
         }>): void;
         /**
@@ -9448,6 +9469,10 @@ declare module BABYLON {
      * Documentation: https://doc.babylonjs.com/babylon101/shadows
      */
     export class ShadowGenerator implements IShadowGenerator {
+        /**
+         * Name of the shadow generator class
+         */
+        static CLASSNAME: string;
         /**
          * Shadow generator mode None: no filtering applied.
          */
@@ -9538,7 +9563,7 @@ declare module BABYLON {
          * Can be used to update internal effect state (that you can get from the onAfterShadowMapRenderObservable)
          */
         onAfterShadowMapRenderMeshObservable: Observable<Mesh>;
-        private _bias;
+        protected _bias: number;
         /**
          * Gets the bias: offset applied on the depth preventing acnea (in light direction).
          */
@@ -9547,7 +9572,7 @@ declare module BABYLON {
          * Sets the bias: offset applied on the depth preventing acnea (in light direction).
          */
         set bias(bias: number);
-        private _normalBias;
+        protected _normalBias: number;
         /**
          * Gets the normalBias: offset applied on the depth preventing acnea (along side the normal direction and proportinal to the light/normal angle).
          */
@@ -9556,7 +9581,7 @@ declare module BABYLON {
          * Sets the normalBias: offset applied on the depth preventing acnea (along side the normal direction and proportinal to the light/normal angle).
          */
         set normalBias(normalBias: number);
-        private _blurBoxOffset;
+        protected _blurBoxOffset: number;
         /**
          * Gets the blur box offset: offset applied during the blur pass.
          * Only useful if useKernelBlur = false
@@ -9567,7 +9592,7 @@ declare module BABYLON {
          * Only useful if useKernelBlur = false
          */
         set blurBoxOffset(value: number);
-        private _blurScale;
+        protected _blurScale: number;
         /**
          * Gets the blur scale: scale of the blurred texture compared to the main shadow map.
          * 2 means half of the size.
@@ -9578,7 +9603,7 @@ declare module BABYLON {
          * 2 means half of the size.
          */
         set blurScale(value: number);
-        private _blurKernel;
+        protected _blurKernel: number;
         /**
          * Gets the blur kernel: kernel size of the blur pass.
          * Only useful if useKernelBlur = true
@@ -9589,7 +9614,7 @@ declare module BABYLON {
          * Only useful if useKernelBlur = true
          */
         set blurKernel(value: number);
-        private _useKernelBlur;
+        protected _useKernelBlur: boolean;
         /**
          * Gets whether the blur pass is a kernel blur (if true) or box blur.
          * Only useful in filtered mode (useBlurExponentialShadowMap...)
@@ -9600,7 +9625,7 @@ declare module BABYLON {
          * Only useful in filtered mode (useBlurExponentialShadowMap...)
          */
         set useKernelBlur(value: boolean);
-        private _depthScale;
+        protected _depthScale: number;
         /**
          * Gets the depth scale used in ESM mode.
          */
@@ -9610,7 +9635,8 @@ declare module BABYLON {
          * This can override the scale stored on the light.
          */
         set depthScale(value: number);
-        private _filter;
+        protected _validateFilter(filter: number): number;
+        protected _filter: number;
         /**
          * Gets the current mode of the shadow generator (normal, PCF, ESM...).
          * The returned value is a number equal to one of the available mode defined in ShadowMap.FILTER_x like _FILTER_NONE
@@ -9673,7 +9699,7 @@ declare module BABYLON {
          * Sets the current filter to "PCF" (percentage closer filtering).
          */
         set usePercentageCloserFiltering(value: boolean);
-        private _filteringQuality;
+        protected _filteringQuality: number;
         /**
          * Gets the PCF or PCSS Quality.
          * Only valid if usePercentageCloserFiltering or usePercentageCloserFiltering is true.
@@ -9692,7 +9718,7 @@ declare module BABYLON {
          * Sets the current filter to "PCSS" (contact hardening).
          */
         set useContactHardeningShadow(value: boolean);
-        private _contactHardeningLightSizeUVRatio;
+        protected _contactHardeningLightSizeUVRatio: number;
         /**
          * Gets the Light Size (in shadow map uv unit) used in PCSS to determine the blocker search area and the penumbra size.
          * Using a ratio helps keeping shape stability independently of the map size.
@@ -9713,7 +9739,7 @@ declare module BABYLON {
          * Only valid if useContactHardeningShadow is true.
          */
         set contactHardeningLightSizeUVRatio(contactHardeningLightSizeUVRatio: number);
-        private _darkness;
+        protected _darkness: number;
         /** Gets or sets the actual darkness of a shadow */
         get darkness(): number;
         set darkness(value: number);
@@ -9729,7 +9755,7 @@ declare module BABYLON {
          * @returns the shadow generator allowing fluent coding.
          */
         setDarkness(darkness: number): ShadowGenerator;
-        private _transparencyShadow;
+        protected _transparencyShadow: boolean;
         /** Gets or sets the ability to have transparent shadow  */
         get transparencyShadow(): boolean;
         set transparencyShadow(value: boolean);
@@ -9739,8 +9765,8 @@ declare module BABYLON {
          * @returns the shadow generator allowing fluent coding
          */
         setTransparencyShadow(transparent: boolean): ShadowGenerator;
-        private _shadowMap;
-        private _shadowMap2;
+        protected _shadowMap: Nullable<RenderTargetTexture>;
+        protected _shadowMap2: Nullable<RenderTargetTexture>;
         /**
          * Gets the main RTT containing the shadow map (usually storing depth from the light point of view).
          * @returns The render target texture if present otherwise, null
@@ -9772,10 +9798,9 @@ declare module BABYLON {
         removeShadowCaster(mesh: AbstractMesh, includeDescendants?: boolean): ShadowGenerator;
         /**
          * Controls the extent to which the shadows fade out at the edge of the frustum
-         * Used only by directionals and spots
          */
         frustumEdgeFalloff: number;
-        private _light;
+        protected _light: IShadowLight;
         /**
          * Returns the associated light object.
          * @returns the light generating the shadow
@@ -9787,26 +9812,26 @@ declare module BABYLON {
          * It might on the other hand introduce peter panning.
          */
         forceBackFacesOnly: boolean;
-        private _scene;
-        private _lightDirection;
-        private _effect;
-        private _viewMatrix;
-        private _projectionMatrix;
-        private _transformMatrix;
-        private _cachedPosition;
-        private _cachedDirection;
-        private _cachedDefines;
-        private _currentRenderID;
-        private _boxBlurPostprocess;
-        private _kernelBlurXPostprocess;
-        private _kernelBlurYPostprocess;
-        private _blurPostProcesses;
-        private _mapSize;
-        private _currentFaceIndex;
-        private _currentFaceIndexCache;
-        private _textureType;
-        private _defaultTextureMatrix;
-        private _storedUniqueId;
+        protected _scene: Scene;
+        protected _lightDirection: Vector3;
+        protected _effect: Effect;
+        protected _viewMatrix: Matrix;
+        protected _projectionMatrix: Matrix;
+        protected _transformMatrix: Matrix;
+        protected _cachedPosition: Vector3;
+        protected _cachedDirection: Vector3;
+        protected _cachedDefines: string;
+        protected _currentRenderID: number;
+        protected _boxBlurPostprocess: Nullable<PostProcess>;
+        protected _kernelBlurXPostprocess: Nullable<PostProcess>;
+        protected _kernelBlurYPostprocess: Nullable<PostProcess>;
+        protected _blurPostProcesses: PostProcess[];
+        protected _mapSize: number;
+        protected _currentFaceIndex: number;
+        protected _currentFaceIndexCache: number;
+        protected _textureType: number;
+        protected _defaultTextureMatrix: Matrix;
+        protected _storedUniqueId: Nullable<number>;
         /** @hidden */
         static _SceneComponentInitialization: (scene: Scene) => void;
         /**
@@ -9819,18 +9844,20 @@ declare module BABYLON {
          * @param usefulFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
          */
         constructor(mapSize: number, light: IShadowLight, usefulFloatFirst?: boolean);
-        private _initializeGenerator;
-        private _initializeShadowMap;
-        private _initializeBlurRTTAndPostProcesses;
-        private _renderForShadowMap;
-        private _renderSubMeshForShadowMap;
-        private _applyFilterValues;
+        protected _initializeGenerator(): void;
+        protected _createTargetRenderTexture(): void;
+        protected _initializeShadowMap(): void;
+        protected _initializeBlurRTTAndPostProcesses(): void;
+        protected _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void;
+        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect): void;
+        protected _renderSubMeshForShadowMap(subMesh: SubMesh): void;
+        protected _applyFilterValues(): void;
         /**
          * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
          * @param onCompiled Callback triggered at the and of the effects compilation
          * @param options Sets of optional options forcing the compilation with different modes
          */
-        forceCompilation(onCompiled?: (generator: ShadowGenerator) => void, options?: Partial<{
+        forceCompilation(onCompiled?: (generator: IShadowGenerator) => void, options?: Partial<{
             useInstances: boolean;
         }>): void;
         /**
@@ -9841,6 +9868,7 @@ declare module BABYLON {
         forceCompilationAsync(options?: Partial<{
             useInstances: boolean;
         }>): Promise<void>;
+        protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void;
         /**
          * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
          * @param subMesh The submesh we want to render in the shadow map
@@ -9872,8 +9900,8 @@ declare module BABYLON {
          * Cube and 2D textures for instance.
          */
         recreateShadowMap(): void;
-        private _disposeBlurPostProcesses;
-        private _disposeRTTandPostProcesses;
+        protected _disposeBlurPostProcesses(): void;
+        protected _disposeRTTandPostProcesses(): void;
         /**
          * Disposes the ShadowGenerator.
          * Returns nothing.
@@ -9888,9 +9916,10 @@ declare module BABYLON {
          * Parses a serialized ShadowGenerator and returns a new ShadowGenerator.
          * @param parsedShadowGenerator The JSON object to parse
          * @param scene The scene to create the shadow map for
+         * @param constr A function that builds a shadow generator or undefined to create an instance of the default shadow generator
          * @returns The parsed shadow generator
          */
-        static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator;
+        static Parse(parsedShadowGenerator: any, scene: Scene, constr?: (mapSize: number, light: IShadowLight) => ShadowGenerator): ShadowGenerator;
     }
 }
 declare module BABYLON {
@@ -10151,10 +10180,9 @@ declare module BABYLON {
          * @param scene The scene where the light belongs to
          * @param effect The effect we are binding the data to
          * @param useSpecular Defines if specular is supported
-         * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
          * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
          */
-        bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff?: boolean, rebuildInParallel?: boolean): void;
+        _bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel?: boolean): void;
         /**
          * Sets the passed Effect "effect" with the Light information.
          * @param effect The effect to update
@@ -11342,9 +11370,9 @@ declare module BABYLON {
         static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER_DRAW: number;
         static readonly STEP_AFTERCAMERADRAW_LAYER: number;
         static readonly STEP_AFTERRENDER_AUDIO: number;
-        static readonly STEP_GATHERRENDERTARGETS_SHADOWGENERATOR: number;
-        static readonly STEP_GATHERRENDERTARGETS_GEOMETRYBUFFERRENDERER: number;
         static readonly STEP_GATHERRENDERTARGETS_DEPTHRENDERER: number;
+        static readonly STEP_GATHERRENDERTARGETS_GEOMETRYBUFFERRENDERER: number;
+        static readonly STEP_GATHERRENDERTARGETS_SHADOWGENERATOR: number;
         static readonly STEP_GATHERRENDERTARGETS_POSTPROCESSRENDERPIPELINEMANAGER: number;
         static readonly STEP_GATHERACTIVECAMERARENDERTARGETS_DEPTHRENDERER: number;
         static readonly STEP_POINTERMOVE_SPRITE: number;
@@ -15536,6 +15564,7 @@ declare module BABYLON {
         private _options;
         private _reusable;
         private _textureType;
+        private _textureFormat;
         /**
         * Smart array of input and output textures for the post process.
         * @hidden
@@ -15638,10 +15667,11 @@ declare module BABYLON {
          * @param vertexUrl The url of the vertex shader to be used. (default: "postprocess")
          * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
          * @param blockCompilation If the shader should not be compiled imediatly. (default: false)
+         * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
          */
         constructor(
         /** Name of the PostProcess. */
-        name: string, fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, defines?: Nullable<string>, textureType?: number, vertexUrl?: string, indexParameters?: any, blockCompilation?: boolean);
+        name: string, fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, defines?: Nullable<string>, textureType?: number, vertexUrl?: string, indexParameters?: any, blockCompilation?: boolean, textureFormat?: number);
         /**
          * Gets a string idenfifying the name of the class
          * @returns "PostProcess" string
@@ -18553,6 +18583,71 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Particle emitter emitting particles from a custom list of positions.
+     */
+    export class CustomParticleEmitter implements IParticleEmitterType {
+        /**
+         * Gets or sets the position generator that will create the inital position of each particle.
+         * Index will be provided when used with GPU particle. Particle will be provided when used with CPU particles
+         */
+        particlePositionGenerator: (index: number, particle: Nullable<Particle>, outPosition: Vector3) => void;
+        /**
+         * Gets or sets the destination generator that will create the final destination of each particle.
+         *  * Index will be provided when used with GPU particle. Particle will be provided when used with CPU particles
+         */
+        particleDestinationGenerator: (index: number, particle: Nullable<Particle>, outDestination: Vector3) => void;
+        /**
+         * Creates a new instance CustomParticleEmitter
+         */
+        constructor();
+        /**
+         * Called by the particle System when the direction is computed for the created particle.
+         * @param worldMatrix is the world matrix of the particle system
+         * @param directionToUpdate is the direction vector to update with the result
+         * @param particle is the particle we are computed the direction for
+         */
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        /**
+         * Called by the particle System when the position is computed for the created particle.
+         * @param worldMatrix is the world matrix of the particle system
+         * @param positionToUpdate is the position vector to update with the result
+         * @param particle is the particle we are computed the position for
+         */
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        /**
+         * Clones the current emitter and returns a copy of it
+         * @returns the new emitter
+         */
+        clone(): CustomParticleEmitter;
+        /**
+         * Called by the GPUParticleSystem to setup the update shader
+         * @param effect defines the update shader
+         */
+        applyToShader(effect: Effect): void;
+        /**
+         * Returns a string to use to update the GPU particles update shader
+         * @returns a string containng the defines string
+         */
+        getEffectDefines(): string;
+        /**
+         * Returns the string "PointParticleEmitter"
+         * @returns a string containing the class name
+         */
+        getClassName(): string;
+        /**
+         * Serializes the particle system to a JSON object.
+         * @returns the JSON object
+         */
+        serialize(): any;
+        /**
+         * Parse properties from a JSON object
+         * @param serializationObject defines the JSON object
+         */
+        parse(serializationObject: any): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Interface representing a particle system in Babylon.js.
      * This groups the common functionalities that needs to be implemented in order to create a particle system.
      * A particle system represents a way to manage particles from their emission to their animation and rendering.
@@ -19283,7 +19378,7 @@ declare module BABYLON {
          *
          * Returns the clone.
          */
-        clone(name: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<AbstractMesh>;
+        clone(name: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean): InstancedMesh;
         /**
          * Disposes the InstancedMesh.
          * Returns nothing.
@@ -19733,7 +19828,7 @@ declare module BABYLON {
         /**
          * Returns a new LineMesh object cloned from the current one.
          */
-        clone(name: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<AbstractMesh>;
+        clone(name: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean): LinesMesh;
         /**
          * Creates a new InstancedLinesMesh object from the mesh model.
          * @see http://doc.babylonjs.com/how_to/how_to_use_instances
@@ -20210,6 +20305,14 @@ declare module BABYLON {
         */
         get renderList(): Nullable<Array<AbstractMesh>>;
         set renderList(value: Nullable<Array<AbstractMesh>>);
+        /**
+         * Use this function to overload the renderList array at rendering time.
+         * Return null to render with the curent renderList, else return the list of meshes to use for rendering.
+         * For 2DArray RTT, layerOrFace is the index of the layer that is going to be rendered, else it is the faceIndex of
+         * the cube (if the RTT is a cube, else layerOrFace=0).
+         * The renderList passed to the function is the current render list (the one that will be used if the function returns null)
+        */
+        getCustomRenderList: (layerOrFace: number, renderList: Nullable<Immutable<Array<AbstractMesh>>>) => Nullable<Array<AbstractMesh>>;
         private _hookArray;
         /**
          * Define if particles should be rendered in your texture.
@@ -20297,6 +20400,7 @@ declare module BABYLON {
         protected _size: number | {
             width: number;
             height: number;
+            layers?: number;
         };
         protected _initialSizeParameter: number | {
             width: number;
@@ -20341,7 +20445,7 @@ declare module BABYLON {
          * depth texture.
          * Otherwise, return null.
          */
-        depthStencilTexture: Nullable<InternalTexture>;
+        get depthStencilTexture(): Nullable<InternalTexture>;
         /**
          * Instantiate a render target texture. This is mainly used to render of screen the scene to for instance apply post processse
          * or used a shadow, depth texture...
@@ -20362,6 +20466,7 @@ declare module BABYLON {
         constructor(name: string, size: number | {
             width: number;
             height: number;
+            layers?: number;
         } | {
             ratio: number;
         }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio?: boolean, type?: number, isCube?: boolean, samplingMode?: number, generateDepthBuffer?: boolean, generateStencilBuffer?: boolean, isMulti?: boolean, format?: number, delayAllocation?: boolean);
@@ -20424,6 +20529,11 @@ declare module BABYLON {
          */
         getRenderHeight(): number;
         /**
+         * Gets the actual number of layers of the texture.
+         * @returns the number of layers
+         */
+        getRenderLayers(): number;
+        /**
          * Get if the texture can be rescaled or not.
          */
         get canRescale(): boolean;
@@ -20451,6 +20561,7 @@ declare module BABYLON {
         } | {
             ratio: number;
         }): void;
+        private _defaultRenderListPrepared;
         /**
          * Renders all the objects from the render list into the texture.
          * @param useCameraPostProcess Define if camera post processes should be used during the rendering
@@ -20458,11 +20569,13 @@ declare module BABYLON {
          */
         render(useCameraPostProcess?: boolean, dumpForDebug?: boolean): void;
         private _bestReflectionRenderTargetDimension;
+        private _prepareRenderingManager;
         /**
          * @hidden
          * @param faceIndex face index to bind to if this is a cubetexture
+         * @param layer defines the index of the texture to bind in the array
          */
-        _bindFrameBuffer(faceIndex?: number): void;
+        _bindFrameBuffer(faceIndex?: number, layer?: number): void;
         protected unbindFrameBuffer(engine: Engine, faceIndex: number): void;
         private renderToTarget;
         /**
@@ -20826,11 +20939,6 @@ declare module BABYLON {
          * Stores the effects for the material
          */
         _effect: Nullable<Effect>;
-        /**
-         * @hidden
-         * Specifies if the material was previously ready
-         */
-        _wasPreviouslyReady: boolean;
         /**
          * Specifies if uniform buffers should be used
          */
@@ -23672,7 +23780,7 @@ declare module BABYLON {
          */
         getObjectCenter(): Vector3;
         /**
-         * Get a specific parametes from the options parameter
+         * Get a specific parameter from the options parameters
          * @param paramName The object parameter name
          * @returns The object parameter
          */
@@ -24630,7 +24738,7 @@ declare module BABYLON {
          * @param clonePhysicsImpostor allows/denies the cloning in the same time of the original mesh `body` used by the physics engine, if any (default `true`)
          * @returns a new mesh
          */
-        clone(name?: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean, clonePhysicsImpostor?: boolean): Nullable<AbstractMesh>;
+        clone(name?: string, newParent?: Nullable<Node>, doNotCloneChildren?: boolean, clonePhysicsImpostor?: boolean): Mesh;
         /**
          * Releases resources associated with this mesh.
          * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
@@ -25199,6 +25307,10 @@ declare module BABYLON {
          * Defines that both eyes of the camera will be rendered over under each other.
          */
         static readonly RIG_MODE_STEREOSCOPIC_OVERUNDER: number;
+        /**
+         * Defines that both eyes of the camera will be rendered on successive lines interlaced for passive 3d monitors.
+         */
+        static readonly RIG_MODE_STEREOSCOPIC_INTERLACED: number;
         /**
          * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
          */
@@ -29785,6 +29897,11 @@ declare module BABYLON {
         /** @hidden */
         _onBindObservable: Nullable<Observable<Effect>>;
         /**
+         * @hidden
+         * Specifies if the effect was previously ready
+         */
+        _wasPreviouslyReady: boolean;
+        /**
          * Observable that will be called when effect is bound.
          */
         get onBindObservable(): Observable<Effect>;
@@ -30533,6 +30650,7 @@ declare module BABYLON {
         private _settings;
         private _createInternalTextureOnEvent;
         private _frameId;
+        private _currentSrc;
         /**
          * Creates a video texture.
          * If you want to display a video in your scene, this is the special texture for that.
@@ -30570,6 +30688,11 @@ declare module BABYLON {
          * @param url New url.
          */
         updateURL(url: string): void;
+        /**
+         * Clones the texture.
+         * @returns the cloned texture
+         */
+        clone(): VideoTexture;
         /**
          * Dispose the texture and release its associated resources.
          */
@@ -31067,10 +31190,10 @@ declare module BABYLON {
          * @param requiredWidth The width of the target to render to
          * @param requiredHeight The height of the target to render to
          * @param forceFullscreenViewport Forces the viewport to be the entire texture/screen if true
-         * @param depthStencilTexture The depth stencil texture to use to render
-         * @param lodLevel defines le lod level to bind to the frame buffer
+         * @param lodLevel defines the lod level to bind to the frame buffer
+         * @param layer defines the 2d array index to bind to frame buffer to
          */
-        bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, depthStencilTexture?: InternalTexture, lodLevel?: number): void;
+        bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel?: number, layer?: number): void;
         /** @hidden */
         _bindUnboundFramebuffer(framebuffer: Nullable<WebGLFramebuffer>): void;
         /**
@@ -31125,7 +31248,8 @@ declare module BABYLON {
          */
         updateArrayBuffer(data: Float32Array): void;
         private _vertexAttribPointer;
-        private _bindIndexBufferWithCache;
+        /** @hidden */
+        _bindIndexBufferWithCache(indexBuffer: Nullable<DataBuffer>): void;
         private _bindVertexBuffersAttributes;
         /**
          * Records a vertex array object
@@ -31490,6 +31614,17 @@ declare module BABYLON {
          */
         createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, excludeLoaders?: Array<IInternalTextureLoader>, mimeType?: string): InternalTexture;
         /**
+         * Loads an image as an HTMLImageElement.
+         * @param input url string, ArrayBuffer, or Blob to load
+         * @param onLoad callback called when the image successfully loads
+         * @param onError callback called when the image fails to load
+         * @param offlineProvider offline provider for caching
+         * @param mimeType optional mime type
+         * @returns the HTMLImageElement of the loaded image
+         * @hidden
+         */
+        static _FileToolsLoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement>;
+        /**
          * @hidden
          */
         _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void;
@@ -31581,11 +31716,24 @@ declare module BABYLON {
         _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | {
             width: number;
             height: number;
+            layers?: number;
         }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number): void;
         /** @hidden */
         _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex?: number, lod?: number): void;
         /** @hidden */
         _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number, babylonInternalFormat?: number, useTextureWidthAndHeight?: boolean): void;
+        /**
+         * Update a portion of an internal texture
+         * @param texture defines the texture to update
+         * @param imageData defines the data to store into the texture
+         * @param xOffset defines the x coordinates of the update rectangle
+         * @param yOffset defines the y coordinates of the update rectangle
+         * @param width defines the width of the update rectangle
+         * @param height defines the height of the update rectangle
+         * @param faceIndex defines the face index if texture is a cube (0 by default)
+         * @param lod defines the lod level to update (0 by default)
+         */
+        updateTextureData(texture: InternalTexture, imageData: ArrayBufferView, xOffset: number, yOffset: number, width: number, height: number, faceIndex?: number, lod?: number): void;
         /** @hidden */
         _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number): void;
         protected _prepareWebGLTextureContinuation(texture: InternalTexture, scene: Nullable<ISceneLike>, noMipmap: boolean, isCompressed: boolean, samplingMode: number): void;
@@ -31634,7 +31782,7 @@ declare module BABYLON {
          */
         setTextureArray(channel: number, uniform: Nullable<WebGLUniformLocation>, textures: BaseTexture[]): void;
         /** @hidden */
-        _setAnisotropicLevel(target: number, texture: BaseTexture): void;
+        _setAnisotropicLevel(target: number, internalTexture: InternalTexture, anisotropicFilteringLevel: number): void;
         private _setTextureParameterFloat;
         private _setTextureParameterInteger;
         /**
@@ -31678,6 +31826,18 @@ declare module BABYLON {
         _getRGBAMultiSampleBufferFormat(type: number): number;
         /** @hidden */
         _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: IWebRequest, exception?: any) => void): IFileRequest;
+        /**
+         * Loads a file from a url
+         * @param url url to load
+         * @param onSuccess callback called when the file successfully loads
+         * @param onProgress callback called while file is loading (if the server supports this mode)
+         * @param offlineProvider defines the offline provider for caching
+         * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+         * @param onError callback called when the file fails to load
+         * @returns a file request object
+         * @hidden
+         */
+        static _FileToolsLoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest;
         /**
          * Reads pixels from the current frame buffer. Please note that this function can be slow
          * @param x defines the x coordinate of the rectangle where pixels must be read
@@ -32109,6 +32269,8 @@ declare module BABYLON {
         _lodGenerationScale: number;
         /** @hidden */
         _lodGenerationOffset: number;
+        /** @hidden */
+        _depthStencilTexture: Nullable<InternalTexture>;
         /** @hidden */
         _colorTextureArray: Nullable<WebGLTexture>;
         /** @hidden */
@@ -33073,6 +33235,8 @@ declare module BABYLON {
         private _deltaTime;
         /** @hidden */
         _drawCalls: PerfCounter;
+        /** Gets or sets the tab index to set to the rendering canvas. 1 is the minimum value to set to be able to capture keyboard events */
+        canvasTabIndex: number;
         /**
          * Turn this value on if you want to pause FPS computation when in background
          */
@@ -33510,11 +33674,6 @@ declare module BABYLON {
         private _measureFps;
         /** @hidden */
         _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex?: number, lod?: number): void;
-        /**
-         * Sets the frame buffer Depth / Stencil attachement of the render target to the defined depth stencil texture.
-         * @param renderTarget The render target to set the frame buffer for
-         */
-        setFrameBufferDepthStencilTexture(renderTarget: RenderTargetTexture): void;
         /**
          * Update a dynamic index buffer
          * @param indexBuffer defines the target index buffer
@@ -34207,6 +34366,11 @@ declare module BABYLON {
          * @returns Promise that resolves after the given amount of time
          */
         static DelayAsync(delay: number): Promise<void>;
+        /**
+         * Utility function to detect if the current user agent is Safari
+         * @returns whether or not the current user agent is safari
+         */
+        static IsSafari(): boolean;
     }
     /**
      * Use this className as a decorator on a given class definition to add it a name and optionally its module.
@@ -34494,8 +34658,9 @@ declare module BABYLON {
         * @param attachUp defines if you want to attach events to pointerup
         * @param attachDown defines if you want to attach events to pointerdown
         * @param attachMove defines if you want to attach events to pointermove
+        * @param elementToAttachTo defines the target DOM element to attach to (will use the canvas by default)
         */
-        attachControl(attachUp?: boolean, attachDown?: boolean, attachMove?: boolean): void;
+        attachControl(attachUp?: boolean, attachDown?: boolean, attachMove?: boolean, elementToAttachTo?: Nullable<HTMLElement>): void;
         /**
          * Detaches all event handlers
          */
@@ -34770,7 +34935,7 @@ declare module BABYLON {
          * Defines that each mesh of the scene should keep up-to-date a map of referencing cloned meshes for fast diposing
          * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
          */
-        useClonedMeshhMap?: boolean;
+        useClonedMeshMap?: boolean;
         /** Defines if the creation of the scene should impact the engine (Eg. UtilityLayer's scene) */
         virtual?: boolean;
     }
@@ -35495,7 +35660,7 @@ declare module BABYLON {
         /** @hidden */
         readonly useMaterialMeshMap: boolean;
         /** @hidden */
-        readonly useClonedMeshhMap: boolean;
+        readonly useClonedMeshMap: boolean;
         private _externalData;
         private _uid;
         /**
@@ -38926,7 +39091,7 @@ declare module BABYLON {
         /**
          * If set, the drag plane/axis will be rotated based on the attached mesh's world rotation (Default: true)
          */
-        useObjectOrienationForDragging: boolean;
+        useObjectOrientationForDragging: boolean;
         private _options;
         /**
          * Gets the options used by the behavior
@@ -41493,6 +41658,24 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * StereoscopicInterlacePostProcessI used to render stereo views from a rigged camera with support for alternate line interlacing
+     */
+    export class StereoscopicInterlacePostProcessI extends PostProcess {
+        private _stepSize;
+        private _passedProcess;
+        /**
+         * Initializes a StereoscopicInterlacePostProcessI
+         * @param name The name of the effect.
+         * @param rigCameras The rig cameras to be appled to the post process
+         * @param isStereoscopicHoriz If the rendered results are horizontal or vertical
+         * @param isStereoscopicInterlaced If the rendered results are alternate line interlaced
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         */
+        constructor(name: string, rigCameras: Camera[], isStereoscopicHoriz: boolean, isStereoscopicInterlaced: boolean, samplingMode?: number, engine?: Engine, reusable?: boolean);
+    }
+    /**
      * StereoscopicInterlacePostProcess used to render stereo views from a rigged camera
      */
     export class StereoscopicInterlacePostProcess extends PostProcess {
@@ -42214,7 +42397,7 @@ declare module BABYLON {
          * @param xrSession xr session
          * @returns a promise that will resolve once the XR Layer has been created
          */
-        initializeXRLayerAsync(xrSession: XRSession): Promise<void>;
+        initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer>;
     }
 }
 declare module BABYLON {
@@ -42225,11 +42408,16 @@ declare module BABYLON {
         /**
          * Options for this XR Layer output
          */
-        canvasOptions: XRWebGLLayerOptions;
+        canvasOptions?: XRWebGLLayerOptions;
         /**
          * CSS styling for a newly created canvas (if not provided)
          */
         newCanvasCssStyle?: string;
+        /**
+         * An optional canvas in case you wish to create it yourself and provide it here.
+         * If not provided, a new canvas will be created
+         */
+        canvasElement?: HTMLCanvasElement;
         /**
          * Get the default values of the configuration object
          * @returns default values of this configuration object
@@ -42240,11 +42428,11 @@ declare module BABYLON {
      * Creates a canvas that is added/removed from the webpage when entering/exiting XR
      */
     export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
-        private configuration;
+        private _options;
         private _engine;
         private _canvas;
         /**
-         * xrpresent context of the canvas which can be used to display/mirror xr content
+         * Rendering context of the canvas which can be used to display/mirror xr content
          */
         canvasContext: WebGLRenderingContext;
         /**
@@ -42256,15 +42444,13 @@ declare module BABYLON {
          * @param xrSession xr session
          * @returns a promise that will resolve once the XR Layer has been created
          */
-        initializeXRLayerAsync(xrSession: any): any;
+        initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer>;
         /**
          * Initializes the canvas to be added/removed upon entering/exiting xr
-         * @param engine the Babylon engine
-         * @param canvas The canvas to be added/removed (If not specified a full screen canvas will be created)
-         * @param onStateChangedObservable the mechanism by which the canvas will be added/removed based on XR state
-         * @param configuration optional configuration for this canvas output. defaults will be used if not provided
+         * @param _xrSessionManager The XR Session manager
+         * @param _options optional configuration for this canvas output. defaults will be used if not provided
          */
-        constructor(engine: ThinEngine, canvas?: HTMLCanvasElement, onStateChangedObservable?: Observable<WebXRState>, configuration?: WebXRManagedOutputCanvasOptions);
+        constructor(_xrSessionManager: WebXRSessionManager, _options?: WebXRManagedOutputCanvasOptions);
         /**
          * Disposes of the object
          */
@@ -42295,13 +42481,38 @@ declare module BABYLON {
          */
         onXRSessionInit: Observable<XRSession>;
         /**
+         * Fires when the reference space changed
+         */
+        onXRReferenceSpaceChanged: Observable<XRReferenceSpace>;
+        /**
          * Underlying xr session
          */
         session: XRSession;
         /**
-         * Type of reference space used when creating the session
+         * The viewer (head position) reference space. This can be used to get the XR world coordinates
+         * or get the offset the player is currently at.
          */
-        referenceSpace: XRReferenceSpace;
+        viewerReferenceSpace: XRReferenceSpace;
+        private _referenceSpace;
+        /**
+         * The current reference space used in this session. This reference space can constantly change!
+         * It is mainly used to offset the camera's position.
+         */
+        get referenceSpace(): XRReferenceSpace;
+        /**
+         * Set a new reference space and triggers the observable
+         */
+        set referenceSpace(newReferenceSpace: XRReferenceSpace);
+        /**
+         * The base reference space from which the session started. good if you want to reset your
+         * reference space
+         */
+        baseReferenceSpace: XRReferenceSpace;
+        /**
+         * Used just in case of a failure to initialize an immersive session.
+         * The viewer reference space is compensated using this height, creating a kind of "viewer-floor" reference space
+         */
+        defaultHeightCompensation: number;
         /**
          * Current XR frame
          */
@@ -42328,16 +42539,20 @@ declare module BABYLON {
         /**
          * Initializes an xr session
          * @param xrSessionMode mode to initialize
-         * @param optionalFeatures defines optional values to pass to the session builder
+         * @param xrSessionInit defines optional and required values to pass to the session builder
          * @returns a promise which will resolve once the session has been initialized
          */
-        initializeSessionAsync(xrSessionMode: XRSessionMode, optionalFeatures?: any): Promise<XRSession>;
+        initializeSessionAsync(xrSessionMode?: XRSessionMode, xrSessionInit?: XRSessionInit): Promise<XRSession>;
         /**
          * Sets the reference space on the xr session
          * @param referenceSpace space to set
          * @returns a promise that will resolve once the reference space has been set
          */
-        setReferenceSpaceAsync(referenceSpace: XRReferenceSpaceType): Promise<void>;
+        setReferenceSpaceAsync(referenceSpace?: XRReferenceSpaceType): Promise<XRReferenceSpace>;
+        /**
+         * Resets the reference space to the one started the session
+         */
+        resetReferenceSpace(): void;
         /**
          * Updates the render state of the session
          * @param state state to set
@@ -42346,9 +42561,8 @@ declare module BABYLON {
         updateRenderStateAsync(state: XRRenderState): Promise<void>;
         /**
          * Starts rendering to the xr layer
-         * @returns a promise that will resolve once rendering has started
          */
-        startRenderingToXRAsync(): Promise<void>;
+        runXRRenderLoop(): void;
         /**
          * Gets the correct render target texture to be rendered this frame for this eye
          * @param eye the eye for which to get the render target
@@ -42365,14 +42579,14 @@ declare module BABYLON {
          * @param sessionMode session mode to check if supported eg. immersive-vr
          * @returns true if supported
          */
-        supportsSessionAsync(sessionMode: XRSessionMode): Promise<boolean>;
+        isSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean>;
         /**
          * Creates a WebXRRenderTarget object for the XR session
          * @param onStateChangedObservable optional, mechanism for enabling/disabling XR rendering canvas, used only on Web
          * @param options optional options to provide when creating a new render target
          * @returns a WebXR render target to which the session can render
          */
-        getWebXRRenderTarget(onStateChangedObservable?: Observable<WebXRState>, options?: WebXRManagedOutputCanvasOptions): WebXRRenderTarget;
+        getWebXRRenderTarget(options?: WebXRManagedOutputCanvasOptions): WebXRRenderTarget;
         /**
          * @hidden
          * Converts the render layer of xrSession to a render target
@@ -42380,15 +42594,15 @@ declare module BABYLON {
          * @param scene scene the new render target should be created for
          * @param baseLayer the webgl layer to create the render target for
          */
-        static _CreateRenderTargetTextureFromSession(session: XRSession, scene: Scene, baseLayer: XRWebGLLayer): RenderTargetTexture;
+        static _CreateRenderTargetTextureFromSession(_session: XRSession, scene: Scene, baseLayer: XRWebGLLayer): RenderTargetTexture;
         /**
          * Disposes of the session manager
          */
         dispose(): void;
         /**
-         * Gets a promise returning true when fullfiled if the given session mode is supported
+         * Returns a promise that resolves with a boolean indicating if the provided session mode is supported by this browser
          * @param sessionMode defines the session to test
-         * @returns a promise
+         * @returns a promise with boolean as final value
          */
         static IsSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean>;
     }
@@ -42399,25 +42613,34 @@ declare module BABYLON {
      * @see https://doc.babylonjs.com/how_to/webxr
      */
     export class WebXRCamera extends FreeCamera {
+        private _xrSessionManager;
         /**
          * Is the camera in debug mode. Used when using an emulator
          */
         debugMode: boolean;
+        private _firstFrame;
+        private _referencedPosition;
+        private _referenceQuaternion;
+        private _xrInvPositionCache;
+        private _xrInvQuaternionCache;
         /**
          * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
          * @param name the name of the camera
          * @param scene the scene to add the camera to
          */
-        constructor(name: string, scene: Scene);
+        constructor(name: string, scene: Scene, _xrSessionManager: WebXRSessionManager);
         private _updateNumberOfRigCameras;
+        /**
+         * Sets this camera's transformation based on a non-vr camera
+         * @param otherCamera the non-vr camera to copy the transformation from
+         * @param resetToBaseReferenceSpace should XR reset to the base reference space
+         */
+        setTransformationFromNonVRCamera(otherCamera: Camera, resetToBaseReferenceSpace?: boolean): void;
         /** @hidden */
         _updateForDualEyeDebugging(): void;
-        /**
-         * Updates the cameras position from the current pose information of the  XR session
-         * @param xrSessionManager the session containing pose information
-         * @returns true if the camera has been updated, false if the session did not contain pose or frame data
-         */
-        updateFromXRSessionManager(xrSessionManager: WebXRSessionManager): boolean;
+        private _updateReferenceSpace;
+        private _updateReferenceSpaceOffset;
+        private _updateFromXRSession;
     }
 }
 declare module BABYLON {
@@ -42425,6 +42648,10 @@ declare module BABYLON {
      * Defining the interface required for a (webxr) feature
      */
     export interface IWebXRFeature extends IDisposable {
+        /**
+         * Is this feature attached
+         */
+        attached: boolean;
         /**
          * Attach the feature to the session
          * Will usually be called by the features manager
@@ -42506,6 +42733,7 @@ declare module BABYLON {
         constructor(_xrSessionManager: WebXRSessionManager);
         /**
          * Enable a feature using its name and a version. This will enable it in the scene, and will be responsible to attach it when the session starts.
+         * If used twice, the old version will be disposed and a new one will be constructed. This way you can re-enable with different configuration.
          *
          * @param featureName the name of the feature to load or the class of the feature
          * @param version optional version to load. if not provided the latest version will be enabled
@@ -42518,6 +42746,7 @@ declare module BABYLON {
         }, version?: number | string, moduleOptions?: any, attachIfPossible?: boolean): IWebXRFeature;
         /**
          * Used to disable an already-enabled feature
+         * The feature will be disposed and will be recreated once enabled.
          * @param featureName the feature to disable
          * @returns true if disable was successful
          */
@@ -42560,10 +42789,6 @@ declare module BABYLON {
     export class WebXRExperienceHelper implements IDisposable {
         private scene;
         /**
-         * Container which stores the xr camera and controllers as children. This can be used to move the camera/user as the camera's position is updated by the xr device
-         */
-        container: AbstractMesh;
-        /**
          * Camera used to render xr content
          */
         camera: WebXRCamera;
@@ -42572,11 +42797,18 @@ declare module BABYLON {
          */
         state: WebXRState;
         private _setState;
-        private static _TmpVector;
         /**
          * Fires when the state of the experience helper has changed
          */
         onStateChangedObservable: Observable<WebXRState>;
+        /**
+         * Observers registered here will be triggered after the camera's initial transformation is set
+         * This can be used to set a different ground level or an extra rotation.
+         *
+         * Note that ground level is considered to be at 0. The height defined by the XR camera will be added
+         * to the position set after this observable is done executing.
+         */
+        onInitialXRPoseSetObservable: Observable<WebXRCamera>;
         /** Session manager used to keep track of xr session */
         sessionManager: WebXRSessionManager;
         /** A features manager for this xr session */
@@ -42607,123 +42839,165 @@ declare module BABYLON {
          * @param renderTarget the output canvas that will be used to enter XR mode
          * @returns promise that resolves after xr mode has entered
          */
-        enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget): Promise<WebXRSessionManager>;
-        /**
-         * Updates the global position of the camera by moving the camera's container
-         * This should be used instead of modifying the camera's position as it will be overwritten by an xrSessions's update frame
-         * @param position The desired global position of the camera
-         */
-        setPositionOfCameraUsingContainer(position: Vector3): void;
-        /**
-         * Rotates the xr camera by rotating the camera's container around the camera's position
-         * This should be used instead of modifying the camera's rotation as it will be overwritten by an xrSessions's update frame
-         * @param rotation the desired quaternion rotation to apply to the camera
-         */
-        rotateCameraByQuaternionUsingContainer(rotation: Quaternion): void;
+        enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget?: WebXRRenderTarget): Promise<WebXRSessionManager>;
         /**
          * Disposes of the experience helper
          */
         dispose(): void;
+        private _nonXRToXRCamera;
     }
 }
 declare module BABYLON {
     /**
-     * Represents an XR input
+     * X-Y values for axes in WebXR
      */
-    export class WebXRController {
-        private scene;
-        /** The underlying input source for the controller  */
-        inputSource: XRInputSource;
-        private parentContainer;
+    export interface IWebXRMotionControllerAxesValue {
         /**
-         * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if thats the case only the pointer from the head will be availible
+         * The value of the x axis
          */
-        grip?: AbstractMesh;
+        x: number;
         /**
-         * Pointer which can be used to select objects or attach a visible laser to
+         * The value of the y-axis
          */
-        pointer: AbstractMesh;
-        private _gamepadMode;
-        /**
-         * If available, this is the gamepad object related to this controller.
-         * Using this object it is possible to get click events and trackpad changes of the
-         * webxr controller that is currently being used.
-         */
-        gamepadController?: WebVRController;
-        /**
-         * Event that fires when the controller is removed/disposed
-         */
-        onDisposeObservable: Observable<{}>;
-        private _tmpQuaternion;
-        private _tmpVector;
-        /**
-         * Creates the controller
-         * @see https://doc.babylonjs.com/how_to/webxr
-         * @param scene the scene which the controller should be associated to
-         * @param inputSource the underlying input source for the controller
-         * @param parentContainer parent that the controller meshes should be children of
-         */
-        constructor(scene: Scene, 
-        /** The underlying input source for the controller  */
-        inputSource: XRInputSource, parentContainer?: Nullable<AbstractMesh>);
-        /**
-         * Updates the controller pose based on the given XRFrame
-         * @param xrFrame xr frame to update the pose with
-         * @param referenceSpace reference space to use
-         */
-        updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace): void;
-        /**
-         * Gets a world space ray coming from the controller
-         * @param result the resulting ray
-         */
-        getWorldPointerRayToRef(result: Ray): void;
-        /**
-         * Get the scene associated with this controller
-         * @returns the scene object
-         */
-        getScene(): Scene;
-        /**
-         * Disposes of the object
-         */
-        dispose(): void;
+        y: number;
     }
-}
-declare module BABYLON {
     /**
-     * XR input used to track XR inputs such as controllers/rays
+     * changed / previous values for the values of this component
      */
-    export class WebXRInput implements IDisposable {
+    export interface IWebXRMotionControllerComponentChangesValues<T> {
         /**
-         * Base experience the input listens to
+         * current (this frame) value
          */
-        baseExperience: WebXRExperienceHelper;
+        current: T;
         /**
-         * XR controllers being tracked
+         * previous (last change) value
          */
-        controllers: Array<WebXRController>;
-        private _frameObserver;
-        private _stateObserver;
+        previous: T;
+    }
+    /**
+     * Represents changes in the component between current frame and last values recorded
+     */
+    export interface IWebXRMotionControllerComponentChanges {
         /**
-         * Event when a controller has been connected/added
+         * will be populated with previous and current values if touched changed
          */
-        onControllerAddedObservable: Observable<WebXRController>;
+        touched?: IWebXRMotionControllerComponentChangesValues<boolean>;
         /**
-         * Event when a controller has been removed/disconnected
+         * will be populated with previous and current values if pressed changed
          */
-        onControllerRemovedObservable: Observable<WebXRController>;
+        pressed?: IWebXRMotionControllerComponentChangesValues<boolean>;
         /**
-         * Initializes the WebXRInput
-         * @param baseExperience experience helper which the input should be created for
+         * will be populated with previous and current values if value changed
+         */
+        value?: IWebXRMotionControllerComponentChangesValues<number>;
+        /**
+         * will be populated with previous and current values if axes changed
+         */
+        axes?: IWebXRMotionControllerComponentChangesValues<IWebXRMotionControllerAxesValue>;
+    }
+    /**
+     * This class represents a single component (for example button or thumbstick) of a motion controller
+     */
+    export class WebXRControllerComponent implements IDisposable {
+        /**
+         * the id of this component
+         */
+        id: string;
+        /**
+         * the type of the component
+         */
+        type: MotionControllerComponentType;
+        private _buttonIndex;
+        private _axesIndices;
+        /**
+         * Thumbstick component type
+         */
+        static THUMBSTICK: string;
+        /**
+         * Touchpad component type
+         */
+        static TOUCHPAD: string;
+        /**
+         * trigger component type
+         */
+        static TRIGGER: string;
+        /**
+         * squeeze component type
+         */
+        static SQUEEZE: string;
+        /**
+         * Observers registered here will be triggered when the state of a button changes
+         * State change is either pressed / touched / value
+         */
+        onButtonStateChanged: Observable<WebXRControllerComponent>;
+        /**
+         * If axes are available for this component (like a touchpad or thumbstick) the observers will be notified when
+         * the axes data changes
+         */
+        onAxisValueChanged: Observable<{
+            x: number;
+            y: number;
+        }>;
+        private _currentValue;
+        private _touched;
+        private _pressed;
+        private _axes;
+        private _changes;
+        /**
+         * Creates a new component for a motion controller.
+         * It is created by the motion controller itself
+         *
+         * @param id the id of this component
+         * @param type the type of the component
+         * @param _buttonIndex index in the buttons array of the gamepad
+         * @param _axesIndices indices of the values in the axes array of the gamepad
          */
         constructor(
         /**
-         * Base experience the input listens to
+         * the id of this component
          */
-        baseExperience: WebXRExperienceHelper);
-        private _onInputSourcesChange;
-        private _addAndRemoveControllers;
+        id: string, 
         /**
-         * Disposes of the object
+         * the type of the component
+         */
+        type: MotionControllerComponentType, _buttonIndex?: number, _axesIndices?: number[]);
+        /**
+         * Get the current value of this component
+         */
+        get value(): number;
+        /**
+         * is the button currently pressed
+         */
+        get pressed(): boolean;
+        /**
+         * is the button currently touched
+         */
+        get touched(): boolean;
+        /**
+         * The current axes data. If this component has no axes it will still return an object { x: 0, y: 0 }
+         */
+        get axes(): IWebXRMotionControllerAxesValue;
+        /**
+         * Get the changes. Elements will be populated only if they changed with their previous and current value
+         */
+        get changes(): IWebXRMotionControllerComponentChanges;
+        /**
+         * Is this component a button (hence - pressable)
+         * @returns true if can be pressed
+         */
+        isButton(): boolean;
+        /**
+         * Are there axes correlating to this component
+         * @return true is axes data is available
+         */
+        isAxes(): boolean;
+        /**
+         * update this component using the gamepad object it is in. Called on every frame
+         * @param nativeController the native gamepad controller object
+         */
+        update(nativeController: IMinimalMotionControllerObject): void;
+        /**
+         * Dispose this component
          */
         dispose(): void;
     }
@@ -43140,425 +43414,704 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Generic Controller
+     * Handness type in xrInput profiles. These can be used to define layouts in the Layout Map.
      */
-    export class GenericController extends WebVRController {
-        /**
-         * Base Url for the controller model.
-         */
-        static readonly MODEL_BASE_URL: string;
-        /**
-         * File name for the controller model.
-         */
-        static readonly MODEL_FILENAME: string;
-        /**
-         * Creates a new GenericController from a gamepad
-         * @param vrGamepad the gamepad that the controller should be created from
-         */
-        constructor(vrGamepad: any);
-        /**
-         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
-         * @param scene scene in which to add meshes
-         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
-         */
-        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
-        /**
-         * Called once for each button that changed state since the last frame
-         * @param buttonIdx Which button index changed
-         * @param state New state of the button
-         * @param changes Which properties on the state changed since last frame
-         */
-        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
-    }
-}
-declare module BABYLON {
+    export type MotionControllerHandness = "none" | "left" | "right" | "left-right" | "left-right-none";
     /**
-     * Defines the WindowsMotionController object that the state of the windows motion controller
+     * The type of components available in motion controllers.
+     * This is not the name of the component.
      */
-    export class WindowsMotionController extends WebVRController {
+    export type MotionControllerComponentType = "trigger" | "squeeze" | "touchpad" | "thumbstick" | "button";
+    /**
+     * The schema of motion controller layout.
+     * No object will be initialized using this interface
+     * This is used just to define the profile.
+     */
+    export interface IMotionControllerLayout {
         /**
-         * The base url used to load the left and right controller models
+         * Defines the main button component id
          */
-        static MODEL_BASE_URL: string;
+        selectComponentId: string;
         /**
-         * The name of the left controller model file
+         * Available components (unsorted)
          */
-        static MODEL_LEFT_FILENAME: string;
-        /**
-         * The name of the right controller model file
-         */
-        static MODEL_RIGHT_FILENAME: string;
-        /**
-         * The controller name prefix for this controller type
-         */
-        static readonly GAMEPAD_ID_PREFIX: string;
-        /**
-         * The controller id pattern for this controller type
-         */
-        private static readonly GAMEPAD_ID_PATTERN;
-        private _loadedMeshInfo;
-        protected readonly _mapping: {
-            buttons: string[];
-            buttonMeshNames: {
-                'trigger': string;
-                'menu': string;
-                'grip': string;
-                'thumbstick': string;
-                'trackpad': string;
+        components: {
+            /**
+             * A map of component Ids
+             */
+            [componentId: string]: {
+                /**
+                 * The type of input the component outputs
+                 */
+                type: MotionControllerComponentType;
             };
-            buttonObservableNames: {
-                'trigger': string;
-                'menu': string;
-                'grip': string;
-                'thumbstick': string;
-                'trackpad': string;
-            };
-            axisMeshNames: string[];
-            pointingPoseMeshName: string;
         };
         /**
-         * Fired when the trackpad on this controller is clicked
+         * An optional gamepad object. If no gamepad object is not defined, no models will be loaded
          */
-        onTrackpadChangedObservable: Observable<ExtendedGamepadButton>;
+        gamepad?: {
+            /**
+             * Is the mapping based on the xr-standard defined here:
+             * https://www.w3.org/TR/webxr-gamepads-module-1/#xr-standard-gamepad-mapping
+             */
+            mapping: "" | "xr-standard";
+            /**
+             * The buttons available in this input in the right order
+             * index of this button will be the index in the gamepadObject.buttons array
+             * correlates to the componentId in components
+             */
+            buttons: Array<string | null>;
+            /**
+             * Definition of the axes of the gamepad input, sorted
+             * Correlates to componentIds in the components map
+             */
+            axes: Array<{
+                /**
+                 * The component id that the axis correlates to
+                 */
+                componentId: string;
+                /**
+                 * X or Y Axis
+                 */
+                axis: "x-axis" | "y-axis";
+            } | null>;
+        };
+    }
+    /**
+     * A definition for the layout map in the input profile
+     */
+    export interface IMotionControllerLayoutMap {
         /**
-         * Fired when the trackpad on this controller is modified
+         * Layouts with handness type as a key
          */
-        onTrackpadValuesChangedObservable: Observable<StickValues>;
+        [handness: string]: IMotionControllerLayout;
+    }
+    /**
+     * The XR Input profile schema
+     * Profiles can be found here:
+     * https://github.com/immersive-web/webxr-input-profiles/tree/master/packages/registry/profiles
+     */
+    export interface IMotionControllerProfile {
         /**
-         * The current x and y values of this controller's trackpad
+         * The id of this profile
+         * correlates to the profile(s) in the xrInput.profiles array
          */
-        trackpad: StickValues;
+        profileId: string;
         /**
-         * Creates a new WindowsMotionController from a gamepad
-         * @param vrGamepad the gamepad that the controller should be created from
+         * fallback profiles for this profileId
          */
-        constructor(vrGamepad: any);
+        fallbackProfileIds: string[];
         /**
-         * Fired when the trigger on this controller is modified
+         * The layout map, with handness as key
          */
-        get onTriggerButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        layouts: IMotionControllerLayoutMap;
+    }
+    /**
+     * A helper-interface for the 3 meshes needed for controller button animation
+     * The meshes are provided to the _lerpButtonTransform function to calculate the current position of the value mesh
+     */
+    export interface IMotionControllerButtonMeshMap {
         /**
-         * Fired when the menu button on this controller is modified
+         * The mesh that will be changed when value changes
          */
-        get onMenuButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        valueMesh: AbstractMesh;
         /**
-         * Fired when the grip button on this controller is modified
+         * the mesh that defines the pressed value mesh position.
+         * This is used to find the max-position of this button
          */
-        get onGripButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        pressedMesh: AbstractMesh;
         /**
-         * Fired when the thumbstick button on this controller is modified
+         * the mesh that defines the unpressed value mesh position.
+         * This is used to find the min (or initial) position of this button
          */
-        get onThumbstickButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        unpressedMesh: AbstractMesh;
+    }
+    /**
+     * A helper-interface for the 3 meshes needed for controller axis animation.
+     * This will be expanded when touchpad animations are fully supported
+     * The meshes are provided to the _lerpAxisTransform function to calculate the current position of the value mesh
+     */
+    export interface IMotionControllerAxisMeshMap {
         /**
-         * Fired when the touchpad button on this controller is modified
+         * The mesh that will be changed when axis value changes
          */
-        get onTouchpadButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        valueMesh: AbstractMesh;
         /**
-         * Fired when the touchpad values on this controller are modified
+         * the mesh that defines the minimum value mesh position.
          */
-        get onTouchpadValuesChangedObservable(): Observable<StickValues>;
-        protected _updateTrackpad(): void;
+        minMesh: AbstractMesh;
         /**
-         * Called once per frame by the engine.
+         * the mesh that defines the maximum value mesh position.
          */
-        update(): void;
+        maxMesh: AbstractMesh;
+    }
+    /**
+     * The elements needed for change-detection of the gamepad objects in motion controllers
+     */
+    export interface IMinimalMotionControllerObject {
         /**
-         * Called once for each button that changed state since the last frame
-         * @param buttonIdx Which button index changed
-         * @param state New state of the button
-         * @param changes Which properties on the state changed since last frame
+         * An array of available buttons
          */
-        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+        buttons: Array<{
+            /**
+            * Value of the button/trigger
+            */
+            value: number;
+            /**
+             * If the button/trigger is currently touched
+             */
+            touched: boolean;
+            /**
+             * If the button/trigger is currently pressed
+             */
+            pressed: boolean;
+        }>;
         /**
-         * Moves the buttons on the controller mesh based on their current state
-         * @param buttonName the name of the button to move
-         * @param buttonValue the value of the button which determines the buttons new position
+         * Available axes of this controller
          */
-        protected _lerpButtonTransform(buttonName: string, buttonValue: number): void;
+        axes: number[];
+    }
+    /**
+     * An Abstract Motion controller
+     * This class receives an xrInput and a profile layout and uses those to initialize the components
+     * Each component has an observable to check for changes in value and state
+     */
+    export abstract class WebXRAbstractMotionController implements IDisposable {
+        protected scene: Scene;
+        protected layout: IMotionControllerLayout;
+        /**
+         * The gamepad object correlating to this controller
+         */
+        gamepadObject: IMinimalMotionControllerObject;
+        /**
+         * handness (left/right/none) of this controller
+         */
+        handness: MotionControllerHandness;
+        /**
+         * Component type map
+         */
+        static ComponentType: {
+            TRIGGER: string;
+            SQUEEZE: string;
+            TOUCHPAD: string;
+            THUMBSTICK: string;
+            BUTTON: string;
+        };
+        /**
+         * The profile id of this motion controller
+         */
+        abstract profileId: string;
+        /**
+         * A map of components (WebXRControllerComponent) in this motion controller
+         * Components have a ComponentType and can also have both button and axis definitions
+         */
+        readonly components: {
+            [id: string]: WebXRControllerComponent;
+        };
+        /**
+         * Observers registered here will be triggered when the model of this controller is done loading
+         */
+        onModelLoadedObservable: Observable<WebXRAbstractMotionController>;
+        /**
+         * The root mesh of the model. It is null if the model was not yet initialized
+         */
+        rootMesh: Nullable<AbstractMesh>;
+        private _modelReady;
+        /**
+         * constructs a new abstract motion controller
+         * @param scene the scene to which the model of the controller will be added
+         * @param layout The profile layout to load
+         * @param gamepadObject The gamepad object correlating to this controller
+         * @param handness handness (left/right/none) of this controller
+         * @param _doNotLoadControllerMesh set this flag to ignore the mesh loading
+         */
+        constructor(scene: Scene, layout: IMotionControllerLayout, 
+        /**
+         * The gamepad object correlating to this controller
+         */
+        gamepadObject: IMinimalMotionControllerObject, 
+        /**
+         * handness (left/right/none) of this controller
+         */
+        handness: MotionControllerHandness, _doNotLoadControllerMesh?: boolean);
+        private _initComponent;
+        /**
+         * Update this model using the current XRFrame
+         * @param xrFrame the current xr frame to use and update the model
+         */
+        updateFromXRFrame(xrFrame: XRFrame): void;
+        /**
+         * Get the list of components available in this motion controller
+         * @returns an array of strings correlating to available components
+         */
+        getComponentTypes(): string[];
+        /**
+         * Get the main (Select) component of this controller as defined in the layout
+         * @returns the main component of this controller
+         */
+        getMainComponent(): WebXRControllerComponent;
+        /**
+         * get a component based an its component id as defined in layout.components
+         * @param id the id of the component
+         * @returns the component correlates to the id or undefined if not found
+         */
+        getComponent(id: string): WebXRControllerComponent;
+        /**
+         * Loads the model correlating to this controller
+         * When the mesh is loaded, the onModelLoadedObservable will be triggered
+         * @returns A promise fulfilled with the result of the model loading
+         */
+        loadModel(): Promise<boolean>;
+        /**
+         * Update the model itself with the current frame data
+         * @param xrFrame the frame to use for updating the model mesh
+         */
+        protected updateModel(xrFrame: XRFrame): void;
         /**
          * Moves the axis on the controller mesh based on its current state
          * @param axis the index of the axis
          * @param axisValue the value of the axis which determines the meshes new position
          * @hidden
          */
-        protected _lerpAxisTransform(axis: number, axisValue: number): void;
+        protected _lerpAxisTransform(axisMap: IMotionControllerAxisMeshMap, axisValue: number): void;
         /**
-         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
-         * @param scene scene in which to add meshes
-         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         * Moves the buttons on the controller mesh based on their current state
+         * @param buttonName the name of the button to move
+         * @param buttonValue the value of the button which determines the buttons new position
          */
-        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void, forceDefault?: boolean): void;
+        protected _lerpButtonTransform(buttonMap: IMotionControllerButtonMeshMap, buttonValue: number): void;
+        private _getGenericFilenameAndPath;
+        private _getGenericParentMesh;
         /**
-         * Takes a list of meshes (as loaded from the glTF file) and finds the root node, as well as nodes that
-         * can be transformed by button presses and axes values, based on this._mapping.
-         *
-         * @param scene scene in which the meshes exist
-         * @param meshes list of meshes that make up the controller model to process
-         * @return structured view of the given meshes, with mapping of buttons and axes to meshes that can be transformed.
+         * Get the filename and path for this controller's model
+         * @returns a map of filename and path
          */
-        private processModel;
-        private createMeshInfo;
-        /**
-         * Gets the ray of the controller in the direction the controller is pointing
-         * @param length the length the resulting ray should be
-         * @returns a ray in the direction the controller is pointing
-         */
-        getForwardRay(length?: number): Ray;
-        /**
-        * Disposes of the controller
-        */
-        dispose(): void;
-    }
-    /**
-     * This class represents a new windows motion controller in XR.
-     */
-    export class XRWindowsMotionController extends WindowsMotionController {
-        /**
-         * Changing the original WIndowsMotionController mapping to fir the new mapping
-         */
-        protected readonly _mapping: {
-            buttons: string[];
-            buttonMeshNames: {
-                'trigger': string;
-                'menu': string;
-                'grip': string;
-                'thumbstick': string;
-                'trackpad': string;
-            };
-            buttonObservableNames: {
-                'trigger': string;
-                'menu': string;
-                'grip': string;
-                'thumbstick': string;
-                'trackpad': string;
-            };
-            axisMeshNames: string[];
-            pointingPoseMeshName: string;
+        protected abstract _getFilenameAndPath(): {
+            filename: string;
+            path: string;
         };
         /**
-         * Construct a new XR-Based windows motion controller
-         *
-         * @param gamepadInfo the gamepad object from the browser
+         * This function will be called after the model was successfully loaded and can be used
+         * for mesh transformations before it is available for the user
+         * @param meshes the loaded meshes
          */
-        constructor(gamepadInfo: any);
+        protected abstract _processLoadedModel(meshes: AbstractMesh[]): void;
         /**
-         * holds the thumbstick values (X,Y)
+         * Set the root mesh for this controller. Important for the WebXR controller class
+         * @param meshes the loaded meshes
          */
-        thumbstickValues: StickValues;
+        protected abstract _setRootMesh(meshes: AbstractMesh[]): void;
         /**
-         * Fired when the thumbstick on this controller is clicked
+         * A function executed each frame that updates the mesh (if needed)
+         * @param xrFrame the current xrFrame
          */
-        onThumbstickStateChangedObservable: Observable<ExtendedGamepadButton>;
+        protected abstract _updateModel(xrFrame: XRFrame): void;
         /**
-         * Fired when the thumbstick on this controller is modified
+         * This function is called before the mesh is loaded. It checks for loading constraints.
+         * For example, this function can check if the GLB loader is available
+         * If this function returns false, the generic controller will be loaded instead
+         * @returns Is the client ready to load the mesh
          */
-        onThumbstickValuesChangedObservable: Observable<StickValues>;
+        protected abstract _getModelLoadingConstraints(): boolean;
         /**
-         * Fired when the touchpad button on this controller is modified
-         */
-        onTrackpadChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the touchpad values on this controller are modified
-         */
-        onTrackpadValuesChangedObservable: Observable<StickValues>;
-        /**
-         * Fired when the thumbstick button on this controller is modified
-         * here to prevent breaking changes
-         */
-        get onThumbstickButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
-        /**
-         * updating the thumbstick(!) and not the trackpad.
-         * This is named this way due to the difference between WebVR and XR and to avoid
-         * changing the parent class.
-         */
-        protected _updateTrackpad(): void;
-        /**
-         * Disposes the class with joy
+         * Dispose this controller, the model mesh and all its components
          */
         dispose(): void;
     }
 }
 declare module BABYLON {
     /**
-     * Oculus Touch Controller
+     * A generic trigger-only motion controller for WebXR
      */
-    export class OculusTouchController extends WebVRController {
+    export class WebXRGenericTriggerMotionController extends WebXRAbstractMotionController {
         /**
-         * Base Url for the controller model.
+         * Static version of the profile id of this controller
          */
-        static MODEL_BASE_URL: string;
-        /**
-         * File name for the left controller model.
-         */
-        static MODEL_LEFT_FILENAME: string;
-        /**
-         * File name for the right controller model.
-         */
-        static MODEL_RIGHT_FILENAME: string;
-        /**
-         * Base Url for the Quest controller model.
-         */
-        static QUEST_MODEL_BASE_URL: string;
-        /**
-         * @hidden
-         * If the controllers are running on a device that needs the updated Quest controller models
-         */
-        static _IsQuest: boolean;
-        /**
-         * Fired when the secondary trigger on this controller is modified
-         */
-        onSecondaryTriggerStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the thumb rest on this controller is modified
-         */
-        onThumbRestChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Creates a new OculusTouchController from a gamepad
-         * @param vrGamepad the gamepad that the controller should be created from
-         */
-        constructor(vrGamepad: any);
-        /**
-         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
-         * @param scene scene in which to add meshes
-         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
-         */
-        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
-        /**
-         * Fired when the A button on this controller is modified
-         */
-        get onAButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the B button on this controller is modified
-         */
-        get onBButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the X button on this controller is modified
-         */
-        get onXButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the Y button on this controller is modified
-         */
-        get onYButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
-        /**
-          * Called once for each button that changed state since the last frame
-          * 0) thumb stick (touch, press, value = pressed (0,1)). value is in this.leftStick
-          * 1) index trigger (touch (?), press (only when value > 0.1), value 0 to 1)
-          * 2) secondary trigger (same)
-          * 3) A (right) X (left), touch, pressed = value
-          * 4) B / Y
-          * 5) thumb rest
-          * @param buttonIdx Which button index changed
-          * @param state New state of the button
-          * @param changes Which properties on the state changed since last frame
-          */
-        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+        static ProfileId: string;
+        profileId: string;
+        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness);
+        protected _processLoadedModel(meshes: AbstractMesh[]): void;
+        protected _updateModel(): void;
+        protected _getFilenameAndPath(): {
+            filename: string;
+            path: string;
+        };
+        protected _setRootMesh(meshes: AbstractMesh[]): void;
+        protected _getModelLoadingConstraints(): boolean;
     }
 }
 declare module BABYLON {
     /**
-     * Vive Controller
+     * A construction function type to create a new controller based on an xrInput object
      */
-    export class ViveController extends WebVRController {
+    export type MotionControllerConstructor = (xrInput: XRInputSource, scene: Scene) => WebXRAbstractMotionController;
+    /**
+     * The MotionController Manager manages all registered motion controllers and loads the right one when needed.
+     *
+     * When this repository is complete: https://github.com/immersive-web/webxr-input-profiles/tree/master/packages/assets
+     * it should be replaced with auto-loaded controllers.
+     *
+     * When using a model try to stay as generic as possible. Eventually there will be no need in any of the controller classes
+     */
+    export class WebXRMotionControllerManager {
+        private static _AvailableControllers;
+        private static _Fallbacks;
         /**
-         * Base Url for the controller model.
+         * Register a new controller based on its profile. This function will be called by the controller classes themselves.
+         *
+         * If you are missing a profile, make sure it is imported in your source, otherwise it will not register.
+         *
+         * @param type the profile type to register
+         * @param constructFunction the function to be called when loading this profile
          */
-        static MODEL_BASE_URL: string;
+        static RegisterController(type: string, constructFunction: MotionControllerConstructor): void;
         /**
-         * File name for the controller model.
+         * When acquiring a new xrInput object (usually by the WebXRInput class), match it with the correct profile.
+         * The order of search:
+         *
+         * 1) Iterate the profiles array of the xr input and try finding a corresponding motion controller
+         * 2) (If not found) search in the gamepad id and try using it (legacy versions only)
+         * 3) search for registered fallbacks (should be redundant, nonetheless it makes sense to check)
+         * 4) return the generic trigger controller if none were found
+         *
+         * @param xrInput the xrInput to which a new controller is initialized
+         * @param scene the scene to which the model will be added
+         * @param forceProfile force a certain profile for this controller
+         * @return the motion controller class for this profile id or the generic standard class if none was found
          */
-        static MODEL_FILENAME: string;
+        static GetMotionControllerWithXRInput(xrInput: XRInputSource, scene: Scene, forceProfile?: string): WebXRAbstractMotionController;
         /**
-         * Creates a new ViveController from a gamepad
-         * @param vrGamepad the gamepad that the controller should be created from
+         * Find a fallback profile if the profile was not found. There are a few predefined generic profiles.
+         * @param profileId the profile to which a fallback needs to be found
+         * @return an array with corresponding fallback profiles
          */
-        constructor(vrGamepad: any);
+        static FindFallbackWithProfileId(profileId: string): string[];
         /**
-         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
-         * @param scene scene in which to add meshes
-         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         * Register a fallback to a specific profile.
+         * @param profileId the profileId that will receive the fallbacks
+         * @param fallbacks A list of fallback profiles
          */
-        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
+        static RegisterFallbacksForProfileId(profileId: string, fallbacks: string[]): void;
         /**
-         * Fired when the left button on this controller is modified
+         * Register the default fallbacks.
+         * This function is called automatically when this file is imported.
          */
-        get onLeftButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the right button on this controller is modified
-         */
-        get onRightButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the menu button on this controller is modified
-         */
-        get onMenuButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
-        /**
-         * Called once for each button that changed state since the last frame
-         * Vive mapping:
-         * 0: touchpad
-         * 1: trigger
-         * 2: left AND right buttons
-         * 3: menu button
-         * @param buttonIdx Which button index changed
-         * @param state New state of the button
-         * @param changes Which properties on the state changed since last frame
-         */
-        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+        static DefaultFallbacks(): void;
     }
 }
 declare module BABYLON {
     /**
-     * Loads a controller model and adds it as a child of the WebXRControllers grip when the controller is created
+     * Configuration options for the WebXR controller creation
      */
-    export class WebXRControllerModelLoader {
+    export interface IWebXRControllerOptions {
         /**
-         * an observable that triggers when a new model (the mesh itself) was initialized.
-         * To know when the mesh was loaded use the controller's own modelLoaded() method
+         * Force a specific controller type for this controller.
+         * This can be used when creating your own profile or when testing different controllers
          */
-        onControllerModelLoaded: Observable<WebXRController>;
+        forceControllerProfile?: string;
+    }
+    /**
+     * Represents an XR controller
+     */
+    export class WebXRController {
+        private _scene;
+        /** The underlying input source for the controller  */
+        inputSource: XRInputSource;
+        private _options;
         /**
-         * Creates the WebXRControllerModelLoader
-         * @param input xr input that creates the controllers
+         * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if thats the case only the pointer from the head will be availible
          */
-        constructor(input: WebXRInput);
+        grip?: AbstractMesh;
+        /**
+         * Pointer which can be used to select objects or attach a visible laser to
+         */
+        pointer: AbstractMesh;
+        /**
+         * If available, this is the gamepad object related to this controller.
+         * Using this object it is possible to get click events and trackpad changes of the
+         * webxr controller that is currently being used.
+         */
+        motionController?: WebXRAbstractMotionController;
+        /**
+         * Event that fires when the controller is removed/disposed
+         */
+        onDisposeObservable: Observable<{}>;
+        private _tmpQuaternion;
+        private _tmpVector;
+        private _uniqueId;
+        /**
+         * Creates the controller
+         * @see https://doc.babylonjs.com/how_to/webxr
+         * @param _scene the scene which the controller should be associated to
+         * @param inputSource the underlying input source for the controller
+         * @param _options options for this controller creation
+         */
+        constructor(_scene: Scene, 
+        /** The underlying input source for the controller  */
+        inputSource: XRInputSource, _options?: IWebXRControllerOptions);
+        /**
+         * Get this controllers unique id
+         */
+        get uniqueId(): string;
+        /**
+         * Updates the controller pose based on the given XRFrame
+         * @param xrFrame xr frame to update the pose with
+         * @param referenceSpace reference space to use
+         */
+        updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace): void;
+        /**
+         * Gets a world space ray coming from the controller
+         * @param result the resulting ray
+         */
+        getWorldPointerRayToRef(result: Ray): void;
+        /**
+         * Disposes of the object
+         */
+        dispose(): void;
     }
 }
 declare module BABYLON {
     /**
-     * Handles pointer input automatically for the pointer of XR controllers
+     * The schema for initialization options of the XR Input class
      */
-    export class WebXRControllerPointerSelection {
+    export interface IWebXRInputOptions {
+        /**
+         * If set to true no model will be automatically loaded
+         */
+        doNotLoadControllerMeshes?: boolean;
+        /**
+         * If set, this profile will be used for all controllers loaded (for example "microsoft-mixed-reality")
+         * If not found, the xr input profile data will be used.
+         * Profiles are defined here - https://github.com/immersive-web/webxr-input-profiles/
+         */
+        forceInputProfile?: string;
+    }
+    /**
+     * XR input used to track XR inputs such as controllers/rays
+     */
+    export class WebXRInput implements IDisposable {
+        /**
+         * the xr session manager for this session
+         */
+        xrSessionManager: WebXRSessionManager;
+        /**
+         * the WebXR camera for this session. Mainly used for teleportation
+         */
+        xrCamera: WebXRCamera;
+        private readonly options;
+        /**
+         * XR controllers being tracked
+         */
+        controllers: Array<WebXRController>;
+        private _frameObserver;
+        private _sessionEndedObserver;
+        private _sessionInitObserver;
+        /**
+         * Event when a controller has been connected/added
+         */
+        onControllerAddedObservable: Observable<WebXRController>;
+        /**
+         * Event when a controller has been removed/disconnected
+         */
+        onControllerRemovedObservable: Observable<WebXRController>;
+        /**
+         * Initializes the WebXRInput
+         * @param xrSessionManager the xr session manager for this session
+         * @param xrCamera the WebXR camera for this session. Mainly used for teleportation
+         * @param options = initialization options for this xr input
+         */
+        constructor(
+        /**
+         * the xr session manager for this session
+         */
+        xrSessionManager: WebXRSessionManager, 
+        /**
+         * the WebXR camera for this session. Mainly used for teleportation
+         */
+        xrCamera: WebXRCamera, options?: IWebXRInputOptions);
+        private _onInputSourcesChange;
+        private _addAndRemoveControllers;
+        /**
+         * Disposes of the object
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * This is the base class for all WebXR features.
+     * Since most features require almost the same resources and callbacks, this class can be used to simplify the development
+     * Note that since the features manager is using the `IWebXRFeature` you are in no way obligated to use this class
+     */
+    export abstract class WebXRAbstractFeature implements IWebXRFeature {
+        protected _xrSessionManager: WebXRSessionManager;
+        /**
+         * Construct a new (abstract) webxr feature
+         * @param _xrSessionManager the xr session manager for this feature
+         */
+        constructor(_xrSessionManager: WebXRSessionManager);
+        private _attached;
+        private _removeOnDetach;
+        /**
+         * Is this feature attached
+         */
+        get attached(): boolean;
+        /**
+         * attach this feature
+         *
+         * @returns true if successful, false is failed or already attached
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         *
+         * @returns true if successful, false if failed or already detached
+         */
+        detach(): boolean;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+        /**
+         * Code in this function will be executed on each xrFrame received from the browser.
+         * This function will not execute after the feature is detached.
+         * @param _xrFrame the current frame
+         */
+        protected _onXRFrame(_xrFrame: XRFrame): void;
+        /**
+         * This is used to register callbacks that will automatically be removed when detach is called.
+         * @param observable the observable to which the observer will be attached
+         * @param callback the callback to register
+         */
+        protected _addNewAttachObserver<T>(observable: Observable<T>, callback: (eventData: T, eventState: EventState) => void): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Options interface for the pointer selection module
+     */
+    export interface IWebXRControllerPointerSelectionOptions {
+        /**
+         * the xr input to use with this pointer selection
+         */
+        xrInput: WebXRInput;
+        /**
+         * Different button type to use instead of the main component
+         */
+        overrideButtonId?: string;
+        /**
+         * The amount of time in miliseconds it takes between pick found something to a pointer down event.
+         * Used in gaze modes. Tracked pointer uses the trigger, screen uses touch events
+         * 3000 means 3 seconds between pointing at something and selecting it
+         */
+        timeToSelect?: number;
+        /**
+         * Disable the pointer up event when the xr controller in screen and gaze mode is disposed (meaning - when the user removed the finger from the screen)
+         * If not disabled, the last picked point will be used to execute a pointer up event
+         * If disabled, pointer up event will be triggered right after the pointer down event.
+         * Used in screen and gaze target ray mode only
+         */
+        disablePointerUpOnTouchOut: boolean;
+        /**
+         * For gaze mode (time to select instead of press)
+         */
+        forceGazeMode: boolean;
+        /**
+         * Factor to be applied to the pointer-moved function in the gaze mode. How sensitive should the gaze mode be when checking if the pointer moved
+         * to start a new countdown to the pointer down event.
+         * Defaults to 1.
+         */
+        gazeModePointerMovedFactor?: number;
+    }
+    /**
+     * A module that will enable pointer selection for motion controllers of XR Input Sources
+     */
+    export class WebXRControllerPointerSelection extends WebXRAbstractFeature implements IWebXRFeature {
+        private readonly _options;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the webxr specs version
+         */
+        static readonly Version: number;
+        /**
+         * This color will be set to the laser pointer when selection is triggered
+         */
+        laserPointerPickedColor: Color3;
+        /**
+         * This color will be applied to the selection ring when selection is triggered
+         */
+        selectionMeshPickedColor: Color3;
+        /**
+         * default color of the selection ring
+         */
+        selectionMeshDefaultColor: Color3;
+        /**
+         * Default color of the laser pointer
+         */
+        lasterPointerDefaultColor: Color3;
+        /**
+         * Should the laser pointer be displayed
+         */
+        displayLaserPointer: boolean;
+        /**
+         * Should the selection mesh be displayed (The ring at the end of the laser pointer)
+         */
+        displaySelectionMesh: boolean;
+        /**
+         * Disable lighting on the laser pointer (so it will always be visible)
+         */
+        disablePointerLighting: boolean;
+        /**
+         * Disable lighting on the selection mesh (so it will always be visible)
+         */
+        disableSelectionMeshLighting: boolean;
         private static _idCounter;
         private _tmpRay;
+        private _controllers;
+        private _scene;
         /**
-         * Creates a WebXRControllerPointerSelection
-         * @param input input manager to setup pointer selection
+         * constructs a new background remover module
+         * @param _xrSessionManager the session manager for this module
+         * @param _options read-only options to be used in this module
          */
-        constructor(input: WebXRInput);
+        constructor(_xrSessionManager: WebXRSessionManager, _options: IWebXRControllerPointerSelectionOptions);
+        /**
+         * attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
+         * Get the xr controller that correlates to the pointer id in the pointer event
+         *
+         * @param id the pointer id to search for
+         * @returns the controller that correlates to this id or null if not found
+         */
+        getXRControllerByPointerId(id: number): Nullable<WebXRController>;
+        protected _onXRFrame(_xrFrame: XRFrame): void;
+        private _attachController;
+        private _attachScreenRayMode;
+        private _attachGazeMode;
+        private _tmpVectorForPickCompare;
+        private _pickingMoved;
+        private _attachTrackedPointerRayMode;
+        private _detachController;
+        private _generateNewMeshPair;
         private _convertNormalToDirectionOfRay;
         private _updatePointerDistance;
-    }
-}
-declare module BABYLON {
-    /**
-     * Enables teleportation
-     */
-    export class WebXRControllerTeleportation {
-        private _teleportationFillColor;
-        private _teleportationBorderColor;
-        private _tmpRay;
-        private _tmpVector;
-        /**
-         * when set to true (default) teleportation will wait for thumbstick changes.
-         * When set to false teleportation will be disabled.
-         *
-         * If set to false while teleporting results can be unexpected.
-         */
-        enabled: boolean;
-        /**
-         * Creates a WebXRControllerTeleportation
-         * @param input input manager to add teleportation to
-         * @param floorMeshes floormeshes which can be teleported to
-         */
-        constructor(input: WebXRInput, floorMeshes?: Array<AbstractMesh>);
     }
 }
 declare module BABYLON {
@@ -43655,13 +44208,238 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class containing static functions to help procedurally build meshes
+     */
+    export class LinesBuilder {
+        /**
+         * Creates a line system mesh. A line system is a pool of many lines gathered in a single mesh
+         * * A line system mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of lines as an input parameter
+         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineSystem to this static function
+         * * The parameter `lines` is an array of lines, each line being an array of successive Vector3
+         * * The optional parameter `instance` is an instance of an existing LineSystem object to be updated with the passed `lines` parameter
+         * * The optional parameter `colors` is an array of line colors, each line colors being an array of successive Color4, one per line point
+         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need the alpha blending (faster)
+         * * Updating a simple Line mesh, you just need to update every line in the `lines` array : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @see https://doc.babylonjs.com/how_to/parametric_shapes#line-system
+         * @param name defines the name of the new line system
+         * @param options defines the options used to create the line system
+         * @param scene defines the hosting scene
+         * @returns a new line system mesh
+         */
+        static CreateLineSystem(name: string, options: {
+            lines: Vector3[][];
+            updatable?: boolean;
+            instance?: Nullable<LinesMesh>;
+            colors?: Nullable<Color4[][]>;
+            useVertexAlpha?: boolean;
+        }, scene: Nullable<Scene>): LinesMesh;
+        /**
+         * Creates a line mesh
+         * A line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter
+         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function
+         * * The parameter `points` is an array successive Vector3
+         * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * * The optional parameter `colors` is an array of successive Color4, one per line point
+         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need alpha blending (faster)
+         * * When updating an instance, remember that only point positions can change, not the number of points
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @see https://doc.babylonjs.com/how_to/parametric_shapes#lines
+         * @param name defines the name of the new line system
+         * @param options defines the options used to create the line system
+         * @param scene defines the hosting scene
+         * @returns a new line mesh
+         */
+        static CreateLines(name: string, options: {
+            points: Vector3[];
+            updatable?: boolean;
+            instance?: Nullable<LinesMesh>;
+            colors?: Color4[];
+            useVertexAlpha?: boolean;
+        }, scene?: Nullable<Scene>): LinesMesh;
+        /**
+         * Creates a dashed line mesh
+         * * A dashed line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter
+         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function
+         * * The parameter `points` is an array successive Vector3
+         * * The parameter `dashNb` is the intended total number of dashes (positive integer, default 200)
+         * * The parameter `dashSize` is the size of the dashes relatively the dash number (positive float, default 3)
+         * * The parameter `gapSize` is the size of the gap between two successive dashes relatively the dash number (positive float, default 1)
+         * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
+         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need the alpha blending (faster)
+         * * When updating an instance, remember that only point positions can change, not the number of points
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @param name defines the name of the mesh
+         * @param options defines the options used to create the mesh
+         * @param scene defines the hosting scene
+         * @returns the dashed line mesh
+         * @see https://doc.babylonjs.com/how_to/parametric_shapes#dashed-lines
+         */
+        static CreateDashedLines(name: string, options: {
+            points: Vector3[];
+            dashSize?: number;
+            gapSize?: number;
+            dashNb?: number;
+            updatable?: boolean;
+            instance?: LinesMesh;
+            useVertexAlpha?: boolean;
+        }, scene?: Nullable<Scene>): LinesMesh;
+    }
+}
+declare module BABYLON {
+    /**
+     * The options container for the teleportation module
+     */
+    export interface IWebXRTeleportationOptions {
+        /**
+         * Babylon XR Input class for controller
+         */
+        xrInput: WebXRInput;
+        /**
+         * A list of meshes to use as floor meshes.
+         * Meshes can be added and removed after initializing the feature using the
+         * addFloorMesh and removeFloorMesh functions
+         * If empty, rotation will still work
+         */
+        floorMeshes?: AbstractMesh[];
+        /**
+         * Provide your own teleportation mesh instead of babylon's wonderful doughnut.
+         * If you want to support rotation, make sure your mesh has a direction indicator.
+         *
+         * When left untouched, the default mesh will be initialized.
+         */
+        teleportationTargetMesh?: AbstractMesh;
+        /**
+         * Values to configure the default target mesh
+         */
+        defaultTargetMeshOptions?: {
+            /**
+             * Fill color of the teleportation area
+             */
+            teleportationFillColor?: string;
+            /**
+             * Border color for the teleportation area
+             */
+            teleportationBorderColor?: string;
+            /**
+             * Override the default material of the torus and arrow
+             */
+            torusArrowMaterial?: Material;
+            /**
+             * Disable the mesh's animation sequence
+             */
+            disableAnimation?: boolean;
+        };
+        /**
+         * Disable using the thumbstick and use the main component (usuallly trigger) on long press.
+         * This will be automatically true if the controller doesnt have a thumbstick or touchpad.
+         */
+        useMainComponentOnly?: boolean;
+        /**
+         * If main component is used (no thumbstick), how long should the "long press" take before teleporting
+         */
+        timeToTeleport?: number;
+    }
+    /**
+     * This is a teleportation feature to be used with webxr-enabled motion controllers.
+     * When enabled and attached, the feature will allow a user to move aroundand rotate in the scene using
+     * the input of the attached controllers.
+     */
+    export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature implements IWebXRFeature {
+        private _options;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the webxr specs version
+         */
+        static readonly Version: number;
+        /**
+         * Is rotation enabled when moving forward?
+         * Disabling this feature will prevent the user from deciding the direction when teleporting
+         */
+        rotationEnabled: boolean;
+        /**
+         * Should the module support parabolic ray on top of direct ray
+         * If enabled, the user will be able to point "at the sky" and move according to predefined radius distance
+         * Very helpful when moving between floors / different heights
+         */
+        parabolicRayEnabled: boolean;
+        /**
+         * The distance from the user to the inspection point in the direction of the controller
+         * A higher number will allow the user to move further
+         * defaults to 5 (meters, in xr units)
+         */
+        parabolicCheckRadius: number;
+        /**
+         * How much rotation should be applied when rotating right and left
+         */
+        rotationAngle: number;
+        /**
+         * Distance to travel when moving backwards
+         */
+        backwardsTeleportationDistance: number;
+        /**
+         * Add a new mesh to the floor meshes array
+         * @param mesh the mesh to use as floor mesh
+         */
+        addFloorMesh(mesh: AbstractMesh): void;
+        /**
+         * Remove a mesh from the floor meshes array
+         * @param mesh the mesh to remove
+         */
+        removeFloorMesh(mesh: AbstractMesh): void;
+        /**
+         * Remove a mesh from the floor meshes array using its name
+         * @param name the mesh name to remove
+         */
+        removeFloorMeshByName(name: string): void;
+        private _tmpRay;
+        private _tmpVector;
+        private _floorMeshes;
+        private _controllers;
+        /**
+         * constructs a new anchor system
+         * @param _xrSessionManager an instance of WebXRSessionManager
+         * @param _options configuration object for this feature
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, _options: IWebXRTeleportationOptions);
+        private _selectionFeature;
+        /**
+         * This function sets a selection feature that will be disabled when
+         * the forward ray is shown and will be reattached when hidden.
+         * This is used to remove the selection rays when moving.
+         * @param selectionFeature the feature to disable when forward movement is enabled
+         */
+        setSelectionFeature(selectionFeature: IWebXRFeature): void;
+        attach(): boolean;
+        detach(): boolean;
+        dispose(): void;
+        protected _onXRFrame(_xrFrame: XRFrame): void;
+        private _currentTeleportationControllerId;
+        private _attachController;
+        private _teleportForward;
+        private _detachController;
+        private createDefaultTargetMesh;
+        private setTargetMeshVisibility;
+        private setTargetMeshPosition;
+        private _quadraticBezierCurve;
+        private showParabolicPath;
+    }
+}
+declare module BABYLON {
+    /**
      * Options for the default xr helper
      */
     export class WebXRDefaultExperienceOptions {
         /**
-         * Floor meshes that should be used for teleporting
+         * Floor meshes that will be used for teleporting
          */
-        floorMeshes: Array<AbstractMesh>;
+        floorMeshes?: Array<AbstractMesh>;
         /**
          * Enable or disable default UI to enter XR
          */
@@ -43674,6 +44452,14 @@ declare module BABYLON {
          * optional UI options. This can be used among other to change session mode and reference space type
          */
         uiOptions?: WebXREnterExitUIOptions;
+        /**
+         * Disable the controller mesh-loading. Can be used if you want to load your own meshes
+         */
+        inputOptions?: IWebXRInputOptions;
+        /**
+         * Should teleportation not initialize. defaults to false.
+         */
+        disableTeleportation?: boolean;
     }
     /**
      * Default experience which provides a similar setup to the previous webVRExperience
@@ -43688,17 +44474,13 @@ declare module BABYLON {
          */
         input: WebXRInput;
         /**
-         * Loads the controller models
-         */
-        controllerModelLoader: WebXRControllerModelLoader;
-        /**
          * Enables laser pointer and selection
          */
         pointerSelection: WebXRControllerPointerSelection;
         /**
          * Enables teleportation
          */
-        teleportation: WebXRControllerTeleportation;
+        teleportation: WebXRMotionControllerTeleportation;
         /**
          * Enables ui for entering/exiting xr
          */
@@ -43713,7 +44495,7 @@ declare module BABYLON {
          * @param options options for basic configuration
          * @returns resulting WebXRDefaultExperience
          */
-        static CreateAsync(scene: Scene, options: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
+        static CreateAsync(scene: Scene, options?: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience>;
         private constructor();
         /**
          * DIsposes of the experience helper
@@ -43876,6 +44658,10 @@ declare module BABYLON {
         private _padSensibilityDown;
         private _leftController;
         private _rightController;
+        private _gazeColor;
+        private _laserColor;
+        private _pickedLaserColor;
+        private _pickedGazeColor;
         /**
          * Observable raised when a new mesh is selected based on meshSelectionPredicate
          */
@@ -44105,6 +44891,23 @@ declare module BABYLON {
         private _castRayAndSelectObject;
         private _notifySelectedMeshUnselected;
         /**
+         * Permanently set new colors for the laser pointer
+         * @param color the new laser color
+         * @param pickedColor the new laser color when picked mesh detected
+         */
+        setLaserColor(color: Color3, pickedColor?: Color3): void;
+        /**
+         * Set lighting enabled / disabled on the laser pointer of both controllers
+         * @param enabled should the lighting be enabled on the laser pointer
+         */
+        setLaserLightingState(enabled?: boolean): void;
+        /**
+         * Permanently set new colors for the gaze pointer
+         * @param color the new gaze color
+         * @param pickedColor the new gaze color when picked mesh detected
+         */
+        setGazeColor(color: Color3, pickedColor?: Color3): void;
+        /**
          * Sets the color of the laser ray from the vr controllers.
          * @param color new color for the ray.
          */
@@ -44157,8 +44960,7 @@ declare module BABYLON {
      * Hit test (or raycasting) is used to interact with the real world.
      * For further information read here - https://github.com/immersive-web/hit-test
      */
-    export class WebXRHitTestLegacy implements IWebXRFeature {
-        private _xrSessionManager;
+    export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRFeature {
         /**
          * options to use when constructing this feature
          */
@@ -44194,6 +44996,7 @@ declare module BABYLON {
          * Triggered when new babylon (transformed) hit test results are available
          */
         onHitTestResultObservable: Observable<IWebXRHitResult[]>;
+        private _onSelectEnabled;
         /**
          * Creates a new instance of the (legacy version) hit test feature
          * @param _xrSessionManager an instance of WebXRSessionManager
@@ -44204,9 +45007,6 @@ declare module BABYLON {
          * options to use when constructing this feature
          */
         options?: IWebXRHitTestOptions);
-        private _onSelectEnabled;
-        private _xrFrameObserver;
-        private _attached;
         /**
          * Populated with the last native XR Hit Results
          */
@@ -44226,6 +45026,10 @@ declare module BABYLON {
          */
         detach(): boolean;
         private _onHitTestResults;
+        private _origin;
+        private _direction;
+        private _mat;
+        protected _onXRFrame(frame: XRFrame): void;
         private _onSelect;
         /**
          * Dispose this feature and all of the resources attached
@@ -44270,8 +45074,7 @@ declare module BABYLON {
      * The plane detector is used to detect planes in the real world when in AR
      * For more information see https://github.com/immersive-web/real-world-geometry/
      */
-    export class WebXRPlaneDetector implements IWebXRFeature {
-        private _xrSessionManager;
+    export class WebXRPlaneDetector extends WebXRAbstractFeature implements IWebXRFeature {
         private _options;
         /**
          * The module's name
@@ -44297,30 +45100,15 @@ declare module BABYLON {
          */
         onPlaneUpdatedObservable: Observable<IWebXRPlane>;
         private _enabled;
-        private _attached;
         private _detectedPlanes;
         private _lastFrameDetected;
-        private _observerTracked;
         /**
          * construct a new Plane Detector
          * @param _xrSessionManager an instance of xr Session manager
          * @param _options configuration to use when constructing this feature
          */
         constructor(_xrSessionManager: WebXRSessionManager, _options?: IWebXRPlaneDetectorOptions);
-        /**
-         * attach this feature
-         * Will usually be called by the features manager
-         *
-         * @returns true if successful.
-         */
-        attach(): boolean;
-        /**
-         * detach this feature.
-         * Will usually be called by the features manager
-         *
-         * @returns true if successful.
-         */
-        detach(): boolean;
+        protected _onXRFrame(frame: XRFrame): void;
         /**
          * Dispose this feature and all of the resources attached
          */
@@ -44375,8 +45163,7 @@ declare module BABYLON {
      * will use the frame to create an anchor and not the session or a detected plane
      * For further information see https://github.com/immersive-web/anchors/
      */
-    export class WebXRAnchorSystem implements IWebXRFeature {
-        private _xrSessionManager;
+    export class WebXRAnchorSystem extends WebXRAbstractFeature implements IWebXRFeature {
         private _options;
         /**
          * The module's name
@@ -44404,10 +45191,8 @@ declare module BABYLON {
         private _planeDetector;
         private _hitTestModule;
         private _enabled;
-        private _attached;
         private _trackedAnchors;
         private _lastFrameDetected;
-        private _observerTracked;
         /**
          * constructs a new anchor system
          * @param _xrSessionManager an instance of WebXRSessionManager
@@ -44443,6 +45228,7 @@ declare module BABYLON {
          * Dispose this feature and all of the resources attached
          */
         dispose(): void;
+        protected _onXRFrame(frame: XRFrame): void;
         private _onSelect;
         /**
          * Add anchor at a specific XR point.
@@ -44491,8 +45277,7 @@ declare module BABYLON {
     /**
      * A module that will automatically disable background meshes when entering AR and will enable them when leaving AR.
      */
-    export class WebXRBackgroundRemover implements IWebXRFeature {
-        private _xrSessionManager;
+    export class WebXRBackgroundRemover extends WebXRAbstractFeature implements IWebXRFeature {
         /**
          * read-only options to be used in this module
          */
@@ -44540,6 +45325,156 @@ declare module BABYLON {
          * Dispose this feature and all of the resources attached
          */
         dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * The motion controller class for all microsoft mixed reality controllers
+     */
+    export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionController {
+        /**
+         * The base url used to load the left and right controller models
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * The name of the left controller model file
+         */
+        static MODEL_LEFT_FILENAME: string;
+        /**
+         * The name of the right controller model file
+         */
+        static MODEL_RIGHT_FILENAME: string;
+        profileId: string;
+        protected readonly _mapping: {
+            defaultButton: {
+                "valueNodeName": string;
+                "unpressedNodeName": string;
+                "pressedNodeName": string;
+            };
+            defaultAxis: {
+                "valueNodeName": string;
+                "minNodeName": string;
+                "maxNodeName": string;
+            };
+            buttons: {
+                "xr-standard-trigger": {
+                    "rootNodeName": string;
+                    "componentProperty": string;
+                    "states": string[];
+                };
+                "xr-standard-squeeze": {
+                    "rootNodeName": string;
+                    "componentProperty": string;
+                    "states": string[];
+                };
+                "xr-standard-touchpad": {
+                    "rootNodeName": string;
+                    "labelAnchorNodeName": string;
+                    "touchPointNodeName": string;
+                };
+                "xr-standard-thumbstick": {
+                    "rootNodeName": string;
+                    "componentProperty": string;
+                    "states": string[];
+                };
+            };
+            axes: {
+                "xr-standard-touchpad": {
+                    "x-axis": {
+                        "rootNodeName": string;
+                    };
+                    "y-axis": {
+                        "rootNodeName": string;
+                    };
+                };
+                "xr-standard-thumbstick": {
+                    "x-axis": {
+                        "rootNodeName": string;
+                    };
+                    "y-axis": {
+                        "rootNodeName": string;
+                    };
+                };
+            };
+        };
+        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness);
+        protected _processLoadedModel(_meshes: AbstractMesh[]): void;
+        private _getChildByName;
+        private _getImmediateChildByName;
+        protected _getFilenameAndPath(): {
+            filename: string;
+            path: string;
+        };
+        protected _updateModel(): void;
+        protected _getModelLoadingConstraints(): boolean;
+        protected _setRootMesh(meshes: AbstractMesh[]): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * The motion controller class for oculus touch (quest, rift).
+     * This class supports legacy mapping as well the standard xr mapping
+     */
+    export class WebXROculusTouchMotionController extends WebXRAbstractMotionController {
+        private _forceLegacyControllers;
+        /**
+         * The base url used to load the left and right controller models
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * The name of the left controller model file
+         */
+        static MODEL_LEFT_FILENAME: string;
+        /**
+         * The name of the right controller model file
+         */
+        static MODEL_RIGHT_FILENAME: string;
+        /**
+         * Base Url for the Quest controller model.
+         */
+        static QUEST_MODEL_BASE_URL: string;
+        profileId: string;
+        private _modelRootNode;
+        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness, legacyMapping?: boolean, _forceLegacyControllers?: boolean);
+        protected _processLoadedModel(_meshes: AbstractMesh[]): void;
+        protected _getFilenameAndPath(): {
+            filename: string;
+            path: string;
+        };
+        /**
+         * Is this the new type of oculus touch. At the moment both have the same profile and it is impossible to differentiate
+         * between the touch and touch 2.
+         */
+        private _isQuest;
+        protected _updateModel(): void;
+        protected _getModelLoadingConstraints(): boolean;
+        protected _setRootMesh(meshes: AbstractMesh[]): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * The motion controller class for the standard HTC-Vive controllers
+     */
+    export class WebXRHTCViveMotionController extends WebXRAbstractMotionController {
+        /**
+         * The base url used to load the left and right controller models
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * File name for the controller model.
+         */
+        static MODEL_FILENAME: string;
+        profileId: string;
+        private _modelRootNode;
+        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness, legacyMapping?: boolean);
+        protected _processLoadedModel(_meshes: AbstractMesh[]): void;
+        protected _getFilenameAndPath(): {
+            filename: string;
+            path: string;
+        };
+        protected _updateModel(): void;
+        protected _getModelLoadingConstraints(): boolean;
+        protected _setRootMesh(meshes: AbstractMesh[]): void;
     }
 }
 declare module BABYLON {
@@ -45528,85 +46463,6 @@ declare module BABYLON.Debug {
 }
 declare module BABYLON {
     /**
-     * Class containing static functions to help procedurally build meshes
-     */
-    export class LinesBuilder {
-        /**
-         * Creates a line system mesh. A line system is a pool of many lines gathered in a single mesh
-         * * A line system mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of lines as an input parameter
-         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineSystem to this static function
-         * * The parameter `lines` is an array of lines, each line being an array of successive Vector3
-         * * The optional parameter `instance` is an instance of an existing LineSystem object to be updated with the passed `lines` parameter
-         * * The optional parameter `colors` is an array of line colors, each line colors being an array of successive Color4, one per line point
-         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need the alpha blending (faster)
-         * * Updating a simple Line mesh, you just need to update every line in the `lines` array : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
-         * * When updating an instance, remember that only line point positions can change, not the number of points, neither the number of lines
-         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes#line-system
-         * @param name defines the name of the new line system
-         * @param options defines the options used to create the line system
-         * @param scene defines the hosting scene
-         * @returns a new line system mesh
-         */
-        static CreateLineSystem(name: string, options: {
-            lines: Vector3[][];
-            updatable?: boolean;
-            instance?: Nullable<LinesMesh>;
-            colors?: Nullable<Color4[][]>;
-            useVertexAlpha?: boolean;
-        }, scene: Nullable<Scene>): LinesMesh;
-        /**
-         * Creates a line mesh
-         * A line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter
-         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function
-         * * The parameter `points` is an array successive Vector3
-         * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
-         * * The optional parameter `colors` is an array of successive Color4, one per line point
-         * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need alpha blending (faster)
-         * * When updating an instance, remember that only point positions can change, not the number of points
-         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes#lines
-         * @param name defines the name of the new line system
-         * @param options defines the options used to create the line system
-         * @param scene defines the hosting scene
-         * @returns a new line mesh
-         */
-        static CreateLines(name: string, options: {
-            points: Vector3[];
-            updatable?: boolean;
-            instance?: Nullable<LinesMesh>;
-            colors?: Color4[];
-            useVertexAlpha?: boolean;
-        }, scene?: Nullable<Scene>): LinesMesh;
-        /**
-         * Creates a dashed line mesh
-         * * A dashed line mesh is considered as a parametric shape since it has no predefined original shape. Its shape is determined by the passed array of points as an input parameter
-         * * Like every other parametric shape, it is dynamically updatable by passing an existing instance of LineMesh to this static function
-         * * The parameter `points` is an array successive Vector3
-         * * The parameter `dashNb` is the intended total number of dashes (positive integer, default 200)
-         * * The parameter `dashSize` is the size of the dashes relatively the dash number (positive float, default 3)
-         * * The parameter `gapSize` is the size of the gap between two successive dashes relatively the dash number (positive float, default 1)
-         * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
-         * * When updating an instance, remember that only point positions can change, not the number of points
-         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @param name defines the name of the mesh
-         * @param options defines the options used to create the mesh
-         * @param scene defines the hosting scene
-         * @returns the dashed line mesh
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes#dashed-lines
-         */
-        static CreateDashedLines(name: string, options: {
-            points: Vector3[];
-            dashSize?: number;
-            gapSize?: number;
-            dashNb?: number;
-            updatable?: boolean;
-            instance?: LinesMesh;
-        }, scene?: Nullable<Scene>): LinesMesh;
-    }
-}
-declare module BABYLON {
-    /**
      * As raycast might be hard to debug, the RayHelper can help rendering the different rays
      * in order to better appreciate the issue one might have.
      * @see http://doc.babylonjs.com/babylon101/raycasts#debugging
@@ -46071,7 +46927,6 @@ declare module BABYLON {
          * @param requiredWidth The width of the target to render to
          * @param requiredHeight The height of the target to render to
          * @param forceFullscreenViewport Forces the viewport to be the entire texture/screen if true
-         * @param depthStencilTexture The depth stencil texture to use to render
          * @param lodLevel defines le lod level to bind to the frame buffer
          */
         bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void;
@@ -47184,6 +48039,372 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Generic Controller
+     */
+    export class GenericController extends WebVRController {
+        /**
+         * Base Url for the controller model.
+         */
+        static readonly MODEL_BASE_URL: string;
+        /**
+         * File name for the controller model.
+         */
+        static readonly MODEL_FILENAME: string;
+        /**
+         * Creates a new GenericController from a gamepad
+         * @param vrGamepad the gamepad that the controller should be created from
+         */
+        constructor(vrGamepad: any);
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
+        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
+        /**
+         * Called once for each button that changed state since the last frame
+         * @param buttonIdx Which button index changed
+         * @param state New state of the button
+         * @param changes Which properties on the state changed since last frame
+         */
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Oculus Touch Controller
+     */
+    export class OculusTouchController extends WebVRController {
+        /**
+         * Base Url for the controller model.
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * File name for the left controller model.
+         */
+        static MODEL_LEFT_FILENAME: string;
+        /**
+         * File name for the right controller model.
+         */
+        static MODEL_RIGHT_FILENAME: string;
+        /**
+         * Base Url for the Quest controller model.
+         */
+        static QUEST_MODEL_BASE_URL: string;
+        /**
+         * @hidden
+         * If the controllers are running on a device that needs the updated Quest controller models
+         */
+        static _IsQuest: boolean;
+        /**
+         * Fired when the secondary trigger on this controller is modified
+         */
+        onSecondaryTriggerStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the thumb rest on this controller is modified
+         */
+        onThumbRestChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Creates a new OculusTouchController from a gamepad
+         * @param vrGamepad the gamepad that the controller should be created from
+         */
+        constructor(vrGamepad: any);
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
+        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
+        /**
+         * Fired when the A button on this controller is modified
+         */
+        get onAButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the B button on this controller is modified
+         */
+        get onBButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the X button on this controller is modified
+         */
+        get onXButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the Y button on this controller is modified
+         */
+        get onYButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+          * Called once for each button that changed state since the last frame
+          * 0) thumb stick (touch, press, value = pressed (0,1)). value is in this.leftStick
+          * 1) index trigger (touch (?), press (only when value > 0.1), value 0 to 1)
+          * 2) secondary trigger (same)
+          * 3) A (right) X (left), touch, pressed = value
+          * 4) B / Y
+          * 5) thumb rest
+          * @param buttonIdx Which button index changed
+          * @param state New state of the button
+          * @param changes Which properties on the state changed since last frame
+          */
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Vive Controller
+     */
+    export class ViveController extends WebVRController {
+        /**
+         * Base Url for the controller model.
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * File name for the controller model.
+         */
+        static MODEL_FILENAME: string;
+        /**
+         * Creates a new ViveController from a gamepad
+         * @param vrGamepad the gamepad that the controller should be created from
+         */
+        constructor(vrGamepad: any);
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
+        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
+        /**
+         * Fired when the left button on this controller is modified
+         */
+        get onLeftButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the right button on this controller is modified
+         */
+        get onRightButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the menu button on this controller is modified
+         */
+        get onMenuButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Called once for each button that changed state since the last frame
+         * Vive mapping:
+         * 0: touchpad
+         * 1: trigger
+         * 2: left AND right buttons
+         * 3: menu button
+         * @param buttonIdx Which button index changed
+         * @param state New state of the button
+         * @param changes Which properties on the state changed since last frame
+         */
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines the WindowsMotionController object that the state of the windows motion controller
+     */
+    export class WindowsMotionController extends WebVRController {
+        /**
+         * The base url used to load the left and right controller models
+         */
+        static MODEL_BASE_URL: string;
+        /**
+         * The name of the left controller model file
+         */
+        static MODEL_LEFT_FILENAME: string;
+        /**
+         * The name of the right controller model file
+         */
+        static MODEL_RIGHT_FILENAME: string;
+        /**
+         * The controller name prefix for this controller type
+         */
+        static readonly GAMEPAD_ID_PREFIX: string;
+        /**
+         * The controller id pattern for this controller type
+         */
+        private static readonly GAMEPAD_ID_PATTERN;
+        private _loadedMeshInfo;
+        protected readonly _mapping: {
+            buttons: string[];
+            buttonMeshNames: {
+                'trigger': string;
+                'menu': string;
+                'grip': string;
+                'thumbstick': string;
+                'trackpad': string;
+            };
+            buttonObservableNames: {
+                'trigger': string;
+                'menu': string;
+                'grip': string;
+                'thumbstick': string;
+                'trackpad': string;
+            };
+            axisMeshNames: string[];
+            pointingPoseMeshName: string;
+        };
+        /**
+         * Fired when the trackpad on this controller is clicked
+         */
+        onTrackpadChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the trackpad on this controller is modified
+         */
+        onTrackpadValuesChangedObservable: Observable<StickValues>;
+        /**
+         * The current x and y values of this controller's trackpad
+         */
+        trackpad: StickValues;
+        /**
+         * Creates a new WindowsMotionController from a gamepad
+         * @param vrGamepad the gamepad that the controller should be created from
+         */
+        constructor(vrGamepad: any);
+        /**
+         * Fired when the trigger on this controller is modified
+         */
+        get onTriggerButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the menu button on this controller is modified
+         */
+        get onMenuButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the grip button on this controller is modified
+         */
+        get onGripButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the thumbstick button on this controller is modified
+         */
+        get onThumbstickButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the touchpad button on this controller is modified
+         */
+        get onTouchpadButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the touchpad values on this controller are modified
+         */
+        get onTouchpadValuesChangedObservable(): Observable<StickValues>;
+        protected _updateTrackpad(): void;
+        /**
+         * Called once per frame by the engine.
+         */
+        update(): void;
+        /**
+         * Called once for each button that changed state since the last frame
+         * @param buttonIdx Which button index changed
+         * @param state New state of the button
+         * @param changes Which properties on the state changed since last frame
+         */
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+        /**
+         * Moves the buttons on the controller mesh based on their current state
+         * @param buttonName the name of the button to move
+         * @param buttonValue the value of the button which determines the buttons new position
+         */
+        protected _lerpButtonTransform(buttonName: string, buttonValue: number): void;
+        /**
+         * Moves the axis on the controller mesh based on its current state
+         * @param axis the index of the axis
+         * @param axisValue the value of the axis which determines the meshes new position
+         * @hidden
+         */
+        protected _lerpAxisTransform(axis: number, axisValue: number): void;
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
+        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void, forceDefault?: boolean): void;
+        /**
+         * Takes a list of meshes (as loaded from the glTF file) and finds the root node, as well as nodes that
+         * can be transformed by button presses and axes values, based on this._mapping.
+         *
+         * @param scene scene in which the meshes exist
+         * @param meshes list of meshes that make up the controller model to process
+         * @return structured view of the given meshes, with mapping of buttons and axes to meshes that can be transformed.
+         */
+        private processModel;
+        private createMeshInfo;
+        /**
+         * Gets the ray of the controller in the direction the controller is pointing
+         * @param length the length the resulting ray should be
+         * @returns a ray in the direction the controller is pointing
+         */
+        getForwardRay(length?: number): Ray;
+        /**
+        * Disposes of the controller
+        */
+        dispose(): void;
+    }
+    /**
+     * This class represents a new windows motion controller in XR.
+     */
+    export class XRWindowsMotionController extends WindowsMotionController {
+        /**
+         * Changing the original WIndowsMotionController mapping to fir the new mapping
+         */
+        protected readonly _mapping: {
+            buttons: string[];
+            buttonMeshNames: {
+                'trigger': string;
+                'menu': string;
+                'grip': string;
+                'thumbstick': string;
+                'trackpad': string;
+            };
+            buttonObservableNames: {
+                'trigger': string;
+                'menu': string;
+                'grip': string;
+                'thumbstick': string;
+                'trackpad': string;
+            };
+            axisMeshNames: string[];
+            pointingPoseMeshName: string;
+        };
+        /**
+         * Construct a new XR-Based windows motion controller
+         *
+         * @param gamepadInfo the gamepad object from the browser
+         */
+        constructor(gamepadInfo: any);
+        /**
+         * holds the thumbstick values (X,Y)
+         */
+        thumbstickValues: StickValues;
+        /**
+         * Fired when the thumbstick on this controller is clicked
+         */
+        onThumbstickStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the thumbstick on this controller is modified
+         */
+        onThumbstickValuesChangedObservable: Observable<StickValues>;
+        /**
+         * Fired when the touchpad button on this controller is modified
+         */
+        onTrackpadChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the touchpad values on this controller are modified
+         */
+        onTrackpadValuesChangedObservable: Observable<StickValues>;
+        /**
+         * Fired when the thumbstick button on this controller is modified
+         * here to prevent breaking changes
+         */
+        get onThumbstickButtonStateChangedObservable(): Observable<ExtendedGamepadButton>;
+        /**
+         * updating the thumbstick(!) and not the trackpad.
+         * This is named this way due to the difference between WebVR and XR and to avoid
+         * changing the parent class.
+         */
+        protected _updateTrackpad(): void;
+        /**
+         * Disposes the class with joy
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Class containing static functions to help procedurally build meshes
      */
     export class PolyhedronBuilder {
@@ -47681,6 +48902,11 @@ declare module BABYLON {
          * on each frame.
          */
         autoUpdateExtends: boolean;
+        /**
+         * Automatically compute the shadowMinZ and shadowMaxZ for the projection matrix to best fit (including all the casters)
+         * on each frame. autoUpdateExtends must be set to true for this to work
+         */
+        autoCalcShadowZBounds: boolean;
         private _orthoLeft;
         private _orthoRight;
         private _orthoTop;
@@ -52883,6 +54109,458 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** @hidden */
+    export var depthPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var depthVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * This represents a depth renderer in Babylon.
+     * A depth renderer will render to it's depth map every frame which can be displayed or used in post processing
+     */
+    export class DepthRenderer {
+        private _scene;
+        private _depthMap;
+        private _effect;
+        private readonly _storeNonLinearDepth;
+        private readonly _clearColor;
+        /** Get if the depth renderer is using packed depth or not */
+        readonly isPacked: boolean;
+        private _cachedDefines;
+        private _camera;
+        /** Enable or disable the depth renderer. When disabled, the depth texture is not updated */
+        enabled: boolean;
+        /**
+         * Specifiess that the depth renderer will only be used within
+         * the camera it is created for.
+         * This can help forcing its rendering during the camera processing.
+         */
+        useOnlyInActiveCamera: boolean;
+        /** @hidden */
+        static _SceneComponentInitialization: (scene: Scene) => void;
+        /**
+         * Instantiates a depth renderer
+         * @param scene The scene the renderer belongs to
+         * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
+         * @param camera The camera to be used to render the depth map (default: scene's active camera)
+         * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
+         */
+        constructor(scene: Scene, type?: number, camera?: Nullable<Camera>, storeNonLinearDepth?: boolean);
+        /**
+         * Creates the depth rendering effect and checks if the effect is ready.
+         * @param subMesh The submesh to be used to render the depth map of
+         * @param useInstances If multiple world instances should be used
+         * @returns if the depth renderer is ready to render the depth map
+         */
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        /**
+         * Gets the texture which the depth map will be written to.
+         * @returns The depth map texture
+         */
+        getDepthMap(): RenderTargetTexture;
+        /**
+         * Disposes of the depth renderer.
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var minmaxReduxPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * This class computes a min/max reduction from a texture: it means it computes the minimum
+     * and maximum values from all values of the texture.
+     * It is performed on the GPU for better performances, thanks to a succession of post processes.
+     * The source values are read from the red channel of the texture.
+     */
+    export class MinMaxReducer {
+        /**
+         * Observable triggered when the computation has been performed
+         */
+        onAfterReductionPerformed: Observable<{
+            min: number;
+            max: number;
+        }>;
+        protected _camera: Camera;
+        protected _sourceTexture: Nullable<RenderTargetTexture>;
+        protected _reductionSteps: Nullable<Array<PostProcess>>;
+        protected _postProcessManager: PostProcessManager;
+        protected _onAfterUnbindObserver: Nullable<Observer<RenderTargetTexture>>;
+        protected _forceFullscreenViewport: boolean;
+        /**
+         * Creates a min/max reducer
+         * @param camera The camera to use for the post processes
+         */
+        constructor(camera: Camera);
+        /**
+         * Gets the texture used to read the values from.
+         */
+        get sourceTexture(): Nullable<RenderTargetTexture>;
+        /**
+         * Sets the source texture to read the values from.
+         * One must indicate if the texture is a depth texture or not through the depthRedux parameter
+         * because in such textures '1' value must not be taken into account to compute the maximum
+         * as this value is used to clear the texture.
+         * Note that the computation is not activated by calling this function, you must call activate() for that!
+         * @param sourceTexture The texture to read the values from. The values should be in the red channel.
+         * @param depthRedux Indicates if the texture is a depth texture or not
+         * @param type The type of the textures created for the reduction (defaults to TEXTURETYPE_HALF_FLOAT)
+         * @param forceFullscreenViewport Forces the post processes used for the reduction to be applied without taking into account viewport (defaults to true)
+         */
+        setSourceTexture(sourceTexture: RenderTargetTexture, depthRedux: boolean, type?: number, forceFullscreenViewport?: boolean): void;
+        /**
+         * Defines the refresh rate of the computation.
+         * Use 0 to compute just once, 1 to compute on every frame, 2 to compute every two frames and so on...
+         */
+        get refreshRate(): number;
+        set refreshRate(value: number);
+        protected _activated: boolean;
+        /**
+         * Gets the activation status of the reducer
+         */
+        get activated(): boolean;
+        /**
+         * Activates the reduction computation.
+         * When activated, the observers registered in onAfterReductionPerformed are
+         * called after the compuation is performed
+         */
+        activate(): void;
+        /**
+         * Deactivates the reduction computation.
+         */
+        deactivate(): void;
+        /**
+         * Disposes the min/max reducer
+         * @param disposeAll true to dispose all the resources. You should always call this function with true as the parameter (or without any parameter as it is the default one). This flag is meant to be used internally.
+         */
+        dispose(disposeAll?: boolean): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * This class is a small wrapper around the MinMaxReducer class to compute the min/max values of a depth texture
+     */
+    export class DepthReducer extends MinMaxReducer {
+        private _depthRenderer;
+        private _depthRendererId;
+        /**
+         * Gets the depth renderer used for the computation.
+         * Note that the result is null if you provide your own renderer when calling setDepthRenderer.
+         */
+        get depthRenderer(): Nullable<DepthRenderer>;
+        /**
+         * Creates a depth reducer
+         * @param camera The camera used to render the depth texture
+         */
+        constructor(camera: Camera);
+        /**
+         * Sets the depth renderer to use to generate the depth map
+         * @param depthRenderer The depth renderer to use. If not provided, a new one will be created automatically
+         * @param type The texture type of the depth map (default: TEXTURETYPE_HALF_FLOAT)
+         * @param forceFullscreenViewport Forces the post processes used for the reduction to be applied without taking into account viewport (defaults to true)
+         */
+        setDepthRenderer(depthRenderer?: Nullable<DepthRenderer>, type?: number, forceFullscreenViewport?: boolean): void;
+        /** @hidden */
+        setSourceTexture(sourceTexture: RenderTargetTexture, depthRedux: boolean, type?: number, forceFullscreenViewport?: boolean): void;
+        /**
+         * Activates the reduction computation.
+         * When activated, the observers registered in onAfterReductionPerformed are
+         * called after the compuation is performed
+         */
+        activate(): void;
+        /**
+         * Deactivates the reduction computation.
+         */
+        deactivate(): void;
+        /**
+         * Disposes the depth reducer
+         * @param disposeAll true to dispose all the resources. You should always call this function with true as the parameter (or without any parameter as it is the default one). This flag is meant to be used internally.
+         */
+        dispose(disposeAll?: boolean): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * A CSM implementation allowing casting shadows on large scenes.
+     * Documentation : https://doc.babylonjs.com/babylon101/cascadedShadows
+     * Based on: https://github.com/TheRealMJP/Shadows and https://johanmedestrom.wordpress.com/2016/03/18/opengl-cascaded-shadow-maps/
+     */
+    export class CascadedShadowGenerator extends ShadowGenerator {
+        private static readonly frustumCornersNDCSpace;
+        /**
+         * Name of the CSM class
+         */
+        static CLASSNAME: string;
+        /**
+         * Defines the default number of cascades used by the CSM.
+         */
+        static readonly DEFAULT_CASCADES_COUNT: number;
+        /**
+         * Defines the minimum number of cascades used by the CSM.
+         */
+        static readonly MIN_CASCADES_COUNT: number;
+        /**
+         * Defines the maximum number of cascades used by the CSM.
+         */
+        static readonly MAX_CASCADES_COUNT: number;
+        protected _validateFilter(filter: number): number;
+        /**
+         * Gets or sets the actual darkness of the soft shadows while using PCSS filtering (value between 0. and 1.)
+         */
+        penumbraDarkness: number;
+        private _numCascades;
+        /**
+         * Gets or set the number of cascades used by the CSM.
+         */
+        get numCascades(): number;
+        set numCascades(value: number);
+        /**
+         * Sets this to true if you want that the edges of the shadows don't "swimm" / "shimmer" when rotating the camera.
+         * The trade off is that you loose some precision in the shadow rendering when enabling this setting.
+         */
+        stabilizeCascades: boolean;
+        private _freezeShadowCastersBoundingInfo;
+        private _freezeShadowCastersBoundingInfoObservable;
+        /**
+         * Enables or disables the shadow casters bounding info computation.
+         * If your shadow casters don't move, you can disable this feature.
+         * If it is enabled, the bounding box computation is done every frame.
+         */
+        get freezeShadowCastersBoundingInfo(): boolean;
+        set freezeShadowCastersBoundingInfo(freeze: boolean);
+        private _scbiMin;
+        private _scbiMax;
+        protected _computeShadowCastersBoundingInfo(): void;
+        protected _shadowCastersBoundingInfo: BoundingInfo;
+        /**
+         * Gets or sets the shadow casters bounding info.
+         * If you provide your own shadow casters bounding info, first enable freezeShadowCastersBoundingInfo
+         * so that the system won't overwrite the bounds you provide
+         */
+        get shadowCastersBoundingInfo(): BoundingInfo;
+        set shadowCastersBoundingInfo(boundingInfo: BoundingInfo);
+        protected _breaksAreDirty: boolean;
+        protected _minDistance: number;
+        protected _maxDistance: number;
+        /**
+         * Sets the minimal and maximal distances to use when computing the cascade breaks.
+         *
+         * The values of min / max are typically the depth zmin and zmax values of your scene, for a given frame.
+         * If you don't know these values, simply leave them to their defaults and don't call this function.
+         * @param min minimal distance for the breaks (default to 0.)
+         * @param max maximal distance for the breaks (default to 1.)
+         */
+        setMinMaxDistance(min: number, max: number): void;
+        /** Gets the minimal distance used in the cascade break computation */
+        get minDistance(): number;
+        /** Gets the maximal distance used in the cascade break computation */
+        get maxDistance(): number;
+        /**
+         * Gets the class name of that object
+         * @returns "CascadedShadowGenerator"
+         */
+        getClassName(): string;
+        private _cascadeMinExtents;
+        private _cascadeMaxExtents;
+        /**
+         * Gets a cascade minimum extents
+         * @param cascadeIndex index of the cascade
+         * @returns the minimum cascade extents
+         */
+        getCascadeMinExtents(cascadeIndex: number): Nullable<Vector3>;
+        /**
+         * Gets a cascade maximum extents
+         * @param cascadeIndex index of the cascade
+         * @returns the maximum cascade extents
+         */
+        getCascadeMaxExtents(cascadeIndex: number): Nullable<Vector3>;
+        private _cascades;
+        private _currentLayer;
+        private _viewSpaceFrustumsZ;
+        private _viewMatrices;
+        private _projectionMatrices;
+        private _transformMatrices;
+        private _transformMatricesAsArray;
+        private _frustumLengths;
+        private _lightSizeUVCorrection;
+        private _depthCorrection;
+        private _frustumCornersWorldSpace;
+        private _frustumCenter;
+        private _shadowCameraPos;
+        private _shadowMaxZ;
+        /**
+         * Gets the shadow max z distance. It's the limit beyond which shadows are not displayed.
+         * It defaults to camera.maxZ
+         */
+        get shadowMaxZ(): number;
+        /**
+         * Sets the shadow max z distance.
+         */
+        set shadowMaxZ(value: number);
+        protected _debug: boolean;
+        /**
+         * Gets or sets the debug flag.
+         * When enabled, the cascades are materialized by different colors on the screen.
+         */
+        get debug(): boolean;
+        set debug(dbg: boolean);
+        private _depthClamp;
+        /**
+         * Gets or sets the depth clamping value.
+         *
+         * When enabled, it improves the shadow quality because the near z plane of the light frustum don't need to be adjusted
+         * to account for the shadow casters far away.
+         *
+         * Note that this property is incompatible with PCSS filtering, so it won't be used in that case.
+         */
+        get depthClamp(): boolean;
+        set depthClamp(value: boolean);
+        private _cascadeBlendPercentage;
+        /**
+         * Gets or sets the percentage of blending between two cascades (value between 0. and 1.).
+         * It defaults to 0.1 (10% blending).
+         */
+        get cascadeBlendPercentage(): number;
+        set cascadeBlendPercentage(value: number);
+        private _lambda;
+        /**
+         * Gets or set the lambda parameter.
+         * This parameter is used to split the camera frustum and create the cascades.
+         * It's a value between 0. and 1.: If 0, the split is a uniform split of the frustum, if 1 it is a logarithmic split.
+         * For all values in-between, it's a linear combination of the uniform and logarithm split algorithm.
+         */
+        get lambda(): number;
+        set lambda(value: number);
+        /**
+         * Gets the view matrix corresponding to a given cascade
+         * @param cascadeNum cascade to retrieve the view matrix from
+         * @returns the cascade view matrix
+         */
+        getCascadeViewMatrix(cascadeNum: number): Nullable<Matrix>;
+        /**
+         * Gets the projection matrix corresponding to a given cascade
+         * @param cascadeNum cascade to retrieve the projection matrix from
+         * @returns the cascade projection matrix
+         */
+        getCascadeProjectionMatrix(cascadeNum: number): Nullable<Matrix>;
+        /**
+         * Gets the transformation matrix corresponding to a given cascade
+         * @param cascadeNum cascade to retrieve the transformation matrix from
+         * @returns the cascade transformation matrix
+         */
+        getCascadeTransformMatrix(cascadeNum: number): Nullable<Matrix>;
+        private _depthRenderer;
+        /**
+         * Sets the depth renderer to use when autoCalcDepthBounds is enabled.
+         *
+         * Note that if no depth renderer is set, a new one will be automatically created internally when necessary.
+         *
+         * You should call this function if you already have a depth renderer enabled in your scene, to avoid
+         * doing multiple depth rendering each frame. If you provide your own depth renderer, make sure it stores linear depth!
+         * @param depthRenderer The depth renderer to use when autoCalcDepthBounds is enabled. If you pass null or don't call this function at all, a depth renderer will be automatically created
+         */
+        setDepthRenderer(depthRenderer: Nullable<DepthRenderer>): void;
+        private _depthReducer;
+        private _autoCalcDepthBounds;
+        /**
+         * Gets or sets the autoCalcDepthBounds property.
+         *
+         * When enabled, a depth rendering pass is first performed (with an internally created depth renderer or with the one
+         * you provide by calling setDepthRenderer). Then, a min/max reducing is applied on the depth map to compute the
+         * minimal and maximal depth of the map and those values are used as inputs for the setMinMaxDistance() function.
+         * It can greatly enhance the shadow quality, at the expense of more GPU works.
+         * When using this option, you should increase the value of the lambda parameter, and even set it to 1 for best results.
+         */
+        get autoCalcDepthBounds(): boolean;
+        set autoCalcDepthBounds(value: boolean);
+        /**
+         * Defines the refresh rate of the min/max computation used when autoCalcDepthBounds is set to true
+         * Use 0 to compute just once, 1 to compute on every frame, 2 to compute every two frames and so on...
+         * Note that if you provided your own depth renderer through a call to setDepthRenderer, you are responsible
+         * for setting the refresh rate on the renderer yourself!
+         */
+        get autoCalcDepthBoundsRefreshRate(): number;
+        set autoCalcDepthBoundsRefreshRate(value: number);
+        /**
+         * Create the cascade breaks according to the lambda, shadowMaxZ and min/max distance properties, as well as the camera near and far planes.
+         * This function is automatically called when updating lambda, shadowMaxZ and min/max distances, however you should call it yourself if
+         * you change the camera near/far planes!
+         */
+        splitFrustum(): void;
+        private _splitFrustum;
+        private _computeMatrices;
+        private _computeFrustumInWorldSpace;
+        private _computeCascadeFrustum;
+        /** @hidden */
+        static _SceneComponentInitialization: (scene: Scene) => void;
+        /**
+         * Creates a Cascaded Shadow Generator object.
+         * A ShadowGenerator is the required tool to use the shadows.
+         * Each directional light casting shadows needs to use its own ShadowGenerator.
+         * Documentation : https://doc.babylonjs.com/babylon101/cascadedShadows
+         * @param mapSize The size of the texture what stores the shadows. Example : 1024.
+         * @param light The directional light object generating the shadows.
+         * @param usefulFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
+         */
+        constructor(mapSize: number, light: DirectionalLight, usefulFloatFirst?: boolean);
+        protected _initializeGenerator(): void;
+        protected _createTargetRenderTexture(): void;
+        protected _initializeShadowMap(): void;
+        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect): void;
+        protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void;
+        /**
+         * Prepare all the defines in a material relying on a shadow map at the specified light index.
+         * @param defines Defines of the material we want to update
+         * @param lightIndex Index of the light in the enabled light list of the material
+         */
+        prepareDefines(defines: any, lightIndex: number): void;
+        /**
+         * Binds the shadow related information inside of an effect (information like near, far, darkness...
+         * defined in the generator but impacting the effect).
+         * @param lightIndex Index of the light in the enabled light list of the material owning the effect
+         * @param effect The effect we are binfing the information for
+         */
+        bindShadowLight(lightIndex: string, effect: Effect): void;
+        /**
+         * Gets the transformation matrix of the first cascade used to project the meshes into the map from the light point of view.
+         * (eq to view projection * shadow projection matrices)
+         * @returns The transform matrix used to create the shadow map
+         */
+        getTransformMatrix(): Matrix;
+        /**
+         * Disposes the ShadowGenerator.
+         * Returns nothing.
+         */
+        dispose(): void;
+        /**
+         * Serializes the shadow generator setup to a json object.
+         * @returns The serialized JSON object
+         */
+        serialize(): any;
+        /**
+         * Parses a serialized ShadowGenerator and returns a new ShadowGenerator.
+         * @param parsedShadowGenerator The JSON object to parse
+         * @param scene The scene to create the shadow map for
+         * @returns The parsed shadow generator
+         */
+        static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator;
+    }
+}
+declare module BABYLON {
     /**
      * Defines the shadow generator component responsible to manage any shadow generators
      * in a given scene.
@@ -55225,6 +56903,9 @@ declare module BABYLON {
     }
     /** @hidden */
     export class NodeMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+        NORMAL: boolean;
+        TANGENT: boolean;
+        UV1: boolean;
         /** BONES */
         NUM_BONE_INFLUENCERS: number;
         BonesPerMesh: number;
@@ -55279,8 +56960,10 @@ declare module BABYLON {
         private _cachedWorldViewProjectionMatrix;
         private _optimizers;
         private _animationFrame;
-        /** Define the URl to load node editor script */
+        /** Define the Url to load node editor script */
         static EditorURL: string;
+        /** Define the Url to load snippets */
+        static SnippetUrl: string;
         private BJSNODEMATERIALEDITOR;
         /** Get the inspector from bundle or global */
         private _getGlobalNodeMaterialEditor;
@@ -55509,7 +57192,7 @@ declare module BABYLON {
          * Serializes this material in a JSON representation
          * @returns the serialized material object
          */
-        serialize(): any;
+        serialize(selectedBlocks?: NodeMaterialBlock[]): any;
         private _restoreConnections;
         /**
          * Clear the current graph and load a new one from a serialization object
@@ -55525,6 +57208,14 @@ declare module BABYLON {
          * @returns a new node material
          */
         static Parse(source: any, scene: Scene, rootUrl?: string): NodeMaterial;
+        /**
+         * Creates a node material from a snippet saved by the node material editor
+         * @param snippetId defines the snippet to load
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root URL to use to load textures and relative dependencies
+         * @returns a promise that will resolve to the new node material
+         */
+        static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl?: string): Promise<NodeMaterial>;
         /**
          * Creates a new node material set to default basic configuration
          * @param name defines the name of the material
@@ -55594,7 +57285,6 @@ declare module BABYLON {
         autoConfigure(material: NodeMaterial): void;
         initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines): void;
-        private _getTextureBase;
         isReady(): boolean;
         bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh): void;
         private get _isMixed();
@@ -55833,6 +57523,8 @@ declare module BABYLON {
         private _isFinalMerger;
         private _isInput;
         protected _isUnique: boolean;
+        /** Gets or sets a boolean indicating that only one input can be connected at a time */
+        inputsAreExclusive: boolean;
         /** @hidden */
         _codeVariableName: string;
         /** @hidden */
@@ -56082,6 +57774,8 @@ declare module BABYLON {
         min: number;
         /** Gets or set a value used to limit the range of float values */
         max: number;
+        /** Gets or set a value indicating that this input can only get 0 and 1 values */
+        isBoolean: boolean;
         /** Gets or sets a value used by the Node Material editor to determine how to configure the current value if it is a matrix */
         matrixMode: number;
         /** @hidden */
@@ -56258,6 +57952,8 @@ declare module BABYLON {
          */
         get associatedVariableName(): string;
         set associatedVariableName(value: string);
+        /** Get the inner type (ie AutoDetect for isntance instead of the inferred one) */
+        get innerType(): NodeMaterialBlockConnectionPointTypes;
         /**
          * Gets or sets the connection point type (default is float)
          */
@@ -56459,7 +58155,6 @@ declare module BABYLON {
      */
     export class MorphTargetsBlock extends NodeMaterialBlock {
         private _repeatableContentAnchor;
-        private _repeatebleContentGenerated;
         /**
          * Create a new MorphTargetsBlock
          * @param name defines the block name
@@ -58710,13 +60405,13 @@ declare module BABYLON {
         /**
          * @constructor
          * @param name The value used by scene.getMeshByName() to do a lookup.
-         * @param generator The mesh to generate a trail.
+         * @param generator The mesh or transform node to generate a trail.
          * @param scene The scene to add this mesh to.
          * @param diameter Diameter of trailing mesh. Default is 1.
          * @param length Length of trailing mesh. Default is 60.
          * @param autoStart Automatically start trailing mesh. Default true.
          */
-        constructor(name: string, generator: AbstractMesh, scene: Scene, diameter?: number, length?: number, autoStart?: boolean);
+        constructor(name: string, generator: TransformNode, scene: Scene, diameter?: number, length?: number, autoStart?: boolean);
         /**
          * "TrailMesh"
          * @returns "TrailMesh"
@@ -58741,7 +60436,7 @@ declare module BABYLON {
          * @param newGenerator use new generator object for cloned trail mesh
          * @returns a new mesh
          */
-        clone(name: string | undefined, newGenerator: AbstractMesh): TrailMesh;
+        clone(name: string | undefined, newGenerator: TransformNode): TrailMesh;
         /**
          * Serializes this trail mesh
          * @param serializationObject object to write serialization to
@@ -60074,7 +61769,7 @@ declare module BABYLON {
          * @param meshes array of all the geometry used to compute the navigatio mesh
          * @param parameters bunch of parameters used to filter geometry
          */
-        createMavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters): void;
+        createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters): void;
         /**
          * Create a navigation mesh debug mesh
          * @param scene is where the mesh will be added
@@ -60184,6 +61879,18 @@ declare module BABYLON {
          * @param destination targeted world position
          */
         agentGoto(index: number, destination: Vector3): void;
+        /**
+         * Teleport the agent to a new position
+         * @param index agent index returned by addAgent
+         * @param destination targeted world position
+         */
+        agentTeleport(index: number, destination: Vector3): void;
+        /**
+         * Update agent parameters
+         * @param index agent index returned by addAgent
+         * @param parameters agent parameters
+         */
+        updateAgentParameters(index: number, parameters: IAgentParameters): void;
         /**
          * Set the Bounding box extent for doing spatial queries (getClosestPoint, getRandomPointAround, ...)
          * The queries will try to find a solution within those bounds
@@ -60326,7 +62033,7 @@ declare module BABYLON {
          * @param meshes array of all the geometry used to compute the navigatio mesh
          * @param parameters bunch of parameters used to filter geometry
          */
-        createMavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters): void;
+        createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters): void;
         /**
          * Create a navigation mesh debug mesh
          * @param scene is where the mesh will be added
@@ -60454,6 +62161,18 @@ declare module BABYLON {
          * @param destination targeted world position
          */
         agentGoto(index: number, destination: Vector3): void;
+        /**
+         * Teleport the agent to a new position
+         * @param index agent index returned by addAgent
+         * @param destination targeted world position
+         */
+        agentTeleport(index: number, destination: Vector3): void;
+        /**
+         * Update agent parameters
+         * @param index agent index returned by addAgent
+         * @param parameters agent parameters
+         */
+        updateAgentParameters(index: number, parameters: IAgentParameters): void;
         /**
          * remove a particular agent previously created
          * @param index agent index returned by addAgent
@@ -62777,6 +64496,11 @@ declare module BABYLON {
          */
         static readonly VELOCITY_TEXTURE_TYPE: number;
         /**
+         * Constant used to retrieve the reflectivity texture index in the G-Buffer textures array
+         * using the getIndex(GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE)
+         */
+        static readonly REFLECTIVITY_TEXTURE_TYPE: number;
+        /**
          * Dictionary used to store the previous transformation matrices of each rendered mesh
          * in order to compute objects velocities when enableVelocity is set to "true"
          * @hidden
@@ -62797,13 +64521,17 @@ declare module BABYLON {
          * Avoids computing bones velocities and computes only mesh's velocity itself (position, rotation, scaling).
          */
         excludedSkinnedMeshesFromVelocity: AbstractMesh[];
+        /** Gets or sets a boolean indicating if transparent meshes should be rendered */
+        renderTransparentMeshes: boolean;
         private _scene;
         private _multiRenderTarget;
         private _ratio;
         private _enablePosition;
         private _enableVelocity;
+        private _enableReflectivity;
         private _positionIndex;
         private _velocityIndex;
+        private _reflectivityIndex;
         protected _effect: Effect;
         protected _cachedDefines: string;
         /**
@@ -62837,6 +64565,14 @@ declare module BABYLON {
          * Sets wether or not objects velocities are enabled for the G buffer.
          */
         set enableVelocity(enable: boolean);
+        /**
+         * Gets a boolean indicating if objects roughness are enabled in the G buffer.
+         */
+        get enableReflectivity(): boolean;
+        /**
+         * Sets wether or not objects roughness are enabled for the G buffer.
+         */
+        set enableReflectivity(enable: boolean);
         /**
          * Gets the scene associated with the buffer.
          */
@@ -63994,6 +65730,86 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var screenSpaceReflectionPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * The ScreenSpaceReflectionPostProcess performs realtime reflections using only and only the available informations on the screen (positions and normals).
+     * Basically, the screen space reflection post-process will compute reflections according the material's reflectivity.
+     */
+    export class ScreenSpaceReflectionPostProcess extends PostProcess {
+        /**
+         * Gets or sets a reflection threshold mainly used to adjust the reflection's height.
+         */
+        threshold: number;
+        /**
+         * Gets or sets the current reflection strength. 1.0 is an ideal value but can be increased/decreased for particular results.
+         */
+        strength: number;
+        /**
+         * Gets or sets the falloff exponent used while computing fresnel. More the exponent is high, more the reflections will be discrete.
+         */
+        reflectionSpecularFalloffExponent: number;
+        /**
+         * Gets or sets the step size used to iterate until the effect finds the color of the reflection's pixel. Typically in interval [0.1, 1.0]
+         */
+        step: number;
+        /**
+         * Gets or sets the factor applied when computing roughness. Default value is 0.2.
+         */
+        roughnessFactor: number;
+        private _geometryBufferRenderer;
+        private _enableSmoothReflections;
+        private _reflectionSamples;
+        private _smoothSteps;
+        /**
+         * Creates a new instance of ScreenSpaceReflectionPostProcess.
+         * @param name The name of the effect.
+         * @param scene The scene containing the objects to calculate reflections.
+         * @param options The required width/height ratio to downsize to before computing the render pass.
+         * @param camera The camera to apply the render pass to.
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         * @param textureType Type of textures used when performing the post process. (default: 0)
+         * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
+         */
+        constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean);
+        /**
+         * Gets wether or not smoothing reflections is enabled.
+         * Enabling smoothing will require more GPU power and can generate a drop in FPS.
+         */
+        get enableSmoothReflections(): boolean;
+        /**
+         * Sets wether or not smoothing reflections is enabled.
+         * Enabling smoothing will require more GPU power and can generate a drop in FPS.
+         */
+        set enableSmoothReflections(enabled: boolean);
+        /**
+         * Gets the number of samples taken while computing reflections. More samples count is high,
+         * more the post-process wil require GPU power and can generate a drop in FPS. Basically in interval [25, 100].
+         */
+        get reflectionSamples(): number;
+        /**
+         * Sets the number of samples taken while computing reflections. More samples count is high,
+         * more the post-process wil require GPU power and can generate a drop in FPS. Basically in interval [25, 100].
+         */
+        set reflectionSamples(samples: number);
+        /**
+         * Gets the number of samples taken while smoothing reflections. More samples count is high,
+         * more the post-process will require GPU power and can generate a drop in FPS.
+         * Default value (5.0) work pretty well in all cases but can be adjusted.
+         */
+        get smoothSteps(): number;
+        set smoothSteps(steps: number);
+        private _updateEffectDefines;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
     export var standardPixelShader: {
         name: string;
         shader: string;
@@ -64099,6 +65915,10 @@ declare module BABYLON {
          * The Fast Approximate Anti-Aliasing post process which attemps to remove aliasing from an image.
          */
         fxaaPostProcess: Nullable<FxaaPostProcess>;
+        /**
+         * Post-process used to simulate realtime reflections using the screen space and geometry renderer.
+         */
+        screenSpaceReflectionPostProcess: Nullable<ScreenSpaceReflectionPostProcess>;
         /**
          * Represents the brightness threshold in order to configure the illuminated surfaces
          */
@@ -64246,6 +66066,7 @@ declare module BABYLON {
         private _hdrEnabled;
         private _motionBlurEnabled;
         private _fxaaEnabled;
+        private _screenSpaceReflectionsEnabled;
         private _motionBlurSamples;
         private _volumetricLightStepsCount;
         private _samples;
@@ -64290,6 +66111,11 @@ declare module BABYLON {
          */
         get fxaaEnabled(): boolean;
         set fxaaEnabled(enabled: boolean);
+        /**
+         * Specifies if screen space reflections are enabled.
+         */
+        get screenSpaceReflectionsEnabled(): boolean;
+        set screenSpaceReflectionsEnabled(enabled: boolean);
         /**
          * Specifies the number of steps used to calculate the volumetric lights
          * Typically in interval [50, 200]
@@ -64393,13 +66219,6 @@ declare module BABYLON {
         /** Defines the required exposure adjustement */
         exposureAdjustment: number, camera: Camera, samplingMode?: number, engine?: Engine, textureFormat?: number);
     }
-}
-declare module BABYLON {
-    /** @hidden */
-    export var depthVertexShader: {
-        name: string;
-        shader: string;
-    };
 }
 declare module BABYLON {
     /** @hidden */
@@ -64622,62 +66441,6 @@ declare module BABYLON {
         renderOcclusionBoundingBox(mesh: AbstractMesh): void;
         /**
          * Dispose and release the resources attached to this renderer.
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export var depthPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * This represents a depth renderer in Babylon.
-     * A depth renderer will render to it's depth map every frame which can be displayed or used in post processing
-     */
-    export class DepthRenderer {
-        private _scene;
-        private _depthMap;
-        private _effect;
-        private readonly _storeNonLinearDepth;
-        private readonly _clearColor;
-        /** Get if the depth renderer is using packed depth or not */
-        readonly isPacked: boolean;
-        private _cachedDefines;
-        private _camera;
-        /**
-         * Specifiess that the depth renderer will only be used within
-         * the camera it is created for.
-         * This can help forcing its rendering during the camera processing.
-         */
-        useOnlyInActiveCamera: boolean;
-        /** @hidden */
-        static _SceneComponentInitialization: (scene: Scene) => void;
-        /**
-         * Instantiates a depth renderer
-         * @param scene The scene the renderer belongs to
-         * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
-         * @param camera The camera to be used to render the depth map (default: scene's active camera)
-         * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
-         */
-        constructor(scene: Scene, type?: number, camera?: Nullable<Camera>, storeNonLinearDepth?: boolean);
-        /**
-         * Creates the depth rendering effect and checks if the effect is ready.
-         * @param subMesh The submesh to be used to render the depth map of
-         * @param useInstances If multiple world instances should be used
-         * @returns if the depth renderer is ready to render the depth map
-         */
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        /**
-         * Gets the texture which the depth map will be written to.
-         * @returns The depth map texture
-         */
-        getDepthMap(): RenderTargetTexture;
-        /**
-         * Disposes of the depth renderer.
          */
         dispose(): void;
     }
@@ -67078,10 +68841,13 @@ interface WebGLRenderingContext {
     readonly UNSIGNED_INT_10F_11F_11F_REV: number;
     readonly UNSIGNED_INT_5_9_9_9_REV: number;
     readonly FLOAT_32_UNSIGNED_INT_24_8_REV: number;
+    readonly DEPTH_COMPONENT32F: number;
 
     texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ArrayBufferView | null): void;
     texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ArrayBufferView, offset: number): void;
     texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ImageBitmap | ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement): void;
+
+    framebufferTextureLayer(target: number, attachment: number, texture: WebGLTexture | null, level: number, layer: number): void;
 
     compressedTexImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, data: ArrayBufferView, offset?: number, length?: number): void;
 
@@ -67416,6 +69182,11 @@ interface XRInputSource {
     profiles: Array<string>;
 }
 
+interface XRSessionInit {
+    optionalFeatures?: XRReferenceSpaceType[];
+    requiredFeatures?: XRReferenceSpaceType[];
+}
+
 interface XRSession extends XRAnchorCreator {
     addEventListener: Function;
     removeEventListener: Function;
@@ -67485,7 +69256,7 @@ interface XRWebGLLayer {
 }
 
 declare class XRRigidTransform {
-    constructor(matrix: Float32Array);
+    constructor(matrix: Float32Array | DOMPointInit, direction?: DOMPointInit);
     position: DOMPointReadOnly;
     orientation: DOMPointReadOnly;
     matrix: Float32Array;
@@ -67511,7 +69282,7 @@ interface XRInputSourceEvent extends Event {
 
 // Experimental(er) features
 declare class XRRay {
-    constructor(transformOrOrigin: XRRigidTransform | DOMPointReadOnly, direction?: DOMPointReadOnly);
+    constructor(transformOrOrigin: XRRigidTransform | DOMPointInit, direction?: DOMPointInit);
     origin: DOMPointReadOnly;
     direction: DOMPointReadOnly;
     matrix: Float32Array;
@@ -73537,6 +75308,10 @@ declare module BABYLON {
      */
     export class MTLFileLoader {
         /**
+         * Invert Y-Axis of referenced textures on load
+         */
+        static INVERT_TEXTURE_Y: boolean;
+        /**
          * All material loaded from the mtl will be set here
          */
         materials: StandardMaterial[];
@@ -73563,6 +75338,8 @@ declare module BABYLON {
          */
         private static _getTexture;
     }
+}
+declare module BABYLON {
     /**
      * Options for loading OBJ/MTL files
      */
@@ -73616,7 +75393,8 @@ declare module BABYLON {
         /**
          * Invert Y-Axis of referenced textures on load
          */
-        static INVERT_TEXTURE_Y: boolean;
+        static get INVERT_TEXTURE_Y(): boolean;
+        static set INVERT_TEXTURE_Y(value: boolean);
         /**
          * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
          */
@@ -74438,7 +76216,7 @@ declare module BABYLON.GLTF2.Exporter {
          */
         static UnregisterExtension(name: string): boolean;
         /**
-         * Lazy load a local engine with premultiplied alpha set to false
+         * Lazy load a local engine
          */
         _getLocalEngine(): Engine;
         private reorderIndicesBasedOnPrimitiveMode;
@@ -77068,103 +78846,6 @@ declare module BABYLON {
          * @param options can either be the font name or an option object following the IDigitalRainPostProcessOptions format
          */
         constructor(name: string, camera: BABYLON.Camera, options?: string | IDigitalRainPostProcessOptions);
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export var oceanPostProcessPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * Option available in the Ocean Post Process.
-     */
-    export interface IOceanPostProcessOptions {
-        /**
-         * The size of the reflection RTT (number if square, or {width: number, height:number} or {ratio:} to define a ratio from the main scene)
-         */
-        reflectionSize?: number | {
-            width: number;
-            height: number;
-        } | {
-            ratio: number;
-        };
-        /**
-         * The size of the refraction RTT (number if square, or {width: number, height:number} or {ratio:} to define a ratio from the main scene)
-         */
-        refractionSize?: number | {
-            width: number;
-            height: number;
-        } | {
-            ratio: number;
-        };
-    }
-    /**
-     * OceanPostProcess helps rendering an infinite ocean surface that can reflect and refract environment.
-     *
-     * Simmply add it to your scene and let the nerd that lives in you have fun.
-     * Example usage:
-     *  var pp = new OceanPostProcess("myOcean", camera);
-     *  pp.reflectionEnabled = true;
-     *  pp.refractionEnabled = true;
-     */
-    export class OceanPostProcess extends BABYLON.PostProcess {
-        /**
-         * Gets a boolean indicating if the real-time reflection is enabled on the ocean.
-         */
-        get reflectionEnabled(): boolean;
-        /**
-         * Sets weither or not the real-time reflection is enabled on the ocean.
-         * Is set to true, the reflection mirror texture will be used as reflection texture.
-         */
-        set reflectionEnabled(enabled: boolean);
-        /**
-         * Gets a boolean indicating if the real-time refraction is enabled on the ocean.
-         */
-        get refractionEnabled(): boolean;
-        /**
-         * Sets weither or not the real-time refraction is enabled on the ocean.
-         * Is set to true, the refraction render target texture will be used as refraction texture.
-         */
-        set refractionEnabled(enabled: boolean);
-        /**
-         * Gets wether or not the post-processes is supported by the running hardware.
-         * This requires draw buffer supports.
-         */
-        get isSupported(): boolean;
-        /**
-         * This is the reflection mirror texture used to display reflections on the ocean.
-         * By default, render list is empty.
-         */
-        reflectionTexture: BABYLON.MirrorTexture;
-        /**
-         * This is the refraction render target texture used to display refraction on the ocean.
-         * By default, render list is empty.
-         */
-        refractionTexture: BABYLON.RenderTargetTexture;
-        private _time;
-        private _cameraRotation;
-        private _cameraViewMatrix;
-        private _reflectionEnabled;
-        private _refractionEnabled;
-        private _geometryRenderer;
-        /**
-         * Instantiates a new Ocean Post Process.
-         * @param name the name to give to the postprocess.
-         * @camera the camera to apply the post process to.
-         * @param options optional object following the IOceanPostProcessOptions format used to customize reflection and refraction render targets sizes.
-         */
-        constructor(name: string, camera: BABYLON.TargetCamera, options?: IOceanPostProcessOptions);
-        /**
-         * Returns the appropriate defines according to the current configuration.
-         */
-        private _getDefines;
-        /**
-         * Computes the current camera rotation as the shader requires a camera rotation.
-         */
-        private _computeCameraRotation;
     }
 }
 declare module BABYLON {

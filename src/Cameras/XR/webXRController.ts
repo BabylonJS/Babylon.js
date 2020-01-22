@@ -1,12 +1,26 @@
-import { Nullable } from "../../types";
 import { Observable } from "../../Misc/observable";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Quaternion, Vector3 } from '../../Maths/math.vector';
 import { Ray } from '../../Culling/ray';
 import { Scene } from '../../scene';
-import { WebVRController } from '../../Gamepads/Controllers/webVRController';
+import { WebXRAbstractMotionController } from './motionController/webXRAbstractController';
+import { WebXRMotionControllerManager } from './motionController/webXRMotionControllerManager';
+
+let idCount = 0;
+
 /**
- * Represents an XR input
+ * Configuration options for the WebXR controller creation
+ */
+export interface IWebXRControllerOptions {
+    /**
+     * Force a specific controller type for this controller.
+     * This can be used when creating your own profile or when testing different controllers
+     */
+    forceControllerProfile?: string;
+}
+
+/**
+ * Represents an XR controller
  */
 export class WebXRController {
     /**
@@ -17,14 +31,12 @@ export class WebXRController {
      * Pointer which can be used to select objects or attach a visible laser to
      */
     public pointer: AbstractMesh;
-
-    private _gamepadMode = false;
     /**
      * If available, this is the gamepad object related to this controller.
      * Using this object it is possible to get click events and trackpad changes of the
      * webxr controller that is currently being used.
      */
-    public gamepadController?: WebVRController;
+    public motionController?: WebXRAbstractMotionController;
 
     /**
      * Event that fires when the controller is removed/disposed
@@ -34,33 +46,44 @@ export class WebXRController {
     private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3();
 
+    private _uniqueId: string;
     /**
      * Creates the controller
      * @see https://doc.babylonjs.com/how_to/webxr
-     * @param scene the scene which the controller should be associated to
+     * @param _scene the scene which the controller should be associated to
      * @param inputSource the underlying input source for the controller
-     * @param parentContainer parent that the controller meshes should be children of
+     * @param _options options for this controller creation
      */
     constructor(
-        private scene: Scene,
+        private _scene: Scene,
         /** The underlying input source for the controller  */
         public inputSource: XRInputSource,
-        private parentContainer: Nullable<AbstractMesh> = null) {
-        this.pointer = new AbstractMesh("controllerPointer", scene);
+        private _options: IWebXRControllerOptions = {}) {
+        this._uniqueId = `controller-${idCount++}-${inputSource.targetRayMode}-${inputSource.handedness}`;
+
+        this.pointer = new AbstractMesh(`${this._uniqueId}-pointer`, _scene);
         this.pointer.rotationQuaternion = new Quaternion();
-        if (parentContainer) {
-            parentContainer.addChild(this.pointer);
-        }
 
         if (this.inputSource.gripSpace) {
-            this.grip = new AbstractMesh("controllerGrip", this.scene);
+            this.grip = new AbstractMesh(`${this._uniqueId}-grip`, this._scene);
             this.grip.rotationQuaternion = new Quaternion();
-            if (this.parentContainer) {
-                this.parentContainer.addChild(this.grip);
-            }
-        } else if (this.inputSource.gamepad) {
-            this._gamepadMode = true;
         }
+
+        // for now only load motion controllers if gamepad available
+        if (this.inputSource.gamepad) {
+            this.motionController = WebXRMotionControllerManager.GetMotionControllerWithXRInput(inputSource, _scene, this._options.forceControllerProfile);
+            // if the model is loaded, do your thing
+            this.motionController.onModelLoadedObservable.addOnce(() => {
+                this.motionController!.rootMesh!.parent = this.pointer;
+            });
+        }
+    }
+
+    /**
+     * Get this controllers unique id
+     */
+    public get uniqueId() {
+        return this._uniqueId;
     }
 
     /**
@@ -75,7 +98,7 @@ export class WebXRController {
         if (pose) {
             this.pointer.position.copyFrom(<any>(pose.transform.position));
             this.pointer.rotationQuaternion!.copyFrom(<any>(pose.transform.orientation));
-            if (!this.scene.useRightHandedSystem) {
+            if (!this._scene.useRightHandedSystem) {
                 this.pointer.position.z *= -1;
                 this.pointer.rotationQuaternion!.z *= -1;
                 this.pointer.rotationQuaternion!.w *= -1;
@@ -88,18 +111,16 @@ export class WebXRController {
             if (pose) {
                 this.grip.position.copyFrom(<any>(pose.transform.position));
                 this.grip.rotationQuaternion!.copyFrom(<any>(pose.transform.orientation));
-                if (!this.scene.useRightHandedSystem) {
+                if (!this._scene.useRightHandedSystem) {
                     this.grip.position.z *= -1;
                     this.grip.rotationQuaternion!.z *= -1;
                     this.grip.rotationQuaternion!.w *= -1;
                 }
             }
         }
-        if (this.gamepadController) {
+        if (this.motionController) {
             // either update buttons only or also position, if in gamepad mode
-            this.gamepadController.isXR = !this._gamepadMode;
-            this.gamepadController.update();
-            this.gamepadController.isXR = true;
+            this.motionController.updateFromXRFrame(xrFrame);
         }
     }
 
@@ -108,22 +129,13 @@ export class WebXRController {
      * @param result the resulting ray
      */
     public getWorldPointerRayToRef(result: Ray) {
-        // Force update to ensure picked point is synced with ray
-        let worldMatrix = this.pointer.computeWorldMatrix(true);
+        let worldMatrix = this.pointer.computeWorldMatrix();
         worldMatrix.decompose(undefined, this._tmpQuaternion, undefined);
         this._tmpVector.set(0, 0, 1);
         this._tmpVector.rotateByQuaternionToRef(this._tmpQuaternion, this._tmpVector);
-        result.origin = this.pointer.absolutePosition;
+        result.origin.copyFrom(this.pointer.absolutePosition);
         result.direction.copyFrom(this._tmpVector);
         result.length = 1000;
-    }
-
-    /**
-     * Get the scene associated with this controller
-     * @returns the scene object
-     */
-    public getScene() {
-        return this.scene;
     }
 
     /**
@@ -133,8 +145,8 @@ export class WebXRController {
         if (this.grip) {
             this.grip.dispose();
         }
-        if (this.gamepadController && this._gamepadMode) {
-            this.gamepadController.dispose();
+        if (this.motionController) {
+            this.motionController.dispose();
         }
         this.pointer.dispose();
         this.onDisposeObservable.notifyObservers({});

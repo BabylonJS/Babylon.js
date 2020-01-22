@@ -2,6 +2,7 @@ import { WebXRFeaturesManager, IWebXRFeature } from "../webXRFeaturesManager";
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { AbstractMesh } from '../../../Meshes/abstractMesh';
 import { Observable } from '../../../Misc/observable';
+import { WebXRAbstractFeature } from './WebXRAbstractFeature';
 
 const Name = "xr-background-remover";
 
@@ -36,7 +37,7 @@ export interface IWebXRBackgroundRemoverOptions {
 /**
  * A module that will automatically disable background meshes when entering AR and will enable them when leaving AR.
  */
-export class WebXRBackgroundRemover implements IWebXRFeature {
+export class WebXRBackgroundRemover extends WebXRAbstractFeature implements IWebXRFeature {
 
     /**
      * The module's name
@@ -59,12 +60,12 @@ export class WebXRBackgroundRemover implements IWebXRFeature {
      * @param _xrSessionManager the session manager for this module
      * @param options read-only options to be used in this module
      */
-    constructor(private _xrSessionManager: WebXRSessionManager,
+    constructor(_xrSessionManager: WebXRSessionManager,
         /**
          * read-only options to be used in this module
          */
         public readonly options: IWebXRBackgroundRemoverOptions = {}) {
-
+        super(_xrSessionManager);
     }
 
     /**
@@ -75,8 +76,7 @@ export class WebXRBackgroundRemover implements IWebXRFeature {
      */
     attach(): boolean {
         this._setBackgroundState(false);
-
-        return true;
+        return super.attach();
     }
 
     /**
@@ -87,8 +87,7 @@ export class WebXRBackgroundRemover implements IWebXRFeature {
      */
     detach(): boolean {
         this._setBackgroundState(true);
-
-        return true;
+        return super.detach();
     }
 
     private _setBackgroundState(newState: boolean) {
@@ -126,6 +125,7 @@ export class WebXRBackgroundRemover implements IWebXRFeature {
      * Dispose this feature and all of the resources attached
      */
     dispose(): void {
+        super.dispose();
         this.onBackgroundStateChangedObservable.clear();
     }
 }

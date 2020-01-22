@@ -588,6 +588,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
             this._frameCandidate.parentElement!.removeChild(this._frameCandidate);
             this._frameCandidate = null;
+
+            this.props.globalState.onSelectionChangedObservable.notifyObservers(newFrame);
          }
     }
 
@@ -708,6 +710,16 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             links.forEach(link => {
                 link.dispose();
             });
+        }
+
+        if (pointB.ownerBlock.inputsAreExclusive) { // Disconnect all inputs if block has exclusive inputs
+            pointB.ownerBlock.inputs.forEach(i => {
+                let links = nodeB.getLinksForConnectionPoint(i);
+
+                links.forEach(link => {
+                    link.dispose();
+                });
+            })
         }
 
         pointA.connectTo(pointB);

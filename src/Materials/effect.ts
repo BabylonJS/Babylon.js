@@ -113,6 +113,12 @@ export class Effect implements IDisposable {
     public _onBindObservable: Nullable<Observable<Effect>> = null;
 
     /**
+     * @hidden
+     * Specifies if the effect was previously ready
+     */
+    public _wasPreviouslyReady = false;
+
+    /**
      * Observable that will be called when effect is bound.
      */
     public get onBindObservable(): Observable<Effect> {
@@ -750,7 +756,7 @@ export class Effect implements IDisposable {
     /** @hidden */
     public _cacheFloat2(uniformName: string, x: number, y: number): boolean {
         var cache = this._valueCache[uniformName];
-        if (!cache) {
+        if (!cache || cache.length !== 2) {
             cache = [x, y];
             this._valueCache[uniformName] = cache;
             return true;
@@ -772,7 +778,7 @@ export class Effect implements IDisposable {
     /** @hidden */
     public _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean {
         var cache = this._valueCache[uniformName];
-        if (!cache) {
+        if (!cache || cache.length !== 3) {
             cache = [x, y, z];
             this._valueCache[uniformName] = cache;
             return true;
@@ -798,7 +804,7 @@ export class Effect implements IDisposable {
     /** @hidden */
     public _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean {
         var cache = this._valueCache[uniformName];
-        if (!cache) {
+        if (!cache || cache.length !== 4) {
             cache = [x, y, z, w];
             this._valueCache[uniformName] = cache;
             return true;
@@ -1208,7 +1214,6 @@ export class Effect implements IDisposable {
      * @returns this effect.
      */
     public setColor3(uniformName: string, color3: IColor3Like): Effect {
-
         if (this._cacheFloat3(uniformName, color3.r, color3.g, color3.b)) {
             this._engine.setFloat3(this._uniforms[uniformName], color3.r, color3.g, color3.b);
         }

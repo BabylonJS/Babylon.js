@@ -2,9 +2,8 @@
 
 ## Major updates
 
-- WIP: Node Material (NEED DOC OR SAMPLES) ([Deltakosh](https://github.com/deltakosh/))
-- WIP: Node material editor (NEED OR AND VIDEOS) ([Deltakosh](https://github.com/deltakosh/) / [TrevorDev](https://github.com/TrevorDev))
-- WIP: WebGPU support (NEED DOC OR SAMPLES) ([Sebavan](https://github.com/sebavan/))
+- Node Material and Node material editor [Doc](https://doc.babylonjs.com/how_to/node_material) ([Deltakosh](https://github.com/deltakosh/) / [TrevorDev](https://github.com/TrevorDev))
+- WebGPU support [Doc](https://doc.babylonjs.com/extensions/webgpu) ([Sebavan](https://github.com/sebavan/))
 - .basis texture file format support [Doc](https://doc.babylonjs.com/resources/multi-platform_compressed_textures#basis-file-format) ([TrevorDev](https://github.com/TrevorDev))
 - WIP: Recast navigation mesh and crowd of moving agents [Demo](https://www.babylonjs-playground.com/#AJTRIL) ([CedricGuillemet](https://github.com/CedricGuillemet))
 - Added Points Cloud Particle System ([JohnK](https://github.com/BabylonJSGuide/))
@@ -16,6 +15,8 @@
 - Added support for Offscreen canvas [Doc](https://doc.babylonjs.com/how_to/using_offscreen_canvas) ([Deltakosh](https://github.com/deltakosh/)
 - Added support for multiple canvases with one engine [Doc](https://doc.babylonjs.com/how_to/multi_canvases) ([Deltakosh](https://github.com/deltakosh/)
 - Added useReverseDepthBuffer to Engine which can provide greater z depth for distant objects without the cost of a logarithmic depth buffer ([BenAdams](https://github.com/benaadams/))
+- Added the "Cascaded Shadow Mapping" (CSM) shadow rendering technique ([Popov72](https://github.com/Popov72) (initiated by [lockphase](https://github.com/lockphase/)))
+- Screen space reflections post-process [Doc](https://doc.babylonjs.com/how_to/using_screenspacereflectionspostprocess) ([julien-moreau](https://github.com/julien-moreau))
 
 ## Updates
 
@@ -48,9 +49,17 @@
 - Added `RawTexture2DArray` to enable use of WebGL2 2D array textures by custom shaders ([atg](https://github.com/atg))
 - Added multiview support for the shader material (and the line-mesh class) ([RaananW](https://github.com/RaananW/))
 - Added various (interpolation) functions to Path3D, also `alignTangentsWithPath`, `slice`, `getClosestPositionTo` ([Poolminer](https://github.com/Poolminer/))
-- Allow setting of `BABYLON.Basis.JSModuleURL` and `BABYLON.Basis.WasmModuleURL`, for hosting the Basis transcoder locally ([JasonAyre])(https://github.com/jasonyre))
+- Allow setting of `BABYLON.Basis.JSModuleURL` and `BABYLON.Basis.WasmModuleURL`, for hosting the Basis transcoder locally ([JasonAyre](https://github.com/jasonyre))
 - PNG support for browsers not supporting SVG ([RaananW](https://github.com/RaananW/))
 - Device orientation event permissions for iOS 13+ ([RaananW](https://github.com/RaananW/))
+- Added `DirectionalLight.autoCalcShadowZBounds` to automatically compute the `shadowMinZ` and `shadowMaxZ` values ([Popov72](https://github.com/Popov72))
+- Added `CascadedShadowGenerator.autoCalcDepthBounds` to improve the shadow quality rendering ([Popov72](https://github.com/Popov72))
+- Improved cascade blending in CSM shadow technique ([Popov72](https://github.com/Popov72))
+- Speed optimization when cascade blending is not used in CSM shadow technique ([Popov72](https://github.com/Popov72))
+- Added `RenderTargetTexture.getCustomRenderList` to overload the render list at rendering time (and possibly for each layer (2DArray) / face (Cube)) ([Popov72](https://github.com/Popov72))
+- Make sure all properties of CascadedShadowMap class are serialized/parsed ([Popov72](https://github.com/Popov72))
+- Added `textures/opacity.png` file to the Playground ([Popov72](https://github.com/Popov72))
+- Refactored the shadow generators code ([Popov72](https://github.com/Popov72))
 
 ### Engine
 
@@ -78,6 +87,7 @@
 - Added support for `Material.depthFunction` property ([Popov72](https://github.com/Popov72))
 - Added an optional config option `initialTab` ([ycw](https://github.com/ycw/))
 - Added support for ImportAnimations ([noalak](https://github.com/noalak/))
+- Added support for Cascaded Shadow Maps ([Popov72](https://github.com/Popov72))
 
 ### Tools
 
@@ -102,6 +112,8 @@
 - Added absolute scaling and rotation getters ([haroldma](https://github.com/haroldma))
 - Added `BILLBOARDMODE_USE_POSITION` flag to billboards allowing use of camera positioning instead of orientation for mesh rotation ([delaneyj](https://github.com/delaneyj))
 - Added accessor functions for `SubMesh._materialDefines` ([Popov72](https://github.com/Popov72))
+- Generator type used in `TrailMesh` constructor is now `TransformNode` instead of `AbstrachMesh` ([Popov72](https://github.com/Popov72))
+- Added the `useVertexAlpha` options to `MeshBuilder.CreateDashedLines` ([Popov72](https://github.com/Popov72))
 
 ### Physics
 
@@ -128,6 +140,7 @@
 - Added support for 8 bone influences to glTF loader ([zeux](https://github.com/zeux))
 - Added support for animations import from separate files ([noalak](https://github.com/noalak/))
 - Use web workers to validate glTF to avoid blocking the main thread. ([bghgary](https://github.com/bghgary))
+- Update glTF validator to 2.0.0-dev.3.1. ([bghgary](https://github.com/bghgary))
 
 ### Materials
 
@@ -174,12 +187,20 @@
 - Added support to teleport the camera at constant speed in the VRExperienceHelper class ([https://github.com/LeoRodz](https://github.com/LeoRodz))
 - VRExperienceHelper has now an XR fallback to force XR usage (Beta) ([RaananW](https://github.com/RaananW/))
 - Added option to change the teleportation easing function in the VRExperienceHelper class ([https://github.com/LeoRodz](https://github.com/LeoRodz))
-- Windows motion controller mapping corrected to XR ([RaananW](https://github.com/RaananW/))
+- Windows motion controller mapping corrected to XR (xr-standard) ([RaananW](https://github.com/RaananW/))
 - Pointer-Event simulation for screen target ray mode ([RaananW](https://github.com/RaananW/))
 - New observable that triggers when a session was initialized ([RaananW](https://github.com/RaananW/))
-- WebXR teleportation can now be disabled after initialized ([RaananW](https://github.com/RaananW/))
+- WebXR teleportation can now be disabled after initialized or before created ([RaananW](https://github.com/RaananW/))
 - New Features Manager for WebXR features ([RaananW](https://github.com/RaananW/))
 - New features - Plane detection, Hit Test, Background remover ([RaananW](https://github.com/RaananW/))
+- Camera's API is Babylon-conform (position, rotationQuaternion, world matrix, direction etc') ([#7239](https://github.com/BabylonJS/Babylon.js/issues/7239)) ([RaananW](https://github.com/RaananW/))
+- XR Input now using standard profiles and completely separated from the gamepad class ([#7348](https://github.com/BabylonJS/Babylon.js/issues/7348)) ([RaananW](https://github.com/RaananW/))
+- Teleportation and controller selection are now WebXR features. ([#7290](https://github.com/BabylonJS/Babylon.js/issues/7290)) ([RaananW](https://github.com/RaananW/))
+- Teleportation allows selecting direction before teleporting when using thumbstick or touchpad. ([#7290](https://github.com/BabylonJS/Babylon.js/issues/7290)) ([RaananW](https://github.com/RaananW/))
+- It is now possible to force a certain profile type for the controllers ([#7348](https://github.com/BabylonJS/Babylon.js/issues/7375)) ([RaananW](https://github.com/RaananW/))
+- WebXR camera is initialized on the first frame ([#7389](https://github.com/BabylonJS/Babylon.js/issues/7389)) ([RaananW](https://github.com/RaananW/))
+- Selection has gaze mode (which can be forced) and touch-screen support ([#7395](https://github.com/BabylonJS/Babylon.js/issues/7395)) ([RaananW](https://github.com/RaananW/))
+- Laser pointers can be excluded from lighting influence so that they are always visible in both WebXR and WebVR ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
@@ -201,6 +222,7 @@
 - Added the feature `removeParticles()` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 - Added the feature "storable particles" and `insertParticlesFromArray()` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 - Added the support for MultiMaterials to the Solid Particle System ([jerome](https://github.com/jbousquie/))
+- Added support for `CustomParticleEmitter`. [Doc](https://doc.babylonjs.com/babylon101/particles#custom-emitter) ([Deltakosh](https://github.com/deltakosh/))
 
 ### Navigation Mesh
 
@@ -211,9 +233,9 @@
 - Added Light intensity output to LightInformationBlock ([Drigax](https://github.com/drigax))
 
 ### Serializers
-- Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))
-- Expanded animation group serialization to include all targeted TransformNodes ([Drigax]https://github.com/drigax/)
 
+- Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))
+- Expanded animation group serialization to include all targeted TransformNodes ([Drigax](https://github.com/drigax/))
 
 ### Documentation
 
@@ -268,6 +290,16 @@
 - Sandbox will now load assets relatively path-ed to same folder ([Kyle Belfort](https://github.com/belfortk))
 - Playground will now render the returned scene from createScene() when there are multiple scenes added to engine ([Kyle Belfort](https://github.com/belfortk))
 - Fixed bug so Playground will now download .env texture files to ./textures in .zip  ([Kyle Belfort](https://github.com/belfortk))
+- It was not possible to change the gaze and laser color in VR ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
+- Fixed issue where textures exported using Safari web browser are Y mirrored. ([#7352](https://github.com/BabylonJS/Babylon.js/issues/7352)) ([Drigax](https://github.com/drigax))
+- Fix a bug when resizing a MRT ([Popov72](https://github.com/Popov72))
+- Fixed an infinite clone recursion bug in `InstancedMesh` due to `DeepCopier.DeepCopy` cloning `parent` ([Poolminer](https://github.com/Poolminer/))
+- Fixed an issue with multiview textures ([RaananW](https://github.com/RaananW/))
+- Screenshot height and width is now forced to be integers to prevent mismatch with openGL context ([jekelija](https://github.com/jekelija))
+- Fix shadow bound calculation in CSM shadow technique ([Popov72](https://github.com/Popov72))
+- Disposing of the depthReducer used in CSM ([Popov72](https://github.com/Popov72))
+- Fixed an issue with teleportation detach and attach ([#7419](https://github.com/BabylonJS/Babylon.js/issues/7419)) ([RaananW](https://github.com/RaananW/))
+- Physics compound calculations were incorrect ([#7407](https://github.com/BabylonJS/Babylon.js/issues/7407)) ([RaananW](https://github.com/RaananW/))
 
 ## Breaking changes
 
@@ -278,3 +310,6 @@
 - The glTF loader extensions that map to glTF 2.0 extensions will now be disabled if the extension is not present in `extensionsUsed`. ([bghgary](https://github.com/bghgary))
 - The STL loader does not create light or camera automatically, please use `scene.createDefaultCameraOrLight();` in your code [Sebavan](https://github.com/sebavan/)
 - The glTF2 exporter extension no longer ignores childless empty nodes.([drigax](https://github.com/drigax))
+- Default culling strategy changed to CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY ([Deltakosh](https://github.com/deltakosh/))
+- `MaterialHelper.BindLight` and `MaterialHelper.BindLights` do not need the usePhysicalLight anymore ([Sebavan](https://github.com/sebavan/))
+- `Mesh.bakeTransformIntoVertices` now preserves child world-space transforms([drigax](https://github.com/drigax))

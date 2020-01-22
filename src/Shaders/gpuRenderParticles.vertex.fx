@@ -1,6 +1,5 @@
 #version 300 es
 
-
 uniform mat4 view;
 uniform mat4 projection;
 uniform vec2 translationPivot;

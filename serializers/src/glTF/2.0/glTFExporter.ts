@@ -327,7 +327,7 @@ export class _Exporter {
     }
 
     /**
-     * Lazy load a local engine with premultiplied alpha set to false
+     * Lazy load a local engine
      */
     public _getLocalEngine(): Engine {
         if (!this._localEngine) {
@@ -335,7 +335,7 @@ export class _Exporter {
             localCanvas.id = "WriteCanvas";
             localCanvas.width = 2048;
             localCanvas.height = 2048;
-            this._localEngine = new Engine(localCanvas, true, { premultipliedAlpha: false, preserveDrawingBuffer: true });
+            this._localEngine = new Engine(localCanvas, true, { premultipliedAlpha: Tools.IsSafari(), preserveDrawingBuffer: true });
             this._localEngine.setViewport(new Viewport(0, 0, 1, 1));
         }
 

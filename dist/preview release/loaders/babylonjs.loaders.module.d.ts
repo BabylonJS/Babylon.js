@@ -2220,20 +2220,17 @@ declare module "babylonjs-loaders/glTF/index" {
     import * as GLTF2 from "babylonjs-loaders/glTF/2.0/index";
     export { GLTF1, GLTF2 };
 }
-declare module "babylonjs-loaders/OBJ/objFileLoader" {
-    import { Vector2 } from "babylonjs/Maths/math";
-    import { AnimationGroup } from "babylonjs/Animations/animationGroup";
-    import { Skeleton } from "babylonjs/Bones/skeleton";
-    import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
+declare module "babylonjs-loaders/OBJ/mtlFileLoader" {
     import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
-    import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
-    import { ISceneLoaderPluginAsync, SceneLoaderProgressEvent, ISceneLoaderPluginFactory, ISceneLoaderPlugin } from "babylonjs/Loading/sceneLoader";
-    import { AssetContainer } from "babylonjs/assetContainer";
     import { Scene } from "babylonjs/scene";
     /**
      * Class reading and parsing the MTL file bundled with the obj file.
      */
     export class MTLFileLoader {
+        /**
+         * Invert Y-Axis of referenced textures on load
+         */
+        static INVERT_TEXTURE_Y: boolean;
         /**
          * All material loaded from the mtl will be set here
          */
@@ -2261,6 +2258,16 @@ declare module "babylonjs-loaders/OBJ/objFileLoader" {
          */
         private static _getTexture;
     }
+}
+declare module "babylonjs-loaders/OBJ/objFileLoader" {
+    import { Vector2 } from "babylonjs/Maths/math";
+    import { AnimationGroup } from "babylonjs/Animations/animationGroup";
+    import { Skeleton } from "babylonjs/Bones/skeleton";
+    import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
+    import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+    import { ISceneLoaderPluginAsync, SceneLoaderProgressEvent, ISceneLoaderPluginFactory, ISceneLoaderPlugin } from "babylonjs/Loading/sceneLoader";
+    import { AssetContainer } from "babylonjs/assetContainer";
+    import { Scene } from "babylonjs/scene";
     /**
      * Options for loading OBJ/MTL files
      */
@@ -2314,7 +2321,8 @@ declare module "babylonjs-loaders/OBJ/objFileLoader" {
         /**
          * Invert Y-Axis of referenced textures on load
          */
-        static INVERT_TEXTURE_Y: boolean;
+        static get INVERT_TEXTURE_Y(): boolean;
+        static set INVERT_TEXTURE_Y(value: boolean);
         /**
          * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
          */
@@ -2455,6 +2463,7 @@ declare module "babylonjs-loaders/OBJ/objFileLoader" {
     }
 }
 declare module "babylonjs-loaders/OBJ/index" {
+    export * from "babylonjs-loaders/OBJ/mtlFileLoader";
     export * from "babylonjs-loaders/OBJ/objFileLoader";
 }
 declare module "babylonjs-loaders/STL/stlFileLoader" {
@@ -4600,6 +4609,10 @@ declare module BABYLON {
      */
     export class MTLFileLoader {
         /**
+         * Invert Y-Axis of referenced textures on load
+         */
+        static INVERT_TEXTURE_Y: boolean;
+        /**
          * All material loaded from the mtl will be set here
          */
         materials: StandardMaterial[];
@@ -4626,6 +4639,8 @@ declare module BABYLON {
          */
         private static _getTexture;
     }
+}
+declare module BABYLON {
     /**
      * Options for loading OBJ/MTL files
      */
@@ -4679,7 +4694,8 @@ declare module BABYLON {
         /**
          * Invert Y-Axis of referenced textures on load
          */
-        static INVERT_TEXTURE_Y: boolean;
+        static get INVERT_TEXTURE_Y(): boolean;
+        static set INVERT_TEXTURE_Y(value: boolean);
         /**
          * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
          */
