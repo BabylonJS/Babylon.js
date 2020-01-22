@@ -183,12 +183,18 @@ export class WebXRFeaturesManager implements IDisposable {
         const name = typeof featureName === 'string' ? featureName : featureName.Name;
         let versionToLoad = 0;
         if (typeof version === 'string') {
+            if (!version) {
+                throw new Error(`Error in provided version - ${name} (${version})`);
+            }
             if (version === 'stable') {
                 versionToLoad = WebXRFeaturesManager.GetStableVersionOfFeature(name);
             } else if (version === 'latest') {
                 versionToLoad = WebXRFeaturesManager.GetLatestVersionOfFeature(name);
+            } else {
+                // try loading the number the string represents
+                versionToLoad = +version;
             }
-            if (versionToLoad === -1) {
+            if (versionToLoad === -1 ||  isNaN(versionToLoad)) {
                 throw new Error(`feature not found - ${name} (${version})`);
             }
         } else {
