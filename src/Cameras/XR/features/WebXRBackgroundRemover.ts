@@ -35,7 +35,7 @@ export interface IWebXRBackgroundRemoverOptions {
 /**
  * A module that will automatically disable background meshes when entering AR and will enable them when leaving AR.
  */
-export class WebXRBackgroundRemover extends WebXRAbstractFeature implements IWebXRFeature {
+export class WebXRBackgroundRemover extends WebXRAbstractFeature {
 
     /**
      * The module's name

@@ -40,7 +40,7 @@ export interface IWebXRHitResult {
  * Hit test (or raycasting) is used to interact with the real world.
  * For further information read here - https://github.com/immersive-web/hit-test
  */
-export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRFeature {
+export class WebXRHitTestLegacy extends WebXRAbstractFeature {
 
     /**
      * The module's name

@@ -52,7 +52,7 @@ let anchorIdProvider = 0;
  * will use the frame to create an anchor and not the session or a detected plane
  * For further information see https://github.com/immersive-web/anchors/
  */
-export class WebXRAnchorSystem extends WebXRAbstractFeature implements IWebXRFeature {
+export class WebXRAnchorSystem extends WebXRAbstractFeature {
 
     /**
      * The module's name

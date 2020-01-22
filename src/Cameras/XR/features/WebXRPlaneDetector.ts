@@ -45,7 +45,7 @@ let planeIdProvider = 0;
  * The plane detector is used to detect planes in the real world when in AR
  * For more information see https://github.com/immersive-web/real-world-geometry/
  */
-export class WebXRPlaneDetector extends WebXRAbstractFeature implements IWebXRFeature {
+export class WebXRPlaneDetector extends WebXRAbstractFeature {
 
     /**
      * The module's name
