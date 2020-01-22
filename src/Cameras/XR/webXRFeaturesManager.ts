@@ -33,14 +33,32 @@ export interface IWebXRFeature extends IDisposable {
 /**
  * A list of the currently available features without referencing them
  */
-export const WebXRFeatureName: { [globalName: string]: string } = {
-    HIT_TEST: "xr-hit-test",
-    ANCHOR_SYSTEM: "xr-anchor-system",
-    BACKGROUND_REMOVER: "xr-background-remover",
-    POINTER_SELECTION: "xr-controller-pointer-selection",
-    TELEPORTATION: "xr-controller-teleportation",
-    PLANE_DETECTION: "xr-plane-detection"
-};
+export class WebXRFeatureName {
+    /**
+     * The name of the hit test feature
+     */
+    public static HIT_TEST = "xr-hit-test";
+    /**
+     * The name of the anchor system feature
+     */
+    public static ANCHOR_SYSTEM = "xr-anchor-system";
+    /**
+     * The name of the background remover feature
+     */
+    public static BACKGROUND_REMOVER = "xr-background-remover";
+    /**
+     * The name of the pointer selection feature
+     */
+    public static POINTER_SELECTION = "xr-controller-pointer-selection";
+    /**
+     * The name of the teleportation feature
+     */
+    public static TELEPORTATION = "xr-controller-teleportation";
+    /**
+     * The name of the plane detection feature
+     */
+    public static PLANE_DETECTION = "xr-plane-detection";
+}
 
 /**
  * Defining the constructor of a feature. Used to register the modules.
