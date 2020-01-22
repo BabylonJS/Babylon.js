@@ -1,4 +1,4 @@
-import { WebXRFeaturesManager, IWebXRFeature } from "../webXRFeaturesManager";
+import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { AbstractMesh } from '../../../Meshes/abstractMesh';
 import { Observer } from '../../../Misc/observable';
@@ -16,8 +16,6 @@ import { TorusBuilder } from '../../../Meshes/Builders/torusBuilder';
 import { Ray } from '../../../Culling/ray';
 import { PickingInfo } from '../../../Collisions/pickingInfo';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-
-const Name = "xr-controller-pointer-selection";
 
 /**
  * Options interface for the pointer selection module
@@ -62,12 +60,12 @@ export interface IWebXRControllerPointerSelectionOptions {
 /**
  * A module that will enable pointer selection for motion controllers of XR Input Sources
  */
-export class WebXRControllerPointerSelection extends WebXRAbstractFeature implements IWebXRFeature {
+export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
     /**
      * The module's name
      */
-    public static readonly Name = Name;
+    public static readonly Name = WebXRFeatureName.POINTER_SELECTION;
     /**
      * The (Babylon) version of this module.
      * This is an integer representing the implementation version.
@@ -78,19 +76,19 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature implem
     /**
      * This color will be set to the laser pointer when selection is triggered
      */
-    public laserPointerPickedColor: Color3 = new Color3(0.7, 0.7, 0.7);
+    public laserPointerPickedColor: Color3 = new Color3(0.9, 0.9, 0.9);
     /**
      * This color will be applied to the selection ring when selection is triggered
      */
-    public selectionMeshPickedColor: Color3 = new Color3(0.7, 0.7, 0.7);
+    public selectionMeshPickedColor: Color3 = new Color3(0.3, 0.3, 1.0);
     /**
      * default color of the selection ring
      */
-    public selectionMeshDefaultColor: Color3 = new Color3(0.5, 0.5, 0.5);
+    public selectionMeshDefaultColor: Color3 = new Color3(0.8, 0.8, 0.8);
     /**
      * Default color of the laser pointer
      */
-    public lasterPointerDefaultColor: Color3 = new Color3(0.5, 0.5, 0.5);
+    public lasterPointerDefaultColor: Color3 = new Color3(0.7, 0.7, 0.7);
 
     /**
      * Should the laser pointer be displayed
@@ -100,6 +98,16 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature implem
      * Should the selection mesh be displayed (The ring at the end of the laser pointer)
      */
     public displaySelectionMesh: boolean = true;
+
+    /**
+     * Disable lighting on the laser pointer (so it will always be visible)
+     */
+    public disablePointerLighting: boolean = true;
+
+    /**
+     * Disable lighting on the selection mesh (so it will always be visible)
+     */
+    public disableSelectionMeshLighting: boolean = true;
 
     private static _idCounter = 0;
 
@@ -371,8 +379,9 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature implem
                     (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
                     (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.lasterPointerDefaultColor;
                 }
-
                 controllerData.laserPointer.isVisible = this.displayLaserPointer;
+                (<StandardMaterial>controllerData.laserPointer.material).disableLighting = this.disablePointerLighting;
+                (<StandardMaterial>controllerData.selectionMesh.material).disableLighting = this.disableSelectionMeshLighting;
 
                 if (controllerData.pick) {
                     this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
@@ -423,7 +432,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature implem
         laserPointer.parent = xrController.pointer;
         let laserPointerMaterial = new StandardMaterial("laserPointerMat", this._scene);
         laserPointerMaterial.emissiveColor = this.lasterPointerDefaultColor;
-        laserPointerMaterial.alpha = 0.6;
+        laserPointerMaterial.alpha = 0.7;
         laserPointer.material = laserPointerMaterial;
         laserPointer.rotation.x = Math.PI / 2;
         this._updatePointerDistance(laserPointer, 1);

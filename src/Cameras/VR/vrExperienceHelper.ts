@@ -254,6 +254,11 @@ class VRExperienceHelperControllerGazer extends VRExperienceHelperGazer {
     }
 
     /** @hidden */
+    public _setLaserPointerLightingDisabled(disabled: boolean) {
+        (<StandardMaterial>this._laserPointer.material).disableLighting = disabled;
+    }
+
+    /** @hidden */
     public _setLaserPointerParent(mesh: AbstractMesh) {
         var makeNotPick = (root: AbstractMesh) => {
             root.isPickable = false;
@@ -2225,6 +2230,20 @@ export class VRExperienceHelper {
     public setLaserColor(color: Color3, pickedColor: Color3 = this._pickedLaserColor) {
         this._laserColor = color;
         this._pickedLaserColor = pickedColor;
+    }
+
+    /**
+     * Set lighting enabled / disabled on the laser pointer of both controllers
+     * @param enabled should the lighting be enabled on the laser pointer
+     */
+    public setLaserLightingState(enabled: boolean = true) {
+        if (this._leftController) {
+            this._leftController._setLaserPointerLightingDisabled(!enabled);
+
+        }
+        if (this._rightController) {
+            this._rightController._setLaserPointerLightingDisabled(!enabled);
+        }
     }
 
     /**
