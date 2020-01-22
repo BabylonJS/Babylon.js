@@ -85,9 +85,7 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
      * This function will not execute after the feature is detached.
      * @param _xrFrame the current frame
      */
-    protected _onXRFrame(_xrFrame: XRFrame): void {
-        // no-op
-    }
+    protected abstract _onXRFrame(_xrFrame: XRFrame): void;
 
     /**
      * This is used to register callbacks that will automatically be removed when detach is called.
