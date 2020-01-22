@@ -1,11 +1,9 @@
-import { WebXRFeaturesManager, IWebXRFeature } from '../webXRFeaturesManager';
+import { WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager';
 import { TransformNode } from '../../../Meshes/transformNode';
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { Observable } from '../../../Misc/observable';
 import { Vector3, Matrix } from '../../../Maths/math.vector';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-
-const Name = "xr-plane-detector";
 
 /**
  * Options used in the plane detector module
@@ -47,12 +45,12 @@ let planeIdProvider = 0;
  * The plane detector is used to detect planes in the real world when in AR
  * For more information see https://github.com/immersive-web/real-world-geometry/
  */
-export class WebXRPlaneDetector extends WebXRAbstractFeature implements IWebXRFeature {
+export class WebXRPlaneDetector extends WebXRAbstractFeature {
 
     /**
      * The module's name
      */
-    public static readonly Name = Name;
+    public static readonly Name = WebXRFeatureName.PLANE_DETECTION;
     /**
      * The (Babylon) version of this module.
      * This is an integer representing the implementation version.
