@@ -38,6 +38,7 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
     /**
      * attach this feature
      *
+     * @param force should attachment be forced (even when already attached)
      * @returns true if successful, false is failed or already attached
      */
     public attach(force?: boolean): boolean {

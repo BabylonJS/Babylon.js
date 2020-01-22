@@ -260,6 +260,6 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
 }
 
 //register the plugin
-WebXRFeaturesManager.AddWebXRFeature(WebXRAnchorSystem.Name, (xrSessionManager, options) => {
-    return () => new WebXRAnchorSystem(xrSessionManager, options);
-}, WebXRAnchorSystem.Version);
+// WebXRFeaturesManager.AddWebXRFeature(WebXRAnchorSystem.Name, (xrSessionManager, options) => {
+//     return () => new WebXRAnchorSystem(xrSessionManager, options);
+// }, WebXRAnchorSystem.Version);
