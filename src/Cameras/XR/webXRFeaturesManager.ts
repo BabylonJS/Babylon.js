@@ -226,11 +226,12 @@ export class WebXRFeaturesManager implements IDisposable {
 
         if (attachIfPossible) {
             // if session started already, request and enable
-            if (this._xrSessionManager.session && !feature.featureImplementation.attached && attachIfPossible) {
+            if (this._xrSessionManager.session && !feature.featureImplementation.attached) {
                 // enable feature
                 this.attachFeature(name);
             }
         } else {
+            // disable auto-attach when session starts
             this._features[name].featureImplementation.disableAutoAttach = true;
         }
 
