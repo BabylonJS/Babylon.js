@@ -12,11 +12,6 @@ import { Viewport } from '../../Maths/math.viewport';
  */
 export class WebXRCamera extends FreeCamera {
 
-    /**
-     * Is the camera in debug mode. Used when using an emulator
-     */
-    public debugMode = false;
-
     private _firstFrame = false;
     private _referencedPosition: Vector3 = new Vector3();
     private _referenceQuaternion: Quaternion = Quaternion.Identity();
@@ -78,7 +73,10 @@ export class WebXRCamera extends FreeCamera {
      * @param otherCamera the non-vr camera to copy the transformation from
      * @param resetToBaseReferenceSpace should XR reset to the base reference space
      */
-    public setTransformationFromNonVRCamera(otherCamera: Camera, resetToBaseReferenceSpace: boolean = true) {
+    public setTransformationFromNonVRCamera(otherCamera: Camera = this.getScene().activeCamera!, resetToBaseReferenceSpace: boolean = true) {
+        if (!otherCamera || otherCamera === this) {
+            return;
+        }
         const mat = otherCamera.computeWorldMatrix();
         mat.decompose(undefined, this.rotationQuaternion, this.position);
         // set the ground level
@@ -249,9 +247,6 @@ export class WebXRCamera extends FreeCamera {
                 currentRig.viewport.height = viewport.height / height;
                 currentRig.viewport.x = viewport.x / width;
                 currentRig.viewport.y = viewport.y / height;
-            }
-            if (this.debugMode) {
-                this._updateForDualEyeDebugging();
             }
 
             // Set cameras to render to the session's render target

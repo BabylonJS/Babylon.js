@@ -1,4 +1,4 @@
-import { WebXRFeaturesManager, IWebXRFeature } from "../webXRFeaturesManager";
+import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { AbstractMesh } from '../../../Meshes/abstractMesh';
 import { Observer } from '../../../Misc/observable';
@@ -16,8 +16,6 @@ import { TorusBuilder } from '../../../Meshes/Builders/torusBuilder';
 import { Ray } from '../../../Culling/ray';
 import { PickingInfo } from '../../../Collisions/pickingInfo';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-
-const Name = "xr-controller-pointer-selection";
 
 /**
  * Options interface for the pointer selection module
@@ -62,12 +60,12 @@ export interface IWebXRControllerPointerSelectionOptions {
 /**
  * A module that will enable pointer selection for motion controllers of XR Input Sources
  */
-export class WebXRControllerPointerSelection extends WebXRAbstractFeature implements IWebXRFeature {
+export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
     /**
      * The module's name
      */
-    public static readonly Name = Name;
+    public static readonly Name = WebXRFeatureName.POINTER_SELECTION;
     /**
      * The (Babylon) version of this module.
      * This is an integer representing the implementation version.
