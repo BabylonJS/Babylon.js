@@ -101,6 +101,10 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                         <SliderLineComponent label="Lightmap level" target={material.lightmapTexture} propertyName="level" minimum={0} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                 </LineContainerComponent>
+                <LineContainerComponent globalState={this.props.globalState} title="NORMAL MAP" closed={true}>
+                    <CheckBoxLineComponent label="Invert X axis" target={material} propertyName="invertNormalMapX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent label="Invert Y axis" target={material} propertyName="invertNormalMapY" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </LineContainerComponent>
             </div>
         );
     }
