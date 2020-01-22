@@ -1,4 +1,4 @@
-import { IWebXRFeature, WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager';
+import { WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager';
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { Observable } from '../../../Misc/observable';
 import { Matrix } from '../../../Maths/math.vector';
