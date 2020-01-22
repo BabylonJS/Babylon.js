@@ -1,4 +1,4 @@
-import { WebXRFeaturesManager, IWebXRFeature, WebXRFeatureName } from '../webXRFeaturesManager';
+import { WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager';
 import { TransformNode } from '../../../Meshes/transformNode';
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { Observable } from '../../../Misc/observable';

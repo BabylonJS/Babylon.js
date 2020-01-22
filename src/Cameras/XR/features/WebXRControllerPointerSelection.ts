@@ -1,4 +1,4 @@
-import { WebXRFeaturesManager, IWebXRFeature, WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { AbstractMesh } from '../../../Meshes/abstractMesh';
 import { Observer } from '../../../Misc/observable';
