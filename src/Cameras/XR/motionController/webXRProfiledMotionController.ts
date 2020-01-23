@@ -4,6 +4,10 @@ import { Scene } from '../../../scene';
 import { SceneLoader } from '../../../Loading/sceneLoader';
 import { Mesh } from '../../../Meshes/mesh';
 import { Axis, Space } from '../../../Maths/math.axis';
+import { Color3 } from '../../../Maths/math.color';
+import { WebXRControllerComponent } from './webXRControllerComponent';
+import { SphereBuilder } from '../../../Meshes/Builders/sphereBuilder';
+import { StandardMaterial } from '../../../Materials/standardMaterial';
 
 /**
  * A profiled motion controller has its profile loaded from an online repository.
@@ -34,6 +38,8 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
             path: `${this._repositoryUrl}/profiles/${this.profileId}/`
         };
     }
+    private _touchDots: { [visKey: string]: AbstractMesh } = {};
+
     protected _processLoadedModel(meshes: AbstractMesh[]): void {
         this.getComponentTypes().forEach((type) => {
             const componentInLayout = this.layout.components[type];
@@ -50,14 +56,28 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
                         maxMesh: this._getChildByName(this.rootMesh!, visResponse.maxNodeName!)
                     };
                 } else {
-                    // visibility
+                    // visibility, usually for touchpads
+                    const nameOfMesh = (componentInLayout.type === WebXRControllerComponent.TOUCHPAD && componentInLayout.touchPointNodeName)
+                        ? componentInLayout.touchPointNodeName : visResponse.valueNodeName!;
                     this._buttonMeshMapping[type].states[visualResponseKey] = {
-                        valueMesh: this._getChildByName(this.rootMesh!, visResponse.valueNodeName!)
+                        valueMesh: this._getChildByName(this.rootMesh!, nameOfMesh)
                     };
+                    if (componentInLayout.type === WebXRControllerComponent.TOUCHPAD && !this._touchDots[visualResponseKey]) {
+                        const dot = SphereBuilder.CreateSphere(visualResponseKey + 'dot', {
+                            diameter: 0.001,
+                            segments: 8
+                        }, this.scene);
+                        dot.material = new StandardMaterial(visualResponseKey + 'mat', this.scene);
+                        (<StandardMaterial>dot.material).diffuseColor = Color3.Red();
+                        dot.parent = this._buttonMeshMapping[type].states[visualResponseKey].valueMesh;
+                        dot.isVisible = false;
+                        this._touchDots[visualResponseKey] = dot;
+                    }
                 }
             });
         });
     }
+
     protected _setRootMesh(meshes: AbstractMesh[]): void {
         this.rootMesh = new Mesh(this.profileId + " " + this.handness, this.scene);
         this.rootMesh.isPickable = false;
@@ -100,13 +120,21 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
                     this._lerpTransform(meshes.states[visualResponseKey], value, visResponse.componentProperty !== "button");
                 } else {
                     // visibility
-                    meshes.states[visualResponseKey].valueMesh.visibility = value;
+                    meshes.states[visualResponseKey].valueMesh.isVisible = component.touched || component.pressed;
+                    this._touchDots[visualResponseKey].isVisible = component.touched || component.pressed;
                 }
             });
         });
     }
     protected _getModelLoadingConstraints(): boolean {
         return SceneLoader.IsPluginForExtensionAvailable(".glb");
+    }
+
+    public dispose() {
+        super.dispose();
+        Object.keys(this._touchDots).forEach((visResKey) => {
+            this._touchDots[visResKey].dispose();
+        });
     }
 
 }
