@@ -76,7 +76,7 @@ export class WebXRGenericTriggerMotionController extends WebXRAbstractMotionCont
     public profileId = WebXRGenericTriggerMotionController.ProfileId;
 
     constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness) {
-        super(scene, GenericTriggerLayout["left-right-none"], gamepadObject, handness);
+        super(scene, GenericTriggerLayout[handness], gamepadObject, handness);
     }
 
     protected _processLoadedModel(meshes: AbstractMesh[]): void {

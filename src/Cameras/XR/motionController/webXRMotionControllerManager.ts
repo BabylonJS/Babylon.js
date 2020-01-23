@@ -21,6 +21,8 @@ export type MotionControllerConstructor = (xrInput: XRInputSource, scene: Scene)
  */
 export class WebXRMotionControllerManager {
     public static BaseRepositoryUrl = "https://immersive-web.github.io/webxr-input-profiles/packages/viewer/dist";
+    public static UseOnlineRepository: boolean = true;
+    public static PrioritizeOnlineRepository: boolean = true;
     private static _AvailableControllers: { [type: string]: MotionControllerConstructor } = {};
     private static _Fallbacks: { [profileId: string]: string[] } = {};
 
@@ -57,21 +59,18 @@ export class WebXRMotionControllerManager {
         }
         profileArray.push(...(xrInput.profiles || []));
 
-        // try using the gamepad id
+        // emulator support
+        if (profileArray.length && !profileArray[0]) {
+            // remove the first "undefined" that the emulator is adding
+            profileArray.pop();
+        }
+
+        // legacy support - try using the gamepad id
         if (xrInput.gamepad && xrInput.gamepad.id) {
             switch (xrInput.gamepad.id) {
                 case (xrInput.gamepad.id.match(/oculus touch/gi) ? xrInput.gamepad.id : undefined):
-                    // oculus in gamepad id - legacy mapping
-                    // return Promise.resolve(this._AvailableControllers["oculus-touch-legacy"](xrInput, scene));
+                    // oculus in gamepad id
                     profileArray.push("oculus-touch-v2");
-                    break;
-                case (xrInput.gamepad.id.match(/Spatial Controller/gi) ? xrInput.gamepad.id : undefined):
-                    // oculus in gamepad id - legacy mapping
-                    // return Promise.resolve(this._AvailableControllers["microsoft-mixed-reality"](xrInput, scene));
-                    break;
-                case (xrInput.gamepad.id.match(/openvr/gi) ? xrInput.gamepad.id : undefined):
-                    // oculus in gamepad id - legacy mapping
-                    // return Promise.resolve(this._AvailableControllers["htc-vive-legacy"](xrInput, scene));
                     break;
             }
         }
@@ -79,40 +78,47 @@ export class WebXRMotionControllerManager {
         // make sure microsoft/windows mixed reality works correctly
         const windowsMRIdx = profileArray.indexOf("windows-mixed-reality");
         if (windowsMRIdx !== -1) {
-            profileArray.splice(windowsMRIdx, 1, "microsoft-mixed-reality");
+            profileArray.splice(windowsMRIdx, 0, "microsoft-mixed-reality");
         }
-
-        // for (let i = 0; i < profileArray.length; ++i) {
-        //     const constructionFunction = this._AvailableControllers[profileArray[i]];
-        //     if (constructionFunction) {
-        //         return Promise.resolve(constructionFunction(xrInput, scene));
-        //     }
-        // }
 
         if (!profileArray.length) {
-            profileArray.push("generic-button");
+            profileArray.push("generic-trigger");
         }
 
-        // TODO use local repository, if asked by the user
+        if (this.UseOnlineRepository) {
+            const firstFunction = this.PrioritizeOnlineRepository ? this._LoadProfileFromRepository : this._LoadProfilesFromAvailableControllers;
+            const secondFunction = this.PrioritizeOnlineRepository ? this._LoadProfilesFromAvailableControllers : this._LoadProfileFromRepository;
 
-        return this._LoadProfileFromRepository(profileArray, xrInput, scene);
-        // // check fallbacks
-        // for (let i = 0; i < profileArray.length; ++i) {
-        //     const fallbacks = this.FindFallbackWithProfileId(profileArray[i]);
-        //     for (let j = 0; j < fallbacks.length; ++j) {
-        //         const constructionFunction = this._AvailableControllers[fallbacks[j]];
-        //         if (constructionFunction) {
-        //             return Promise.resolve(constructionFunction(xrInput, scene));
-        //         }
-        //     }
-        // }
-        // return the most generic thing we have
-        // return this._AvailableControllers[WebXRGenericTriggerMotionController.ProfileId](xrInput, scene);
+            return firstFunction.call(this, profileArray, xrInput, scene).catch(() => {
+                return secondFunction.call(this, profileArray, xrInput, scene);
+            });
 
-        // Check if there is an online profile and use it if possible
+        } else {
+            // use only available functions
+            return this._LoadProfilesFromAvailableControllers(profileArray, xrInput, scene);
+        }
     }
 
-    private static _ProfilesList: { [profile: string]: string };
+    private static _LoadProfilesFromAvailableControllers(profileArray: string[], xrInput: XRInputSource, scene: Scene) {
+        // check fallbacks
+        for (let i = 0; i < profileArray.length; ++i) {
+            // defensive
+            if (!profileArray[i]) {
+                continue;
+            }
+            const fallbacks = this.FindFallbackWithProfileId(profileArray[i]);
+            for (let j = 0; j < fallbacks.length; ++j) {
+                const constructionFunction = this._AvailableControllers[fallbacks[j]];
+                if (constructionFunction) {
+                    return Promise.resolve(constructionFunction(xrInput, scene));
+                }
+            }
+        }
+
+        throw new Error(`no controller requested was found in the available controllers list`);
+    }
+
+    private static _ProfilesList: Promise<{ [profile: string]: string }>;
 
     // cache for loading
     private static _ProfileLoadingPromises: { [profileName: string]: Promise<IMotionControllerProfile> } = {};
@@ -127,12 +133,16 @@ export class WebXRMotionControllerManager {
         }).then((profilesList: { [profile: string]: string }) => {
             // load the right profile
             for (let i = 0; i < profileArray.length; ++i) {
+                // defensive
+                if (!profileArray[i]) {
+                    continue;
+                }
                 if (profilesList[profileArray[i]]) {
                     return profileArray[i];
                 }
             }
 
-            return "generic-button";
+            throw new Error(`neither controller ${profileArray[0]} nor all fallbacks were found in the repository,`);
         }).then((profileToLoad: string) => {
             // load the profile
             if (!this._ProfileLoadingPromises[profileToLoad]) {
@@ -145,16 +155,22 @@ export class WebXRMotionControllerManager {
 
     }
 
-    public static ClearProfileCache() {
+    /**
+     * Clear the cache used for profile loading and reload when requested again
+     */
+    public static ClearProfilesCache() {
         delete this._ProfilesList;
         this._ProfileLoadingPromises = {};
     }
 
+    /**
+     * Will update the list of profiles available in the repository
+     */
     public static UpdateProfilesList() {
-        return Tools.LoadFileAsync(this.BaseRepositoryUrl + '/profiles/profilesList.json', false).then((data) => {
-            this._ProfilesList = JSON.parse(data.toString());
-            return this._ProfilesList;
+        this._ProfilesList = Tools.LoadFileAsync(this.BaseRepositoryUrl + '/profiles/profilesList.json', false).then((data) => {
+            return JSON.parse(data.toString());
         });
+        return this._ProfilesList;
     }
 
     /**
@@ -163,7 +179,10 @@ export class WebXRMotionControllerManager {
      * @return an array with corresponding fallback profiles
      */
     public static FindFallbackWithProfileId(profileId: string): string[] {
-        return this._Fallbacks[profileId] || [];
+        const returnArray = this._Fallbacks[profileId] || [];
+
+        returnArray.unshift(profileId);
+        return returnArray;
     }
 
     /**

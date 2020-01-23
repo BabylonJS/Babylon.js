@@ -27,7 +27,12 @@ export interface IWebXRInputOptions {
      *
      * Instead, use the controllers available in babylon itself.
      */
-    useOnlyLocalControllers?: boolean;
+    disableOnlineControllerRepository?: boolean;
+
+    /**
+     * A custom URL for the controllers repository
+     */
+    customControllersRepositoryURL?: string;
 }
 /**
  * XR input used to track XR inputs such as controllers/rays
@@ -82,8 +87,16 @@ export class WebXRInput implements IDisposable {
             });
         });
 
-        if (!this.options.useOnlyLocalControllers) {
+        if (this.options.customControllersRepositoryURL) {
+            WebXRMotionControllerManager.BaseRepositoryUrl = this.options.customControllersRepositoryURL;
+        }
+
+        if (!this.options.disableOnlineControllerRepository) {
+            WebXRMotionControllerManager.UseOnlineRepository = true;
+            // pre-load the profiles list to load the controllers quicker afterwards
             WebXRMotionControllerManager.UpdateProfilesList();
+        } else {
+            WebXRMotionControllerManager.UseOnlineRepository = false;
         }
     }
 
