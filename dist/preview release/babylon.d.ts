@@ -42583,7 +42583,7 @@ declare module BABYLON {
         /**
          * Checks if a session would be supported for the creation options specified
          * @param sessionMode session mode to check if supported eg. immersive-vr
-         * @returns true if supported
+         * @returns A Promise that resolves to true if supported and false if not
          */
         isSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean>;
         /**
@@ -42620,6 +42620,11 @@ declare module BABYLON {
      */
     export class WebXRCamera extends FreeCamera {
         private _xrSessionManager;
+        /**
+         * Should position compensation execute on first frame.
+         * This is used when copying the position from a native (non XR) camera
+         */
+        compensateOnFirstFrame: boolean;
         private _firstFrame;
         private _referencedPosition;
         private _referenceQuaternion;
@@ -44501,6 +44506,12 @@ declare module BABYLON {
          * Should teleportation not initialize. defaults to false.
          */
         disableTeleportation?: boolean;
+        /**
+         * If set to true, the first frame will not be used to reset position
+         * The first frame is mainly used when copying transformation from the old camera
+         * Mainly used in AR
+         */
+        ignoreNativeCameraTransformation?: boolean;
     }
     /**
      * Default experience which provides a similar setup to the previous webVRExperience
@@ -45091,6 +45102,8 @@ declare module BABYLON {
     /**
      * A babylon interface for a webxr plane.
      * A Plane is actually a polygon, built from N points in space
+     *
+     * Supported in chrome 79, not supported in canary 81 ATM
      */
     export interface IWebXRPlane {
         /**
@@ -45149,6 +45162,7 @@ declare module BABYLON {
          * @param _options configuration to use when constructing this feature
          */
         constructor(_xrSessionManager: WebXRSessionManager, _options?: IWebXRPlaneDetectorOptions);
+        private _init;
         protected _onXRFrame(frame: XRFrame): void;
         /**
          * Dispose this feature and all of the resources attached
@@ -58186,6 +58200,10 @@ declare module BABYLON {
          * Gets the output component
          */
         get output(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the isntanceID component
+         */
+        get instanceID(): NodeMaterialConnectionPoint;
         autoConfigure(material: NodeMaterial): void;
         prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): void;
         protected _buildBlock(state: NodeMaterialBuildState): this;
