@@ -268,9 +268,9 @@ export class WebXRSessionManager implements IDisposable {
     /**
      * Checks if a session would be supported for the creation options specified
      * @param sessionMode session mode to check if supported eg. immersive-vr
-     * @returns true if supported
+     * @returns A Promise that resolves to true if supported and false if not
      */
-    public isSessionSupportedAsync(sessionMode: XRSessionMode) {
+    public isSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean> {
         return WebXRSessionManager.IsSessionSupportedAsync(sessionMode);
     }
 
@@ -344,8 +344,9 @@ export class WebXRSessionManager implements IDisposable {
         if (!functionToUse) {
             return Promise.resolve(false);
         } else {
-            return functionToUse.call((navigator as any).xr, sessionMode).then(() => {
-                return Promise.resolve(true);
+            return functionToUse.call((navigator as any).xr, sessionMode).then((result: boolean) => {
+                const returnValue = (typeof result === "undefined") ? true : result;
+                return Promise.resolve(returnValue);
             }).catch((e: any) => {
                 Logger.Warn(e);
                 return Promise.resolve(false);
