@@ -6,6 +6,7 @@ import { WebXRSessionManager } from "./webXRSessionManager";
 import { WebXRCamera } from "./webXRCamera";
 import { WebXRState, WebXRRenderTarget } from './webXRTypes';
 import { WebXRFeaturesManager } from './webXRFeaturesManager';
+import { Logger } from '../../Misc/logger';
 
 /**
  * Base set of functionality needed to create an XR experince (WebXRSessionManager, Camera, StateManagement, etc.)
@@ -104,12 +105,16 @@ export class WebXRExperienceHelper implements IDisposable {
      */
     public enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget = this.sessionManager.getWebXRRenderTarget()): Promise<WebXRSessionManager> {
         if (!this._supported) {
-            throw "XR not available";
+            throw "WebXR not supported";
         }
         this._setState(WebXRState.ENTERING_XR);
         let sessionCreationOptions: XRSessionInit = {
             optionalFeatures: (referenceSpaceType !== "viewer" && referenceSpaceType !== "local") ? [referenceSpaceType] : []
         };
+        // we currently recommend "local" space in AR
+        if (sessionMode === "immersive-ar" && referenceSpaceType !== "local") {
+            Logger.Warn("We recommend using 'local' reference space type when using 'immersive-ar' session mode");
+        }
         // make sure that the session mode is supported
         return this.sessionManager.isSessionSupportedAsync(sessionMode).then(() => {
             return this.sessionManager.initializeSessionAsync(sessionMode, sessionCreationOptions);
@@ -129,7 +134,13 @@ export class WebXRExperienceHelper implements IDisposable {
             // Overwrite current scene settings
             this.scene.autoClear = false;
 
-            this._nonXRToXRCamera();
+            this.scene.activeCamera = this.camera;
+            // do not compensate when AR session is used
+            if (sessionMode !== 'immersive-ar') {
+                this._nonXRToXRCamera();
+            } else {
+                this.camera.compensateOnFirstFrame = false;
+            }
 
             this.sessionManager.onXRSessionEnded.addOnce(() => {
                 // Reset camera rigs output render target to ensure sessions render target is not drawn after it ends
@@ -140,10 +151,12 @@ export class WebXRExperienceHelper implements IDisposable {
                 // Restore scene settings
                 this.scene.autoClear = this._originalSceneAutoClear;
                 this.scene.activeCamera = this._nonVRCamera;
-                if ((<any>this._nonVRCamera).setPosition) {
-                    (<any>this._nonVRCamera).setPosition(this.camera.position);
-                } else {
-                    this._nonVRCamera!.position.copyFrom(this.camera.position);
+                if (sessionMode !== 'immersive-ar' && this.camera.compensateOnFirstFrame) {
+                    if ((<any>this._nonVRCamera).setPosition) {
+                        (<any>this._nonVRCamera).setPosition(this.camera.position);
+                    } else {
+                        this._nonVRCamera!.position.copyFrom(this.camera.position);
+                    }
                 }
 
                 this._setState(WebXRState.NOT_IN_XR);
@@ -177,7 +190,6 @@ export class WebXRExperienceHelper implements IDisposable {
     }
 
     private _nonXRToXRCamera() {
-        this.scene.activeCamera = this.camera;
         this.camera.setTransformationFromNonVRCamera(this._nonVRCamera!);
         this.onInitialXRPoseSetObservable.notifyObservers(this.camera);
     }
