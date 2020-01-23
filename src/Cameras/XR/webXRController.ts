@@ -94,7 +94,7 @@ export class WebXRController {
                 if (!this._options.doNotLoadControllerMesh) {
                     this.motionController.loadModel().then((success) => {
                         if (success) {
-                            this.motionController!.rootMesh!.parent = this.pointer;
+                            this.motionController!.rootMesh!.parent = this.grip || this.pointer;
                             this.motionController!.disableAnimation = !!this._options.disableMotionControllerAnimation;
                         }
                     });
