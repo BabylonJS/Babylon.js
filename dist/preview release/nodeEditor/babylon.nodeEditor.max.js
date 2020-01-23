@@ -52364,6 +52364,9 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
         }
         document.getElementById("file-picker").value = "";
     };
+    PreviewMeshControlComponent.prototype.onPopUp = function () {
+        this.props.togglePreviewAreaComponent();
+    };
     PreviewMeshControlComponent.prototype.render = function () {
         var _this = this;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-mesh-bar" },
@@ -52382,7 +52385,9 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "button align", title: "Preview with a custom mesh" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "file-picker", id: "file-picker-label" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faPlus"] })),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: "file-picker", id: "file-picker", type: "file", onChange: function (evt) { return _this.useCustomMesh(evt); }, accept: ".gltf, .glb, .babylon, .obj" }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: "file-picker", id: "file-picker", type: "file", onChange: function (evt) { return _this.useCustomMesh(evt); }, accept: ".gltf, .glb, .babylon, .obj" })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Open preview in new window", id: "preview-new-window", onClick: function () { return _this.onPopUp(); }, className: "button" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faWindowRestore"] }))));
     };
     return PreviewMeshControlComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -56603,6 +56608,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _serializationTools__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./serializationTools */ "./serializationTools.ts");
 /* harmony import */ var _diagram_graphCanvas__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./diagram/graphCanvas */ "./diagram/graphCanvas.tsx");
 /* harmony import */ var _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./diagram/graphFrame */ "./diagram/graphFrame.ts");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! react-dom */ "../../node_modules/react-dom/index.js");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_16___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_16__);
+
 
 
 
@@ -56632,6 +56640,166 @@ var GraphEditor = /** @class */ (function (_super) {
         _this._copiedFrame = null;
         _this._mouseLocationX = 0;
         _this._mouseLocationY = 0;
+        _this.state = {
+            showPreviewPopUp: false
+        };
+        _this.handlePopUp = function () {
+            _this.setState({
+                showPreviewPopUp: true
+            });
+            _this.createPopUp();
+            window.addEventListener('beforeunload', _this.handleClosingPopUp);
+        };
+        _this.handleClosingPopUp = function () {
+            _this._previewManager.dispose();
+            _this._popUpWindow.close();
+            _this.setState({
+                showPreviewPopUp: false
+            }, function () { return _this.initiatePreviewArea(); });
+        };
+        _this.initiatePreviewArea = function (canvas) {
+            if (canvas === void 0) { canvas = _this.props.globalState.hostDocument.getElementById("preview-canvas"); }
+            _this._previewManager = new _components_preview_previewManager__WEBPACK_IMPORTED_MODULE_10__["PreviewManager"](canvas, _this.props.globalState);
+        };
+        _this.createPopUp = function () {
+            var userOptions = {
+                original: true,
+                popup: false,
+                overlay: false,
+                embedMode: false,
+                enableClose: true,
+                handleResize: true,
+                enablePopup: true,
+            };
+            var options = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({ embedHostWidth: "100%", popup: true }, userOptions);
+            var popUpWindow = _this.createPopupWindow("PREVIEW AREA", "_PreviewHostWindow");
+            if (popUpWindow) {
+                popUpWindow.addEventListener('beforeunload', _this.handleClosingPopUp);
+                var parentControl = popUpWindow.document.getElementById('node-editor-graph-root');
+                _this.createPreviewMeshControlHost(options, parentControl);
+                _this.createPreviewHost(options, parentControl);
+                if (parentControl) {
+                    _this.fixPopUpStyles(parentControl.ownerDocument);
+                    _this.initiatePreviewArea(parentControl.ownerDocument.getElementById("preview-canvas"));
+                }
+            }
+        };
+        _this.createPopupWindow = function (title, windowVariableName, width, height) {
+            if (width === void 0) { width = 500; }
+            if (height === void 0) { height = 500; }
+            var windowCreationOptionsList = {
+                width: width,
+                height: height,
+                top: (window.innerHeight - width) / 2 + window.screenY,
+                left: (window.innerWidth - height) / 2 + window.screenX
+            };
+            var windowCreationOptions = Object.keys(windowCreationOptionsList)
+                .map(function (key) { return key + '=' + windowCreationOptionsList[key]; })
+                .join(',');
+            var popupWindow = window.open("", title, windowCreationOptions);
+            if (!popupWindow) {
+                return null;
+            }
+            var parentDocument = popupWindow.document;
+            parentDocument.title = title;
+            parentDocument.body.style.width = "100%";
+            parentDocument.body.style.height = "100%";
+            parentDocument.body.style.margin = "0";
+            parentDocument.body.style.padding = "0";
+            var parentControl = parentDocument.createElement("div");
+            parentControl.style.width = "100%";
+            parentControl.style.height = "100%";
+            parentControl.style.margin = "0";
+            parentControl.style.padding = "0";
+            parentControl.style.display = "block";
+            parentControl.style.gridTemplateRows = "unset";
+            parentControl.id = 'node-editor-graph-root';
+            parentControl.className = 'right-panel';
+            popupWindow.document.body.appendChild(parentControl);
+            _this.copyStyles(window.document, parentDocument);
+            _this[windowVariableName] = popupWindow;
+            _this._popUpWindow = popupWindow;
+            return popupWindow;
+        };
+        _this.copyStyles = function (sourceDoc, targetDoc) {
+            var styleContainer = [];
+            for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
+                var styleSheet = sourceDoc.styleSheets[index];
+                try {
+                    if (styleSheet.href) { // for <link> elements loading CSS from a URL
+                        var newLinkEl = sourceDoc.createElement('link');
+                        newLinkEl.rel = 'stylesheet';
+                        newLinkEl.href = styleSheet.href;
+                        targetDoc.head.appendChild(newLinkEl);
+                        styleContainer.push(newLinkEl);
+                    }
+                    else if (styleSheet.cssRules) { // for <style> elements
+                        var newStyleEl = sourceDoc.createElement('style');
+                        for (var _i = 0, _a = styleSheet.cssRules; _i < _a.length; _i++) {
+                            var cssRule = _a[_i];
+                            if (cssRule.selectorText !== '.right-panel #preview-config-bar .button') { // skip css grid layout rules
+                                newStyleEl.appendChild(sourceDoc.createTextNode(cssRule.cssText));
+                            }
+                        }
+                        targetDoc.head.appendChild(newStyleEl);
+                        styleContainer.push(newStyleEl);
+                    }
+                }
+                catch (e) {
+                    console.log(e);
+                }
+            }
+        };
+        _this.createPreviewMeshControlHost = function (options, parentControl) {
+            // Prepare the preview control host
+            if (parentControl) {
+                var host = parentControl.ownerDocument.createElement("div");
+                host.id = "PreviewMeshControl-host";
+                host.style.width = options.embedHostWidth || "auto";
+                host.style.display = "block";
+                host.style.height = "30px";
+                parentControl.appendChild(host);
+                var PreviewMeshControlComponentHost = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewMeshControlComponent__WEBPACK_IMPORTED_MODULE_11__["PreviewMeshControlComponent"], {
+                    globalState: _this.props.globalState,
+                    togglePreviewAreaComponent: _this.handlePopUp
+                });
+                react_dom__WEBPACK_IMPORTED_MODULE_16__["render"](PreviewMeshControlComponentHost, host);
+            }
+        };
+        _this.createPreviewHost = function (options, parentControl) {
+            // Prepare the preview host
+            if (parentControl) {
+                var host = parentControl.ownerDocument.createElement("div");
+                host.id = "PreviewAreaComponent-host";
+                host.style.width = options.embedHostWidth || "auto";
+                host.style.display = "block";
+                parentControl.appendChild(host);
+                _this._previewHost = host;
+                if (!options.overlay) {
+                    _this._previewHost.style.position = "relative";
+                }
+            }
+            if (_this._previewHost) {
+                var PreviewAreaComponentHost = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewAreaComponent__WEBPACK_IMPORTED_MODULE_12__["PreviewAreaComponent"], {
+                    globalState: _this.props.globalState,
+                    width: 200
+                });
+                react_dom__WEBPACK_IMPORTED_MODULE_16__["render"](PreviewAreaComponentHost, _this._previewHost);
+            }
+        };
+        _this.fixPopUpStyles = function (document) {
+            var previewContainer = document.getElementById("preview");
+            if (previewContainer) {
+                previewContainer.style.height = "calc(100% - 60px)";
+            }
+            var newWindowButton = document.getElementById('preview-new-window');
+            if (newWindowButton) {
+                newWindowButton.style.display = 'none';
+            }
+        };
+        _this.state = {
+            showPreviewPopUp: false
+        };
         _this.props.globalState.onRebuildRequiredObservable.add(function () {
             if (_this.props.globalState.nodeMaterial) {
                 _this.buildMaterial();
@@ -56731,6 +56899,10 @@ var GraphEditor = /** @class */ (function (_super) {
         }, false);
         return _this;
     }
+    /**
+     * Creates a node and recursivly creates its parent nodes from it's input
+     * @param nodeMaterialBlock
+     */
     GraphEditor.prototype.createNodeFromObject = function (block, recursion) {
         if (recursion === void 0) { recursion = true; }
         if (this._blocks.indexOf(block) !== -1) {
@@ -57043,8 +57215,8 @@ var GraphEditor = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "rightGrab", onPointerDown: function (evt) { return _this.onPointerDown(evt); }, onPointerUp: function (evt) { return _this.onPointerUp(evt); }, onPointerMove: function (evt) { return _this.resizeColumns(evt, false); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "right-panel" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_propertyTab_propertyTabComponent__WEBPACK_IMPORTED_MODULE_3__["PropertyTabComponent"], { globalState: this.props.globalState }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewMeshControlComponent__WEBPACK_IMPORTED_MODULE_11__["PreviewMeshControlComponent"], { globalState: this.props.globalState }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewAreaComponent__WEBPACK_IMPORTED_MODULE_12__["PreviewAreaComponent"], { globalState: this.props.globalState, width: this._rightWidth })),
+                    !this.state.showPreviewPopUp ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewMeshControlComponent__WEBPACK_IMPORTED_MODULE_11__["PreviewMeshControlComponent"], { globalState: this.props.globalState, togglePreviewAreaComponent: this.handlePopUp }) : null,
+                    !this.state.showPreviewPopUp ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewAreaComponent__WEBPACK_IMPORTED_MODULE_12__["PreviewAreaComponent"], { globalState: this.props.globalState, width: this._rightWidth }) : null),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_log_logComponent__WEBPACK_IMPORTED_MODULE_5__["LogComponent"], { globalState: this.props.globalState })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_messageDialog__WEBPACK_IMPORTED_MODULE_8__["MessageDialogComponent"], { globalState: this.props.globalState }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "blocker" }, "Node Material Editor runs only on desktop")));
