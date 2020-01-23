@@ -544,7 +544,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, State> {
             showPreviewPopUp : true
         });
         this.createPopUp();
-        window.addEventListener('beforeunload', this.handleClosingPopUp);
+        this.props.globalState.hostWindow.addEventListener('beforeunload', this.handleClosingPopUp);
     }
 
     handleClosingPopUp = () => {
@@ -593,8 +593,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, State> {
         const windowCreationOptionsList = {
             width: width,
             height: height,
-            top: (window.innerHeight - width) / 2 + window.screenY,
-            left: (window.innerWidth - height) / 2 + window.screenX
+            top: (this.props.globalState.hostWindow.innerHeight - width) / 2 + window.screenY,
+            left: (this.props.globalState.hostWindow.innerWidth - height) / 2 + window.screenX
         };
 
         var windowCreationOptions = Object.keys(windowCreationOptionsList)
@@ -603,7 +603,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, State> {
             )
             .join(',');
 
-        const popupWindow = window.open("", title, windowCreationOptions);
+        const popupWindow = this.props.globalState.hostWindow.open("", title, windowCreationOptions);
         if (!popupWindow) {
             return null;
         }
@@ -628,7 +628,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, State> {
 
         popupWindow.document.body.appendChild(parentControl);
 
-        this.copyStyles(window.document, parentDocument);
+        this.copyStyles(this.props.globalState.hostWindow.document, parentDocument);
 
         (this as any)[windowVariableName] = popupWindow;
 
