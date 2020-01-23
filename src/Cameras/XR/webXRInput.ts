@@ -33,6 +33,11 @@ export interface IWebXRInputOptions {
      * A custom URL for the controllers repository
      */
     customControllersRepositoryURL?: string;
+
+    /**
+     * Should the controller model's components not move according to the user input
+     */
+    disableControllerAnimation?: boolean;
 }
 /**
  * XR input used to track XR inputs such as controllers/rays
@@ -109,7 +114,11 @@ export class WebXRInput implements IDisposable {
         let sources = this.controllers.map((c) => { return c.inputSource; });
         for (let input of addInputs) {
             if (sources.indexOf(input) === -1) {
-                let controller = new WebXRController(this.xrSessionManager.scene, input, { forceControllerProfile: this.options.forceInputProfile, doNotLoadControllerMesh: this.options.doNotLoadControllerMeshes });
+                let controller = new WebXRController(this.xrSessionManager.scene, input, {
+                    forceControllerProfile: this.options.forceInputProfile,
+                    doNotLoadControllerMesh: this.options.doNotLoadControllerMeshes,
+                    disableMotionControllerAnimation: this.options.disableControllerAnimation
+                });
                 this.controllers.push(controller);
                 this.onControllerAddedObservable.notifyObservers(controller);
             }

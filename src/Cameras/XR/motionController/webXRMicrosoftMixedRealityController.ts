@@ -94,6 +94,9 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
 
         // Button Meshes
         this.getComponentTypes().forEach((buttonName, i) => {
+            if (this.disableAnimation) {
+                return;
+            }
             if (buttonName && this.rootMesh) {
                 const buttonMap = (<any>this._mapping.buttons)[buttonName];
                 const buttonMeshName = buttonMap.rootNodeName;

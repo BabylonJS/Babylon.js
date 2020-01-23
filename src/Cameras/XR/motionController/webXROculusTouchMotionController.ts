@@ -55,7 +55,7 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
             if (comp) {
                 comp.onButtonStateChanged.add((component) => {
 
-                    if (!this.rootMesh) { return; }
+                    if (!this.rootMesh || this.disableAnimation) { return; }
 
                     switch (buttonName) {
                         case "xr-standard-trigger": // index trigger
