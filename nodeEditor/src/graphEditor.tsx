@@ -20,6 +20,9 @@ import { SerializationTools } from './serializationTools';
 import { GraphCanvasComponent } from './diagram/graphCanvas';
 import { GraphNode } from './diagram/graphNode';
 import { GraphFrame } from './diagram/graphFrame';
+import * as ReactDOM from 'react-dom';
+import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
+
 
 require("./main.scss");
 
@@ -27,7 +30,19 @@ interface IGraphEditorProps {
     globalState: GlobalState;
 }
 
-export class GraphEditor extends React.Component<IGraphEditorProps> {
+type State = {
+    showPreviewPopUp: boolean;
+};
+
+interface IInternalPreviewAreaOptions extends IInspectorOptions {
+    popup: boolean;
+    original: boolean;
+    explorerWidth?: string;
+    inspectorWidth?: string;
+    embedHostWidth?: string;
+}
+
+export class GraphEditor extends React.Component<IGraphEditorProps, State> {
     private readonly NodeWidth = 100;
     private _graphCanvas: GraphCanvasComponent;
 
@@ -46,6 +61,18 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
     private _mouseLocationY = 0;
     private _onWidgetKeyUpPointer: any;
 
+    private _previewHost: Nullable<HTMLElement>;
+    private _popUpWindow: Window;
+
+
+    public readonly state: State = {
+        showPreviewPopUp: false
+    };
+
+    /**
+     * Creates a node and recursivly creates its parent nodes from it's input
+     * @param nodeMaterialBlock 
+     */
     public createNodeFromObject(block: NodeMaterialBlock, recursion = true) {
         if (this._blocks.indexOf(block) !== -1) {        
             return this._graphCanvas.nodes.filter(n => n.block === block)[0];
@@ -117,6 +144,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
 
     constructor(props: IGraphEditorProps) {
         super(props);
+
+        this.state = {
+            showPreviewPopUp: false
+        };
 
         this.props.globalState.onRebuildRequiredObservable.add(() => {
             if (this.props.globalState.nodeMaterial) {
@@ -508,6 +539,192 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
         this.forceUpdate();
     }
 
+    handlePopUp = () => {
+        this.setState({
+            showPreviewPopUp : true
+        });
+        this.createPopUp();
+        window.addEventListener('beforeunload', this.handleClosingPopUp);
+    }
+
+    handleClosingPopUp = () => {
+        this._previewManager.dispose();
+        this._popUpWindow.close();
+        this.setState({
+            showPreviewPopUp: false
+        }, () => this.initiatePreviewArea()
+        );
+    }
+
+    initiatePreviewArea = (canvas: HTMLCanvasElement = this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement) => {
+        this._previewManager =  new PreviewManager(canvas, this.props.globalState);
+    }
+
+    createPopUp = () => {
+        const userOptions = {
+            original: true,
+            popup: false,
+            overlay: false,
+            embedMode: false,
+            enableClose: true,
+            handleResize: true,
+            enablePopup: true,
+
+        };
+        const options = {
+            embedHostWidth: "100%",
+            popup: true,
+            ...userOptions
+        };
+        const popUpWindow = this.createPopupWindow("PREVIEW AREA", "_PreviewHostWindow");
+        if (popUpWindow) {
+            popUpWindow.addEventListener('beforeunload',  this.handleClosingPopUp);
+            const parentControl = popUpWindow.document.getElementById('node-editor-graph-root');
+            this.createPreviewMeshControlHost(options, parentControl);
+            this.createPreviewHost(options, parentControl);
+            if (parentControl) {
+                this.fixPopUpStyles(parentControl.ownerDocument!);
+                this.initiatePreviewArea(parentControl.ownerDocument!.getElementById("preview-canvas") as HTMLCanvasElement);
+            }
+        }
+    }
+
+    createPopupWindow = (title: string, windowVariableName: string, width = 500, height = 500): Window | null => {
+        const windowCreationOptionsList = {
+            width: width,
+            height: height,
+            top: (window.innerHeight - width) / 2 + window.screenY,
+            left: (window.innerWidth - height) / 2 + window.screenX
+        };
+
+        var windowCreationOptions = Object.keys(windowCreationOptionsList)
+            .map(
+                (key) => key + '=' + (windowCreationOptionsList as any)[key]
+            )
+            .join(',');
+
+        const popupWindow = window.open("", title, windowCreationOptions);
+        if (!popupWindow) {
+            return null;
+        }
+
+        const parentDocument = popupWindow.document;
+
+        parentDocument.title = title;
+        parentDocument.body.style.width = "100%";
+        parentDocument.body.style.height = "100%";
+        parentDocument.body.style.margin = "0";
+        parentDocument.body.style.padding = "0";
+
+        let parentControl = parentDocument.createElement("div");
+        parentControl.style.width = "100%";
+        parentControl.style.height = "100%";
+        parentControl.style.margin = "0";
+        parentControl.style.padding = "0";
+        parentControl.style.display = "block";
+        parentControl.style.gridTemplateRows = "unset";
+        parentControl.id = 'node-editor-graph-root';
+        parentControl.className = 'right-panel';
+
+        popupWindow.document.body.appendChild(parentControl);
+
+        this.copyStyles(window.document, parentDocument);
+
+        (this as any)[windowVariableName] = popupWindow;
+
+        this._popUpWindow = popupWindow;
+
+        return popupWindow;
+    }
+
+    copyStyles = (sourceDoc: HTMLDocument, targetDoc: HTMLDocument) => {
+        const styleContainer = [];
+        for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
+            var styleSheet: any = sourceDoc.styleSheets[index];
+            try {
+                if (styleSheet.href) { // for <link> elements loading CSS from a URL
+                    const newLinkEl = sourceDoc.createElement('link');
+
+                    newLinkEl.rel = 'stylesheet';
+                    newLinkEl.href = styleSheet.href;
+                    targetDoc.head!.appendChild(newLinkEl);
+                    styleContainer.push(newLinkEl);
+                }
+                else if (styleSheet.cssRules) { // for <style> elements
+                    const newStyleEl = sourceDoc.createElement('style');
+
+                    for (var cssRule of styleSheet.cssRules) {
+                        if (cssRule.selectorText !== '.right-panel #preview-config-bar .button') { // skip css grid layout rules
+                            newStyleEl.appendChild(sourceDoc.createTextNode(cssRule.cssText));
+                        }
+                    }
+
+                    targetDoc.head!.appendChild(newStyleEl);
+                    styleContainer.push(newStyleEl);
+                } 
+            } catch (e) {
+                console.log(e);
+            }
+        }
+    }
+
+    createPreviewMeshControlHost = (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => {
+        // Prepare the preview control host
+        if (parentControl) {
+            const host = parentControl.ownerDocument!.createElement("div");
+
+            host.id = "PreviewMeshControl-host";
+            host.style.width = options.embedHostWidth || "auto";
+            host.style.display = "block";
+            host.style.height = "30px";
+
+            parentControl.appendChild(host);
+            const PreviewMeshControlComponentHost = React.createElement(PreviewMeshControlComponent, {
+                globalState: this.props.globalState,
+                togglePreviewAreaComponent: this.handlePopUp
+            });
+            ReactDOM.render(PreviewMeshControlComponentHost, host);
+        }
+    }
+
+    createPreviewHost = (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => {
+        // Prepare the preview host
+        if (parentControl) {
+            const host = parentControl.ownerDocument!.createElement("div");
+
+            host.id = "PreviewAreaComponent-host";
+            host.style.width = options.embedHostWidth || "auto";
+            host.style.display = "block";
+
+            parentControl.appendChild(host);
+
+            this._previewHost = host;
+
+            if (!options.overlay) {
+                this._previewHost.style.position = "relative";
+            }
+        }
+
+        if (this._previewHost) {
+            const PreviewAreaComponentHost = React.createElement(PreviewAreaComponent, {
+                globalState: this.props.globalState,
+                width: 200
+            });
+            ReactDOM.render(PreviewAreaComponentHost, this._previewHost);
+        }
+    }
+
+    fixPopUpStyles = (document: Document) => {
+        const previewContainer = document.getElementById("preview");
+        if (previewContainer) {
+            previewContainer.style.height = "calc(100% - 60px)";
+        }
+        const newWindowButton = document.getElementById('preview-new-window');
+        if (newWindowButton) {
+            newWindowButton.style.display = 'none';
+        }
+    }
+
     render() {
         return (
             <Portal globalState={this.props.globalState}>
@@ -556,8 +773,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps> {
                     {/* Property tab */}
                     <div className="right-panel">
                         <PropertyTabComponent globalState={this.props.globalState} />
-                        <PreviewMeshControlComponent globalState={this.props.globalState} />
-                        <PreviewAreaComponent globalState={this.props.globalState} width={this._rightWidth}/>
+                        {!this.state.showPreviewPopUp ? <PreviewMeshControlComponent globalState={this.props.globalState} togglePreviewAreaComponent={this.handlePopUp} /> : null }
+                        {!this.state.showPreviewPopUp ? <PreviewAreaComponent globalState={this.props.globalState} width={this._rightWidth} /> : null}
                     </div>
 
                     <LogComponent globalState={this.props.globalState} />
