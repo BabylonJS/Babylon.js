@@ -27,10 +27,15 @@ export class WebXRHTCViveMotionController extends WebXRAbstractMotionController 
 
     private _modelRootNode: AbstractMesh;
 
+    /**
+     * Create a new Vive motion controller object
+     * @param scene the scene to use to create this controller
+     * @param gamepadObject the corresponding gamepad object
+     * @param handness the handness of the controller
+     */
     constructor(scene: Scene,
         gamepadObject: IMinimalMotionControllerObject,
-        handness: MotionControllerHandness/*,
-        private _legacyMapping: boolean = false*/) {
+        handness: MotionControllerHandness) {
         super(scene, HTCViveLayout[handness], gamepadObject, handness);
     }
 
