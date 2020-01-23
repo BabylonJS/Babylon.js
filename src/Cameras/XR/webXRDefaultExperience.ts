@@ -42,6 +42,13 @@ export class WebXRDefaultExperienceOptions {
      * Should teleportation not initialize. defaults to false.
      */
     public disableTeleportation?: boolean;
+
+    /**
+     * If set to true, the first frame will not be used to reset position
+     * The first frame is mainly used when copying transformation from the old camera
+     * Mainly used in AR
+     */
+    public ignoreNativeCameraTransformation?: boolean;
 }
 
 /**
@@ -85,6 +92,10 @@ export class WebXRDefaultExperience {
         // Create base experience
         return WebXRExperienceHelper.CreateAsync(scene).then((xrHelper) => {
             result.baseExperience = xrHelper;
+
+            if (options.ignoreNativeCameraTransformation) {
+                result.baseExperience.camera.compensateOnFirstFrame = false;
+            }
 
             // Add controller support
             result.input = new WebXRInput(xrHelper.sessionManager, xrHelper.camera, options.inputOptions);

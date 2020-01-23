@@ -18,6 +18,8 @@ export interface IWebXRPlaneDetectorOptions {
 /**
  * A babylon interface for a webxr plane.
  * A Plane is actually a polygon, built from N points in space
+ *
+ * Supported in chrome 79, not supported in canary 81 ATM
  */
 export interface IWebXRPlane {
     /**
@@ -84,13 +86,23 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
     constructor(_xrSessionManager: WebXRSessionManager, private _options: IWebXRPlaneDetectorOptions = {}) {
         super(_xrSessionManager);
         if (this._xrSessionManager.session) {
-            this._xrSessionManager.session.updateWorldTrackingState({ planeDetectionState: { enabled: true } });
-            this._enabled = true;
+            this._init();
         } else {
             this._xrSessionManager.onXRSessionInit.addOnce(() => {
-                this._xrSessionManager.session.updateWorldTrackingState({ planeDetectionState: { enabled: true } });
-                this._enabled = true;
+                this._init();
             });
+        }
+    }
+
+    private _init() {
+        if (!this._xrSessionManager.session.updateWorldTrackingState) {
+            // fail silently
+            return;
+        }
+        this._xrSessionManager.session.updateWorldTrackingState({ planeDetectionState: { enabled: true } });
+        this._enabled = true;
+        if (this._detectedPlanes.length) {
+            this._detectedPlanes = [];
         }
     }
 

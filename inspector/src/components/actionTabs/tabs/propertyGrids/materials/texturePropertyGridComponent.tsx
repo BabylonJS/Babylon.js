@@ -172,6 +172,10 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <TextLineComponent label="Is 2D array" value={texture.is2DArray ? "Yes" : "No"} />
                     <TextLineComponent label="Is cube" value={texture.isCube ? "Yes" : "No"} />
                     <TextLineComponent label="Is render target" value={texture.isRenderTarget ? "Yes" : "No"} />
+                    {
+                        (texture instanceof Texture) && 
+                        <TextLineComponent label="Stored as inverted on Y" value={texture.invertY ? "Yes" : "No"} />
+                    }
                     <TextLineComponent label="Has mipmaps" value={!texture.noMipmap ? "Yes" : "No"} />
                     <SliderLineComponent label="UV set" target={texture} propertyName="coordinatesIndex" minimum={0} maximum={3} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} decimalCount={0} />
                     <OptionsLineComponent label="Mode" options={coordinatesMode} target={texture} propertyName="coordinatesMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => texture.updateSamplingMode(value)} />
