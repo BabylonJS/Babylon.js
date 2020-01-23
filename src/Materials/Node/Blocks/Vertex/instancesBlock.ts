@@ -28,6 +28,7 @@ export class InstancesBlock extends NodeMaterialBlock {
         this.registerInput("world", NodeMaterialBlockConnectionPointTypes.Matrix, true);
 
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Matrix);
+        this.registerOutput("instanceID", NodeMaterialBlockConnectionPointTypes.Float);
     }
 
     /**
@@ -78,6 +79,13 @@ export class InstancesBlock extends NodeMaterialBlock {
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];
+    }
+
+    /**
+     * Gets the isntanceID component
+     */
+    public get instanceID(): NodeMaterialConnectionPoint {
+        return this._outputs[1];
     }
 
     public autoConfigure(material: NodeMaterial) {
@@ -150,6 +158,7 @@ export class InstancesBlock extends NodeMaterialBlock {
 
         // Emit code
         let output = this._outputs[0];
+        let instanceID = this._outputs[1];
         let world0 = this.world0;
         let world1 = this.world1;
         let world2 = this.world2;
@@ -157,8 +166,10 @@ export class InstancesBlock extends NodeMaterialBlock {
 
         state.compilationString += `#ifdef INSTANCES\r\n`;
         state.compilationString += this._declareOutput(output, state) + ` = mat4(${world0.associatedVariableName}, ${world1.associatedVariableName}, ${world2.associatedVariableName}, ${world3.associatedVariableName});\r\n`;
+        state.compilationString += this._declareOutput(instanceID, state) + ` = float(gl_InstanceID);\r\n`;
         state.compilationString += `#else\r\n`;
         state.compilationString += this._declareOutput(output, state) + ` = ${this.world.associatedVariableName};\r\n`;
+        state.compilationString += this._declareOutput(instanceID, state) + ` = 0.0;\r\n`;
         state.compilationString += `#endif\r\n`;
         return this;
     }
