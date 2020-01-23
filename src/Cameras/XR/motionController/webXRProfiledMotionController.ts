@@ -2,7 +2,6 @@ import { AbstractMesh } from '../../../Meshes/abstractMesh';
 import { WebXRAbstractMotionController, IMotionControllerProfile, IMotionControllerMeshMap } from './webXRAbstractController';
 import { Scene } from '../../../scene';
 import { SceneLoader } from '../../../Loading/sceneLoader';
-import { WebXRMotionControllerManager } from './webXRMotionControllerManager';
 import { Mesh } from '../../../Meshes/mesh';
 import { Axis, Space } from '../../../Maths/math.axis';
 
@@ -17,7 +16,7 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
             }
         }
     } = {};
-    constructor(scene: Scene, xrInput: XRInputSource, _profile: IMotionControllerProfile) {
+    constructor(scene: Scene, xrInput: XRInputSource, _profile: IMotionControllerProfile, private _repositoryUrl: string) {
         super(scene, _profile.layouts[xrInput.handedness || "none"], xrInput.gamepad as any, xrInput.handedness);
         this.profileId = _profile.profileId;
     }
@@ -25,7 +24,7 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
     protected _getFilenameAndPath(): { filename: string; path: string; } {
         return {
             filename: this.layout.assetPath,
-            path: `${WebXRMotionControllerManager.BaseRepositoryUrl}/profiles/${this.profileId}/`
+            path: `${this._repositoryUrl}/profiles/${this.profileId}/`
         };
     }
     protected _processLoadedModel(meshes: AbstractMesh[]): void {
