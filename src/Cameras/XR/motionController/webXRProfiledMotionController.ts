@@ -108,12 +108,12 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
         });
 
         console.log(min, max, { x: max.x + min.x, y: max.y + min.y, z: max.z + min.z });*/
-        const center = Mesh.Center(this.rootMesh.getChildMeshes());
-        this.rootMesh.position.subtractInPlace(center.scaleInPlace(2));
-        this.rootMesh.position.z *= -1;
+        // const center = Mesh.Center(this.rootMesh.getChildMeshes());
+        // this.rootMesh.position.subtractInPlace(center.scaleInPlace(2));
+        // this.rootMesh.position.z *= -1;
 
         this.rootMesh.rotate(Axis.Y, Math.PI, Space.WORLD);
-        this.rootMesh.rotate(Axis.X, -Math.PI / 4, Space.WORLD);
+        // this.rootMesh.rotate(Axis.X, -Math.PI / 4, Space.WORLD);
     }
     protected _updateModel(_xrFrame: XRFrame): void {
         if (this.disableAnimation) {
