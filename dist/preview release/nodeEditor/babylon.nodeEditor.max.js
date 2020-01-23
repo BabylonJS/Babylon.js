@@ -52727,6 +52727,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _diagram_graphFrame__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../diagram/graphFrame */ "./diagram/graphFrame.ts");
 /* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
 /* harmony import */ var _diagram_properties_framePropertyComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../diagram/properties/framePropertyComponent */ "./diagram/properties/framePropertyComponent.tsx");
+/* harmony import */ var _sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../sharedComponents/color3LineComponent */ "./sharedComponents/color3LineComponent.tsx");
+/* harmony import */ var _sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../../sharedComponents/floatLineComponent */ "./sharedComponents/floatLineComponent.tsx");
+/* harmony import */ var _sharedComponents_color4LineComponent__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../../sharedComponents/color4LineComponent */ "./sharedComponents/color4LineComponent.tsx");
+/* harmony import */ var _sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../../sharedComponents/vector2LineComponent */ "./sharedComponents/vector2LineComponent.tsx");
+/* harmony import */ var _sharedComponents_vector3LineComponent__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ../../sharedComponents/vector3LineComponent */ "./sharedComponents/vector3LineComponent.tsx");
+/* harmony import */ var _sharedComponents_vector4LineComponent__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ../../sharedComponents/vector4LineComponent */ "./sharedComponents/vector4LineComponent.tsx");
+
+
+
+
+
+
+
 
 
 
@@ -52764,6 +52777,37 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 _this.setState({ currentNode: null, currentFrame: null });
             }
         });
+    };
+    PropertyTabComponent.prototype.processInputBlockUpdate = function (ib) {
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        if (ib.isConstant) {
+            this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+        }
+    };
+    PropertyTabComponent.prototype.renderInputBlock = function (block) {
+        var _this = this;
+        switch (block.type) {
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Float:
+                var cantDisplaySlider = (isNaN(block.min) || isNaN(block.max) || block.min === block.max);
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: block.name },
+                    block.isBoolean &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { key: block.name, label: block.name, target: block, propertyName: "value", onValueChanged: function () { return _this.processInputBlockUpdate(block); } }),
+                    !block.isBoolean && cantDisplaySlider &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_floatLineComponent__WEBPACK_IMPORTED_MODULE_16__["FloatLineComponent"], { key: block.name, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }),
+                    !block.isBoolean && !cantDisplaySlider &&
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_sliderLineComponent__WEBPACK_IMPORTED_MODULE_11__["SliderLineComponent"], { key: block.name, label: block.name, target: block, propertyName: "value", step: (block.max - block.min) / 100.0, minimum: block.min, maximum: block.max, onChange: function () { return _this.processInputBlockUpdate(block); } })));
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Color3:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_15__["Color3LineComponent"], { globalState: this.props.globalState, key: block.name, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Color4:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color4LineComponent__WEBPACK_IMPORTED_MODULE_17__["Color4LineComponent"], { globalState: this.props.globalState, key: block.name, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Vector2:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector2LineComponent__WEBPACK_IMPORTED_MODULE_18__["Vector2LineComponent"], { globalState: this.props.globalState, key: block.name, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Vector3:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector3LineComponent__WEBPACK_IMPORTED_MODULE_19__["Vector3LineComponent"], { globalState: this.props.globalState, key: block.name, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
+            case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Vector4:
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_vector4LineComponent__WEBPACK_IMPORTED_MODULE_20__["Vector4LineComponent"], { globalState: this.props.globalState, key: block.name, label: block.name, target: block, propertyName: "value", onChange: function () { return _this.processInputBlockUpdate(block); } }));
+        }
+        return null;
     };
     PropertyTabComponent.prototype.load = function (file) {
         var _this = this;
@@ -52844,7 +52888,13 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                         } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Export shaders", onClick: function () {
                             _stringTools__WEBPACK_IMPORTED_MODULE_4__["StringTools"].DownloadAsFile(_this.props.globalState.hostDocument, _this.props.globalState.nodeMaterial.compiledShaders, "shaders.txt");
-                        } })))));
+                        } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "INPUTS" }, this.props.globalState.nodeMaterial.getInputBlocks().map(function (ib) {
+                    if (!ib.isUniform) {
+                        return null;
+                    }
+                    return _this.renderInputBlock(ib);
+                })))));
     };
     return PropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
