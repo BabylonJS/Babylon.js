@@ -316,112 +316,114 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         };
         const controllerData = this._controllers[xrController.uniqueId];
         // motion controller support
-        if (xrController.motionController) {
-            const movementController = xrController.motionController.getComponent(WebXRControllerComponent.THUMBSTICK) || xrController.motionController.getComponent(WebXRControllerComponent.TOUCHPAD);
-            if (!movementController || this._options.useMainComponentOnly) {
-                // use trigger to move on long press
-                const mainComponent = xrController.motionController.getMainComponent();
-                if (!mainComponent) {
-                    return;
-                }
-                controllerData.onButtonChangedObserver = mainComponent.onButtonStateChanged.add(() => {
-                    // did "pressed" changed?
-                    if (mainComponent.changes.pressed) {
-                        if (mainComponent.changes.pressed.current) {
-                            // simulate "forward" thumbstick push
+        xrController.onMotionControllerProfileLoaded.addOnce(() => {
+            if (xrController.motionController) {
+                const movementController = xrController.motionController.getComponent(WebXRControllerComponent.THUMBSTICK) || xrController.motionController.getComponent(WebXRControllerComponent.TOUCHPAD);
+                if (!movementController || this._options.useMainComponentOnly) {
+                    // use trigger to move on long press
+                    const mainComponent = xrController.motionController.getMainComponent();
+                    if (!mainComponent) {
+                        return;
+                    }
+                    controllerData.onButtonChangedObserver = mainComponent.onButtonStateChanged.add(() => {
+                        // did "pressed" changed?
+                        if (mainComponent.changes.pressed) {
+                            if (mainComponent.changes.pressed.current) {
+                                // simulate "forward" thumbstick push
+                                controllerData.teleportationState.forward = true;
+                                this._currentTeleportationControllerId = controllerData.xrController.uniqueId;
+                                controllerData.teleportationState.baseRotation = this._options.xrInput.xrCamera.rotationQuaternion.toEulerAngles().y;
+                                controllerData.teleportationState.currentRotation = 0;
+                                const timeToSelect = this._options.timeToTeleport || 3000;
+                                let timer = 0;
+                                const observer = this._xrSessionManager.onXRFrameObservable.add(() => {
+                                    if (!mainComponent.pressed) {
+                                        this._xrSessionManager.onXRFrameObservable.remove(observer);
+                                        return;
+                                    }
+                                    timer += this._xrSessionManager.scene.getEngine().getDeltaTime();
+                                    if (timer >= timeToSelect && this._currentTeleportationControllerId === controllerData.xrController.uniqueId && controllerData.teleportationState.forward) {
+                                        this._teleportForward(xrController.uniqueId);
+                                    }
+
+                                    // failsafe
+                                    if (timer >= timeToSelect) {
+                                        this._xrSessionManager.onXRFrameObservable.remove(observer);
+                                    }
+                                });
+                            } else {
+                                controllerData.teleportationState.forward = false;
+                                this._currentTeleportationControllerId = "";
+                            }
+                        }
+                    });
+                } else {
+                    controllerData.onButtonChangedObserver = movementController.onButtonStateChanged.add(() => {
+                        if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId && controllerData.teleportationState.forward && !movementController.touched) {
+                            this._teleportForward(xrController.uniqueId);
+                        }
+                    });
+                    // use thumbstick (or touchpad if thumbstick not available)
+                    controllerData.onAxisChangedObserver = movementController.onAxisValueChanged.add((axesData) => {
+                        if (axesData.y <= 0.7 && controllerData.teleportationState.backwards) {
+                            //if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId) {
+                            controllerData.teleportationState.backwards = false;
+                            //this._currentTeleportationControllerId = "";
+                            //}
+                        }
+                        if (axesData.y > 0.7 && !controllerData.teleportationState.forward) {
+                            // teleport backwards
+                            if (!controllerData.teleportationState.backwards) {
+                                controllerData.teleportationState.backwards = true;
+                                // teleport backwards ONCE
+                                this._tmpVector.set(0, 0, -this.backwardsTeleportationDistance!);
+                                this._tmpVector.addInPlace(this._options.xrInput.xrCamera.position);
+                                this._tmpRay.origin.copyFrom(this._tmpVector);
+                                this._tmpRay.direction.set(0, -1, 0);
+                                let pick = this._xrSessionManager.scene.pickWithRay(this._tmpRay, (o) => {
+                                    return this._floorMeshes.indexOf(o) !== -1;
+                                });
+
+                                // pick must exist, but stay safe
+                                if (pick && pick.pickedPoint) {
+                                    // Teleport the users feet to where they targeted
+                                    this._options.xrInput.xrCamera.position.addInPlace(pick.pickedPoint);
+                                }
+
+                            }
+                        }
+                        if (axesData.y < -0.7 && !this._currentTeleportationControllerId && !controllerData.teleportationState.rotating) {
                             controllerData.teleportationState.forward = true;
                             this._currentTeleportationControllerId = controllerData.xrController.uniqueId;
                             controllerData.teleportationState.baseRotation = this._options.xrInput.xrCamera.rotationQuaternion.toEulerAngles().y;
-                            controllerData.teleportationState.currentRotation = 0;
-                            const timeToSelect = this._options.timeToTeleport || 3000;
-                            let timer = 0;
-                            const observer = this._xrSessionManager.onXRFrameObservable.add(() => {
-                                if (!mainComponent.pressed) {
-                                    this._xrSessionManager.onXRFrameObservable.remove(observer);
-                                    return;
-                                }
-                                timer += this._xrSessionManager.scene.getEngine().getDeltaTime();
-                                if (timer >= timeToSelect && this._currentTeleportationControllerId === controllerData.xrController.uniqueId && controllerData.teleportationState.forward) {
-                                    this._teleportForward(xrController.uniqueId);
-                                }
-
-                                // failsafe
-                                if (timer >= timeToSelect) {
-                                    this._xrSessionManager.onXRFrameObservable.remove(observer);
-                                }
-                            });
-                        } else {
-                            controllerData.teleportationState.forward = false;
-                            this._currentTeleportationControllerId = "";
                         }
-                    }
-                });
-            } else {
-                controllerData.onButtonChangedObserver = movementController.onButtonStateChanged.add(() => {
-                    if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId && controllerData.teleportationState.forward && !movementController.touched) {
-                        this._teleportForward(xrController.uniqueId);
-                    }
-                });
-                // use thumbstick (or touchpad if thumbstick not available)
-                controllerData.onAxisChangedObserver = movementController.onAxisValueChanged.add((axesData) => {
-                    if (axesData.y <= 0.7 && controllerData.teleportationState.backwards) {
-                        //if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId) {
-                        controllerData.teleportationState.backwards = false;
-                        //this._currentTeleportationControllerId = "";
-                        //}
-                    }
-                    if (axesData.y > 0.7 && !controllerData.teleportationState.forward) {
-                        // teleport backwards
-                        if (!controllerData.teleportationState.backwards) {
-                            controllerData.teleportationState.backwards = true;
-                            // teleport backwards ONCE
-                            this._tmpVector.set(0, 0, -this.backwardsTeleportationDistance!);
-                            this._tmpVector.addInPlace(this._options.xrInput.xrCamera.position);
-                            this._tmpRay.origin.copyFrom(this._tmpVector);
-                            this._tmpRay.direction.set(0, -1, 0);
-                            let pick = this._xrSessionManager.scene.pickWithRay(this._tmpRay, (o) => {
-                                return this._floorMeshes.indexOf(o) !== -1;
-                            });
-
-                            // pick must exist, but stay safe
-                            if (pick && pick.pickedPoint) {
-                                // Teleport the users feet to where they targeted
-                                this._options.xrInput.xrCamera.position.addInPlace(pick.pickedPoint);
-                            }
-
-                        }
-                    }
-                    if (axesData.y < -0.7 && !this._currentTeleportationControllerId && !controllerData.teleportationState.rotating) {
-                        controllerData.teleportationState.forward = true;
-                        this._currentTeleportationControllerId = controllerData.xrController.uniqueId;
-                        controllerData.teleportationState.baseRotation = this._options.xrInput.xrCamera.rotationQuaternion.toEulerAngles().y;
-                    }
-                    if (axesData.x) {
-                        if (!controllerData.teleportationState.forward) {
-                            if (!controllerData.teleportationState.rotating && Math.abs(axesData.x) > 0.7) {
-                                // rotate in the right direction positive is right
-                                controllerData.teleportationState.rotating = true;
-                                const rotation = this.rotationAngle * (axesData.x > 0 ? 1 : -1);
-                                this._options.xrInput.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, rotation, 0));
+                        if (axesData.x) {
+                            if (!controllerData.teleportationState.forward) {
+                                if (!controllerData.teleportationState.rotating && Math.abs(axesData.x) > 0.7) {
+                                    // rotate in the right direction positive is right
+                                    controllerData.teleportationState.rotating = true;
+                                    const rotation = this.rotationAngle * (axesData.x > 0 ? 1 : -1);
+                                    this._options.xrInput.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, rotation, 0));
+                                }
+                            } else {
+                                if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId) {
+                                    // set the rotation of the forward movement
+                                    if (this.rotationEnabled) {
+                                        setTimeout(() => {
+                                            controllerData.teleportationState.currentRotation = Math.atan2(axesData.x, -axesData.y);
+                                        });
+                                    } else {
+                                        controllerData.teleportationState.currentRotation = 0;
+                                    }
+                                }
                             }
                         } else {
-                            if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId) {
-                                // set the rotation of the forward movement
-                                if (this.rotationEnabled) {
-                                    setTimeout(() => {
-                                        controllerData.teleportationState.currentRotation = Math.atan2(axesData.x, -axesData.y);
-                                    });
-                                } else {
-                                    controllerData.teleportationState.currentRotation = 0;
-                                }
-                            }
+                            controllerData.teleportationState.rotating = false;
                         }
-                    } else {
-                        controllerData.teleportationState.rotating = false;
-                    }
-                });
+                    });
+                }
             }
-        }
+        });
     }
 
     private _teleportForward(controllerId: string) {
