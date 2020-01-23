@@ -350,7 +350,8 @@ export class Tools {
     /**
      * Loads a file from a url
      * @param url the file url to load
-     * @returns a promise containing an ArrayBuffer corrisponding to the loaded file
+     * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+     * @returns a promise containing an ArrayBuffer corresponding to the loaded file
      */
     public static LoadFileAsync(url: string, useArrayBuffer: boolean = true): Promise<ArrayBuffer | string> {
         return new Promise((resolve, reject) => {

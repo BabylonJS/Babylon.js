@@ -20,8 +20,17 @@ export type MotionControllerConstructor = (xrInput: XRInputSource, scene: Scene)
  * When using a model try to stay as generic as possible. Eventually there will be no need in any of the controller classes
  */
 export class WebXRMotionControllerManager {
+    /**
+     * The base URL of the online controller repository. Can be changed at any time.
+     */
     public static BaseRepositoryUrl = "https://immersive-web.github.io/webxr-input-profiles/packages/viewer/dist";
+    /**
+     * Use the online repository, or use only locally-defined controllers
+     */
     public static UseOnlineRepository: boolean = true;
+    /**
+     * Which repository gets priority - local or online
+     */
     public static PrioritizeOnlineRepository: boolean = true;
     private static _AvailableControllers: { [type: string]: MotionControllerConstructor } = {};
     private static _Fallbacks: { [profileId: string]: string[] } = {};
@@ -165,6 +174,7 @@ export class WebXRMotionControllerManager {
 
     /**
      * Will update the list of profiles available in the repository
+     * @return a promise that resolves to a map of profiles available online
      */
     public static UpdateProfilesList() {
         this._ProfilesList = Tools.LoadFileAsync(this.BaseRepositoryUrl + '/profiles/profilesList.json', false).then((data) => {

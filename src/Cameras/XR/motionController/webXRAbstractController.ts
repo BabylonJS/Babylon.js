@@ -18,6 +18,9 @@ export type MotionControllerHandness = "none" | "left" | "right";
  */
 export type MotionControllerComponentType = "trigger" | "squeeze" | "touchpad" | "thumbstick" | "button";
 
+/**
+ * The state of a controller component
+ */
 export type MotionControllerComponentStateType = "default" | "touched" | "pressed";
 
 /**
@@ -42,27 +45,75 @@ export interface IMotionControllerLayout {
              * The type of input the component outputs
              */
             type: MotionControllerComponentType;
+            /**
+             * The indices of this component in the gamepad object
+             */
             gamepadIndices: {
+                /**
+                 * Index of button
+                 */
                 button?: number;
+                /**
+                 * If available, index of x-axis
+                 */
                 xAxis?: number;
+                /**
+                 * If available, index of y-axis
+                 */
                 yAxis?: number;
             };
+            /**
+             * The mesh's root node name
+             */
             rootNodeName: string;
+            /**
+             * Animation definitions for this model
+             */
             visualResponses: {
-                [state: string]: {
+                [stateKey: string]: {
+                    /**
+                     * What property will be animated
+                     */
                     componentProperty: "xAxis" | "yAxis" | "button" | "state";
+                    /**
+                     * What states influence this visual reponse
+                     */
                     states: MotionControllerComponentStateType[];
+                    /**
+                     * Type of animation - movement or visibility
+                     */
                     valueNodeProperty: "transform" | "visibility";
+                    /**
+                     * Base node name to move. Its position will be calculated according to the min and max nodes
+                     */
                     valueNodeName?: string;
+                    /**
+                     * Minimum movement node
+                     */
                     minNodeName?: string;
+                    /**
+                     * Max movement node
+                     */
                     maxNodeName?: string;
                 }
             }
+            /**
+             * If touch enabled, what is the name of node to display user feedback
+             */
             touchPointNodeName?: string;
         }
     };
+    /**
+     * Is it xr standard mapping or not
+     */
     gamepadMapping: "" | "xr-standard";
+    /**
+     * Base root node of this entire model
+     */
     rootNodeName: string;
+    /**
+     * Path to load the assets. Usually relative to the base path
+     */
     assetPath: string;
 }
 

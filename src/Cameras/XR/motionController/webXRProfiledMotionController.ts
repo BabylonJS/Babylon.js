@@ -5,7 +5,14 @@ import { SceneLoader } from '../../../Loading/sceneLoader';
 import { Mesh } from '../../../Meshes/mesh';
 import { Axis, Space } from '../../../Maths/math.axis';
 
+/**
+ * A profiled motion controller has its profile loaded from an online repository.
+ * The class is responsible of loading the model, mapping the keys and enabling model-animations
+ */
 export class WebXRProfiledMotionController extends WebXRAbstractMotionController {
+    /**
+     * The profile ID of this controller. Will be populated when the controller initializes.
+     */
     public profileId: string;
 
     private _buttonMeshMapping: {
@@ -70,49 +77,8 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
         if (rootMesh) {
             rootMesh.setParent(this.rootMesh);
         }
-        /*let min = {
-            x: 0,
-            y: 0,
-            z: 0
-        };
-        let max = {
-            x: 0,
-            y: 0,
-            z: 0
-        };
-        this.rootMesh.getChildMeshes().forEach((mesh) => {
-            var bi = mesh.getBoundingInfo();
-            var minimum = bi.boundingBox.minimumWorld;
-            var maximum = bi.boundingBox.maximumWorld;
-
-            if (minimum.x < min.x) {
-                min.x = minimum.x;
-            }
-            if (minimum.y < min.y) {
-                min.y = minimum.y;
-            }
-            if (minimum.z < min.z) {
-                min.z = minimum.z;
-            }
-
-            if (maximum.x > max.x) {
-                max.x = maximum.x;
-            }
-            if (maximum.y > max.y) {
-                max.y = maximum.y;
-            }
-            if (maximum.z > max.z) {
-                max.z = maximum.z;
-            }
-        });
-
-        console.log(min, max, { x: max.x + min.x, y: max.y + min.y, z: max.z + min.z });*/
-        // const center = Mesh.Center(this.rootMesh.getChildMeshes());
-        // this.rootMesh.position.subtractInPlace(center.scaleInPlace(2));
-        // this.rootMesh.position.z *= -1;
 
         this.rootMesh.rotate(Axis.Y, Math.PI, Space.WORLD);
-        // this.rootMesh.rotate(Axis.X, -Math.PI / 4, Space.WORLD);
     }
     protected _updateModel(_xrFrame: XRFrame): void {
         if (this.disableAnimation) {
