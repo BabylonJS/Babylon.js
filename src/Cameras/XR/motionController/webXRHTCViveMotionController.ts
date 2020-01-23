@@ -163,29 +163,6 @@ const HTCViveLayout: IMotionControllerLayoutMap = {
     }
 };
 
-// const HTCViveLegacyLayout: IMotionControllerLayoutMap = {
-//     "left-right-none": {
-//         "selectComponentId": "xr-standard-trigger",
-//         "components": {
-//             "xr-standard-trigger": { "type": "trigger" },
-//             "xr-standard-squeeze": { "type": "squeeze" },
-//             "xr-standard-touchpad": { "type": "touchpad" }
-//         },
-//         "gamepad": {
-//             "mapping": "",
-//             "buttons": [
-//                 "xr-standard-touchpad",
-//                 "xr-standard-trigger",
-//                 "xr-standard-squeeze"
-//             ],
-//             "axes": [
-//                 { "componentId": "xr-standard-touchpad", "axis": "x-axis" },
-//                 { "componentId": "xr-standard-touchpad", "axis": "y-axis" }
-//             ]
-//         }
-//     }
-// };
-
 /**
  * The motion controller class for the standard HTC-Vive controllers
  */
