@@ -45,7 +45,7 @@ export class WebXRHTCViveMotionController extends WebXRAbstractMotionController 
             if (comp) {
                 comp.onButtonStateChanged.add((component) => {
 
-                    if (!this.rootMesh) { return; }
+                    if (!this.rootMesh || this.disableAnimation) { return; }
 
                     switch (type) {
                         case "xr-standard-trigger":

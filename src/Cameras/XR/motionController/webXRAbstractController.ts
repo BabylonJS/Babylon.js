@@ -195,6 +195,9 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      */
     public rootMesh: Nullable<AbstractMesh>;
 
+    /**
+     * Disable the model's animation. Can be set at any time.
+     */
     public disableAnimation: boolean = false;
 
     private _modelReady: boolean = false;
