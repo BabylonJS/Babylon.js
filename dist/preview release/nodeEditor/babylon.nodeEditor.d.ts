@@ -1198,10 +1198,12 @@ declare module NODEEDITOR {
 declare module NODEEDITOR {
     interface IPreviewMeshControlComponent {
         globalState: GlobalState;
+        togglePreviewAreaComponent: () => void;
     }
     export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
         changeMeshType(newOne: PreviewMeshType): void;
         useCustomMesh(evt: any): void;
+        onPopUp(): void;
         render(): JSX.Element;
     }
 }
@@ -1225,7 +1227,17 @@ declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
-    export class GraphEditor extends React.Component<IGraphEditorProps> {
+    type State = {
+        showPreviewPopUp: boolean;
+    };
+    interface IInternalPreviewAreaOptions extends BABYLON.IInspectorOptions {
+        popup: boolean;
+        original: boolean;
+        explorerWidth?: string;
+        inspectorWidth?: string;
+        embedHostWidth?: string;
+    }
+    export class GraphEditor extends React.Component<IGraphEditorProps, State> {
         private readonly NodeWidth;
         private _graphCanvas;
         private _startX;
@@ -1239,6 +1251,13 @@ declare module NODEEDITOR {
         private _mouseLocationX;
         private _mouseLocationY;
         private _onWidgetKeyUpPointer;
+        private _previewHost;
+        private _popUpWindow;
+        readonly state: State;
+        /**
+         * Creates a node and recursivly creates its parent nodes from it's input
+         * @param nodeMaterialBlock
+         */
         createNodeFromObject(block: BABYLON.NodeMaterialBlock, recursion?: boolean): GraphNode;
         addValueNode(type: string): GraphNode;
         componentDidMount(): void;
@@ -1255,6 +1274,15 @@ declare module NODEEDITOR {
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
         buildColumnLayout(): string;
         emitNewBlock(event: React.DragEvent<HTMLDivElement>): void;
+        handlePopUp: () => void;
+        handleClosingPopUp: () => void;
+        initiatePreviewArea: (canvas?: HTMLCanvasElement) => void;
+        createPopUp: () => void;
+        createPopupWindow: (title: string, windowVariableName: string, width?: number, height?: number) => Window | null;
+        copyStyles: (sourceDoc: HTMLDocument, targetDoc: HTMLDocument) => void;
+        createPreviewMeshControlHost: (options: IInternalPreviewAreaOptions, parentControl: HTMLElement | null) => void;
+        createPreviewHost: (options: IInternalPreviewAreaOptions, parentControl: HTMLElement | null) => void;
+        fixPopUpStyles: (document: Document) => void;
         render(): JSX.Element;
     }
 }
