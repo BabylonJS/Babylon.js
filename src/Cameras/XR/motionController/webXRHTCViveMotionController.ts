@@ -10,6 +10,90 @@ import { Mesh } from '../../../Meshes/mesh';
 import { Quaternion } from '../../../Maths/math.vector';
 import { WebXRMotionControllerManager } from './webXRMotionControllerManager';
 
+/**
+ * The motion controller class for the standard HTC-Vive controllers
+ */
+export class WebXRHTCViveMotionController extends WebXRAbstractMotionController {
+    /**
+     * The base url used to load the left and right controller models
+     */
+    public static MODEL_BASE_URL: string = 'https://controllers.babylonjs.com/vive/';
+    /**
+     * File name for the controller model.
+     */
+    public static MODEL_FILENAME: string = 'wand.babylon';
+
+    public profileId = "htc-vive";
+
+    private _modelRootNode: AbstractMesh;
+
+    constructor(scene: Scene,
+        gamepadObject: IMinimalMotionControllerObject,
+        handness: MotionControllerHandness/*,
+        private _legacyMapping: boolean = false*/) {
+        super(scene, HTCViveLayout[handness], gamepadObject, handness);
+    }
+
+    protected _processLoadedModel(_meshes: AbstractMesh[]): void {
+        this.getComponentTypes().forEach((type) => {
+            const comp = type && this.getComponent(type);
+            if (comp) {
+                comp.onButtonStateChanged.add((component) => {
+
+                    if (!this.rootMesh) { return; }
+
+                    switch (type) {
+                        case "xr-standard-trigger":
+                            (<AbstractMesh>(this._modelRootNode.getChildren()[6])).rotation.x = -component.value * 0.15;
+                            return;
+                        case "xr-standard-touchpad":
+                            return;
+                        case "xr-standard-squeeze":
+                            return;
+                    }
+                }, undefined, true);
+            }
+        });
+    }
+
+    protected _getFilenameAndPath(): { filename: string; path: string; } {
+        let filename = WebXRHTCViveMotionController.MODEL_FILENAME;
+        let path = WebXRHTCViveMotionController.MODEL_BASE_URL;
+
+        return {
+            filename,
+            path
+        };
+    }
+
+    protected _updateModel(): void {
+        // no-op. model is updated using observables.
+    }
+
+    protected _getModelLoadingConstraints(): boolean {
+        return true;
+    }
+
+    protected _setRootMesh(meshes: AbstractMesh[]): void {
+        this.rootMesh = new Mesh(this.profileId + " " + this.handness, this.scene);
+
+        meshes.forEach((mesh) => { mesh.isPickable = false; });
+        this._modelRootNode = meshes[1];
+        this._modelRootNode.parent = this.rootMesh;
+        this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
+    }
+
+}
+
+// register the profile
+WebXRMotionControllerManager.RegisterController("htc-vive", (xrInput: XRInputSource, scene: Scene) => {
+    return new WebXRHTCViveMotionController(scene, <any>(xrInput.gamepad), xrInput.handedness);
+});
+
+// WebXRMotionControllerManager.RegisterController("htc-vive-legacy", (xrInput: XRInputSource, scene: Scene) => {
+//     return new WebXRHTCViveMotionController(scene, <any>(xrInput.gamepad), xrInput.handedness, true);
+// });
+
 const HTCViveLayout: IMotionControllerLayoutMap = {
     "left": {
         "selectComponentId": "xr-standard-trigger",
@@ -162,87 +246,3 @@ const HTCViveLayout: IMotionControllerLayoutMap = {
         "assetPath": "none.glb"
     }
 };
-
-/**
- * The motion controller class for the standard HTC-Vive controllers
- */
-export class WebXRHTCViveMotionController extends WebXRAbstractMotionController {
-    /**
-     * The base url used to load the left and right controller models
-     */
-    public static MODEL_BASE_URL: string = 'https://controllers.babylonjs.com/vive/';
-    /**
-     * File name for the controller model.
-     */
-    public static MODEL_FILENAME: string = 'wand.babylon';
-
-    public profileId = "htc-vive";
-
-    private _modelRootNode: AbstractMesh;
-
-    constructor(scene: Scene,
-        gamepadObject: IMinimalMotionControllerObject,
-        handness: MotionControllerHandness/*,
-        private _legacyMapping: boolean = false*/) {
-        super(scene, HTCViveLayout[handness], gamepadObject, handness);
-    }
-
-    protected _processLoadedModel(_meshes: AbstractMesh[]): void {
-        // this.layout.gamepad!.buttons.forEach((buttonName) => {
-        //     const comp = buttonName && this.getComponent(buttonName);
-        //     if (comp) {
-        //         comp.onButtonStateChanged.add((component) => {
-
-        //             if (!this.rootMesh) { return; }
-
-        //             switch (buttonName) {
-        //                 case "xr-standard-trigger":
-        //                     (<AbstractMesh>(this._modelRootNode.getChildren()[6])).rotation.x = -component.value * 0.15;
-        //                     return;
-        //                 case "xr-standard-touchpad":
-        //                     return;
-        //                 case "xr-standard-squeeze":
-        //                     return;
-        //             }
-        //         }, undefined, true);
-        //     }
-        // });
-    }
-
-    protected _getFilenameAndPath(): { filename: string; path: string; } {
-        let filename = WebXRHTCViveMotionController.MODEL_FILENAME;
-        let path = WebXRHTCViveMotionController.MODEL_BASE_URL;
-
-        return {
-            filename,
-            path
-        };
-    }
-
-    protected _updateModel(): void {
-        // no-op. model is updated using observables.
-    }
-
-    protected _getModelLoadingConstraints(): boolean {
-        return true;
-    }
-
-    protected _setRootMesh(meshes: AbstractMesh[]): void {
-        this.rootMesh = new Mesh(this.profileId + " " + this.handness, this.scene);
-
-        meshes.forEach((mesh) => { mesh.isPickable = false; });
-        this._modelRootNode = meshes[1];
-        this._modelRootNode.parent = this.rootMesh;
-        this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
-    }
-
-}
-
-// register the profile
-WebXRMotionControllerManager.RegisterController("htc-vive", (xrInput: XRInputSource, scene: Scene) => {
-    return new WebXRHTCViveMotionController(scene, <any>(xrInput.gamepad), xrInput.handedness);
-});
-
-// WebXRMotionControllerManager.RegisterController("htc-vive-legacy", (xrInput: XRInputSource, scene: Scene) => {
-//     return new WebXRHTCViveMotionController(scene, <any>(xrInput.gamepad), xrInput.handedness, true);
-// });
