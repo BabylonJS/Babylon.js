@@ -41,10 +41,11 @@ export class NodeEditor {
         }
         
         let globalState = new GlobalState();
-        globalState.nodeMaterial = options.nodeMaterial
+        globalState.nodeMaterial = options.nodeMaterial;
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;
         globalState.customSave = options.customSave;
+        globalState.hostWindow =  hostElement.ownerDocument!.defaultView!;
 
         const graphEditor = React.createElement(GraphEditor, {
             globalState: globalState
