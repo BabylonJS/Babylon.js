@@ -111,7 +111,10 @@ export class WebXRExperienceHelper implements IDisposable {
             optionalFeatures: (referenceSpaceType !== "viewer" && referenceSpaceType !== "local") ? [referenceSpaceType] : []
         };
         // make sure that the session mode is supported
-        return this.sessionManager.isSessionSupportedAsync(sessionMode).then(() => {
+        return this.sessionManager.isSessionSupportedAsync(sessionMode).then((supported) => {
+            if (!supported) {
+                throw new Error(`Session mode "${sessionMode}" not supported in browser`);
+            }
             return this.sessionManager.initializeSessionAsync(sessionMode, sessionCreationOptions);
         }).then(() => {
             return this.sessionManager.setReferenceSpaceTypeAsync(referenceSpaceType);
