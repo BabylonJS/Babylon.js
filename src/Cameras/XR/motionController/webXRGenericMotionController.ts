@@ -9,6 +9,55 @@ import { Scene } from '../../../scene';
 import { Mesh } from '../../../Meshes/mesh';
 import { Quaternion } from '../../../Maths/math.vector';
 
+/**
+ * A generic trigger-only motion controller for WebXR
+ */
+export class WebXRGenericTriggerMotionController extends WebXRAbstractMotionController {
+    /**
+     * Static version of the profile id of this controller
+     */
+    public static ProfileId = "generic-trigger";
+
+    public profileId = WebXRGenericTriggerMotionController.ProfileId;
+
+    constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness) {
+        super(scene, GenericTriggerLayout[handness], gamepadObject, handness);
+    }
+
+    protected _processLoadedModel(meshes: AbstractMesh[]): void {
+        // nothing to do
+    }
+
+    protected _updateModel(): void {
+        // no-op
+    }
+
+    protected _getFilenameAndPath(): { filename: string; path: string; } {
+        return {
+            filename: "generic.babylon",
+            path: "https://controllers.babylonjs.com/generic/"
+        };
+    }
+
+    protected _setRootMesh(meshes: AbstractMesh[]): void {
+        this.rootMesh = new Mesh(this.profileId + " " + this.handness, this.scene);
+
+        meshes.forEach((mesh) => {
+            mesh.isPickable = false;
+            if (!mesh.parent) {
+                mesh.setParent(this.rootMesh);
+            }
+        });
+
+        this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
+    }
+
+    protected _getModelLoadingConstraints(): boolean {
+        return true;
+    }
+
+}
+
 // https://github.com/immersive-web/webxr-input-profiles/blob/master/packages/registry/profiles/generic/generic-trigger-touchpad-thumbstick.json
 const GenericTriggerLayout: IMotionControllerLayoutMap = {
     "left": {
@@ -60,55 +109,3 @@ const GenericTriggerLayout: IMotionControllerLayoutMap = {
         "assetPath": "none.glb"
     }
 };
-
-// TODO support all generic models with xr-standard mapping at:
-// https://github.com/immersive-web/webxr-input-profiles/tree/master/packages/registry/profiles/generic
-
-/**
- * A generic trigger-only motion controller for WebXR
- */
-export class WebXRGenericTriggerMotionController extends WebXRAbstractMotionController {
-    /**
-     * Static version of the profile id of this controller
-     */
-    public static ProfileId = "generic-trigger";
-
-    public profileId = WebXRGenericTriggerMotionController.ProfileId;
-
-    constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness) {
-        super(scene, GenericTriggerLayout[handness], gamepadObject, handness);
-    }
-
-    protected _processLoadedModel(meshes: AbstractMesh[]): void {
-        // nothing to do
-    }
-
-    protected _updateModel(): void {
-        // no-op
-    }
-
-    protected _getFilenameAndPath(): { filename: string; path: string; } {
-        return {
-            filename: "generic.babylon",
-            path: "https://controllers.babylonjs.com/generic/"
-        };
-    }
-
-    protected _setRootMesh(meshes: AbstractMesh[]): void {
-        this.rootMesh = new Mesh(this.profileId + " " + this.handness, this.scene);
-
-        meshes.forEach((mesh) => {
-            mesh.isPickable = false;
-            if (!mesh.parent) {
-                mesh.setParent(this.rootMesh);
-            }
-        });
-
-        this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
-    }
-
-    protected _getModelLoadingConstraints(): boolean {
-        return true;
-    }
-
-}

@@ -47,10 +47,10 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
 
     protected _processLoadedModel(_meshes: AbstractMesh[]): void {
 
-        /*const isQuest = this._isQuest();
+        const isQuest = this._isQuest();
         const triggerDirection = this.handness === 'right' ? -1 : 1;
 
-        this.layout.gamepad!.buttons.forEach((buttonName) => {
+        this.getComponentTypes().forEach((buttonName) => {
             const comp = buttonName && this.getComponent(buttonName);
             if (comp) {
                 comp.onButtonStateChanged.add((component) => {
@@ -97,7 +97,7 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
                     }
                 }, undefined, true);
             }
-        });*/
+        });
     }
 
     protected _getFilenameAndPath(): { filename: string; path: string; } {
