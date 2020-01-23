@@ -12,6 +12,12 @@ import { Viewport } from '../../Maths/math.viewport';
  */
 export class WebXRCamera extends FreeCamera {
 
+    /**
+     * Should position compensation execute on first frame.
+     * This is used when copying the position from a native (non XR) camera
+     */
+    public compensateOnFirstFrame: boolean = true;
+
     private _firstFrame = false;
     private _referencedPosition: Vector3 = new Vector3();
     private _referenceQuaternion: Quaternion = Quaternion.Identity();
@@ -37,7 +43,7 @@ export class WebXRCamera extends FreeCamera {
             this._referencedPosition.copyFromFloats(0, 0, 0);
             this._referenceQuaternion.copyFromFloats(0, 0, 0, 1);
             // first frame - camera's y position should be 0 for the correct offset
-            this._firstFrame = true;
+            this._firstFrame = this.compensateOnFirstFrame;
 
         });
 

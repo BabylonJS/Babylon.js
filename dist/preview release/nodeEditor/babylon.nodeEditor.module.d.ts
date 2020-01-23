@@ -1379,6 +1379,7 @@ declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponen
     import { Nullable } from 'babylonjs/types';
     import { GraphNode } from "babylonjs-node-editor/diagram/graphNode";
     import { GraphFrame } from "babylonjs-node-editor/diagram/graphFrame";
+    import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
@@ -1388,6 +1389,8 @@ declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponen
     }> {
         constructor(props: IPropertyTabComponentProps);
         componentDidMount(): void;
+        processInputBlockUpdate(ib: InputBlock): void;
+        renderInputBlock(block: InputBlock): JSX.Element | null;
         load(file: File): void;
         save(): void;
         customSave(): void;
@@ -2735,6 +2738,8 @@ declare module NODEEDITOR {
     }> {
         constructor(props: IPropertyTabComponentProps);
         componentDidMount(): void;
+        processInputBlockUpdate(ib: BABYLON.InputBlock): void;
+        renderInputBlock(block: BABYLON.InputBlock): JSX.Element | null;
         load(file: File): void;
         save(): void;
         customSave(): void;

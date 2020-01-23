@@ -1140,6 +1140,8 @@ declare module NODEEDITOR {
     }> {
         constructor(props: IPropertyTabComponentProps);
         componentDidMount(): void;
+        processInputBlockUpdate(ib: BABYLON.InputBlock): void;
+        renderInputBlock(block: BABYLON.InputBlock): JSX.Element | null;
         load(file: File): void;
         save(): void;
         customSave(): void;
