@@ -61,6 +61,7 @@
 - Added `textures/opacity.png` file to the Playground ([Popov72](https://github.com/Popov72))
 - Refactored the shadow generators code ([Popov72](https://github.com/Popov72))
 - Added preview area pop up for NME ([Kyle Belfort](https://github.com/belfortk))
+- Supports clip planes with shadows ([sebavan](http://www.github.com/sebavan))
 
 ### Engine
 
