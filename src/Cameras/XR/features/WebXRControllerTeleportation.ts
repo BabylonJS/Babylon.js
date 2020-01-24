@@ -58,10 +58,6 @@ export interface IWebXRTeleportationOptions {
          */
         teleportationBorderColor?: string;
         /**
-         * Override the default material of the torus and arrow
-         */
-        torusArrowMaterial?: Material;
-        /**
          * Disable the mesh's animation sequence
          */
         disableAnimation?: boolean;
@@ -69,6 +65,10 @@ export interface IWebXRTeleportationOptions {
          * Disable lighting on the material or the ring and arrow
          */
         disableLighting?: boolean;
+        /**
+         * Override the default material of the torus and arrow
+         */
+        torusArrowMaterial?: Material;
     };
 
     /**
@@ -531,8 +531,11 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             const torusConeMaterial = new StandardMaterial("torusConsMat", scene);
             torusConeMaterial.disableLighting = !!this._options.defaultTargetMeshOptions.disableLighting;
             if (torusConeMaterial.disableLighting) {
-                torusConeMaterial.emissiveColor = Color3.Gray();
+                torusConeMaterial.emissiveColor = new Color3(0.3, 0.3, 1.0);
+            } else {
+                torusConeMaterial.diffuseColor = new Color3(0.3, 0.3, 1.0);
             }
+            torusConeMaterial.alpha = 0.9;
             torus.material = torusConeMaterial;
             cone.material = torusConeMaterial;
         }
