@@ -228,7 +228,7 @@ namespace Babylon
         m_env = &env;
         auto hostScopeGuard = gsl::finally([this] { m_env = nullptr; });
 
-        InitializeJavaScriptVariables(600, 400);
+        InitializeJavaScriptVariables(32, 32);
 
         // TODO: Handle device lost/restored.
 

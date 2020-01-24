@@ -1364,7 +1364,7 @@ namespace Babylon
         bgfx::FrameBufferHandle fbh = BGFX_INVALID_HANDLE;
         bgfx::requestScreenShot(fbh, "GetImageData");
 
-        while (BGFXCallback::screenShotBitmap.empty())
+        while (BgfxCallback::screenShotBitmap.empty())
         {
             bgfx::frame();
         }
@@ -1388,14 +1388,14 @@ namespace Babylon
             for (auto px = x; px < (x + width); px++)
             {
                 // bgfx screenshot is BGRA
-                *bitmap++ = BGFXCallback::screenShotBitmap[(py * sourceWidth + px) * 4 + 2];
-                *bitmap++ = BGFXCallback::screenShotBitmap[(py * sourceWidth + px) * 4 + 1];
-                *bitmap++ = BGFXCallback::screenShotBitmap[(py * sourceWidth + px) * 4 + 0];
-                *bitmap++ = BGFXCallback::screenShotBitmap[(py * sourceWidth + px) * 4 + 3];
+                *bitmap++ = BgfxCallback::screenShotBitmap[(py * sourceWidth + px) * 4 + 2];
+                *bitmap++ = BgfxCallback::screenShotBitmap[(py * sourceWidth + px) * 4 + 1];
+                *bitmap++ = BgfxCallback::screenShotBitmap[(py * sourceWidth + px) * 4 + 0];
+                *bitmap++ = BgfxCallback::screenShotBitmap[(py * sourceWidth + px) * 4 + 3];
             }
         }
 
-        BGFXCallback::screenShotBitmap.clear();
+        BgfxCallback::screenShotBitmap.clear();
 
         return Napi::External<ImageData>::New(info.Env(), imageData);
     }

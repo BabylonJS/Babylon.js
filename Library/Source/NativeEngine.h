@@ -3,7 +3,7 @@
 #include "NativeWindow.h"
 #include "ShaderCompiler.h"
 #include "RuntimeImpl.h"
-#include "BGFXCallback.h"
+#include "BgfxCallback.h"
 
 #include <napi/napi.h>
 
@@ -390,7 +390,7 @@ namespace Babylon
         bx::DefaultAllocator m_allocator;
         uint64_t m_engineState;
 
-        inline static BGFXCallback m_bgfxCallback{};
+        BgfxCallback m_bgfxCallback{};
         FrameBufferManager m_frameBufferManager{};
 
         NativeWindow::OnResizeCallbackTicket m_resizeCallbackTicket;
