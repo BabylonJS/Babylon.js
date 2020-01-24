@@ -76,10 +76,10 @@ declare module "../../Engines/thinEngine" {
             format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number): InternalTexture;
 
         /** @hidden */
-        _partialLoadFile(url: string, index: number, loadedFiles: (string | ArrayBuffer)[], onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>): void;
+        _partialLoadFile(url: string, index: number, loadedFiles: ArrayBuffer[], onfinish: (files: ArrayBuffer[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>): void;
 
         /** @hidden */
-        _cascadeLoadFiles(scene: Nullable<Scene>, onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>): void;
+        _cascadeLoadFiles(scene: Nullable<Scene>, onfinish: (images: ArrayBuffer[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>): void;
 
         /** @hidden */
         _cascadeLoadImgs(scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>, mimeType?: string): void;
@@ -130,9 +130,9 @@ ThinEngine.prototype._createDepthStencilCubeTexture = function(size: number, opt
     return internalTexture;
 };
 
-ThinEngine.prototype._partialLoadFile = function(url: string, index: number, loadedFiles: (string | ArrayBuffer)[],
-    onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null): void {
-    var onload = (data: string | ArrayBuffer) => {
+ThinEngine.prototype._partialLoadFile = function(url: string, index: number, loadedFiles: ArrayBuffer[],
+    onfinish: (files: ArrayBuffer[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null): void {
+    var onload = (data: ArrayBuffer) => {
         loadedFiles[index] = data;
         (<any>loadedFiles)._internalCount++;
 
@@ -147,11 +147,11 @@ ThinEngine.prototype._partialLoadFile = function(url: string, index: number, loa
         }
     };
 
-    this._loadFile(url, onload, undefined, undefined, true, onerror);
+    this._loadFile(url, onload as (data: string | ArrayBuffer) => void, undefined, undefined, true, onerror);
 };
 
-ThinEngine.prototype._cascadeLoadFiles = function(scene: Nullable<Scene>, onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null): void {
-    var loadedFiles: (string | ArrayBuffer)[] = [];
+ThinEngine.prototype._cascadeLoadFiles = function(scene: Nullable<Scene>, onfinish: (images: ArrayBuffer[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null): void {
+    var loadedFiles: ArrayBuffer[] = [];
     (<any>loadedFiles)._internalCount = 0;
 
     for (let index = 0; index < 6; index++) {
@@ -262,13 +262,13 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
     if (loader) {
         rootUrl = loader.transformUrl(rootUrl, filteredFormat);
 
-        const onloaddata = (data: any) => {
+        const onloaddata = (data: ArrayBufferView | ArrayBufferView[]) => {
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
             loader!.loadCubeData(data, texture, createPolynomials, onLoad, onError);
         };
         if (files && files.length === 6) {
             if (loader.supportCascades) {
-                this._cascadeLoadFiles(scene, onloaddata, files, onError);
+                this._cascadeLoadFiles(scene, (images) => onloaddata(images.map((image) => new Uint8Array(image))), files, onError);
             }
             else {
                 if (onError) {
@@ -279,7 +279,7 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
             }
         }
         else {
-            this._loadFile(rootUrl, onloaddata, undefined, undefined, true, onInternalError);
+            this._loadFile(rootUrl, (data) => onloaddata(new Uint8Array(data as ArrayBuffer)), undefined, undefined, true, onInternalError);
         }
     }
     else {

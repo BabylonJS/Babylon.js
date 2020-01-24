@@ -111,8 +111,8 @@ export class EnvironmentTextureTools {
      * @param data The array buffer containing the .env bytes.
      * @returns the environment file info (the json header) if successfully parsed.
      */
-    public static GetEnvInfo(data: ArrayBuffer): Nullable<EnvironmentTextureInfo> {
-        let dataView = new DataView(data);
+    public static GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureInfo> {
+        let dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
         let pos = 0;
 
         for (let i = 0; i < EnvironmentTextureTools._MagicBytes.length; i++) {
@@ -326,11 +326,11 @@ export class EnvironmentTextureTools {
 
     /**
      * Creates the ArrayBufferViews used for initializing environment texture image data.
-     * @param arrayBuffer the underlying ArrayBuffer to which the views refer
+     * @param data the image data
      * @param info parameters that determine what views will be created for accessing the underlying buffer
      * @return the views described by info providing access to the underlying buffer
      */
-    public static CreateImageDataArrayBufferViews(arrayBuffer: any, info: EnvironmentTextureInfo): Array<Array<ArrayBufferView>> {
+    public static CreateImageDataArrayBufferViews(data: ArrayBufferView, info: EnvironmentTextureInfo): Array<Array<ArrayBufferView>> {
         if (info.version !== 1) {
             throw new Error(`Unsupported babylon environment map version "${info.version}"`);
         }
@@ -349,7 +349,7 @@ export class EnvironmentTextureTools {
             imageData[i] = new Array<ArrayBufferView>(6);
             for (let face = 0; face < 6; face++) {
                 const imageInfo = specularInfo.mipmaps[i * 6 + face];
-                imageData[i][face] = new Uint8Array(arrayBuffer, specularInfo.specularDataPosition! + imageInfo.position, imageInfo.length);
+                imageData[i][face] = new Uint8Array(data.buffer, data.byteOffset + specularInfo.specularDataPosition! + imageInfo.position, imageInfo.length);
             }
         }
 
@@ -359,11 +359,11 @@ export class EnvironmentTextureTools {
     /**
      * Uploads the texture info contained in the env file to the GPU.
      * @param texture defines the internal texture to upload to
-     * @param arrayBuffer defines the buffer cotaining the data to load
+     * @param data defines the data to load
      * @param info defines the texture info retrieved through the GetEnvInfo method
      * @returns a promise
      */
-    public static UploadEnvLevelsAsync(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): Promise<void> {
+    public static UploadEnvLevelsAsync(texture: InternalTexture, data: ArrayBufferView, info: EnvironmentTextureInfo): Promise<void> {
         if (info.version !== 1) {
             throw new Error(`Unsupported babylon environment map version "${info.version}"`);
         }
@@ -376,7 +376,7 @@ export class EnvironmentTextureTools {
 
         texture._lodGenerationScale = specularInfo.lodGenerationScale;
 
-        const imageData = EnvironmentTextureTools.CreateImageDataArrayBufferViews(arrayBuffer, info);
+        const imageData = EnvironmentTextureTools.CreateImageDataArrayBufferViews(data, info);
 
         return EnvironmentTextureTools.UploadLevelsAsync(texture, imageData);
     }
