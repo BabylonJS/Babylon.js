@@ -73,7 +73,7 @@ export class WebXRControllerComponent implements IDisposable {
      */
     public static SQUEEZE: MotionControllerComponentType = "squeeze";
     /**
-     * squeeze component type
+     * button component type
      */
     public static BUTTON: MotionControllerComponentType = "button";
     /**
