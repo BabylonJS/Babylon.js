@@ -404,13 +404,28 @@ describe('Babylon Scene Loader', function() {
             const scene = new BABYLON.Scene(subject);
             const promises = new Array<Promise<void>>();
 
+            const expectedSetRequestHeaderCalls = [
+                "Range: bytes=0-19",
+                "Range: bytes=20-1399",
+                "Range: bytes=1400-1817",
+                "Range: bytes=1820-3149",
+                "Range: bytes=3152-8841",
+            ];
+
+            const setRequestHeaderCalls = new Array<string>();
+            const origSetRequestHeader = BABYLON.WebRequest.prototype.setRequestHeader;
+            sinon.stub(BABYLON.WebRequest.prototype, "setRequestHeader").callsFake(function(...args) {
+                setRequestHeaderCalls.push(args.join(": "));
+                origSetRequestHeader.apply(this, args);
+            });
+
             BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
                 loader.useRangeRequests = true;
                 promises.push(loader.whenCompleteAsync());
             });
 
             promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/", "LevelOfDetail.glb", scene).then(() => {
-                // do nothing
+                expect(setRequestHeaderCalls, "setRequestHeaderCalls").to.have.ordered.members(expectedSetRequestHeaderCalls);
             }));
 
             return Promise.all(promises);
