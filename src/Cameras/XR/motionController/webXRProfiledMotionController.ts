@@ -62,9 +62,9 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
                     this._buttonMeshMapping[type].states[visualResponseKey] = {
                         valueMesh: this._getChildByName(this.rootMesh!, nameOfMesh)
                     };
-                    if (componentInLayout.type === WebXRControllerComponent.TOUCHPAD && !this._touchDots[visualResponseKey]) {
+                    if (type === WebXRControllerComponent.TOUCHPAD && !this._touchDots[visualResponseKey]) {
                         const dot = SphereBuilder.CreateSphere(visualResponseKey + 'dot', {
-                            diameter: 0.001,
+                            diameter: 0.0015,
                             segments: 8
                         }, this.scene);
                         dot.material = new StandardMaterial(visualResponseKey + 'mat', this.scene);
@@ -121,7 +121,9 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
                 } else {
                     // visibility
                     meshes.states[visualResponseKey].valueMesh.isVisible = component.touched || component.pressed;
-                    this._touchDots[visualResponseKey].isVisible = component.touched || component.pressed;
+                    if (this._touchDots[visualResponseKey]) {
+                        this._touchDots[visualResponseKey].isVisible = component.touched || component.pressed;
+                    }
                 }
             });
         });
