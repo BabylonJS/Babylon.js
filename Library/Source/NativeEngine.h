@@ -393,7 +393,7 @@ namespace Babylon
         bx::DefaultAllocator m_allocator;
         uint64_t m_engineState;
 
-        BgfxCallback m_bgfxCallback{};
+        static inline BgfxCallback _bgfxCallback{};
         FrameBufferManager m_frameBufferManager{};
 
         NativeWindow::OnResizeCallbackTicket m_resizeCallbackTicket;
