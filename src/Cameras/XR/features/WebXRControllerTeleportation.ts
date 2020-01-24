@@ -318,7 +318,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         // motion controller support
         xrController.onMotionControllerProfileLoaded.addOnce(() => {
             if (xrController.motionController) {
-                const movementController = xrController.motionController.getComponent(WebXRControllerComponent.THUMBSTICK) || xrController.motionController.getComponent(WebXRControllerComponent.TOUCHPAD);
+                const movementController = xrController.motionController.getComponentOfType(WebXRControllerComponent.THUMBSTICK) || xrController.motionController.getComponentOfType(WebXRControllerComponent.TOUCHPAD);
                 if (!movementController || this._options.useMainComponentOnly) {
                     // use trigger to move on long press
                     const mainComponent = xrController.motionController.getMainComponent();

@@ -59,19 +59,23 @@ export class WebXRControllerComponent implements IDisposable {
     /**
      * Thumbstick component type
      */
-    public static THUMBSTICK = "xr-standard-thumbstick";
+    public static THUMBSTICK: MotionControllerComponentType = "thumbstick";
     /**
      * Touchpad component type
      */
-    public static TOUCHPAD = "xr-standard-touchpad";
+    public static TOUCHPAD: MotionControllerComponentType = "touchpad";
     /**
      * trigger component type
      */
-    public static TRIGGER = "xr-standard-trigger";
+    public static TRIGGER: MotionControllerComponentType = "trigger";
     /**
      * squeeze component type
      */
-    public static SQUEEZE = "xr-standard-squeeze";
+    public static SQUEEZE: MotionControllerComponentType = "squeeze";
+    /**
+     * squeeze component type
+     */
+    public static BUTTON: MotionControllerComponentType = "button";
     /**
      * Observers registered here will be triggered when the state of a button changes
      * State change is either pressed / touched / value

@@ -40,14 +40,14 @@ export class WebXRHTCViveMotionController extends WebXRAbstractMotionController 
     }
 
     protected _processLoadedModel(_meshes: AbstractMesh[]): void {
-        this.getComponentTypes().forEach((type) => {
-            const comp = type && this.getComponent(type);
+        this.getComponentIds().forEach((id) => {
+            const comp = id && this.getComponent(id);
             if (comp) {
                 comp.onButtonStateChanged.add((component) => {
 
                     if (!this.rootMesh || this.disableAnimation) { return; }
 
-                    switch (type) {
+                    switch (id) {
                         case "xr-standard-trigger":
                             (<AbstractMesh>(this._modelRootNode.getChildren()[6])).rotation.x = -component.value * 0.15;
                             return;
