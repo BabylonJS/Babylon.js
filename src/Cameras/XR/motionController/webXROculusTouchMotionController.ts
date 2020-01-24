@@ -10,123 +10,6 @@ import { Scene } from '../../../scene';
 import { Mesh } from '../../../Meshes/mesh';
 import { Quaternion } from '../../../Maths/math.vector';
 
-// https://github.com/immersive-web/webxr-input-profiles/blob/master/packages/registry/profiles/microsoft/microsoft-mixed-reality.json
-const OculusTouchLayouts: IMotionControllerLayoutMap = {
-    "left": {
-        "selectComponentId": "xr-standard-trigger",
-        "components": {
-            "xr-standard-trigger": { "type": "trigger" },
-            "xr-standard-squeeze": { "type": "squeeze" },
-            "xr-standard-thumbstick": { "type": "thumbstick" },
-            "a-button": { "type": "button" },
-            "b-button": { "type": "button" },
-            "thumbrest": { "type": "button" }
-        },
-        "gamepad": {
-            "mapping": "xr-standard",
-            "buttons": [
-                "xr-standard-trigger",
-                "xr-standard-squeeze",
-                null,
-                "xr-standard-thumbstick",
-                "a-button",
-                "b-button",
-                "thumbrest"
-            ],
-            "axes": [
-                null,
-                null,
-                { "componentId": "xr-standard-thumbstick", "axis": "x-axis" },
-                { "componentId": "xr-standard-thumbstick", "axis": "y-axis" }
-            ]
-        }
-    },
-    "right": {
-        "selectComponentId": "xr-standard-trigger",
-        "components": {
-            "xr-standard-trigger": { "type": "trigger" },
-            "xr-standard-squeeze": { "type": "squeeze" },
-            "xr-standard-thumbstick": { "type": "thumbstick" },
-            "x-button": { "type": "button" },
-            "y-button": { "type": "button" },
-            "thumbrest": { "type": "button" }
-        },
-        "gamepad": {
-            "mapping": "xr-standard",
-            "buttons": [
-                "xr-standard-trigger",
-                "xr-standard-squeeze",
-                null,
-                "xr-standard-thumbstick",
-                "x-button",
-                "y-button",
-                "thumbrest"
-            ],
-            "axes": [
-                null,
-                null,
-                { "componentId": "xr-standard-thumbstick", "axis": "x-axis" },
-                { "componentId": "xr-standard-thumbstick", "axis": "y-axis" }
-            ]
-        }
-    }
-};
-
-const OculusTouchLegacyLayouts: IMotionControllerLayoutMap = {
-    "left": {
-        "selectComponentId": "xr-standard-trigger",
-        "components": {
-            "xr-standard-trigger": { "type": "trigger" },
-            "xr-standard-squeeze": { "type": "squeeze" },
-            "xr-standard-thumbstick": { "type": "thumbstick" },
-            "a-button": { "type": "button" },
-            "b-button": { "type": "button" },
-            "thumbrest": { "type": "button" }
-        },
-        "gamepad": {
-            "mapping": "",
-            "buttons": [
-                "xr-standard-thumbstick",
-                "xr-standard-trigger",
-                "xr-standard-squeeze",
-                "a-button",
-                "b-button",
-                "thumbrest"
-            ],
-            "axes": [
-                { "componentId": "xr-standard-thumbstick", "axis": "x-axis" },
-                { "componentId": "xr-standard-thumbstick", "axis": "y-axis" }
-            ]
-        }
-    },
-    "right": {
-        "selectComponentId": "xr-standard-trigger",
-        "components": {
-            "xr-standard-trigger": { "type": "trigger" },
-            "xr-standard-squeeze": { "type": "squeeze" },
-            "xr-standard-thumbstick": { "type": "thumbstick" },
-            "x-button": { "type": "button" },
-            "y-button": { "type": "button" },
-            "thumbrest": { "type": "button" }
-        },
-        "gamepad": {
-            "mapping": "",
-            "buttons": [
-                "xr-standard-thumbstick",
-                "xr-standard-trigger",
-                "xr-standard-squeeze",
-                "x-button",
-                "y-button",
-                "thumbrest"
-            ],
-            "axes": [
-                { "componentId": "xr-standard-thumbstick", "axis": "x-axis" },
-                { "componentId": "xr-standard-thumbstick", "axis": "y-axis" }
-            ]
-        }
-    }
-};
-
 /**
  * The motion controller class for oculus touch (quest, rift).
  * This class supports legacy mapping as well the standard xr mapping
@@ -167,14 +50,14 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
         const isQuest = this._isQuest();
         const triggerDirection = this.handness === 'right' ? -1 : 1;
 
-        this.layout.gamepad!.buttons.forEach((buttonName) => {
-            const comp = buttonName && this.getComponent(buttonName);
+        this.getComponentIds().forEach((id) => {
+            const comp = id && this.getComponent(id);
             if (comp) {
                 comp.onButtonStateChanged.add((component) => {
 
-                    if (!this.rootMesh) { return; }
+                    if (!this.rootMesh || this.disableAnimation) { return; }
 
-                    switch (buttonName) {
+                    switch (id) {
                         case "xr-standard-trigger": // index trigger
                             if (!isQuest) {
                                 (<AbstractMesh>(this._modelRootNode.getChildren()[3])).rotation.x = -component.value * 0.20;
@@ -275,3 +158,289 @@ WebXRMotionControllerManager.RegisterController("oculus-touch", (xrInput: XRInpu
 WebXRMotionControllerManager.RegisterController("oculus-touch-legacy", (xrInput: XRInputSource, scene: Scene) => {
     return new WebXROculusTouchMotionController(scene, <any>(xrInput.gamepad), xrInput.handedness, true);
 });
+
+const OculusTouchLayouts: IMotionControllerLayoutMap = {
+    "left": {
+        "selectComponentId": "xr-standard-trigger",
+        "components": {
+            "xr-standard-trigger": {
+                "type": "trigger",
+                "gamepadIndices": {
+                    "button": 0
+                },
+                "rootNodeName": "xr_standard_trigger",
+                "visualResponses": {
+
+                }
+            },
+            "xr-standard-squeeze": {
+                "type": "squeeze",
+                "gamepadIndices": {
+                    "button": 1
+                },
+                "rootNodeName": "xr_standard_squeeze",
+                "visualResponses": {
+
+                }
+            },
+            "xr-standard-thumbstick": {
+                "type": "thumbstick",
+                "gamepadIndices": {
+                    "button": 3,
+                    "xAxis": 2,
+                    "yAxis": 3
+                },
+                "rootNodeName": "xr_standard_thumbstick",
+                "visualResponses": {
+
+                }
+            },
+            "x-button": {
+                "type": "button",
+                "gamepadIndices": {
+                    "button": 4
+                },
+                "rootNodeName": "x_button",
+                "visualResponses": {
+
+                }
+            },
+            "y-button": {
+                "type": "button",
+                "gamepadIndices": {
+                    "button": 5
+                },
+                "rootNodeName": "y_button",
+                "visualResponses": {
+
+                }
+            },
+            "thumbrest": {
+                "type": "button",
+                "gamepadIndices": {
+                    "button": 6
+                },
+                "rootNodeName": "thumbrest",
+                "visualResponses": {
+
+                }
+            }
+        },
+        "gamepadMapping": "xr-standard",
+        "rootNodeName": "oculus-touch-v2-left",
+        "assetPath": "left.glb"
+    },
+    "right": {
+        "selectComponentId": "xr-standard-trigger",
+        "components": {
+            "xr-standard-trigger": {
+                "type": "trigger",
+                "gamepadIndices": {
+                    "button": 0
+                },
+                "rootNodeName": "xr_standard_trigger",
+                "visualResponses": {
+
+                }
+            },
+            "xr-standard-squeeze": {
+                "type": "squeeze",
+                "gamepadIndices": {
+                    "button": 1
+                },
+                "rootNodeName": "xr_standard_squeeze",
+                "visualResponses": {
+
+                }
+            },
+            "xr-standard-thumbstick": {
+                "type": "thumbstick",
+                "gamepadIndices": {
+                    "button": 3,
+                    "xAxis": 2,
+                    "yAxis": 3
+                },
+                "rootNodeName": "xr_standard_thumbstick",
+                "visualResponses": {
+
+                }
+            },
+            "a-button": {
+                "type": "button",
+                "gamepadIndices": {
+                    "button": 4
+                },
+                "rootNodeName": "a_button",
+                "visualResponses": {
+
+                }
+            },
+            "b-button": {
+                "type": "button",
+                "gamepadIndices": {
+                    "button": 5
+                },
+                "rootNodeName": "b_button",
+                "visualResponses": {
+
+                }
+            },
+            "thumbrest": {
+                "type": "button",
+                "gamepadIndices": {
+                    "button": 6
+                },
+                "rootNodeName": "thumbrest",
+                "visualResponses": {
+
+                }
+            }
+        },
+        "gamepadMapping": "xr-standard",
+        "rootNodeName": "oculus-touch-v2-right",
+        "assetPath": "right.glb"
+    }
+};
+
+const OculusTouchLegacyLayouts: IMotionControllerLayoutMap = {
+    "left": {
+        "selectComponentId": "xr-standard-trigger",
+        "components": {
+            "xr-standard-trigger": {
+                "type": "trigger",
+                "gamepadIndices": {
+                    "button": 1
+                },
+                "rootNodeName": "xr_standard_trigger",
+                "visualResponses": {
+
+                }
+            },
+            "xr-standard-squeeze": {
+                "type": "squeeze",
+                "gamepadIndices": {
+                    "button": 2
+                },
+                "rootNodeName": "xr_standard_squeeze",
+                "visualResponses": {
+
+                }
+            },
+            "xr-standard-thumbstick": {
+                "type": "thumbstick",
+                "gamepadIndices": {
+                    "button": 0,
+                    "xAxis": 0,
+                    "yAxis": 1
+                },
+                "rootNodeName": "xr_standard_thumbstick",
+                "visualResponses": {
+
+                }
+            },
+            "x-button": {
+                "type": "button",
+                "gamepadIndices": {
+                    "button": 3
+                },
+                "rootNodeName": "x_button",
+                "visualResponses": {
+
+                }
+            },
+            "y-button": {
+                "type": "button",
+                "gamepadIndices": {
+                    "button": 4
+                },
+                "rootNodeName": "y_button",
+                "visualResponses": {
+
+                }
+            },
+            "thumbrest": {
+                "type": "button",
+                "gamepadIndices": {
+                    "button": 5
+                },
+                "rootNodeName": "thumbrest",
+                "visualResponses": {
+
+                }
+            }
+        },
+        "gamepadMapping": "xr-standard",
+        "rootNodeName": "oculus-touch-v2-left",
+        "assetPath": "left.glb"
+    },
+    "right": {
+        "selectComponentId": "xr-standard-trigger",
+        "components": {
+            "xr-standard-trigger": {
+                "type": "trigger",
+                "gamepadIndices": {
+                    "button": 1
+                },
+                "rootNodeName": "xr_standard_trigger",
+                "visualResponses": {
+
+                }
+            },
+            "xr-standard-squeeze": {
+                "type": "squeeze",
+                "gamepadIndices": {
+                    "button": 2
+                },
+                "rootNodeName": "xr_standard_squeeze",
+                "visualResponses": {
+
+                }
+            },
+            "xr-standard-thumbstick": {
+                "type": "thumbstick",
+                "gamepadIndices": {
+                    "button": 0,
+                    "xAxis": 0,
+                    "yAxis": 1
+                },
+                "rootNodeName": "xr_standard_thumbstick",
+                "visualResponses": {
+
+                }
+            },
+            "a-button": {
+                "type": "button",
+                "gamepadIndices": {
+                    "button": 3
+                },
+                "rootNodeName": "a_button",
+                "visualResponses": {
+
+                }
+            },
+            "b-button": {
+                "type": "button",
+                "gamepadIndices": {
+                    "button": 4
+                },
+                "rootNodeName": "b_button",
+                "visualResponses": {
+
+                }
+            },
+            "thumbrest": {
+                "type": "button",
+                "gamepadIndices": {
+                    "button": 5
+                },
+                "rootNodeName": "thumbrest",
+                "visualResponses": {
+
+                }
+            }
+        },
+        "gamepadMapping": "xr-standard",
+        "rootNodeName": "oculus-touch-v2-right",
+        "assetPath": "right.glb"
+    }
+};
