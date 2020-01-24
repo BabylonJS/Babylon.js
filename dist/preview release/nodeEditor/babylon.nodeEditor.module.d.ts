@@ -1291,6 +1291,7 @@ declare module "babylonjs-node-editor/globalState" {
         nodeMaterial: NodeMaterial;
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
+        hostWindow: Window;
         onSelectionChangedObservable: Observable<Nullable<GraphNode | GraphFrame | NodeLink>>;
         onRebuildRequiredObservable: Observable<void>;
         onResetRequiredObservable: Observable<void>;
@@ -2652,6 +2653,7 @@ declare module NODEEDITOR {
         nodeMaterial: BABYLON.NodeMaterial;
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
+        hostWindow: Window;
         onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<GraphNode | GraphFrame | NodeLink>>;
         onRebuildRequiredObservable: BABYLON.Observable<void>;
         onResetRequiredObservable: BABYLON.Observable<void>;
