@@ -29,10 +29,14 @@ export class UtilityLayerRenderer implements IDisposable {
     public getRenderCamera() {
         if (this._renderCamera) {
             return this._renderCamera;
-        } else if (this.originalScene.activeCameras.length > 1) {
-            return this.originalScene.activeCameras[this.originalScene.activeCameras.length - 1];
         } else {
-            return this.originalScene.activeCamera;
+            let activeCam: Camera;
+            if (this.originalScene.activeCameras.length > 1) {
+                activeCam = this.originalScene.activeCameras[this.originalScene.activeCameras.length - 1];
+            } else {
+                activeCam = <Camera>(this.originalScene.activeCamera!);
+            }
+            return (activeCam && activeCam.isRigCamera) ? activeCam.rigParent! : activeCam;
         }
     }
     /**
