@@ -19,12 +19,13 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
     
 }
 
-- (void)init:( void* )CALayerPtr
+- (void)init:(void*)CALayerPtr width:(int)inWidth height:(int)inHeight
 {
     NSBundle* main = [NSBundle mainBundle];
     NSURL* resourceUrl = [main resourceURL];
     runtime = std::make_unique<Babylon::RuntimeApple>(
-        CALayerPtr, [[NSString stringWithFormat:@"file://%s", [resourceUrl fileSystemRepresentation]] UTF8String]);
+        CALayerPtr, [[NSString stringWithFormat:@"file://%s", [resourceUrl fileSystemRepresentation]] UTF8String],
+        inWidth, inHeight);
     
     runtime->Dispatch([](Babylon::Env& env)
     {

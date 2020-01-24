@@ -143,8 +143,19 @@ concurrency::task<void> App::RestartRuntimeAsync(Windows::Foundation::Rect bound
         rootUrl = "file:///" + parentPath.generic_string();
     }
 
+    DisplayInformation^ displayInformation = DisplayInformation::GetForCurrentView();
+    m_displayScale = static_cast<float>(displayInformation->RawPixelsPerViewPixel);
+
+    float width = bounds.Width * m_displayScale;
+    float height = bounds.Height * m_displayScale;
     m_runtime = std::make_unique<Babylon::RuntimeUWP>(
-        reinterpret_cast<ABI::Windows::UI::Core::ICoreWindow*>(CoreWindow::GetForCurrentThread()), rootUrl);
+        reinterpret_cast<ABI::Windows::UI::Core::ICoreWindow*>(CoreWindow::GetForCurrentThread()), rootUrl,
+        width, height);
+
+    // issue a resize here because on some platforms (UWP, WIN32) WM_SIZE is received before the runtime construction
+    // So the context is created with the right size but the nativeWindow still has the wrong size
+    // depending on how you create your app (runtime created before WM_SIZE is received, this call is not needed)
+    m_runtime->UpdateSize(width, height);
 
     m_runtime->Dispatch([](Babylon::Env& env)
     {
@@ -176,11 +187,6 @@ concurrency::task<void> App::RestartRuntimeAsync(Windows::Foundation::Rect bound
 
         m_runtime->LoadScript(appUrl + "/Scripts/playground_runner.js");
     }
-
-    DisplayInformation^ displayInformation = DisplayInformation::GetForCurrentView();
-    m_displayScale = static_cast<float>(displayInformation->RawPixelsPerViewPixel);
-
-    m_runtime->UpdateSize(bounds.Width * m_displayScale, bounds.Height * m_displayScale);
 }
 
 void App::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ args)

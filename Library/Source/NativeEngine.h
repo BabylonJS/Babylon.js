@@ -80,6 +80,8 @@ namespace Babylon
         void Update() const
         {
             bgfx::setViewClear(m_viewId, m_flags, Color(), m_depth, m_stencil);
+            // discard any previous set state 
+            bgfx::discard();
             bgfx::touch(m_viewId);
         }
 
@@ -301,7 +303,8 @@ namespace Babylon
         NativeEngine(const Napi::CallbackInfo& info);
         NativeEngine(const Napi::CallbackInfo& info, NativeWindow& nativeWindow);
 
-        static Napi::FunctionReference InitializeAndCreateConstructor(Napi::Env&);
+        static void InitializeWindow(void* nativeWindowPtr, uint32_t width, uint32_t height);
+        static Napi::FunctionReference CreateConstructor(Napi::Env&);
 
         FrameBufferManager& GetFrameBufferManager();
         void Dispatch(std::function<void()>);
