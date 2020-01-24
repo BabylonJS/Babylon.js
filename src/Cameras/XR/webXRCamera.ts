@@ -60,10 +60,12 @@ export class WebXRCamera extends FreeCamera {
 
     private _updateNumberOfRigCameras(viewCount = 1) {
         while (this.rigCameras.length < viewCount) {
-            var newCamera = new TargetCamera("view: " + this.rigCameras.length, Vector3.Zero(), this.getScene());
+            var newCamera = new TargetCamera("XR-RigCamera: " + this.rigCameras.length, Vector3.Zero(), this.getScene());
             newCamera.minZ = 0.1;
             newCamera.rotationQuaternion = new Quaternion();
             newCamera.updateUpVectorFromRotation = true;
+            newCamera.isRigCamera = true;
+            newCamera.rigParent = this;
             this.rigCameras.push(newCamera);
         }
         while (this.rigCameras.length > viewCount) {
