@@ -60,7 +60,7 @@ namespace
         }
         auto width = rect.right - rect.left;
         auto height = rect.bottom - rect.top;
-        runtime = std::make_unique<Babylon::RuntimeWin32>(hWnd, rootUrl, float(width), float(height));
+        runtime = std::make_unique<Babylon::RuntimeWin32>(hWnd, rootUrl, static_cast<float>(width), static_cast<float>(height));
 
         runtime->Dispatch([](Babylon::Env& env)
         {
