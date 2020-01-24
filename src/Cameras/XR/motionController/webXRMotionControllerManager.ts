@@ -1,8 +1,10 @@
 import {
-    WebXRAbstractMotionController,
+    WebXRAbstractMotionController, IMotionControllerProfile,
 } from './webXRAbstractController';
 import { WebXRGenericTriggerMotionController } from './webXRGenericMotionController';
 import { Scene } from '../../../scene';
+import { Tools } from '../../../Misc/tools';
+import { WebXRProfiledMotionController } from './webXRProfiledMotionController';
 
 /**
  * A construction function type to create a new controller based on an xrInput object
@@ -18,6 +20,18 @@ export type MotionControllerConstructor = (xrInput: XRInputSource, scene: Scene)
  * When using a model try to stay as generic as possible. Eventually there will be no need in any of the controller classes
  */
 export class WebXRMotionControllerManager {
+    /**
+     * The base URL of the online controller repository. Can be changed at any time.
+     */
+    public static BaseRepositoryUrl = "https://immersive-web.github.io/webxr-input-profiles/packages/viewer/dist";
+    /**
+     * Use the online repository, or use only locally-defined controllers
+     */
+    public static UseOnlineRepository: boolean = true;
+    /**
+     * Which repository gets priority - local or online
+     */
+    public static PrioritizeOnlineRepository: boolean = true;
     private static _AvailableControllers: { [type: string]: MotionControllerConstructor } = {};
     private static _Fallbacks: { [profileId: string]: string[] } = {};
 
@@ -45,49 +59,128 @@ export class WebXRMotionControllerManager {
      * @param xrInput the xrInput to which a new controller is initialized
      * @param scene the scene to which the model will be added
      * @param forceProfile force a certain profile for this controller
-     * @return the motion controller class for this profile id or the generic standard class if none was found
+     * @return A promise that fulfils with the motion controller class for this profile id or the generic standard class if none was found
      */
-    public static GetMotionControllerWithXRInput(xrInput: XRInputSource, scene: Scene, forceProfile?: string): WebXRAbstractMotionController {
-        //if a type was forced, try creating a controller using it. Continue if not found.
+    public static GetMotionControllerWithXRInput(xrInput: XRInputSource, scene: Scene, forceProfile?: string): Promise<WebXRAbstractMotionController> {
+        const profileArray: string[] = [];
         if (forceProfile) {
-            const constructionFunction = this._AvailableControllers[forceProfile];
-            if (constructionFunction) {
-                return constructionFunction(xrInput, scene);
-            }
+            profileArray.push(forceProfile);
+        }
+        profileArray.push(...(xrInput.profiles || []));
+
+        // emulator support
+        if (profileArray.length && !profileArray[0]) {
+            // remove the first "undefined" that the emulator is adding
+            profileArray.pop();
         }
 
-        for (let i = 0; i < xrInput.profiles.length; ++i) {
-            const constructionFunction = this._AvailableControllers[xrInput.profiles[i]];
-            if (constructionFunction) {
-                return constructionFunction(xrInput, scene);
-            }
-        }
-        // try using the gamepad id
+        // legacy support - try using the gamepad id
         if (xrInput.gamepad && xrInput.gamepad.id) {
             switch (xrInput.gamepad.id) {
                 case (xrInput.gamepad.id.match(/oculus touch/gi) ? xrInput.gamepad.id : undefined):
-                    // oculus in gamepad id - legacy mapping
-                    return this._AvailableControllers["oculus-touch-legacy"](xrInput, scene);
-                case (xrInput.gamepad.id.match(/Spatial Controller/gi) ? xrInput.gamepad.id : undefined):
-                    // oculus in gamepad id - legacy mapping
-                    return this._AvailableControllers["microsoft-mixed-reality"](xrInput, scene);
-                case (xrInput.gamepad.id.match(/openvr/gi) ? xrInput.gamepad.id : undefined):
-                    // oculus in gamepad id - legacy mapping
-                    return this._AvailableControllers["htc-vive-legacy"](xrInput, scene);
+                    // oculus in gamepad id
+                    profileArray.push("oculus-touch-v2");
+                    break;
             }
         }
+
+        // make sure microsoft/windows mixed reality works correctly
+        const windowsMRIdx = profileArray.indexOf("windows-mixed-reality");
+        if (windowsMRIdx !== -1) {
+            profileArray.splice(windowsMRIdx, 0, "microsoft-mixed-reality");
+        }
+
+        if (!profileArray.length) {
+            profileArray.push("generic-trigger");
+        }
+
+        if (this.UseOnlineRepository) {
+            const firstFunction = this.PrioritizeOnlineRepository ? this._LoadProfileFromRepository : this._LoadProfilesFromAvailableControllers;
+            const secondFunction = this.PrioritizeOnlineRepository ? this._LoadProfilesFromAvailableControllers : this._LoadProfileFromRepository;
+
+            return firstFunction.call(this, profileArray, xrInput, scene).catch(() => {
+                return secondFunction.call(this, profileArray, xrInput, scene);
+            });
+
+        } else {
+            // use only available functions
+            return this._LoadProfilesFromAvailableControllers(profileArray, xrInput, scene);
+        }
+    }
+
+    private static _LoadProfilesFromAvailableControllers(profileArray: string[], xrInput: XRInputSource, scene: Scene) {
         // check fallbacks
-        for (let i = 0; i < xrInput.profiles.length; ++i) {
-            const fallbacks = this.FindFallbackWithProfileId(xrInput.profiles[i]);
+        for (let i = 0; i < profileArray.length; ++i) {
+            // defensive
+            if (!profileArray[i]) {
+                continue;
+            }
+            const fallbacks = this.FindFallbackWithProfileId(profileArray[i]);
             for (let j = 0; j < fallbacks.length; ++j) {
                 const constructionFunction = this._AvailableControllers[fallbacks[j]];
                 if (constructionFunction) {
-                    return constructionFunction(xrInput, scene);
+                    return Promise.resolve(constructionFunction(xrInput, scene));
                 }
             }
         }
-        // return the most generic thing we have
-        return this._AvailableControllers[WebXRGenericTriggerMotionController.ProfileId](xrInput, scene);
+
+        throw new Error(`no controller requested was found in the available controllers list`);
+    }
+
+    private static _ProfilesList: Promise<{ [profile: string]: string }>;
+
+    // cache for loading
+    private static _ProfileLoadingPromises: { [profileName: string]: Promise<IMotionControllerProfile> } = {};
+
+    private static _LoadProfileFromRepository(profileArray: string[], xrInput: XRInputSource, scene: Scene): Promise<WebXRAbstractMotionController> {
+        return Promise.resolve().then(() => {
+            if (!this._ProfilesList) {
+                return this.UpdateProfilesList();
+            } else {
+                return this._ProfilesList;
+            }
+        }).then((profilesList: { [profile: string]: string }) => {
+            // load the right profile
+            for (let i = 0; i < profileArray.length; ++i) {
+                // defensive
+                if (!profileArray[i]) {
+                    continue;
+                }
+                if (profilesList[profileArray[i]]) {
+                    return profileArray[i];
+                }
+            }
+
+            throw new Error(`neither controller ${profileArray[0]} nor all fallbacks were found in the repository,`);
+        }).then((profileToLoad: string) => {
+            // load the profile
+            if (!this._ProfileLoadingPromises[profileToLoad]) {
+                this._ProfileLoadingPromises[profileToLoad] = Tools.LoadFileAsync(`${this.BaseRepositoryUrl}/profiles/${profileToLoad}/profile.json`, false).then((data) => <IMotionControllerProfile>JSON.parse(data as string));
+            }
+            return this._ProfileLoadingPromises[profileToLoad];
+        }).then((profile: IMotionControllerProfile) => {
+            return new WebXRProfiledMotionController(scene, xrInput, profile, this.BaseRepositoryUrl);
+        });
+
+    }
+
+    /**
+     * Clear the cache used for profile loading and reload when requested again
+     */
+    public static ClearProfilesCache() {
+        delete this._ProfilesList;
+        this._ProfileLoadingPromises = {};
+    }
+
+    /**
+     * Will update the list of profiles available in the repository
+     * @return a promise that resolves to a map of profiles available online
+     */
+    public static UpdateProfilesList() {
+        this._ProfilesList = Tools.LoadFileAsync(this.BaseRepositoryUrl + '/profiles/profilesList.json', false).then((data) => {
+            return JSON.parse(data.toString());
+        });
+        return this._ProfilesList;
     }
 
     /**
@@ -96,7 +189,10 @@ export class WebXRMotionControllerManager {
      * @return an array with corresponding fallback profiles
      */
     public static FindFallbackWithProfileId(profileId: string): string[] {
-        return this._Fallbacks[profileId] || [];
+        const returnArray = this._Fallbacks[profileId] || [];
+
+        returnArray.unshift(profileId);
+        return returnArray;
     }
 
     /**
