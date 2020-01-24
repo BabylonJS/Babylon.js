@@ -298,6 +298,7 @@ namespace Babylon
     public:
         NativeEngine(const Napi::CallbackInfo& info);
         NativeEngine(const Napi::CallbackInfo& info, NativeWindow& nativeWindow);
+        ~NativeEngine();
 
         static void InitializeWindow(void* nativeWindowPtr, uint32_t width, uint32_t height);
         static Napi::FunctionReference CreateConstructor(Napi::Env&);

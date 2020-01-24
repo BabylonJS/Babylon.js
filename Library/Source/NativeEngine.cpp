@@ -386,6 +386,11 @@ namespace Babylon
         UpdateSize(static_cast<uint32_t>(nativeWindow.GetWidth()), static_cast<uint32_t>(nativeWindow.GetHeight()));
     }
 
+    NativeEngine::~NativeEngine()
+    {
+        bgfx::shutdown();
+    }
+
     void NativeEngine::UpdateSize(size_t width, size_t height)
     {
         const auto w = static_cast<uint16_t>(width);
