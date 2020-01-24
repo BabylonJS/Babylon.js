@@ -21,6 +21,7 @@ import { PickingInfo } from '../../../Collisions/pickingInfo';
 import { Curve3 } from '../../../Maths/math.path';
 import { LinesBuilder } from '../../../Meshes/Builders/linesBuilder';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
+import { Color3 } from '../../../Maths/math.color';
 
 /**
  * The options container for the teleportation module
@@ -57,13 +58,17 @@ export interface IWebXRTeleportationOptions {
          */
         teleportationBorderColor?: string;
         /**
-         * Override the default material of the torus and arrow
-         */
-        torusArrowMaterial?: Material;
-        /**
          * Disable the mesh's animation sequence
          */
         disableAnimation?: boolean;
+        /**
+         * Disable lighting on the material or the ring and arrow
+         */
+        disableLighting?: boolean;
+        /**
+         * Override the default material of the torus and arrow
+         */
+        torusArrowMaterial?: Material;
     };
 
     /**
@@ -118,9 +123,14 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     public rotationAngle: number = Math.PI / 8;
 
     /**
+     * Is movement backwards enabled
+     */
+    public backwardsMovementEnabled = true;
+
+    /**
      * Distance to travel when moving backwards
      */
-    public backwardsTeleportationDistance: number = 0.5;
+    public backwardsTeleportationDistance: number = 0.7;
 
     /**
      * Add a new mesh to the floor meshes array
@@ -371,13 +381,15 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                             //this._currentTeleportationControllerId = "";
                             //}
                         }
-                        if (axesData.y > 0.7 && !controllerData.teleportationState.forward) {
+                        if (axesData.y > 0.7 && !controllerData.teleportationState.forward && this.backwardsMovementEnabled) {
                             // teleport backwards
                             if (!controllerData.teleportationState.backwards) {
                                 controllerData.teleportationState.backwards = true;
                                 // teleport backwards ONCE
-                                this._tmpVector.set(0, 0, -this.backwardsTeleportationDistance!);
+                                this._tmpVector.set(0, 0, this.backwardsTeleportationDistance!);
+                                this._tmpVector.rotateByQuaternionToRef(this._options.xrInput.xrCamera.rotationQuaternion!, this._tmpVector);
                                 this._tmpVector.addInPlace(this._options.xrInput.xrCamera.position);
+                                this._options.xrInput.xrCamera.position.subtractToRef(this._tmpVector, this._tmpVector);
                                 this._tmpRay.origin.copyFrom(this._tmpVector);
                                 this._tmpRay.direction.set(0, -1, 0);
                                 let pick = this._xrSessionManager.scene.pickWithRay(this._tmpRay, (o) => {
@@ -461,7 +473,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         let teleportationTarget = GroundBuilder.CreateGround("teleportationTarget", { width: 2, height: 2, subdivisions: 2 }, scene);
         teleportationTarget.isPickable = false;
         let length = 512;
-        let dynamicTexture = new DynamicTexture("DynamicTexture", length, scene, true);
+        let dynamicTexture = new DynamicTexture("teleportationPlaneDynamicTexture", length, scene, true);
         dynamicTexture.hasAlpha = true;
         let context = dynamicTexture.getContext();
         let centerX = length / 2;
@@ -476,7 +488,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         context.stroke();
         context.closePath();
         dynamicTexture.update();
-        let teleportationCircleMaterial = new StandardMaterial("TextPlaneMaterial", scene);
+        const teleportationCircleMaterial = new StandardMaterial("teleportationPlaneMaterial", scene);
         teleportationCircleMaterial.diffuseTexture = dynamicTexture;
         teleportationTarget.material = teleportationCircleMaterial;
         let torus = TorusBuilder.CreateTorus("torusTeleportation", {
@@ -522,6 +534,17 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         if (this._options.defaultTargetMeshOptions.torusArrowMaterial) {
             torus.material = this._options.defaultTargetMeshOptions.torusArrowMaterial;
             cone.material = this._options.defaultTargetMeshOptions.torusArrowMaterial;
+        } else {
+            const torusConeMaterial = new StandardMaterial("torusConsMat", scene);
+            torusConeMaterial.disableLighting = !!this._options.defaultTargetMeshOptions.disableLighting;
+            if (torusConeMaterial.disableLighting) {
+                torusConeMaterial.emissiveColor = new Color3(0.3, 0.3, 1.0);
+            } else {
+                torusConeMaterial.diffuseColor = new Color3(0.3, 0.3, 1.0);
+            }
+            torusConeMaterial.alpha = 0.9;
+            torus.material = torusConeMaterial;
+            cone.material = torusConeMaterial;
         }
 
         this._options.teleportationTargetMesh = teleportationTarget;
