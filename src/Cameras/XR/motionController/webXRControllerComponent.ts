@@ -91,6 +91,13 @@ export class WebXRControllerComponent implements IDisposable {
         y: 0
     };
     private _changes: IWebXRMotionControllerComponentChanges = {};
+    private _hasChanges: boolean = false;
+    /**
+     * Return whether or not the component changed the last frame
+     */
+    public get hasChanges(): boolean {
+        return this._hasChanges;
+    }
 
     /**
      * Creates a new component for a motion controller.
@@ -173,6 +180,7 @@ export class WebXRControllerComponent implements IDisposable {
     public update(nativeController: IMinimalMotionControllerObject) {
         let buttonUpdated = false;
         let axesUpdate = false;
+        this._hasChanges = false;
         this._changes = {};
 
         if (this.isButton()) {
@@ -244,9 +252,11 @@ export class WebXRControllerComponent implements IDisposable {
         }
 
         if (buttonUpdated) {
+            this._hasChanges = true;
             this.onButtonStateChanged.notifyObservers(this);
         }
         if (axesUpdate) {
+            this._hasChanges = true;
             this.onAxisValueChanged.notifyObservers(this._axes);
         }
     }
