@@ -40,7 +40,7 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
     }
     private _touchDots: { [visKey: string]: AbstractMesh } = {};
 
-    protected _processLoadedModel(meshes: AbstractMesh[]): void {
+    protected _processLoadedModel(_meshes: AbstractMesh[]): void {
         this.getComponentTypes().forEach((type) => {
             const componentInLayout = this.layout.components[type];
             this._buttonMeshMapping[type] = {
@@ -79,7 +79,7 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
     }
 
     protected _setRootMesh(meshes: AbstractMesh[]): void {
-        this.rootMesh = new Mesh(this.profileId + " " + this.handness, this.scene);
+        this.rootMesh = new Mesh(this.profileId + "-" + this.handness, this.scene);
         this.rootMesh.isPickable = false;
         let rootMesh;
         // Find the root node in the loaded glTF scene, and attach it as a child of 'parentMesh'
