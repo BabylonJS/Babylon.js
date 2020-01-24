@@ -53,7 +53,14 @@ namespace
     void RefreshBabylon(HWND hWnd)
     {
         std::string rootUrl{ GetUrlFromPath(GetModulePath().parent_path().parent_path()) };
-        runtime = std::make_unique<Babylon::RuntimeWin32>(hWnd, rootUrl);
+        RECT rect;
+        if (!GetWindowRect(hWnd, &rect))
+        {
+            return;
+        }
+        auto width = rect.right - rect.left;
+        auto height = rect.bottom - rect.top;
+        runtime = std::make_unique<Babylon::RuntimeWin32>(hWnd, rootUrl, float(width), float(height));
 
         runtime->Dispatch([](Babylon::Env& env)
         {
