@@ -1076,9 +1076,7 @@ export class NativeEngine extends Engine {
         var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
 
         if (extension === ".env") {
-            const onloaddata = (data: any) => {
-                data = data as ArrayBuffer;
-
+            const onloaddata = (data: ArrayBufferView) => {
                 var info = EnvironmentTextureTools.GetEnvInfo(data)!;
                 texture.width = info.width;
                 texture.height = info.width;
@@ -1122,7 +1120,7 @@ export class NativeEngine extends Engine {
                     }
                 };
 
-                this._loadFile(rootUrl, onloaddata, undefined, undefined, true, onInternalError);
+                this._loadFile(rootUrl, (data) => onloaddata(new Uint8Array(data as ArrayBuffer)), undefined, undefined, true, onInternalError);
             }
         }
         else {

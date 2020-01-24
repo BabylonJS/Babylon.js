@@ -4606,17 +4606,27 @@ var GLTFFileLoader = /** @class */ (function () {
             JSON: 0x4E4F534A,
             BIN: 0x004E4942
         };
-        var data = { json: {}, bin: null };
-        var readAsync = function () {
-            var chunkLength = dataReader.readUint32();
-            var chunkFormat = dataReader.readUint32();
-            var finalChunk = (dataReader.byteOffset + chunkLength + 8 > length);
-            // Read the chunk and (if available) the length and type of the next chunk.
-            return dataReader.loadAsync(finalChunk ? chunkLength : chunkLength + 8).then(function () {
+        // Read the JSON chunk header.
+        var chunkLength = dataReader.readUint32();
+        var chunkFormat = dataReader.readUint32();
+        if (chunkFormat !== ChunkFormat.JSON) {
+            throw new Error("First chunk format is not JSON");
+        }
+        // Bail if there are no other chunks.
+        if (dataReader.byteOffset + chunkLength === dataReader.buffer.byteLength) {
+            return dataReader.loadAsync(chunkLength).then(function () {
+                return { json: _this._parseJson(dataReader.readString(chunkLength)), bin: null };
+            });
+        }
+        // Read the JSON chunk and the length and type of the next chunk.
+        return dataReader.loadAsync(chunkLength + 8).then(function () {
+            var data = { json: _this._parseJson(dataReader.readString(chunkLength)), bin: null };
+            var readAsync = function () {
+                var chunkLength = dataReader.readUint32();
+                var chunkFormat = dataReader.readUint32();
                 switch (chunkFormat) {
                     case ChunkFormat.JSON: {
-                        data.json = _this._parseJson(dataReader.readString(chunkLength));
-                        break;
+                        throw new Error("Unexpected JSON chunk");
                     }
                     case ChunkFormat.BIN: {
                         var startByteOffset_2 = dataReader.byteOffset;
@@ -4633,13 +4643,13 @@ var GLTFFileLoader = /** @class */ (function () {
                         break;
                     }
                 }
-                if (finalChunk) {
-                    return data;
+                if (dataReader.byteOffset !== dataReader.buffer.byteLength) {
+                    return dataReader.loadAsync(8).then(readAsync);
                 }
-                return readAsync();
-            });
-        };
-        return readAsync();
+                return Promise.resolve(data);
+            };
+            return readAsync();
+        });
     };
     GLTFFileLoader._parseVersion = function (version) {
         if (version === "1.0" || version === "1.0.1") {

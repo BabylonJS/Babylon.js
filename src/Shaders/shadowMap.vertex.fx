@@ -36,6 +36,8 @@ attribute vec2 uv2;
 varying float z;
 #endif
 
+#include<clipPlaneVertexDeclaration>
+
 void main(void)
 {
 vec3 positionUpdated = position;
@@ -98,4 +100,7 @@ gl_Position = viewProjection * worldPos;
         vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
     #endif
 #endif
+
+#include<clipPlaneVertex>
+
 }

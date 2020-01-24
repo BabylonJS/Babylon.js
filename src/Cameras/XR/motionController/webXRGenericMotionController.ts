@@ -9,27 +9,6 @@ import { Scene } from '../../../scene';
 import { Mesh } from '../../../Meshes/mesh';
 import { Quaternion } from '../../../Maths/math.vector';
 
-// https://github.com/immersive-web/webxr-input-profiles/blob/master/packages/registry/profiles/generic/generic-trigger-touchpad-thumbstick.json
-const GenericTriggerLayout: IMotionControllerLayoutMap = {
-    "left-right-none": {
-        "selectComponentId": "xr-standard-trigger",
-        "components": {
-            "xr-standard-trigger": { "type": "trigger" }
-        },
-        "gamepad": {
-            "mapping": "xr-standard",
-            "buttons": [
-                "xr-standard-trigger"
-            ],
-            "axes": []
-        }
-    }
-
-};
-
-// TODO support all generic models with xr-standard mapping at:
-// https://github.com/immersive-web/webxr-input-profiles/tree/master/packages/registry/profiles/generic
-
 /**
  * A generic trigger-only motion controller for WebXR
  */
@@ -42,7 +21,7 @@ export class WebXRGenericTriggerMotionController extends WebXRAbstractMotionCont
     public profileId = WebXRGenericTriggerMotionController.ProfileId;
 
     constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness) {
-        super(scene, GenericTriggerLayout["left-right-none"], gamepadObject, handness);
+        super(scene, GenericTriggerLayout[handness], gamepadObject, handness);
     }
 
     protected _processLoadedModel(meshes: AbstractMesh[]): void {
@@ -78,3 +57,55 @@ export class WebXRGenericTriggerMotionController extends WebXRAbstractMotionCont
     }
 
 }
+
+// https://github.com/immersive-web/webxr-input-profiles/blob/master/packages/registry/profiles/generic/generic-trigger-touchpad-thumbstick.json
+const GenericTriggerLayout: IMotionControllerLayoutMap = {
+    "left": {
+        "selectComponentId": "xr-standard-trigger",
+        "components": {
+            "xr-standard-trigger": {
+                "type": "trigger",
+                "gamepadIndices": {
+                    "button": 0
+                },
+                "rootNodeName": "xr_standard_trigger",
+                "visualResponses": {}
+            }
+        },
+        "gamepadMapping": "xr-standard",
+        "rootNodeName": "generic-trigger-left",
+        "assetPath": "left.glb"
+    },
+    "right": {
+        "selectComponentId": "xr-standard-trigger",
+        "components": {
+            "xr-standard-trigger": {
+                "type": "trigger",
+                "gamepadIndices": {
+                    "button": 0
+                },
+                "rootNodeName": "xr_standard_trigger",
+                "visualResponses": {}
+            }
+        },
+        "gamepadMapping": "xr-standard",
+        "rootNodeName": "generic-trigger-right",
+        "assetPath": "right.glb"
+    },
+    "none": {
+        "selectComponentId": "xr-standard-trigger",
+        "components": {
+            "xr-standard-trigger": {
+                "type": "trigger",
+                "gamepadIndices": {
+                    "button": 0
+                },
+                "rootNodeName": "xr_standard_trigger",
+                "visualResponses": {}
+            }
+        },
+        "gamepadMapping": "xr-standard",
+        "rootNodeName": "generic-trigger-none",
+        "assetPath": "none.glb"
+    }
+};

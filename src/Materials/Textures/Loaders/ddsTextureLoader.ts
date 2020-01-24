@@ -56,7 +56,7 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
      * @param onLoad defines the callback to trigger once the texture is ready
      * @param onError defines the callback to trigger in case of error
      */
-    public loadCubeData(imgs: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void {
+    public loadCubeData(imgs: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void {
         var engine = texture.getEngine() as Engine;
         var info: DDSInfo | undefined;
         var loadMipmap: boolean = false;
@@ -116,7 +116,7 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
      * @param texture defines the BabylonJS internal texture
      * @param callback defines the method to call once ready to upload
      */
-    public loadData(data: ArrayBuffer, texture: InternalTexture,
+    public loadData(data: ArrayBufferView, texture: InternalTexture,
         callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void {
         var info = DDSTools.GetDDSInfo(data);
 

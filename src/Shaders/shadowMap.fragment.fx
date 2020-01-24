@@ -16,8 +16,12 @@ uniform vec2 depthValues;
 varying float z;
 #endif
 
+#include<clipPlaneFragmentDeclaration>
+
 void main(void)
 {
+#include<clipPlaneFragment>
+
 #ifdef ALPHATEST
     if (texture2D(diffuseSampler, vUV).a < 0.4)
         discard;
