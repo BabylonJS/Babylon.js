@@ -123,9 +123,14 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     public rotationAngle: number = Math.PI / 8;
 
     /**
+     * Is movement backwards enabled
+     */
+    public backwardsMovementEnabled = true;
+
+    /**
      * Distance to travel when moving backwards
      */
-    public backwardsTeleportationDistance: number = 0.5;
+    public backwardsTeleportationDistance: number = 0.7;
 
     /**
      * Add a new mesh to the floor meshes array
@@ -376,13 +381,15 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                             //this._currentTeleportationControllerId = "";
                             //}
                         }
-                        if (axesData.y > 0.7 && !controllerData.teleportationState.forward) {
+                        if (axesData.y > 0.7 && !controllerData.teleportationState.forward && this.backwardsMovementEnabled) {
                             // teleport backwards
                             if (!controllerData.teleportationState.backwards) {
                                 controllerData.teleportationState.backwards = true;
                                 // teleport backwards ONCE
-                                this._tmpVector.set(0, 0, -this.backwardsTeleportationDistance!);
+                                this._tmpVector.set(0, 0, this.backwardsTeleportationDistance!);
+                                this._tmpVector.rotateByQuaternionToRef(this._options.xrInput.xrCamera.rotationQuaternion!, this._tmpVector);
                                 this._tmpVector.addInPlace(this._options.xrInput.xrCamera.position);
+                                this._options.xrInput.xrCamera.position.subtractToRef(this._tmpVector, this._tmpVector);
                                 this._tmpRay.origin.copyFrom(this._tmpVector);
                                 this._tmpRay.direction.set(0, -1, 0);
                                 let pick = this._xrSessionManager.scene.pickWithRay(this._tmpRay, (o) => {
