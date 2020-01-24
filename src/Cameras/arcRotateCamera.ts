@@ -1128,6 +1128,8 @@ export class ArcRotateCamera extends TargetCamera {
         }
         var rigCam = new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this._target, this.getScene());
         rigCam._cameraRigParams = {};
+        rigCam.isRigCamera = true;
+        rigCam.rigParent = this;
         return rigCam;
     }
 

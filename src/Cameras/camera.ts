@@ -266,6 +266,17 @@ export class Camera extends Node {
      */
     public onRestoreStateObservable = new Observable<Camera>();
 
+    /**
+     * Is this camera a part of a rig system?
+     */
+    public isRigCamera: boolean = false;
+
+    /**
+     * If isRigCamera set to true this will be set with the parent camera.
+     * The parent camera is not (!) necessarily the .parent of this camera (like in the case of XR)
+     */
+    public rigParent?: Camera;
+
     /** @hidden */
     public _cameraRigParams: any;
     /** @hidden */
