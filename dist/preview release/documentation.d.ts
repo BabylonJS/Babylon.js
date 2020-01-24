@@ -44547,13 +44547,17 @@ declare module BABYLON {
              */
             teleportationBorderColor?: string;
             /**
-             * Override the default material of the torus and arrow
-             */
-            torusArrowMaterial?: Material;
-            /**
              * Disable the mesh's animation sequence
              */
             disableAnimation?: boolean;
+            /**
+             * Disable lighting on the material or the ring and arrow
+             */
+            disableLighting?: boolean;
+            /**
+             * Override the default material of the torus and arrow
+             */
+            torusArrowMaterial?: Material;
         };
         /**
          * Disable using the thumbstick and use the main component (usuallly trigger) on long press.
@@ -44603,6 +44607,10 @@ declare module BABYLON {
          * How much rotation should be applied when rotating right and left
          */
         rotationAngle: number;
+        /**
+         * Is movement backwards enabled
+         */
+        backwardsMovementEnabled: boolean;
         /**
          * Distance to travel when moving backwards
          */
