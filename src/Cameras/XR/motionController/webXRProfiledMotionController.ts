@@ -41,7 +41,7 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
     private _touchDots: { [visKey: string]: AbstractMesh } = {};
 
     protected _processLoadedModel(_meshes: AbstractMesh[]): void {
-        this.getComponentTypes().forEach((type) => {
+        this.getComponentIds().forEach((type) => {
             const componentInLayout = this.layout.components[type];
             this._buttonMeshMapping[type] = {
                 mainMesh: this._getChildByName(this.rootMesh!, componentInLayout.rootNodeName),
@@ -62,7 +62,7 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
                     this._buttonMeshMapping[type].states[visualResponseKey] = {
                         valueMesh: this._getChildByName(this.rootMesh!, nameOfMesh)
                     };
-                    if (type === WebXRControllerComponent.TOUCHPAD && !this._touchDots[visualResponseKey]) {
+                    if (componentInLayout.type === WebXRControllerComponent.TOUCHPAD && !this._touchDots[visualResponseKey]) {
                         const dot = SphereBuilder.CreateSphere(visualResponseKey + 'dot', {
                             diameter: 0.0015,
                             segments: 8
@@ -104,11 +104,11 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
         if (this.disableAnimation) {
             return;
         }
-        this.getComponentTypes().forEach((type) => {
-            const component = this.getComponent(type);
+        this.getComponentIds().forEach((id) => {
+            const component = this.getComponent(id);
             if (!component.hasChanges) { return; }
-            const meshes = this._buttonMeshMapping[type];
-            const componentInLayout = this.layout.components[type];
+            const meshes = this._buttonMeshMapping[id];
+            const componentInLayout = this.layout.components[id];
             Object.keys(componentInLayout.visualResponses).forEach((visualResponseKey) => {
                 const visResponse = componentInLayout.visualResponses[visualResponseKey];
                 let value = component.value;

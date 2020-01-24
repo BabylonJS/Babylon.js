@@ -297,7 +297,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * @param xrFrame the current xr frame to use and update the model
      */
     public updateFromXRFrame(xrFrame: XRFrame): void {
-        this.getComponentTypes().forEach((id) => this.getComponent(id).update(this.gamepadObject));
+        this.getComponentIds().forEach((id) => this.getComponent(id).update(this.gamepadObject));
         this.updateModel(xrFrame);
     }
 
@@ -305,7 +305,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * Get the list of components available in this motion controller
      * @returns an array of strings correlating to available components
      */
-    public getComponentTypes(): string[] {
+    public getComponentIds(): string[] {
         return Object.keys(this.components);
     }
 
@@ -324,6 +324,24 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      */
     public getComponent(id: string): WebXRControllerComponent {
         return this.components[id];
+    }
+
+    /**
+     * Get the first component of specific type
+     * @param type type of component to find
+     * @return a controller component or null if not found
+     */
+    public getComponentOfType(type: MotionControllerComponentType): Nullable<WebXRControllerComponent> {
+        return this.getAllComponentsOfType(type)[0] || null;
+    }
+
+    /**
+     * Returns all components of specific type
+     * @param type the type to search for
+     * @return an array of components with this type
+     */
+    public getAllComponentsOfType(type: MotionControllerComponentType): WebXRControllerComponent[] {
+        return this.getComponentIds().map((id) => this.components[id]).filter((component) => component.type === type);
     }
 
     /**
@@ -461,7 +479,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * Dispose this controller, the model mesh and all its components
      */
     public dispose(): void {
-        this.getComponentTypes().forEach((id) => this.getComponent(id).dispose());
+        this.getComponentIds().forEach((id) => this.getComponent(id).dispose());
         if (this.rootMesh) {
             this.rootMesh.dispose();
         }

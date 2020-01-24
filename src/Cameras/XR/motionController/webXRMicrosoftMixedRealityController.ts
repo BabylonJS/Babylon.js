@@ -93,15 +93,15 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
         if (!this.rootMesh) { return; }
 
         // Button Meshes
-        this.getComponentTypes().forEach((buttonName, i) => {
+        this.getComponentIds().forEach((id, i) => {
             if (this.disableAnimation) {
                 return;
             }
-            if (buttonName && this.rootMesh) {
-                const buttonMap = (<any>this._mapping.buttons)[buttonName];
+            if (id && this.rootMesh) {
+                const buttonMap = (<any>this._mapping.buttons)[id];
                 const buttonMeshName = buttonMap.rootNodeName;
                 if (!buttonMeshName) {
-                    Logger.Log('Skipping unknown button at index: ' + i + ' with mapped name: ' + buttonName);
+                    Logger.Log('Skipping unknown button at index: ' + i + ' with mapped name: ' + id);
                     return;
                 }
 
@@ -116,7 +116,7 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
                 buttonMap.unpressedMesh = this._getImmediateChildByName(buttonMesh, this._mapping.defaultButton.unpressedNodeName);
 
                 if (buttonMap.valueMesh && buttonMap.pressedMesh && buttonMap.unpressedMesh) {
-                    const comp = this.getComponent(buttonName);
+                    const comp = this.getComponent(id);
                     if (comp) {
                         comp.onButtonStateChanged.add((component) => {
                             this._lerpTransform(buttonMap, component.value);
@@ -131,15 +131,15 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
         });
 
         // Axis Meshes
-        this.getComponentTypes().forEach((type, i) => {
-            const comp = this.getComponent(type);
+        this.getComponentIds().forEach((id, i) => {
+            const comp = this.getComponent(id);
             if (!comp.isAxes()) {
                 return;
             }
 
             ["x-axis", "y-axis"].forEach((axis) => {
                 if (!this.rootMesh) { return; }
-                const axisMap = (<any>this._mapping.axes)[type][axis];
+                const axisMap = (<any>this._mapping.axes)[id][axis];
 
                 var axisMesh = this._getChildByName(this.rootMesh, axisMap.rootNodeName);
                 if (!axisMesh) {

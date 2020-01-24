@@ -50,14 +50,14 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
         const isQuest = this._isQuest();
         const triggerDirection = this.handness === 'right' ? -1 : 1;
 
-        this.getComponentTypes().forEach((buttonName) => {
-            const comp = buttonName && this.getComponent(buttonName);
+        this.getComponentIds().forEach((id) => {
+            const comp = id && this.getComponent(id);
             if (comp) {
                 comp.onButtonStateChanged.add((component) => {
 
                     if (!this.rootMesh || this.disableAnimation) { return; }
 
-                    switch (buttonName) {
+                    switch (id) {
                         case "xr-standard-trigger": // index trigger
                             if (!isQuest) {
                                 (<AbstractMesh>(this._modelRootNode.getChildren()[3])).rotation.x = -component.value * 0.20;
