@@ -230,7 +230,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     <LineContainerComponent title="INPUTS">   
                     {
                         this.props.globalState.nodeMaterial.getInputBlocks().map(ib => {
-                            if (!ib.isUniform) {
+                            if (!ib.isUniform || ib.isSystemValue || !ib.name) {
                                 return null;
                             }
                             return this.renderInputBlock(ib);
