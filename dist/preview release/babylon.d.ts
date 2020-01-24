@@ -1083,14 +1083,14 @@ declare module BABYLON {
          * @param onLoad defines the callback to trigger once the texture is ready
          * @param onError defines the callback to trigger in case of error
          */
-        loadCubeData(data: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
+        loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
         /**
          * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
          */
-        loadData(data: ArrayBuffer, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed?: boolean) => void): void;
+        loadData(data: ArrayBufferView, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed?: boolean) => void): void;
     }
 }
 declare module BABYLON {
@@ -7635,9 +7635,9 @@ declare module BABYLON {
              */
             createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number): InternalTexture;
             /** @hidden */
-            _partialLoadFile(url: string, index: number, loadedFiles: (string | ArrayBuffer)[], onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>): void;
+            _partialLoadFile(url: string, index: number, loadedFiles: ArrayBuffer[], onfinish: (files: ArrayBuffer[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void>): void;
             /** @hidden */
-            _cascadeLoadFiles(scene: Nullable<Scene>, onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>): void;
+            _cascadeLoadFiles(scene: Nullable<Scene>, onfinish: (images: ArrayBuffer[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>): void;
             /** @hidden */
             _cascadeLoadImgs(scene: Nullable<Scene>, onfinish: (images: HTMLImageElement[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>, mimeType?: string): void;
             /** @hidden */
@@ -9295,6 +9295,20 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var clipPlaneFragmentDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var clipPlaneFragment: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var shadowMapPixelShader: {
         name: string;
         shader: string;
@@ -9337,6 +9351,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var clipPlaneVertexDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var morphTargetsVertex: {
         name: string;
         shader: string;
@@ -9352,6 +9373,13 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export var bonesVertex: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var clipPlaneVertex: {
         name: string;
         shader: string;
     };
@@ -17307,13 +17335,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export var clipPlaneFragmentDeclaration: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
     export var imageProcessingDeclaration: {
         name: string;
         shader: string;
@@ -17328,28 +17349,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export var clipPlaneFragment: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
     export var particlesPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var clipPlaneVertexDeclaration: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var clipPlaneVertex: {
         name: string;
         shader: string;
     };
@@ -25457,6 +25457,15 @@ declare module BABYLON {
          * Observable triggered when reset has been called and applied to the camera.
          */
         onRestoreStateObservable: Observable<Camera>;
+        /**
+         * Is this camera a part of a rig system?
+         */
+        isRigCamera: boolean;
+        /**
+         * If isRigCamera set to true this will be set with the parent camera.
+         * The parent camera is not (!) necessarily the .parent of this camera (like in the case of XR)
+         */
+        rigParent?: Camera;
         /** @hidden */
         _cameraRigParams: any;
         /** @hidden */
@@ -34031,9 +34040,10 @@ declare module BABYLON {
         /**
          * Loads a file from a url
          * @param url the file url to load
-         * @returns a promise containing an ArrayBuffer corrisponding to the loaded file
+         * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+         * @returns a promise containing an ArrayBuffer corresponding to the loaded file
          */
-        static LoadFileAsync(url: string): Promise<ArrayBuffer>;
+        static LoadFileAsync(url: string, useArrayBuffer?: boolean): Promise<ArrayBuffer | string>;
         /**
          * Load a script (identified by an url). When the url returns, the
          * content of this file is added into a new script element, attached to the DOM (body element)
@@ -42953,19 +42963,23 @@ declare module BABYLON {
         /**
          * Thumbstick component type
          */
-        static THUMBSTICK: string;
+        static THUMBSTICK: MotionControllerComponentType;
         /**
          * Touchpad component type
          */
-        static TOUCHPAD: string;
+        static TOUCHPAD: MotionControllerComponentType;
         /**
          * trigger component type
          */
-        static TRIGGER: string;
+        static TRIGGER: MotionControllerComponentType;
         /**
          * squeeze component type
          */
-        static SQUEEZE: string;
+        static SQUEEZE: MotionControllerComponentType;
+        /**
+         * button component type
+         */
+        static BUTTON: MotionControllerComponentType;
         /**
          * Observers registered here will be triggered when the state of a button changes
          * State change is either pressed / touched / value
@@ -42984,6 +42998,11 @@ declare module BABYLON {
         private _pressed;
         private _axes;
         private _changes;
+        private _hasChanges;
+        /**
+         * Return whether or not the component changed the last frame
+         */
+        get hasChanges(): boolean;
         /**
          * Creates a new component for a motion controller.
          * It is created by the motion controller itself
@@ -43457,12 +43476,16 @@ declare module BABYLON {
     /**
      * Handness type in xrInput profiles. These can be used to define layouts in the Layout Map.
      */
-    export type MotionControllerHandness = "none" | "left" | "right" | "left-right" | "left-right-none";
+    export type MotionControllerHandness = "none" | "left" | "right";
     /**
      * The type of components available in motion controllers.
      * This is not the name of the component.
      */
     export type MotionControllerComponentType = "trigger" | "squeeze" | "touchpad" | "thumbstick" | "button";
+    /**
+     * The state of a controller component
+     */
+    export type MotionControllerComponentStateType = "default" | "touched" | "pressed";
     /**
      * The schema of motion controller layout.
      * No object will be initialized using this interface
@@ -43485,38 +43508,76 @@ declare module BABYLON {
                  * The type of input the component outputs
                  */
                 type: MotionControllerComponentType;
+                /**
+                 * The indices of this component in the gamepad object
+                 */
+                gamepadIndices: {
+                    /**
+                     * Index of button
+                     */
+                    button?: number;
+                    /**
+                     * If available, index of x-axis
+                     */
+                    xAxis?: number;
+                    /**
+                     * If available, index of y-axis
+                     */
+                    yAxis?: number;
+                };
+                /**
+                 * The mesh's root node name
+                 */
+                rootNodeName: string;
+                /**
+                 * Animation definitions for this model
+                 */
+                visualResponses: {
+                    [stateKey: string]: {
+                        /**
+                         * What property will be animated
+                         */
+                        componentProperty: "xAxis" | "yAxis" | "button" | "state";
+                        /**
+                         * What states influence this visual reponse
+                         */
+                        states: MotionControllerComponentStateType[];
+                        /**
+                         * Type of animation - movement or visibility
+                         */
+                        valueNodeProperty: "transform" | "visibility";
+                        /**
+                         * Base node name to move. Its position will be calculated according to the min and max nodes
+                         */
+                        valueNodeName?: string;
+                        /**
+                         * Minimum movement node
+                         */
+                        minNodeName?: string;
+                        /**
+                         * Max movement node
+                         */
+                        maxNodeName?: string;
+                    };
+                };
+                /**
+                 * If touch enabled, what is the name of node to display user feedback
+                 */
+                touchPointNodeName?: string;
             };
         };
         /**
-         * An optional gamepad object. If no gamepad object is not defined, no models will be loaded
+         * Is it xr standard mapping or not
          */
-        gamepad?: {
-            /**
-             * Is the mapping based on the xr-standard defined here:
-             * https://www.w3.org/TR/webxr-gamepads-module-1/#xr-standard-gamepad-mapping
-             */
-            mapping: "" | "xr-standard";
-            /**
-             * The buttons available in this input in the right order
-             * index of this button will be the index in the gamepadObject.buttons array
-             * correlates to the componentId in components
-             */
-            buttons: Array<string | null>;
-            /**
-             * Definition of the axes of the gamepad input, sorted
-             * Correlates to componentIds in the components map
-             */
-            axes: Array<{
-                /**
-                 * The component id that the axis correlates to
-                 */
-                componentId: string;
-                /**
-                 * X or Y Axis
-                 */
-                axis: "x-axis" | "y-axis";
-            } | null>;
-        };
+        gamepadMapping: "" | "xr-standard";
+        /**
+         * Base root node of this entire model
+         */
+        rootNodeName: string;
+        /**
+         * Path to load the assets. Usually relative to the base path
+         */
+        assetPath: string;
     }
     /**
      * A definition for the layout map in the input profile
@@ -43572,7 +43633,7 @@ declare module BABYLON {
      * This will be expanded when touchpad animations are fully supported
      * The meshes are provided to the _lerpAxisTransform function to calculate the current position of the value mesh
      */
-    export interface IMotionControllerAxisMeshMap {
+    export interface IMotionControllerMeshMap {
         /**
          * The mesh that will be changed when axis value changes
          */
@@ -43580,11 +43641,11 @@ declare module BABYLON {
         /**
          * the mesh that defines the minimum value mesh position.
          */
-        minMesh: AbstractMesh;
+        minMesh?: AbstractMesh;
         /**
          * the mesh that defines the maximum value mesh position.
          */
-        maxMesh: AbstractMesh;
+        maxMesh?: AbstractMesh;
     }
     /**
      * The elements needed for change-detection of the gamepad objects in motion controllers
@@ -43629,16 +43690,6 @@ declare module BABYLON {
          */
         handness: MotionControllerHandness;
         /**
-         * Component type map
-         */
-        static ComponentType: {
-            TRIGGER: string;
-            SQUEEZE: string;
-            TOUCHPAD: string;
-            THUMBSTICK: string;
-            BUTTON: string;
-        };
-        /**
          * The profile id of this motion controller
          */
         abstract profileId: string;
@@ -43657,6 +43708,10 @@ declare module BABYLON {
          * The root mesh of the model. It is null if the model was not yet initialized
          */
         rootMesh: Nullable<AbstractMesh>;
+        /**
+         * Disable the model's animation. Can be set at any time.
+         */
+        disableAnimation: boolean;
         private _modelReady;
         /**
          * constructs a new abstract motion controller
@@ -43685,7 +43740,7 @@ declare module BABYLON {
          * Get the list of components available in this motion controller
          * @returns an array of strings correlating to available components
          */
-        getComponentTypes(): string[];
+        getComponentIds(): string[];
         /**
          * Get the main (Select) component of this controller as defined in the layout
          * @returns the main component of this controller
@@ -43697,6 +43752,18 @@ declare module BABYLON {
          * @returns the component correlates to the id or undefined if not found
          */
         getComponent(id: string): WebXRControllerComponent;
+        /**
+         * Get the first component of specific type
+         * @param type type of component to find
+         * @return a controller component or null if not found
+         */
+        getComponentOfType(type: MotionControllerComponentType): Nullable<WebXRControllerComponent>;
+        /**
+         * Returns all components of specific type
+         * @param type the type to search for
+         * @return an array of components with this type
+         */
+        getAllComponentsOfType(type: MotionControllerComponentType): WebXRControllerComponent[];
         /**
          * Loads the model correlating to this controller
          * When the mesh is loaded, the onModelLoadedObservable will be triggered
@@ -43714,13 +43781,9 @@ declare module BABYLON {
          * @param axisValue the value of the axis which determines the meshes new position
          * @hidden
          */
-        protected _lerpAxisTransform(axisMap: IMotionControllerAxisMeshMap, axisValue: number): void;
-        /**
-         * Moves the buttons on the controller mesh based on their current state
-         * @param buttonName the name of the button to move
-         * @param buttonValue the value of the button which determines the buttons new position
-         */
-        protected _lerpButtonTransform(buttonMap: IMotionControllerButtonMeshMap, buttonValue: number): void;
+        protected _lerpTransform(axisMap: IMotionControllerMeshMap, axisValue: number, fixValueCoordinates?: boolean): void;
+        protected _getChildByName(node: AbstractMesh, name: string): AbstractMesh;
+        protected _getImmediateChildByName(node: AbstractMesh, name: string): AbstractMesh;
         private _getGenericFilenameAndPath;
         private _getGenericParentMesh;
         /**
@@ -43783,6 +43846,67 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Class containing static functions to help procedurally build meshes
+     */
+    export class SphereBuilder {
+        /**
+         * Creates a sphere mesh
+         * * The parameter `diameter` sets the diameter size (float) of the sphere (default 1)
+         * * You can set some different sphere dimensions, for instance to build an ellipsoid, by using the parameters `diameterX`, `diameterY` and `diameterZ` (all by default have the same value of `diameter`)
+         * * The parameter `segments` sets the sphere number of horizontal stripes (positive integer, default 32)
+         * * You can create an unclosed sphere with the parameter `arc` (positive float, default 1), valued between 0 and 1, what is the ratio of the circumference (latitude) : 2 x PI x ratio
+         * * You can create an unclosed sphere on its height with the parameter `slice` (positive float, default1), valued between 0 and 1, what is the height ratio (longitude)
+         * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
+         * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
+         * @param name defines the name of the mesh
+         * @param options defines the options used to create the mesh
+         * @param scene defines the hosting scene
+         * @returns the sphere mesh
+         * @see https://doc.babylonjs.com/how_to/set_shapes#sphere
+         */
+        static CreateSphere(name: string, options: {
+            segments?: number;
+            diameter?: number;
+            diameterX?: number;
+            diameterY?: number;
+            diameterZ?: number;
+            arc?: number;
+            slice?: number;
+            sideOrientation?: number;
+            frontUVs?: Vector4;
+            backUVs?: Vector4;
+            updatable?: boolean;
+        }, scene?: Nullable<Scene>): Mesh;
+    }
+}
+declare module BABYLON {
+    /**
+     * A profiled motion controller has its profile loaded from an online repository.
+     * The class is responsible of loading the model, mapping the keys and enabling model-animations
+     */
+    export class WebXRProfiledMotionController extends WebXRAbstractMotionController {
+        private _repositoryUrl;
+        /**
+         * The profile ID of this controller. Will be populated when the controller initializes.
+         */
+        profileId: string;
+        private _buttonMeshMapping;
+        constructor(scene: Scene, xrInput: XRInputSource, _profile: IMotionControllerProfile, _repositoryUrl: string);
+        protected _getFilenameAndPath(): {
+            filename: string;
+            path: string;
+        };
+        private _touchDots;
+        protected _processLoadedModel(_meshes: AbstractMesh[]): void;
+        protected _setRootMesh(meshes: AbstractMesh[]): void;
+        protected _updateModel(_xrFrame: XRFrame): void;
+        protected _getModelLoadingConstraints(): boolean;
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
      * A construction function type to create a new controller based on an xrInput object
      */
     export type MotionControllerConstructor = (xrInput: XRInputSource, scene: Scene) => WebXRAbstractMotionController;
@@ -43795,6 +43919,18 @@ declare module BABYLON {
      * When using a model try to stay as generic as possible. Eventually there will be no need in any of the controller classes
      */
     export class WebXRMotionControllerManager {
+        /**
+         * The base URL of the online controller repository. Can be changed at any time.
+         */
+        static BaseRepositoryUrl: string;
+        /**
+         * Use the online repository, or use only locally-defined controllers
+         */
+        static UseOnlineRepository: boolean;
+        /**
+         * Which repository gets priority - local or online
+         */
+        static PrioritizeOnlineRepository: boolean;
         private static _AvailableControllers;
         private static _Fallbacks;
         /**
@@ -43818,9 +43954,24 @@ declare module BABYLON {
          * @param xrInput the xrInput to which a new controller is initialized
          * @param scene the scene to which the model will be added
          * @param forceProfile force a certain profile for this controller
-         * @return the motion controller class for this profile id or the generic standard class if none was found
+         * @return A promise that fulfils with the motion controller class for this profile id or the generic standard class if none was found
          */
-        static GetMotionControllerWithXRInput(xrInput: XRInputSource, scene: Scene, forceProfile?: string): WebXRAbstractMotionController;
+        static GetMotionControllerWithXRInput(xrInput: XRInputSource, scene: Scene, forceProfile?: string): Promise<WebXRAbstractMotionController>;
+        private static _LoadProfilesFromAvailableControllers;
+        private static _ProfilesList;
+        private static _ProfileLoadingPromises;
+        private static _LoadProfileFromRepository;
+        /**
+         * Clear the cache used for profile loading and reload when requested again
+         */
+        static ClearProfilesCache(): void;
+        /**
+         * Will update the list of profiles available in the repository
+         * @return a promise that resolves to a map of profiles available online
+         */
+        static UpdateProfilesList(): Promise<{
+            [profile: string]: string;
+        }>;
         /**
          * Find a fallback profile if the profile was not found. There are a few predefined generic profiles.
          * @param profileId the profile to which a fallback needs to be found
@@ -43850,6 +44001,15 @@ declare module BABYLON {
          * This can be used when creating your own profile or when testing different controllers
          */
         forceControllerProfile?: string;
+        /**
+         * Do not load the controller mesh, in case a different mesh needs to be loaded.
+         */
+        doNotLoadControllerMesh?: boolean;
+        /**
+         * Should the controller mesh be animated when a user interacts with it
+         * The pressed buttons / thumbstick and touchpad animations will be disabled
+         */
+        disableMotionControllerAnimation?: boolean;
     }
     /**
      * Represents an XR controller
@@ -43873,6 +44033,10 @@ declare module BABYLON {
          * webxr controller that is currently being used.
          */
         motionController?: WebXRAbstractMotionController;
+        /**
+         * Observers registered here will trigger when a motion controller profile was assigned to this xr controller
+         */
+        onMotionControllerProfileLoaded: Observable<WebXRAbstractMotionController>;
         /**
          * Event that fires when the controller is removed/disposed
          */
@@ -43926,6 +44090,20 @@ declare module BABYLON {
          * Profiles are defined here - https://github.com/immersive-web/webxr-input-profiles/
          */
         forceInputProfile?: string;
+        /**
+         * Do not send a request to the controlle repository to load the profile.
+         *
+         * Instead, use the controllers available in babylon itself.
+         */
+        disableOnlineControllerRepository?: boolean;
+        /**
+         * A custom URL for the controllers repository
+         */
+        customControllersRepositoryURL?: string;
+        /**
+         * Should the controller model's components not move according to the user input
+         */
+        disableControllerAnimation?: boolean;
     }
     /**
      * XR input used to track XR inputs such as controllers/rays
@@ -45455,8 +45633,6 @@ declare module BABYLON {
         };
         constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness);
         protected _processLoadedModel(_meshes: AbstractMesh[]): void;
-        private _getChildByName;
-        private _getImmediateChildByName;
         protected _getFilenameAndPath(): {
             filename: string;
             path: string;
@@ -45522,7 +45698,13 @@ declare module BABYLON {
         static MODEL_FILENAME: string;
         profileId: string;
         private _modelRootNode;
-        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness, legacyMapping?: boolean);
+        /**
+         * Create a new Vive motion controller object
+         * @param scene the scene to use to create this controller
+         * @param gamepadObject the corresponding gamepad object
+         * @param handness the handness of the controller
+         */
+        constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness);
         protected _processLoadedModel(_meshes: AbstractMesh[]): void;
         protected _getFilenameAndPath(): {
             filename: string;
@@ -45826,7 +46008,7 @@ declare module BABYLON {
          * Gets the camera that is used to render the utility layer (when not set, this will be the last active camera)
          * @returns the camera that is used when rendering the utility layer
          */
-        getRenderCamera(): Nullable<Camera>;
+        getRenderCamera(): Camera;
         /**
          * Sets the camera that should be used when rendering the utility layer (If set to null the last active camera will be used)
          * @param cam the camera that should be used when rendering the utility layer
@@ -46426,42 +46608,6 @@ declare module BABYLON {
             wrap?: boolean;
             topBaseAt?: number;
             bottomBaseAt?: number;
-            updatable?: boolean;
-        }, scene?: Nullable<Scene>): Mesh;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class containing static functions to help procedurally build meshes
-     */
-    export class SphereBuilder {
-        /**
-         * Creates a sphere mesh
-         * * The parameter `diameter` sets the diameter size (float) of the sphere (default 1)
-         * * You can set some different sphere dimensions, for instance to build an ellipsoid, by using the parameters `diameterX`, `diameterY` and `diameterZ` (all by default have the same value of `diameter`)
-         * * The parameter `segments` sets the sphere number of horizontal stripes (positive integer, default 32)
-         * * You can create an unclosed sphere with the parameter `arc` (positive float, default 1), valued between 0 and 1, what is the ratio of the circumference (latitude) : 2 x PI x ratio
-         * * You can create an unclosed sphere on its height with the parameter `slice` (positive float, default1), valued between 0 and 1, what is the height ratio (longitude)
-         * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
-         * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
-         * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
-         * @param name defines the name of the mesh
-         * @param options defines the options used to create the mesh
-         * @param scene defines the hosting scene
-         * @returns the sphere mesh
-         * @see https://doc.babylonjs.com/how_to/set_shapes#sphere
-         */
-        static CreateSphere(name: string, options: {
-            segments?: number;
-            diameter?: number;
-            diameterX?: number;
-            diameterY?: number;
-            diameterZ?: number;
-            arc?: number;
-            slice?: number;
-            sideOrientation?: number;
-            frontUVs?: Vector4;
-            backUVs?: Vector4;
             updatable?: boolean;
         }, scene?: Nullable<Scene>): Mesh;
     }
@@ -47606,7 +47752,7 @@ declare module BABYLON {
          * @param data The array buffer containing the .env bytes.
          * @returns the environment file info (the json header) if successfully parsed.
          */
-        static GetEnvInfo(data: ArrayBuffer): Nullable<EnvironmentTextureInfo>;
+        static GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureInfo>;
         /**
          * Creates an environment texture from a loaded cube texture.
          * @param texture defines the cube texture to convert in env file
@@ -47621,19 +47767,19 @@ declare module BABYLON {
         private static _CreateEnvTextureIrradiance;
         /**
          * Creates the ArrayBufferViews used for initializing environment texture image data.
-         * @param arrayBuffer the underlying ArrayBuffer to which the views refer
+         * @param data the image data
          * @param info parameters that determine what views will be created for accessing the underlying buffer
          * @return the views described by info providing access to the underlying buffer
          */
-        static CreateImageDataArrayBufferViews(arrayBuffer: any, info: EnvironmentTextureInfo): Array<Array<ArrayBufferView>>;
+        static CreateImageDataArrayBufferViews(data: ArrayBufferView, info: EnvironmentTextureInfo): Array<Array<ArrayBufferView>>;
         /**
          * Uploads the texture info contained in the env file to the GPU.
          * @param texture defines the internal texture to upload to
-         * @param arrayBuffer defines the buffer cotaining the data to load
+         * @param data defines the data to load
          * @param info defines the texture info retrieved through the GetEnvInfo method
          * @returns a promise
          */
-        static UploadEnvLevelsAsync(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): Promise<void>;
+        static UploadEnvLevelsAsync(texture: InternalTexture, data: ArrayBufferView, info: EnvironmentTextureInfo): Promise<void>;
         private static _OnImageReadyAsync;
         /**
          * Uploads the levels of image data to the GPU.
@@ -52164,10 +52310,10 @@ declare module BABYLON {
         static StoreLODInAlphaChannel: boolean;
         /**
          * Gets DDS information from an array buffer
-         * @param arrayBuffer defines the array buffer to read data from
+         * @param data defines the array buffer view to read data from
          * @returns the DDS information
          */
-        static GetDDSInfo(arrayBuffer: any): DDSInfo;
+        static GetDDSInfo(data: ArrayBufferView): DDSInfo;
         private static _FloatView;
         private static _Int32View;
         private static _ToHalfFloat;
@@ -52185,7 +52331,7 @@ declare module BABYLON {
          * Uploads DDS Levels to a Babylon Texture
          * @hidden
          */
-        static UploadDDSLevels(engine: ThinEngine, texture: InternalTexture, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex?: number, currentFace?: number): void;
+        static UploadDDSLevels(engine: ThinEngine, texture: InternalTexture, data: ArrayBufferView, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex?: number, currentFace?: number): void;
     }
         interface ThinEngine {
             /**
@@ -52246,14 +52392,14 @@ declare module BABYLON {
          * @param onLoad defines the callback to trigger once the texture is ready
          * @param onError defines the callback to trigger in case of error
          */
-        loadCubeData(imgs: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
+        loadCubeData(imgs: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
         /**
          * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
          */
-        loadData(data: ArrayBuffer, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void;
+        loadData(data: ArrayBufferView, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void;
     }
 }
 declare module BABYLON {
@@ -52298,14 +52444,14 @@ declare module BABYLON {
          * @param onLoad defines the callback to trigger once the texture is ready
          * @param onError defines the callback to trigger in case of error
          */
-        loadCubeData(data: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
+        loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
         /**
          * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
          */
-        loadData(data: ArrayBuffer, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void;
+        loadData(data: ArrayBufferView, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void;
     }
 }
 declare module BABYLON {
@@ -52315,7 +52461,7 @@ declare module BABYLON {
      */
     export class KhronosTextureContainer {
         /** contents of the KTX container file */
-        arrayBuffer: any;
+        data: ArrayBufferView;
         private static HEADER_LEN;
         private static COMPRESSED_2D;
         private static COMPRESSED_3D;
@@ -52379,14 +52525,14 @@ declare module BABYLON {
         isInvalid: boolean;
         /**
          * Creates a new KhronosTextureContainer
-         * @param arrayBuffer contents of the KTX container file
+         * @param data contents of the KTX container file
          * @param facesExpected should be either 1 or 6, based whether a cube texture or or
          * @param threeDExpected provision for indicating that data should be a 3D texture, not implemented
          * @param textureArrayExpected provision for indicating that data should be a texture array, not implemented
          */
         constructor(
         /** contents of the KTX container file */
-        arrayBuffer: any, facesExpected: number, threeDExpected?: boolean, textureArrayExpected?: boolean);
+        data: ArrayBufferView, facesExpected: number, threeDExpected?: boolean, textureArrayExpected?: boolean);
         /**
          * Uploads KTX content to a Babylon Texture.
          * It is assumed that the texture has already been created & is currently bound
@@ -52438,14 +52584,14 @@ declare module BABYLON {
          * @param onLoad defines the callback to trigger once the texture is ready
          * @param onError defines the callback to trigger in case of error
          */
-        loadCubeData(data: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
+        loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
         /**
          * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
          */
-        loadData(data: ArrayBuffer, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed: boolean) => void): void;
+        loadData(data: ArrayBufferView, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed: boolean) => void): void;
     }
 }
 declare module BABYLON {
@@ -56196,14 +56342,14 @@ declare module BABYLON {
          * @param onLoad defines the callback to trigger once the texture is ready
          * @param onError defines the callback to trigger in case of error
          */
-        loadCubeData(data: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
+        loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
         /**
          * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
          */
-        loadData(data: ArrayBuffer, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void;
+        loadData(data: ArrayBufferView, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void;
     }
 }
 declare module BABYLON {
@@ -56299,11 +56445,11 @@ declare module BABYLON {
         private static _CreateWorkerAsync;
         /**
          * Transcodes a loaded image file to compressed pixel data
-         * @param imageData image data to transcode
+         * @param data image data to transcode
          * @param config configuration options for the transcoding
          * @returns a promise resulting in the transcoded image
          */
-        static TranscodeAsync(imageData: ArrayBuffer, config: BasisTranscodeConfiguration): Promise<TranscodeResult>;
+        static TranscodeAsync(data: ArrayBuffer | ArrayBufferView, config: BasisTranscodeConfiguration): Promise<TranscodeResult>;
         /**
          * Loads a texture from the transcode result
          * @param texture texture load to
@@ -56353,14 +56499,14 @@ declare module BABYLON {
          * @param onLoad defines the callback to trigger once the texture is ready
          * @param onError defines the callback to trigger in case of error
          */
-        loadCubeData(data: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
+        loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
         /**
          * Uploads the 2D texture data to the WebGl Texture. It has alreday been bound once in the callback.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
          */
-        loadData(data: ArrayBuffer, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void;
+        loadData(data: ArrayBufferView, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void;
     }
 }
 declare module BABYLON {
