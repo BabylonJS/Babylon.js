@@ -1294,6 +1294,7 @@ declare module "babylonjs-node-editor/globalState" {
         hostWindow: Window;
         onSelectionChangedObservable: Observable<Nullable<GraphNode | GraphFrame | NodeLink>>;
         onRebuildRequiredObservable: Observable<void>;
+        onBuiltObservable: Observable<void>;
         onResetRequiredObservable: Observable<void>;
         onUpdateRequiredObservable: Observable<void>;
         onZoomToFitRequiredObservable: Observable<void>;
@@ -1388,8 +1389,10 @@ declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponen
         currentNode: Nullable<GraphNode>;
         currentFrame: Nullable<GraphFrame>;
     }> {
+        private _onBuiltObserver;
         constructor(props: IPropertyTabComponentProps);
         componentDidMount(): void;
+        componentWillReceiveProps(): void;
         processInputBlockUpdate(ib: InputBlock): void;
         renderInputBlock(block: InputBlock): JSX.Element | null;
         load(file: File): void;
@@ -2656,6 +2659,7 @@ declare module NODEEDITOR {
         hostWindow: Window;
         onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<GraphNode | GraphFrame | NodeLink>>;
         onRebuildRequiredObservable: BABYLON.Observable<void>;
+        onBuiltObservable: BABYLON.Observable<void>;
         onResetRequiredObservable: BABYLON.Observable<void>;
         onUpdateRequiredObservable: BABYLON.Observable<void>;
         onZoomToFitRequiredObservable: BABYLON.Observable<void>;
@@ -2738,8 +2742,10 @@ declare module NODEEDITOR {
         currentNode: BABYLON.Nullable<GraphNode>;
         currentFrame: BABYLON.Nullable<GraphFrame>;
     }> {
+        private _onBuiltObserver;
         constructor(props: IPropertyTabComponentProps);
         componentDidMount(): void;
+        componentWillReceiveProps(): void;
         processInputBlockUpdate(ib: BABYLON.InputBlock): void;
         renderInputBlock(block: BABYLON.InputBlock): JSX.Element | null;
         load(file: File): void;
