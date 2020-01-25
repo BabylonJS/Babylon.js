@@ -2073,6 +2073,17 @@ declare module BABYLON {
          */
         negate(): Vector2;
         /**
+         * Negate this vector in place
+         * @returns this
+         */
+        negateInPlace(): Vector2;
+        /**
+         * Negate the current Vector2 and stores the result in the given vector "result" coordinates
+         * @param result defines the Vector3 object where to store the result
+         * @returns the current Vector2
+         */
+        negateToRef(result: Vector2): Vector2;
+        /**
          * Multiply the Vector2 coordinates by scale
          * @param scale defines the scaling factor
          * @returns the current updated Vector2
@@ -2428,6 +2439,12 @@ declare module BABYLON {
          * @returns this
          */
         negateInPlace(): Vector3;
+        /**
+         * Negate the current Vector3 and stores the result in the given vector "result" coordinates
+         * @param result defines the Vector3 object where to store the result
+         * @returns the current Vector3
+         */
+        negateToRef(result: Vector3): Vector3;
         /**
          * Multiplies the Vector3 coordinates by the float "scale"
          * @param scale defines the multiplier factor
@@ -3149,6 +3166,17 @@ declare module BABYLON {
          * @returns a new vector with the negated values
          */
         negate(): Vector4;
+        /**
+         * Negate this vector in place
+         * @returns this
+         */
+        negateInPlace(): Vector4;
+        /**
+         * Negate the current Vector4 and stores the result in the given vector "result" coordinates
+         * @param result defines the Vector3 object where to store the result
+         * @returns the current Vector4
+         */
+        negateToRef(result: Vector4): Vector4;
         /**
          * Multiplies the current Vector4 coordinates by scale (float).
          * @param scale the number to scale with
