@@ -851,6 +851,15 @@ export class Vector3 {
     }
 
     /**
+     * Negate the current Vector3 and stores the result in the given vector "result" coordinates
+     * @param result defines the Vector3 object where to store the result
+     * @returns this
+     */
+    public negateToRef(result: Vector3): Vector3 {
+        return result.copyFromFloats(this.x * -1, this.y * -1, this.z * -1);
+    }
+
+    /**
      * Multiplies the Vector3 coordinates by the float "scale"
      * @param scale defines the multiplier factor
      * @returns the current updated Vector3
