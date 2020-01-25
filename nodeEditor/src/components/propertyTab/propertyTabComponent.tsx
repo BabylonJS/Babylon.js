@@ -24,7 +24,7 @@ import { Color4LineComponent } from '../../sharedComponents/color4LineComponent'
 import { Vector2LineComponent } from '../../sharedComponents/vector2LineComponent';
 import { Vector3LineComponent } from '../../sharedComponents/vector3LineComponent';
 import { Vector4LineComponent } from '../../sharedComponents/vector4LineComponent';
-import { Observer } from 'babylonjs';
+import { Observer } from 'babylonjs/Misc/observable';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
