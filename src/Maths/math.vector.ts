@@ -257,6 +257,25 @@ export class Vector2 {
     }
 
     /**
+     * Negate this vector in place
+     * @returns this
+     */
+    public negateInPlace(): Vector2 {
+        this.x *= -1;
+        this.y *= -1;
+        return this;
+    }
+
+    /**
+     * Negate the current Vector2 and stores the result in the given vector "result" coordinates
+     * @param result defines the Vector3 object where to store the result
+     * @returns the current Vector2
+     */
+    public negateToRef(result: Vector2): Vector2 {
+        return result.copyFromFloats(this.x * -1, this.y * -1);
+    }
+
+    /**
      * Multiply the Vector2 coordinates by scale
      * @param scale defines the scaling factor
      * @returns the current updated Vector2
@@ -848,6 +867,15 @@ export class Vector3 {
         this.y *= -1;
         this.z *= -1;
         return this;
+    }
+
+    /**
+     * Negate the current Vector3 and stores the result in the given vector "result" coordinates
+     * @param result defines the Vector3 object where to store the result
+     * @returns the current Vector3
+     */
+    public negateToRef(result: Vector3): Vector3 {
+        return result.copyFromFloats(this.x * -1, this.y * -1, this.z * -1);
     }
 
     /**
@@ -2098,6 +2126,27 @@ export class Vector4 {
      */
     public negate(): Vector4 {
         return new Vector4(-this.x, -this.y, -this.z, -this.w);
+    }
+
+    /**
+     * Negate this vector in place
+     * @returns this
+     */
+    public negateInPlace(): Vector4 {
+        this.x *= -1;
+        this.y *= -1;
+        this.z *= -1;
+        this.w *= -1;
+        return this;
+    }
+
+    /**
+     * Negate the current Vector4 and stores the result in the given vector "result" coordinates
+     * @param result defines the Vector3 object where to store the result
+     * @returns the current Vector4
+     */
+    public negateToRef(result: Vector4): Vector4 {
+        return result.copyFromFloats(this.x * -1, this.y * -1, this.z * -1, this.w * -1);
     }
 
     /**
