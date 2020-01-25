@@ -387,9 +387,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             }
 
             for (var frame of this._frames) {
-                if (frame.id === dagreNode.id) {
+                if (frame.id === dagreNode.id) {                    
+                    this._frameIsMoving = true;
                     frame.move(dagreNode.x - dagreNode.width / 2, dagreNode.y - dagreNode.height / 2, false);
                     frame.cleanAccumulation();
+                    this._frameIsMoving = false;
                     return;
                 }
             }
@@ -617,6 +619,45 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     zoomToFit() {
+        // Get negative offset
+        let minX = 0;
+        let minY = 0;
+        this._nodes.forEach(node => {
+            if (this._frames.some(f => f.nodes.indexOf(node) !== -1)) {
+                return;
+            }
+
+            if (node.x < minX) {
+                minX = node.x;
+            }
+            if (node.y < minY) {
+                minY = node.y;
+            }
+        });
+
+        this._frames.forEach(frame => {
+            if (frame.x < minX) {
+                minX = frame.x;
+            }
+            if (frame.y < minY) {
+                minY = frame.y;
+            }
+        });
+
+        // Restore to 0
+        this._frames.forEach(frame => {            
+            frame.x += -minX;
+            frame.y += -minY;
+            frame.cleanAccumulation();
+        });
+
+        this._nodes.forEach(node => {
+            node.x += -minX;
+            node.y += -minY;            
+            node.cleanAccumulation();
+        });
+
+        // Get correct zoom
         const xFactor = this._rootContainer.clientWidth / this._rootContainer.scrollWidth;
         const yFactor = this._rootContainer.clientHeight / this._rootContainer.scrollHeight;
         const zoomFactor = xFactor < yFactor ? xFactor : yFactor;
