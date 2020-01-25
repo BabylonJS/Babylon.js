@@ -56,6 +56,7 @@ export class NodeEditor {
         if (options.customLoadObservable) {
             options.customLoadObservable.add(data => {
                 SerializationTools.Deserialize(data, globalState);
+                globalState.onBuiltObservable.notifyObservers();
             })
         }
 
