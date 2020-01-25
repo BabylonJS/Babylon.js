@@ -24,6 +24,7 @@ import { Color4LineComponent } from '../../sharedComponents/color4LineComponent'
 import { Vector2LineComponent } from '../../sharedComponents/vector2LineComponent';
 import { Vector3LineComponent } from '../../sharedComponents/vector3LineComponent';
 import { Vector4LineComponent } from '../../sharedComponents/vector4LineComponent';
+import { Observer } from 'babylonjs/Misc/observable';
 require("./propertyTab.scss");
 
 interface IPropertyTabComponentProps {
@@ -31,6 +32,8 @@ interface IPropertyTabComponentProps {
 }
 
 export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, { currentNode: Nullable<GraphNode>, currentFrame: Nullable<GraphFrame> }> {
+    private _onBuiltObserver: Nullable<Observer<void>>;
+
     constructor(props: IPropertyTabComponentProps) {
         super(props)
 
@@ -47,6 +50,14 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 this.setState({ currentNode: null, currentFrame: null });
             }
         });
+
+        this._onBuiltObserver = this.props.globalState.onBuiltObservable.add(() => {
+            this.forceUpdate();
+        });
+    }
+
+    componentWillReceiveProps() {
+        this.props.globalState.onBuiltObservable.remove(this._onBuiltObserver);
     }
 
     processInputBlockUpdate(ib: InputBlock) {
@@ -65,17 +76,19 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <div key={block.name}>                            
                             {
                                 block.isBoolean &&
-                                <CheckBoxLineComponent key={block.name} label={block.name} target={block} propertyName="value" 
-                                onValueChanged={() => this.processInputBlockUpdate(block)}/>
+                                <CheckBoxLineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value"                                 
+                                onValueChanged={() => {
+                                    this.processInputBlockUpdate(block);
+                                }}/>
                             }
                             {
                                 !block.isBoolean && cantDisplaySlider &&
-                                <FloatLineComponent key={block.name} label={block.name} target={block} propertyName="value" 
+                                <FloatLineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" 
                                 onChange={() => this.processInputBlockUpdate(block)}/>
                             }        
                             {
                                 !block.isBoolean && !cantDisplaySlider &&
-                                <SliderLineComponent key={block.name} label={block.name} target={block} propertyName="value" 
+                                <SliderLineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value" 
                                 step={(block.max - block.min) / 100.0} minimum={block.min} maximum={block.max}
                                 onChange={() => this.processInputBlockUpdate(block)}/>
                             }
@@ -83,31 +96,31 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     );  
             case NodeMaterialBlockConnectionPointTypes.Color3:
                 return (
-                    <Color3LineComponent globalState={this.props.globalState} key={block.name} label={block.name} target={block} 
+                    <Color3LineComponent globalState={this.props.globalState} key={block.uniqueId} label={block.name} target={block} 
                         propertyName="value" 
                         onChange={() => this.processInputBlockUpdate(block)}
                     />
                 )     
             case NodeMaterialBlockConnectionPointTypes.Color4:
                 return (
-                    <Color4LineComponent globalState={this.props.globalState} key={block.name} label={block.name} target={block} propertyName="value" 
+                    <Color4LineComponent globalState={this.props.globalState} key={block.uniqueId} label={block.name} target={block} propertyName="value" 
                     onChange={() => this.processInputBlockUpdate(block)}/>
                 )                         
             case NodeMaterialBlockConnectionPointTypes.Vector2:
                 return (
-                        <Vector2LineComponent globalState={this.props.globalState} key={block.name} label={block.name} target={block} 
+                        <Vector2LineComponent globalState={this.props.globalState} key={block.uniqueId} label={block.name} target={block} 
                         propertyName="value" 
                         onChange={() => this.processInputBlockUpdate(block)}/>
                     )                                
             case NodeMaterialBlockConnectionPointTypes.Vector3:
                 return (
-                    <Vector3LineComponent globalState={this.props.globalState} key={block.name} label={block.name} target={block} 
+                    <Vector3LineComponent globalState={this.props.globalState} key={block.uniqueId} label={block.name} target={block} 
                     propertyName="value" 
                     onChange={() => this.processInputBlockUpdate(block)}/>
                 )
             case NodeMaterialBlockConnectionPointTypes.Vector4:
                 return (
-                    <Vector4LineComponent globalState={this.props.globalState} key={block.name} label={block.name} target={block} 
+                    <Vector4LineComponent globalState={this.props.globalState} key={block.uniqueId} label={block.name} target={block} 
                     propertyName="value" 
                     onChange={() => this.processInputBlockUpdate(block)}/>
                 )

@@ -382,6 +382,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, State> {
         }
 
         SerializationTools.UpdateLocations(this.props.globalState.nodeMaterial, this.props.globalState);
+
+        this.props.globalState.onBuiltObservable.notifyObservers();
     }
 
     build() {        

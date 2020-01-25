@@ -19,6 +19,7 @@ export class GlobalState {
     hostWindow: Window;
     onSelectionChangedObservable = new Observable<Nullable<GraphNode | NodeLink | GraphFrame>>();
     onRebuildRequiredObservable = new Observable<void>();
+    onBuiltObservable = new Observable<void>();
     onResetRequiredObservable = new Observable<void>();
     onUpdateRequiredObservable = new Observable<void>();
     onZoomToFitRequiredObservable = new Observable<void>();
