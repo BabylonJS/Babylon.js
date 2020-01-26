@@ -105,6 +105,9 @@ export class Control {
     protected _rebuildLayout = false;
 
     /** @hidden */
+    public _customData: any = {};
+
+    /** @hidden */
     public _isClipped = false;
 
     /** @hidden */
