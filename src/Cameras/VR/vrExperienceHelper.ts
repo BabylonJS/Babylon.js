@@ -689,7 +689,7 @@ export class VRExperienceHelper {
     }
 
     /**
-     * Defines wether or not Pointer lock should be requested when switching to
+     * Defines whether or not Pointer lock should be requested when switching to
      * full screen.
      */
     public requestPointerLockOnFullScreen = true;
