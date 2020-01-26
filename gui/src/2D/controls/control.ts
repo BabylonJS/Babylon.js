@@ -26,9 +26,9 @@ export class Control {
     public static AllowAlphaInheritance = false;
 
     /** Gets the number of layout calls made the last time the ADT has been rendered */
-    public static numLayoutCalls = 0;
+    public static NumLayoutCalls = 0;
     /** Gets the number of render calls made the last time the ADT has been rendered */
-    public static numRenderCalls = 0;
+    public static NumRenderCalls = 0;
 
     private _alpha = 1;
     private _alphaSet = false;
@@ -1364,7 +1364,7 @@ export class Control {
         }
 
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
-            Control.numLayoutCalls++;
+            Control.NumLayoutCalls++;
 
             this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
 
@@ -1607,7 +1607,7 @@ export class Control {
             return false;
         }
 
-        Control.numRenderCalls++;
+        Control.NumRenderCalls++;
 
         context.save();
 
