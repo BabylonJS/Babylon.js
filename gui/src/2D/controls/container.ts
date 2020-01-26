@@ -304,6 +304,8 @@ export class Container extends Control {
             return false;
         }
 
+        Control.numLayoutCalls++;
+
         if (this._isDirty) {
             this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
         }

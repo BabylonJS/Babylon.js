@@ -550,6 +550,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         // Layout
         this.onBeginLayoutObservable.notifyObservers(this);
         var measure = new Measure(0, 0, renderWidth, renderHeight);
+        Control.numLayoutCalls = 0;
         this._rootContainer._layout(measure, context);
         this.onEndLayoutObservable.notifyObservers(this);
         this._isDirty = false; // Restoring the dirty state that could have been set by controls during layout processing
@@ -570,6 +571,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
         // Render
         this.onBeginRenderObservable.notifyObservers(this);
+        Control.numRenderCalls = 0;
         this._rootContainer._render(context, this._invalidatedRectangle);
         this.onEndRenderObservable.notifyObservers(this);
         this._invalidatedRectangle = null;
