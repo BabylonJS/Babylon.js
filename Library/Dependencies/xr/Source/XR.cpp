@@ -82,9 +82,9 @@ namespace xr
     class System::Impl
     {
     public:
-        constexpr static XrFormFactor FORM_FACTOR{ XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY };
-        constexpr static XrViewConfigurationType VIEW_CONFIGURATION_TYPE{ XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO };
-        constexpr static uint32_t STEREO_VIEW_COUNT{ 2 }; // PRIMARY_STEREO view configuration always has 2 views
+        static constexpr XrFormFactor FORM_FACTOR{ XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY };
+        static constexpr XrViewConfigurationType VIEW_CONFIGURATION_TYPE{ XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO };
+        static constexpr uint32_t STEREO_VIEW_COUNT{ 2 }; // PRIMARY_STEREO view configuration always has 2 views
 
         XrInstance Instance{ XR_NULL_HANDLE };
         XrSystemId SystemId{ XR_NULL_SYSTEM_ID };
@@ -173,8 +173,8 @@ namespace xr
         XrSpace SceneSpace{ XR_NULL_HANDLE };
         XrReferenceSpaceType SceneSpaceType{};
 
-        constexpr static uint32_t LeftSide = 0;
-        constexpr static uint32_t RightSide = 1;
+        static constexpr uint32_t LeftSide = 0;
+        static constexpr uint32_t RightSide = 1;
 
         struct Swapchain
         {

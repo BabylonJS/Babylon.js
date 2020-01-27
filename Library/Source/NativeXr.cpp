@@ -427,7 +427,7 @@ namespace Babylon
             static constexpr auto JS_CLASS_NAME = "XRWebGLLayer";
 
         public:
-            static void Initialize(Napi::Env& env)
+            static void Initialize(Napi::Env env)
             {
                 Napi::HandleScope scope{env};
 
@@ -438,15 +438,12 @@ namespace Babylon
                         InstanceMethod("getViewport", &XRWebGLLayer::GetViewport),
                     });
 
-                constructor = Napi::Persistent(func);
-                constructor.SuppressDestruct();
-
                 env.Global().Set(JS_CLASS_NAME, func);
             }
 
-            static Napi::Object New()
+            static Napi::Object New(const Napi::CallbackInfo& info)
             {
-                return constructor.New({});
+                return info.Env().Global().Get(JS_CLASS_NAME).As<Napi::Function>().New({});
             }
 
             XRWebGLLayer(const Napi::CallbackInfo& info)
@@ -455,8 +452,6 @@ namespace Babylon
             }
 
         private:
-            static inline Napi::FunctionReference constructor{};
-
             Napi::Value GetViewport(const Napi::CallbackInfo& info)
             {
                 return info.This().As<Napi::Object>().Get("viewport");
@@ -470,7 +465,7 @@ namespace Babylon
             static constexpr size_t MATRIX_SIZE = 16;
 
         public:
-            static void Initialize(Napi::Env& env)
+            static void Initialize(Napi::Env env)
             {
                 Napi::HandleScope scope{env};
 
@@ -483,15 +478,12 @@ namespace Babylon
                         InstanceAccessor("matrix", &XRRigidTransform::Matrix, nullptr),
                     });
 
-                constructor = Napi::Persistent(func);
-                constructor.SuppressDestruct();
-
                 env.Global().Set(JS_CLASS_NAME, func);
             }
 
-            static Napi::Object New()
+            static Napi::Object New(const Napi::CallbackInfo& info)
             {
-                return constructor.New({});
+                return info.Env().Global().Get(JS_CLASS_NAME).As<Napi::Function>().New({});
             }
 
             XRRigidTransform(const Napi::CallbackInfo& info)
@@ -520,8 +512,6 @@ namespace Babylon
             }
 
         private:
-            static inline Napi::FunctionReference constructor{};
-
             Napi::ObjectReference m_position{};
             Napi::ObjectReference m_orientation{};
             Napi::Reference<Napi::Float32Array> m_matrix{};
@@ -548,7 +538,7 @@ namespace Babylon
             static constexpr size_t MATRIX_SIZE = 16;
 
         public:
-            static void Initialize(Napi::Env& env)
+            static void Initialize(Napi::Env env)
             {
                 Napi::HandleScope scope{env};
 
@@ -561,15 +551,12 @@ namespace Babylon
                         InstanceAccessor("transform", &XRView::GetTransform, nullptr),
                     });
 
-                constructor = Napi::Persistent(func);
-                constructor.SuppressDestruct();
-
                 env.Global().Set(JS_CLASS_NAME, func);
             }
 
-            static Napi::Object New()
+            static Napi::Object New(const Napi::CallbackInfo& info)
             {
-                return constructor.New({});
+                return info.Env().Global().Get(JS_CLASS_NAME).As<Napi::Function>().New({});
             }
 
             XRView(const Napi::CallbackInfo& info)
@@ -577,7 +564,7 @@ namespace Babylon
                 , m_eyeIdx{0}
                 , m_eye{Napi::Persistent(Napi::String::From(info.Env(), XREye::IndexToEye(m_eyeIdx)))}
                 , m_projectionMatrix{Napi::Persistent(Napi::Float32Array::New(info.Env(), MATRIX_SIZE))}
-                , m_rigidTransform{Napi::Persistent(XRRigidTransform::New())}
+                , m_rigidTransform{Napi::Persistent(XRRigidTransform::New(info))}
             {
             }
 
@@ -595,8 +582,6 @@ namespace Babylon
             }
 
         private:
-            static inline Napi::FunctionReference constructor{};
-
             size_t m_eyeIdx{};
             Napi::Reference<Napi::String> m_eye{};
             Napi::Reference<Napi::Float32Array> m_projectionMatrix{};
@@ -623,7 +608,7 @@ namespace Babylon
             static constexpr auto JS_CLASS_NAME = "XRViewerPose";
 
         public:
-            static void Initialize(Napi::Env& env)
+            static void Initialize(Napi::Env env)
             {
                 Napi::HandleScope scope{env};
 
@@ -635,26 +620,23 @@ namespace Babylon
                         InstanceAccessor("views", &XRViewerPose::GetViews, nullptr),
                     });
 
-                constructor = Napi::Persistent(func);
-                constructor.SuppressDestruct();
-
                 env.Global().Set(JS_CLASS_NAME, func);
             }
 
-            static Napi::Object New()
+            static Napi::Object New(const Napi::CallbackInfo& info)
             {
-                return constructor.New({});
+                return info.Env().Global().Get(JS_CLASS_NAME).As<Napi::Function>().New({});
             }
 
             XRViewerPose(const Napi::CallbackInfo& info)
                 : Napi::ObjectWrap<XRViewerPose>{info}
-                , m_jsTransform{Napi::Persistent(XRRigidTransform::New())}
+                , m_jsTransform{Napi::Persistent(XRRigidTransform::New(info))}
                 , m_jsViews{Napi::Persistent(Napi::Array::New(info.Env(), 0))}
                 , m_transform{*XRRigidTransform::Unwrap(m_jsTransform.Value())}
             {
             }
 
-            void Update(const xr::System::Session::Frame::Space& space, gsl::span<const xr::System::Session::Frame::View> views)
+            void Update(const Napi::CallbackInfo& info, const xr::System::Session::Frame::Space& space, gsl::span<const xr::System::Session::Frame::View> views)
             {
                 // Update the transform.
                 m_transform.Update(space, true);
@@ -675,7 +657,7 @@ namespace Babylon
                         }
                         else
                         {
-                            newViews.Set(idx, XRView::New());
+                            newViews.Set(idx, XRView::New(info));
                         }
 
                         m_views[idx] = XRView::Unwrap(newViews.Get(idx).As<Napi::Object>());
@@ -693,8 +675,6 @@ namespace Babylon
             }
 
         private:
-            static inline Napi::FunctionReference constructor{};
-
             Napi::ObjectReference m_jsTransform{};
             Napi::Reference<Napi::Array> m_jsViews{};
 
@@ -718,7 +698,7 @@ namespace Babylon
             static constexpr auto JS_CLASS_NAME = "XRReferenceSpace";
 
         public:
-            static void Initialize(Napi::Env& env)
+            static void Initialize(Napi::Env env)
             {
                 Napi::HandleScope scope{env};
 
@@ -729,15 +709,12 @@ namespace Babylon
                         InstanceMethod("getOffsetReferenceSpace", &XRReferenceSpace::GetOffsetReferenceSpace),
                     });
 
-                constructor = Napi::Persistent(func);
-                constructor.SuppressDestruct();
-
                 env.Global().Set(JS_CLASS_NAME, func);
             }
 
             static Napi::Object New(const Napi::CallbackInfo& info)
             {
-                return constructor.New({info[0]});
+                return info.Env().Global().Get(JS_CLASS_NAME).As<Napi::Function>().New({info[0]});
             }
 
             XRReferenceSpace(const Napi::CallbackInfo& info)
@@ -758,8 +735,6 @@ namespace Babylon
             }
 
         private:
-            static inline Napi::FunctionReference constructor{};
-
             Napi::Value GetOffsetReferenceSpace(const Napi::CallbackInfo& info)
             {
                 // TODO: Handle XRBoundedReferenceSpace case
@@ -774,7 +749,7 @@ namespace Babylon
             static constexpr auto JS_CLASS_NAME = "XRFrame";
 
         public:
-            static void Initialize(Napi::Env& env)
+            static void Initialize(Napi::Env env)
             {
                 Napi::HandleScope scope{env};
 
@@ -786,22 +761,19 @@ namespace Babylon
                         InstanceMethod("getPose", &XRFrame::GetPose),
                     });
 
-                constructor = Napi::Persistent(func);
-                constructor.SuppressDestruct();
-
                 env.Global().Set(JS_CLASS_NAME, func);
             }
 
-            static Napi::Object New()
+            static Napi::Object New(const Napi::CallbackInfo& info)
             {
-                return constructor.New({});
+                return info.Env().Global().Get(JS_CLASS_NAME).As<Napi::Function>().New({});
             }
 
             XRFrame(const Napi::CallbackInfo& info)
                 : Napi::ObjectWrap<XRFrame>{info}
-                , m_jsXRViewerPose{Napi::Persistent(XRViewerPose::New())}
+                , m_jsXRViewerPose{Napi::Persistent(XRViewerPose::New(info))}
                 , m_xrViewerPose{*XRViewerPose::Unwrap(m_jsXRViewerPose.Value())}
-                , m_jsTransform{Napi::Persistent(XRRigidTransform::New())}
+                , m_jsTransform{Napi::Persistent(XRRigidTransform::New(info))}
                 , m_transform{*XRRigidTransform::Unwrap(m_jsTransform.Value())}
                 , m_jsPose{Napi::Persistent(Napi::Object::New(info.Env()))}
             {
@@ -816,8 +788,6 @@ namespace Babylon
             }
 
         private:
-            static inline Napi::FunctionReference constructor{};
-
             const xr::System::Session::Frame* m_frame{};
             Napi::ObjectReference m_jsXRViewerPose{};
             XRViewerPose& m_xrViewerPose;
@@ -834,7 +804,7 @@ namespace Babylon
                 // Updating the reference space is currently not supported. Until it is, we assume the
                 // reference space is unmoving at identity (which is usually true).
 
-                m_xrViewerPose.Update({ {0, 0, 0}, {0, 0, 0, 1} }, m_frame->Views);
+                m_xrViewerPose.Update(info, { {0, 0, 0}, {0, 0, 0, 1} }, m_frame->Views);
 
                 return m_jsXRViewerPose.Value();
             }
@@ -856,7 +826,7 @@ namespace Babylon
             static constexpr auto JS_EVENT_NAME_INPUT_SOURCES_CHANGE = "inputsourceschange";
 
         public:
-            static void Initialize(Napi::Env& env)
+            static void Initialize(Napi::Env env)
             {
                 Napi::HandleScope scope{env};
 
@@ -872,15 +842,12 @@ namespace Babylon
                         InstanceMethod("end", &XRSession::End),
                     });
 
-                constructor = Napi::Persistent(func);
-                constructor.SuppressDestruct();
-
                 env.Global().Set(JS_CLASS_NAME, func);
             }
 
             static Napi::Promise CreateAsync(const Napi::CallbackInfo& info)
             {
-                auto jsSession = constructor.New({info[0]});
+                auto jsSession = info.Env().Global().Get(JS_CLASS_NAME).As<Napi::Function>().New({info[0]});
                 auto& session = *XRSession::Unwrap(jsSession);
 
                 session.m_xr.BeginSession();
@@ -892,7 +859,7 @@ namespace Babylon
 
             XRSession(const Napi::CallbackInfo& info)
                 : Napi::ObjectWrap<XRSession>{info}
-                , m_jsXRFrame{Napi::Persistent(XRFrame::New())}
+                , m_jsXRFrame{Napi::Persistent(XRFrame::New(info))}
                 , m_xrFrame{*XRFrame::Unwrap(m_jsXRFrame.Value())}
                 , m_jsInputSources{Napi::Persistent(Napi::Array::New(info.Env()))}
             {
@@ -943,8 +910,6 @@ namespace Babylon
             }
 
         private:
-            static inline Napi::FunctionReference constructor{};
-
             NativeXr m_xr{};
             Napi::ObjectReference m_jsXRFrame{};
             XRFrame& m_xrFrame;
@@ -1106,7 +1071,7 @@ namespace Babylon
             static constexpr auto JS_CLASS_NAME = "NativeWebXRRenderTarget";
 
         public:
-            static void Initialize(Napi::Env& env)
+            static void Initialize(Napi::Env env)
             {
                 Napi::HandleScope scope{env};
 
@@ -1117,15 +1082,12 @@ namespace Babylon
                         InstanceMethod("initializeXRLayerAsync", &NativeWebXRRenderTarget::InitializeXRLayerAsync),
                     });
 
-                constructor = Napi::Persistent(func);
-                constructor.SuppressDestruct();
-
                 env.Global().Set(JS_CLASS_NAME, func);
             }
 
             static Napi::Object New(const Napi::CallbackInfo& info)
             {
-                return constructor.New({info[0]});
+                return info.Env().Global().Get(JS_CLASS_NAME).As<Napi::Function>().New({info[0]});
             }
 
             NativeWebXRRenderTarget(const Napi::CallbackInfo& info)
@@ -1135,8 +1097,6 @@ namespace Babylon
             }
 
         private:
-            static inline Napi::FunctionReference constructor{};
-
             // Lifetime control to prevent the cleanup of the NativeEngine while XR is still alive.
             Napi::ObjectReference m_jsEngineReference{};
 
@@ -1145,7 +1105,7 @@ namespace Babylon
                 auto& session = *XRSession::Unwrap(info[0].As<Napi::Object>());
                 session.SetEngine(m_jsEngineReference.Value());
 
-                auto xrLayer = XRWebGLLayer::New();
+                auto xrLayer = XRWebGLLayer::New(info);
                 session.InitializeXrLayer(xrLayer);
                 info.This().As<Napi::Object>().Set("xrLayer", xrLayer);
 
@@ -1160,7 +1120,7 @@ namespace Babylon
             static constexpr auto JS_CLASS_NAME = "NativeRenderTargetProvider";
 
         public:
-            static void Initialize(Napi::Env& env)
+            static void Initialize(Napi::Env env)
             {
                 Napi::HandleScope scope{env};
 
@@ -1171,15 +1131,12 @@ namespace Babylon
                         InstanceMethod("getRenderTargetForEye", &NativeRenderTargetProvider::GetRenderTargetForEye),
                     });
 
-                constructor = Napi::Persistent(func);
-                constructor.SuppressDestruct();
-
                 env.Global().Set(JS_CLASS_NAME, func);
             }
 
             static Napi::Object New(const Napi::CallbackInfo& info)
             {
-                return constructor.New({info[0], info[1]});
+                return info.Env().Global().Get(JS_CLASS_NAME).As<Napi::Function>().New({info[0], info[1]});
             }
 
             NativeRenderTargetProvider(const Napi::CallbackInfo& info)
@@ -1199,8 +1156,6 @@ namespace Babylon
             }
 
         private:
-            static inline Napi::FunctionReference constructor{};
-
             Napi::ObjectReference m_jsSession{};
             std::array<Napi::ObjectReference, 2> m_jsRenderTargetTextures;
             XRSession& m_session;
@@ -1224,7 +1179,7 @@ namespace Babylon
             static constexpr auto JS_NATIVE_NAME = "native";
 
         public:
-            static void Initialize(Napi::Env& env)
+            static void Initialize(Napi::Env env)
             {
                 Napi::HandleScope scope{env};
 

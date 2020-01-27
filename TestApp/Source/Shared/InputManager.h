@@ -73,9 +73,6 @@ public:
                 },
                 data);
 
-            InputManager::constructor = Napi::Persistent(func);
-            InputManager::constructor.SuppressDestruct();
-
             env.Global().Set("InputManager", func);
         });
     }
@@ -83,8 +80,6 @@ public:
     explicit InputManager(const Napi::CallbackInfo& info);
 
 private:
-    static inline Napi::FunctionReference constructor{};
-
     InputBuffer* m_buffer{};
 
     Napi::Value PointerX(const Napi::CallbackInfo&);

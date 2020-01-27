@@ -32,8 +32,8 @@ namespace xr
     class System
     {
     public:
-        constexpr static float DEFAULT_DEPTH_NEAR_Z{ 0.5f };
-        constexpr static float DEFAULT_DEPTH_FAR_Z{ 1000.f };
+        static constexpr float DEFAULT_DEPTH_NEAR_Z{ 0.5f };
+        static constexpr float DEFAULT_DEPTH_FAR_Z{ 1000.f };
 
         class Session
         {
