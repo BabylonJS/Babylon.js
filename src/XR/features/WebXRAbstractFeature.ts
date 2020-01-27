@@ -1,6 +1,6 @@
 import { IWebXRFeature } from '../webXRFeaturesManager';
-import { Observer, Observable, EventState } from '../../../Misc/observable';
-import { Nullable } from '../../../types';
+import { Observer, Observable, EventState } from '../../Misc/observable';
+import { Nullable } from '../../types';
 import { WebXRSessionManager } from '../webXRSessionManager';
 
 /**
