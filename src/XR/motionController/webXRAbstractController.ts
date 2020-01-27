@@ -1,12 +1,12 @@
-import { IDisposable, Scene } from '../../../scene';
+import { IDisposable, Scene } from '../../scene';
 import { WebXRControllerComponent } from './webXRControllerComponent';
-import { Observable } from '../../../Misc/observable';
-import { Logger } from '../../../Misc/logger';
-import { SceneLoader } from '../../../Loading/sceneLoader';
-import { AbstractMesh } from '../../../Meshes/abstractMesh';
-import { Nullable } from '../../../types';
-import { Quaternion, Vector3 } from '../../../Maths/math.vector';
-import { Mesh } from '../../../Meshes/mesh';
+import { Observable } from '../../Misc/observable';
+import { Logger } from '../../Misc/logger';
+import { SceneLoader } from '../../Loading/sceneLoader';
+import { AbstractMesh } from '../../Meshes/abstractMesh';
+import { Nullable } from '../../types';
+import { Quaternion, Vector3 } from '../../Maths/math.vector';
+import { Mesh } from '../../Meshes/mesh';
 
 /**
  * Handness type in xrInput profiles. These can be used to define layouts in the Layout Map.

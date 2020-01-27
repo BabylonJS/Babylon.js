@@ -4,10 +4,10 @@ import {
     MotionControllerHandness,
     WebXRAbstractMotionController
 } from "./webXRAbstractController";
-import { Scene } from '../../../scene';
-import { AbstractMesh } from '../../../Meshes/abstractMesh';
-import { Mesh } from '../../../Meshes/mesh';
-import { Quaternion } from '../../../Maths/math.vector';
+import { Scene } from '../../scene';
+import { AbstractMesh } from '../../Meshes/abstractMesh';
+import { Mesh } from '../../Meshes/mesh';
+import { Quaternion } from '../../Maths/math.vector';
 import { WebXRMotionControllerManager } from './webXRMotionControllerManager';
 
 /**

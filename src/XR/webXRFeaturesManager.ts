@@ -1,5 +1,5 @@
 import { WebXRSessionManager } from './webXRSessionManager';
-import { IDisposable } from '../../scene';
+import { IDisposable } from '../scene';
 
 /**
  * Defining the interface required for a (webxr) feature

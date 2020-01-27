@@ -1,6 +1,6 @@
-import { Nullable } from "../../types";
-import { Observable } from "../../Misc/observable";
-import { IDisposable, Scene } from "../../scene";
+import { Nullable } from "../types";
+import { Observable } from "../Misc/observable";
+import { IDisposable, Scene } from "../scene";
 import { WebXRExperienceHelper } from "./webXRExperienceHelper";
 import { WebXRState, WebXRRenderTarget } from './webXRTypes';
 /**

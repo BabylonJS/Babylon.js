@@ -1,9 +1,9 @@
-import { Logger } from "../../Misc/logger";
-import { Observable } from "../../Misc/observable";
-import { Nullable } from "../../types";
-import { IDisposable, Scene } from "../../scene";
-import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
-import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import { Logger } from "../Misc/logger";
+import { Observable } from "../Misc/observable";
+import { Nullable } from "../types";
+import { IDisposable, Scene } from "../scene";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { WebXRRenderTarget } from './webXRTypes';
 import { WebXRManagedOutputCanvas, WebXRManagedOutputCanvasOptions } from './webXRManagedOutputCanvas';
 
