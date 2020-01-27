@@ -70,12 +70,12 @@ export interface ITexturePackerOptions{
 	 * Ratio of the value to add padding wise to each cell.  Defaults to 0.0115
 	 */
     paddingRatio?: number;
-    
+
     /**
 	 * Number that declares the fill method for the padding gutter.
 	 */
     paddingMode?: number;
-    
+
     /**
 	 * If in SUBUV_COLOR padding mode what color to use.
 	 */
@@ -95,14 +95,13 @@ export class TexturePacker{
     public static readonly LAYOUT_POWER2 = Constants.LAYOUT_POWER2;
     /** Packer Layout Constant 2 */
     public static readonly LAYOUT_COLNUM = Constants.LAYOUT_COLNUM;
-    
+
     /** Packer Layout Constant 0 */
     public static readonly SUBUV_WRAP = Constants.SUBUV_WRAP;
     /** Packer Layout Constant 1 */
     public static readonly SUBUV_EXTEND = Constants.SUBUV_EXTEND;
     /** Packer Layout Constant 2 */
     public static readonly SUBUV_COLOR = Constants.SUBUV_COLOR;
-    
 
     /** The Name of the Texture Package */
     public name: string;
@@ -126,7 +125,7 @@ export class TexturePacker{
     public frames: TexturePackerFrame[];
 
     /** The List of textures to purge from memory after compilation */
-    private _disposeList: (Texture | DynamicTexture)[];  
+    private _disposeList: (Texture | DynamicTexture)[];
 
     /** The padding value from Math.ceil(frameSize * paddingRatio) */
     private _paddingValue: number;
@@ -188,11 +187,11 @@ export class TexturePacker{
         if (this._paddingValue % 2 !== 0) {
             this._paddingValue++;
         }
-        
+
         this.options.paddingMode = this.options.paddingMode || TexturePacker.SUBUV_WRAP;
-        
+
         if (this.options.paddingMode === TexturePacker.SUBUV_COLOR) {
-            this.options.paddingColor = this.options.paddingColor || new Color4(0,0,0,1.0);
+            this.options.paddingColor = this.options.paddingColor || new Color4(0, 0, 0, 1.0);
         }
 
         this.sets = {};
@@ -246,7 +245,7 @@ export class TexturePacker{
                 return reject(e);
             }
         });
-       
+
         return this;
     }
     /**
@@ -337,17 +336,16 @@ export class TexturePacker{
                     updateDt();
 
                 }else {
-                    
+
                     let setTexture = (mat as any)[setName];
-                    let img = new Image(); 
-                    
-                    if(setTexture instanceof DynamicTexture){
+                    let img = new Image();
+
+                    if (setTexture instanceof DynamicTexture) {
                         img.src = setTexture.getContext().canvas.toDataURL("image/png");
-                    }else{
+                    }else {
                         img.src = setTexture!.url;
-                    }                    
-                    
-                    
+                    }
+
                     img.onload = () => {
                         tcx.fillStyle = 'rgba(0,0,0,0)';
                         tcx.fillRect(0, 0, tcs, tcs);
@@ -355,10 +353,10 @@ export class TexturePacker{
 
                         tcx.setTransform(1, 0, 0, -1, 0, 0);
                         let cellOffsets = [ 0, 0, 1, 0, 1, 1, 0, 1, -1, 1, -1, 0, -1 - 1, 0, -1, 1, -1];
-                        switch(this.options.paddingMode){
+                        switch (this.options.paddingMode){
                             //Wrap Mode
-                            case 0:                                
-                                for(let i = 0; i < 9; i++) {
+                            case 0:
+                                for (let i = 0; i < 9; i++) {
                                     tcx.drawImage(
                                         img,
                                         0,
@@ -373,8 +371,8 @@ export class TexturePacker{
                                 }
                             break;
                             //Extend Mode
-                            case 1: 
-                                for(let i = 0; i < padding; i++){
+                            case 1:
+                                for (let i = 0; i < padding; i++) {
                                     tcx.drawImage(
                                         img,
                                         0,
@@ -386,7 +384,7 @@ export class TexturePacker{
                                         baseSize,
                                         baseSize
                                     );
-                                    
+
                                     tcx.drawImage(
                                         img,
                                         0,
@@ -398,7 +396,7 @@ export class TexturePacker{
                                         baseSize,
                                         baseSize
                                     );
-                                    
+
                                     tcx.drawImage(
                                         img,
                                         0,
@@ -410,7 +408,7 @@ export class TexturePacker{
                                         baseSize,
                                         baseSize
                                     );
-                                    
+
                                     tcx.drawImage(
                                         img,
                                         0,
@@ -421,9 +419,9 @@ export class TexturePacker{
                                         (padding * 2) - i - tcs,
                                         baseSize,
                                         baseSize
-                                    );                                    
-                                }                                                           
-                                
+                                    );
+                                }
+
                                 tcx.drawImage(
                                     img,
                                     0,
@@ -435,11 +433,11 @@ export class TexturePacker{
                                     baseSize,
                                     baseSize
                                 );
-                            
+
                             break;
                             //Color Mode
                             case 2:
-                            
+
                                tcx.fillStyle = (this.options.paddingColor || Color3.Black()).toHexString();
                                tcx.fillRect(0, 0, tcs, -tcs);
                                tcx.clearRect(padding, padding, baseSize, baseSize);
@@ -454,12 +452,9 @@ export class TexturePacker{
                                     baseSize,
                                     baseSize
                                 );
-                            
-                            
+
                             break;
                         }
-
-                        
 
                         tcx.setTransform(1, 0, 0, 1, 0, 0);
 
@@ -545,7 +540,7 @@ export class TexturePacker{
             }
         }
     }
-    
+
     /**
     * Calculates the frames Offset.
     * @param index of the frame
@@ -579,14 +574,14 @@ export class TexturePacker{
                 let rowCnt = Math.max(1, Math.ceil(meshLength / cols));
                 xStep = Math.floor(index / rowCnt);
                 yStep = index - (xStep * rowCnt);
-                uvStep = new Vector2(1 / cols, 1 / rowCnt);               
+                uvStep = new Vector2(1 / cols, 1 / rowCnt);
                 return new Vector2(xStep * uvStep.x , yStep * uvStep.y);
             break;
         }
 
         return Vector2.Zero();
     }
-    
+
     /**
     * Updates a Mesh to the frame data
     * @param mesh that is the target
@@ -612,7 +607,7 @@ export class TexturePacker{
 
         mesh.setVerticesData(this.options.uvsOut || VertexBuffer.UVKind, uvOut);
     }
-    
+
     /**
     * Updates a Meshs materials to use the texture packer channels
     * @param m is the mesh to target
@@ -631,28 +626,27 @@ export class TexturePacker{
             }
         }
     }
-    
-    
+
     /**
     * Returns the promised then
-    * @returns Function
+    * @param success callback
+    * @param error callback
     */
-    public then(success = (): void => {}, error = (): void => {}): void{
+    public then(success = (): void => {}, error = (err : string): void => {}): void {
         this.promise.then(
             success, error
-        )       
+        );
     }
-    
+
     /**
     * Updates a Meshs materials to use the texture packer channels
     * @param m is the mesh to target
-    * @returns void
     */
     public dispose(): void {
         let sKeys = Object.keys(this.sets);
         for (let i = 0; i < sKeys.length; i++) {
             let setName = sKeys[i];
-            (this.sets as any)[setName].dispose()
+            (this.sets as any)[setName].dispose();
         }
     }
 }
