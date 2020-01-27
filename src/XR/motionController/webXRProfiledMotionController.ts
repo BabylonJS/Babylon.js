@@ -1,13 +1,13 @@
-import { AbstractMesh } from '../../../Meshes/abstractMesh';
+import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { WebXRAbstractMotionController, IMotionControllerProfile, IMotionControllerMeshMap } from './webXRAbstractController';
-import { Scene } from '../../../scene';
-import { SceneLoader } from '../../../Loading/sceneLoader';
-import { Mesh } from '../../../Meshes/mesh';
-import { Axis, Space } from '../../../Maths/math.axis';
-import { Color3 } from '../../../Maths/math.color';
+import { Scene } from '../../scene';
+import { SceneLoader } from '../../Loading/sceneLoader';
+import { Mesh } from '../../Meshes/mesh';
+import { Axis, Space } from '../../Maths/math.axis';
+import { Color3 } from '../../Maths/math.color';
 import { WebXRControllerComponent } from './webXRControllerComponent';
-import { SphereBuilder } from '../../../Meshes/Builders/sphereBuilder';
-import { StandardMaterial } from '../../../Materials/standardMaterial';
+import { SphereBuilder } from '../../Meshes/Builders/sphereBuilder';
+import { StandardMaterial } from '../../Materials/standardMaterial';
 
 /**
  * A profiled motion controller has its profile loaded from an online repository.

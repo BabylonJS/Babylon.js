@@ -1,8 +1,8 @@
-import { Observable } from "../../Misc/observable";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Quaternion, Vector3 } from '../../Maths/math.vector';
-import { Ray } from '../../Culling/ray';
-import { Scene } from '../../scene';
+import { Observable } from "../Misc/observable";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Quaternion, Vector3 } from '../Maths/math.vector';
+import { Ray } from '../Culling/ray';
+import { Scene } from '../scene';
 import { WebXRAbstractMotionController } from './motionController/webXRAbstractController';
 import { WebXRMotionControllerManager } from './motionController/webXRMotionControllerManager';
 

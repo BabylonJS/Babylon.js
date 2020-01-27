@@ -1,8 +1,8 @@
 import { WebXRFeatureName } from '../webXRFeaturesManager';
 import { WebXRSessionManager } from '../webXRSessionManager';
-import { Observable } from '../../../Misc/observable';
-import { Matrix } from '../../../Maths/math.vector';
-import { TransformNode } from '../../../Meshes/transformNode';
+import { Observable } from '../../Misc/observable';
+import { Matrix } from '../../Maths/math.vector';
+import { TransformNode } from '../../Meshes/transformNode';
 import { WebXRPlaneDetector } from './WebXRPlaneDetector';
 import { WebXRHitTestLegacy } from './WebXRHitTestLegacy';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
