@@ -734,8 +734,8 @@ export class Image extends Control {
             rightWidth -= 1;
         }
 
-        const centerWidth = this._sliceRight - this._sliceLeft + 1;
-        const targetCenterWidth = this._currentMeasure.width - rightWidth - this.sliceLeft + 1;
+        const centerWidth = this._sliceRight - this._sliceLeft;
+        const targetCenterWidth = this._currentMeasure.width - rightWidth - this.sliceLeft;
         const targetTopHeight = this._currentMeasure.height - height + this._sliceBottom;
 
         // Corners
@@ -746,8 +746,8 @@ export class Image extends Control {
         this._renderCornerPatch(context, this._sliceRight, this._sliceBottom, rightWidth, height - this._sliceBottom, this._currentMeasure.width - rightWidth, targetTopHeight);
 
         // Center
-        this._drawImage(context, this._sliceLeft, this._sliceTop, centerWidth, this._sliceBottom - this._sliceTop + 1,
-            this._currentMeasure.left + leftWidth, this._currentMeasure.top + topHeight, targetCenterWidth, targetTopHeight - topHeight + 1);
+        this._drawImage(context, this._sliceLeft, this._sliceTop, centerWidth, this._sliceBottom - this._sliceTop,
+            this._currentMeasure.left + leftWidth, this._currentMeasure.top + topHeight, targetCenterWidth, targetTopHeight - topHeight);
 
         // Borders
         this._drawImage(context, left, this._sliceTop, leftWidth, this._sliceBottom - this._sliceTop,
