@@ -13,10 +13,9 @@ export class _ScrollViewerWindow extends Container {
 
     private _freezeControls = false;
     private _parentMeasure: Measure;
+    private _oldLeft: number;
+    private _oldTop: number;
 
-    /**
-     * Freezes or unfreezes controls
-     */
     public get freezeControls(): boolean {
         return this._freezeControls;
     }
@@ -44,11 +43,80 @@ export class _ScrollViewerWindow extends Container {
         // in freeze mode, prepare children measures accordingly
         if (value) {
             this._updateMeasures();
+            if (this._useBuckets()) {
+                this._makeBuckets();
+            }
         }
 
         this._freezeControls = value;
 
         this.host.markAsDirty(); // redraw with the (new) current settings
+    }
+
+    private _bucketWidth: number = 0;
+    private _bucketHeight: number = 0;
+    private _buckets: { [key: number]: Array<Control> } = {};
+    private _bucketLen: number;
+
+    public get bucketWidth(): number {
+        return this._bucketWidth;
+    }
+
+    public get bucketHeight(): number {
+        return this._bucketHeight;
+    }
+
+    public setBucketSizes(width: number, height: number): void {
+        this._bucketWidth = width;
+        this._bucketHeight = height;
+
+        if (this._useBuckets()) {
+            if (this._freezeControls) {
+                this._makeBuckets();
+            }
+        } else {
+            this._buckets = {};
+        }
+    }
+
+    private _useBuckets(): boolean {
+        return this._bucketWidth > 0 && this._bucketHeight > 0;
+    }
+
+    private _makeBuckets(): void {
+        this._buckets = {};
+        this._bucketLen = Math.ceil(this.widthInPixels / this._bucketWidth);
+        this._dispatchInBuckets(this._children);
+    }
+
+    private _dispatchInBuckets(children: Control[]): void {
+        for (let i = 0; i < children.length; ++i) {
+            let child = children[i];
+
+            let bStartX = Math.max(0, Math.floor((child._currentMeasure.left - this._currentMeasure.left) / this._bucketWidth)),
+                bEndX = Math.floor((child._currentMeasure.left - this._currentMeasure.left + child._currentMeasure.width - 1) / this._bucketWidth),
+                bStartY = Math.max(0, Math.floor((child._currentMeasure.top - this._currentMeasure.top) / this._bucketHeight)),
+                bEndY = Math.floor((child._currentMeasure.top - this._currentMeasure.top + child._currentMeasure.height - 1) / this._bucketHeight);
+
+            while (bStartY <= bEndY) {
+                for (let x = bStartX; x <= bEndX; ++x) {
+                    let bucket = bStartY * this._bucketLen + x,
+                        lstc = this._buckets[bucket];
+
+                    if (!lstc) {
+                        lstc = [];
+                        this._buckets[bucket] = lstc;
+                    }
+
+                    lstc.push(child);
+                }
+                bStartY++;
+            }
+
+            if (child instanceof Container && child._children.length > 0) {
+                this._dispatchInBuckets(child._children);
+            }
+        }
     }
 
     // reset left and top measures for the window and all its children
@@ -129,6 +197,30 @@ export class _ScrollViewerWindow extends Container {
         }
     }
 
+    private _scrollChildrenWithBuckets(left: number, top: number, scrollLeft: number, scrollTop: number): void {
+        let bStartX = Math.max(0, Math.floor(-left / this._bucketWidth)),
+            bEndX = Math.floor((-left + this._parentMeasure.width - 1) / this._bucketWidth),
+            bStartY = Math.max(0, Math.floor(-top / this._bucketHeight)),
+            bEndY = Math.floor((-top + this._parentMeasure.height - 1) / this._bucketHeight);
+
+        while (bStartY <= bEndY) {
+            for (let x = bStartX; x <= bEndX; ++x) {
+                let bucket = bStartY * this._bucketLen + x,
+                    lstc = this._buckets[bucket];
+
+                if (lstc) {
+                    for (let i = 0; i < lstc.length; ++i) {
+                        let child = lstc[i];
+                        child._currentMeasure.left = child._customData._origLeft + scrollLeft;
+                        child._currentMeasure.top = child._customData._origTop + scrollTop;
+                        child._isClipped = false; // clipping will be handled by _draw and the call to _intersectsRect()
+                    }
+                }
+            }
+            bStartY++;
+        }
+    }
+
     /** @hidden */
     public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void {
         if (!this._freezeControls) {
@@ -145,7 +237,15 @@ export class _ScrollViewerWindow extends Container {
         let left = this.leftInPixels,
             top = this.topInPixels;
 
-        this._scrollChildren(this._children, left, top);
+        if (this._useBuckets()) {
+            this._scrollChildrenWithBuckets(this._oldLeft, this._oldTop, left, top);
+            this._scrollChildrenWithBuckets(left, top, left, top);
+        } else {
+            this._scrollChildren(this._children, left, top);
+        }
+
+        this._oldLeft = left;
+        this._oldTop = top;
 
         for (var child of this._children) {
             if (!child._intersectsRect(this._parentMeasure)) {
