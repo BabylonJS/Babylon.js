@@ -36,7 +36,7 @@ export class _ScrollViewerWindow extends Container {
 
         var measure = new Measure(0, 0, renderWidth, renderHeight);
 
-        Control.NumLayoutCalls = 0;
+        this.host._numLayoutCalls = 0;
 
         this.host._rootContainer._layout(measure, context);
 
