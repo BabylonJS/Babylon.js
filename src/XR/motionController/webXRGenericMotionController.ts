@@ -4,10 +4,10 @@ import {
     MotionControllerHandness,
     IMotionControllerLayoutMap
 } from "./webXRAbstractController";
-import { AbstractMesh } from '../../../Meshes/abstractMesh';
-import { Scene } from '../../../scene';
-import { Mesh } from '../../../Meshes/mesh';
-import { Quaternion } from '../../../Maths/math.vector';
+import { AbstractMesh } from '../../Meshes/abstractMesh';
+import { Scene } from '../../scene';
+import { Mesh } from '../../Meshes/mesh';
+import { Quaternion } from '../../Maths/math.vector';
 
 /**
  * A generic trigger-only motion controller for WebXR
