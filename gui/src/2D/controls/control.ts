@@ -25,6 +25,11 @@ export class Control {
      */
     public static AllowAlphaInheritance = false;
 
+    /** Gets the number of layout calls made the last time the ADT has been rendered */
+    public static NumLayoutCalls = 0;
+    /** Gets the number of render calls made the last time the ADT has been rendered */
+    public static NumRenderCalls = 0;
+
     private _alpha = 1;
     private _alphaSet = false;
     private _zIndex = 0;
@@ -98,6 +103,9 @@ export class Control {
     protected _disabledColor = "#9a9a9a";
     /** @hidden */
     protected _rebuildLayout = false;
+
+    /** @hidden */
+    public _customData: any = {};
 
     /** @hidden */
     public _isClipped = false;
@@ -1356,6 +1364,8 @@ export class Control {
         }
 
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
+            Control.NumLayoutCalls++;
+
             this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
 
             context.save();
@@ -1596,6 +1606,9 @@ export class Control {
             this._isDirty = false;
             return false;
         }
+
+        Control.NumRenderCalls++;
+
         context.save();
 
         this._applyStates(context);

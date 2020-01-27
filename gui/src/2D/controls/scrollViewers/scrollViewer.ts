@@ -29,8 +29,6 @@ export class ScrollViewer extends Rectangle {
     private _barImage: Image;
     private _barBackgroundImage: Image;
     private _barSize: number = 20;
-    private _endLeft: number;
-    private _endTop: number;
     private _window: _ScrollViewerWindow;
     private _pointerIsOver: Boolean = false;
     private _wheelPrecision: number = 0.05;
@@ -93,6 +91,73 @@ export class ScrollViewer extends Rectangle {
     }
 
     /**
+     * Freezes or unfreezes the controls in the window.
+     * When controls are frozen, the scroll viewer can render a lot more quickly but updates to positions/sizes of controls
+     * are not taken into account. If you want to change positions/sizes, unfreeze, perform the changes then freeze again
+     */
+    public get freezeControls(): boolean {
+        return this._window.freezeControls;
+    }
+
+    public set freezeControls(value: boolean) {
+        this._window.freezeControls = value;
+    }
+
+    /** Gets the bucket width */
+    public get bucketWidth(): number {
+        return this._window.bucketWidth;
+    }
+
+    /** Gets the bucket height */
+    public get bucketHeight(): number {
+        return this._window.bucketHeight;
+    }
+
+    /**
+     * Sets the bucket sizes.
+     * When freezeControls is true, setting a non-zero bucket size will improve performances by updating only
+     * controls that are visible. The bucket sizes is used to subdivide (internally) the window area to smaller areas into which
+     * controls are dispatched. So, the size should be roughly equals to the mean size of all the controls of
+     * the window. To disable the usage of buckets, sets either width or height (or both) to 0.
+     * Please note that using this option will raise the memory usage (the higher the bucket sizes, the less memory
+     * used), that's why it is not enabled by default.
+     * @param width width of the bucket
+     * @param height height of the bucket
+     */
+    public setBucketSizes(width: number, height: number): void {
+        this._window.setBucketSizes(width, height);
+    }
+
+    private _forceHorizontalBar: boolean = false;
+    private _forceVerticalBar: boolean = false;
+
+    /**
+     * Forces the horizontal scroll bar to be displayed
+     */
+    public get forceHorizontalBar(): boolean {
+        return this._forceHorizontalBar;
+    }
+
+    public set forceHorizontalBar(value: boolean) {
+        this._grid.setRowDefinition(1, value ? this._barSize : 0, true);
+        this._horizontalBar.isVisible = value;
+        this._forceHorizontalBar = value;
+    }
+
+    /**
+     * Forces the vertical scroll bar to be displayed
+     */
+    public get forceVerticalBar(): boolean {
+        return this._forceVerticalBar;
+    }
+
+    public set forceVerticalBar(value: boolean) {
+        this._grid.setColumnDefinition(1, value ? this._barSize : 0, true);
+        this._verticalBar.isVisible = value;
+        this._forceVerticalBar = value;
+    }
+
+    /**
     * Creates a new ScrollViewer
     * @param name of ScrollViewer
     */
@@ -125,7 +190,7 @@ export class ScrollViewer extends Rectangle {
             this._verticalBar = new ScrollBar();
         }
 
-        this._window = new _ScrollViewerWindow();
+        this._window = new _ScrollViewerWindow("scrollViewer_window");
         this._window.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         this._window.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 
@@ -173,8 +238,8 @@ export class ScrollViewer extends Rectangle {
     }
 
     private _buildClientSizes() {
-        this._window.parentClientWidth = this._currentMeasure.width - (this._verticalBar.isVisible ? this._barSize : 0) - 2 * this.thickness;
-        this._window.parentClientHeight = this._currentMeasure.height - (this._horizontalBar.isVisible ? this._barSize : 0) - 2 * this.thickness;
+        this._window.parentClientWidth = this._currentMeasure.width - (this._verticalBar.isVisible || this.forceVerticalBar ? this._barSize : 0) - 2 * this.thickness;
+        this._window.parentClientHeight = this._currentMeasure.height - (this._horizontalBar.isVisible || this.forceHorizontalBar ? this._barSize : 0) - 2 * this.thickness;
 
         this._clientWidth = this._window.parentClientWidth;
         this._clientHeight = this._window.parentClientHeight;
@@ -385,51 +450,61 @@ export class ScrollViewer extends Rectangle {
         vb.backgroundImage = value;
     }
 
+    private _setWindowPosition(): void {
+        let windowContentsWidth = this._window._currentMeasure.width;
+        let windowContentsHeight = this._window._currentMeasure.height;
+
+        const _endLeft = this._clientWidth - windowContentsWidth;
+        const _endTop = this._clientHeight - windowContentsHeight;
+
+        const newLeft = this._horizontalBar.value * _endLeft + "px";
+        const newTop = this._verticalBar.value * _endTop + "px";
+
+        if (newLeft !== this._window.left) {
+            this._window.left = newLeft;
+            if (!this.freezeControls) {
+                this._rebuildLayout = true;
+            }
+        }
+
+        if (newTop !== this._window.top) {
+            this._window.top = newTop;
+            if (!this.freezeControls) {
+                this._rebuildLayout = true;
+            }
+        }
+    }
+
     /** @hidden */
     private _updateScroller(): void {
         let windowContentsWidth = this._window._currentMeasure.width;
         let windowContentsHeight = this._window._currentMeasure.height;
 
-        if (this._horizontalBar.isVisible && windowContentsWidth <= this._clientWidth) {
+        if (this._horizontalBar.isVisible && windowContentsWidth <= this._clientWidth && !this.forceHorizontalBar) {
             this._grid.setRowDefinition(1, 0, true);
             this._horizontalBar.isVisible = false;
             this._horizontalBar.value = 0;
             this._rebuildLayout = true;
         }
-        else if (!this._horizontalBar.isVisible && windowContentsWidth > this._clientWidth) {
+        else if (!this._horizontalBar.isVisible && (windowContentsWidth > this._clientWidth || this.forceHorizontalBar)) {
             this._grid.setRowDefinition(1, this._barSize, true);
             this._horizontalBar.isVisible = true;
             this._rebuildLayout = true;
         }
 
-        if (this._verticalBar.isVisible && windowContentsHeight <= this._clientHeight) {
+        if (this._verticalBar.isVisible && windowContentsHeight <= this._clientHeight && !this.forceVerticalBar) {
             this._grid.setColumnDefinition(1, 0, true);
             this._verticalBar.isVisible = false;
             this._verticalBar.value = 0;
             this._rebuildLayout = true;
         }
-        else if (!this._verticalBar.isVisible && windowContentsHeight > this._clientHeight) {
+        else if (!this._verticalBar.isVisible && (windowContentsHeight > this._clientHeight || this.forceVerticalBar)) {
             this._grid.setColumnDefinition(1, this._barSize, true);
             this._verticalBar.isVisible = true;
             this._rebuildLayout = true;
         }
 
         this._buildClientSizes();
-        this._endLeft = this._clientWidth - windowContentsWidth;
-        this._endTop = this._clientHeight - windowContentsHeight;
-
-        const newLeft = this._horizontalBar.value * this._endLeft + "px";
-        const newTop = this._verticalBar.value * this._endTop + "px";
-
-        if (newLeft !== this._window.left) {
-            this._window.left = newLeft;
-            this._rebuildLayout = true;
-        }
-
-        if (newTop !== this._window.top) {
-            this._window.top = newTop;
-            this._rebuildLayout = true;
-        }
 
         this._horizontalBar.thumbWidth = this._thumbLength * 0.9 * this._clientWidth + "px";
         this._verticalBar.thumbWidth = this._thumbLength *  0.9 * this._clientHeight + "px";
@@ -458,12 +533,7 @@ export class ScrollViewer extends Rectangle {
         barContainer.addControl(barControl);
 
         barControl.onValueChangedObservable.add((value) => {
-            if (rotation > 0) {
-                this._window.top = value * this._endTop + "px";
-            }
-            else {
-                this._window.left = value * this._endLeft + "px";
-            }
+            this._setWindowPosition();
         });
     }
 
