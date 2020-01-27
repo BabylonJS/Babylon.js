@@ -7,6 +7,7 @@ import { WebXRSessionManager } from "../webXRSessionManager";
 import { AbstractMesh } from "../../../Meshes/abstractMesh";
 import { SphereBuilder } from "../../../Meshes/Builders/sphereBuilder";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
+import { Logger } from '../../../Misc/logger';
 
 /**
  * Options for the controller physics feature
@@ -150,7 +151,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
     }
 
     /**
-     * Manually add a controller (if no xrInput was provided)
+     * Manually add a controller (if no xrInput was provided or physics engine was not enabled)
      * @param xrController the controller to add
      */
     public addController(xrController: WebXRController) {
@@ -178,6 +179,9 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
         if (this._controllers[xrController.uniqueId]) {
             // already attached
             return;
+        }
+        if (!this._xrSessionManager.scene.isPhysicsEnabled()) {
+            Logger.Warn("physics engine not enabled, skipped. Please add this controller manually.");
         }
         if (this._options.physicsProperties!.useControllerMesh) {
             xrController.onMotionControllerProfileLoaded.addOnce((motionController) => {
