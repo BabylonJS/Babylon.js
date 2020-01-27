@@ -190,7 +190,7 @@ export class Camera extends Node {
     public mode = Camera.PERSPECTIVE_CAMERA;
 
     /**
-     * Define wether the camera is intermediate.
+     * Define whether the camera is intermediate.
      * This is useful to not present the output directly to the screen in case of rig without post process for instance
      */
     public isIntermediate = false;
@@ -411,7 +411,7 @@ export class Camera extends Node {
     }
 
     /**
-     * Check wether a mesh is part of the current active mesh list of the camera
+     * Check whether a mesh is part of the current active mesh list of the camera
      * @param mesh Defines the mesh to check
      * @returns true if active, false otherwise
      */
