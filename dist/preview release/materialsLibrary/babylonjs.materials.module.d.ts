@@ -1443,7 +1443,7 @@ declare module "babylonjs-materials/water/waterMaterial" {
         */
         waveSpeed: number;
         /**
-         * Sets or gets wether or not automatic clipping should be enabled or not. Setting to true will save performances and
+         * Sets or gets whether or not automatic clipping should be enabled or not. Setting to true will save performances and
          * will avoid calculating useless pixels in the pixel shader of the water material.
          */
         disableClipPlane: boolean;
@@ -2510,7 +2510,7 @@ declare module BABYLON {
         */
         waveSpeed: number;
         /**
-         * Sets or gets wether or not automatic clipping should be enabled or not. Setting to true will save performances and
+         * Sets or gets whether or not automatic clipping should be enabled or not. Setting to true will save performances and
          * will avoid calculating useless pixels in the pixel shader of the water material.
          */
         disableClipPlane: boolean;
