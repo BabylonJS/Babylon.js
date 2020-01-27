@@ -471,7 +471,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
     private _updatePointerDistance(_laserPointer: AbstractMesh, distance: number = 100) {
         _laserPointer.scaling.y = distance;
-        _laserPointer.position.z = distance / 2;
+        // a bit of distance from the controller
+        _laserPointer.position.z = (distance / 2) + 0.05;
     }
 }
 
