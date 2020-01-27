@@ -103,6 +103,31 @@ export class ScrollViewer extends Rectangle {
         this._window.freezeControls = value;
     }
 
+    /** Gets the bucket width */
+    public get bucketWidth(): number {
+        return this._window.bucketWidth;
+    }
+
+    /** Gets the bucket height */
+    public get bucketHeight(): number {
+        return this._window.bucketHeight;
+    }
+
+    /**
+     * Sets the bucket sizes.
+     * When freezeControls is true, setting a non-zero bucket size will improve performances by updating only
+     * controls that are visible. The bucket sizes is used to subdivide (internally) the window area to smaller areas into which
+     * controls are dispatched. So, the size should be roughly equals to the mean size of all the controls of
+     * the window. To disable the usage of buckets, sets either width or height (or both) to 0.
+     * Please note that using this option will raise the memory usage (the higher the bucket sizes, the less memory
+     * used), that's why it is not enabled by default.
+     * @param width width of the bucket
+     * @param height height of the bucket
+     */
+    public setBucketSizes(width: number, height: number): void {
+        this._window.setBucketSizes(width, height);
+    }
+
     private _forceHorizontalBar: boolean = false;
     private _forceVerticalBar: boolean = false;
 
