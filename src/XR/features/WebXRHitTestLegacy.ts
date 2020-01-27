@@ -1,8 +1,8 @@
 import { WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager';
 import { WebXRSessionManager } from '../webXRSessionManager';
-import { Observable } from '../../../Misc/observable';
-import { Vector3, Matrix } from '../../../Maths/math.vector';
-import { TransformNode } from '../../../Meshes/transformNode';
+import { Observable } from '../../Misc/observable';
+import { Vector3, Matrix } from '../../Maths/math.vector';
+import { TransformNode } from '../../Meshes/transformNode';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
 
 // the plugin is registered at the end of the file

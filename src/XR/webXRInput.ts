@@ -1,6 +1,6 @@
-import { Nullable } from "../../types";
-import { Observer, Observable } from "../../Misc/observable";
-import { IDisposable } from "../../scene";
+import { Nullable } from "../types";
+import { Observer, Observable } from "../Misc/observable";
+import { IDisposable } from "../scene";
 import { WebXRController } from './webXRController';
 import { WebXRSessionManager } from './webXRSessionManager';
 import { WebXRCamera } from './webXRCamera';

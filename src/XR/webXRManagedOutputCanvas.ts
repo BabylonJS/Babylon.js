@@ -1,5 +1,5 @@
-import { Nullable } from "../../types";
-import { ThinEngine } from '../../Engines/thinEngine';
+import { Nullable } from "../types";
+import { ThinEngine } from '../Engines/thinEngine';
 import { WebXRRenderTarget } from "./webXRTypes";
 import { WebXRSessionManager } from './webXRSessionManager';
 
