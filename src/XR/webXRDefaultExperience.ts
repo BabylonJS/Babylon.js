@@ -1,13 +1,13 @@
 import { WebXRExperienceHelper } from "./webXRExperienceHelper";
-import { Scene } from '../../scene';
+import { Scene } from '../scene';
 import { WebXRInput, IWebXRInputOptions } from './webXRInput';
 import { WebXRControllerPointerSelection } from './features/WebXRControllerPointerSelection';
 import { WebXRRenderTarget } from './webXRTypes';
 import { WebXREnterExitUI, WebXREnterExitUIOptions } from './webXREnterExitUI';
-import { AbstractMesh } from '../../Meshes/abstractMesh';
+import { AbstractMesh } from '../Meshes/abstractMesh';
 import { WebXRManagedOutputCanvasOptions } from './webXRManagedOutputCanvas';
 import { WebXRMotionControllerTeleportation } from './features/WebXRControllerTeleportation';
-import { Logger } from '../../Misc/logger';
+import { Logger } from '../Misc/logger';
 
 /**
  * Options for the default xr helper

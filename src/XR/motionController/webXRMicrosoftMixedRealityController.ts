@@ -5,12 +5,12 @@ import {
     IMotionControllerLayoutMap
 } from "./webXRAbstractController";
 import { WebXRMotionControllerManager } from './webXRMotionControllerManager';
-import { AbstractMesh } from '../../../Meshes/abstractMesh';
-import { Scene } from '../../../scene';
-import { Mesh } from '../../../Meshes/mesh';
-import { Quaternion } from '../../../Maths/math.vector';
-import { SceneLoader } from '../../../Loading/sceneLoader';
-import { Logger } from '../../../Misc/logger';
+import { AbstractMesh } from '../../Meshes/abstractMesh';
+import { Scene } from '../../scene';
+import { Mesh } from '../../Meshes/mesh';
+import { Quaternion } from '../../Maths/math.vector';
+import { SceneLoader } from '../../Loading/sceneLoader';
+import { Logger } from '../../Misc/logger';
 
 /**
  * The motion controller class for all microsoft mixed reality controllers
