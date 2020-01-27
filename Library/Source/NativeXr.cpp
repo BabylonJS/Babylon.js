@@ -6,6 +6,8 @@
 
 #include <bx/bx.h>
 
+#include <set>
+
 namespace
 {
     bgfx::TextureFormat::Enum XrTextureFormatToBgfxFormat(xr::TextureFormat format)
@@ -54,10 +56,10 @@ namespace
         return bxResult;
     }
 
-    std::array<float, 16> CreateTransformMatrix(const xr::System::Session::Frame::View& view)
+    std::array<float, 16> CreateTransformMatrix(const xr::System::Session::Frame::Space& space, bool viewSpace = true)
     {
-        auto& quat = view.Orientation;
-        auto& pos = view.Position;
+        auto& quat = space.Orientation;
+        auto& pos = space.Position;
 
         // Quaternion to matrix from https://github.com/BabylonJS/Babylon.js/blob/v4.0.0/src/Maths/math.ts#L6245-L6283
         const float xx{quat.X * quat.X};
@@ -93,11 +95,47 @@ namespace
         worldSpaceTransform[14] = pos.Z;
         worldSpaceTransform[15] = 1.f;
 
-        // Invert to get the view space transform.
-        std::array<float, 16> viewSpaceTransform{};
-        bx::mtxInverse(viewSpaceTransform.data(), worldSpaceTransform.data());
+        if (viewSpace)
+        {
+            // Invert to get the view space transform.
+            std::array<float, 16> viewSpaceTransform{};
+            bx::mtxInverse(viewSpaceTransform.data(), worldSpaceTransform.data());
 
-        return viewSpaceTransform;
+            return viewSpaceTransform;
+        }
+        else
+        {
+            return worldSpaceTransform;
+        }
+    }
+
+    void SetXRInputSourceSpaces(Napi::Object& jsInputSource, xr::System::Session::Frame::InputSource& inputSource)
+    {
+        auto env = jsInputSource.Env();
+        jsInputSource.Set("targetRaySpace", Napi::External<decltype(inputSource.AimSpace)>::New(env, &inputSource.AimSpace));
+        jsInputSource.Set("gripSpace", Napi::External<decltype(inputSource.GripSpace)>::New(env, &inputSource.GripSpace));
+    }
+
+    Napi::ObjectReference CreateXRInputSource(xr::System::Session::Frame::InputSource& inputSource, Napi::Env& env)
+    {
+        constexpr std::array<const char*, 2> HANDEDNESS_STRINGS
+        {
+            "left",
+            "right"
+        };
+        constexpr char* TARGET_RAY_MODE{ "tracked-pointer" };
+
+        auto jsInputSource = Napi::Object::New(env);
+        jsInputSource.Set("handedness", Napi::String::New(env, HANDEDNESS_STRINGS[static_cast<size_t>(inputSource.Handedness)]));
+        jsInputSource.Set("targetRayMode", TARGET_RAY_MODE);
+        SetXRInputSourceSpaces(jsInputSource, inputSource);
+
+        auto profiles = Napi::Array::New(env, 1);
+        Napi::Value string = Napi::String::New(env, "generic-trigger-squeeze-touchpad-thumbstick");
+        profiles.Set(uint32_t{ 0 }, string);
+        jsInputSource.Set("profiles", profiles);
+
+        return Napi::Persistent(jsInputSource);
     }
 }
 
@@ -352,6 +390,38 @@ namespace Babylon
             }
         };
 
+        class PointerEvent : public Napi::ObjectWrap<PointerEvent>
+        {
+            static constexpr auto JS_CLASS_NAME = "PointerEvent";
+
+        public:
+            static void Initialize(Napi::Env& env)
+            {
+                Napi::Function func = DefineClass(
+                    env,
+                    JS_CLASS_NAME,
+                    {
+                    });
+
+                constructor = Napi::Persistent(func);
+                constructor.SuppressDestruct();
+
+                env.Global().Set(JS_CLASS_NAME, func);
+            }
+
+            static Napi::Object New()
+            {
+                return constructor.New({});
+            }
+
+            PointerEvent(const Napi::CallbackInfo & info)
+                : Napi::ObjectWrap<PointerEvent>{ info }
+            {}
+
+        private:
+            static inline Napi::FunctionReference constructor{};
+        };
+
         class XRWebGLLayer : public Napi::ObjectWrap<XRWebGLLayer>
         {
             static constexpr auto JS_CLASS_NAME = "XRWebGLLayer";
@@ -396,6 +466,7 @@ namespace Babylon
         class XRRigidTransform : public Napi::ObjectWrap<XRRigidTransform>
         {
             static constexpr auto JS_CLASS_NAME = "XRRigidTransform";
+            static constexpr size_t VECTOR_SIZE = 4;
             static constexpr size_t MATRIX_SIZE = 16;
 
         public:
@@ -407,6 +478,8 @@ namespace Babylon
                     env,
                     JS_CLASS_NAME,
                     {
+                        InstanceAccessor("position", &XRRigidTransform::Position, nullptr),
+                        InstanceAccessor("orientation", &XRRigidTransform::Orientation, nullptr),
                         InstanceAccessor("matrix", &XRRigidTransform::Matrix, nullptr),
                     });
 
@@ -423,21 +496,47 @@ namespace Babylon
 
             XRRigidTransform(const Napi::CallbackInfo& info)
                 : Napi::ObjectWrap<XRRigidTransform>{info}
+                , m_position{Napi::Persistent(Napi::Object::New(info.Env()))}
+                , m_orientation{Napi::Persistent(Napi::Object::New(info.Env()))}
                 , m_matrix{Napi::Persistent(Napi::Float32Array::New(info.Env(), MATRIX_SIZE))}
             {
             }
 
-            void Update(gsl::span<const float, MATRIX_SIZE> matrix)
+            void Update(const xr::System::Session::Frame::Space& space, bool isViewSpace)
             {
-                std::memcpy(m_matrix.Value().Data(), matrix.data(), m_matrix.Value().ByteLength());
+                auto pos = m_position.Value();
+                pos.Set("x", space.Position.X);
+                pos.Set("y", space.Position.Y);
+                pos.Set("z", space.Position.Z);
+                pos.Set("w", 1.f);
+
+                auto or = m_orientation.Value();
+                or.Set("x", space.Orientation.X);
+                or.Set("y", space.Orientation.Y);
+                or.Set("z", space.Orientation.Z);
+                or.Set("w", space.Orientation.W);
+
+                std::memcpy(m_matrix.Value().Data(), CreateTransformMatrix(space, isViewSpace).data(), m_matrix.Value().ByteLength());
             }
 
         private:
             static inline Napi::FunctionReference constructor{};
 
+            Napi::ObjectReference m_position{};
+            Napi::ObjectReference m_orientation{};
             Napi::Reference<Napi::Float32Array> m_matrix{};
 
-            Napi::Value Matrix(const Napi::CallbackInfo& info)
+            Napi::Value Position(const Napi::CallbackInfo&)
+            {
+                return m_position.Value();
+            }
+
+            Napi::Value Orientation(const Napi::CallbackInfo&)
+            {
+                return m_orientation.Value();
+            }
+
+            Napi::Value Matrix(const Napi::CallbackInfo&)
             {
                 return m_matrix.Value();
             }
@@ -482,7 +581,7 @@ namespace Babylon
             {
             }
 
-            void Update(size_t eyeIdx, gsl::span<const float, 16> projectionMatrix, gsl::span<const float, 16> transformMatrix)
+            void Update(size_t eyeIdx, gsl::span<const float, 16> projectionMatrix, const xr::System::Session::Frame::Space& space)
             {
                 if (eyeIdx != m_eyeIdx)
                 {
@@ -492,7 +591,7 @@ namespace Babylon
 
                 std::memcpy(m_projectionMatrix.Value().Data(), projectionMatrix.data(), m_projectionMatrix.Value().ByteLength());
 
-                XRRigidTransform::Unwrap(m_rigidTransform.Value())->Update(transformMatrix);
+                XRRigidTransform::Unwrap(m_rigidTransform.Value())->Update(space, true);
             }
 
         private:
@@ -555,10 +654,10 @@ namespace Babylon
             {
             }
 
-            void Update(gsl::span<const float, 16> matrix, gsl::span<const xr::System::Session::Frame::View> views)
+            void Update(const xr::System::Session::Frame::Space& space, gsl::span<const xr::System::Session::Frame::View> views)
             {
                 // Update the transform.
-                m_transform.Update(matrix);
+                m_transform.Update(space, true);
 
                 // Update the views array if necessary.
                 const auto oldSize = static_cast<uint32_t>(m_views.size());
@@ -589,9 +688,7 @@ namespace Babylon
                 for (uint32_t idx = 0; idx < static_cast<uint32_t>(views.size()); ++idx)
                 {
                     const auto& view = views[idx];
-                    const auto projectionMatrix = CreateProjectionMatrix(view);
-                    const auto transformMatrix = CreateTransformMatrix(view);
-                    m_views[idx]->Update(idx, projectionMatrix, transformMatrix);
+                    m_views[idx]->Update(idx, CreateProjectionMatrix(view), view.Space);
                 }
             }
 
@@ -628,7 +725,9 @@ namespace Babylon
                 Napi::Function func = DefineClass(
                     env,
                     JS_CLASS_NAME,
-                    {});
+                    {
+                        InstanceMethod("getOffsetReferenceSpace", &XRReferenceSpace::GetOffsetReferenceSpace),
+                    });
 
                 constructor = Napi::Persistent(func);
                 constructor.SuppressDestruct();
@@ -644,12 +743,30 @@ namespace Babylon
             XRReferenceSpace(const Napi::CallbackInfo& info)
                 : Napi::ObjectWrap<XRReferenceSpace>{info}
             {
-                // Only unbounded reference spaces are supported at the moment.
-                assert(info[0].As<Napi::String>().Utf8Value() == XRReferenceSpaceType::UNBOUNDED);
+                if (info[0].IsString())
+                {
+                    // TODO: Actually support the different types of reference spaces.
+                    const auto referenceSpaceType = info[0].As<Napi::String>().Utf8Value();
+                    assert(referenceSpaceType == XRReferenceSpaceType::UNBOUNDED || referenceSpaceType == XRReferenceSpaceType::VIEWER);
+                }
+                else
+                {
+                    // TODO: Actually take the offset into account.
+                    auto* transform = XRRigidTransform::Unwrap(info[0].As<Napi::Object>());
+                    assert(transform != nullptr);
+                }
             }
 
         private:
             static inline Napi::FunctionReference constructor{};
+
+            Napi::Value GetOffsetReferenceSpace(const Napi::CallbackInfo& info)
+            {
+                // TODO: Handle XRBoundedReferenceSpace case
+                // https://immersive-web.github.io/webxr/#dom-xrreferencespace-getoffsetreferencespace
+
+                return XRReferenceSpace::New(info);
+            }
         };
 
         class XRFrame : public Napi::ObjectWrap<XRFrame>
@@ -666,6 +783,7 @@ namespace Babylon
                     JS_CLASS_NAME,
                     {
                         InstanceMethod("getViewerPose", &XRFrame::GetViewerPose),
+                        InstanceMethod("getPose", &XRFrame::GetPose),
                     });
 
                 constructor = Napi::Persistent(func);
@@ -683,7 +801,11 @@ namespace Babylon
                 : Napi::ObjectWrap<XRFrame>{info}
                 , m_jsXRViewerPose{Napi::Persistent(XRViewerPose::New())}
                 , m_xrViewerPose{*XRViewerPose::Unwrap(m_jsXRViewerPose.Value())}
+                , m_jsTransform{Napi::Persistent(XRRigidTransform::New())}
+                , m_transform{*XRRigidTransform::Unwrap(m_jsTransform.Value())}
+                , m_jsPose{Napi::Persistent(Napi::Object::New(info.Env()))}
             {
+                m_jsPose.Set("transform", m_jsTransform.Value());
             }
 
             void Update(const xr::System::Session::Frame& frame)
@@ -700,6 +822,10 @@ namespace Babylon
             Napi::ObjectReference m_jsXRViewerPose{};
             XRViewerPose& m_xrViewerPose;
 
+            Napi::ObjectReference m_jsTransform{};
+            XRRigidTransform& m_transform;
+            Napi::ObjectReference m_jsPose{};
+
             Napi::Value GetViewerPose(const Napi::CallbackInfo& info)
             {
                 // TODO: Support reference spaces.
@@ -707,11 +833,18 @@ namespace Babylon
 
                 // Updating the reference space is currently not supported. Until it is, we assume the
                 // reference space is unmoving at identity (which is usually true).
-                auto spaceTransform = IDENTITY_MATRIX;
 
-                m_xrViewerPose.Update(spaceTransform, m_frame->Views);
+                m_xrViewerPose.Update({ {0, 0, 0}, {0, 0, 0, 1} }, m_frame->Views);
 
                 return m_jsXRViewerPose.Value();
+            }
+
+            Napi::Value GetPose(const Napi::CallbackInfo& info)
+            {
+                const auto& space = *info[0].As<Napi::External<xr::System::Session::Frame::Space>>().Data();
+
+                m_transform.Update(space, false);
+                return m_jsPose.Value();
             }
         };
 
@@ -720,6 +853,7 @@ namespace Babylon
         {
             static constexpr auto JS_CLASS_NAME = "XRSession";
             static constexpr auto JS_EVENT_NAME_END = "end";
+            static constexpr auto JS_EVENT_NAME_INPUT_SOURCES_CHANGE = "inputsourceschange";
 
         public:
             static void Initialize(Napi::Env& env)
@@ -730,6 +864,7 @@ namespace Babylon
                     env,
                     JS_CLASS_NAME,
                     {
+                        InstanceAccessor("inputSources", &XRSession::GetInputSources, nullptr),
                         InstanceMethod("addEventListener", &XRSession::AddEventListener),
                         InstanceMethod("requestReferenceSpace", &XRSession::RequestReferenceSpace),
                         InstanceMethod("updateRenderState", &XRSession::UpdateRenderState),
@@ -759,6 +894,7 @@ namespace Babylon
                 : Napi::ObjectWrap<XRSession>{info}
                 , m_jsXRFrame{Napi::Persistent(XRFrame::New())}
                 , m_xrFrame{*XRFrame::Unwrap(m_jsXRFrame.Value())}
+                , m_jsInputSources{Napi::Persistent(Napi::Array::New(info.Env()))}
             {
                 // Currently only immersive VR is supported.
                 assert(info[0].As<Napi::String>().Utf8Value() == XRSessionType::IMMERSIVE_VR);
@@ -815,6 +951,14 @@ namespace Babylon
 
             std::vector<std::pair<const std::string, Napi::FunctionReference>> m_eventNamesAndCallbacks{};
 
+            Napi::Reference<Napi::Array> m_jsInputSources{};
+            std::map<xr::System::Session::Frame::InputSource::Identifier, Napi::ObjectReference> m_idToInputSource{};
+
+            Napi::Value GetInputSources(const Napi::CallbackInfo& info)
+            {
+                return m_jsInputSources.Value();
+            }
+
             void AddEventListener(const Napi::CallbackInfo& info)
             {
                 m_eventNamesAndCallbacks.emplace_back(
@@ -843,9 +987,92 @@ namespace Babylon
                 return deferred.Promise();
             }
 
+            void ProcessInputSources(const xr::System::Session::Frame& frame, Napi::Env env)
+            {
+                // Figure out the new state.
+                std::set<xr::System::Session::Frame::InputSource::Identifier> added{};
+                std::set<xr::System::Session::Frame::InputSource::Identifier> current{};
+                std::set<xr::System::Session::Frame::InputSource::Identifier> removed{};
+                for (auto& inputSource : frame.InputSources)
+                {
+                    if (!inputSource.TrackedThisFrame)
+                    {
+                        continue;
+                    }
+
+                    current.insert(inputSource.ID);
+
+                    auto found = m_idToInputSource.find(inputSource.ID);
+                    if (found == m_idToInputSource.end())
+                    {
+                        // Create the new input source, which will have the correct spaces associated with it.
+                        m_idToInputSource.insert({ inputSource.ID, CreateXRInputSource(inputSource, env) });
+
+                        added.insert(inputSource.ID);
+                    }
+                    else
+                    {
+                        // Ensure the correct spaces are associated with the existing input source.
+                        SetXRInputSourceSpaces(found->second.Value(), inputSource);
+                    }
+                }
+                for (const auto& [id, ref] : m_idToInputSource)
+                {
+                    if (current.find(id) == current.end())
+                    {
+                        // Do not update space association since said spaces no longer exist.
+                        removed.insert(id);
+                    }
+                }
+
+                // Only need to do more if there's been a change. Note that this block of code assumes
+                // that ALL known input sources -- including ones added AND REMOVED this frame -- are
+                // currently up-to-date and accessible though m_idToInputSource.
+                if (added.size() > 0 || removed.size() > 0)
+                {
+                    // Update the input sources array.
+                    auto jsCurrent = Napi::Array::New(env);
+                    for (const auto id : current)
+                    {
+                        jsCurrent.Set(jsCurrent.Length(), m_idToInputSource[id].Value());
+                    }
+                    m_jsInputSources = Napi::Persistent(jsCurrent);
+
+                    // Create and send the sources changed event.
+                    Napi::Array jsAdded = Napi::Array::New(env);
+                    for (const auto id : added)
+                    {
+                        jsAdded.Set(jsAdded.Length(), m_idToInputSource[id].Value());
+                    }
+                    Napi::Array jsRemoved = Napi::Array::New(env);
+                    for (const auto id : removed)
+                    {
+                        jsRemoved.Set(jsRemoved.Length(), m_idToInputSource[id].Value());
+                    }
+                    auto sourcesChangeEvent = Napi::Object::New(env);
+                    sourcesChangeEvent.Set("added", jsAdded);
+                    sourcesChangeEvent.Set("removed", jsRemoved);
+                    for (const auto& [name, callback] : m_eventNamesAndCallbacks)
+                    {
+                        if (name == JS_EVENT_NAME_INPUT_SOURCES_CHANGE)
+                        {
+                            callback.Call({ sourcesChangeEvent });
+                        }
+                    }
+
+                    // Finally, remove the removed.
+                    for (const auto id : removed)
+                    {
+                        m_idToInputSource.erase(id);
+                    }
+                }
+            }
+
             Napi::Value RequestAnimationFrame(const Napi::CallbackInfo& info)
             {
                 m_xr.DoFrame([this, func = std::make_shared<Napi::FunctionReference>(std::move(Napi::Persistent(info[0].As<Napi::Function>()))), env = info.Env()](const auto& frame) {
+                    ProcessInputSources(frame, env);
+
                     m_xrFrame.Update(frame);
                     func->Call({Napi::Value::From(env, -1), m_jsXRFrame.Value()});
                 });
@@ -1068,6 +1295,8 @@ namespace Babylon
 
     void InitializeNativeXr(Env& env)
     {
+        PointerEvent::Initialize(env);
+
         XRWebGLLayer::Initialize(env);
         XRRigidTransform::Initialize(env);
         XRView::Initialize(env);
