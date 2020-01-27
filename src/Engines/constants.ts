@@ -256,7 +256,7 @@ export class Constants {
     public static readonly LAYOUT_POWER2 = 1;
     /** Defines that texture packer will use a custom number of columns . */
     public static readonly LAYOUT_COLNUM = 2;
-    
+
     /** Defines that the texture packer will pad the subUV in wrap mode. */
     public static readonly SUBUV_WRAP = 0;
     /** Defines that the texture packer will pad the subUV in extend mode. */
