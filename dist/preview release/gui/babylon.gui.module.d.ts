@@ -463,6 +463,11 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         get renderAtIdealSize(): boolean;
         set renderAtIdealSize(value: boolean);
         /**
+         * Gets the ratio used when in "ideal mode"
+        * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         * */
+        get idealRatio(): number;
+        /**
         * Gets the underlying layer used to render the texture when in fullscreen mode
         */
         get layer(): Nullable<Layer>;
@@ -4758,6 +4763,11 @@ declare module BABYLON.GUI {
         */
         get renderAtIdealSize(): boolean;
         set renderAtIdealSize(value: boolean);
+        /**
+         * Gets the ratio used when in "ideal mode"
+        * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         * */
+        get idealRatio(): number;
         /**
         * Gets the underlying layer used to render the texture when in fullscreen mode
         */
