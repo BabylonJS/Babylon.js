@@ -394,6 +394,7 @@ export class TextureBlock extends NodeMaterialBlock {
     public serialize(): any {
         let serializationObject = super.serialize();
 
+        serializationObject.convertToGammaSpace = this.convertToGammaSpace;
         if (this.texture) {
             serializationObject.texture = this.texture.serialize();
         }
@@ -403,6 +404,8 @@ export class TextureBlock extends NodeMaterialBlock {
 
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
+
+        this.convertToGammaSpace = serializationObject.convertToGammaSpace;
 
         if (serializationObject.texture) {
             rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? "" : rootUrl;
