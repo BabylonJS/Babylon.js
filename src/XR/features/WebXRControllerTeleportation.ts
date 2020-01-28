@@ -326,7 +326,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         };
         const controllerData = this._controllers[xrController.uniqueId];
         // motion controller support
-        xrController.onMotionControllerProfileLoaded.addOnce(() => {
+        xrController.onMotionControllerInitObservable.addOnce(() => {
             if (xrController.motionController) {
                 const movementController = xrController.motionController.getComponentOfType(WebXRControllerComponent.THUMBSTICK) || xrController.motionController.getComponentOfType(WebXRControllerComponent.TOUCHPAD);
                 if (!movementController || this._options.useMainComponentOnly) {
