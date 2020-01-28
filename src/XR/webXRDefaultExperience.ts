@@ -49,6 +49,11 @@ export class WebXRDefaultExperienceOptions {
      * Mainly used in AR
      */
     public ignoreNativeCameraTransformation?: boolean;
+
+    /**
+     * When loading teleportation and pointer select, use stable versions instead of latest.
+     */
+    public useStablePlugins?: boolean;
 }
 
 /**
@@ -99,13 +104,13 @@ export class WebXRDefaultExperience {
 
             // Add controller support
             result.input = new WebXRInput(xrHelper.sessionManager, xrHelper.camera, options.inputOptions);
-            result.pointerSelection = <WebXRControllerPointerSelection>result.baseExperience.featuresManager.enableFeature(WebXRControllerPointerSelection.Name, "latest", {
+            result.pointerSelection = <WebXRControllerPointerSelection>result.baseExperience.featuresManager.enableFeature(WebXRControllerPointerSelection.Name, options.useStablePlugins ? "stable" : "latest", {
                 xrInput: result.input
             });
 
             // Add default teleportation, including rotation
             if (!options.disableTeleportation) {
-                result.teleportation = <WebXRMotionControllerTeleportation>result.baseExperience.featuresManager.enableFeature(WebXRMotionControllerTeleportation.Name, "latest", {
+                result.teleportation = <WebXRMotionControllerTeleportation>result.baseExperience.featuresManager.enableFeature(WebXRMotionControllerTeleportation.Name, options.useStablePlugins ? "stable" : "latest", {
                     floorMeshes: options.floorMeshes,
                     xrInput: result.input
                 });

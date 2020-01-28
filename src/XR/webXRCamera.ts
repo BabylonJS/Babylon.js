@@ -24,6 +24,21 @@ export class WebXRCamera extends FreeCamera {
     private _xrInvPositionCache: Vector3 = new Vector3();
     private _xrInvQuaternionCache = Quaternion.Identity();
 
+    private _realWorldHeight: number = 0;
+
+    /**
+     * Prevent the camera from calculating the real-world height
+     * If you are not using the user's height disable this for better performance
+     */
+    public disableRealWorldHeightCalculation: boolean = false;
+
+    /**
+     * Return the user's height, unrelated to the current ground.
+     */
+    public get realWorldHeight(): number {
+        return this._realWorldHeight;
+    }
+
     /**
      * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
      * @param name the name of the camera
@@ -176,6 +191,16 @@ export class WebXRCamera extends FreeCamera {
     }
 
     private _updateFromXRSession() {
+
+        // user height
+        if (!this.disableRealWorldHeightCalculation) {
+            const basePose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.baseReferenceSpace);
+            if (basePose && basePose.transform) {
+                this._realWorldHeight = basePose.transform.position.y;
+            }
+        } else {
+            this._realWorldHeight = 0;
+        }
 
         const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.referenceSpace);
 
