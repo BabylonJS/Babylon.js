@@ -11,9 +11,9 @@
 
 namespace Babylon
 {
-    struct BGFXCallback : public bgfx::CallbackI
+    struct BgfxCallback : public bgfx::CallbackI
     {
-        virtual ~BGFXCallback() = default;
+        virtual ~BgfxCallback() = default;
 
         virtual void fatal(const char* filePath, uint16_t line, bgfx::Fatal::Enum code, const char* str) override;
         virtual void traceVargs(const char* filePath, uint16_t line, const char* format, va_list argList) override;
@@ -28,7 +28,7 @@ namespace Babylon
         virtual void captureEnd() override;
         virtual void captureFrame(const void* _data, uint32_t _size) override;
 
-        static std::vector<uint8_t> screenShotBitmap;
+        std::vector<uint8_t> m_screenShotBitmap;
 
     protected:
         void trace(const char* _filePath, uint16_t _line, const char* _format, ...);
