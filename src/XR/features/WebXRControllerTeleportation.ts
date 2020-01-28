@@ -267,18 +267,24 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                 let hitPossible = false;
                 // first check if direct ray possible
                 controllerData.xrController.getWorldPointerRayToRef(this._tmpRay);
+                // pick grounds that are LOWER only. upper will use parabolic path
                 let pick = scene.pickWithRay(this._tmpRay, (o) => {
-                    return this._floorMeshes.indexOf(o) !== -1;
+                    const index = this._floorMeshes.indexOf(o);
+                    if (index === -1) { return false; }
+                    return (this._floorMeshes[index].absolutePosition.y < this._options.xrInput.xrCamera.position.y);
                 });
                 if (pick && pick.pickedPoint) {
                     hitPossible = true;
                     this.setTargetMeshPosition(pick.pickedPoint);
                     this.setTargetMeshVisibility(true);
-                    this.showParabolicPath(pick);
+                    this._showParabolicPath(pick);
                 } else {
                     if (this.parabolicRayEnabled) {
+                        // radius compensation according to pointer rotation around X
+                        const xRotation = controllerData.xrController.pointer.rotationQuaternion!.toEulerAngles().x;
+                        const compensation = (1 + ((Math.PI / 2) - Math.abs(xRotation)));
                         // check parabolic ray
-                        const radius = this.parabolicCheckRadius;
+                        const radius = this.parabolicCheckRadius * compensation;
                         this._tmpRay.origin.addToRef(this._tmpRay.direction.scale(radius * 2), this._tmpVector);
                         this._tmpVector.y = this._tmpRay.origin.y;
                         this._tmpRay.origin.addInPlace(this._tmpRay.direction.scale(radius));
@@ -292,7 +298,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                             hitPossible = true;
                             this.setTargetMeshPosition(pick.pickedPoint);
                             this.setTargetMeshVisibility(true);
-                            this.showParabolicPath(pick);
+                            this._showParabolicPath(pick);
                         }
                     }
                 }
@@ -444,7 +450,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         this._currentTeleportationControllerId = "";
         // do the movement forward here
         if (this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.isVisible) {
-            const height = this._options.xrInput.xrCamera.position.y - this._options.teleportationTargetMesh.position.y;
+            const height = this._options.xrInput.xrCamera.realWorldHeight;
             this._options.xrInput.xrCamera.position.copyFrom(this._options.teleportationTargetMesh.position);
             this._options.xrInput.xrCamera.position.y += height;
             this._options.xrInput.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, controllerData.teleportationState.currentRotation, 0));
@@ -578,7 +584,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
 
     private _quadraticBezierCurve: AbstractMesh;
 
-    private showParabolicPath(pickInfo: PickingInfo) {
+    private _showParabolicPath(pickInfo: PickingInfo) {
         if (!pickInfo.pickedPoint) { return; }
 
         const controllerData = this._controllers[this._currentTeleportationControllerId];
