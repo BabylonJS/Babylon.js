@@ -946,7 +946,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Defines the target the camera should look at.
      * This will automatically adapt alpha beta and radius to fit within the new target.
      * @param target Defines the new target as a Vector or a mesh
-     * @param toBoundingCenter In case of a mesh target, defines wether to target the mesh position or its bounding information center
+     * @param toBoundingCenter In case of a mesh target, defines whether to target the mesh position or its bounding information center
      * @param allowSamePosition If false, prevents reapplying the new computed position if it is identical to the current one (optim)
      */
     public setTarget(target: AbstractMesh | Vector3, toBoundingCenter = false, allowSamePosition = false): void {

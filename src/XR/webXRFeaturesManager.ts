@@ -1,5 +1,5 @@
 import { WebXRSessionManager } from './webXRSessionManager';
-import { IDisposable } from '../../scene';
+import { IDisposable } from '../scene';
 
 /**
  * Defining the interface required for a (webxr) feature
@@ -58,6 +58,11 @@ export class WebXRFeatureName {
      * The name of the plane detection feature
      */
     public static PLANE_DETECTION = "xr-plane-detection";
+
+    /**
+     * physics impostors for xr controllers feature
+     */
+    public static PHYSICS_CONTROLLERS = "xr-physics-controller";
 }
 
 /**

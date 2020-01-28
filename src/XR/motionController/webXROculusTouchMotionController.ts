@@ -5,10 +5,10 @@ import {
     IMotionControllerLayoutMap
 } from "./webXRAbstractController";
 import { WebXRMotionControllerManager } from './webXRMotionControllerManager';
-import { AbstractMesh } from '../../../Meshes/abstractMesh';
-import { Scene } from '../../../scene';
-import { Mesh } from '../../../Meshes/mesh';
-import { Quaternion } from '../../../Maths/math.vector';
+import { AbstractMesh } from '../../Meshes/abstractMesh';
+import { Scene } from '../../scene';
+import { Mesh } from '../../Meshes/mesh';
+import { Quaternion } from '../../Maths/math.vector';
 
 /**
  * The motion controller class for oculus touch (quest, rift).

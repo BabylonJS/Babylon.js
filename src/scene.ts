@@ -355,7 +355,7 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     public defaultCursor: string = "";
     /**
-     * Defines wether cursors are handled by the scene.
+     * Defines whether cursors are handled by the scene.
      */
     public doNotHandleCursors = false;
     /**

@@ -411,7 +411,27 @@ export class BlockTools {
                 worldMatrixBlock.connectTo(transformBlock);
 
                 return transformBlock;
-            }                  
+            }     
+            case "WorldTangentBlock": {
+                let worldTangentBlock = nodeMaterial.getInputBlockByPredicate(b => b.isAttribute && b.name === "tangent");                
+                if (!worldTangentBlock) {
+                    worldTangentBlock = new InputBlock("tangent");
+                    worldTangentBlock.setAsAttribute("tangent");
+                }
+
+                let worldMatrixBlock = nodeMaterial.getInputBlockByPredicate(b => b.isSystemValue && b.systemValue === NodeMaterialSystemValues.World);  
+
+                if (!worldMatrixBlock) {
+                    worldMatrixBlock = new InputBlock("World");
+                    worldMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.World);
+                }
+
+                let transformBlock = new TransformBlock("World tangent");
+                worldTangentBlock.connectTo(transformBlock);
+                worldMatrixBlock.connectTo(transformBlock);
+
+                return transformBlock;
+            }              
         }
 
         return null;

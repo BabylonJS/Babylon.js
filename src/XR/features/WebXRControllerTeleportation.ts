@@ -1,27 +1,27 @@
 import { IWebXRFeature, WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager';
-import { Observer } from '../../../Misc/observable';
+import { Observer } from '../../Misc/observable';
 import { WebXRSessionManager } from '../webXRSessionManager';
-import { Nullable } from '../../../types';
+import { Nullable } from '../../types';
 import { WebXRInput } from '../webXRInput';
 import { WebXRController } from '../webXRController';
 import { WebXRControllerComponent, IWebXRMotionControllerAxesValue } from '../motionController/webXRControllerComponent';
-import { AbstractMesh } from '../../../Meshes/abstractMesh';
-import { Vector3, Quaternion } from '../../../Maths/math.vector';
-import { Ray } from '../../../Culling/ray';
-import { Material } from '../../../Materials/material';
-import { DynamicTexture } from '../../../Materials/Textures/dynamicTexture';
-import { CylinderBuilder } from '../../../Meshes/Builders/cylinderBuilder';
-import { SineEase, EasingFunction } from '../../../Animations/easing';
-import { Animation } from '../../../Animations/animation';
-import { Axis } from '../../../Maths/math.axis';
-import { StandardMaterial } from '../../../Materials/standardMaterial';
-import { GroundBuilder } from '../../../Meshes/Builders/groundBuilder';
-import { TorusBuilder } from '../../../Meshes/Builders/torusBuilder';
-import { PickingInfo } from '../../../Collisions/pickingInfo';
-import { Curve3 } from '../../../Maths/math.path';
-import { LinesBuilder } from '../../../Meshes/Builders/linesBuilder';
+import { AbstractMesh } from '../../Meshes/abstractMesh';
+import { Vector3, Quaternion } from '../../Maths/math.vector';
+import { Ray } from '../../Culling/ray';
+import { Material } from '../../Materials/material';
+import { DynamicTexture } from '../../Materials/Textures/dynamicTexture';
+import { CylinderBuilder } from '../../Meshes/Builders/cylinderBuilder';
+import { SineEase, EasingFunction } from '../../Animations/easing';
+import { Animation } from '../../Animations/animation';
+import { Axis } from '../../Maths/math.axis';
+import { StandardMaterial } from '../../Materials/standardMaterial';
+import { GroundBuilder } from '../../Meshes/Builders/groundBuilder';
+import { TorusBuilder } from '../../Meshes/Builders/torusBuilder';
+import { PickingInfo } from '../../Collisions/pickingInfo';
+import { Curve3 } from '../../Maths/math.path';
+import { LinesBuilder } from '../../Meshes/Builders/linesBuilder';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-import { Color3 } from '../../../Maths/math.color';
+import { Color3 } from '../../Maths/math.color';
 
 /**
  * The options container for the teleportation module

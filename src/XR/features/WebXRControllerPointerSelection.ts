@@ -1,20 +1,20 @@
 import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
 import { WebXRSessionManager } from '../webXRSessionManager';
-import { AbstractMesh } from '../../../Meshes/abstractMesh';
-import { Observer } from '../../../Misc/observable';
+import { AbstractMesh } from '../../Meshes/abstractMesh';
+import { Observer } from '../../Misc/observable';
 import { WebXRInput } from '../webXRInput';
 import { WebXRController } from '../webXRController';
-import { Scene } from '../../../scene';
+import { Scene } from '../../scene';
 import { WebXRControllerComponent } from '../motionController/webXRControllerComponent';
-import { Nullable } from '../../../types';
-import { Vector3 } from '../../../Maths/math.vector';
-import { Color3 } from '../../../Maths/math.color';
-import { Axis } from '../../../Maths/math.axis';
-import { StandardMaterial } from '../../../Materials/standardMaterial';
-import { CylinderBuilder } from '../../../Meshes/Builders/cylinderBuilder';
-import { TorusBuilder } from '../../../Meshes/Builders/torusBuilder';
-import { Ray } from '../../../Culling/ray';
-import { PickingInfo } from '../../../Collisions/pickingInfo';
+import { Nullable } from '../../types';
+import { Vector3 } from '../../Maths/math.vector';
+import { Color3 } from '../../Maths/math.color';
+import { Axis } from '../../Maths/math.axis';
+import { StandardMaterial } from '../../Materials/standardMaterial';
+import { CylinderBuilder } from '../../Meshes/Builders/cylinderBuilder';
+import { TorusBuilder } from '../../Meshes/Builders/torusBuilder';
+import { Ray } from '../../Culling/ray';
+import { PickingInfo } from '../../Collisions/pickingInfo';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
 
 /**
@@ -471,7 +471,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
     private _updatePointerDistance(_laserPointer: AbstractMesh, distance: number = 100) {
         _laserPointer.scaling.y = distance;
-        _laserPointer.position.z = distance / 2;
+        // a bit of distance from the controller
+        _laserPointer.position.z = (distance / 2) + 0.05;
     }
 }
 
