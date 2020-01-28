@@ -357,7 +357,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     }
 
     private _attachTrackedPointerRayMode(xrController: WebXRController) {
-        xrController.onMotionControllerProfileLoaded.add((motionController) => {
+        xrController.onMotionControllerInitObservable.add((motionController) => {
             if (this._options.forceGazeMode) {
                 return this._attachGazeMode(xrController);
             }

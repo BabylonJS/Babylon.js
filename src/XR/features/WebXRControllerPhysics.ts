@@ -31,7 +31,7 @@ export class IWebXRControllerPhysicsOptions {
          */
         impostorType?: number;
         /**
-         * the size of the impostor
+         * the size of the impostor. Defaults to 10cm
          */
         impostorSize?: number | { width: number, height: number, depth: number };
         /**
@@ -184,7 +184,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
             Logger.Warn("physics engine not enabled, skipped. Please add this controller manually.");
         }
         if (this._options.physicsProperties!.useControllerMesh) {
-            xrController.onMotionControllerProfileLoaded.addOnce((motionController) => {
+            xrController.onMotionControllerInitObservable.addOnce((motionController) => {
                 motionController.onModelLoadedObservable.addOnce(() => {
                     const impostor = new PhysicsImpostor(motionController.rootMesh!, PhysicsImpostor.MeshImpostor, {
                         mass: 0,
@@ -201,7 +201,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
             });
         } else {
             const impostorType: number = this._options.physicsProperties!.impostorType || PhysicsImpostor.SphereImpostor;
-            const impostorSize: number | { width: number, height: number, depth: number } = this._options.physicsProperties!.impostorSize || 0.08;
+            const impostorSize: number | { width: number, height: number, depth: number } = this._options.physicsProperties!.impostorSize || 0.1;
             const impostorMesh = SphereBuilder.CreateSphere('impostor-mesh-' + xrController.uniqueId, {
                 diameterX: typeof impostorSize === 'number' ? impostorSize : impostorSize.width,
                 diameterY: typeof impostorSize === 'number' ? impostorSize : impostorSize.height,
