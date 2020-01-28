@@ -98,7 +98,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -570,6 +570,10 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         _this._blockNextFocusCheck = false;
         _this._renderScale = 1;
         _this._cursorChanged = false;
+        /** @hidden */
+        _this._numLayoutCalls = 0;
+        /** @hidden */
+        _this._numRenderCalls = 0;
         /**
         * Define type to string to ensure compatibility across browsers
         * Safari doesn't support DataTransfer constructor
@@ -652,6 +656,22 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         _this._texture.isReady = true;
         return _this;
     }
+    Object.defineProperty(AdvancedDynamicTexture.prototype, "numLayoutCalls", {
+        /** Gets the number of layout calls made the last time the ADT has been rendered */
+        get: function () {
+            return this._numLayoutCalls;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AdvancedDynamicTexture.prototype, "numRenderCalls", {
+        /** Gets the number of render calls made the last time the ADT has been rendered */
+        get: function () {
+            return this._numRenderCalls;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(AdvancedDynamicTexture.prototype, "renderScale", {
         /**
         * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
@@ -1093,6 +1113,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         // Layout
         this.onBeginLayoutObservable.notifyObservers(this);
         var measure = new _measure__WEBPACK_IMPORTED_MODULE_4__["Measure"](0, 0, renderWidth, renderHeight);
+        this._numLayoutCalls = 0;
         this._rootContainer._layout(measure, context);
         this.onEndLayoutObservable.notifyObservers(this);
         this._isDirty = false; // Restoring the dirty state that could have been set by controls during layout processing
@@ -1112,6 +1133,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         }
         // Render
         this.onBeginRenderObservable.notifyObservers(this);
+        this._numRenderCalls = 0;
         this._rootContainer._render(context, this._invalidatedRectangle);
         this.onEndRenderObservable.notifyObservers(this);
         this._invalidatedRectangle = null;
@@ -3498,6 +3520,7 @@ var Container = /** @class */ (function (_super) {
         if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
             return false;
         }
+        this.host._numLayoutCalls++;
         if (this._isDirty) {
             this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
         }
@@ -3726,6 +3749,8 @@ var Control = /** @class */ (function () {
         this._disabledColor = "#9a9a9a";
         /** @hidden */
         this._rebuildLayout = false;
+        /** @hidden */
+        this._customData = {};
         /** @hidden */
         this._isClipped = false;
         /** @hidden */
@@ -4955,6 +4980,7 @@ var Control = /** @class */ (function () {
             return false;
         }
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
+            this.host._numLayoutCalls++;
             this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
             context.save();
             this._applyStates(context);
@@ -5153,6 +5179,7 @@ var Control = /** @class */ (function () {
             this._isDirty = false;
             return false;
         }
+        this.host._numRenderCalls++;
         context.save();
         this._applyStates(context);
         // Transform
@@ -6976,8 +7003,8 @@ var Image = /** @class */ (function (_super) {
             bottomHeight -= 1;
             rightWidth -= 1;
         }
-        var centerWidth = this._sliceRight - this._sliceLeft + 1;
-        var targetCenterWidth = this._currentMeasure.width - rightWidth - this.sliceLeft + 1;
+        var centerWidth = this._sliceRight - this._sliceLeft;
+        var targetCenterWidth = this._currentMeasure.width - rightWidth - this.sliceLeft;
         var targetTopHeight = this._currentMeasure.height - height + this._sliceBottom;
         // Corners
         this._renderCornerPatch(context, left, top, leftWidth, topHeight, 0, 0);
@@ -6985,7 +7012,7 @@ var Image = /** @class */ (function (_super) {
         this._renderCornerPatch(context, this._sliceRight, top, rightWidth, topHeight, this._currentMeasure.width - rightWidth, 0);
         this._renderCornerPatch(context, this._sliceRight, this._sliceBottom, rightWidth, height - this._sliceBottom, this._currentMeasure.width - rightWidth, targetTopHeight);
         // Center
-        this._drawImage(context, this._sliceLeft, this._sliceTop, centerWidth, this._sliceBottom - this._sliceTop + 1, this._currentMeasure.left + leftWidth, this._currentMeasure.top + topHeight, targetCenterWidth, targetTopHeight - topHeight + 1);
+        this._drawImage(context, this._sliceLeft, this._sliceTop, centerWidth, this._sliceBottom - this._sliceTop, this._currentMeasure.left + leftWidth, this._currentMeasure.top + topHeight, targetCenterWidth, targetTopHeight - topHeight);
         // Borders
         this._drawImage(context, left, this._sliceTop, leftWidth, this._sliceBottom - this._sliceTop, this._currentMeasure.left, this._currentMeasure.top + topHeight, leftWidth, targetTopHeight - topHeight);
         this._drawImage(context, this._sliceRight, this._sliceTop, leftWidth, this._sliceBottom - this._sliceTop, this._currentMeasure.left + this._currentMeasure.width - rightWidth, this._currentMeasure.top + topHeight, leftWidth, targetTopHeight - topHeight);
@@ -9135,6 +9162,8 @@ var ScrollViewer = /** @class */ (function (_super) {
         _this._thumbLength = 0.5;
         _this._thumbHeight = 1;
         _this._barImageHeight = 1;
+        _this._forceHorizontalBar = false;
+        _this._forceVerticalBar = false;
         _this._useImageBar = isImageBased ? isImageBased : false;
         _this.onDirtyObservable.add(function () {
             _this._horizontalBarSpace.color = _this.color;
@@ -9156,7 +9185,7 @@ var ScrollViewer = /** @class */ (function (_super) {
             _this._horizontalBar = new _sliders_scrollBar__WEBPACK_IMPORTED_MODULE_6__["ScrollBar"]();
             _this._verticalBar = new _sliders_scrollBar__WEBPACK_IMPORTED_MODULE_6__["ScrollBar"]();
         }
-        _this._window = new _scrollViewerWindow__WEBPACK_IMPORTED_MODULE_5__["_ScrollViewerWindow"]();
+        _this._window = new _scrollViewerWindow__WEBPACK_IMPORTED_MODULE_5__["_ScrollViewerWindow"]("scrollViewer_window");
         _this._window.horizontalAlignment = _control__WEBPACK_IMPORTED_MODULE_4__["Control"].HORIZONTAL_ALIGNMENT_LEFT;
         _this._window.verticalAlignment = _control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_TOP;
         _this._grid.addColumnDefinition(1);
@@ -9242,6 +9271,81 @@ var ScrollViewer = /** @class */ (function (_super) {
             child._markMatrixAsDirty();
         }
     };
+    Object.defineProperty(ScrollViewer.prototype, "freezeControls", {
+        /**
+         * Freezes or unfreezes the controls in the window.
+         * When controls are frozen, the scroll viewer can render a lot more quickly but updates to positions/sizes of controls
+         * are not taken into account. If you want to change positions/sizes, unfreeze, perform the changes then freeze again
+         */
+        get: function () {
+            return this._window.freezeControls;
+        },
+        set: function (value) {
+            this._window.freezeControls = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ScrollViewer.prototype, "bucketWidth", {
+        /** Gets the bucket width */
+        get: function () {
+            return this._window.bucketWidth;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ScrollViewer.prototype, "bucketHeight", {
+        /** Gets the bucket height */
+        get: function () {
+            return this._window.bucketHeight;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Sets the bucket sizes.
+     * When freezeControls is true, setting a non-zero bucket size will improve performances by updating only
+     * controls that are visible. The bucket sizes is used to subdivide (internally) the window area to smaller areas into which
+     * controls are dispatched. So, the size should be roughly equals to the mean size of all the controls of
+     * the window. To disable the usage of buckets, sets either width or height (or both) to 0.
+     * Please note that using this option will raise the memory usage (the higher the bucket sizes, the less memory
+     * used), that's why it is not enabled by default.
+     * @param width width of the bucket
+     * @param height height of the bucket
+     */
+    ScrollViewer.prototype.setBucketSizes = function (width, height) {
+        this._window.setBucketSizes(width, height);
+    };
+    Object.defineProperty(ScrollViewer.prototype, "forceHorizontalBar", {
+        /**
+         * Forces the horizontal scroll bar to be displayed
+         */
+        get: function () {
+            return this._forceHorizontalBar;
+        },
+        set: function (value) {
+            this._grid.setRowDefinition(1, value ? this._barSize : 0, true);
+            this._horizontalBar.isVisible = value;
+            this._forceHorizontalBar = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ScrollViewer.prototype, "forceVerticalBar", {
+        /**
+         * Forces the vertical scroll bar to be displayed
+         */
+        get: function () {
+            return this._forceVerticalBar;
+        },
+        set: function (value) {
+            this._grid.setColumnDefinition(1, value ? this._barSize : 0, true);
+            this._verticalBar.isVisible = value;
+            this._forceVerticalBar = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /** Reset the scroll viewer window to initial size */
     ScrollViewer.prototype.resetWindow = function () {
         this._window.width = "100%";
@@ -9251,8 +9355,8 @@ var ScrollViewer = /** @class */ (function (_super) {
         return "ScrollViewer";
     };
     ScrollViewer.prototype._buildClientSizes = function () {
-        this._window.parentClientWidth = this._currentMeasure.width - (this._verticalBar.isVisible ? this._barSize : 0) - 2 * this.thickness;
-        this._window.parentClientHeight = this._currentMeasure.height - (this._horizontalBar.isVisible ? this._barSize : 0) - 2 * this.thickness;
+        this._window.parentClientWidth = this._currentMeasure.width - (this._verticalBar.isVisible || this.forceVerticalBar ? this._barSize : 0) - 2 * this.thickness;
+        this._window.parentClientHeight = this._currentMeasure.height - (this._horizontalBar.isVisible || this.forceHorizontalBar ? this._barSize : 0) - 2 * this.thickness;
         this._clientWidth = this._window.parentClientWidth;
         this._clientHeight = this._window.parentClientHeight;
     };
@@ -9468,45 +9572,53 @@ var ScrollViewer = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    ScrollViewer.prototype._setWindowPosition = function () {
+        var windowContentsWidth = this._window._currentMeasure.width;
+        var windowContentsHeight = this._window._currentMeasure.height;
+        var _endLeft = this._clientWidth - windowContentsWidth;
+        var _endTop = this._clientHeight - windowContentsHeight;
+        var newLeft = this._horizontalBar.value * _endLeft + "px";
+        var newTop = this._verticalBar.value * _endTop + "px";
+        if (newLeft !== this._window.left) {
+            this._window.left = newLeft;
+            if (!this.freezeControls) {
+                this._rebuildLayout = true;
+            }
+        }
+        if (newTop !== this._window.top) {
+            this._window.top = newTop;
+            if (!this.freezeControls) {
+                this._rebuildLayout = true;
+            }
+        }
+    };
     /** @hidden */
     ScrollViewer.prototype._updateScroller = function () {
         var windowContentsWidth = this._window._currentMeasure.width;
         var windowContentsHeight = this._window._currentMeasure.height;
-        if (this._horizontalBar.isVisible && windowContentsWidth <= this._clientWidth) {
+        if (this._horizontalBar.isVisible && windowContentsWidth <= this._clientWidth && !this.forceHorizontalBar) {
             this._grid.setRowDefinition(1, 0, true);
             this._horizontalBar.isVisible = false;
             this._horizontalBar.value = 0;
             this._rebuildLayout = true;
         }
-        else if (!this._horizontalBar.isVisible && windowContentsWidth > this._clientWidth) {
+        else if (!this._horizontalBar.isVisible && (windowContentsWidth > this._clientWidth || this.forceHorizontalBar)) {
             this._grid.setRowDefinition(1, this._barSize, true);
             this._horizontalBar.isVisible = true;
             this._rebuildLayout = true;
         }
-        if (this._verticalBar.isVisible && windowContentsHeight <= this._clientHeight) {
+        if (this._verticalBar.isVisible && windowContentsHeight <= this._clientHeight && !this.forceVerticalBar) {
             this._grid.setColumnDefinition(1, 0, true);
             this._verticalBar.isVisible = false;
             this._verticalBar.value = 0;
             this._rebuildLayout = true;
         }
-        else if (!this._verticalBar.isVisible && windowContentsHeight > this._clientHeight) {
+        else if (!this._verticalBar.isVisible && (windowContentsHeight > this._clientHeight || this.forceVerticalBar)) {
             this._grid.setColumnDefinition(1, this._barSize, true);
             this._verticalBar.isVisible = true;
             this._rebuildLayout = true;
         }
         this._buildClientSizes();
-        this._endLeft = this._clientWidth - windowContentsWidth;
-        this._endTop = this._clientHeight - windowContentsHeight;
-        var newLeft = this._horizontalBar.value * this._endLeft + "px";
-        var newTop = this._verticalBar.value * this._endTop + "px";
-        if (newLeft !== this._window.left) {
-            this._window.left = newLeft;
-            this._rebuildLayout = true;
-        }
-        if (newTop !== this._window.top) {
-            this._window.top = newTop;
-            this._rebuildLayout = true;
-        }
         this._horizontalBar.thumbWidth = this._thumbLength * 0.9 * this._clientWidth + "px";
         this._verticalBar.thumbWidth = this._thumbLength * 0.9 * this._clientHeight + "px";
     };
@@ -9530,12 +9642,7 @@ var ScrollViewer = /** @class */ (function (_super) {
         barControl.isVisible = false;
         barContainer.addControl(barControl);
         barControl.onValueChangedObservable.add(function (value) {
-            if (rotation > 0) {
-                _this._window.top = value * _this._endTop + "px";
-            }
-            else {
-                _this._window.left = value * _this._endLeft + "px";
-            }
+            _this._setWindowPosition();
         });
     };
     /** @hidden */
@@ -9603,9 +9710,11 @@ babylonjs_Events_pointerEvents__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].Regist
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "_ScrollViewerWindow", function() { return _ScrollViewerWindow; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var _container__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../container */ "./2D/controls/container.ts");
-/* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../valueAndUnit */ "./2D/valueAndUnit.ts");
-/* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../control */ "./2D/controls/control.ts");
+/* harmony import */ var _measure__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../measure */ "./2D/measure.ts");
+/* harmony import */ var _container__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../container */ "./2D/controls/container.ts");
+/* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../valueAndUnit */ "./2D/valueAndUnit.ts");
+/* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../control */ "./2D/controls/control.ts");
+
 
 
 
@@ -9621,20 +9730,199 @@ var _ScrollViewerWindow = /** @class */ (function (_super) {
     * @param name of ScrollViewerWindow
     */
     function _ScrollViewerWindow(name) {
-        return _super.call(this, name) || this;
+        var _this = _super.call(this, name) || this;
+        _this._freezeControls = false;
+        _this._bucketWidth = 0;
+        _this._bucketHeight = 0;
+        _this._buckets = {};
+        return _this;
     }
+    Object.defineProperty(_ScrollViewerWindow.prototype, "freezeControls", {
+        get: function () {
+            return this._freezeControls;
+        },
+        set: function (value) {
+            if (this._freezeControls === value) {
+                return;
+            }
+            // trigger a full normal layout calculation to be sure all children have their measures up to date
+            this._freezeControls = false;
+            var textureSize = this.host.getSize();
+            var renderWidth = textureSize.width;
+            var renderHeight = textureSize.height;
+            var context = this.host.getContext();
+            var measure = new _measure__WEBPACK_IMPORTED_MODULE_1__["Measure"](0, 0, renderWidth, renderHeight);
+            this.host._numLayoutCalls = 0;
+            this.host._rootContainer._layout(measure, context);
+            // in freeze mode, prepare children measures accordingly
+            if (value) {
+                this._updateMeasures();
+                if (this._useBuckets()) {
+                    this._makeBuckets();
+                }
+            }
+            this._freezeControls = value;
+            this.host.markAsDirty(); // redraw with the (new) current settings
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(_ScrollViewerWindow.prototype, "bucketWidth", {
+        get: function () {
+            return this._bucketWidth;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(_ScrollViewerWindow.prototype, "bucketHeight", {
+        get: function () {
+            return this._bucketHeight;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    _ScrollViewerWindow.prototype.setBucketSizes = function (width, height) {
+        this._bucketWidth = width;
+        this._bucketHeight = height;
+        if (this._useBuckets()) {
+            if (this._freezeControls) {
+                this._makeBuckets();
+            }
+        }
+        else {
+            this._buckets = {};
+        }
+    };
+    _ScrollViewerWindow.prototype._useBuckets = function () {
+        return this._bucketWidth > 0 && this._bucketHeight > 0;
+    };
+    _ScrollViewerWindow.prototype._makeBuckets = function () {
+        this._buckets = {};
+        this._bucketLen = Math.ceil(this.widthInPixels / this._bucketWidth);
+        this._dispatchInBuckets(this._children);
+    };
+    _ScrollViewerWindow.prototype._dispatchInBuckets = function (children) {
+        for (var i = 0; i < children.length; ++i) {
+            var child = children[i];
+            var bStartX = Math.max(0, Math.floor((child._currentMeasure.left - this._currentMeasure.left) / this._bucketWidth)), bEndX = Math.floor((child._currentMeasure.left - this._currentMeasure.left + child._currentMeasure.width - 1) / this._bucketWidth), bStartY = Math.max(0, Math.floor((child._currentMeasure.top - this._currentMeasure.top) / this._bucketHeight)), bEndY = Math.floor((child._currentMeasure.top - this._currentMeasure.top + child._currentMeasure.height - 1) / this._bucketHeight);
+            while (bStartY <= bEndY) {
+                for (var x = bStartX; x <= bEndX; ++x) {
+                    var bucket = bStartY * this._bucketLen + x, lstc = this._buckets[bucket];
+                    if (!lstc) {
+                        lstc = [];
+                        this._buckets[bucket] = lstc;
+                    }
+                    lstc.push(child);
+                }
+                bStartY++;
+            }
+            if (child instanceof _container__WEBPACK_IMPORTED_MODULE_2__["Container"] && child._children.length > 0) {
+                this._dispatchInBuckets(child._children);
+            }
+        }
+    };
+    // reset left and top measures for the window and all its children
+    _ScrollViewerWindow.prototype._updateMeasures = function () {
+        var left = this.leftInPixels | 0, top = this.topInPixels | 0;
+        this._measureForChildren.left -= left;
+        this._measureForChildren.top -= top;
+        this._currentMeasure.left -= left;
+        this._currentMeasure.top -= top;
+        this._updateChildrenMeasures(this._children, left, top);
+    };
+    _ScrollViewerWindow.prototype._updateChildrenMeasures = function (children, left, top) {
+        for (var i = 0; i < children.length; ++i) {
+            var child = children[i];
+            child._currentMeasure.left -= left;
+            child._currentMeasure.top -= top;
+            child._customData._origLeft = child._currentMeasure.left; // save the original left and top values for each child
+            child._customData._origTop = child._currentMeasure.top;
+            if (child instanceof _container__WEBPACK_IMPORTED_MODULE_2__["Container"] && child._children.length > 0) {
+                this._updateChildrenMeasures(child._children, left, top);
+            }
+        }
+    };
     _ScrollViewerWindow.prototype._getTypeName = function () {
         return "ScrollViewerWindow";
     };
     /** @hidden */
     _ScrollViewerWindow.prototype._additionalProcessing = function (parentMeasure, context) {
         _super.prototype._additionalProcessing.call(this, parentMeasure, context);
+        this._parentMeasure = parentMeasure;
         this._measureForChildren.left = this._currentMeasure.left;
         this._measureForChildren.top = this._currentMeasure.top;
         this._measureForChildren.width = parentMeasure.width;
         this._measureForChildren.height = parentMeasure.height;
     };
+    /** @hidden */
+    _ScrollViewerWindow.prototype._layout = function (parentMeasure, context) {
+        if (this._freezeControls) {
+            this.invalidateRect(); // will trigger a redraw of the window
+            return false;
+        }
+        return _super.prototype._layout.call(this, parentMeasure, context);
+    };
+    _ScrollViewerWindow.prototype._scrollChildren = function (children, left, top) {
+        for (var i = 0; i < children.length; ++i) {
+            var child = children[i];
+            child._currentMeasure.left = child._customData._origLeft + left;
+            child._currentMeasure.top = child._customData._origTop + top;
+            child._isClipped = false; // clipping will be handled by _draw and the call to _intersectsRect()
+            if (child instanceof _container__WEBPACK_IMPORTED_MODULE_2__["Container"] && child._children.length > 0) {
+                this._scrollChildren(child._children, left, top);
+            }
+        }
+    };
+    _ScrollViewerWindow.prototype._scrollChildrenWithBuckets = function (left, top, scrollLeft, scrollTop) {
+        var bStartX = Math.max(0, Math.floor(-left / this._bucketWidth)), bEndX = Math.floor((-left + this._parentMeasure.width - 1) / this._bucketWidth), bStartY = Math.max(0, Math.floor(-top / this._bucketHeight)), bEndY = Math.floor((-top + this._parentMeasure.height - 1) / this._bucketHeight);
+        while (bStartY <= bEndY) {
+            for (var x = bStartX; x <= bEndX; ++x) {
+                var bucket = bStartY * this._bucketLen + x, lstc = this._buckets[bucket];
+                if (lstc) {
+                    for (var i = 0; i < lstc.length; ++i) {
+                        var child = lstc[i];
+                        child._currentMeasure.left = child._customData._origLeft + scrollLeft;
+                        child._currentMeasure.top = child._customData._origTop + scrollTop;
+                        child._isClipped = false; // clipping will be handled by _draw and the call to _intersectsRect()
+                    }
+                }
+            }
+            bStartY++;
+        }
+    };
+    /** @hidden */
+    _ScrollViewerWindow.prototype._draw = function (context, invalidatedRectangle) {
+        if (!this._freezeControls) {
+            _super.prototype._draw.call(this, context, invalidatedRectangle);
+            return;
+        }
+        this._localDraw(context);
+        if (this.clipChildren) {
+            this._clipForChildren(context);
+        }
+        var left = this.leftInPixels, top = this.topInPixels;
+        if (this._useBuckets()) {
+            this._scrollChildrenWithBuckets(this._oldLeft, this._oldTop, left, top);
+            this._scrollChildrenWithBuckets(left, top, left, top);
+        }
+        else {
+            this._scrollChildren(this._children, left, top);
+        }
+        this._oldLeft = left;
+        this._oldTop = top;
+        for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+            var child = _a[_i];
+            if (!child._intersectsRect(this._parentMeasure)) {
+                continue;
+            }
+            child._render(context, this._parentMeasure);
+        }
+    };
     _ScrollViewerWindow.prototype._postMeasure = function () {
+        if (this._freezeControls) {
+            _super.prototype._postMeasure.call(this);
+            return;
+        }
         var maxWidth = this.parentClientWidth;
         var maxHeight = this.parentClientHeight;
         for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
@@ -9642,23 +9930,23 @@ var _ScrollViewerWindow = /** @class */ (function (_super) {
             if (!child.isVisible || child.notRenderable) {
                 continue;
             }
-            if (child.horizontalAlignment === _control__WEBPACK_IMPORTED_MODULE_3__["Control"].HORIZONTAL_ALIGNMENT_CENTER) {
+            if (child.horizontalAlignment === _control__WEBPACK_IMPORTED_MODULE_4__["Control"].HORIZONTAL_ALIGNMENT_CENTER) {
                 child._offsetLeft(this._currentMeasure.left - child._currentMeasure.left);
             }
-            if (child.verticalAlignment === _control__WEBPACK_IMPORTED_MODULE_3__["Control"].VERTICAL_ALIGNMENT_CENTER) {
+            if (child.verticalAlignment === _control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_CENTER) {
                 child._offsetTop(this._currentMeasure.top - child._currentMeasure.top);
             }
             maxWidth = Math.max(maxWidth, child._currentMeasure.left - this._currentMeasure.left + child._currentMeasure.width);
             maxHeight = Math.max(maxHeight, child._currentMeasure.top - this._currentMeasure.top + child._currentMeasure.height);
         }
         if (this._currentMeasure.width !== maxWidth) {
-            this._width.updateInPlace(maxWidth, _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PIXEL);
+            this._width.updateInPlace(maxWidth, _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__["ValueAndUnit"].UNITMODE_PIXEL);
             this._currentMeasure.width = maxWidth;
             this._rebuildLayout = true;
             this._isDirty = true;
         }
         if (this._currentMeasure.height !== maxHeight) {
-            this._height.updateInPlace(maxHeight, _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PIXEL);
+            this._height.updateInPlace(maxHeight, _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__["ValueAndUnit"].UNITMODE_PIXEL);
             this._currentMeasure.height = maxHeight;
             this._rebuildLayout = true;
             this._isDirty = true;
@@ -9666,7 +9954,7 @@ var _ScrollViewerWindow = /** @class */ (function (_super) {
         _super.prototype._postMeasure.call(this);
     };
     return _ScrollViewerWindow;
-}(_container__WEBPACK_IMPORTED_MODULE_1__["Container"]));
+}(_container__WEBPACK_IMPORTED_MODULE_2__["Container"]));
 
 
 
@@ -12848,7 +13136,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/perfCounter");
 /* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__);
 
-
+var tmpRect = [
+    new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](0, 0),
+    new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](0, 0),
+    new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](0, 0),
+    new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](0, 0),
+];
+var tmpRect2 = [
+    new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](0, 0),
+    new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](0, 0),
+    new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](0, 0),
+    new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](0, 0),
+];
+var tmpV1 = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](0, 0);
+var tmpV2 = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](0, 0);
 /**
  * Class used to store 2D control sizes
  */
@@ -12919,20 +13220,23 @@ var Measure = /** @class */ (function () {
      * @param result the resulting AABB
      */
     Measure.prototype.transformToRef = function (transform, result) {
-        var rectanglePoints = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Polygon"].Rectangle(this.left, this.top, this.left + this.width, this.top + this.height);
-        var min = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](Number.MAX_VALUE, Number.MAX_VALUE);
-        var max = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](0, 0);
+        tmpRect[0].copyFromFloats(this.left, this.top);
+        tmpRect[1].copyFromFloats(this.left + this.width, this.top);
+        tmpRect[2].copyFromFloats(this.left + this.width, this.top + this.height);
+        tmpRect[3].copyFromFloats(this.left, this.top + this.height);
+        tmpV1.copyFromFloats(Number.MAX_VALUE, Number.MAX_VALUE);
+        tmpV2.copyFromFloats(0, 0);
         for (var i = 0; i < 4; i++) {
-            transform.transformCoordinates(rectanglePoints[i].x, rectanglePoints[i].y, rectanglePoints[i]);
-            min.x = Math.floor(Math.min(min.x, rectanglePoints[i].x));
-            min.y = Math.floor(Math.min(min.y, rectanglePoints[i].y));
-            max.x = Math.ceil(Math.max(max.x, rectanglePoints[i].x));
-            max.y = Math.ceil(Math.max(max.y, rectanglePoints[i].y));
+            transform.transformCoordinates(tmpRect[i].x, tmpRect[i].y, tmpRect2[i]);
+            tmpV1.x = Math.floor(Math.min(tmpV1.x, tmpRect2[i].x));
+            tmpV1.y = Math.floor(Math.min(tmpV1.y, tmpRect2[i].y));
+            tmpV2.x = Math.ceil(Math.max(tmpV2.x, tmpRect2[i].x));
+            tmpV2.y = Math.ceil(Math.max(tmpV2.y, tmpRect2[i].y));
         }
-        result.left = min.x;
-        result.top = min.y;
-        result.width = max.x - min.x;
-        result.height = max.y - min.y;
+        result.left = tmpV1.x;
+        result.top = tmpV1.y;
+        result.width = tmpV2.x - tmpV1.x;
+        result.height = tmpV2.y - tmpV1.y;
     };
     /**
      * Check equality between this measure and another one

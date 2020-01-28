@@ -179,7 +179,7 @@ export class WaterMaterial extends PushMaterial {
     @serialize()
     public waveSpeed: number = 1.0;
     /**
-     * Sets or gets wether or not automatic clipping should be enabled or not. Setting to true will save performances and
+     * Sets or gets whether or not automatic clipping should be enabled or not. Setting to true will save performances and
      * will avoid calculating useless pixels in the pixel shader of the water material.
      */
     @serialize()
