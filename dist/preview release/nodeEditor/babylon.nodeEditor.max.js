@@ -56346,14 +56346,14 @@ var TexturePropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Auto select UV", propertyName: "autoSelectUV", target: this.props.block, onValueChanged: function () {
                         _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                     } }),
+                texture && !isInReflectionMode &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Convert to gamma space", propertyName: "convertToGammaSpace", target: this.props.block, onValueChanged: function () {
+                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        } }),
                 texture && isInReflectionMode &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_10__["OptionsLineComponent"], { label: "Reflection mode", options: reflectionModeOptions, target: texture, propertyName: "coordinatesMode", onSelect: function (value) {
                             texture.coordinatesMode = value;
                             _this.forceUpdate();
-                            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-                        } }),
-                texture && !isInReflectionMode &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Gamma space", propertyName: "gammaSpace", target: texture, onValueChanged: function () {
                             _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         } }),
                 texture && !isInReflectionMode &&

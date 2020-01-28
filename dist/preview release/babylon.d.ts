@@ -42668,6 +42668,16 @@ declare module BABYLON {
         private _referenceQuaternion;
         private _xrInvPositionCache;
         private _xrInvQuaternionCache;
+        private _realWorldHeight;
+        /**
+         * Prevent the camera from calculating the real-world height
+         * If you are not using the user's height disable this for better performance
+         */
+        disableRealWorldHeightCalculation: boolean;
+        /**
+         * Return the user's height, unrelated to the current ground.
+         */
+        get realWorldHeight(): number;
         /**
          * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
          * @param name the name of the camera
@@ -44068,11 +44078,19 @@ declare module BABYLON {
         /**
          * Observers registered here will trigger when a motion controller profile was assigned to this xr controller
          */
-        onMotionControllerProfileLoaded: Observable<WebXRAbstractMotionController>;
+        onMotionControllerInitObservable: Observable<WebXRAbstractMotionController>;
         /**
-         * Event that fires when the controller is removed/disposed
+         * Will be triggered when the mesh associated with the motion controller is done loading.
+         * It is also possible that this will never trigger (!) if no mesh was loaded, or if the developer decides to load a different mesh
+         * A shortened version of controller -> motion controller -> on mesh loaded.
          */
-        onDisposeObservable: Observable<{}>;
+        onMeshLoadedObservable: Observable<AbstractMesh>;
+        /**
+         * Event that fires when the controller is removed/disposed.
+         * The object provided as event data is this controller, after associated assets were disposed.
+         * uniqueId is still available.
+         */
+        onDisposeObservable: Observable<WebXRController>;
         private _tmpQuaternion;
         private _tmpVector;
         private _uniqueId;
@@ -44692,7 +44710,7 @@ declare module BABYLON {
         private setTargetMeshVisibility;
         private setTargetMeshPosition;
         private _quadraticBezierCurve;
-        private showParabolicPath;
+        private _showParabolicPath;
     }
 }
 declare module BABYLON {
@@ -44730,6 +44748,10 @@ declare module BABYLON {
          * Mainly used in AR
          */
         ignoreNativeCameraTransformation?: boolean;
+        /**
+         * When loading teleportation and pointer select, use stable versions instead of latest.
+         */
+        useStablePlugins?: boolean;
     }
     /**
      * Default experience which provides a similar setup to the previous webVRExperience
@@ -56929,6 +56951,10 @@ declare module BABYLON {
          */
         texture: Nullable<Texture>;
         /**
+         * Gets or sets a boolean indicating if content needs to be converted to gamma space
+         */
+        convertToGammaSpace: boolean;
+        /**
          * Create a new TextureBlock
          * @param name defines the block name
          */
@@ -68668,7 +68694,7 @@ declare module BABYLON {
              */
             impostorType?: number;
             /**
-             * the size of the impostor
+             * the size of the impostor. Defaults to 10cm
              */
             impostorSize?: number | {
                 width: number;
