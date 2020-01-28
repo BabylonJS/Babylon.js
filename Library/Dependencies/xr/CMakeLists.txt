@@ -16,6 +16,8 @@ endif()
 
 add_library(xr ${SOURCES})
 
+target_compile_definitions(xr PRIVATE _CRT_SECURE_NO_WARNINGS)
+
 target_include_directories(xr PRIVATE "Dependencies/OpenXR-SDK/include")
 
 target_include_directories(xr PRIVATE "Source")

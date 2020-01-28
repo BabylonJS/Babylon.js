@@ -32,8 +32,8 @@ namespace xr
     class System
     {
     public:
-        constexpr static float DEFAULT_DEPTH_NEAR_Z{ 0.5f };
-        constexpr static float DEFAULT_DEPTH_FAR_Z{ 1000.f };
+        static constexpr float DEFAULT_DEPTH_NEAR_Z{ 0.5f };
+        static constexpr float DEFAULT_DEPTH_FAR_Z{ 1000.f };
 
         class Session
         {
@@ -44,7 +44,7 @@ namespace xr
             class Frame
             {
             public:
-                struct View
+                struct Space
                 {
                     struct
                     {
@@ -60,6 +60,11 @@ namespace xr
                         float Z{};
                         float W{};
                     } Orientation;
+                };
+
+                struct View
+                {
+                    Space Space{};
 
                     struct
                     {
@@ -81,7 +86,28 @@ namespace xr
                     float DepthFarZ{};
                 };
 
+                struct InputSource
+                {
+                    using Identifier = size_t;
+
+                    enum class HandednessEnum
+                    {
+                        Left = 0,
+                        Right = 1
+                    };
+
+                    const Identifier ID{ NEXT_ID++ };
+                    bool TrackedThisFrame{};
+                    Space GripSpace{};
+                    Space AimSpace{};
+                    HandednessEnum Handedness{};
+
+                private:
+                    static inline Identifier NEXT_ID{ 0 };
+                };
+
                 std::vector<View>& Views;
+                std::vector<InputSource>& InputSources;
 
                 Frame(System::Session::Impl&);
                 ~Frame();
