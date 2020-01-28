@@ -65,7 +65,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     public get worldNormal(): NodeMaterialConnectionPoint {
         return this._inputs[1];
     }
-    
+
     /**
      * Gets the world tangent input component
      */

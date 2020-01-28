@@ -58002,6 +58002,10 @@ declare module BABYLON {
          */
         get worldNormal(): NodeMaterialConnectionPoint;
         /**
+         * Gets the world tangent input component
+         */
+        get worldTangent(): NodeMaterialConnectionPoint;
+        /**
          * Gets the uv input component
          */
         get uv(): NodeMaterialConnectionPoint;
