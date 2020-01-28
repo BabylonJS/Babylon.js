@@ -14,7 +14,7 @@
 
 #define MAX_LOADSTRING 100
 
-    // Global Variables:
+// Global Variables:
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
@@ -72,16 +72,19 @@ namespace
 
     void RefreshBabylon(HWND hWnd)
     {
-        std::string rootUrl{ GetUrlFromPath(GetModulePath().parent_path().parent_path()) };
+        std::vector<std::string> scripts = GetCommandLineArguments();
+        std::string moduleRootUrl = GetUrlFromPath(GetModulePath().parent_path().parent_path());
+        std::string rootUrl{ scripts.empty() ? moduleRootUrl : GetUrlFromPath(std::filesystem::path{ scripts.back() }.parent_path()) };
+
         RECT rect;
         if (!GetWindowRect(hWnd, &rect))
         {
             return;
         }
-        auto width = rect.right - rect.left;
-        auto height = rect.bottom - rect.top;
+        auto width = static_cast<float>(rect.right - rect.left);
+        auto height = static_cast<float>(rect.bottom - rect.top);
         runtime = std::make_unique<Babylon::RuntimeWin32>(hWnd, rootUrl, width, height);
-        
+
         // issue a resize here because on some platforms (UWP, WIN32) WM_SIZE is received before the runtime construction
         // So the context is created with the right size but the nativeWindow still has the wrong size
         // depending on how you create your app (runtime created before WM_SIZE is received, this call is not needed)
@@ -98,12 +101,12 @@ namespace
         inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);
         InputManager::Initialize(*runtime, *inputBuffer);
 
-        runtime->LoadScript("Scripts/babylon.max.js");
-        runtime->LoadScript("Scripts/babylon.glTF2FileLoader.js");
-        runtime->LoadScript("Scripts/babylonjs.materials.js");
+        runtime->LoadScript(moduleRootUrl + "/Scripts/babylon.max.js");
+        runtime->LoadScript(moduleRootUrl + "/Scripts/babylon.glTF2FileLoader.js");
+        runtime->LoadScript(moduleRootUrl + "/Scripts/babylonjs.materials.js");
+        runtime->LoadScript(moduleRootUrl + "/Scripts/ammo.js");
 
-        auto scripts = GetCommandLineArguments();
-        if (scripts.size() == 0)
+        if (scripts.empty())
         {
             runtime->LoadScript("Scripts/experience.js");
         }
@@ -111,10 +114,10 @@ namespace
         {
             for (const auto& script : scripts)
             {
-                runtime->LoadScript(script);
+                runtime->LoadScript(GetUrlFromPath(script));
             }
 
-            runtime->LoadScript("Scripts/playground_runner.js");
+            runtime->LoadScript(moduleRootUrl + "/Scripts/playground_runner.js");
         }
     }
 }
