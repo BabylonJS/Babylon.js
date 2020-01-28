@@ -404,7 +404,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
- 
+
         this.convertToGammaSpace = serializationObject.convertToGammaSpace;
 
         if (serializationObject.texture) {
