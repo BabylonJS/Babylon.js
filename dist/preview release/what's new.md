@@ -62,6 +62,7 @@
 - Refactored the shadow generators code ([Popov72](https://github.com/Popov72))
 - Added preview area pop up for NME ([Kyle Belfort](https://github.com/belfortk))
 - Supports clip planes with shadows ([sebavan](http://www.github.com/sebavan))
+- Added Workbench color scheme for VSCode ([drigax](https://github.com/drigax) & [Patrick Ryan](https://github.com/PatrickRyanMS))
 
 ### Engine
 
