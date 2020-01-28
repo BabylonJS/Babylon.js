@@ -205,6 +205,7 @@
 - Laser pointers can be excluded from lighting influence so that they are always visible in both WebXR and WebVR ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
 - Full support for the online motion controller repository ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
 - New feature - XR Controller physics impostor ([RaananW](https://github.com/RaananW/))
+- Teleportation between different ground levels in WebXR is enabled ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
