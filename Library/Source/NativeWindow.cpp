@@ -111,10 +111,12 @@ namespace Babylon
 
     void NativeWindow::AddEventListener(const Napi::CallbackInfo& info)
     {
+        // TODO: handle events
     }
 
     void NativeWindow::RemoveEventListener(const Napi::CallbackInfo& info)
     {
+        // TODO: handle events
     }
 
     void NativeWindow::RecursiveWaitOrCall(

@@ -23,6 +23,8 @@ endif()
 if(WIN32)
     set(WIN32_EXECUTABLE TRUE)
     add_executable(ValidationTests WIN32 ${SOURCES} ${RESOURCE_FILES})
+elseif()
+    message(FATAL_ERROR "Unrecognized platform for ValidationTests: ${CMAKE_SYSTEM_NAME}")
 endif()
 
 
