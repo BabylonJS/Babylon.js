@@ -216,6 +216,38 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._renderAtIdealSize = value;
         this._onResize();
     }
+
+    /**
+     * Gets the ratio used when in "ideal mode"
+    * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+     * */
+    public get idealRatio(): number {
+        var rwidth: number = 0;
+        var rheight: number = 0;
+
+        if (this._idealWidth) {
+            rwidth = (this.getSize().width) / this._idealWidth;
+        }
+
+        if (this._idealHeight) {
+            rheight = (this.getSize().height) / this._idealHeight;
+        }
+
+        if (this._useSmallestIdeal && this._idealWidth && this._idealHeight) {
+            return window.innerWidth < window.innerHeight ? rwidth : rheight;
+        }
+
+        if (this._idealWidth) { // horizontal
+            return rwidth;
+        }
+
+        if (this._idealHeight) { // vertical
+            return rheight;
+        }
+
+        return 1;
+    }
+
     /**
     * Gets the underlying layer used to render the texture when in fullscreen mode
     */

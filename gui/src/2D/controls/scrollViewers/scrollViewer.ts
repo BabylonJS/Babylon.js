@@ -451,14 +451,15 @@ export class ScrollViewer extends Rectangle {
     }
 
     private _setWindowPosition(): void {
+        let ratio = this.host.idealRatio;
         let windowContentsWidth = this._window._currentMeasure.width;
         let windowContentsHeight = this._window._currentMeasure.height;
 
         const _endLeft = this._clientWidth - windowContentsWidth;
         const _endTop = this._clientHeight - windowContentsHeight;
 
-        const newLeft = this._horizontalBar.value * _endLeft + "px";
-        const newTop = this._verticalBar.value * _endTop + "px";
+        const newLeft = (this._horizontalBar.value / ratio) * _endLeft + "px";
+        const newTop = (this._verticalBar.value / ratio) * _endTop + "px";
 
         if (newLeft !== this._window.left) {
             this._window.left = newLeft;
@@ -506,8 +507,10 @@ export class ScrollViewer extends Rectangle {
 
         this._buildClientSizes();
 
-        this._horizontalBar.thumbWidth = this._thumbLength * 0.9 * this._clientWidth + "px";
-        this._verticalBar.thumbWidth = this._thumbLength *  0.9 * this._clientHeight + "px";
+        let ratio = this.host.idealRatio;
+
+        this._horizontalBar.thumbWidth = this._thumbLength * 0.9 * (this._clientWidth / ratio) + "px";
+        this._verticalBar.thumbWidth = this._thumbLength *  0.9 * (this._clientHeight / ratio) + "px";
     }
 
     public _link(host: AdvancedDynamicTexture): void {
