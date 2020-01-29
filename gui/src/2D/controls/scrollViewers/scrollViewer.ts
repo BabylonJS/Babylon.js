@@ -27,7 +27,11 @@ export class ScrollViewer extends Rectangle {
     private _barColor: string;
     private _barBackground: string;
     private _barImage: Image;
+    private _horizontalBarImage: Image;
+    private _verticalBarImage: Image;
     private _barBackgroundImage: Image;
+    private _horizontalBarBackgroundImage: Image;
+    private _verticalBarBackgroundImage: Image;
     private _barSize: number = 20;
     private _window: _ScrollViewerWindow;
     private _pointerIsOver: Boolean = false;
@@ -39,6 +43,8 @@ export class ScrollViewer extends Rectangle {
     private _thumbLength: number = 0.5;
     private _thumbHeight: number = 1;
     private _barImageHeight: number = 1;
+    private _horizontalBarImageHeight: number = 1;
+    private _verticalBarImageHeight: number = 1;
 
     /**
      * Gets the horizontal scrollbar
@@ -326,6 +332,36 @@ export class ScrollViewer extends Rectangle {
         vb.thumbImage = value;
     }
 
+    /** Gets or sets the horizontal bar image */
+    public get horizontalThumbImage(): Image {
+        return this._horizontalBarImage;
+    }
+
+    public set horizontalThumbImage(value: Image) {
+        if (this._horizontalBarImage === value) {
+            return;
+        }
+
+        this._horizontalBarImage = value;
+        let hb = <ImageScrollBar>this._horizontalBar;
+        hb.thumbImage = value;
+    }
+
+    /** Gets or sets the vertical bar image */
+    public get verticalThumbImage(): Image {
+        return this._verticalBarImage;
+    }
+
+    public set verticalThumbImage(value: Image) {
+        if (this._verticalBarImage === value) {
+            return;
+        }
+
+        this._verticalBarImage = value;
+        let vb = <ImageScrollBar>this._verticalBar;
+        vb.thumbImage = value;
+    }
+
     /** Gets or sets the size of the bar */
     public get barSize(): number {
         return this._barSize;
@@ -416,6 +452,48 @@ export class ScrollViewer extends Rectangle {
         this._markAsDirty();
     }
 
+    /** Gets or sets the height of the horizontal bar image */
+    public get horizontalBarImageHeight(): number {
+        return this._horizontalBarImageHeight;
+    }
+
+    public set horizontalBarImageHeight(value: number) {
+        if (this._horizontalBarImageHeight === value) {
+            return;
+        }
+        if (value <= 0) {
+            value = 0.1;
+        }
+        if (value > 1) {
+            value = 1;
+        }
+        this._horizontalBarImageHeight = value;
+        var hb = <ImageScrollBar>this._horizontalBar;
+        hb.barImageHeight = value;
+        this._markAsDirty();
+    }
+
+    /** Gets or sets the height of the vertical bar image */
+    public get verticalBarImageHeight(): number {
+        return this._verticalBarImageHeight;
+    }
+
+    public set verticalBarImageHeight(value: number) {
+        if (this._verticalBarImageHeight === value) {
+            return;
+        }
+        if (value <= 0) {
+            value = 0.1;
+        }
+        if (value > 1) {
+            value = 1;
+        }
+        this._verticalBarImageHeight = value;
+        var vb = <ImageScrollBar>this._verticalBar;
+        vb.barImageHeight = value;
+        this._markAsDirty();
+    }
+
     /** Gets or sets the bar background */
     public get barBackground(): string {
         return this._barBackground;
@@ -447,6 +525,34 @@ export class ScrollViewer extends Rectangle {
         let hb = <ImageScrollBar>this._horizontalBar;
         let vb = <ImageScrollBar>this._verticalBar;
         hb.backgroundImage = value;
+        vb.backgroundImage = value;
+    }
+
+    /** Gets or sets the horizontal bar background image */
+    public get horizontalBarImage(): Image {
+        return this._horizontalBarBackgroundImage;
+    }
+
+    public set horizontalBarImage(value: Image) {
+        if (this._horizontalBarBackgroundImage === value) {
+        }
+
+        this._horizontalBarBackgroundImage = value;
+        let hb = <ImageScrollBar>this._horizontalBar;
+        hb.backgroundImage = value;
+    }
+
+    /** Gets or sets the vertical bar background image */
+    public get verticalBarImage(): Image {
+        return this._verticalBarBackgroundImage;
+    }
+
+    public set verticalBarImage(value: Image) {
+        if (this._verticalBarBackgroundImage === value) {
+        }
+
+        this._verticalBarBackgroundImage = value;
+        let vb = <ImageScrollBar>this._verticalBar;
         vb.backgroundImage = value;
     }
 
