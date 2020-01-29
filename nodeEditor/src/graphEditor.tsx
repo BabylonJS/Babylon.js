@@ -116,7 +116,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, State> {
         let nodeType: NodeMaterialBlockConnectionPointTypes = BlockTools.GetConnectionNodeTypeFromString(type);
 
         let newInputBlock = new InputBlock(type, undefined, nodeType);
-        return this.createNodeFromObject(newInputBlock)
+        return this.createNodeFromObject(newInputBlock);
     }
 
     componentDidMount() {

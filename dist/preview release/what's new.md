@@ -60,7 +60,6 @@
 - Make sure all properties of CascadedShadowMap class are serialized/parsed ([Popov72](https://github.com/Popov72))
 - Added `textures/opacity.png` file to the Playground ([Popov72](https://github.com/Popov72))
 - Refactored the shadow generators code ([Popov72](https://github.com/Popov72))
-- Added preview area pop up for NME ([Kyle Belfort](https://github.com/belfortk))
 - Supports clip planes with shadows ([sebavan](http://www.github.com/sebavan))
 - Added Workbench color scheme for VSCode ([drigax](https://github.com/drigax) & [Patrick Ryan](https://github.com/PatrickRyanMS))
 
@@ -107,6 +106,8 @@
 - Added diff navigator in the playground ([sailro](http://www.github.com/sailro))
 - Added custom filter to remove internals from the completion in the playground ([sailro](http://www.github.com/sailro))
 - Added support for tagging deprecated members (both in editor and for completion) in the playground ([sailro](http://www.github.com/sailro))
+- Added preview area pop up for NME ([Kyle Belfort](https://github.com/belfortk))
+- Added comments to frames in NME ([Kyle Belfort](https://github.com/belfortk))
 
 ### Meshes
 
