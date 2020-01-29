@@ -256,6 +256,7 @@ export class GraphFrame {
             this._commentsElement.style.gridRow = "2";
             this._commentsElement.style.gridColumn = "1";
             this._commentsElement.style.paddingLeft = "10px";
+            this._commentsElement.style.fontStyle = "italic";
         }
         this._comments = comments;
         this._commentsElement.innerText = comments;
