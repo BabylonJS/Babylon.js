@@ -3699,7 +3699,7 @@ if (typeof globalObject !== "undefined") {
 /*!******************************************!*\
   !*** ./legacy/legacy-glTF1FileLoader.ts ***!
   \******************************************/
-/*! exports provided: GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode, GLTFLoaderState, GLTFFileLoader, GLTFValidation, GLTF1 */
+/*! exports provided: GLTF1, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode, GLTFLoaderState, GLTFFileLoader, GLTFValidation */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";

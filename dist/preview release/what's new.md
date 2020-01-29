@@ -62,6 +62,7 @@
 - Refactored the shadow generators code ([Popov72](https://github.com/Popov72))
 - Added preview area pop up for NME ([Kyle Belfort](https://github.com/belfortk))
 - Supports clip planes with shadows ([sebavan](http://www.github.com/sebavan))
+- Added Workbench color scheme for VSCode ([drigax](https://github.com/drigax) & [Patrick Ryan](https://github.com/PatrickRyanMS))
 
 ### Engine
 
@@ -309,6 +310,7 @@
 - Fix bug NME bug where preview area crashes on pop up when NME is opened from playground ([Kyle Belfort](https://github.com/belfortk))
 - Fixed an issue with isSessionSupported return value being ignored ([#7501](https://github.com/BabylonJS/Babylon.js/issues/7501)) ([RaananW](https://github.com/RaananW/))
 - Added isRigCamera to rig cameras so they can be detected. Used to fix a bug with utility layer and WebXR ([#7517](https://github.com/BabylonJS/Babylon.js/issues/7517)) ([RaananW](https://github.com/RaananW/))
+- Fixed bug in the `ScrollViewer` GUI class when setting a `idealWidth` or `idealHeight` on the ADT ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
