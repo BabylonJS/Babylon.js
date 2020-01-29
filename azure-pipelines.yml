@@ -16,8 +16,8 @@ jobs:
     displayName: 'CMake version'
 
   - script: |
-      sudo xcode-select --switch /Applications/Xcode_11.app/Contents/Developer
-    displayName: 'Select XCode 11'
+      sudo xcode-select --switch /Applications/Xcode_11.3.1.app/Contents/Developer
+    displayName: 'Select XCode 11.3.1'
     
   - script: |
       mkdir buildmacOS
@@ -47,8 +47,8 @@ jobs:
     displayName: 'CMake version'
 
   - script: |
-      sudo xcode-select --switch /Applications/Xcode_10.3.app/Contents/Developer
-    displayName: 'Select XCode 10.3'
+      sudo xcode-select --switch /Applications/Xcode_11.3.1.app/Contents/Developer
+    displayName: 'Select XCode 11.3.1'
 
   - script: |
       mkdir buildiOS
