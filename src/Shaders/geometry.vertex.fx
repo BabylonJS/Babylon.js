@@ -132,7 +132,7 @@ void main(void)
 		#endif
 	#endif
 
-	#ifdef POSITION
+	#if defined(POSITION) || defined(BUMP)
 	vPositionW = pos.xyz / pos.w;
 	#endif
 

@@ -249,8 +249,8 @@ export class GraphNode {
             this._displayManager.updatePreviewContent(this.block, this._content);
             this._visual.style.background = this._displayManager.getBackgroundColor(this.block);
             let additionalClass = this._displayManager.getHeaderClass(this.block);
+            this._header.classList.value = "header";
             if (additionalClass) {
-                this._header.classList.value = "header";
                 this._header.classList.add(additionalClass);
             }
         } else {

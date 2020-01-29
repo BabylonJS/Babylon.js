@@ -61,6 +61,7 @@
 - Added `textures/opacity.png` file to the Playground ([Popov72](https://github.com/Popov72))
 - Refactored the shadow generators code ([Popov72](https://github.com/Popov72))
 - Supports clip planes with shadows ([sebavan](http://www.github.com/sebavan))
+- Added Workbench color scheme for VSCode ([drigax](https://github.com/drigax) & [Patrick Ryan](https://github.com/PatrickRyanMS))
 
 ### Engine
 
@@ -205,7 +206,8 @@
 - Selection has gaze mode (which can be forced) and touch-screen support ([#7395](https://github.com/BabylonJS/Babylon.js/issues/7395)) ([RaananW](https://github.com/RaananW/))
 - Laser pointers can be excluded from lighting influence so that they are always visible in both WebXR and WebVR ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
 - Full support for the online motion controller repository ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
-- New WebXR feature - Controller physics impostor ([RaananW](https://github.com/RaananW/))
+- New feature - XR Controller physics impostor ([RaananW](https://github.com/RaananW/))
+- Teleportation between different ground levels in WebXR is enabled ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
@@ -309,6 +311,7 @@
 - Fix bug NME bug where preview area crashes on pop up when NME is opened from playground ([Kyle Belfort](https://github.com/belfortk))
 - Fixed an issue with isSessionSupported return value being ignored ([#7501](https://github.com/BabylonJS/Babylon.js/issues/7501)) ([RaananW](https://github.com/RaananW/))
 - Added isRigCamera to rig cameras so they can be detected. Used to fix a bug with utility layer and WebXR ([#7517](https://github.com/BabylonJS/Babylon.js/issues/7517)) ([RaananW](https://github.com/RaananW/))
+- Fixed bug in the `ScrollViewer` GUI class when setting a `idealWidth` or `idealHeight` on the ADT ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 

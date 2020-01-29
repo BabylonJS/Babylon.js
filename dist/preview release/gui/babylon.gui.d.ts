@@ -367,6 +367,14 @@ declare module BABYLON.GUI {
         private _renderScale;
         private _rootElement;
         private _cursorChanged;
+        /** @hidden */
+        _numLayoutCalls: number;
+        /** Gets the number of layout calls made the last time the ADT has been rendered */
+        get numLayoutCalls(): number;
+        /** @hidden */
+        _numRenderCalls: number;
+        /** Gets the number of render calls made the last time the ADT has been rendered */
+        get numRenderCalls(): number;
         /**
         * Define type to string to ensure compatibility across browsers
         * Safari doesn't support DataTransfer constructor
@@ -435,6 +443,11 @@ declare module BABYLON.GUI {
         */
         get renderAtIdealSize(): boolean;
         set renderAtIdealSize(value: boolean);
+        /**
+         * Gets the ratio used when in "ideal mode"
+        * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         * */
+        get idealRatio(): number;
         /**
         * Gets the underlying layer used to render the texture when in fullscreen mode
         */
@@ -700,6 +713,8 @@ declare module BABYLON.GUI {
         protected _disabledColor: string;
         /** @hidden */
         protected _rebuildLayout: boolean;
+        /** @hidden */
+        _customData: any;
         /** @hidden */
         _isClipped: boolean;
         /** @hidden */
@@ -1226,7 +1241,7 @@ declare module BABYLON.GUI {
     export class Container extends Control {
         name?: string | undefined;
         /** @hidden */
-        protected _children: Control[];
+        _children: Control[];
         /** @hidden */
         protected _measureForChildren: Measure;
         /** @hidden */
@@ -2867,6 +2882,24 @@ declare module BABYLON.GUI {
     export class _ScrollViewerWindow extends Container {
         parentClientWidth: number;
         parentClientHeight: number;
+        private _freezeControls;
+        private _parentMeasure;
+        private _oldLeft;
+        private _oldTop;
+        get freezeControls(): boolean;
+        set freezeControls(value: boolean);
+        private _bucketWidth;
+        private _bucketHeight;
+        private _buckets;
+        private _bucketLen;
+        get bucketWidth(): number;
+        get bucketHeight(): number;
+        setBucketSizes(width: number, height: number): void;
+        private _useBuckets;
+        private _makeBuckets;
+        private _dispatchInBuckets;
+        private _updateMeasures;
+        private _updateChildrenMeasures;
         /**
         * Creates a new ScrollViewerWindow
         * @param name of ScrollViewerWindow
@@ -2875,6 +2908,12 @@ declare module BABYLON.GUI {
         protected _getTypeName(): string;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        /** @hidden */
+        _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
+        private _scrollChildren;
+        private _scrollChildrenWithBuckets;
+        /** @hidden */
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
         protected _postMeasure(): void;
     }
 }
@@ -2980,8 +3019,6 @@ declare module BABYLON.GUI {
         private _barImage;
         private _barBackgroundImage;
         private _barSize;
-        private _endLeft;
-        private _endTop;
         private _window;
         private _pointerIsOver;
         private _wheelPrecision;
@@ -3015,6 +3052,41 @@ declare module BABYLON.GUI {
         /** Gets the list of children */
         get children(): Control[];
         _flagDescendantsAsMatrixDirty(): void;
+        /**
+         * Freezes or unfreezes the controls in the window.
+         * When controls are frozen, the scroll viewer can render a lot more quickly but updates to positions/sizes of controls
+         * are not taken into account. If you want to change positions/sizes, unfreeze, perform the changes then freeze again
+         */
+        get freezeControls(): boolean;
+        set freezeControls(value: boolean);
+        /** Gets the bucket width */
+        get bucketWidth(): number;
+        /** Gets the bucket height */
+        get bucketHeight(): number;
+        /**
+         * Sets the bucket sizes.
+         * When freezeControls is true, setting a non-zero bucket size will improve performances by updating only
+         * controls that are visible. The bucket sizes is used to subdivide (internally) the window area to smaller areas into which
+         * controls are dispatched. So, the size should be roughly equals to the mean size of all the controls of
+         * the window. To disable the usage of buckets, sets either width or height (or both) to 0.
+         * Please note that using this option will raise the memory usage (the higher the bucket sizes, the less memory
+         * used), that's why it is not enabled by default.
+         * @param width width of the bucket
+         * @param height height of the bucket
+         */
+        setBucketSizes(width: number, height: number): void;
+        private _forceHorizontalBar;
+        private _forceVerticalBar;
+        /**
+         * Forces the horizontal scroll bar to be displayed
+         */
+        get forceHorizontalBar(): boolean;
+        set forceHorizontalBar(value: boolean);
+        /**
+         * Forces the vertical scroll bar to be displayed
+         */
+        get forceVerticalBar(): boolean;
+        set forceVerticalBar(value: boolean);
         /**
         * Creates a new ScrollViewer
         * @param name of ScrollViewer
@@ -3059,6 +3131,7 @@ declare module BABYLON.GUI {
         /** Gets or sets the bar background image */
         get barImage(): Image;
         set barImage(value: Image);
+        private _setWindowPosition;
         /** @hidden */
         private _updateScroller;
         _link(host: AdvancedDynamicTexture): void;
