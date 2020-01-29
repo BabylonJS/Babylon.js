@@ -104,7 +104,6 @@ namespace
         runtime->LoadScript(moduleRootUrl + "/Scripts/babylon.max.js");
         runtime->LoadScript(moduleRootUrl + "/Scripts/babylon.glTF2FileLoader.js");
         runtime->LoadScript(moduleRootUrl + "/Scripts/babylonjs.materials.js");
-        runtime->LoadScript(moduleRootUrl + "/Scripts/ammo.js");
 
         if (scripts.empty())
         {
