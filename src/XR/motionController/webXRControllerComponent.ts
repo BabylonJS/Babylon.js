@@ -1,4 +1,4 @@
-import { IMinimalMotionControllerObject, MotionControllerComponentType } from "./webXRAbstractController";
+import { IMinimalMotionControllerObject, MotionControllerComponentType } from "./webXRAbstractMotionController";
 import { Observable } from '../../Misc/observable';
 import { IDisposable } from '../../scene';
 
@@ -80,12 +80,12 @@ export class WebXRControllerComponent implements IDisposable {
      * Observers registered here will be triggered when the state of a button changes
      * State change is either pressed / touched / value
      */
-    public onButtonStateChanged: Observable<WebXRControllerComponent> = new Observable();
+    public onButtonStateChangedObservable: Observable<WebXRControllerComponent> = new Observable();
     /**
      * If axes are available for this component (like a touchpad or thumbstick) the observers will be notified when
      * the axes data changes
      */
-    public onAxisValueChanged: Observable<{ x: number, y: number }> = new Observable();
+    public onAxisValueChangedObservable: Observable<{ x: number, y: number }> = new Observable();
 
     private _currentValue: number = 0;
     private _touched: boolean = false;
@@ -257,11 +257,11 @@ export class WebXRControllerComponent implements IDisposable {
 
         if (buttonUpdated) {
             this._hasChanges = true;
-            this.onButtonStateChanged.notifyObservers(this);
+            this.onButtonStateChangedObservable.notifyObservers(this);
         }
         if (axesUpdate) {
             this._hasChanges = true;
-            this.onAxisValueChanged.notifyObservers(this._axes);
+            this.onAxisValueChangedObservable.notifyObservers(this._axes);
         }
     }
 
@@ -269,7 +269,7 @@ export class WebXRControllerComponent implements IDisposable {
      * Dispose this component
      */
     public dispose(): void {
-        this.onAxisValueChanged.clear();
-        this.onButtonStateChanged.clear();
+        this.onAxisValueChangedObservable.clear();
+        this.onButtonStateChangedObservable.clear();
     }
 }

@@ -1,5 +1,5 @@
 import { AbstractMesh } from '../../Meshes/abstractMesh';
-import { WebXRAbstractMotionController, IMotionControllerProfile, IMotionControllerMeshMap } from './webXRAbstractController';
+import { WebXRAbstractMotionController, IMotionControllerProfile, IMotionControllerMeshMap } from './webXRAbstractMotionController';
 import { Scene } from '../../scene';
 import { SceneLoader } from '../../Loading/sceneLoader';
 import { Mesh } from '../../Meshes/mesh';

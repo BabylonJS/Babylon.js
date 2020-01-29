@@ -3,7 +3,7 @@ import {
     IMinimalMotionControllerObject,
     MotionControllerHandness,
     IMotionControllerLayoutMap
-} from "./webXRAbstractController";
+} from "./webXRAbstractMotionController";
 import { WebXRMotionControllerManager } from './webXRMotionControllerManager';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Scene } from '../../scene';
@@ -53,7 +53,7 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
         this.getComponentIds().forEach((id) => {
             const comp = id && this.getComponent(id);
             if (comp) {
-                comp.onButtonStateChanged.add((component) => {
+                comp.onButtonStateChangedObservable.add((component) => {
 
                     if (!this.rootMesh || this.disableAnimation) { return; }
 
