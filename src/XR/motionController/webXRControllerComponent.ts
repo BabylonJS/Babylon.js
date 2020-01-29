@@ -1,4 +1,4 @@
-import { IMinimalMotionControllerObject, MotionControllerComponentType } from "./webXRAbstractController";
+import { IMinimalMotionControllerObject, MotionControllerComponentType } from "./webXRAbstractMotionController";
 import { Observable } from '../../Misc/observable';
 import { IDisposable } from '../../scene';
 

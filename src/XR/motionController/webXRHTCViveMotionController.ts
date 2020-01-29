@@ -3,7 +3,7 @@ import {
     IMinimalMotionControllerObject,
     MotionControllerHandness,
     WebXRAbstractMotionController
-} from "./webXRAbstractController";
+} from "./webXRAbstractMotionController";
 import { Scene } from '../../scene';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Mesh } from '../../Meshes/mesh';
