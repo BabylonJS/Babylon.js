@@ -100,6 +100,9 @@ export class Control {
     protected _rebuildLayout = false;
 
     /** @hidden */
+    public _customData: any = {};
+
+    /** @hidden */
     public _isClipped = false;
 
     /** @hidden */
@@ -1356,6 +1359,8 @@ export class Control {
         }
 
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
+            this.host._numLayoutCalls++;
+
             this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
 
             context.save();
@@ -1596,6 +1601,9 @@ export class Control {
             this._isDirty = false;
             return false;
         }
+
+        this.host._numRenderCalls++;
+
         context.save();
 
         this._applyStates(context);

@@ -98,7 +98,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -6905,7 +6905,10 @@ var GLTFFileLoader = /** @class */ (function () {
                     readAsync: function (byteOffset, byteLength) {
                         return new Promise(function (resolve, reject) {
                             fileRequests_1.push(scene._requestFile(url, function (data, webRequest) {
-                                dataBuffer_1.byteLength = Number(webRequest.getResponseHeader("Content-Range").split("/")[1]);
+                                var contentRange = webRequest.getResponseHeader("Content-Range");
+                                if (contentRange) {
+                                    dataBuffer_1.byteLength = Number(contentRange.split("/")[1]);
+                                }
                                 resolve(new Uint8Array(data));
                             }, onProgress, true, true, function (error) {
                                 reject(error);
@@ -7116,17 +7119,17 @@ var GLTFFileLoader = /** @class */ (function () {
                 _this._log("Binary version: " + version);
             }
             var length = dataReader.readUint32();
-            if (length !== dataReader.buffer.byteLength) {
+            if (dataReader.buffer.byteLength != 0 && length !== dataReader.buffer.byteLength) {
                 throw new Error("Length in header does not match actual data length: " + length + " != " + dataReader.buffer.byteLength);
             }
             var unpacked;
             switch (version) {
                 case 1: {
-                    unpacked = _this._unpackBinaryV1Async(dataReader);
+                    unpacked = _this._unpackBinaryV1Async(dataReader, length);
                     break;
                 }
                 case 2: {
-                    unpacked = _this._unpackBinaryV2Async(dataReader);
+                    unpacked = _this._unpackBinaryV2Async(dataReader, length);
                     break;
                 }
                 default: {
@@ -7137,7 +7140,7 @@ var GLTFFileLoader = /** @class */ (function () {
             return unpacked;
         });
     };
-    GLTFFileLoader.prototype._unpackBinaryV1Async = function (dataReader) {
+    GLTFFileLoader.prototype._unpackBinaryV1Async = function (dataReader, length) {
         var ContentFormat = {
             JSON: 0
         };
@@ -7146,7 +7149,7 @@ var GLTFFileLoader = /** @class */ (function () {
         if (contentFormat !== ContentFormat.JSON) {
             throw new Error("Unexpected content format: " + contentFormat);
         }
-        var bodyLength = dataReader.buffer.byteLength - dataReader.byteOffset;
+        var bodyLength = length - dataReader.byteOffset;
         var data = { json: this._parseJson(dataReader.readString(contentLength)), bin: null };
         if (bodyLength !== 0) {
             var startByteOffset_1 = dataReader.byteOffset;
@@ -7157,7 +7160,7 @@ var GLTFFileLoader = /** @class */ (function () {
         }
         return Promise.resolve(data);
     };
-    GLTFFileLoader.prototype._unpackBinaryV2Async = function (dataReader) {
+    GLTFFileLoader.prototype._unpackBinaryV2Async = function (dataReader, length) {
         var _this = this;
         var ChunkFormat = {
             JSON: 0x4E4F534A,

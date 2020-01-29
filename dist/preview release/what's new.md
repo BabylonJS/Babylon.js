@@ -60,6 +60,9 @@
 - Make sure all properties of CascadedShadowMap class are serialized/parsed ([Popov72](https://github.com/Popov72))
 - Added `textures/opacity.png` file to the Playground ([Popov72](https://github.com/Popov72))
 - Refactored the shadow generators code ([Popov72](https://github.com/Popov72))
+- Added preview area pop up for NME ([Kyle Belfort](https://github.com/belfortk))
+- Supports clip planes with shadows ([sebavan](http://www.github.com/sebavan))
+- Added Workbench color scheme for VSCode ([drigax](https://github.com/drigax) & [Patrick Ryan](https://github.com/PatrickRyanMS))
 
 ### Engine
 
@@ -193,14 +196,17 @@
 - WebXR teleportation can now be disabled after initialized or before created ([RaananW](https://github.com/RaananW/))
 - New Features Manager for WebXR features ([RaananW](https://github.com/RaananW/))
 - New features - Plane detection, Hit Test, Background remover ([RaananW](https://github.com/RaananW/))
-- Camera's API is Babylon-conform (position, rotationQuaternion, world matrix, direction etc') ([#7239](https://github.com/BabylonJS/Babylon.js/issues/7239)) ([RaananW](https://github.com/RaananW/))
+- XR Camera's API is Babylon-conform (position, rotationQuaternion, world matrix, direction etc') ([#7239](https://github.com/BabylonJS/Babylon.js/issues/7239)) ([RaananW](https://github.com/RaananW/))
 - XR Input now using standard profiles and completely separated from the gamepad class ([#7348](https://github.com/BabylonJS/Babylon.js/issues/7348)) ([RaananW](https://github.com/RaananW/))
 - Teleportation and controller selection are now WebXR features. ([#7290](https://github.com/BabylonJS/Babylon.js/issues/7290)) ([RaananW](https://github.com/RaananW/))
-- Teleportation allows selecting direction before teleporting when using thumbstick or touchpad. ([#7290](https://github.com/BabylonJS/Babylon.js/issues/7290)) ([RaananW](https://github.com/RaananW/))
+- Teleportation allows selecting direction before teleporting when using thumbstick / touchpad. ([#7290](https://github.com/BabylonJS/Babylon.js/issues/7290)) ([RaananW](https://github.com/RaananW/))
 - It is now possible to force a certain profile type for the controllers ([#7348](https://github.com/BabylonJS/Babylon.js/issues/7375)) ([RaananW](https://github.com/RaananW/))
-- WebXR camera is initialized on the first frame ([#7389](https://github.com/BabylonJS/Babylon.js/issues/7389)) ([RaananW](https://github.com/RaananW/))
+- WebXR camera is initialized on the first frame, including copying transformation from native camera (except for in AR) ([#7389](https://github.com/BabylonJS/Babylon.js/issues/7389)) ([RaananW](https://github.com/RaananW/))
 - Selection has gaze mode (which can be forced) and touch-screen support ([#7395](https://github.com/BabylonJS/Babylon.js/issues/7395)) ([RaananW](https://github.com/RaananW/))
 - Laser pointers can be excluded from lighting influence so that they are always visible in both WebXR and WebVR ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
+- Full support for the online motion controller repository ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
+- New feature - XR Controller physics impostor ([RaananW](https://github.com/RaananW/))
+- Teleportation between different ground levels in WebXR is enabled ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
@@ -215,6 +221,7 @@
 - Added `StackPanel.ignoreLayoutWarnings` to disable console warnings when controls with percentage size are added to a StackPanel ([Deltakosh](https://github.com/deltakosh/))
 - Added `_getSVGAttribs` functionality for loading multiple svg icons from an external svg file via icon id. Fixed bug for Chrome. Strip icon id from image url for firefox.([lockphase](https://github.com/lockphase/))
 - Scroll Viewer extended to include the use of images in the scroll bars([JohnK](https://github.com/BabylonJSGuide/))
+- Added `ScrollViewer.freezeControls` property to speed up rendering ([Popov72](https://github.com/Popov72))
 
 ### Particles
 
@@ -300,6 +307,10 @@
 - Disposing of the depthReducer used in CSM ([Popov72](https://github.com/Popov72))
 - Fixed an issue with teleportation detach and attach ([#7419](https://github.com/BabylonJS/Babylon.js/issues/7419)) ([RaananW](https://github.com/RaananW/))
 - Physics compound calculations were incorrect ([#7407](https://github.com/BabylonJS/Babylon.js/issues/7407)) ([RaananW](https://github.com/RaananW/))
+- Fix bug NME bug where preview area crashes on pop up when NME is opened from playground ([Kyle Belfort](https://github.com/belfortk))
+- Fixed an issue with isSessionSupported return value being ignored ([#7501](https://github.com/BabylonJS/Babylon.js/issues/7501)) ([RaananW](https://github.com/RaananW/))
+- Added isRigCamera to rig cameras so they can be detected. Used to fix a bug with utility layer and WebXR ([#7517](https://github.com/BabylonJS/Babylon.js/issues/7517)) ([RaananW](https://github.com/RaananW/))
+- Fixed bug in the `ScrollViewer` GUI class when setting a `idealWidth` or `idealHeight` on the ADT ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
@@ -312,3 +323,4 @@
 - The glTF2 exporter extension no longer ignores childless empty nodes.([drigax](https://github.com/drigax))
 - Default culling strategy changed to CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY ([Deltakosh](https://github.com/deltakosh/))
 - `MaterialHelper.BindLight` and `MaterialHelper.BindLights` do not need the usePhysicalLight anymore ([Sebavan](https://github.com/sebavan/))
+- `Mesh.bakeTransformIntoVertices` now preserves child world-space transforms([drigax](https://github.com/drigax))

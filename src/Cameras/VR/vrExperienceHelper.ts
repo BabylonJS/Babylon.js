@@ -36,9 +36,9 @@ import "../../Meshes/Builders/cylinderBuilder";
 import "../../Gamepads/gamepadSceneComponent";
 import "../../Animations/animatable";
 import { Axis } from '../../Maths/math.axis';
-import { WebXRSessionManager } from '../XR/webXRSessionManager';
-import { WebXRDefaultExperience } from '../XR/webXRDefaultExperience';
-import { WebXRState } from '../XR/webXRTypes';
+import { WebXRSessionManager } from '../../XR/webXRSessionManager';
+import { WebXRDefaultExperience } from '../../XR/webXRDefaultExperience';
+import { WebXRState } from '../../XR/webXRTypes';
 
 /**
  * Options to modify the vr teleportation behavior.
@@ -689,7 +689,7 @@ export class VRExperienceHelper {
     }
 
     /**
-     * Defines wether or not Pointer lock should be requested when switching to
+     * Defines whether or not Pointer lock should be requested when switching to
      * full screen.
      */
     public requestPointerLockOnFullScreen = true;

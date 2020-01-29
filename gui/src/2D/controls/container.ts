@@ -12,7 +12,7 @@ import { _TypeStore } from 'babylonjs/Misc/typeStore';
  */
 export class Container extends Control {
     /** @hidden */
-    protected _children = new Array<Control>();
+    public _children = new Array<Control>();
     /** @hidden */
     protected _measureForChildren = Measure.Empty();
     /** @hidden */
@@ -303,6 +303,8 @@ export class Container extends Control {
         if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
             return false;
         }
+
+        this.host._numLayoutCalls++;
 
         if (this._isDirty) {
             this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);

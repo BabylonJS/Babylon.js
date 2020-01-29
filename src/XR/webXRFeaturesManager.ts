@@ -1,5 +1,5 @@
 import { WebXRSessionManager } from './webXRSessionManager';
-import { IDisposable } from '../../scene';
+import { IDisposable } from '../scene';
 
 /**
  * Defining the interface required for a (webxr) feature
@@ -10,12 +10,17 @@ export interface IWebXRFeature extends IDisposable {
      */
     attached: boolean;
     /**
+     * Should auto-attach be disabled?
+     */
+    disableAutoAttach: boolean;
+    /**
      * Attach the feature to the session
      * Will usually be called by the features manager
      *
+     * @param force should attachment be forced (even when already attached)
      * @returns true if successful.
      */
-    attach(): boolean;
+    attach(force?: boolean): boolean;
     /**
      * Detach the feature from the session
      * Will usually be called by the features manager
@@ -23,6 +28,41 @@ export interface IWebXRFeature extends IDisposable {
      * @returns true if successful.
      */
     detach(): boolean;
+}
+
+/**
+ * A list of the currently available features without referencing them
+ */
+export class WebXRFeatureName {
+    /**
+     * The name of the hit test feature
+     */
+    public static HIT_TEST = "xr-hit-test";
+    /**
+     * The name of the anchor system feature
+     */
+    public static ANCHOR_SYSTEM = "xr-anchor-system";
+    /**
+     * The name of the background remover feature
+     */
+    public static BACKGROUND_REMOVER = "xr-background-remover";
+    /**
+     * The name of the pointer selection feature
+     */
+    public static POINTER_SELECTION = "xr-controller-pointer-selection";
+    /**
+     * The name of the teleportation feature
+     */
+    public static TELEPORTATION = "xr-controller-teleportation";
+    /**
+     * The name of the plane detection feature
+     */
+    public static PLANE_DETECTION = "xr-plane-detection";
+
+    /**
+     * physics impostors for xr controllers feature
+     */
+    public static PHYSICS_CONTROLLERS = "xr-physics-controller";
 }
 
 /**
@@ -139,7 +179,7 @@ export class WebXRFeaturesManager implements IDisposable {
         this._xrSessionManager.onXRSessionInit.add(() => {
             this.getEnabledFeatures().forEach((featureName) => {
                 const feature = this._features[featureName];
-                if (feature.enabled && !feature.featureImplementation.attached) {
+                if (feature.enabled && !feature.featureImplementation.attached && !feature.featureImplementation.disableAutoAttach) {
                     this.attachFeature(featureName);
                 }
             });
@@ -171,12 +211,18 @@ export class WebXRFeaturesManager implements IDisposable {
         const name = typeof featureName === 'string' ? featureName : featureName.Name;
         let versionToLoad = 0;
         if (typeof version === 'string') {
+            if (!version) {
+                throw new Error(`Error in provided version - ${name} (${version})`);
+            }
             if (version === 'stable') {
                 versionToLoad = WebXRFeaturesManager.GetStableVersionOfFeature(name);
             } else if (version === 'latest') {
                 versionToLoad = WebXRFeaturesManager.GetLatestVersionOfFeature(name);
+            } else {
+                // try loading the number the string represents
+                versionToLoad = +version;
             }
-            if (versionToLoad === -1) {
+            if (versionToLoad === -1 || isNaN(versionToLoad)) {
                 throw new Error(`feature not found - ${name} (${version})`);
             }
         } else {
@@ -201,10 +247,15 @@ export class WebXRFeaturesManager implements IDisposable {
             version: versionToLoad
         };
 
-        // if session started already, request and enable
-        if (this._xrSessionManager.session && !feature.featureImplementation.attached && attachIfPossible) {
-            // enable feature
-            this.attachFeature(name);
+        if (attachIfPossible) {
+            // if session started already, request and enable
+            if (this._xrSessionManager.session && !feature.featureImplementation.attached) {
+                // enable feature
+                this.attachFeature(name);
+            }
+        } else {
+            // disable auto-attach when session starts
+            this._features[name].featureImplementation.disableAutoAttach = true;
         }
 
         return this._features[name].featureImplementation;

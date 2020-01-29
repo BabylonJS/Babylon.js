@@ -1,8 +1,8 @@
-import { Observable } from "../../Misc/observable";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Quaternion, Vector3 } from '../../Maths/math.vector';
-import { Ray } from '../../Culling/ray';
-import { Scene } from '../../scene';
+import { Observable } from "../Misc/observable";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Quaternion, Vector3 } from '../Maths/math.vector';
+import { Ray } from '../Culling/ray';
+import { Scene } from '../scene';
 import { WebXRAbstractMotionController } from './motionController/webXRAbstractController';
 import { WebXRMotionControllerManager } from './motionController/webXRMotionControllerManager';
 
@@ -17,6 +17,17 @@ export interface IWebXRControllerOptions {
      * This can be used when creating your own profile or when testing different controllers
      */
     forceControllerProfile?: string;
+
+    /**
+     * Do not load the controller mesh, in case a different mesh needs to be loaded.
+     */
+    doNotLoadControllerMesh?: boolean;
+
+    /**
+     * Should the controller mesh be animated when a user interacts with it
+     * The pressed buttons / thumbstick and touchpad animations will be disabled
+     */
+    disableMotionControllerAnimation?: boolean;
 }
 
 /**
@@ -39,9 +50,23 @@ export class WebXRController {
     public motionController?: WebXRAbstractMotionController;
 
     /**
-     * Event that fires when the controller is removed/disposed
+     * Observers registered here will trigger when a motion controller profile was assigned to this xr controller
      */
-    public onDisposeObservable = new Observable<{}>();
+    public onMotionControllerInitObservable = new Observable<WebXRAbstractMotionController>();
+
+    /**
+     * Will be triggered when the mesh associated with the motion controller is done loading.
+     * It is also possible that this will never trigger (!) if no mesh was loaded, or if the developer decides to load a different mesh
+     * A shortened version of controller -> motion controller -> on mesh loaded.
+     */
+    public onMeshLoadedObservable = new Observable<AbstractMesh>();
+
+    /**
+     * Event that fires when the controller is removed/disposed.
+     * The object provided as event data is this controller, after associated assets were disposed.
+     * uniqueId is still available.
+     */
+    public onDisposeObservable = new Observable<WebXRController>();
 
     private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3();
@@ -69,12 +94,21 @@ export class WebXRController {
             this.grip.rotationQuaternion = new Quaternion();
         }
 
-        // for now only load motion controllers if gamepad available
+        // for now only load motion controllers if gamepad object available
         if (this.inputSource.gamepad) {
-            this.motionController = WebXRMotionControllerManager.GetMotionControllerWithXRInput(inputSource, _scene, this._options.forceControllerProfile);
-            // if the model is loaded, do your thing
-            this.motionController.onModelLoadedObservable.addOnce(() => {
-                this.motionController!.rootMesh!.parent = this.pointer;
+            WebXRMotionControllerManager.GetMotionControllerWithXRInput(inputSource, _scene, this._options.forceControllerProfile).then((motionController) => {
+                this.motionController = motionController;
+                this.onMotionControllerInitObservable.notifyObservers(motionController);
+                // should the model be loaded?
+                if (!this._options.doNotLoadControllerMesh) {
+                    this.motionController.loadModel().then((success) => {
+                        if (success) {
+                            this.onMeshLoadedObservable.notifyObservers(this.motionController!.rootMesh!);
+                            this.motionController!.rootMesh!.parent = this.grip || this.pointer;
+                            this.motionController!.disableAnimation = !!this._options.disableMotionControllerAnimation;
+                        }
+                    });
+                }
             });
         }
     }
@@ -149,6 +183,9 @@ export class WebXRController {
             this.motionController.dispose();
         }
         this.pointer.dispose();
-        this.onDisposeObservable.notifyObservers({});
+        this.onMotionControllerInitObservable.clear();
+        this.onMeshLoadedObservable.clear();
+        this.onDisposeObservable.notifyObservers(this);
+        this.onDisposeObservable.clear();
     }
 }

@@ -1,9 +1,10 @@
-import { Nullable } from "../../types";
-import { Observer, Observable } from "../../Misc/observable";
-import { IDisposable } from "../../scene";
+import { Nullable } from "../types";
+import { Observer, Observable } from "../Misc/observable";
+import { IDisposable } from "../scene";
 import { WebXRController } from './webXRController';
 import { WebXRSessionManager } from './webXRSessionManager';
 import { WebXRCamera } from './webXRCamera';
+import { WebXRMotionControllerManager } from './motionController/webXRMotionControllerManager';
 
 /**
  * The schema for initialization options of the XR Input class
@@ -20,6 +21,23 @@ export interface IWebXRInputOptions {
      * Profiles are defined here - https://github.com/immersive-web/webxr-input-profiles/
      */
     forceInputProfile?: string;
+
+    /**
+     * Do not send a request to the controlle repository to load the profile.
+     *
+     * Instead, use the controllers available in babylon itself.
+     */
+    disableOnlineControllerRepository?: boolean;
+
+    /**
+     * A custom URL for the controllers repository
+     */
+    customControllersRepositoryURL?: string;
+
+    /**
+     * Should the controller model's components not move according to the user input
+     */
+    disableControllerAnimation?: boolean;
 }
 /**
  * XR input used to track XR inputs such as controllers/rays
@@ -73,6 +91,18 @@ export class WebXRInput implements IDisposable {
                 controller.updateFromXRFrame(frame, this.xrSessionManager.referenceSpace);
             });
         });
+
+        if (this.options.customControllersRepositoryURL) {
+            WebXRMotionControllerManager.BaseRepositoryUrl = this.options.customControllersRepositoryURL;
+        }
+
+        if (!this.options.disableOnlineControllerRepository) {
+            WebXRMotionControllerManager.UseOnlineRepository = true;
+            // pre-load the profiles list to load the controllers quicker afterwards
+            WebXRMotionControllerManager.UpdateProfilesList();
+        } else {
+            WebXRMotionControllerManager.UseOnlineRepository = false;
+        }
     }
 
     private _onInputSourcesChange = (event: XRInputSourceChangeEvent) => {
@@ -84,11 +114,12 @@ export class WebXRInput implements IDisposable {
         let sources = this.controllers.map((c) => { return c.inputSource; });
         for (let input of addInputs) {
             if (sources.indexOf(input) === -1) {
-                let controller = new WebXRController(this.xrSessionManager.scene, input, { forceControllerProfile: this.options.forceInputProfile });
+                let controller = new WebXRController(this.xrSessionManager.scene, input, {
+                    forceControllerProfile: this.options.forceInputProfile,
+                    doNotLoadControllerMesh: this.options.doNotLoadControllerMeshes,
+                    disableMotionControllerAnimation: this.options.disableControllerAnimation
+                });
                 this.controllers.push(controller);
-                if (!this.options.doNotLoadControllerMeshes && controller.motionController) {
-                    controller.motionController.loadModel();
-                }
                 this.onControllerAddedObservable.notifyObservers(controller);
             }
         }

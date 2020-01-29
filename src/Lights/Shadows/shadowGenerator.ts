@@ -1064,6 +1064,9 @@ export class ShadowGenerator implements IShadowGenerator {
             // Morph targets
             MaterialHelper.BindMorphTargetParameters(mesh, this._effect);
 
+            // Clip planes
+            MaterialHelper.BindClipPlane(this._effect, scene);
+
             this._bindCustomEffectForRenderSubMeshForShadowMap(subMesh, this._effect);
 
             if (this.forceBackFacesOnly) {
@@ -1274,6 +1277,27 @@ export class ShadowGenerator implements IShadowGenerator {
             }
         }
 
+        // ClipPlanes
+        const scene = this._scene;
+        if (scene.clipPlane) {
+            defines.push("#define CLIPPLANE");
+        }
+        if (scene.clipPlane2) {
+            defines.push("#define CLIPPLANE2");
+        }
+        if (scene.clipPlane3) {
+            defines.push("#define CLIPPLANE3");
+        }
+        if (scene.clipPlane4) {
+            defines.push("#define CLIPPLANE4");
+        }
+        if (scene.clipPlane5) {
+            defines.push("#define CLIPPLANE5");
+        }
+        if (scene.clipPlane6) {
+            defines.push("#define CLIPPLANE6");
+        }
+
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
@@ -1298,7 +1322,8 @@ export class ShadowGenerator implements IShadowGenerator {
             this._cachedDefines = join;
 
             let shaderName = "shadowMap";
-            let uniforms = ["world", "mBones", "viewProjection", "diffuseMatrix", "lightData", "depthValues", "biasAndScale", "morphTargetInfluences", "boneTextureWidth"];
+            let uniforms = ["world", "mBones", "viewProjection", "diffuseMatrix", "lightData", "depthValues", "biasAndScale", "morphTargetInfluences", "boneTextureWidth",
+                            "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6"];
             let samplers = ["diffuseSampler", "boneSampler"];
 
             // Custom shader?

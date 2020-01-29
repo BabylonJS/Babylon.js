@@ -1,14 +1,9 @@
-import { IWebXRFeature, WebXRFeaturesManager } from '../webXRFeaturesManager';
+import { WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager';
 import { WebXRSessionManager } from '../webXRSessionManager';
-import { Observable } from '../../../Misc/observable';
-import { Vector3, Matrix } from '../../../Maths/math.vector';
-import { TransformNode } from '../../../Meshes/transformNode';
+import { Observable } from '../../Misc/observable';
+import { Vector3, Matrix } from '../../Maths/math.vector';
+import { TransformNode } from '../../Meshes/transformNode';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-
-/**
- * name of module (can be reused with other versions)
- */
-const WebXRHitTestModuleName = "xr-hit-test";
 
 // the plugin is registered at the end of the file
 
@@ -45,12 +40,12 @@ export interface IWebXRHitResult {
  * Hit test (or raycasting) is used to interact with the real world.
  * For further information read here - https://github.com/immersive-web/hit-test
  */
-export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRFeature {
+export class WebXRHitTestLegacy extends WebXRAbstractFeature {
 
     /**
      * The module's name
      */
-    public static readonly Name = WebXRHitTestModuleName;
+    public static readonly Name = WebXRFeatureName.HIT_TEST;
     /**
      * The (Babylon) version of this module.
      * This is an integer representing the implementation version.

@@ -82,6 +82,21 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _renderScale = 1;
     private _rootElement: Nullable<HTMLElement>;
     private _cursorChanged = false;
+
+    /** @hidden */
+    public _numLayoutCalls = 0;
+    /** Gets the number of layout calls made the last time the ADT has been rendered */
+    public get numLayoutCalls(): number {
+        return this._numLayoutCalls;
+    }
+
+    /** @hidden */
+    public _numRenderCalls = 0;
+    /** Gets the number of render calls made the last time the ADT has been rendered */
+    public get numRenderCalls(): number {
+        return this._numRenderCalls;
+    }
+
     /**
     * Define type to string to ensure compatibility across browsers
     * Safari doesn't support DataTransfer constructor
@@ -201,6 +216,38 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._renderAtIdealSize = value;
         this._onResize();
     }
+
+    /**
+     * Gets the ratio used when in "ideal mode"
+    * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+     * */
+    public get idealRatio(): number {
+        var rwidth: number = 0;
+        var rheight: number = 0;
+
+        if (this._idealWidth) {
+            rwidth = (this.getSize().width) / this._idealWidth;
+        }
+
+        if (this._idealHeight) {
+            rheight = (this.getSize().height) / this._idealHeight;
+        }
+
+        if (this._useSmallestIdeal && this._idealWidth && this._idealHeight) {
+            return window.innerWidth < window.innerHeight ? rwidth : rheight;
+        }
+
+        if (this._idealWidth) { // horizontal
+            return rwidth;
+        }
+
+        if (this._idealHeight) { // vertical
+            return rheight;
+        }
+
+        return 1;
+    }
+
     /**
     * Gets the underlying layer used to render the texture when in fullscreen mode
     */
@@ -550,6 +597,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         // Layout
         this.onBeginLayoutObservable.notifyObservers(this);
         var measure = new Measure(0, 0, renderWidth, renderHeight);
+        this._numLayoutCalls = 0;
         this._rootContainer._layout(measure, context);
         this.onEndLayoutObservable.notifyObservers(this);
         this._isDirty = false; // Restoring the dirty state that could have been set by controls during layout processing
@@ -570,6 +618,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
         // Render
         this.onBeginRenderObservable.notifyObservers(this);
+        this._numRenderCalls = 0;
         this._rootContainer._render(context, this._invalidatedRectangle);
         this.onEndRenderObservable.notifyObservers(this);
         this._invalidatedRectangle = null;

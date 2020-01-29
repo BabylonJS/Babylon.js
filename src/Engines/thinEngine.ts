@@ -625,7 +625,7 @@ export class ThinEngine {
                     if (this._gl) {
                         this._webGLVersion = 2.0;
 
-                        // Prevent weird browsers to lie
+                        // Prevent weird browsers to lie (yeah that happens!)
                         if (!this._gl.deleteQuery) {
                             this._webGLVersion = 1.0;
                         }
@@ -1826,10 +1826,10 @@ export class ThinEngine {
     }
 
     /**
-     * Bind the content of a webGL buffer used with instanciation
+     * Bind the content of a webGL buffer used with instantiation
      * @param instancesBuffer defines the webGL buffer to bind
      * @param attributesInfo defines the offsets or attributes information used to determine where data must be stored in the buffer
-     * @param computeStride defines Wether to compute the strides from the info or use the default 0
+     * @param computeStride defines Whether to compute the strides from the info or use the default 0
      */
     public bindInstancesBuffer(instancesBuffer: DataBuffer, attributesInfo: InstancingAttributeInfo[], computeStride = true): void {
         this.bindArrayBuffer(instancesBuffer);
@@ -2874,8 +2874,8 @@ export class ThinEngine {
 
         // processing for non-image formats
         if (loader) {
-            var callback = (data: string | ArrayBuffer) => {
-                loader!.loadData(data as ArrayBuffer, texture, (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed) => {
+            var callback = (data: ArrayBufferView) => {
+                loader!.loadData(data, texture, (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed) => {
                     if (loadFailed) {
                         onInternalError("TextureLoader failed to load data");
                     } else {
@@ -2888,17 +2888,19 @@ export class ThinEngine {
             };
 
             if (!buffer) {
-                this._loadFile(url, callback, undefined, scene ? scene.offlineProvider : undefined, true, (request?: IWebRequest, exception?: any) => {
+                this._loadFile(url, (data) => callback(new Uint8Array(data as ArrayBuffer)), undefined, scene ? scene.offlineProvider : undefined, true, (request?: IWebRequest, exception?: any) => {
                     onInternalError("Unable to load " + (request ? request.responseURL : url, exception));
                 });
             } else {
-                //callback(buffer as ArrayBuffer);
                 if (buffer instanceof ArrayBuffer) {
+                    callback(new Uint8Array(buffer));
+                }
+                else if (ArrayBuffer.isView(buffer)) {
                     callback(buffer);
                 }
                 else {
                     if (onError) {
-                        onError("Unable to load: only ArrayBuffer supported here", null);
+                        onError("Unable to load: only ArrayBuffer or ArrayBufferView is supported", null);
                     }
                 }
             }
@@ -4218,7 +4220,7 @@ export class ThinEngine {
      * @param y defines the y coordinate of the rectangle where pixels must be read
      * @param width defines the width of the rectangle where pixels must be read
      * @param height defines the height of the rectangle where pixels must be read
-     * @param hasAlpha defines wether the output should have alpha or not (defaults to true)
+     * @param hasAlpha defines whether the output should have alpha or not (defaults to true)
      * @returns a Uint8Array containing RGBA colors
      */
     public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true): Uint8Array {

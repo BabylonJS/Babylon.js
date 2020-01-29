@@ -75,6 +75,9 @@ export class InputBlock extends NodeMaterialBlock {
                     case "Color4":
                         this._type = NodeMaterialBlockConnectionPointTypes.Color4;
                         return this._type;
+                    case "Matrix":
+                        this._type = NodeMaterialBlockConnectionPointTypes.Matrix;
+                        return this._type;
                 }
             }
 
@@ -589,6 +592,9 @@ export class InputBlock extends NodeMaterialBlock {
                     break;
                 case NodeMaterialBlockConnectionPointTypes.Color4:
                     valueString = `new BABYLON.Color4(${this.value.r}, ${this.value.g}, ${this.value.b}, ${this.value.a})`;
+                    break;
+                case NodeMaterialBlockConnectionPointTypes.Matrix:
+                    valueString = `BABYLON.Matrix.FromArray([${(this.value as Matrix).m.toString()}])`;
                     break;
             }
             let finalOutput = `${variableName}.value = ${valueString};\r\n`;

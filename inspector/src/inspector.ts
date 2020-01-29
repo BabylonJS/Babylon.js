@@ -66,7 +66,7 @@ export class Inspector {
                     targetDoc.head!.appendChild(newLinkEl);
                 }
             } catch (e) {
-                console.log(e)
+                console.log(e);
             }
 
         }
@@ -221,7 +221,7 @@ export class Inspector {
         if (this._EmbedHost) {
             this._OpenedPane++;
             const embedHostElement = React.createElement(EmbedHostComponent, {
-                globalState: this._GlobalState, scene: scene,                
+                globalState: this._GlobalState, scene: scene,
                 extensibilityGroups: options.explorerExtensibility,
                 noExpand: !options.enablePopup,
                 noClose: !options.enableClose,

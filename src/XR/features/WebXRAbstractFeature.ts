@@ -1,6 +1,6 @@
 import { IWebXRFeature } from '../webXRFeaturesManager';
-import { Observer, Observable, EventState } from '../../../Misc/observable';
-import { Nullable } from '../../../types';
+import { Observer, Observable, EventState } from '../../Misc/observable';
+import { Nullable } from '../../types';
 import { WebXRSessionManager } from '../webXRSessionManager';
 
 /**
@@ -15,7 +15,6 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
      * @param _xrSessionManager the xr session manager for this feature
      */
     constructor(protected _xrSessionManager: WebXRSessionManager) {
-
     }
 
     private _attached: boolean = false;
@@ -32,14 +31,28 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
     }
 
     /**
+     * Should auto-attach be disabled?
+     */
+    public disableAutoAttach: boolean = false;
+
+    /**
      * attach this feature
      *
+     * @param force should attachment be forced (even when already attached)
      * @returns true if successful, false is failed or already attached
      */
-    public attach(): boolean {
-        if (this.attached) {
-            return false;
+    public attach(force?: boolean): boolean {
+        if (!force) {
+            if (this.attached) {
+                return false;
+            }
+        } else {
+            if (this.attached) {
+                // detach first, to be sure
+                this.detach();
+            }
         }
+
         this._attached = true;
         this._addNewAttachObserver(this._xrSessionManager.onXRFrameObservable, (frame) => this._onXRFrame(frame));
         return true;
@@ -52,6 +65,7 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
      */
     public detach(): boolean {
         if (!this._attached) {
+            this.disableAutoAttach = true;
             return false;
         }
         this._attached = false;
@@ -72,9 +86,7 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
      * This function will not execute after the feature is detached.
      * @param _xrFrame the current frame
      */
-    protected _onXRFrame(_xrFrame: XRFrame): void {
-        // no-op
-    }
+    protected abstract _onXRFrame(_xrFrame: XRFrame): void;
 
     /**
      * This is used to register callbacks that will automatically be removed when detach is called.

@@ -52,7 +52,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @param meshes array of all the geometry used to compute the navigatio mesh
      * @param parameters bunch of parameters used to filter geometry
      */
-    createMavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters): void {
+    createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters): void {
         const rc = new this.bjsRECAST.rcConfig();
         rc.cs = parameters.cs;
         rc.ch = parameters.ch;
