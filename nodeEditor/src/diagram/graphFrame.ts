@@ -368,6 +368,7 @@ export class GraphFrame {
 
     public refresh() {
         this._nodes = [];
+        this._ownerCanvas.globalState.onFrameCreated.notifyObservers(this);
     }
 
     public addNode(node: GraphNode) {
