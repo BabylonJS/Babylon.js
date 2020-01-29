@@ -85,6 +85,7 @@ declare module NODEEDITOR {
         name: string;
         isCollapsed: boolean;
         blocks: number[];
+        comments: string;
     }
     export interface IEditorData {
         locations: INodeLocationInfo[];
@@ -138,6 +139,7 @@ declare module NODEEDITOR {
         private _headerTextElement;
         private _headerCollapseElement;
         private _headerCloseElement;
+        private _commentsElement;
         private _portContainer;
         private _outputPortContainer;
         private _inputPortContainer;
@@ -150,6 +152,7 @@ declare module NODEEDITOR {
         private _ports;
         private _controlledPorts;
         private _id;
+        private _comments;
         onExpandStateChanged: BABYLON.Observable<GraphFrame>;
         private readonly CloseSVG;
         private readonly ExpandSVG;
@@ -171,6 +174,8 @@ declare module NODEEDITOR {
         set width(value: number);
         get height(): number;
         set height(value: number);
+        get comments(): string;
+        set comments(comments: string);
         constructor(candidate: BABYLON.Nullable<HTMLDivElement>, canvas: GraphCanvasComponent, doNotCaptureNodes?: boolean);
         refresh(): void;
         addNode(node: GraphNode): void;

@@ -54350,6 +54350,11 @@ var GraphFrame = /** @class */ (function () {
                 _this.element.classList.remove("selected");
             }
         });
+        this._commentsElement = document.createElement('div');
+        this._commentsElement.className = 'frame-comments';
+        this._commentsElement.style.color = 'white';
+        this._commentsElement.style.fontSize = '16px';
+        this.element.appendChild(this._commentsElement);
         // Get nodes
         if (!doNotCaptureNodes) {
             this.refresh();
@@ -54557,6 +54562,26 @@ var GraphFrame = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(GraphFrame.prototype, "comments", {
+        get: function () {
+            return this._comments;
+        },
+        set: function (comments) {
+            if (comments.length > 0) {
+                this.element.style.gridTemplateRows = "40px 40px calc(100% - 80px)";
+                this._borderElement.style.gridRow = "1 / span 3";
+                this._portContainer.style.gridRow = "3";
+                this._commentsElement.style.display = "grid";
+                this._commentsElement.style.gridRow = "2";
+                this._commentsElement.style.gridColumn = "1";
+                this._commentsElement.style.paddingLeft = "10px";
+            }
+            this._comments = comments;
+            this._commentsElement.innerText = comments;
+        },
+        enumerable: true,
+        configurable: true
+    });
     GraphFrame.prototype.refresh = function () {
         this._nodes = [];
         this._ownerCanvas.globalState.onFrameCreated.notifyObservers(this);
@@ -54662,7 +54687,8 @@ var GraphFrame = /** @class */ (function () {
             color: this._color.asArray(),
             name: this.name,
             isCollapsed: this.isCollapsed,
-            blocks: this.nodes.map(function (n) { return n.block.uniqueId; })
+            blocks: this.nodes.map(function (n) { return n.block.uniqueId; }),
+            comments: this._comments
         };
     };
     GraphFrame.prototype.export = function () {
@@ -54679,6 +54705,7 @@ var GraphFrame = /** @class */ (function () {
         newFrame.height = serializationData.height;
         newFrame.name = serializationData.name;
         newFrame.color = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(serializationData.color);
+        newFrame.comments = serializationData.comments;
         if (serializationData.blocks && map) {
             var _loop_1 = function () {
                 var actualId = map[blockId];
@@ -55529,6 +55556,7 @@ var FramePropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: this.props.frame }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_3__["Color3LineComponent"], { globalState: this.props.globalState, label: "Color", target: this.props.frame, propertyName: "color" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Comments", propertyName: "comments", target: this.props.frame }),
                     !this.props.frame.isCollapsed &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Collapse", onClick: function () {
                                 _this.props.frame.isCollapsed = true;

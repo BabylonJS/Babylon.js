@@ -9190,6 +9190,8 @@ var ScrollViewer = /** @class */ (function (_super) {
         _this._thumbLength = 0.5;
         _this._thumbHeight = 1;
         _this._barImageHeight = 1;
+        _this._horizontalBarImageHeight = 1;
+        _this._verticalBarImageHeight = 1;
         _this._forceHorizontalBar = false;
         _this._forceVerticalBar = false;
         _this._useImageBar = isImageBased ? isImageBased : false;
@@ -9468,6 +9470,38 @@ var ScrollViewer = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(ScrollViewer.prototype, "horizontalThumbImage", {
+        /** Gets or sets the horizontal bar image */
+        get: function () {
+            return this._horizontalBarImage;
+        },
+        set: function (value) {
+            if (this._horizontalBarImage === value) {
+                return;
+            }
+            this._horizontalBarImage = value;
+            var hb = this._horizontalBar;
+            hb.thumbImage = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ScrollViewer.prototype, "verticalThumbImage", {
+        /** Gets or sets the vertical bar image */
+        get: function () {
+            return this._verticalBarImage;
+        },
+        set: function (value) {
+            if (this._verticalBarImage === value) {
+                return;
+            }
+            this._verticalBarImage = value;
+            var vb = this._verticalBar;
+            vb.thumbImage = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(ScrollViewer.prototype, "barSize", {
         /** Gets or sets the size of the bar */
         get: function () {
@@ -9564,6 +9598,52 @@ var ScrollViewer = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(ScrollViewer.prototype, "horizontalBarImageHeight", {
+        /** Gets or sets the height of the horizontal bar image */
+        get: function () {
+            return this._horizontalBarImageHeight;
+        },
+        set: function (value) {
+            if (this._horizontalBarImageHeight === value) {
+                return;
+            }
+            if (value <= 0) {
+                value = 0.1;
+            }
+            if (value > 1) {
+                value = 1;
+            }
+            this._horizontalBarImageHeight = value;
+            var hb = this._horizontalBar;
+            hb.barImageHeight = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ScrollViewer.prototype, "verticalBarImageHeight", {
+        /** Gets or sets the height of the vertical bar image */
+        get: function () {
+            return this._verticalBarImageHeight;
+        },
+        set: function (value) {
+            if (this._verticalBarImageHeight === value) {
+                return;
+            }
+            if (value <= 0) {
+                value = 0.1;
+            }
+            if (value > 1) {
+                value = 1;
+            }
+            this._verticalBarImageHeight = value;
+            var vb = this._verticalBar;
+            vb.barImageHeight = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(ScrollViewer.prototype, "barBackground", {
         /** Gets or sets the bar background */
         get: function () {
@@ -9595,6 +9675,36 @@ var ScrollViewer = /** @class */ (function (_super) {
             var hb = this._horizontalBar;
             var vb = this._verticalBar;
             hb.backgroundImage = value;
+            vb.backgroundImage = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ScrollViewer.prototype, "horizontalBarImage", {
+        /** Gets or sets the horizontal bar background image */
+        get: function () {
+            return this._horizontalBarBackgroundImage;
+        },
+        set: function (value) {
+            if (this._horizontalBarBackgroundImage === value) {
+            }
+            this._horizontalBarBackgroundImage = value;
+            var hb = this._horizontalBar;
+            hb.backgroundImage = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ScrollViewer.prototype, "verticalBarImage", {
+        /** Gets or sets the vertical bar background image */
+        get: function () {
+            return this._verticalBarBackgroundImage;
+        },
+        set: function (value) {
+            if (this._verticalBarBackgroundImage === value) {
+            }
+            this._verticalBarBackgroundImage = value;
+            var vb = this._verticalBar;
             vb.backgroundImage = value;
         },
         enumerable: true,
