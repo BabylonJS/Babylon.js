@@ -59,6 +59,14 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
     public pinchDeltaPercentage = 0;
 
     /**
+     * useNaturalPinchZoom will be used instead of pinchPrecision if set to true.
+     * Pinch natural zoom is a calculation based off the distance of the
+     * pinch and the camera distance.
+     */
+    @serialize()
+    public useNaturalPinchZoom: boolean = false;
+
+    /**
      * Defines the pointer panning sensibility or how fast is the camera moving.
      */
     @serialize()
@@ -139,7 +147,11 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
                 this.camera.inertialRadiusOffset +=
                     (pinchSquaredDistance - previousPinchSquaredDistance) * 0.001 *
                     this.camera.radius * this.pinchDeltaPercentage;
-            } else {
+            } else if (this.useNaturalPinchZoom) {
+                this.camera.radius = this.camera.radius *
+                    Math.sqrt(previousPinchSquaredDistance) / Math.sqrt(pinchSquaredDistance);
+            }
+            else {
                 this.camera.inertialRadiusOffset +=
                     (pinchSquaredDistance - previousPinchSquaredDistance) /
                     (this.pinchPrecision * direction *
