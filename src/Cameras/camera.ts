@@ -190,7 +190,7 @@ export class Camera extends Node {
     public mode = Camera.PERSPECTIVE_CAMERA;
 
     /**
-     * Define wether the camera is intermediate.
+     * Define whether the camera is intermediate.
      * This is useful to not present the output directly to the screen in case of rig without post process for instance
      */
     public isIntermediate = false;
@@ -265,6 +265,17 @@ export class Camera extends Node {
      * Observable triggered when reset has been called and applied to the camera.
      */
     public onRestoreStateObservable = new Observable<Camera>();
+
+    /**
+     * Is this camera a part of a rig system?
+     */
+    public isRigCamera: boolean = false;
+
+    /**
+     * If isRigCamera set to true this will be set with the parent camera.
+     * The parent camera is not (!) necessarily the .parent of this camera (like in the case of XR)
+     */
+    public rigParent?: Camera;
 
     /** @hidden */
     public _cameraRigParams: any;
@@ -400,7 +411,7 @@ export class Camera extends Node {
     }
 
     /**
-     * Check wether a mesh is part of the current active mesh list of the camera
+     * Check whether a mesh is part of the current active mesh list of the camera
      * @param mesh Defines the mesh to check
      * @returns true if active, false otherwise
      */

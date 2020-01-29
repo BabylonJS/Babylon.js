@@ -486,7 +486,10 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                     readAsync: (byteOffset: number, byteLength: number) => {
                         return new Promise<ArrayBufferView>((resolve, reject) => {
                             fileRequests.push(scene._requestFile(url, (data, webRequest) => {
-                                dataBuffer.byteLength = Number(webRequest!.getResponseHeader("Content-Range")!.split("/")[1]);
+                                const contentRange = webRequest!.getResponseHeader("Content-Range");
+                                if (contentRange) {
+                                    dataBuffer.byteLength = Number(contentRange.split("/")[1]);
+                                }
                                 resolve(new Uint8Array(data as ArrayBuffer));
                             }, onProgress, true, true, (error) => {
                                 reject(error);
@@ -727,18 +730,18 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             }
 
             const length = dataReader.readUint32();
-            if (length !== dataReader.buffer.byteLength) {
+            if (dataReader.buffer.byteLength != 0 && length !== dataReader.buffer.byteLength) {
                 throw new Error(`Length in header does not match actual data length: ${length} != ${dataReader.buffer.byteLength}`);
             }
 
             let unpacked: Promise<IGLTFLoaderData>;
             switch (version) {
                 case 1: {
-                    unpacked = this._unpackBinaryV1Async(dataReader);
+                    unpacked = this._unpackBinaryV1Async(dataReader, length);
                     break;
                 }
                 case 2: {
-                    unpacked = this._unpackBinaryV2Async(dataReader);
+                    unpacked = this._unpackBinaryV2Async(dataReader, length);
                     break;
                 }
                 default: {
@@ -752,7 +755,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         });
     }
 
-    private _unpackBinaryV1Async(dataReader: DataReader): Promise<IGLTFLoaderData> {
+    private _unpackBinaryV1Async(dataReader: DataReader, length: number): Promise<IGLTFLoaderData> {
         const ContentFormat = {
             JSON: 0
         };
@@ -764,7 +767,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             throw new Error(`Unexpected content format: ${contentFormat}`);
         }
 
-        const bodyLength = dataReader.buffer.byteLength - dataReader.byteOffset;
+        const bodyLength = length - dataReader.byteOffset;
 
         const data: IGLTFLoaderData = { json: this._parseJson(dataReader.readString(contentLength)), bin: null };
         if (bodyLength !== 0) {
@@ -778,7 +781,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         return Promise.resolve(data);
     }
 
-    private _unpackBinaryV2Async(dataReader: DataReader): Promise<IGLTFLoaderData> {
+    private _unpackBinaryV2Async(dataReader: DataReader, length: number): Promise<IGLTFLoaderData> {
         const ChunkFormat = {
             JSON: 0x4E4F534A,
             BIN: 0x004E4942

@@ -350,7 +350,7 @@ export class GlowLayer extends EffectLayer {
     }
 
     /**
-     * Returns wether or nood the layer needs stencil enabled during the mesh rendering.
+     * Returns whether or nood the layer needs stencil enabled during the mesh rendering.
      */
     public needStencil(): boolean {
         return false;
@@ -512,7 +512,7 @@ export class GlowLayer extends EffectLayer {
     }
 
     /**
-     * Defines wether the current material of the mesh should be use to render the effect.
+     * Defines whether the current material of the mesh should be use to render the effect.
      * @param mesh defines the current mesh to render
      */
     protected _useMeshMaterial(mesh: AbstractMesh): boolean {

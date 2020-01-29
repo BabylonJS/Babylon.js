@@ -55,12 +55,11 @@ export class _ENVTextureLoader implements IInternalTextureLoader {
      * @param onLoad defines the callback to trigger once the texture is ready
      * @param onError defines the callback to trigger in case of error
      */
-    public loadCubeData(data: string | ArrayBuffer | (string | ArrayBuffer)[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void {
+    public loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void {
         if (Array.isArray(data)) {
             return;
         }
 
-        data = data as ArrayBuffer;
         var info = EnvironmentTextureTools.GetEnvInfo(data);
         if (info) {
             texture.width = info.width;
@@ -87,7 +86,7 @@ export class _ENVTextureLoader implements IInternalTextureLoader {
      * @param texture defines the BabylonJS internal texture
      * @param callback defines the method to call once ready to upload
      */
-    public loadData(data: ArrayBuffer, texture: InternalTexture,
+    public loadData(data: ArrayBufferView, texture: InternalTexture,
         callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void): void {
         throw ".env not supported in 2d.";
     }

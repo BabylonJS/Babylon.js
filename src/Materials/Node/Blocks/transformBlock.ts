@@ -36,7 +36,7 @@ export class TransformBlock extends NodeMaterialBlock {
             if (other.ownerBlock.isInput) {
                 let otherAsInput = other.ownerBlock as InputBlock;
 
-                if (otherAsInput.name === "normal") {
+                if (otherAsInput.name === "normal" || otherAsInput.name === "tangent") {
                     this.complementW = 0;
                 }
             }

@@ -183,6 +183,12 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                     }}/> 
                     {
+                        texture && !isInReflectionMode &&
+                        <CheckBoxLineComponent label="Convert to gamma space" propertyName="convertToGammaSpace" target={this.props.block} onValueChanged={() => {                        
+                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        }}/>
+                    }
+                    {
                         texture && isInReflectionMode &&
                         <OptionsLineComponent label="Reflection mode" options={reflectionModeOptions} target={texture} propertyName="coordinatesMode" onSelect={(value: any) => {
                             texture.coordinatesMode = value;
@@ -190,12 +196,6 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                             this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         }} />
                     }                    
-                    {
-                        texture && !isInReflectionMode &&
-                        <CheckBoxLineComponent label="Gamma space" propertyName="gammaSpace" target={texture} onValueChanged={() => {                        
-                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-                        }}/>
-                    }
                     {
                         texture && !isInReflectionMode &&
                         <CheckBoxLineComponent label="Clamp U" isSelected={() => texture.wrapU === Texture.CLAMP_ADDRESSMODE} onSelect={(value) => {

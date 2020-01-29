@@ -1,9 +1,9 @@
-import { Logger } from "../../Misc/logger";
-import { Observable } from "../../Misc/observable";
-import { Nullable } from "../../types";
-import { IDisposable, Scene } from "../../scene";
-import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
-import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import { Logger } from "../Misc/logger";
+import { Observable } from "../Misc/observable";
+import { Nullable } from "../types";
+import { IDisposable, Scene } from "../scene";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { WebXRRenderTarget } from './webXRTypes';
 import { WebXRManagedOutputCanvas, WebXRManagedOutputCanvasOptions } from './webXRManagedOutputCanvas';
 
@@ -139,17 +139,18 @@ export class WebXRSessionManager implements IDisposable {
 
             // handle when the session is ended (By calling session.end or device ends its own session eg. pressing home button on phone)
             this.session.addEventListener("end", () => {
+                const engine = this.scene.getEngine();
                 this._sessionEnded = true;
                 // Remove render target texture and notify frame obervers
                 this._rttProvider = null;
 
                 // Restore frame buffer to avoid clear on xr framebuffer after session end
-                this.scene.getEngine().restoreDefaultFramebuffer();
+                engine.restoreDefaultFramebuffer();
 
                 // Need to restart render loop as after the session is ended the last request for new frame will never call callback
-                this.scene.getEngine().customAnimationFrameRequester = null;
+                engine.customAnimationFrameRequester = null;
                 this.onXRSessionEnded.notifyObservers(null);
-                this.scene.getEngine()._renderLoop();
+                engine._renderLoop();
             }, { once: true });
             return this.session;
         });
@@ -157,11 +158,11 @@ export class WebXRSessionManager implements IDisposable {
 
     /**
      * Sets the reference space on the xr session
-     * @param referenceSpace space to set
+     * @param referenceSpaceType space to set
      * @returns a promise that will resolve once the reference space has been set
      */
-    public setReferenceSpaceAsync(referenceSpace: XRReferenceSpaceType = "local-floor"): Promise<XRReferenceSpace> {
-        return this.session.requestReferenceSpace(referenceSpace).then((referenceSpace: XRReferenceSpace) => {
+    public setReferenceSpaceTypeAsync(referenceSpaceType: XRReferenceSpaceType = "local-floor"): Promise<XRReferenceSpace> {
+        return this.session.requestReferenceSpace(referenceSpaceType).then((referenceSpace: XRReferenceSpace) => {
             return referenceSpace;
         }, (rejectionReason) => {
             Logger.Error("XR.requestReferenceSpace failed for the following reason: ");
@@ -267,9 +268,9 @@ export class WebXRSessionManager implements IDisposable {
     /**
      * Checks if a session would be supported for the creation options specified
      * @param sessionMode session mode to check if supported eg. immersive-vr
-     * @returns true if supported
+     * @returns A Promise that resolves to true if supported and false if not
      */
-    public isSessionSupportedAsync(sessionMode: XRSessionMode) {
+    public isSessionSupportedAsync(sessionMode: XRSessionMode): Promise<boolean> {
         return WebXRSessionManager.IsSessionSupportedAsync(sessionMode);
     }
 
@@ -343,8 +344,9 @@ export class WebXRSessionManager implements IDisposable {
         if (!functionToUse) {
             return Promise.resolve(false);
         } else {
-            return functionToUse.call((navigator as any).xr, sessionMode).then(() => {
-                return Promise.resolve(true);
+            return functionToUse.call((navigator as any).xr, sessionMode).then((result: boolean) => {
+                const returnValue = (typeof result === "undefined") ? true : result;
+                return Promise.resolve(returnValue);
             }).catch((e: any) => {
                 Logger.Warn(e);
                 return Promise.resolve(false);

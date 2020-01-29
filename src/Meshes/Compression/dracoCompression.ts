@@ -280,7 +280,7 @@ export class DracoCompression implements IDisposable {
     constructor(numWorkers = DracoCompression.DefaultNumWorkers) {
         const decoder = DracoCompression.Configuration.decoder;
 
-        const decoderInfo: { url: string | undefined, wasmBinaryPromise: Promise<ArrayBuffer | undefined> } =
+        const decoderInfo: { url: string | undefined, wasmBinaryPromise: Promise<ArrayBuffer | string | undefined> } =
             (decoder.wasmUrl && decoder.wasmBinaryUrl && typeof WebAssembly === "object") ? {
                 url: decoder.wasmUrl,
                 wasmBinaryPromise: Tools.LoadFileAsync(getAbsoluteUrl(decoder.wasmBinaryUrl))
@@ -336,7 +336,7 @@ export class DracoCompression implements IDisposable {
                 }
 
                 return Tools.LoadScriptAsync(decoderInfo.url).then(() => {
-                    return createDecoderAsync(decoderWasmBinary);
+                    return createDecoderAsync(decoderWasmBinary as ArrayBuffer);
                 });
             });
         }

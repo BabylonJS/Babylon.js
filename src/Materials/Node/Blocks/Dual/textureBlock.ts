@@ -35,6 +35,11 @@ export class TextureBlock extends NodeMaterialBlock {
     public texture: Nullable<Texture>;
 
     /**
+     * Gets or sets a boolean indicating if content needs to be converted to gamma space
+     */
+    public convertToGammaSpace = false;
+
+    /**
      * Create a new TextureBlock
      * @param name defines the block name
      */
@@ -183,7 +188,7 @@ export class TextureBlock extends NodeMaterialBlock {
             return;
         }
 
-        defines.setValue(this._linearDefineName, !this.texture.gammaSpace);
+        defines.setValue(this._linearDefineName, this.convertToGammaSpace);
         if (this._isMixed) {
             if (!this.texture.getTextureMatrix().isIdentityAs3x2()) {
                 defines.setValue(this._defineName, true);
@@ -381,7 +386,7 @@ export class TextureBlock extends NodeMaterialBlock {
         codeString += `${this._codeVariableName}.texture.vOffset = ${this.texture.vOffset};\r\n`;
         codeString += `${this._codeVariableName}.texture.uScale = ${this.texture.uScale};\r\n`;
         codeString += `${this._codeVariableName}.texture.vScale = ${this.texture.vScale};\r\n`;
-        codeString += `${this._codeVariableName}.texture.gammaSpace = ${this.texture.gammaSpace};\r\n`;
+        codeString += `${this._codeVariableName}.convertToGammaSpace = ${this.convertToGammaSpace};\r\n`;
 
         return codeString;
     }
@@ -389,6 +394,7 @@ export class TextureBlock extends NodeMaterialBlock {
     public serialize(): any {
         let serializationObject = super.serialize();
 
+        serializationObject.convertToGammaSpace = this.convertToGammaSpace;
         if (this.texture) {
             serializationObject.texture = this.texture.serialize();
         }
@@ -398,6 +404,8 @@ export class TextureBlock extends NodeMaterialBlock {
 
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
+
+        this.convertToGammaSpace = serializationObject.convertToGammaSpace;
 
         if (serializationObject.texture) {
             rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? "" : rootUrl;

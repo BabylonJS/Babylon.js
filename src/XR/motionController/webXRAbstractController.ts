@@ -1,22 +1,27 @@
-import { IDisposable, Scene } from '../../../scene';
+import { IDisposable, Scene } from '../../scene';
 import { WebXRControllerComponent } from './webXRControllerComponent';
-import { Observable } from '../../../Misc/observable';
-import { Logger } from '../../../Misc/logger';
-import { SceneLoader } from '../../../Loading/sceneLoader';
-import { AbstractMesh } from '../../../Meshes/abstractMesh';
-import { Nullable } from '../../../types';
-import { Quaternion, Vector3 } from '../../../Maths/math.vector';
-import { Mesh } from '../../../Meshes/mesh';
+import { Observable } from '../../Misc/observable';
+import { Logger } from '../../Misc/logger';
+import { SceneLoader } from '../../Loading/sceneLoader';
+import { AbstractMesh } from '../../Meshes/abstractMesh';
+import { Nullable } from '../../types';
+import { Quaternion, Vector3 } from '../../Maths/math.vector';
+import { Mesh } from '../../Meshes/mesh';
 
 /**
  * Handness type in xrInput profiles. These can be used to define layouts in the Layout Map.
  */
-export type MotionControllerHandness = "none" | "left" | "right" | "left-right" | "left-right-none";
+export type MotionControllerHandness = "none" | "left" | "right";
 /**
  * The type of components available in motion controllers.
  * This is not the name of the component.
  */
 export type MotionControllerComponentType = "trigger" | "squeeze" | "touchpad" | "thumbstick" | "button";
+
+/**
+ * The state of a controller component
+ */
+export type MotionControllerComponentStateType = "default" | "touched" | "pressed";
 
 /**
  * The schema of motion controller layout.
@@ -40,38 +45,76 @@ export interface IMotionControllerLayout {
              * The type of input the component outputs
              */
             type: MotionControllerComponentType;
+            /**
+             * The indices of this component in the gamepad object
+             */
+            gamepadIndices: {
+                /**
+                 * Index of button
+                 */
+                button?: number;
+                /**
+                 * If available, index of x-axis
+                 */
+                xAxis?: number;
+                /**
+                 * If available, index of y-axis
+                 */
+                yAxis?: number;
+            };
+            /**
+             * The mesh's root node name
+             */
+            rootNodeName: string;
+            /**
+             * Animation definitions for this model
+             */
+            visualResponses: {
+                [stateKey: string]: {
+                    /**
+                     * What property will be animated
+                     */
+                    componentProperty: "xAxis" | "yAxis" | "button" | "state";
+                    /**
+                     * What states influence this visual reponse
+                     */
+                    states: MotionControllerComponentStateType[];
+                    /**
+                     * Type of animation - movement or visibility
+                     */
+                    valueNodeProperty: "transform" | "visibility";
+                    /**
+                     * Base node name to move. Its position will be calculated according to the min and max nodes
+                     */
+                    valueNodeName?: string;
+                    /**
+                     * Minimum movement node
+                     */
+                    minNodeName?: string;
+                    /**
+                     * Max movement node
+                     */
+                    maxNodeName?: string;
+                }
+            }
+            /**
+             * If touch enabled, what is the name of node to display user feedback
+             */
+            touchPointNodeName?: string;
         }
     };
     /**
-     * An optional gamepad object. If no gamepad object is not defined, no models will be loaded
+     * Is it xr standard mapping or not
      */
-    gamepad?: {
-        /**
-         * Is the mapping based on the xr-standard defined here:
-         * https://www.w3.org/TR/webxr-gamepads-module-1/#xr-standard-gamepad-mapping
-         */
-        mapping: "" | "xr-standard";
-        /**
-         * The buttons available in this input in the right order
-         * index of this button will be the index in the gamepadObject.buttons array
-         * correlates to the componentId in components
-         */
-        buttons: Array<string | null>;
-        /**
-         * Definition of the axes of the gamepad input, sorted
-         * Correlates to componentIds in the components map
-         */
-        axes: Array<{
-            /**
-             * The component id that the axis correlates to
-             */
-            componentId: string;
-            /**
-             * X or Y Axis
-             */
-            axis: "x-axis" | "y-axis";
-        } | null>;
-    };
+    gamepadMapping: "" | "xr-standard";
+    /**
+     * Base root node of this entire model
+     */
+    rootNodeName: string;
+    /**
+     * Path to load the assets. Usually relative to the base path
+     */
+    assetPath: string;
 }
 
 /**
@@ -131,7 +174,7 @@ export interface IMotionControllerButtonMeshMap {
  * This will be expanded when touchpad animations are fully supported
  * The meshes are provided to the _lerpAxisTransform function to calculate the current position of the value mesh
  */
-export interface IMotionControllerAxisMeshMap {
+export interface IMotionControllerMeshMap {
     /**
      * The mesh that will be changed when axis value changes
      */
@@ -139,11 +182,11 @@ export interface IMotionControllerAxisMeshMap {
     /**
      * the mesh that defines the minimum value mesh position.
      */
-    minMesh: AbstractMesh;
+    minMesh?: AbstractMesh;
     /**
      * the mesh that defines the maximum value mesh position.
      */
-    maxMesh: AbstractMesh;
+    maxMesh?: AbstractMesh;
 }
 
 /**
@@ -181,17 +224,6 @@ export interface IMinimalMotionControllerObject {
 export abstract class WebXRAbstractMotionController implements IDisposable {
 
     /**
-     * Component type map
-     */
-    public static ComponentType = {
-        TRIGGER: "trigger",
-        SQUEEZE: "squeeze",
-        TOUCHPAD: "touchpad",
-        THUMBSTICK: "thumbstick",
-        BUTTON: "button"
-    };
-
-    /**
      * The profile id of this motion controller
      */
     public abstract profileId: string;
@@ -214,6 +246,11 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      */
     public rootMesh: Nullable<AbstractMesh>;
 
+    /**
+     * Disable the model's animation. Can be set at any time.
+     */
+    public disableAnimation: boolean = false;
+
     private _modelReady: boolean = false;
 
     /**
@@ -235,27 +272,23 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
         public handness: MotionControllerHandness,
         _doNotLoadControllerMesh: boolean = false) {
         // initialize the components
-        if (layout.gamepad) {
-            layout.gamepad.buttons.forEach(this._initComponent);
+        if (layout.components) {
+            Object.keys(layout.components).forEach(this._initComponent);
         }
         // Model is loaded in WebXRInput
     }
 
-    private _initComponent = (id: string | null) => {
-        if (!this.layout.gamepad || !id) { return; }
-        const type = this.layout.components[id].type;
-        const buttonIndex = this.layout.gamepad.buttons.indexOf(id);
+    private _initComponent = (id: string) => {
+        if (!id) { return; }
+        const componentDef = this.layout.components[id];
+        const type = componentDef.type;
+        const buttonIndex = componentDef.gamepadIndices.button;
         // search for axes
         let axes: number[] = [];
-        this.layout.gamepad.axes.forEach((axis, index) => {
-            if (axis && axis.componentId === id) {
-                if (axis.axis === "x-axis") {
-                    axes[0] = index;
-                } else {
-                    axes[1] = index;
-                }
-            }
-        });
+        if (componentDef.gamepadIndices.xAxis !== undefined && componentDef.gamepadIndices.yAxis !== undefined) {
+            axes.push(componentDef.gamepadIndices.xAxis, componentDef.gamepadIndices.yAxis);
+        }
+
         this.components[id] = new WebXRControllerComponent(id, type, buttonIndex, axes);
     }
 
@@ -264,7 +297,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * @param xrFrame the current xr frame to use and update the model
      */
     public updateFromXRFrame(xrFrame: XRFrame): void {
-        this.getComponentTypes().forEach((id) => this.getComponent(id).update(this.gamepadObject));
+        this.getComponentIds().forEach((id) => this.getComponent(id).update(this.gamepadObject));
         this.updateModel(xrFrame);
     }
 
@@ -272,7 +305,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * Get the list of components available in this motion controller
      * @returns an array of strings correlating to available components
      */
-    public getComponentTypes(): string[] {
+    public getComponentIds(): string[] {
         return Object.keys(this.components);
     }
 
@@ -291,6 +324,24 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      */
     public getComponent(id: string): WebXRControllerComponent {
         return this.components[id];
+    }
+
+    /**
+     * Get the first component of specific type
+     * @param type type of component to find
+     * @return a controller component or null if not found
+     */
+    public getComponentOfType(type: MotionControllerComponentType): Nullable<WebXRControllerComponent> {
+        return this.getAllComponentsOfType(type)[0] || null;
+    }
+
+    /**
+     * Returns all components of specific type
+     * @param type the type to search for
+     * @return an array of components with this type
+     */
+    public getAllComponentsOfType(type: MotionControllerComponentType): WebXRControllerComponent[] {
+        return this.getComponentIds().map((id) => this.components[id]).filter((component) => component.type === type);
     }
 
     /**
@@ -343,14 +394,17 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * @param axisValue the value of the axis which determines the meshes new position
      * @hidden
      */
-    protected _lerpAxisTransform(axisMap: IMotionControllerAxisMeshMap, axisValue: number): void {
+    protected _lerpTransform(axisMap: IMotionControllerMeshMap, axisValue: number, fixValueCoordinates?: boolean): void {
+        if (!axisMap.minMesh || !axisMap.maxMesh) {
+            return;
+        }
 
         if (!axisMap.minMesh.rotationQuaternion || !axisMap.maxMesh.rotationQuaternion || !axisMap.valueMesh.rotationQuaternion) {
             return;
         }
 
         // Convert from gamepad value range (-1 to +1) to lerp range (0 to 1)
-        let lerpValue = axisValue * 0.5 + 0.5;
+        let lerpValue = fixValueCoordinates ? axisValue * 0.5 + 0.5 : axisValue;
         Quaternion.SlerpToRef(
             axisMap.minMesh.rotationQuaternion,
             axisMap.maxMesh.rotationQuaternion,
@@ -363,30 +417,13 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
             axisMap.valueMesh.position);
     }
 
-    /**
-     * Moves the buttons on the controller mesh based on their current state
-     * @param buttonName the name of the button to move
-     * @param buttonValue the value of the button which determines the buttons new position
-     */
-    protected _lerpButtonTransform(buttonMap: IMotionControllerButtonMeshMap, buttonValue: number): void {
-
-        if (!buttonMap
-            || !buttonMap.unpressedMesh.rotationQuaternion
-            || !buttonMap.pressedMesh.rotationQuaternion
-            || !buttonMap.valueMesh.rotationQuaternion) {
-            return;
-        }
-
-        Quaternion.SlerpToRef(
-            buttonMap.unpressedMesh.rotationQuaternion,
-            buttonMap.pressedMesh.rotationQuaternion,
-            buttonValue,
-            buttonMap.valueMesh.rotationQuaternion);
-        Vector3.LerpToRef(
-            buttonMap.unpressedMesh.position,
-            buttonMap.pressedMesh.position,
-            buttonValue,
-            buttonMap.valueMesh.position);
+    // Look through all children recursively. This will return null if no mesh exists with the given name.
+    protected _getChildByName(node: AbstractMesh, name: string): AbstractMesh {
+        return <AbstractMesh>node.getChildren((n) => n.name === name, false)[0];
+    }
+    // Look through only immediate children. This will return null if no mesh exists with the given name.
+    protected _getImmediateChildByName(node: AbstractMesh, name: string): AbstractMesh {
+        return <AbstractMesh>node.getChildren((n) => n.name == name, true)[0];
     }
 
     private _getGenericFilenameAndPath(): { filename: string, path: string } {
@@ -442,7 +479,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * Dispose this controller, the model mesh and all its components
      */
     public dispose(): void {
-        this.getComponentTypes().forEach((id) => this.getComponent(id).dispose());
+        this.getComponentIds().forEach((id) => this.getComponent(id).dispose());
         if (this.rootMesh) {
             this.rootMesh.dispose();
         }

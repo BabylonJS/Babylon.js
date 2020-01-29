@@ -1,6 +1,6 @@
 import { IMinimalMotionControllerObject, MotionControllerComponentType } from "./webXRAbstractController";
-import { Observable } from '../../../Misc/observable';
-import { IDisposable } from '../../../scene';
+import { Observable } from '../../Misc/observable';
+import { IDisposable } from '../../scene';
 
 /**
  * X-Y values for axes in WebXR
@@ -59,19 +59,23 @@ export class WebXRControllerComponent implements IDisposable {
     /**
      * Thumbstick component type
      */
-    public static THUMBSTICK = "xr-standard-thumbstick";
+    public static THUMBSTICK: MotionControllerComponentType = "thumbstick";
     /**
      * Touchpad component type
      */
-    public static TOUCHPAD = "xr-standard-touchpad";
+    public static TOUCHPAD: MotionControllerComponentType = "touchpad";
     /**
      * trigger component type
      */
-    public static TRIGGER = "xr-standard-trigger";
+    public static TRIGGER: MotionControllerComponentType = "trigger";
     /**
      * squeeze component type
      */
-    public static SQUEEZE = "xr-standard-squeeze";
+    public static SQUEEZE: MotionControllerComponentType = "squeeze";
+    /**
+     * button component type
+     */
+    public static BUTTON: MotionControllerComponentType = "button";
     /**
      * Observers registered here will be triggered when the state of a button changes
      * State change is either pressed / touched / value
@@ -91,6 +95,13 @@ export class WebXRControllerComponent implements IDisposable {
         y: 0
     };
     private _changes: IWebXRMotionControllerComponentChanges = {};
+    private _hasChanges: boolean = false;
+    /**
+     * Return whether or not the component changed the last frame
+     */
+    public get hasChanges(): boolean {
+        return this._hasChanges;
+    }
 
     /**
      * Creates a new component for a motion controller.
@@ -173,10 +184,15 @@ export class WebXRControllerComponent implements IDisposable {
     public update(nativeController: IMinimalMotionControllerObject) {
         let buttonUpdated = false;
         let axesUpdate = false;
+        this._hasChanges = false;
         this._changes = {};
 
         if (this.isButton()) {
             const button = nativeController.buttons[this._buttonIndex];
+            // defensive, in case a profile was forced
+            if (!button) {
+                return;
+            }
             if (this._currentValue !== button.value) {
                 this.changes.value = {
                     current: button.value,
@@ -240,9 +256,11 @@ export class WebXRControllerComponent implements IDisposable {
         }
 
         if (buttonUpdated) {
+            this._hasChanges = true;
             this.onButtonStateChanged.notifyObservers(this);
         }
         if (axesUpdate) {
+            this._hasChanges = true;
             this.onAxisValueChanged.notifyObservers(this._axes);
         }
     }

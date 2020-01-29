@@ -1,11 +1,9 @@
-import { WebXRFeaturesManager, IWebXRFeature } from '../webXRFeaturesManager';
-import { TransformNode } from '../../../Meshes/transformNode';
+import { WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager';
+import { TransformNode } from '../../Meshes/transformNode';
 import { WebXRSessionManager } from '../webXRSessionManager';
-import { Observable } from '../../../Misc/observable';
-import { Vector3, Matrix } from '../../../Maths/math.vector';
+import { Observable } from '../../Misc/observable';
+import { Vector3, Matrix } from '../../Maths/math.vector';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-
-const Name = "xr-plane-detector";
 
 /**
  * Options used in the plane detector module
@@ -20,6 +18,8 @@ export interface IWebXRPlaneDetectorOptions {
 /**
  * A babylon interface for a webxr plane.
  * A Plane is actually a polygon, built from N points in space
+ *
+ * Supported in chrome 79, not supported in canary 81 ATM
  */
 export interface IWebXRPlane {
     /**
@@ -47,12 +47,12 @@ let planeIdProvider = 0;
  * The plane detector is used to detect planes in the real world when in AR
  * For more information see https://github.com/immersive-web/real-world-geometry/
  */
-export class WebXRPlaneDetector extends WebXRAbstractFeature implements IWebXRFeature {
+export class WebXRPlaneDetector extends WebXRAbstractFeature {
 
     /**
      * The module's name
      */
-    public static readonly Name = Name;
+    public static readonly Name = WebXRFeatureName.PLANE_DETECTION;
     /**
      * The (Babylon) version of this module.
      * This is an integer representing the implementation version.
@@ -86,13 +86,23 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature implements IWebXRFe
     constructor(_xrSessionManager: WebXRSessionManager, private _options: IWebXRPlaneDetectorOptions = {}) {
         super(_xrSessionManager);
         if (this._xrSessionManager.session) {
-            this._xrSessionManager.session.updateWorldTrackingState({ planeDetectionState: { enabled: true } });
-            this._enabled = true;
+            this._init();
         } else {
             this._xrSessionManager.onXRSessionInit.addOnce(() => {
-                this._xrSessionManager.session.updateWorldTrackingState({ planeDetectionState: { enabled: true } });
-                this._enabled = true;
+                this._init();
             });
+        }
+    }
+
+    private _init() {
+        if (!this._xrSessionManager.session.updateWorldTrackingState) {
+            // fail silently
+            return;
+        }
+        this._xrSessionManager.session.updateWorldTrackingState({ planeDetectionState: { enabled: true } });
+        this._enabled = true;
+        if (this._detectedPlanes.length) {
+            this._detectedPlanes = [];
         }
     }
 

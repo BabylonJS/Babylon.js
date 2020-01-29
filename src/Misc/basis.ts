@@ -151,11 +151,13 @@ export class BasisTools {
 
     /**
      * Transcodes a loaded image file to compressed pixel data
-     * @param imageData image data to transcode
+     * @param data image data to transcode
      * @param config configuration options for the transcoding
      * @returns a promise resulting in the transcoded image
      */
-    public static TranscodeAsync(imageData: ArrayBuffer, config: BasisTranscodeConfiguration): Promise<TranscodeResult> {
+    public static TranscodeAsync(data: ArrayBuffer | ArrayBufferView, config: BasisTranscodeConfiguration): Promise<TranscodeResult> {
+        const dataView = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
+
         return new Promise((res, rej) => {
             this._CreateWorkerAsync().then(() => {
                 var actionId = this._actionId++;
@@ -170,7 +172,10 @@ export class BasisTools {
                     }
                 };
                 this._Worker!.addEventListener("message", messageHandler);
-                this._Worker!.postMessage({action: "transcode", id: actionId, imageData: imageData, config: config, ignoreSupportedFormats: this._IgnoreSupportedFormats}, [imageData]);
+
+                const dataViewCopy = new Uint8Array(dataView.byteLength);
+                dataViewCopy.set(new Uint8Array(dataView.buffer, dataView.byteOffset, dataView.byteLength));
+                this._Worker!.postMessage({action: "transcode", id: actionId, imageData: dataViewCopy, config: config, ignoreSupportedFormats: this._IgnoreSupportedFormats}, [dataViewCopy.buffer]);
             });
         });
     }
@@ -274,7 +279,7 @@ function workerFunc(): void {
             // Transcode the basis image and return the resulting pixels
             var config: BasisTranscodeConfiguration = event.data.config;
             var imgData = event.data.imageData;
-            var loadedFile = new Module.BasisFile(new Uint8Array(imgData));
+            var loadedFile = new Module.BasisFile(imgData);
             var fileInfo = GetFileInfo(loadedFile);
             var format = event.data.ignoreSupportedFormats ? null : GetSupportedTranscodeFormat(event.data.config, fileInfo);
 

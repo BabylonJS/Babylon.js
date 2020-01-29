@@ -18,6 +18,7 @@ import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Buffer, VertexBuffer } from "babylonjs/Meshes/buffer";
 import { Geometry } from "babylonjs/Meshes/geometry";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { InstancedMesh } from "babylonjs/Meshes/instancedMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { MorphTarget } from "babylonjs/Morph/morphTarget";
 import { MorphTargetManager } from "babylonjs/Morph/morphTargetManager";
@@ -748,7 +749,7 @@ export class GLTFLoader implements IGLTFLoader {
         let promise: Promise<any>;
 
         if (shouldInstance && primitive._instanceData) {
-            babylonAbstractMesh = primitive._instanceData.babylonSourceMesh.createInstance(name);
+            babylonAbstractMesh = primitive._instanceData.babylonSourceMesh.createInstance(name) as InstancedMesh;
             promise = primitive._instanceData.promise;
         }
         else {
