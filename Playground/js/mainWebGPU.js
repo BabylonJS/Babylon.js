@@ -262,11 +262,14 @@ class Main {
         this.loadScriptsList(restoreVersionResult);
 
         // -------------------- UI --------------------
+        var handleRun = () => compileAndRun(this.parent, this.fpsLabel);
+        var handleSave = () => this.askForSave();
+        var handleGetZip = () => this.parent.zipTool.getZip(engine);
 
         // Display BJS version
         if (BABYLON) this.parent.utils.setToMultipleID("mainTitle", "innerHTML", "v" + BABYLON.Engine.Version);
         // Run
-        this.parent.utils.setToMultipleID("runButton", "click", () => compileAndRun(this.parent, this.fpsLabel));
+        this.parent.utils.setToMultipleID("runButton", "click", handleRun);
         // New
         this.parent.utils.setToMultipleID("newButton", "click", function () {
             this.parent.menuPG.removeAllOptions();
@@ -278,11 +281,9 @@ class Main {
             this.clear.call(this);
         }.bind(this));
         // Save
-        this.parent.utils.setToMultipleID("saveButton", "click", this.askForSave.bind(this));
+        this.parent.utils.setToMultipleID("saveButton", "click", handleSave);
         // Zip
-        this.parent.utils.setToMultipleID("zipButton", "click", function () {
-            this.parent.zipTool.getZip(engine);
-        }.bind(this));
+        this.parent.utils.setToMultipleID("zipButton", "click", handleGetZip);
         // Themes
         this.parent.utils.setToMultipleID("darkTheme", "click", function () {
             this.parent.menuPG.removeAllOptions();
@@ -410,6 +411,30 @@ class Main {
         this.parent.settingsPG.setScriptLanguage();
         // Check if it's mobile mode. If true, switch to full canvas by default
         this.parent.menuPG.resizeBigCanvas();
+
+        // HotKeys
+        document.onkeydown = function (e) {
+            // Alt+Enter to Run
+            if (e.altKey && (e.key === 'Enter' || event.which === 13)) {
+                handleRun();
+            }
+            // Ctrl+Shift+S to Download Zip
+            else if (
+              (window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey) &&
+              e.shiftKey &&
+              (e.key === 'S' || event.which === 83)
+            ) {
+                handleGetZip();
+            }
+            // Ctrl+S to Save
+            else if (
+              (window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey) &&
+              (e.key === 'S' || event.which === 83)
+            ) {
+                e.preventDefault();
+                handleSave();
+            }
+        };
     };
 
     /**

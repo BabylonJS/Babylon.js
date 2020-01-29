@@ -2,8 +2,8 @@ import {
     WebXRAbstractMotionController, IMotionControllerProfile,
 } from './webXRAbstractController';
 import { WebXRGenericTriggerMotionController } from './webXRGenericMotionController';
-import { Scene } from '../../../scene';
-import { Tools } from '../../../Misc/tools';
+import { Scene } from '../../scene';
+import { Tools } from '../../Misc/tools';
 import { WebXRProfiledMotionController } from './webXRProfiledMotionController';
 
 /**

@@ -1,27 +1,27 @@
 import { IWebXRFeature, WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager';
-import { Observer } from '../../../Misc/observable';
+import { Observer } from '../../Misc/observable';
 import { WebXRSessionManager } from '../webXRSessionManager';
-import { Nullable } from '../../../types';
+import { Nullable } from '../../types';
 import { WebXRInput } from '../webXRInput';
 import { WebXRController } from '../webXRController';
 import { WebXRControllerComponent, IWebXRMotionControllerAxesValue } from '../motionController/webXRControllerComponent';
-import { AbstractMesh } from '../../../Meshes/abstractMesh';
-import { Vector3, Quaternion } from '../../../Maths/math.vector';
-import { Ray } from '../../../Culling/ray';
-import { Material } from '../../../Materials/material';
-import { DynamicTexture } from '../../../Materials/Textures/dynamicTexture';
-import { CylinderBuilder } from '../../../Meshes/Builders/cylinderBuilder';
-import { SineEase, EasingFunction } from '../../../Animations/easing';
-import { Animation } from '../../../Animations/animation';
-import { Axis } from '../../../Maths/math.axis';
-import { StandardMaterial } from '../../../Materials/standardMaterial';
-import { GroundBuilder } from '../../../Meshes/Builders/groundBuilder';
-import { TorusBuilder } from '../../../Meshes/Builders/torusBuilder';
-import { PickingInfo } from '../../../Collisions/pickingInfo';
-import { Curve3 } from '../../../Maths/math.path';
-import { LinesBuilder } from '../../../Meshes/Builders/linesBuilder';
+import { AbstractMesh } from '../../Meshes/abstractMesh';
+import { Vector3, Quaternion } from '../../Maths/math.vector';
+import { Ray } from '../../Culling/ray';
+import { Material } from '../../Materials/material';
+import { DynamicTexture } from '../../Materials/Textures/dynamicTexture';
+import { CylinderBuilder } from '../../Meshes/Builders/cylinderBuilder';
+import { SineEase, EasingFunction } from '../../Animations/easing';
+import { Animation } from '../../Animations/animation';
+import { Axis } from '../../Maths/math.axis';
+import { StandardMaterial } from '../../Materials/standardMaterial';
+import { GroundBuilder } from '../../Meshes/Builders/groundBuilder';
+import { TorusBuilder } from '../../Meshes/Builders/torusBuilder';
+import { PickingInfo } from '../../Collisions/pickingInfo';
+import { Curve3 } from '../../Maths/math.path';
+import { LinesBuilder } from '../../Meshes/Builders/linesBuilder';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-import { Color3 } from '../../../Maths/math.color';
+import { Color3 } from '../../Maths/math.color';
 
 /**
  * The options container for the teleportation module
@@ -267,18 +267,24 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                 let hitPossible = false;
                 // first check if direct ray possible
                 controllerData.xrController.getWorldPointerRayToRef(this._tmpRay);
+                // pick grounds that are LOWER only. upper will use parabolic path
                 let pick = scene.pickWithRay(this._tmpRay, (o) => {
-                    return this._floorMeshes.indexOf(o) !== -1;
+                    const index = this._floorMeshes.indexOf(o);
+                    if (index === -1) { return false; }
+                    return (this._floorMeshes[index].absolutePosition.y < this._options.xrInput.xrCamera.position.y);
                 });
                 if (pick && pick.pickedPoint) {
                     hitPossible = true;
                     this.setTargetMeshPosition(pick.pickedPoint);
                     this.setTargetMeshVisibility(true);
-                    this.showParabolicPath(pick);
+                    this._showParabolicPath(pick);
                 } else {
                     if (this.parabolicRayEnabled) {
+                        // radius compensation according to pointer rotation around X
+                        const xRotation = controllerData.xrController.pointer.rotationQuaternion!.toEulerAngles().x;
+                        const compensation = (1 + ((Math.PI / 2) - Math.abs(xRotation)));
                         // check parabolic ray
-                        const radius = this.parabolicCheckRadius;
+                        const radius = this.parabolicCheckRadius * compensation;
                         this._tmpRay.origin.addToRef(this._tmpRay.direction.scale(radius * 2), this._tmpVector);
                         this._tmpVector.y = this._tmpRay.origin.y;
                         this._tmpRay.origin.addInPlace(this._tmpRay.direction.scale(radius));
@@ -292,7 +298,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                             hitPossible = true;
                             this.setTargetMeshPosition(pick.pickedPoint);
                             this.setTargetMeshVisibility(true);
-                            this.showParabolicPath(pick);
+                            this._showParabolicPath(pick);
                         }
                     }
                 }
@@ -326,7 +332,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         };
         const controllerData = this._controllers[xrController.uniqueId];
         // motion controller support
-        xrController.onMotionControllerProfileLoaded.addOnce(() => {
+        xrController.onMotionControllerInitObservable.addOnce(() => {
             if (xrController.motionController) {
                 const movementController = xrController.motionController.getComponentOfType(WebXRControllerComponent.THUMBSTICK) || xrController.motionController.getComponentOfType(WebXRControllerComponent.TOUCHPAD);
                 if (!movementController || this._options.useMainComponentOnly) {
@@ -444,7 +450,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         this._currentTeleportationControllerId = "";
         // do the movement forward here
         if (this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.isVisible) {
-            const height = this._options.xrInput.xrCamera.position.y - this._options.teleportationTargetMesh.position.y;
+            const height = this._options.xrInput.xrCamera.realWorldHeight;
             this._options.xrInput.xrCamera.position.copyFrom(this._options.teleportationTargetMesh.position);
             this._options.xrInput.xrCamera.position.y += height;
             this._options.xrInput.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, controllerData.teleportationState.currentRotation, 0));
@@ -578,7 +584,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
 
     private _quadraticBezierCurve: AbstractMesh;
 
-    private showParabolicPath(pickInfo: PickingInfo) {
+    private _showParabolicPath(pickInfo: PickingInfo) {
         if (!pickInfo.pickedPoint) { return; }
 
         const controllerData = this._controllers[this._currentTeleportationControllerId];
