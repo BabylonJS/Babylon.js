@@ -498,7 +498,8 @@ export class GraphFrame {
             color: this._color.asArray(),
             name: this.name,
             isCollapsed: this.isCollapsed,
-            blocks: this.nodes.map(n => n.block.uniqueId)
+            blocks: this.nodes.map(n => n.block.uniqueId),
+            comments: this._comments
         }
     }
 
@@ -518,6 +519,7 @@ export class GraphFrame {
         newFrame.height = serializationData.height;
         newFrame.name = serializationData.name;
         newFrame.color = Color3.FromArray(serializationData.color);
+        newFrame.comments = serializationData.comments;
 
         if (serializationData.blocks && map) {
             for (var blockId of serializationData.blocks) {
