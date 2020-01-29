@@ -1,7 +1,7 @@
 import { Nullable } from "../types";
 import { Observer, Observable } from "../Misc/observable";
 import { IDisposable } from "../scene";
-import { WebXRController } from './webXRController';
+import { WebXRInputSource } from './webXRInputSource';
 import { WebXRSessionManager } from './webXRSessionManager';
 import { WebXRCamera } from './webXRCamera';
 import { WebXRMotionControllerManager } from './motionController/webXRMotionControllerManager';
@@ -46,18 +46,18 @@ export class WebXRInput implements IDisposable {
     /**
      * XR controllers being tracked
      */
-    public controllers: Array<WebXRController> = [];
+    public controllers: Array<WebXRInputSource> = [];
     private _frameObserver: Nullable<Observer<any>>;
     private _sessionEndedObserver: Nullable<Observer<any>>;
     private _sessionInitObserver: Nullable<Observer<any>>;
     /**
      * Event when a controller has been connected/added
      */
-    public onControllerAddedObservable = new Observable<WebXRController>();
+    public onControllerAddedObservable = new Observable<WebXRInputSource>();
     /**
      * Event when a controller has been removed/disconnected
      */
-    public onControllerRemovedObservable = new Observable<WebXRController>();
+    public onControllerRemovedObservable = new Observable<WebXRInputSource>();
 
     /**
      * Initializes the WebXRInput
@@ -114,7 +114,7 @@ export class WebXRInput implements IDisposable {
         let sources = this.controllers.map((c) => { return c.inputSource; });
         for (let input of addInputs) {
             if (sources.indexOf(input) === -1) {
-                let controller = new WebXRController(this.xrSessionManager.scene, input, {
+                let controller = new WebXRInputSource(this.xrSessionManager.scene, input, {
                     forceControllerProfile: this.options.forceInputProfile,
                     doNotLoadControllerMesh: this.options.doNotLoadControllerMeshes,
                     disableMotionControllerAnimation: this.options.disableControllerAnimation
@@ -125,8 +125,8 @@ export class WebXRInput implements IDisposable {
         }
 
         // Remove and dispose of controllers to be disposed
-        let keepControllers: Array<WebXRController> = [];
-        let removedControllers: Array<WebXRController> = [];
+        let keepControllers: Array<WebXRInputSource> = [];
+        let removedControllers: Array<WebXRInputSource> = [];
         this.controllers.forEach((c) => {
             if (removeInputs.indexOf(c.inputSource) === -1) {
                 keepControllers.push(c);
