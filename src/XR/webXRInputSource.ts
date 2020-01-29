@@ -159,15 +159,17 @@ export class WebXRInputSource {
     }
 
     /**
-     * Gets a world space ray coming from the controller
+     * Gets a world space ray coming from the pointer or grip
      * @param result the resulting ray
+     * @param gripIfAvailable use the grip mesh instead of the pointer, if available
      */
-    public getWorldPointerRayToRef(result: Ray) {
-        let worldMatrix = this.pointer.computeWorldMatrix();
+    public getWorldPointerRayToRef(result: Ray, gripIfAvailable: boolean = false) {
+        const object = gripIfAvailable && this.grip ? this.grip : this.pointer;
+        let worldMatrix = object.computeWorldMatrix();
         worldMatrix.decompose(undefined, this._tmpQuaternion, undefined);
         this._tmpVector.set(0, 0, 1);
         this._tmpVector.rotateByQuaternionToRef(this._tmpQuaternion, this._tmpVector);
-        result.origin.copyFrom(this.pointer.absolutePosition);
+        result.origin.copyFrom(object.absolutePosition);
         result.direction.copyFrom(this._tmpVector);
         result.length = 1000;
     }
