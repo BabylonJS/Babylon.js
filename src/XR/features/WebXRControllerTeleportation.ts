@@ -3,7 +3,7 @@ import { Observer } from '../../Misc/observable';
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { Nullable } from '../../types';
 import { WebXRInput } from '../webXRInput';
-import { WebXRController } from '../webXRController';
+import { WebXRInputSource } from '../webXRInputSource';
 import { WebXRControllerComponent, IWebXRMotionControllerAxesValue } from '../motionController/webXRControllerComponent';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Vector3, Quaternion } from '../../Maths/math.vector';
@@ -169,7 +169,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
 
     private _controllers: {
         [controllerUniqueId: string]: {
-            xrController: WebXRController;
+            xrController: WebXRInputSource;
             teleportationComponent?: WebXRControllerComponent;
             teleportationState: {
                 forward: boolean;
@@ -315,7 +315,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
 
     private _currentTeleportationControllerId: string;
 
-    private _attachController = (xrController: WebXRController) => {
+    private _attachController = (xrController: WebXRInputSource) => {
         if (this._controllers[xrController.uniqueId]) {
             // already attached
             return;
@@ -341,7 +341,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                     if (!mainComponent) {
                         return;
                     }
-                    controllerData.onButtonChangedObserver = mainComponent.onButtonStateChanged.add(() => {
+                    controllerData.onButtonChangedObserver = mainComponent.onButtonStateChangedObservable.add(() => {
                         // did "pressed" changed?
                         if (mainComponent.changes.pressed) {
                             if (mainComponent.changes.pressed.current) {
@@ -374,13 +374,13 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                         }
                     });
                 } else {
-                    controllerData.onButtonChangedObserver = movementController.onButtonStateChanged.add(() => {
+                    controllerData.onButtonChangedObserver = movementController.onButtonStateChangedObservable.add(() => {
                         if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId && controllerData.teleportationState.forward && !movementController.touched) {
                             this._teleportForward(xrController.uniqueId);
                         }
                     });
                     // use thumbstick (or touchpad if thumbstick not available)
-                    controllerData.onAxisChangedObserver = movementController.onAxisValueChanged.add((axesData) => {
+                    controllerData.onAxisChangedObserver = movementController.onAxisValueChangedObservable.add((axesData) => {
                         if (axesData.y <= 0.7 && controllerData.teleportationState.backwards) {
                             //if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId) {
                             controllerData.teleportationState.backwards = false;
@@ -462,10 +462,10 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         if (!controllerData) { return; }
         if (controllerData.teleportationComponent) {
             if (controllerData.onAxisChangedObserver) {
-                controllerData.teleportationComponent.onAxisValueChanged.remove(controllerData.onAxisChangedObserver);
+                controllerData.teleportationComponent.onAxisValueChangedObservable.remove(controllerData.onAxisChangedObserver);
             }
             if (controllerData.onButtonChangedObserver) {
-                controllerData.teleportationComponent.onButtonStateChanged.remove(controllerData.onButtonChangedObserver);
+                controllerData.teleportationComponent.onButtonStateChangedObservable.remove(controllerData.onButtonChangedObserver);
             }
         }
         // remove from the map

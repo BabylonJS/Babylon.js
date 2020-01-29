@@ -8,9 +8,14 @@ import { Viewport } from '../Maths/math.viewport';
 
 /**
  * WebXR Camera which holds the views for the xrSession
- * @see https://doc.babylonjs.com/how_to/webxr
+ * @see https://doc.babylonjs.com/how_to/webxr_camera
  */
 export class WebXRCamera extends FreeCamera {
+    private _firstFrame = false;
+    private _referenceQuaternion: Quaternion = Quaternion.Identity();
+    private _referencedPosition: Vector3 = new Vector3();
+    private _xrInvPositionCache: Vector3 = new Vector3();
+    private _xrInvQuaternionCache = Quaternion.Identity();
 
     /**
      * Should position compensation execute on first frame.
@@ -18,31 +23,11 @@ export class WebXRCamera extends FreeCamera {
      */
     public compensateOnFirstFrame: boolean = true;
 
-    private _firstFrame = false;
-    private _referencedPosition: Vector3 = new Vector3();
-    private _referenceQuaternion: Quaternion = Quaternion.Identity();
-    private _xrInvPositionCache: Vector3 = new Vector3();
-    private _xrInvQuaternionCache = Quaternion.Identity();
-
-    private _realWorldHeight: number = 0;
-
-    /**
-     * Prevent the camera from calculating the real-world height
-     * If you are not using the user's height disable this for better performance
-     */
-    public disableRealWorldHeightCalculation: boolean = false;
-
-    /**
-     * Return the user's height, unrelated to the current ground.
-     */
-    public get realWorldHeight(): number {
-        return this._realWorldHeight;
-    }
-
     /**
      * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
      * @param name the name of the camera
      * @param scene the scene to add the camera to
+     * @param _xrSessionManager a constructed xr session manager
      */
     constructor(name: string, scene: Scene, private _xrSessionManager: WebXRSessionManager) {
         super(name, Vector3.Zero(), scene);
@@ -73,22 +58,29 @@ export class WebXRCamera extends FreeCamera {
         }, undefined, true);
     }
 
-    private _updateNumberOfRigCameras(viewCount = 1) {
-        while (this.rigCameras.length < viewCount) {
-            var newCamera = new TargetCamera("XR-RigCamera: " + this.rigCameras.length, Vector3.Zero(), this.getScene());
-            newCamera.minZ = 0.1;
-            newCamera.rotationQuaternion = new Quaternion();
-            newCamera.updateUpVectorFromRotation = true;
-            newCamera.isRigCamera = true;
-            newCamera.rigParent = this;
-            this.rigCameras.push(newCamera);
+    /**
+     * Return the user's height, unrelated to the current ground.
+     * This will be the y position of this camera, when ground level is 0.
+     */
+    public get realWorldHeight(): number {
+        const basePose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.baseReferenceSpace);
+        if (basePose && basePose.transform) {
+            return basePose.transform.position.y;
+        } else {
+            return 0;
         }
-        while (this.rigCameras.length > viewCount) {
-            var removedCamera = this.rigCameras.pop();
-            if (removedCamera) {
-                removedCamera.dispose();
-            }
-        }
+    }
+
+    /** @hidden */
+    public _updateForDualEyeDebugging(/*pupilDistance = 0.01*/) {
+        // Create initial camera rigs
+        this._updateNumberOfRigCameras(2);
+        this.rigCameras[0].viewport = new Viewport(0, 0, 0.5, 1.0);
+        // this.rigCameras[0].position.x = -pupilDistance / 2;
+        this.rigCameras[0].outputRenderTarget = null;
+        this.rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
+        // this.rigCameras[1].position.x = pupilDistance / 2;
+        this.rigCameras[1].outputRenderTarget = null;
     }
 
     /**
@@ -111,16 +103,107 @@ export class WebXRCamera extends FreeCamera {
         }
     }
 
-    /** @hidden */
-    public _updateForDualEyeDebugging(/*pupilDistance = 0.01*/) {
-        // Create initial camera rigs
-        this._updateNumberOfRigCameras(2);
-        this.rigCameras[0].viewport = new Viewport(0, 0, 0.5, 1.0);
-        // this.rigCameras[0].position.x = -pupilDistance / 2;
-        this.rigCameras[0].outputRenderTarget = null;
-        this.rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
-        // this.rigCameras[1].position.x = pupilDistance / 2;
-        this.rigCameras[1].outputRenderTarget = null;
+    private _updateFromXRSession() {
+        const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.referenceSpace);
+
+        if (!pose) {
+            return;
+        }
+
+        if (pose.transform) {
+            this._referencedPosition.copyFrom(<any>(pose.transform.position));
+            this._referenceQuaternion.copyFrom(<any>(pose.transform.orientation));
+            if (!this._scene.useRightHandedSystem) {
+                this._referencedPosition.z *= -1;
+                this._referenceQuaternion.z *= -1;
+                this._referenceQuaternion.w *= -1;
+            }
+
+            if (this._firstFrame) {
+                this._firstFrame = false;
+                // we have the XR reference, now use this to find the offset to get the camera to be
+                // in the right position
+
+                // set the height to correlate to the current height
+                this.position.y += this._referencedPosition.y;
+                // avoid using the head rotation on the first frame.
+                this._referenceQuaternion.copyFromFloats(0, 0, 0, 1);
+                // update the reference space so that the position will be correct
+            }
+            else {
+                this.rotationQuaternion.copyFrom(this._referenceQuaternion);
+                this.position.copyFrom(this._referencedPosition);
+            }
+        }
+
+        // Update camera rigs
+        if (this.rigCameras.length !== pose.views.length) {
+            this._updateNumberOfRigCameras(pose.views.length);
+        }
+
+        pose.views.forEach((view: any, i: number) => {
+            const currentRig = <TargetCamera>this.rigCameras[i];
+            // update right and left, where applicable
+            if (!currentRig.isLeftCamera && !currentRig.isRightCamera) {
+                if (view.eye === 'right') {
+                    currentRig._isRightCamera = true;
+                } else if (view.eye === 'left') {
+                    currentRig._isLeftCamera = true;
+                }
+            }
+            // Update view/projection matrix
+            if (view.transform.position) {
+                currentRig.position.copyFrom(view.transform.position);
+                currentRig.rotationQuaternion.copyFrom(view.transform.orientation);
+                if (!this._scene.useRightHandedSystem) {
+                    currentRig.position.z *= -1;
+                    currentRig.rotationQuaternion.z *= -1;
+                    currentRig.rotationQuaternion.w *= -1;
+                }
+            } else {
+                Matrix.FromFloat32ArrayToRefScaled(view.transform.matrix, 0, 1, currentRig._computedViewMatrix);
+                if (!this._scene.useRightHandedSystem) {
+                    currentRig._computedViewMatrix.toggleModelMatrixHandInPlace();
+                }
+            }
+            Matrix.FromFloat32ArrayToRefScaled(view.projectionMatrix, 0, 1, currentRig._projectionMatrix);
+
+            if (!this._scene.useRightHandedSystem) {
+                currentRig._projectionMatrix.toggleProjectionMatrixHandInPlace();
+            }
+
+            // Update viewport
+            if (this._xrSessionManager.session.renderState.baseLayer) {
+                var viewport = this._xrSessionManager.session.renderState.baseLayer.getViewport(view);
+                var width = this._xrSessionManager.session.renderState.baseLayer.framebufferWidth;
+                var height = this._xrSessionManager.session.renderState.baseLayer.framebufferHeight;
+                currentRig.viewport.width = viewport.width / width;
+                currentRig.viewport.height = viewport.height / height;
+                currentRig.viewport.x = viewport.x / width;
+                currentRig.viewport.y = viewport.y / height;
+            }
+
+            // Set cameras to render to the session's render target
+            currentRig.outputRenderTarget = this._xrSessionManager.getRenderTargetTextureForEye(view.eye);
+        });
+    }
+
+    private _updateNumberOfRigCameras(viewCount = 1) {
+        while (this.rigCameras.length < viewCount) {
+            var newCamera = new TargetCamera("XR-RigCamera: " + this.rigCameras.length, Vector3.Zero(), this.getScene());
+            newCamera.minZ = 0.1;
+            newCamera.rotationQuaternion = new Quaternion();
+            newCamera.updateUpVectorFromRotation = true;
+            newCamera.isRigCamera = true;
+            newCamera.rigParent = this;
+            this.rigCameras.push(newCamera);
+        }
+        while (this.rigCameras.length > viewCount) {
+            var removedCamera = this.rigCameras.pop();
+            if (removedCamera) {
+                removedCamera.dispose();
+            }
+        }
     }
 
     private _updateReferenceSpace() {
@@ -188,102 +271,5 @@ export class WebXRCamera extends FreeCamera {
             // This new offset needs to be applied to the base ref space.
             this._xrSessionManager.referenceSpace = referenceSpace.getOffsetReferenceSpace(transform2);
         }
-    }
-
-    private _updateFromXRSession() {
-
-        // user height
-        if (!this.disableRealWorldHeightCalculation) {
-            const basePose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.baseReferenceSpace);
-            if (basePose && basePose.transform) {
-                this._realWorldHeight = basePose.transform.position.y;
-            }
-        } else {
-            this._realWorldHeight = 0;
-        }
-
-        const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.referenceSpace);
-
-        if (!pose) {
-            return;
-        }
-
-        if (pose.transform) {
-            this._referencedPosition.copyFrom(<any>(pose.transform.position));
-            this._referenceQuaternion.copyFrom(<any>(pose.transform.orientation));
-            if (!this._scene.useRightHandedSystem) {
-                this._referencedPosition.z *= -1;
-                this._referenceQuaternion.z *= -1;
-                this._referenceQuaternion.w *= -1;
-            }
-
-            if (this._firstFrame) {
-                this._firstFrame = false;
-                // we have the XR reference, now use this to find the offset to get the camera to be
-                // in the right position
-
-                // set the height to correlate to the current height
-                this.position.y += this._referencedPosition.y;
-                // avoid using the head rotation on the first frame.
-                this._referenceQuaternion.copyFromFloats(0, 0, 0, 1);
-                // update the reference space so that the position will be correct
-
-            }
-            else {
-                this.rotationQuaternion.copyFrom(this._referenceQuaternion);
-                this.position.copyFrom(this._referencedPosition);
-            }
-        }
-
-        // Update camera rigs
-        if (this.rigCameras.length !== pose.views.length) {
-            this._updateNumberOfRigCameras(pose.views.length);
-        }
-
-        pose.views.forEach((view: any, i: number) => {
-            const currentRig = <TargetCamera>this.rigCameras[i];
-            // update right and left, where applicable
-            if (!currentRig.isLeftCamera && !currentRig.isRightCamera) {
-                if (view.eye === 'right') {
-                    currentRig._isRightCamera = true;
-                } else if (view.eye === 'left') {
-                    currentRig._isLeftCamera = true;
-                }
-            }
-            // Update view/projection matrix
-            if (view.transform.position) {
-                currentRig.position.copyFrom(view.transform.position);
-                currentRig.rotationQuaternion.copyFrom(view.transform.orientation);
-                if (!this._scene.useRightHandedSystem) {
-                    currentRig.position.z *= -1;
-                    currentRig.rotationQuaternion.z *= -1;
-                    currentRig.rotationQuaternion.w *= -1;
-                }
-            } else {
-                Matrix.FromFloat32ArrayToRefScaled(view.transform.matrix, 0, 1, currentRig._computedViewMatrix);
-                if (!this._scene.useRightHandedSystem) {
-                    currentRig._computedViewMatrix.toggleModelMatrixHandInPlace();
-                }
-            }
-            Matrix.FromFloat32ArrayToRefScaled(view.projectionMatrix, 0, 1, currentRig._projectionMatrix);
-
-            if (!this._scene.useRightHandedSystem) {
-                currentRig._projectionMatrix.toggleProjectionMatrixHandInPlace();
-            }
-
-            // Update viewport
-            if (this._xrSessionManager.session.renderState.baseLayer) {
-                var viewport = this._xrSessionManager.session.renderState.baseLayer.getViewport(view);
-                var width = this._xrSessionManager.session.renderState.baseLayer.framebufferWidth;
-                var height = this._xrSessionManager.session.renderState.baseLayer.framebufferHeight;
-                currentRig.viewport.width = viewport.width / width;
-                currentRig.viewport.height = viewport.height / height;
-                currentRig.viewport.x = viewport.x / width;
-                currentRig.viewport.y = viewport.y / height;
-            }
-
-            // Set cameras to render to the session's render target
-            currentRig.outputRenderTarget = this._xrSessionManager.getRenderTargetTextureForEye(view.eye);
-        });
     }
 }
