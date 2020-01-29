@@ -1,6 +1,6 @@
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Vector3, Quaternion } from "../../Maths/math.vector";
-import { WebXRController } from "../webXRController";
+import { WebXRInputSource } from "../webXRInputSource";
 import { PhysicsImpostor } from "../../Physics/physicsImpostor";
 import { WebXRInput } from "../webXRInput";
 import { WebXRSessionManager } from "../webXRSessionManager";
@@ -67,7 +67,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
 
     private _controllers: {
         [id: string]: {
-            xrController: WebXRController;
+            xrController: WebXRInputSource;
             impostorMesh?: AbstractMesh,
             impostor: PhysicsImpostor
             oldPos?: Vector3;
@@ -154,7 +154,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
      * Manually add a controller (if no xrInput was provided or physics engine was not enabled)
      * @param xrController the controller to add
      */
-    public addController(xrController: WebXRController) {
+    public addController(xrController: WebXRInputSource) {
         this._attachController(xrController);
     }
 
@@ -174,7 +174,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
         });
     }
 
-    private _attachController = (xrController: WebXRController
+    private _attachController = (xrController: WebXRInputSource
     ) => {
         if (this._controllers[xrController.uniqueId]) {
             // already attached

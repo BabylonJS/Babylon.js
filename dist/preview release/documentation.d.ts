@@ -42654,48 +42654,44 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * WebXR Camera which holds the views for the xrSession
-     * @see https://doc.babylonjs.com/how_to/webxr
+     * @see https://doc.babylonjs.com/how_to/webxr_camera
      */
     export class WebXRCamera extends FreeCamera {
         private _xrSessionManager;
+        private _firstFrame;
+        private _referenceQuaternion;
+        private _referencedPosition;
+        private _xrInvPositionCache;
+        private _xrInvQuaternionCache;
         /**
          * Should position compensation execute on first frame.
          * This is used when copying the position from a native (non XR) camera
          */
         compensateOnFirstFrame: boolean;
-        private _firstFrame;
-        private _referencedPosition;
-        private _referenceQuaternion;
-        private _xrInvPositionCache;
-        private _xrInvQuaternionCache;
-        private _realWorldHeight;
-        /**
-         * Prevent the camera from calculating the real-world height
-         * If you are not using the user's height disable this for better performance
-         */
-        disableRealWorldHeightCalculation: boolean;
-        /**
-         * Return the user's height, unrelated to the current ground.
-         */
-        get realWorldHeight(): number;
         /**
          * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
          * @param name the name of the camera
          * @param scene the scene to add the camera to
+         * @param _xrSessionManager a constructed xr session manager
          */
         constructor(name: string, scene: Scene, _xrSessionManager: WebXRSessionManager);
-        private _updateNumberOfRigCameras;
+        /**
+         * Return the user's height, unrelated to the current ground.
+         * This will be the y position of this camera, when ground level is 0.
+         */
+        get realWorldHeight(): number;
+        /** @hidden */
+        _updateForDualEyeDebugging(): void;
         /**
          * Sets this camera's transformation based on a non-vr camera
          * @param otherCamera the non-vr camera to copy the transformation from
          * @param resetToBaseReferenceSpace should XR reset to the base reference space
          */
         setTransformationFromNonVRCamera(otherCamera?: Camera, resetToBaseReferenceSpace?: boolean): void;
-        /** @hidden */
-        _updateForDualEyeDebugging(): void;
+        private _updateFromXRSession;
+        private _updateNumberOfRigCameras;
         private _updateReferenceSpace;
         private _updateReferenceSpaceOffset;
-        private _updateFromXRSession;
     }
 }
 declare module BABYLON {
@@ -43026,12 +43022,12 @@ declare module BABYLON {
          * Observers registered here will be triggered when the state of a button changes
          * State change is either pressed / touched / value
          */
-        onButtonStateChanged: Observable<WebXRControllerComponent>;
+        onButtonStateChangedObservable: Observable<WebXRControllerComponent>;
         /**
          * If axes are available for this component (like a touchpad or thumbstick) the observers will be notified when
          * the axes data changes
          */
-        onAxisValueChanged: Observable<{
+        onAxisValueChangedObservable: Observable<{
             x: number;
             y: number;
         }>;
@@ -44056,7 +44052,7 @@ declare module BABYLON {
     /**
      * Represents an XR controller
      */
-    export class WebXRController {
+    export class WebXRInputSource {
         private _scene;
         /** The underlying input source for the controller  */
         inputSource: XRInputSource;
@@ -44090,7 +44086,7 @@ declare module BABYLON {
          * The object provided as event data is this controller, after associated assets were disposed.
          * uniqueId is still available.
          */
-        onDisposeObservable: Observable<WebXRController>;
+        onDisposeObservable: Observable<WebXRInputSource>;
         private _tmpQuaternion;
         private _tmpVector;
         private _uniqueId;
@@ -44115,10 +44111,11 @@ declare module BABYLON {
          */
         updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace): void;
         /**
-         * Gets a world space ray coming from the controller
+         * Gets a world space ray coming from the pointer or grip
          * @param result the resulting ray
+         * @param gripIfAvailable use the grip mesh instead of the pointer, if available
          */
-        getWorldPointerRayToRef(result: Ray): void;
+        getWorldPointerRayToRef(result: Ray, gripIfAvailable?: boolean): void;
         /**
          * Disposes of the object
          */
@@ -44171,18 +44168,18 @@ declare module BABYLON {
         /**
          * XR controllers being tracked
          */
-        controllers: Array<WebXRController>;
+        controllers: Array<WebXRInputSource>;
         private _frameObserver;
         private _sessionEndedObserver;
         private _sessionInitObserver;
         /**
          * Event when a controller has been connected/added
          */
-        onControllerAddedObservable: Observable<WebXRController>;
+        onControllerAddedObservable: Observable<WebXRInputSource>;
         /**
          * Event when a controller has been removed/disconnected
          */
-        onControllerRemovedObservable: Observable<WebXRController>;
+        onControllerRemovedObservable: Observable<WebXRInputSource>;
         /**
          * Initializes the WebXRInput
          * @param xrSessionManager the xr session manager for this session
@@ -44374,7 +44371,7 @@ declare module BABYLON {
          * @param id the pointer id to search for
          * @returns the controller that correlates to this id or null if not found
          */
-        getXRControllerByPointerId(id: number): Nullable<WebXRController>;
+        getXRControllerByPointerId(id: number): Nullable<WebXRInputSource>;
         protected _onXRFrame(_xrFrame: XRFrame): void;
         private _attachController;
         private _attachScreenRayMode;
@@ -68770,7 +68767,7 @@ declare module BABYLON {
          * Manually add a controller (if no xrInput was provided or physics engine was not enabled)
          * @param xrController the controller to add
          */
-        addController(xrController: WebXRController): void;
+        addController(xrController: WebXRInputSource): void;
         private _debugMode;
         /**
          * @hidden

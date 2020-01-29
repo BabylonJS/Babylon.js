@@ -3,7 +3,7 @@ import {
     IMinimalMotionControllerObject,
     MotionControllerHandness,
     IMotionControllerLayoutMap
-} from "./webXRAbstractController";
+} from "./webXRAbstractMotionController";
 import { WebXRMotionControllerManager } from './webXRMotionControllerManager';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Scene } from '../../scene';
@@ -118,7 +118,7 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
                 if (buttonMap.valueMesh && buttonMap.pressedMesh && buttonMap.unpressedMesh) {
                     const comp = this.getComponent(id);
                     if (comp) {
-                        comp.onButtonStateChanged.add((component) => {
+                        comp.onButtonStateChangedObservable.add((component) => {
                             this._lerpTransform(buttonMap, component.value);
                         }, undefined, true);
                     }
@@ -153,7 +153,7 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
 
                 if (axisMap.valueMesh && axisMap.minMesh && axisMap.maxMesh) {
                     if (comp) {
-                        comp.onAxisValueChanged.add((axisValues) => {
+                        comp.onAxisValueChangedObservable.add((axisValues) => {
                             const value = axis === "x-axis" ? axisValues.x : axisValues.y;
                             this._lerpTransform(axisMap, value, true);
                         }, undefined, true);
