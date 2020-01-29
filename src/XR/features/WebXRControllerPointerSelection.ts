@@ -388,7 +388,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 }
             });
 
-            controllerData.onButtonChangedObserver = controllerData.selectionComponent.onButtonStateChanged.add((component) => {
+            controllerData.onButtonChangedObserver = controllerData.selectionComponent.onButtonStateChangedObservable.add((component) => {
                 if (component.changes.pressed) {
                     const pressed = component.changes.pressed.current;
                     if (controllerData.pick) {
@@ -409,7 +409,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         if (!controllerData) { return; }
         if (controllerData.selectionComponent) {
             if (controllerData.onButtonChangedObserver) {
-                controllerData.selectionComponent.onButtonStateChanged.remove(controllerData.onButtonChangedObserver);
+                controllerData.selectionComponent.onButtonStateChangedObservable.remove(controllerData.onButtonChangedObserver);
             }
         }
         if (controllerData.onFrameObserver) {
