@@ -33,7 +33,7 @@ export interface IWebXRControllerOptions {
 /**
  * Represents an XR controller
  */
-export class WebXRController {
+export class WebXRInputSource {
     /**
      * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if thats the case only the pointer from the head will be availible
      */
@@ -66,7 +66,7 @@ export class WebXRController {
      * The object provided as event data is this controller, after associated assets were disposed.
      * uniqueId is still available.
      */
-    public onDisposeObservable = new Observable<WebXRController>();
+    public onDisposeObservable = new Observable<WebXRInputSource>();
 
     private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3();

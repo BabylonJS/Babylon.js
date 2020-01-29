@@ -3,7 +3,7 @@ import { Observer } from '../../Misc/observable';
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { Nullable } from '../../types';
 import { WebXRInput } from '../webXRInput';
-import { WebXRController } from '../webXRController';
+import { WebXRInputSource } from '../webXRInputSource';
 import { WebXRControllerComponent, IWebXRMotionControllerAxesValue } from '../motionController/webXRControllerComponent';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Vector3, Quaternion } from '../../Maths/math.vector';
@@ -169,7 +169,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
 
     private _controllers: {
         [controllerUniqueId: string]: {
-            xrController: WebXRController;
+            xrController: WebXRInputSource;
             teleportationComponent?: WebXRControllerComponent;
             teleportationState: {
                 forward: boolean;
@@ -315,7 +315,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
 
     private _currentTeleportationControllerId: string;
 
-    private _attachController = (xrController: WebXRController) => {
+    private _attachController = (xrController: WebXRInputSource) => {
         if (this._controllers[xrController.uniqueId]) {
             // already attached
             return;

@@ -3,7 +3,7 @@ import { WebXRSessionManager } from '../webXRSessionManager';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Observer } from '../../Misc/observable';
 import { WebXRInput } from '../webXRInput';
-import { WebXRController } from '../webXRController';
+import { WebXRInputSource } from '../webXRInputSource';
 import { Scene } from '../../scene';
 import { WebXRControllerComponent } from '../motionController/webXRControllerComponent';
 import { Nullable } from '../../types';
@@ -115,7 +115,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
     private _controllers: {
         [controllerUniqueId: string]: {
-            xrController: WebXRController;
+            xrController: WebXRInputSource;
             selectionComponent?: WebXRControllerComponent;
             onButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
             onFrameObserver?: Nullable<Observer<XRFrame>>;
@@ -183,7 +183,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
      * @param id the pointer id to search for
      * @returns the controller that correlates to this id or null if not found
      */
-    public getXRControllerByPointerId(id: number): Nullable<WebXRController> {
+    public getXRControllerByPointerId(id: number): Nullable<WebXRInputSource> {
         const keys = Object.keys(this._controllers);
 
         for (let i = 0; i < keys.length; ++i) {
@@ -231,7 +231,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         });
     }
 
-    private _attachController = (xrController: WebXRController) => {
+    private _attachController = (xrController: WebXRInputSource) => {
         if (this._controllers[xrController.uniqueId]) {
             // already attached
             return;
@@ -257,7 +257,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         }
     }
 
-    private _attachScreenRayMode(xrController: WebXRController) {
+    private _attachScreenRayMode(xrController: WebXRInputSource) {
         const controllerData = this._controllers[xrController.uniqueId];
         let downTriggered = false;
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
@@ -279,7 +279,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         });
     }
 
-    private _attachGazeMode(xrController: WebXRController) {
+    private _attachGazeMode(xrController: WebXRInputSource) {
         const controllerData = this._controllers[xrController.uniqueId];
         // attached when touched, detaches when raised
         const timeToSelect = this._options.timeToSelect || 3000;
@@ -356,7 +356,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
     }
 
-    private _attachTrackedPointerRayMode(xrController: WebXRController) {
+    private _attachTrackedPointerRayMode(xrController: WebXRInputSource) {
         xrController.onMotionControllerInitObservable.add((motionController) => {
             if (this._options.forceGazeMode) {
                 return this._attachGazeMode(xrController);
@@ -421,7 +421,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         delete this._controllers[xrControllerUniqueId];
     }
 
-    private _generateNewMeshPair(xrController: WebXRController) {
+    private _generateNewMeshPair(xrController: WebXRInputSource) {
         const laserPointer = CylinderBuilder.CreateCylinder("laserPointer", {
             height: 1,
             diameterTop: 0.0002,
