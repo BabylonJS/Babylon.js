@@ -3,7 +3,7 @@ import {
     IMinimalMotionControllerObject,
     MotionControllerHandness,
     WebXRAbstractMotionController
-} from "./webXRAbstractController";
+} from "./webXRAbstractMotionController";
 import { Scene } from '../../scene';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Mesh } from '../../Meshes/mesh';
@@ -43,7 +43,7 @@ export class WebXRHTCViveMotionController extends WebXRAbstractMotionController 
         this.getComponentIds().forEach((id) => {
             const comp = id && this.getComponent(id);
             if (comp) {
-                comp.onButtonStateChanged.add((component) => {
+                comp.onButtonStateChangedObservable.add((component) => {
 
                     if (!this.rootMesh || this.disableAnimation) { return; }
 
