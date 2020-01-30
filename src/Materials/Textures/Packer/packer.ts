@@ -10,6 +10,7 @@ import { Nullable } from "../../../types";
 import { Vector2 } from "../../../Maths/math.vector";
 import { Color3, Color4 } from "../../../Maths/math.color";
 import { TexturePackerFrame } from "./frame";
+import { ITexturePackerJSON } from "./packerLoader";
 
 /**
  * Defines the basic options interface of a TexturePacker
@@ -202,6 +203,10 @@ export class TexturePacker{
         */
         this.promise = new Promise ((resolve, reject) => {
             try {
+                if(this.meshes.length === 0){
+                    //Must be a JSON load!
+                    resolve();
+                }
                 let done = 0;
                 const doneCheck = (mat: Material) => {
                     done++;
@@ -611,22 +616,49 @@ export class TexturePacker{
     /**
     * Updates a Meshs materials to use the texture packer channels
     * @param m is the mesh to target
+    * @param force all channels on the packer to be set.
     * @returns void
     */
-    private _updateTextureRefrences(m: AbstractMesh): void {
+    private _updateTextureRefrences(m: AbstractMesh, force: boolean = false): void {
         let mat = m.material;
         let sKeys = Object.keys(this.sets);
+        
+        let _dispose = (_t: any)=>{
+             if ( (_t.dispose) ) {
+                _t.dispose();
+             }
+        }
+        
         for (let i = 0; i < sKeys.length; i++) {
             let setName = sKeys[i];
-            if ((mat as any)[setName] !== null) {
-                if ((mat as any)[setName].dispose) {
-                    (mat as any)[setName].dispose();
+            if(!force){
+                if ((mat as any)[setName] !== null) {
+                    _dispose((mat as any)[setName]);
+                    (mat as any)[setName] = (this.sets as any)[setName];
+                }
+            }else{
+                if ((mat as any)[setName] !== null) {
+                    _dispose((mat as any)[setName]);
                 }
                 (mat as any)[setName] = (this.sets as any)[setName];
             }
         }
     }
-
+    
+    /**
+    * Public method to set a Mesh to a frame
+    * @param mesh that is the target
+    * @param frameID or the frame index
+    * @param should the Meshes attached Material be updated?
+    * @returns void
+    */
+    public setMeshToFrame( m: AbstractMesh, frameID: number, updateMaterial: boolean = false): void {
+        this._updateMeshUV( m, frameID );
+        if(updateMaterial){
+            this._updateTextureRefrences(m, true);
+        }
+    } 
+    
     /**
     * Returns the promised then
     * @param success callback
@@ -659,18 +691,11 @@ export class TexturePacker{
         let pack = {
             name : this.name,
             sets : {},
-            frameData: {
-                layout: this.options.layout,
-                colnum: this.options.colnum,
-                fillBlanks: this.options.fillBlanks,
-                customFillColor: this.options.customFillColor,
-                frameSize : this.options.frameSize,
-                paddingRatio: this.options.paddingRatio,
-                paddingMode: this.options.paddingMode,
-                paddingColor: this.options.paddingColor
-            }
+            options: {},
+            frames : []
         };
-        let sKeys = Object.keys(this.sets);        
+        let sKeys = Object.keys(this.sets);
+        let oKeys = Object.keys(this.options);   
         let downloadPromise = new Promise ( (success)=>{
             try {            
                 for(let i = 0; i < sKeys.length; i++){
@@ -678,6 +703,14 @@ export class TexturePacker{
                     let dt =  (this.sets as any)[channel];                  
                     (pack.sets as any)[channel] = dt.getContext().canvas.toDataURL('image/'+imageType, quality);
                 }                
+                for(let i = 0; i < oKeys.length; i++){
+                    let opt:string = oKeys[i];
+                    (pack.options as any)[opt] = (this.options as any)[opt];   
+                }
+                for(let i = 0; i < this.frames.length; i++){
+                    let _f = this.frames[i];
+                    ( pack.frames as Array<number> ).push( _f.scale.x, _f.scale.y, _f.offset.x, _f.offset.y )
+                }                  
             success(pack);            
             }catch(err){
                 return
@@ -693,4 +726,39 @@ export class TexturePacker{
             _a.remove();
         });        
     }
+    
+    /**
+    * Public to load a texturePacker JSON file.
+    * @param success callback for the load promise
+    * @param error callback for the load promise
+    * @returns void
+    */
+    public updateFromJSON( data:string , success = (): void => {}, error = (err : string): void => {}): void {
+        try {
+        let parsedData:ITexturePackerJSON = JSON.parse(data); 
+        this.name = parsedData.name;
+        let _options = Object.keys(parsedData.options);
+            for(let i = 0; i < _options.length; i++){
+                (this.options as any)[_options[i]] = (parsedData.options as any)[_options[i]];
+            }
+            for(let i = 0; i < parsedData.frames.length; i+=4){
+                let frame: TexturePackerFrame = new TexturePackerFrame(
+                        i/4, 
+                        new Vector2(parsedData.frames[i], parsedData.frames[i+1]),
+                        new Vector2(parsedData.frames[i+2], parsedData.frames[i+3])
+                    );
+                this.frames.push(frame);
+            }
+            let channels = Object.keys(parsedData.sets)
+            for(let i = 0; i < channels.length; i++){
+                let _t = new Texture(parsedData.sets[channels[i]], this.scene, false, false);
+                (this.sets as any)[channels[i]] = _t;
+            }            
+            success();
+        }catch (err) {
+            error(err);
+        }
+    }       
 }
+
+
