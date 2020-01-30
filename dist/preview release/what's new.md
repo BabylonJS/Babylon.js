@@ -312,6 +312,8 @@
 - Fixed an issue with isSessionSupported return value being ignored ([#7501](https://github.com/BabylonJS/Babylon.js/issues/7501)) ([RaananW](https://github.com/RaananW/))
 - Added isRigCamera to rig cameras so they can be detected. Used to fix a bug with utility layer and WebXR ([#7517](https://github.com/BabylonJS/Babylon.js/issues/7517)) ([RaananW](https://github.com/RaananW/))
 - Fixed bug in the `ScrollViewer` GUI class when setting a `idealWidth` or `idealHeight` on the ADT ([Popov72](https://github.com/Popov72))
+- Fixed bug in the `Image` GUI class where some properties were lost after a rotation by n x 90° ([Popov72](https://github.com/Popov72))
+- Fixed bug in the `Image` GUI class when rotating a SVG picture ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
