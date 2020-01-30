@@ -32,9 +32,9 @@ export class ImageScrollBar extends BaseSlider {
         this._backgroundBaseImage = value;
 
         if (this.isVertical) {
-            if (value && !value.isLoaded) {
+            if (!value.isLoaded) {
                 value.onImageLoadedObservable.addOnce(() => {
-                    const rotatedValue = value._rotate90(1);
+                    const rotatedValue = value._rotate90(1, true);
                     this._backgroundImage = rotatedValue;
                     if (!rotatedValue.isLoaded) {
                         rotatedValue.onImageLoadedObservable.addOnce(() => {
@@ -43,9 +43,10 @@ export class ImageScrollBar extends BaseSlider {
                     }
                     this._markAsDirty();
                 });
+            } else {
+                this._backgroundImage = value._rotate90(1, true);
+                this._markAsDirty();
             }
-            this._backgroundImage = value._rotate90(1);
-            this._markAsDirty();
         }
         else {
             this._backgroundImage = value;
@@ -74,9 +75,9 @@ export class ImageScrollBar extends BaseSlider {
         this._thumbBaseImage = value;
 
         if (this.isVertical) {
-            if (value && !value.isLoaded) {
+            if (!value.isLoaded) {
                 value.onImageLoadedObservable.addOnce(() => {
-                    var rotatedValue = value._rotate90(-1);
+                    var rotatedValue = value._rotate90(-1, true);
                     this._thumbImage = rotatedValue;
                     if (!rotatedValue.isLoaded) {
                         rotatedValue.onImageLoadedObservable.addOnce(() => {
@@ -85,9 +86,10 @@ export class ImageScrollBar extends BaseSlider {
                     }
                     this._markAsDirty();
                 });
+            } else {
+                this._thumbImage = value._rotate90(-1, true);
+                this._markAsDirty();
             }
-            this._thumbImage = value._rotate90(-1);
-            this._markAsDirty();
         }
         else {
             this._thumbImage = value;
