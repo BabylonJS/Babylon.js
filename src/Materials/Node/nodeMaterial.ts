@@ -1019,31 +1019,31 @@ export class NodeMaterial extends PushMaterial {
 
         this.editorData = null;
 
-        var positionInput = new InputBlock("position");
+        var positionInput = new InputBlock("Position");
         positionInput.setAsAttribute("position");
 
-        var worldInput = new InputBlock("world");
+        var worldInput = new InputBlock("World");
         worldInput.setAsSystemValue(BABYLON.NodeMaterialSystemValues.World);
 
-        var worldPos = new TransformBlock("worldPos");
+        var worldPos = new TransformBlock("WorldPos");
         positionInput.connectTo(worldPos);
         worldInput.connectTo(worldPos);
 
-        var viewProjectionInput = new InputBlock("viewProjection");
+        var viewProjectionInput = new InputBlock("ViewProjection");
         viewProjectionInput.setAsSystemValue(BABYLON.NodeMaterialSystemValues.ViewProjection);
 
-        var worldPosdMultipliedByViewProjection = new TransformBlock("worldPos * viewProjectionTransform");
+        var worldPosdMultipliedByViewProjection = new TransformBlock("WorldPos * ViewProjectionTransform");
         worldPos.connectTo(worldPosdMultipliedByViewProjection);
         viewProjectionInput.connectTo(worldPosdMultipliedByViewProjection);
 
-        var vertexOutput = new VertexOutputBlock("vertexOutput");
+        var vertexOutput = new VertexOutputBlock("VertexOutput");
         worldPosdMultipliedByViewProjection.connectTo(vertexOutput);
 
         // Pixel
         var pixelColor = new InputBlock("color");
         pixelColor.value = new Color4(0.8, 0.8, 0.8, 1);
 
-        var fragmentOutput = new FragmentOutputBlock("fragmentOutput");
+        var fragmentOutput = new FragmentOutputBlock("FragmentOutput");
         pixelColor.connectTo(fragmentOutput);
 
         // Add to nodes
