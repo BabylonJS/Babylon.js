@@ -1203,6 +1203,17 @@ declare module "babylonjs-node-editor/diagram/display/textureDisplayManager" {
         updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void;
     }
 }
+declare module "babylonjs-node-editor/diagram/display/discardDisplayManager" {
+    import { IDisplayManager } from "babylonjs-node-editor/diagram/display/displayManager";
+    import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
+    export class DiscardDisplayManager implements IDisplayManager {
+        getHeaderClass(block: NodeMaterialBlock): string;
+        shouldDisplayPortLabels(block: NodeMaterialBlock): boolean;
+        getHeaderText(block: NodeMaterialBlock): string;
+        getBackgroundColor(block: NodeMaterialBlock): string;
+        updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void;
+    }
+}
 declare module "babylonjs-node-editor/diagram/displayLedger" {
     export class DisplayLedger {
         static RegisteredControls: {
@@ -2586,6 +2597,15 @@ declare module NODEEDITOR {
     export class TextureDisplayManager implements IDisplayManager {
         private _previewCanvas;
         private _previewImage;
+        getHeaderClass(block: BABYLON.NodeMaterialBlock): string;
+        shouldDisplayPortLabels(block: BABYLON.NodeMaterialBlock): boolean;
+        getHeaderText(block: BABYLON.NodeMaterialBlock): string;
+        getBackgroundColor(block: BABYLON.NodeMaterialBlock): string;
+        updatePreviewContent(block: BABYLON.NodeMaterialBlock, contentArea: HTMLDivElement): void;
+    }
+}
+declare module NODEEDITOR {
+    export class DiscardDisplayManager implements IDisplayManager {
         getHeaderClass(block: BABYLON.NodeMaterialBlock): string;
         shouldDisplayPortLabels(block: BABYLON.NodeMaterialBlock): boolean;
         getHeaderText(block: BABYLON.NodeMaterialBlock): string;

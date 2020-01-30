@@ -1524,6 +1524,8 @@ declare module BABYLON.GUI {
         private _sourceTop;
         private _sourceWidth;
         private _sourceHeight;
+        private _svgAttributesComputationCompleted;
+        private _isSVG;
         private _cellWidth;
         private _cellHeight;
         private _cellId;
@@ -1596,6 +1598,10 @@ declare module BABYLON.GUI {
          */
         get sourceHeight(): number;
         set sourceHeight(value: number);
+        /** Indicates if the format of the image is SVG */
+        get isSVG(): boolean;
+        /** Gets the status of the SVG attributes computation (sourceLeft, sourceTop, sourceWidth, sourceHeight) */
+        get svgAttributesComputationCompleted(): boolean;
         /**
          * Gets or sets a boolean indicating if the image can force its container to adapt its size
          * @see http://doc.babylonjs.com/how_to/gui#image
@@ -1606,7 +1612,9 @@ declare module BABYLON.GUI {
         get stretch(): number;
         set stretch(value: number);
         /** @hidden */
-        _rotate90(n: number): Image;
+        _rotate90(n: number, preserveProperties?: boolean): Image;
+        private _handleRotationForSVGImage;
+        private _rotate90SourceProperties;
         /**
          * Gets or sets the internal DOM image used to render the control
          */
