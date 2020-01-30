@@ -73,7 +73,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             case NodeMaterialBlockConnectionPointTypes.Float:
                     let cantDisplaySlider = (isNaN(block.min) || isNaN(block.max) || block.min === block.max);
                     return (
-                        <div key={block.name}>                            
+                        <div key={block.uniqueId} >                            
                             {
                                 block.isBoolean &&
                                 <CheckBoxLineComponent key={block.uniqueId} label={block.name} target={block} propertyName="value"                                 
