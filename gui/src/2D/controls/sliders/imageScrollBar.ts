@@ -211,8 +211,10 @@ export class ImageScrollBar extends BaseSlider {
             this._tempMeasure.copyFromFloats(this._currentMeasure.left + thumbPosition, this._currentMeasure.top + this._currentMeasure.height * (1 - this._thumbHeight) * 0.5, this._effectiveThumbThickness, this._currentMeasure.height * this._thumbHeight);
         }
 
-        this._thumbImage._currentMeasure.copyFrom(this._tempMeasure);
-        this._thumbImage._draw(context);
+        if (this._thumbImage) {
+            this._thumbImage._currentMeasure.copyFrom(this._tempMeasure);
+            this._thumbImage._draw(context);
+        }
 
         context.restore();
     }
