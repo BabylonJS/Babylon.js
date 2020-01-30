@@ -2,7 +2,7 @@ pull_request_rules:
   - name: Automatic merge
     conditions:
       - label=automerge
-      - status-success=Azure Pipelines / CI
+      - status-success=CI
     actions:
       merge:
         method: merge
