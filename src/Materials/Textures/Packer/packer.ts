@@ -645,8 +645,53 @@ export class TexturePacker{
     public dispose(): void {
         let sKeys = Object.keys(this.sets);
         for (let i = 0; i < sKeys.length; i++) {
-            let setName = sKeys[i];
-            (this.sets as any)[setName].dispose();
+            let channel = sKeys[i];
+            (this.sets as any)[channel].dispose();
         }
+    }
+    
+    /**
+    * Starts the download process for all the channels converting them to base64 data and embedding it all in a JSON file.
+    * @param imageType is the image type to use. 
+    * @param quality of the image if downloading as jpeg, Ranges from >0 to 1. 
+    */
+    public download(imageType:string = 'png', quality:number = 1): void {
+        console.log(imageType)
+        let pack = {
+            name : this.name,
+            sets : {},
+            frameData: {
+                layout: this.options.layout,
+                colnum: this.options.colnum,
+                fillBlanks: this.options.fillBlanks,
+                customFillColor: this.options.customFillColor,
+                frameSize : this.options.frameSize,
+                paddingRatio: this.options.paddingRatio,
+                paddingMode: this.options.paddingMode,
+                paddingColor: this.options.paddingColor
+            }
+        };
+        let sKeys = Object.keys(this.sets);        
+        let downloadPromise = new Promise ( (success)=>{
+            try {            
+                for(let i = 0; i < sKeys.length; i++){
+                    let channel:string = sKeys[i];
+                    let dt =  (this.sets as any)[channel];                  
+                    (pack.sets as any)[channel] = dt.getContext().canvas.toDataURL('image/'+imageType, quality);
+                }                
+            success(pack);            
+            }catch(err){
+                return
+            }
+        });        
+        downloadPromise.then( (result) => {
+            let data = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(result, null, 4));
+            let _a = document.createElement('a');
+            _a.setAttribute("href", data);
+            _a.setAttribute("download", this.name + "_texurePackage.json");
+            document.body.appendChild(_a);
+            _a.click();
+            _a.remove();
+        });        
     }
 }
