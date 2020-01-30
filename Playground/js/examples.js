@@ -85,6 +85,11 @@ class Examples {
 
         this.fpsLabel.style.display = 'none';
         this.toggleExamplesButtons.call(this, true);
+        this.exampleList.querySelectorAll("img").forEach(function(img) {
+            if(!img.src) {
+                img.src = img.getAttribute("data-src");
+            }
+        })
     };
 
     /**
