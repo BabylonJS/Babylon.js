@@ -32,9 +32,9 @@ export class ImageScrollBar extends BaseSlider {
         this._backgroundBaseImage = value;
 
         if (this.isVertical) {
-            if (value && !value.isLoaded) {
+            if (!value.isLoaded) {
                 value.onImageLoadedObservable.addOnce(() => {
-                    const rotatedValue = value._rotate90(1);
+                    const rotatedValue = value._rotate90(1, true);
                     this._backgroundImage = rotatedValue;
                     if (!rotatedValue.isLoaded) {
                         rotatedValue.onImageLoadedObservable.addOnce(() => {
@@ -43,9 +43,10 @@ export class ImageScrollBar extends BaseSlider {
                     }
                     this._markAsDirty();
                 });
+            } else {
+                this._backgroundImage = value._rotate90(1, true);
+                this._markAsDirty();
             }
-            this._backgroundImage = value._rotate90(1);
-            this._markAsDirty();
         }
         else {
             this._backgroundImage = value;
@@ -74,9 +75,9 @@ export class ImageScrollBar extends BaseSlider {
         this._thumbBaseImage = value;
 
         if (this.isVertical) {
-            if (value && !value.isLoaded) {
+            if (!value.isLoaded) {
                 value.onImageLoadedObservable.addOnce(() => {
-                    var rotatedValue = value._rotate90(-1);
+                    var rotatedValue = value._rotate90(-1, true);
                     this._thumbImage = rotatedValue;
                     if (!rotatedValue.isLoaded) {
                         rotatedValue.onImageLoadedObservable.addOnce(() => {
@@ -85,9 +86,10 @@ export class ImageScrollBar extends BaseSlider {
                     }
                     this._markAsDirty();
                 });
+            } else {
+                this._thumbImage = value._rotate90(-1, true);
+                this._markAsDirty();
             }
-            this._thumbImage = value._rotate90(-1);
-            this._markAsDirty();
         }
         else {
             this._thumbImage = value;
@@ -187,21 +189,21 @@ export class ImageScrollBar extends BaseSlider {
         var width = this._renderWidth;
         var height = this._renderHeight;
 
-       // Background
-       if (this._backgroundImage) {
-        this._tempMeasure.copyFromFloats(left, top, width, height);
-        if (this.isVertical) {
-            this._tempMeasure.copyFromFloats(left + width * (1 - this._barImageHeight) * 0.5, this._currentMeasure.top, width * this._barImageHeight, height);
-            this._tempMeasure.height += this._effectiveThumbThickness;
-            this._backgroundImage._currentMeasure.copyFrom(this._tempMeasure);
+        // Background
+        if (this._backgroundImage) {
+            this._tempMeasure.copyFromFloats(left, top, width, height);
+            if (this.isVertical) {
+                this._tempMeasure.copyFromFloats(left + width * (1 - this._barImageHeight) * 0.5, this._currentMeasure.top, width * this._barImageHeight, height);
+                this._tempMeasure.height += this._effectiveThumbThickness;
+                this._backgroundImage._currentMeasure.copyFrom(this._tempMeasure);
+            }
+            else {
+                this._tempMeasure.copyFromFloats(this._currentMeasure.left, top + height * (1 - this._barImageHeight) * 0.5, width, height * this._barImageHeight);
+                this._tempMeasure.width += this._effectiveThumbThickness;
+                this._backgroundImage._currentMeasure.copyFrom(this._tempMeasure);
+            }
+            this._backgroundImage._draw(context);
         }
-        else {
-            this._tempMeasure.copyFromFloats(this._currentMeasure.left, top + height * (1 - this._barImageHeight) * 0.5, width, height * this._barImageHeight);
-            this._tempMeasure.width += this._effectiveThumbThickness;
-            this._backgroundImage._currentMeasure.copyFrom(this._tempMeasure);
-        }
-        this._backgroundImage._draw(context);
-    }
 
         // Thumb
         if (this.isVertical) {
@@ -211,8 +213,10 @@ export class ImageScrollBar extends BaseSlider {
             this._tempMeasure.copyFromFloats(this._currentMeasure.left + thumbPosition, this._currentMeasure.top + this._currentMeasure.height * (1 - this._thumbHeight) * 0.5, this._effectiveThumbThickness, this._currentMeasure.height * this._thumbHeight);
         }
 
-        this._thumbImage._currentMeasure.copyFrom(this._tempMeasure);
-        this._thumbImage._draw(context);
+        if (this._thumbImage) {
+            this._thumbImage._currentMeasure.copyFrom(this._tempMeasure);
+            this._thumbImage._draw(context);
+        }
 
         context.restore();
     }

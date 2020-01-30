@@ -24,6 +24,8 @@ export class Image extends Control {
     private _sourceTop = 0;
     private _sourceWidth = 0;
     private _sourceHeight = 0;
+    private _svgAttributesComputationCompleted: boolean = false;
+    private _isSVG: boolean = false;
 
     private _cellWidth: number = 0;
     private _cellHeight: number = 0;
@@ -225,6 +227,16 @@ export class Image extends Control {
         this._markAsDirty();
     }
 
+    /** Indicates if the format of the image is SVG */
+    public get isSVG(): boolean {
+        return this._isSVG;
+    }
+
+    /** Gets the status of the SVG attributes computation (sourceLeft, sourceTop, sourceWidth, sourceHeight) */
+    public get svgAttributesComputationCompleted(): boolean {
+        return this._svgAttributesComputationCompleted;
+    }
+
     /**
      * Gets or sets a boolean indicating if the image can force its container to adapt its size
      * @see http://doc.babylonjs.com/how_to/gui#image
@@ -261,7 +273,7 @@ export class Image extends Control {
     }
 
     /** @hidden */
-    public _rotate90(n: number): Image {
+    public _rotate90(n: number, preserveProperties: boolean = false): Image {
         let canvas = document.createElement('canvas');
 
         const context = canvas.getContext('2d')!;
@@ -279,7 +291,68 @@ export class Image extends Control {
         const dataUrl: string = canvas.toDataURL("image/jpg");
         const rotatedImage = new Image(this.name + "rotated", dataUrl);
 
+        if (preserveProperties) {
+            rotatedImage._stretch = this._stretch;
+            rotatedImage._autoScale = this._autoScale;
+            rotatedImage._cellId = this._cellId;
+            rotatedImage._cellWidth = n % 1 ? this._cellHeight : this._cellWidth;
+            rotatedImage._cellHeight = n % 1 ? this._cellWidth : this._cellHeight;
+        }
+
+        this._handleRotationForSVGImage(this, rotatedImage, n);
+
         return rotatedImage;
+    }
+
+    private _handleRotationForSVGImage(srcImage: Image, dstImage: Image, n: number): void {
+        if (!srcImage._isSVG) {
+            return;
+        }
+
+        if (srcImage._svgAttributesComputationCompleted) {
+            this._rotate90SourceProperties(srcImage, dstImage, n);
+            this._markAsDirty();
+        } else {
+            srcImage.onSVGAttributesComputedObservable.addOnce(() => {
+                this._rotate90SourceProperties(srcImage, dstImage, n);
+                this._markAsDirty();
+            });
+        }
+    }
+
+    private _rotate90SourceProperties(srcImage: Image, dstImage: Image, n: number): void {
+        let srcLeft = srcImage.sourceLeft,
+            srcTop = srcImage.sourceTop,
+            srcWidth = srcImage.domImage.width,
+            srcHeight = srcImage.domImage.height;
+
+        let dstLeft = srcLeft,
+            dstTop = srcTop,
+            dstWidth = srcImage.sourceWidth,
+            dstHeight = srcImage.sourceHeight;
+
+        if (n != 0) {
+            let mult = n < 0 ? -1 : 1;
+            n = n % 4;
+            for (let i = 0; i < Math.abs(n); ++i) {
+                dstLeft = -(srcTop - srcHeight / 2) * mult + srcHeight / 2;
+                dstTop = (srcLeft - srcWidth / 2) * mult + srcWidth / 2;
+                [dstWidth, dstHeight] = [dstHeight, dstWidth];
+                if (n < 0) {
+                    dstTop -= dstHeight;
+                } else {
+                    dstLeft -= dstWidth;
+                }
+                srcLeft = dstLeft;
+                srcTop = dstTop;
+                [srcWidth, srcHeight] = [srcHeight, srcWidth];
+            }
+        }
+
+        dstImage.sourceLeft = dstLeft;
+        dstImage.sourceTop = dstTop;
+        dstImage.sourceWidth = dstWidth;
+        dstImage.sourceHeight = dstHeight;
     }
 
     /**
@@ -401,6 +474,7 @@ export class Image extends Control {
      */
     private _svgCheck(value: string): string {
         if (window.SVGSVGElement && (value.search(/.svg#/gi) !== -1) && (value.indexOf("#") === value.lastIndexOf("#"))) {
+            this._isSVG = true;
             var svgsrc = value.split('#')[0];
             var elemid = value.split('#')[1];
             // check if object alr exist in document
@@ -477,6 +551,7 @@ export class Image extends Control {
                 this.sourceTop = ((elem_matrix_d * elem_bbox.y + elem_matrix_f) * docheight) / vb_height;
                 this.sourceWidth = (elem_bbox.width * elem_matrix_a) * (docwidth / vb_width);
                 this.sourceHeight = (elem_bbox.height * elem_matrix_d) * (docheight / vb_height);
+                this._svgAttributesComputationCompleted = true;
                 this.onSVGAttributesComputedObservable.notifyObservers(this);
             }
         }
