@@ -38221,6 +38221,13 @@ declare module BABYLON {
          */
         pinchDeltaPercentage: number;
         /**
+         * When useNaturalPinchZoom is true, multi touch zoom will zoom in such
+         * that any object in the plane at the camera's target point will scale
+         * perfectly with finger motion.
+         * Overrides pinchDeltaPercentage and pinchPrecision.
+         */
+        useNaturalPinchZoom: boolean;
+        /**
          * Defines the pointer panning sensibility or how fast is the camera moving.
          */
         panningSensibility: number;
@@ -38570,6 +38577,15 @@ declare module BABYLON {
          */
         get pinchDeltaPercentage(): number;
         set pinchDeltaPercentage(value: number);
+        /**
+         * Gets or Set the pointer use natural pinch zoom to override the pinch precision
+         * and pinch delta percentage.
+         * When useNaturalPinchZoom is true, multi touch zoom will zoom in such
+         * that any object in the plane at the camera's target point will scale
+         * perfectly with finger motion.
+         */
+        get useNaturalPinchZoom(): boolean;
+        set useNaturalPinchZoom(value: boolean);
         /**
          * Gets or Set the pointer panning sensibility or how fast is the camera moving.
          */
@@ -75718,6 +75734,8 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         dispose(): void;
         /** @hidden */
         onReady(): void;
+        /** @hidden */
+        loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>>;
         /** @hidden */
         loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
         /** @hidden */

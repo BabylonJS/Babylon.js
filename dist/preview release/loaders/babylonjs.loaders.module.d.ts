@@ -2057,7 +2057,7 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/MSFT_lod" {
     import { Material } from "babylonjs/Materials/material";
     import { TransformNode } from "babylonjs/Meshes/transformNode";
     import { Mesh } from "babylonjs/Meshes/mesh";
-    import { INode, IMaterial, IBuffer } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
+    import { INode, IMaterial, IBuffer, IScene } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
     import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
     import { IProperty } from 'babylonjs-gltf2interface';
@@ -2108,6 +2108,8 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/MSFT_lod" {
         dispose(): void;
         /** @hidden */
         onReady(): void;
+        /** @hidden */
+        loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>>;
         /** @hidden */
         loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
         /** @hidden */
@@ -4538,6 +4540,8 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         dispose(): void;
         /** @hidden */
         onReady(): void;
+        /** @hidden */
+        loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>>;
         /** @hidden */
         loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
         /** @hidden */

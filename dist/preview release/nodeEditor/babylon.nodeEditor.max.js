@@ -52812,7 +52812,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         switch (block.type) {
             case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Float:
                 var cantDisplaySlider = (isNaN(block.min) || isNaN(block.max) || block.min === block.max);
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: block.name },
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: block.uniqueId },
                     block.isBoolean &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", onValueChanged: function () {
                                 _this.processInputBlockUpdate(block);
@@ -54575,6 +54575,7 @@ var GraphFrame = /** @class */ (function () {
                 this._commentsElement.style.gridRow = "2";
                 this._commentsElement.style.gridColumn = "1";
                 this._commentsElement.style.paddingLeft = "10px";
+                this._commentsElement.style.fontStyle = "italic";
             }
             this._comments = comments;
             this._commentsElement.innerText = comments;
@@ -56962,7 +56963,7 @@ var GraphEditor = /** @class */ (function (_super) {
             return _this._graphCanvas.findNodeFromBlock(block);
         };
         _this.props.globalState.hostDocument.addEventListener("keydown", function (evt) {
-            if (evt.keyCode === 46 && !_this.props.globalState.blockKeyboardEvents) { // Delete                
+            if ((evt.keyCode === 46 || evt.keyCode === 8) && !_this.props.globalState.blockKeyboardEvents) { // Delete                
                 var selectedItems = _this._graphCanvas.selectedNodes;
                 for (var _i = 0, selectedItems_1 = selectedItems; _i < selectedItems_1.length; _i++) {
                     var selectedItem = selectedItems_1[_i];

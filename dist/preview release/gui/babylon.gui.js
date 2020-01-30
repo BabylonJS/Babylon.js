@@ -9385,8 +9385,9 @@ var ScrollViewer = /** @class */ (function (_super) {
         return "ScrollViewer";
     };
     ScrollViewer.prototype._buildClientSizes = function () {
-        this._window.parentClientWidth = this._currentMeasure.width - (this._verticalBar.isVisible || this.forceVerticalBar ? this._barSize : 0) - 2 * this.thickness;
-        this._window.parentClientHeight = this._currentMeasure.height - (this._horizontalBar.isVisible || this.forceHorizontalBar ? this._barSize : 0) - 2 * this.thickness;
+        var ratio = this.host.idealRatio;
+        this._window.parentClientWidth = this._currentMeasure.width - (this._verticalBar.isVisible || this.forceVerticalBar ? this._barSize * ratio : 0) - 2 * this.thickness;
+        this._window.parentClientHeight = this._currentMeasure.height - (this._horizontalBar.isVisible || this.forceHorizontalBar ? this._barSize * ratio : 0) - 2 * this.thickness;
         this._clientWidth = this._window.parentClientWidth;
         this._clientHeight = this._window.parentClientHeight;
     };
