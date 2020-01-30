@@ -59,9 +59,10 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
     public pinchDeltaPercentage = 0;
 
     /**
-     * useNaturalPinchZoom will be used instead of pinchPrecision if set to true.
-     * Pinch natural zoom is a calculation based off the distance of the
-     * pinch and the camera distance.
+     * When useNaturalPinchZoom is true, multi touch zoom will zoom in such
+     * that any object in the plane at the camera's target point will scale
+     * perfectly with finger motion.
+     * Overrides pinchDeltaPercentage and pinchPrecision.
      */
     @serialize()
     public useNaturalPinchZoom: boolean = false;
@@ -143,13 +144,13 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
         var direction = this.pinchInwards ? 1 : -1;
 
         if (this.multiTouchPanAndZoom) {
-            if (this.pinchDeltaPercentage) {
+            if (this.useNaturalPinchZoom) {
+                this.camera.radius = this.camera.radius *
+                    Math.sqrt(previousPinchSquaredDistance) / Math.sqrt(pinchSquaredDistance);
+            } else if (this.pinchDeltaPercentage) {
                 this.camera.inertialRadiusOffset +=
                     (pinchSquaredDistance - previousPinchSquaredDistance) * 0.001 *
                     this.camera.radius * this.pinchDeltaPercentage;
-            } else if (this.useNaturalPinchZoom) {
-                this.camera.radius = this.camera.radius *
-                    Math.sqrt(previousPinchSquaredDistance) / Math.sqrt(pinchSquaredDistance);
             }
             else {
                 this.camera.inertialRadiusOffset +=
