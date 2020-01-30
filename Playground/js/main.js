@@ -548,7 +548,7 @@ class Main {
                                 example.id = ii;
 
                                 var exampleImg = document.createElement("img");
-                                exampleImg.src = this.scripts[i].samples[ii].icon.replace("icons", "https://doc.babylonjs.com/examples/icons");
+                                exampleImg.setAttribute("data-src", this.scripts[i].samples[ii].icon.replace("icons", "https://doc.babylonjs.com/examples/icons"));
                                 exampleImg.setAttribute("onClick", "document.getElementById('PGLink_" + this.scripts[i].samples[ii].PGID + "').click();");
 
                                 var exampleContent = document.createElement("div");
