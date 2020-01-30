@@ -261,7 +261,7 @@ export class Image extends Control {
     }
 
     /** @hidden */
-    public _rotate90(n: number): Image {
+    public _rotate90(n: number, preserveProperties: boolean = false): Image {
         let canvas = document.createElement('canvas');
 
         const context = canvas.getContext('2d')!;
@@ -278,6 +278,15 @@ export class Image extends Control {
 
         const dataUrl: string = canvas.toDataURL("image/jpg");
         const rotatedImage = new Image(this.name + "rotated", dataUrl);
+
+        if (preserveProperties) {
+            rotatedImage._stretch = this._stretch;
+            rotatedImage._autoScale = this._autoScale;
+            rotatedImage._cellId = this._cellId;
+            rotatedImage._cellWidth = n % 1 ? this._cellHeight : this._cellWidth;
+            rotatedImage._cellHeight = n % 1 ? this._cellWidth : this._cellHeight;
+        }
+
 
         return rotatedImage;
     }
