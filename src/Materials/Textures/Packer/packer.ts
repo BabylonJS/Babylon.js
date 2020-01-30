@@ -656,7 +656,6 @@ export class TexturePacker{
     * @param quality of the image if downloading as jpeg, Ranges from >0 to 1. 
     */
     public download(imageType:string = 'png', quality:number = 1): void {
-        console.log(imageType)
         let pack = {
             name : this.name,
             sets : {},
