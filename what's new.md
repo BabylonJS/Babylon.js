@@ -222,6 +222,7 @@
 - Improving visual quality on SSAO2 shader ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Fixed a bug where changing the sample count on `PostProcess` would not update the WebGL Texture ([CraigFeldspar](https://github.com/CraigFeldspar))
 - Fixed multi camera support in defaultRenderingPipeline depth of field ([sebavan](http://www.github.com/sebavan))
+- Added a new NaturalPinchZoom for the ArcRotateCamera, which adds a new pinch type that is based on the camera and pinch distance. ([rwedoff](https://github.com/rwedoff))
 
 ### Viewer
 

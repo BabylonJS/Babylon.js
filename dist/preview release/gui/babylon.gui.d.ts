@@ -1524,6 +1524,8 @@ declare module BABYLON.GUI {
         private _sourceTop;
         private _sourceWidth;
         private _sourceHeight;
+        private _svgAttributesComputationCompleted;
+        private _isSVG;
         private _cellWidth;
         private _cellHeight;
         private _cellId;
@@ -1596,6 +1598,10 @@ declare module BABYLON.GUI {
          */
         get sourceHeight(): number;
         set sourceHeight(value: number);
+        /** Indicates if the format of the image is SVG */
+        get isSVG(): boolean;
+        /** Gets the status of the SVG attributes computation (sourceLeft, sourceTop, sourceWidth, sourceHeight) */
+        get svgAttributesComputationCompleted(): boolean;
         /**
          * Gets or sets a boolean indicating if the image can force its container to adapt its size
          * @see http://doc.babylonjs.com/how_to/gui#image
@@ -1606,7 +1612,9 @@ declare module BABYLON.GUI {
         get stretch(): number;
         set stretch(value: number);
         /** @hidden */
-        _rotate90(n: number): Image;
+        _rotate90(n: number, preserveProperties?: boolean): Image;
+        private _handleRotationForSVGImage;
+        private _rotate90SourceProperties;
         /**
          * Gets or sets the internal DOM image used to render the control
          */
@@ -3017,7 +3025,11 @@ declare module BABYLON.GUI {
         private _barColor;
         private _barBackground;
         private _barImage;
+        private _horizontalBarImage;
+        private _verticalBarImage;
         private _barBackgroundImage;
+        private _horizontalBarBackgroundImage;
+        private _verticalBarBackgroundImage;
         private _barSize;
         private _window;
         private _pointerIsOver;
@@ -3029,6 +3041,8 @@ declare module BABYLON.GUI {
         private _thumbLength;
         private _thumbHeight;
         private _barImageHeight;
+        private _horizontalBarImageHeight;
+        private _verticalBarImageHeight;
         /**
          * Gets the horizontal scrollbar
          */
@@ -3113,6 +3127,12 @@ declare module BABYLON.GUI {
         /** Gets or sets the bar image */
         get thumbImage(): Image;
         set thumbImage(value: Image);
+        /** Gets or sets the horizontal bar image */
+        get horizontalThumbImage(): Image;
+        set horizontalThumbImage(value: Image);
+        /** Gets or sets the vertical bar image */
+        get verticalThumbImage(): Image;
+        set verticalThumbImage(value: Image);
         /** Gets or sets the size of the bar */
         get barSize(): number;
         set barSize(value: number);
@@ -3125,12 +3145,24 @@ declare module BABYLON.GUI {
         /** Gets or sets the height of the bar image */
         get barImageHeight(): number;
         set barImageHeight(value: number);
+        /** Gets or sets the height of the horizontal bar image */
+        get horizontalBarImageHeight(): number;
+        set horizontalBarImageHeight(value: number);
+        /** Gets or sets the height of the vertical bar image */
+        get verticalBarImageHeight(): number;
+        set verticalBarImageHeight(value: number);
         /** Gets or sets the bar background */
         get barBackground(): string;
         set barBackground(color: string);
         /** Gets or sets the bar background image */
         get barImage(): Image;
         set barImage(value: Image);
+        /** Gets or sets the horizontal bar background image */
+        get horizontalBarImage(): Image;
+        set horizontalBarImage(value: Image);
+        /** Gets or sets the vertical bar background image */
+        get verticalBarImage(): Image;
+        set verticalBarImage(value: Image);
         private _setWindowPosition;
         /** @hidden */
         private _updateScroller;

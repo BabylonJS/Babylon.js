@@ -51794,7 +51794,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock"],
             Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
-            Output_Blocks: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
+            Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
@@ -52812,7 +52812,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         switch (block.type) {
             case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Float:
                 var cantDisplaySlider = (isNaN(block.min) || isNaN(block.max) || block.min === block.max);
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: block.name },
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: block.uniqueId },
                     block.isBoolean &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", onValueChanged: function () {
                                 _this.processInputBlockUpdate(block);
@@ -53043,6 +53043,41 @@ var ClampDisplayManager = /** @class */ (function () {
         contentArea.innerHTML = "[" + clampBlock.minimum + ", " + clampBlock.maximum + "]";
     };
     return ClampDisplayManager;
+}());
+
+
+
+/***/ }),
+
+/***/ "./diagram/display/discardDisplayManager.ts":
+/*!**************************************************!*\
+  !*** ./diagram/display/discardDisplayManager.ts ***!
+  \**************************************************/
+/*! exports provided: DiscardDisplayManager */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DiscardDisplayManager", function() { return DiscardDisplayManager; });
+var DiscardDisplayManager = /** @class */ (function () {
+    function DiscardDisplayManager() {
+    }
+    DiscardDisplayManager.prototype.getHeaderClass = function (block) {
+        return "";
+    };
+    DiscardDisplayManager.prototype.shouldDisplayPortLabels = function (block) {
+        return true;
+    };
+    DiscardDisplayManager.prototype.getHeaderText = function (block) {
+        return block.name;
+    };
+    DiscardDisplayManager.prototype.getBackgroundColor = function (block) {
+        return "#540b0b";
+    };
+    DiscardDisplayManager.prototype.updatePreviewContent = function (block, contentArea) {
+        contentArea.classList.add("discard-block");
+    };
+    return DiscardDisplayManager;
 }());
 
 
@@ -53426,6 +53461,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _display_remapDisplayManager__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./display/remapDisplayManager */ "./diagram/display/remapDisplayManager.ts");
 /* harmony import */ var _display_trigonometryDisplayManager__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./display/trigonometryDisplayManager */ "./diagram/display/trigonometryDisplayManager.ts");
 /* harmony import */ var _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./display/textureDisplayManager */ "./diagram/display/textureDisplayManager.ts");
+/* harmony import */ var _display_discardDisplayManager__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./display/discardDisplayManager */ "./diagram/display/discardDisplayManager.ts");
+
 
 
 
@@ -53449,6 +53486,7 @@ DisplayLedger.RegisteredControls["RemapBlock"] = _display_remapDisplayManager__W
 DisplayLedger.RegisteredControls["TrigonometryBlock"] = _display_trigonometryDisplayManager__WEBPACK_IMPORTED_MODULE_5__["TrigonometryDisplayManager"];
 DisplayLedger.RegisteredControls["TextureBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
 DisplayLedger.RegisteredControls["ReflectionTextureBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
+DisplayLedger.RegisteredControls["DiscardBlock"] = _display_discardDisplayManager__WEBPACK_IMPORTED_MODULE_7__["DiscardDisplayManager"];
 
 
 /***/ }),
@@ -54350,6 +54388,11 @@ var GraphFrame = /** @class */ (function () {
                 _this.element.classList.remove("selected");
             }
         });
+        this._commentsElement = document.createElement('div');
+        this._commentsElement.className = 'frame-comments';
+        this._commentsElement.style.color = 'white';
+        this._commentsElement.style.fontSize = '16px';
+        this.element.appendChild(this._commentsElement);
         // Get nodes
         if (!doNotCaptureNodes) {
             this.refresh();
@@ -54557,6 +54600,27 @@ var GraphFrame = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(GraphFrame.prototype, "comments", {
+        get: function () {
+            return this._comments;
+        },
+        set: function (comments) {
+            if (comments.length > 0) {
+                this.element.style.gridTemplateRows = "40px 40px calc(100% - 80px)";
+                this._borderElement.style.gridRow = "1 / span 3";
+                this._portContainer.style.gridRow = "3";
+                this._commentsElement.style.display = "grid";
+                this._commentsElement.style.gridRow = "2";
+                this._commentsElement.style.gridColumn = "1";
+                this._commentsElement.style.paddingLeft = "10px";
+                this._commentsElement.style.fontStyle = "italic";
+            }
+            this._comments = comments;
+            this._commentsElement.innerText = comments;
+        },
+        enumerable: true,
+        configurable: true
+    });
     GraphFrame.prototype.refresh = function () {
         this._nodes = [];
         this._ownerCanvas.globalState.onFrameCreated.notifyObservers(this);
@@ -54662,7 +54726,8 @@ var GraphFrame = /** @class */ (function () {
             color: this._color.asArray(),
             name: this.name,
             isCollapsed: this.isCollapsed,
-            blocks: this.nodes.map(function (n) { return n.block.uniqueId; })
+            blocks: this.nodes.map(function (n) { return n.block.uniqueId; }),
+            comments: this._comments
         };
     };
     GraphFrame.prototype.export = function () {
@@ -54679,6 +54744,7 @@ var GraphFrame = /** @class */ (function () {
         newFrame.height = serializationData.height;
         newFrame.name = serializationData.name;
         newFrame.color = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(serializationData.color);
+        newFrame.comments = serializationData.comments;
         if (serializationData.blocks && map) {
             var _loop_1 = function () {
                 var actualId = map[blockId];
@@ -55529,6 +55595,7 @@ var FramePropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: this.props.frame }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_3__["Color3LineComponent"], { globalState: this.props.globalState, label: "Color", target: this.props.frame, propertyName: "color" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Comments", propertyName: "comments", target: this.props.frame }),
                     !this.props.frame.isCollapsed &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Collapse", onClick: function () {
                                 _this.props.frame.isCollapsed = true;
@@ -56934,7 +57001,7 @@ var GraphEditor = /** @class */ (function (_super) {
             return _this._graphCanvas.findNodeFromBlock(block);
         };
         _this.props.globalState.hostDocument.addEventListener("keydown", function (evt) {
-            if (evt.keyCode === 46 && !_this.props.globalState.blockKeyboardEvents) { // Delete                
+            if ((evt.keyCode === 46 || evt.keyCode === 8) && !_this.props.globalState.blockKeyboardEvents) { // Delete                
                 var selectedItems = _this._graphCanvas.selectedNodes;
                 for (var _i = 0, selectedItems_1 = selectedItems; _i < selectedItems_1.length; _i++) {
                     var selectedItem = selectedItems_1[_i];
