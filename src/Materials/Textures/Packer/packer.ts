@@ -203,7 +203,7 @@ export class TexturePacker{
         */
         this.promise = new Promise ((resolve, reject) => {
             try {
-                if(this.meshes.length === 0){
+                if (this.meshes.length === 0) {
                     //Must be a JSON load!
                     resolve();
                 }
@@ -622,21 +622,21 @@ export class TexturePacker{
     private _updateTextureRefrences(m: AbstractMesh, force: boolean = false): void {
         let mat = m.material;
         let sKeys = Object.keys(this.sets);
-        
-        let _dispose = (_t: any)=>{
-             if ( (_t.dispose) ) {
+
+        let _dispose = (_t: any) => {
+             if ((_t.dispose)) {
                 _t.dispose();
              }
-        }
-        
+        };
+
         for (let i = 0; i < sKeys.length; i++) {
             let setName = sKeys[i];
-            if(!force){
+            if (!force) {
                 if ((mat as any)[setName] !== null) {
                     _dispose((mat as any)[setName]);
                     (mat as any)[setName] = (this.sets as any)[setName];
                 }
-            }else{
+            }else {
                 if ((mat as any)[setName] !== null) {
                     _dispose((mat as any)[setName]);
                 }
@@ -644,21 +644,20 @@ export class TexturePacker{
             }
         }
     }
-    
+
     /**
     * Public method to set a Mesh to a frame
-    * @param mesh that is the target
+    * @param m that is the target
     * @param frameID or the frame index
-    * @param should the Meshes attached Material be updated?
-    * @returns void
+    * @param updateMaterial trigger for if the Meshes attached Material be updated?
     */
-    public setMeshToFrame( m: AbstractMesh, frameID: number, updateMaterial: boolean = false): void {
-        this._updateMeshUV( m, frameID );
-        if(updateMaterial){
+    public setMeshToFrame(m: AbstractMesh, frameID: number, updateMaterial: boolean = false): void {
+        this._updateMeshUV(m, frameID);
+        if (updateMaterial) {
             this._updateTextureRefrences(m, true);
         }
-    } 
-    
+    }
+
     /**
     * Returns the promised then
     * @param success callback
@@ -681,13 +680,13 @@ export class TexturePacker{
             (this.sets as any)[channel].dispose();
         }
     }
-    
+
     /**
     * Starts the download process for all the channels converting them to base64 data and embedding it all in a JSON file.
-    * @param imageType is the image type to use. 
-    * @param quality of the image if downloading as jpeg, Ranges from >0 to 1. 
+    * @param imageType is the image type to use.
+    * @param quality of the image if downloading as jpeg, Ranges from >0 to 1.
     */
-    public download(imageType:string = 'png', quality:number = 1): void {
+    public download(imageType: string = 'png', quality: number = 1): void {
         let pack = {
             name : this.name,
             sets : {},
@@ -695,28 +694,28 @@ export class TexturePacker{
             frames : []
         };
         let sKeys = Object.keys(this.sets);
-        let oKeys = Object.keys(this.options);   
-        let downloadPromise = new Promise ( (success)=>{
-            try {            
-                for(let i = 0; i < sKeys.length; i++){
-                    let channel:string = sKeys[i];
-                    let dt =  (this.sets as any)[channel];                  
-                    (pack.sets as any)[channel] = dt.getContext().canvas.toDataURL('image/'+imageType, quality);
-                }                
-                for(let i = 0; i < oKeys.length; i++){
-                    let opt:string = oKeys[i];
-                    (pack.options as any)[opt] = (this.options as any)[opt];   
+        let oKeys = Object.keys(this.options);
+        let downloadPromise = new Promise ((success) => {
+            try {
+                for (let i = 0; i < sKeys.length; i++) {
+                    let channel: string = sKeys[i];
+                    let dt =  (this.sets as any)[channel];
+                    (pack.sets as any)[channel] = dt.getContext().canvas.toDataURL('image/' + imageType, quality);
                 }
-                for(let i = 0; i < this.frames.length; i++){
+                for (let i = 0; i < oKeys.length; i++) {
+                    let opt: string = oKeys[i];
+                    (pack.options as any)[opt] = (this.options as any)[opt];
+                }
+                for (let i = 0; i < this.frames.length; i++) {
                     let _f = this.frames[i];
-                    ( pack.frames as Array<number> ).push( _f.scale.x, _f.scale.y, _f.offset.x, _f.offset.y )
-                }                  
-            success(pack);            
-            }catch(err){
-                return
+                    (pack.frames as Array<number>).push(_f.scale.x, _f.scale.y, _f.offset.x, _f.offset.y);
+                }
+            success(pack);
+            }catch (err) {
+                return;
             }
-        });        
-        downloadPromise.then( (result) => {
+        });
+        downloadPromise.then((result) => {
             let data = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(result, null, 4));
             let _a = document.createElement('a');
             _a.setAttribute("href", data);
@@ -724,41 +723,39 @@ export class TexturePacker{
             document.body.appendChild(_a);
             _a.click();
             _a.remove();
-        });        
+        });
     }
-    
+
     /**
     * Public to load a texturePacker JSON file.
+    * @param data to load in string format
     * @param success callback for the load promise
     * @param error callback for the load promise
-    * @returns void
     */
-    public updateFromJSON( data:string , success = (): void => {}, error = (err : string): void => {}): void {
+    public updateFromJSON(data: string , success = (): void => {}, error = (err : string): void => {}): void {
         try {
-        let parsedData:ITexturePackerJSON = JSON.parse(data); 
+        let parsedData: ITexturePackerJSON = JSON.parse(data);
         this.name = parsedData.name;
         let _options = Object.keys(parsedData.options);
-            for(let i = 0; i < _options.length; i++){
+            for (let i = 0; i < _options.length; i++) {
                 (this.options as any)[_options[i]] = (parsedData.options as any)[_options[i]];
             }
-            for(let i = 0; i < parsedData.frames.length; i+=4){
+            for (let i = 0; i < parsedData.frames.length; i += 4) {
                 let frame: TexturePackerFrame = new TexturePackerFrame(
-                        i/4, 
-                        new Vector2(parsedData.frames[i], parsedData.frames[i+1]),
-                        new Vector2(parsedData.frames[i+2], parsedData.frames[i+3])
+                        i / 4,
+                        new Vector2(parsedData.frames[i], parsedData.frames[i + 1]),
+                        new Vector2(parsedData.frames[i + 2], parsedData.frames[i + 3])
                     );
                 this.frames.push(frame);
             }
-            let channels = Object.keys(parsedData.sets)
-            for(let i = 0; i < channels.length; i++){
+            let channels = Object.keys(parsedData.sets);
+            for (let i = 0; i < channels.length; i++) {
                 let _t = new Texture(parsedData.sets[channels[i]], this.scene, false, false);
                 (this.sets as any)[channels[i]] = _t;
-            }            
+            }
             success();
         }catch (err) {
             error(err);
         }
-    }       
+    }
 }
-
-

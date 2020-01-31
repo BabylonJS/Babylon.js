@@ -20,12 +20,12 @@ export interface ITexturePackerJSON{
 	 * The options of the Packer
 	 */
     options: ITexturePackerOptions;
-    
+
     /**
 	 * The frame data of the Packer
 	 */
     frames: Array<number>;
-    
+
 }
 
 /**
@@ -39,8 +39,8 @@ export class TexturePackerLoader{
     * @param scene that the packer is scoped to.
     * @returns TexturePacker
     */
-    constructor(jsonURL:string, scene:Scene){
-        if(!scene || !jsonURL || typeof jsonURL !== 'string'){
+    constructor(jsonURL: string, scene: Scene) {
+        if (!scene || !jsonURL || typeof jsonURL !== 'string') {
             return false;
         }
         try {
@@ -50,22 +50,22 @@ export class TexturePackerLoader{
                 var xml = new XMLHttpRequest();
                 xml.onreadystatechange = () => {
                     if (xml.readyState == 4) {
-                        if (xml.status == 200){
-                            pack.updateFromJSON(xml.responseText, success, error);                            
+                        if (xml.status == 200) {
+                            pack.updateFromJSON(xml.responseText, success, error);
                         }
                     }
-                }
+                };
                 xml.open("GET", jsonURL);
                 xml.send();
                 }catch (e) {
                     error(e);
                 }
             });
-            
+
             return pack;
-            
+
             } catch (e) {
 
-            }            
-    }    
+            }
+    }
 }
