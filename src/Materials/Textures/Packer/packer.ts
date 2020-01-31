@@ -231,7 +231,7 @@ export class TexturePacker{
 
         return this;
     }
-    
+
     /**
     * Starts the package process
     * @param resolve The promises resolution function
@@ -305,7 +305,7 @@ export class TexturePacker{
                 };
 
                 let setName = sKeys[j] || '_blank';
-                if ((mat as any)[setName] === null) {
+                if (!mat || (mat as any)[setName] === null) {
                     tcx.fillStyle = 'rgba(0,0,0,0)';
 
                     if (this.options.fillBlanks) {
@@ -605,6 +605,9 @@ export class TexturePacker{
         for (let i = 0; i < sKeys.length; i++) {
             let setName = sKeys[i];
             if (!force) {
+                if (!mat) {
+                    return;
+                }
                 if ((mat as any)[setName] !== null) {
                     _dispose((mat as any)[setName]);
                     (mat as any)[setName] = (this.sets as any)[setName];
@@ -632,10 +635,12 @@ export class TexturePacker{
     }
 
     /**
-    * Starts the Async promise to compile the texture packer.
-    */ 
-    public processAsync(success = (): void => {}, error = (err : string): void => {}):void{
-        setTimeout(()=>{
+    * Starts the async promise to compile the texture packer.
+    * @param success callback for the load promise
+    * @param error callback for the load promise
+    */
+    public processAsync(success = (): void => {}, error = (err : string): void => {}): void {
+        setTimeout(() => {
             this.promise = new Promise ((resolve, reject) => {
                 try {
                     if (this.meshes.length === 0) {
@@ -654,9 +659,9 @@ export class TexturePacker{
                                 if (t !== null) {
                                     if (!(this.sets as any)[this.options.map[j]]) {
                                         (this.sets as any)[this.options.map[j]] = true;
-                                    }  
-                                    
-                                    this._expecting++;                                
+                                    }
+
+                                    this._expecting++;
                                 }
                             }
 
@@ -686,18 +691,18 @@ export class TexturePacker{
                 }catch (e) {
                     return reject(e);
                 }
-            })
-            
+            });
+
             this.promise.then(
-                ()=>{
+                () => {
                     success();
                 },
-                (err)=>{                
+                (err) => {
                     error(err);
                 }
-            )
-            
-        },0);        
+            );
+
+        }, 0);
     }
 
     /**
@@ -759,34 +764,64 @@ export class TexturePacker{
 
     /**
     * Public method to load a texturePacker JSON file.
-    * @param data to load in string format
+    * @param url location of the JSON file
     * @param success callback for the load promise
     * @param error callback for the load promise
     */
-    public updateFromJSON(data: string , success = (): void => {}, error = (err : string): void => {}): void {
-        try {
-        let parsedData: ITexturePackerJSON = JSON.parse(data);
-        this.name = parsedData.name;
-        let _options = Object.keys(parsedData.options);
-            for (let i = 0; i < _options.length; i++) {
-                (this.options as any)[_options[i]] = (parsedData.options as any)[_options[i]];
+    public updateFromJSON(url: string , success = (): void => {}, error = (err : string): void => {}): void {
+        setTimeout(() => {
+            try {
+                let xml = new XMLHttpRequest();
+                xml.onreadystatechange = () => {
+                    if (xml.readyState == 4) {
+                        if (xml.status == 200) {
+                            this.promise = new Promise ((resolve, reject) => {
+                            try {
+                                let parsedData: ITexturePackerJSON = JSON.parse(xml.responseText);
+                                this.name = parsedData.name;
+                                let _options = Object.keys(parsedData.options);
+
+                                for (let i = 0; i < _options.length; i++) {
+                                    (this.options as any)[_options[i]] = (parsedData.options as any)[_options[i]];
+                                }
+
+                                for (let i = 0; i < parsedData.frames.length; i += 4) {
+                                    let frame: TexturePackerFrame = new TexturePackerFrame(
+                                        i / 4,
+                                        new Vector2(parsedData.frames[i], parsedData.frames[i + 1]),
+                                        new Vector2(parsedData.frames[i + 2], parsedData.frames[i + 3])
+                                    );
+                                this.frames.push(frame);
+                                }
+
+                                let channels = Object.keys(parsedData.sets);
+
+                                for (let i = 0; i < channels.length; i++) {
+                                    let _t = new Texture(parsedData.sets[channels[i]], this.scene, false, false);
+                                    (this.sets as any)[channels[i]] = _t;
+                                }
+
+                                resolve();
+                            }catch (e) {
+                                return reject(e);
+                            }
+                            });
+                            this.promise.then(
+                                () => {
+                                    success();
+                                },
+                                (err) => {
+                                    error(err);
+                                }
+                            );
+                        }
+                    }
+                };
+                xml.open("GET", url);
+                xml.send();
+            }catch (e) {
+                error(e);
             }
-            for (let i = 0; i < parsedData.frames.length; i += 4) {
-                let frame: TexturePackerFrame = new TexturePackerFrame(
-                        i / 4,
-                        new Vector2(parsedData.frames[i], parsedData.frames[i + 1]),
-                        new Vector2(parsedData.frames[i + 2], parsedData.frames[i + 3])
-                    );
-                this.frames.push(frame);
-            }
-            let channels = Object.keys(parsedData.sets);
-            for (let i = 0; i < channels.length; i++) {
-                let _t = new Texture(parsedData.sets[channels[i]], this.scene, false, false);
-                (this.sets as any)[channels[i]] = _t;
-            }
-            success();
-        }catch (err) {
-            error(err);
-        }
+        }, 0);
     }
 }
