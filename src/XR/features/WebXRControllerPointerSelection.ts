@@ -16,6 +16,7 @@ import { TorusBuilder } from '../../Meshes/Builders/torusBuilder';
 import { Ray } from '../../Culling/ray';
 import { PickingInfo } from '../../Collisions/pickingInfo';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
+import { UtilityLayerRenderer } from '../../Rendering/utilityLayerRenderer';
 
 /**
  * Options interface for the pointer selection module
@@ -55,6 +56,16 @@ export interface IWebXRControllerPointerSelectionOptions {
      * Defaults to 1.
      */
     gazeModePointerMovedFactor?: number;
+
+    /**
+     * Should meshes created here be added to a utility layer or the main scene
+     */
+    useUtilityLayer?: boolean;
+
+    /**
+     * if provided, this scene will be used to render meshes.
+     */
+    customUtilityLayerScene?: Scene;
 }
 
 /**
@@ -283,12 +294,13 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         const controllerData = this._controllers[xrController.uniqueId];
         // attached when touched, detaches when raised
         const timeToSelect = this._options.timeToSelect || 3000;
+        const sceneToRenderTo = this._options.useUtilityLayer ? (this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene) : this._scene;
         let oldPick = new PickingInfo();
         let discMesh = TorusBuilder.CreateTorus("selection", {
             diameter: 0.0035 * 15,
             thickness: 0.0025 * 6,
             tessellation: 20
-        }, this._scene);
+        }, sceneToRenderTo);
         discMesh.isVisible = false;
         discMesh.isPickable = false;
         discMesh.parent = controllerData.selectionMesh;
@@ -422,15 +434,16 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     }
 
     private _generateNewMeshPair(xrController: WebXRInputSource) {
+        const sceneToRenderTo = this._options.useUtilityLayer ? (this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene) : this._scene;
         const laserPointer = CylinderBuilder.CreateCylinder("laserPointer", {
             height: 1,
             diameterTop: 0.0002,
             diameterBottom: 0.004,
             tessellation: 20,
             subdivisions: 1
-        }, this._scene);
+        }, sceneToRenderTo);
         laserPointer.parent = xrController.pointer;
-        let laserPointerMaterial = new StandardMaterial("laserPointerMat", this._scene);
+        let laserPointerMaterial = new StandardMaterial("laserPointerMat", sceneToRenderTo);
         laserPointerMaterial.emissiveColor = this.lasterPointerDefaultColor;
         laserPointerMaterial.alpha = 0.7;
         laserPointer.material = laserPointerMaterial;
@@ -443,11 +456,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             diameter: 0.0035 * 3,
             thickness: 0.0025 * 3,
             tessellation: 20
-        }, this._scene);
+        }, sceneToRenderTo);
         selectionMesh.bakeCurrentTransformIntoVertices();
         selectionMesh.isPickable = false;
         selectionMesh.isVisible = false;
-        let targetMat = new StandardMaterial("targetMat", this._scene);
+        let targetMat = new StandardMaterial("targetMat", sceneToRenderTo);
         targetMat.specularColor = Color3.Black();
         targetMat.emissiveColor = this.selectionMeshDefaultColor;
         targetMat.backFaceCulling = false;

@@ -208,6 +208,7 @@
 - Full support for the online motion controller repository ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
 - New feature - XR Controller physics impostor for motion controllers ([RaananW](https://github.com/RaananW/))
 - Teleportation between different ground levels in WebXR is enabled ([RaananW](https://github.com/RaananW/))
+- Utility Meshes for XR (teleportation ring, selection rays) can now be rendered using a utility layer ([#7563](https://github.com/BabylonJS/Babylon.js/issues/7563)) ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
@@ -231,6 +232,7 @@
 - Added the feature "storable particles" and `insertParticlesFromArray()` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 - Added the support for MultiMaterials to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 - Added support for `CustomParticleEmitter`. [Doc](https://doc.babylonjs.com/babylon101/particles#custom-emitter) ([Deltakosh](https://github.com/deltakosh/))
+- Added support for `MeshParticleEmitter`. [Doc](https://doc.babylonjs.com/babylon101/particles#mesh-emitter) ([Deltakosh](https://github.com/deltakosh/))
 
 ### Navigation Mesh
 
@@ -314,6 +316,7 @@
 - Fixed bug in the `ScrollViewer` GUI class when setting a `idealWidth` or `idealHeight` on the ADT ([Popov72](https://github.com/Popov72))
 - Fixed bug in the `Image` GUI class where some properties were lost after a rotation by n x 90° ([Popov72](https://github.com/Popov72))
 - Fixed bug in the `Image` GUI class when rotating a SVG picture ([Popov72](https://github.com/Popov72))
+- Fix for bug where NME would crash if frames did not have comments ([Kyle Belfort](https://github.com/belfortk))
 
 ## Breaking changes
 
