@@ -55,7 +55,8 @@ namespace Babylon
         void BaseThreadProcedure();
         void ThreadProcedure();
 
-        arcana::manual_dispatcher<babylon_dispatcher::work_size> m_dispatcher{};
+        using DispatcherT = arcana::manual_dispatcher<babylon_dispatcher::work_size>;
+        std::unique_ptr<DispatcherT> m_dispatcher{};
         arcana::cancellation_source m_cancelSource{};
         std::mutex m_taskMutex;
         std::mutex m_suspendMutex;
