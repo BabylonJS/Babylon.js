@@ -231,6 +231,7 @@
 - Added the feature "storable particles" and `insertParticlesFromArray()` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 - Added the support for MultiMaterials to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 - Added support for `CustomParticleEmitter`. [Doc](https://doc.babylonjs.com/babylon101/particles#custom-emitter) ([Deltakosh](https://github.com/deltakosh/))
+- Added support for `MeshParticleEmitter`. [Doc](https://doc.babylonjs.com/babylon101/particles#mesh-emitter) ([Deltakosh](https://github.com/deltakosh/))
 
 ### Navigation Mesh
 
