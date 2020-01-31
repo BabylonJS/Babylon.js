@@ -8,7 +8,7 @@
   },
   "readme": "https://github.com/BabylonJS/Babylon.js/blob/master/readme.md",
   "license": "(Apache-2.0)",
-  "dependencies": {
+  "devDependencies": {
     "monaco-editor": "~0.18.1"
   },
   "scripts": {
