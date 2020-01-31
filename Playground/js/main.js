@@ -728,7 +728,7 @@ class Main {
                                 window.location.href = location.protocol + "//" + location.host + location.pathname + "#" + newPG;
                             } else if (query.indexOf("=") === -1) {
                                 this.loadScript("scripts/" + query + ".js", query);
-                            } else {
+                            } else if (query.indexOf('pg=') === -1) {
                                 this.loadScript(this.parent.settingsPG.DefaultScene, "Basic scene");
                             }
                         } else {
@@ -1032,79 +1032,88 @@ class Main {
         location.hash = splits.join("#");
     };
     checkHash() {
+        if (location.search) {
+            var query = this.parseQuery(location.search);
+            this.previousHash = "#" + query.pg + "#" + (query.revision || "0")
+            if (query.pg) {
+                this.loadPlayground(query.pg + "#" + (query.revision || "0"));
+            }
+
+        }
         if (location.hash) {
             if (this.previousHash !== location.hash) {
                 this.cleanHash();
 
                 this.previousHash = location.hash;
 
-                try {
-                    var xmlHttp = new XMLHttpRequest();
-                    xmlHttp.onreadystatechange = function () {
-                        if (xmlHttp.readyState === 4) {
-                            if (xmlHttp.status === 200) {
-
-                                if (!this.checkTypescriptSupport(xmlHttp)) {
-                                    return;
-                                }
-
-                                var snippet = JSON.parse(xmlHttp.responseText);
-
-                                this.parent.monacoCreator.BlockEditorChange = true;
-                                this.parent.monacoCreator.JsEditor.setValue(JSON.parse(snippet.jsonPayload).code.toString());
-
-                                // Check if title / descr / tags are already set
-                                if (snippet.name != null && snippet.name != "") {
-                                    this.currentSnippetTitle = snippet.name;
-                                } else this.currentSnippetTitle = null;
-
-                                if (snippet.description != null && snippet.description != "") {
-                                    this.currentSnippetDescription = snippet.description;
-                                } else this.currentSnippetDescription = null;
-
-                                if (snippet.tags != null && snippet.tags != "") {
-                                    this.currentSnippetTags = snippet.tags;
-                                } else this.currentSnippetTags = null;
-
-                                if (this.currentSnippetTitle != null && this.currentSnippetTags != null && this.currentSnippetDescription) {
-                                    if (document.getElementById("saveLayer")) {
-
-                                        document.getElementById("saveFormTitle").value = this.currentSnippetTitle;
-                                        document.getElementById("saveFormDescription").value = this.currentSnippetDescription;
-                                        document.getElementById("saveFormTags").value = this.currentSnippetTags;
-
-                                        this.hideNoMetadata();
-                                    }
-                                } else {
-                                    this.showNoMetadata();
-                                }
-
-                                this.updateMetadata();
-
-                                this.parent.monacoCreator.JsEditor.setPosition({
-                                    lineNumber: 0,
-                                    column: 0
-                                });
-                                this.parent.monacoCreator.BlockEditorChange = false;
-                                compileAndRun(this.parent, this.fpsLabel);
-                            }
-                        }
-                    }.bind(this);
-
-                    var hash = location.hash.substr(1);
-                    this.currentSnippetToken = hash.split("#")[0];
-                    if (!hash.split("#")[1]) hash += "#0";
-
-
-                    xmlHttp.open("GET", this.snippetV3Url + "/" + hash.replace("#", "/"));
-                    xmlHttp.send();
-                } catch (e) {
-
-                }
+                this.loadPlayground(location.hash.substr(1))
             }
         }
-        setTimeout(this.checkHash.bind(this), 200);
+        window.addEventListener("hashchange", this.checkHash.bind(this));
     };
+    loadPlayground(id) {
+        try {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function () {
+                if (xmlHttp.readyState === 4) {
+                    if (xmlHttp.status === 200) {
+
+                        if (!this.checkTypescriptSupport(xmlHttp)) {
+                            return;
+                        }
+
+                        var snippet = JSON.parse(xmlHttp.responseText);
+
+                        this.parent.monacoCreator.BlockEditorChange = true;
+                        this.parent.monacoCreator.JsEditor.setValue(JSON.parse(snippet.jsonPayload).code.toString());
+
+                        // Check if title / descr / tags are already set
+                        if (snippet.name != null && snippet.name != "") {
+                            this.currentSnippetTitle = snippet.name;
+                        } else this.currentSnippetTitle = null;
+
+                        if (snippet.description != null && snippet.description != "") {
+                            this.currentSnippetDescription = snippet.description;
+                        } else this.currentSnippetDescription = null;
+
+                        if (snippet.tags != null && snippet.tags != "") {
+                            this.currentSnippetTags = snippet.tags;
+                        } else this.currentSnippetTags = null;
+
+                        if (this.currentSnippetTitle != null && this.currentSnippetTags != null && this.currentSnippetDescription) {
+                            if (document.getElementById("saveLayer")) {
+
+                                document.getElementById("saveFormTitle").value = this.currentSnippetTitle;
+                                document.getElementById("saveFormDescription").value = this.currentSnippetDescription;
+                                document.getElementById("saveFormTags").value = this.currentSnippetTags;
+
+                                this.hideNoMetadata();
+                            }
+                        } else {
+                            this.showNoMetadata();
+                        }
+
+                        this.updateMetadata();
+
+                        this.parent.monacoCreator.JsEditor.setPosition({
+                            lineNumber: 0,
+                            column: 0
+                        });
+                        this.parent.monacoCreator.BlockEditorChange = false;
+                        compileAndRun(this.parent, this.fpsLabel);
+                    }
+                }
+            }.bind(this);
+
+            this.currentSnippetToken = id.split("#")[0];
+            if (!id.split("#")[1]) id += "#0";
+
+            xmlHttp.open("GET", this.snippetV3Url + "/" + id.replace("#", "/"));
+            xmlHttp.send();
+        } catch (e) {
+
+        }
+    }
     updateMetadata() {
         if (this.currentSnippetTitle) {
             document.querySelector('title').innerText = (this.currentSnippetTitle + " | Babylon.js Playground");
@@ -1117,5 +1126,14 @@ class Main {
         if (this.currentSnippetTags) {
             document.querySelector('meta[name="keywords"]').setAttribute("content", "babylon.js, game engine, webgl, 3d," + this.currentSnippetTags);
         }
+    }
+    parseQuery(queryString) {
+        var query = {};
+        var pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
+        for (var i = 0; i < pairs.length; i++) {
+            var pair = pairs[i].split('=');
+            query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+        }
+        return query;
     }
 }
