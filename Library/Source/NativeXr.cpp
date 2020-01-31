@@ -340,27 +340,27 @@ namespace Babylon
     {
         struct XRSessionType
         {
-            static inline const std::string IMMERSIVE_VR{"immersive-vr"};
-            static inline const std::string IMMERSIVE_AR{"immersive-vr"};
-            static inline const std::string IMMERSIVE_INLINE{"inline"};
+            static constexpr auto IMMERSIVE_VR{"immersive-vr"};
+            static constexpr auto IMMERSIVE_AR{"immersive-vr"};
+            static constexpr auto IMMERSIVE_INLINE{"inline"};
         };
 
         struct XRReferenceSpaceType
         {
-            static inline const std::string VIEWER{"viewer"};
-            static inline const std::string LOCAL{"local"};
-            static inline const std::string LOCAL_FLOOR{"local-floor"};
-            static inline const std::string BOUNDED_FLOOR{"bounded-floor"};
-            static inline const std::string UNBOUNDED{"unbounded"};
+            static constexpr auto VIEWER{"viewer"};
+            static constexpr auto LOCAL{"local"};
+            static constexpr auto LOCAL_FLOOR{"local-floor"};
+            static constexpr auto BOUNDED_FLOOR{"bounded-floor"};
+            static constexpr auto UNBOUNDED{"unbounded"};
         };
 
         struct XREye
         {
-            static inline const std::string NONE{"none"};
-            static inline const std::string LEFT{"left"};
-            static inline const std::string RIGHT{"right"};
+            static constexpr auto NONE{"none"};
+            static constexpr auto LEFT{"left"};
+            static constexpr auto RIGHT{"right"};
 
-            static const auto& IndexToEye(size_t idx)
+            static const auto IndexToEye(size_t idx)
             {
                 switch (idx)
                 {
@@ -562,7 +562,7 @@ namespace Babylon
             XRView(const Napi::CallbackInfo& info)
                 : Napi::ObjectWrap<XRView>{info}
                 , m_eyeIdx{0}
-                , m_eye{Napi::Persistent(Napi::String::From(info.Env(), XREye::IndexToEye(m_eyeIdx)))}
+                , m_eye{XREye::IndexToEye(m_eyeIdx)}
                 , m_projectionMatrix{Napi::Persistent(Napi::Float32Array::New(info.Env(), MATRIX_SIZE))}
                 , m_rigidTransform{Napi::Persistent(XRRigidTransform::New(info))}
             {
@@ -573,7 +573,7 @@ namespace Babylon
                 if (eyeIdx != m_eyeIdx)
                 {
                     m_eyeIdx = eyeIdx;
-                    m_eye = Napi::Persistent(Napi::String::From(m_eye.Env(), XREye::IndexToEye(m_eyeIdx)));
+                    m_eye = XREye::IndexToEye(m_eyeIdx);
                 }
 
                 std::memcpy(m_projectionMatrix.Value().Data(), projectionMatrix.data(), m_projectionMatrix.Value().ByteLength());
@@ -583,13 +583,13 @@ namespace Babylon
 
         private:
             size_t m_eyeIdx{};
-            Napi::Reference<Napi::String> m_eye{};
+            gsl::czstring<> m_eye{};
             Napi::Reference<Napi::Float32Array> m_projectionMatrix{};
             Napi::ObjectReference m_rigidTransform{};
 
-            Napi::Value GetEye(const Napi::CallbackInfo&)
+            Napi::Value GetEye(const Napi::CallbackInfo& info)
             {
-                return m_eye.Value();
+                return Napi::String::From(info.Env(), m_eye);
             }
 
             Napi::Value GetProjectionMatrix(const Napi::CallbackInfo&)
