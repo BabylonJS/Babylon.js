@@ -208,6 +208,7 @@
 - Full support for the online motion controller repository ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
 - New feature - XR Controller physics impostor for motion controllers ([RaananW](https://github.com/RaananW/))
 - Teleportation between different ground levels in WebXR is enabled ([RaananW](https://github.com/RaananW/))
+- Utility Meshes for XR (teleportation ring, selection rays) can now be rendered using a utility layer ([#7563](https://github.com/BabylonJS/Babylon.js/issues/7563)) ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
@@ -315,6 +316,7 @@
 - Fixed bug in the `ScrollViewer` GUI class when setting a `idealWidth` or `idealHeight` on the ADT ([Popov72](https://github.com/Popov72))
 - Fixed bug in the `Image` GUI class where some properties were lost after a rotation by n x 90° ([Popov72](https://github.com/Popov72))
 - Fixed bug in the `Image` GUI class when rotating a SVG picture ([Popov72](https://github.com/Popov72))
+- Fix for bug where NME would crash if frames did not have comments ([Kyle Belfort](https://github.com/belfortk))
 
 ## Breaking changes
 
