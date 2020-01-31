@@ -244,6 +244,11 @@
 - Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))
 - Expanded animation group serialization to include all targeted TransformNodes ([Drigax](https://github.com/drigax/))
 
+### Texture Packer
+
+- Added TexturePacker Class ([Pryme8](https://github.com/Pryme8))
+- Added TexturePackerLoader Class ([Pryme8](https://github.com/Pryme8))
+
 ### Documentation
 
 - Added a note on shallow bounding of getBoundingInfo ([tibotiber](https://github.com/tibotiber))
