@@ -180,6 +180,8 @@ localDev/src/*
 package-lock.json
 dist/preview release/package/
 
+Playground/monaco-editor/
+
 # viewer dist files
 /Viewer/dist/viewer.js
 /Viewer/dist/viewer.min.js

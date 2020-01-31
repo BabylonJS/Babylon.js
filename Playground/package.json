@@ -13,6 +13,6 @@
   },
   "scripts": {
     "test": "browser-sync start --server --files **/* --no-inject-changes --startPath index.html",
-    "copy-assets": "cp ./node_modules/monaco-editor ./ -R"
+    "postinstall": "cp ./node_modules/monaco-editor ./ -R"
   }
 }
