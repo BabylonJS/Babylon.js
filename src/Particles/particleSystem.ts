@@ -2533,10 +2533,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                     break;
             }
 
-            emitterType.parse(parsedParticleSystem.particleEmitterType);
+            emitterType.parse(parsedParticleSystem.particleEmitterType, scene);
         } else {
             emitterType = new BoxParticleEmitter();
-            emitterType.parse(parsedParticleSystem);
+            emitterType.parse(parsedParticleSystem, scene);
         }
         particleSystem.particleEmitterType = emitterType;
 
