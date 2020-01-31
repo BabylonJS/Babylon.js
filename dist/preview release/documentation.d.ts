@@ -17992,8 +17992,9 @@ declare module BABYLON {
         /**
          * Parse properties from a JSON object
          * @param serializationObject defines the JSON object
+         * @param scene defines the hosting scene
          */
-        parse(serializationObject: any): void;
+        parse(serializationObject: any, scene: Scene): void;
     }
 }
 declare module BABYLON {
@@ -18677,6 +18678,83 @@ declare module BABYLON {
          * @param serializationObject defines the JSON object
          */
         parse(serializationObject: any): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Particle emitter emitting particles from the inside of a box.
+     * It emits the particles randomly between 2 given directions.
+     */
+    export class MeshParticleEmitter implements IParticleEmitterType {
+        /** Defines the mesh to use as source */
+        mesh?: AbstractMesh | undefined;
+        private _indices;
+        private _positions;
+        private _normals;
+        private _storedNormal;
+        /**
+         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+         */
+        direction1: Vector3;
+        /**
+         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+         */
+        direction2: Vector3;
+        /**
+         * Gets or sets a boolean indicating that particle directions must be built from mesh face normals
+         */
+        useMeshNormalsForDirection: boolean;
+        /**
+         * Creates a new instance MeshParticleEmitter
+         * @param mesh defines the mesh to use as source
+         */
+        constructor(
+        /** Defines the mesh to use as source */
+        mesh?: AbstractMesh | undefined);
+        /**
+         * Called by the particle System when the direction is computed for the created particle.
+         * @param worldMatrix is the world matrix of the particle system
+         * @param directionToUpdate is the direction vector to update with the result
+         * @param particle is the particle we are computed the direction for
+         */
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        /**
+         * Called by the particle System when the position is computed for the created particle.
+         * @param worldMatrix is the world matrix of the particle system
+         * @param positionToUpdate is the position vector to update with the result
+         * @param particle is the particle we are computed the position for
+         */
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        /**
+         * Clones the current emitter and returns a copy of it
+         * @returns the new emitter
+         */
+        clone(): MeshParticleEmitter;
+        /**
+         * Called by the GPUParticleSystem to setup the update shader
+         * @param effect defines the update shader
+         */
+        applyToShader(effect: Effect): void;
+        /**
+         * Returns a string to use to update the GPU particles update shader
+         * @returns a string containng the defines string
+         */
+        getEffectDefines(): string;
+        /**
+         * Returns the string "BoxParticleEmitter"
+         * @returns a string containing the class name
+         */
+        getClassName(): string;
+        /**
+         * Serializes the particle system to a JSON object.
+         * @returns the JSON object
+         */
+        serialize(): any;
+        /**
+         * Parse properties from a JSON object
+         * @param serializationObject defines the JSON object
+         */
+        parse(serializationObject: any, scene: Scene): void;
     }
 }
 declare module BABYLON {

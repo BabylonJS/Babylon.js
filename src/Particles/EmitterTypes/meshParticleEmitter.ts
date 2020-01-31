@@ -56,7 +56,7 @@ export class MeshParticleEmitter implements IParticleEmitterType {
     public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
         if (this.useMeshNormalsForDirection && this._normals) {
             Vector3.TransformNormalToRef(this._storedNormal, worldMatrix, directionToUpdate);
-            return;    
+            return;
         }
 
         var randX = Scalar.RandomRange(this.direction1.x, this.direction2.x);
@@ -89,7 +89,7 @@ export class MeshParticleEmitter implements IParticleEmitterType {
         let vertexB = TmpVectors.Vector3[1];
         let vertexC = TmpVectors.Vector3[2];
         let randomVertex = TmpVectors.Vector3[3];
-        
+
         Vector3.FromArrayToRef(this._positions, faceIndexA * 3, vertexA);
         Vector3.FromArrayToRef(this._positions, faceIndexB * 3, vertexB);
         Vector3.FromArrayToRef(this._positions, faceIndexC * 3, vertexC);
@@ -167,6 +167,7 @@ export class MeshParticleEmitter implements IParticleEmitterType {
     /**
      * Parse properties from a JSON object
      * @param serializationObject defines the JSON object
+     * @param scene defines the hosting scene
      */
     public parse(serializationObject: any, scene: Scene): void {
         Vector3.FromArrayToRef(serializationObject.direction1, 0, this.direction1);
