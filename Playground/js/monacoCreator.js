@@ -86,25 +86,26 @@ class MonacoCreator {
     };
 
     setupDefinitionWorker(libContent) {
-        // What is the reason behind this worker?
 
-        // this.definitionWorker = new Worker('js/definitionWorker.js');
-        // this.definitionWorker.addEventListener('message', ({ data }) => {
-        //     this.deprecatedCandidates = data.result;
-        //     this.analyzeCode();
-        // });
-        // this.definitionWorker.postMessage({ code: libContent });
-        this.deprecatedCandidates = [
-            "FromFloatArray",
-            "FromFloatArrayToRef",
-            "getStrideSize",
-            "getStrideSize",
-            "getOffset",
-            "rgb",
-            "xy",
-            "xyz",
-            "fieldOfView"
-          ];
+        // This worker can be initialized differently.
+        // Its main job is to analyze the code and return an array of deprecated functions
+        this.definitionWorker = new Worker('js/definitionWorker.js');
+        this.definitionWorker.addEventListener('message', ({ data }) => {
+            this.deprecatedCandidates = data.result;
+            this.analyzeCode();
+        });
+        this.definitionWorker.postMessage({ code: libContent });
+        // this.deprecatedCandidates = [
+        //     "FromFloatArray",
+        //     "FromFloatArrayToRef",
+        //     "getStrideSize",
+        //     "getStrideSize",
+        //     "getOffset",
+        //     "rgb",
+        //     "xy",
+        //     "xyz",
+        //     "fieldOfView"
+        //   ];
     }
 
     isDeprecatedEntry(details) {
