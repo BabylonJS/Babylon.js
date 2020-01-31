@@ -71,7 +71,7 @@ class MonacoCreator {
 
         this.setupDefinitionWorker(libContent);
 
-        require.config({ paths: { 'vs': 'node_modules/monaco-editor/dev/vs' } });
+        require.config({ paths: { 'vs': 'monaco-editor/dev/vs' } });
 
         require(['vs/editor/editor.main'], () => {
             this.setupMonacoCompilationPipeline(libContent);
