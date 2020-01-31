@@ -12,7 +12,6 @@
     "monaco-editor": "~0.18.1"
   },
   "scripts": {
-    "test": "browser-sync start --server --files **/* --no-inject-changes --startPath index.html",
-    "postinstall": "cp ./node_modules/monaco-editor ./ -R"
+    "test": "browser-sync start --server --files **/* --no-inject-changes --startPath index.html"
   }
 }
