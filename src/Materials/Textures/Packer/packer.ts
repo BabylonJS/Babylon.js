@@ -10,36 +10,35 @@ import { Nullable } from "../../../types";
 import { Vector2 } from "../../../Maths/math.vector";
 import { Color3, Color4 } from "../../../Maths/math.color";
 import { TexturePackerFrame } from "./frame";
-import { ITexturePackerJSON } from "./packerLoader";
 
 /**
- * Defines the basic options interface of a TexturePacker
- */
+* Defines the basic options interface of a TexturePacker
+*/
 export interface ITexturePackerOptions{
 
     /**
-	 * Custom targets for the channels of a texture packer.  Default is all the channels of the Standard Material
-	 */
+    * Custom targets for the channels of a texture packer.  Default is all the channels of the Standard Material
+    */
     map?: string[];
 
     /**
-	 * the UV input targets, as a single value for all meshes or an array of values that matches the mesh count.  Defaults to VertexBuffer.UVKind
-	 */
-    uvsIn?: string; // | string[];
+    * the UV input targets, as a single value for all meshes. Defaults to VertexBuffer.UVKind
+    */
+    uvsIn?: string;
 
     /**
-	 * the UV output targets, as a single value for all meshes or an array of values that matches the mesh count.  Defaults to VertexBuffer.UVKind
-	 */
-    uvsOut?: string; // | string[];
+    * the UV output targets, as a single value for all meshes.  Defaults to VertexBuffer.UVKind
+    */
+    uvsOut?: string;
 
     /**
-	 * number representing the layout style. Defaults to LAYOUT_STRIP
-	 */
+    * number representing the layout style. Defaults to LAYOUT_STRIP
+    */
     layout?: number;
 
     /**
-	 * number of columns if using custom column count layout(2).  This defaults to 4.
-	 */
+    * number of columns if using custom column count layout(2).  This defaults to 4.
+    */
     colnum?: number;
 
     /**
@@ -53,41 +52,68 @@ export interface ITexturePackerOptions{
     disposeSources?: boolean;
 
     /**
-	 * Fills the blank cells in a set to the customFillColor.  Defaults to true.
-	 */
+    * Fills the blank cells in a set to the customFillColor.  Defaults to true.
+    */
     fillBlanks?: boolean;
 
     /**
-	 * string value representing the context fill style color.  Defaults to 'black'.
-	 */
+    * string value representing the context fill style color.  Defaults to 'black'.
+    */
     customFillColor?: string;
 
     /**
-	 * Width and Height Value of each Frame in the TexturePacker Sets
-	 */
+    * Width and Height Value of each Frame in the TexturePacker Sets
+    */
     frameSize?: number;
 
     /**
-	 * Ratio of the value to add padding wise to each cell.  Defaults to 0.0115
-	 */
+    * Ratio of the value to add padding wise to each cell.  Defaults to 0.0115
+    */
     paddingRatio?: number;
 
     /**
-	 * Number that declares the fill method for the padding gutter.
-	 */
+    * Number that declares the fill method for the padding gutter.
+    */
     paddingMode?: number;
 
     /**
-	 * If in SUBUV_COLOR padding mode what color to use.
-	 */
+    * If in SUBUV_COLOR padding mode what color to use.
+    */
     paddingColor?: Color3 | Color4;
 
 }
 
 /**
- * This is a support class that generates a series of packed texture sets.
- * @see #TODO ADD THIS
- */
+* Defines the basic interface of a TexturePacker JSON File
+*/
+export interface ITexturePackerJSON{
+
+    /**
+    * The frame ID
+    */
+    name: string;
+
+    /**
+    * The base64 channel data
+    */
+    sets: any;
+
+    /**
+    * The options of the Packer
+    */
+    options: ITexturePackerOptions;
+
+    /**
+    * The frame data of the Packer
+    */
+    frames: Array<number>;
+
+}
+
+/**
+* This is a support class that generates a series of packed texture sets.
+* @see https://doc.babylonjs.com/babylon101/materials
+*/
 export class TexturePacker{
 
     /** Packer Layout Constant 0 */
@@ -117,7 +143,7 @@ export class TexturePacker{
     public options: ITexturePackerOptions;
 
     /** The promise that is started upon initialization */
-    public promise: Promise< TexturePacker | string >;
+    public promise: Nullable<Promise< TexturePacker | string >>;
 
     /** The Container object for the channel sets that are generated */
     public sets: object;
@@ -125,8 +151,8 @@ export class TexturePacker{
     /** The Container array for the frames that are generated */
     public frames: TexturePackerFrame[];
 
-    /** The List of textures to purge from memory after compilation */
-    private _disposeList: (Texture | DynamicTexture)[];
+    /** The expected number of textures the system is parsing. */
+    private _expecting: number;
 
     /** The padding value from Math.ceil(frameSize * paddingRatio) */
     private _paddingValue: number;
@@ -146,8 +172,8 @@ export class TexturePacker{
         this.scene = scene;
 
         /**
-        * Run through the options and set what ever defaults are needed that where not declared.
-        */
+         * Run through the options and set what ever defaults are needed that where not declared.
+         */
         this.options = options;
         this.options.map = this.options.map || [
                 'ambientTexture',
@@ -171,7 +197,7 @@ export class TexturePacker{
 
         this.options.updateInputMeshes = this.options.updateInputMeshes || true;
         this.options.disposeSources = this.options.disposeSources || true;
-        this._disposeList = [];
+        this._expecting = 0;
 
         this.options.fillBlanks = this.options.fillBlanks || true;
 
@@ -201,58 +227,11 @@ export class TexturePacker{
         /**
         * Create the promise and then run through the materials on the meshes.
         */
-        this.promise = new Promise ((resolve, reject) => {
-            try {
-                if (this.meshes.length === 0) {
-                    //Must be a JSON load!
-                    resolve();
-                }
-                let done = 0;
-                const doneCheck = (mat: Material) => {
-                    done++;
-                    //Check Status of all Textures on all meshes, till they are ready.
-                    if (this.options.map) {
-                        for (let j = 0; j < this.options.map.length; j++) {
-                            let index: string = this.options.map[j];
-                            let t: (Texture | DynamicTexture) = (mat as any)[index];
-
-                            if (t !== null) {
-                                if (!(this.sets as any)[this.options.map[j]]) {
-                                    (this.sets as any)[this.options.map[j]] = true;
-                                }
-
-                                if (this.options.disposeSources) {
-                                    this._disposeList.push(t);
-                                }
-                            }
-                        }
-
-                        if (done === this.meshes.length) {
-                            this._createFrames(resolve);
-                        }
-                    }
-                };
-
-                for (let i = 0; i < this.meshes.length; i++) {
-
-                    let mesh = this.meshes[i];
-                    let material: Nullable< Material > = mesh.material;
-
-                    if (!material) {
-                        return new Error('Mesh has no Material assigned!');
-                    }
-
-                    material.forceCompilationAsync(mesh).then(() => {
-                        doneCheck((material as Material));
-                    });
-                }
-            }catch (e) {
-                return reject(e);
-            }
-        });
+        this.promise = null;
 
         return this;
     }
+    
     /**
     * Starts the package process
     * @param resolve The promises resolution function
@@ -263,7 +242,7 @@ export class TexturePacker{
         let dtSize = this._calculateSize();
         let dtUnits = (new Vector2(1, 1)).divide(dtSize);
         let doneCount = 0;
-        let expecting = this._disposeList.length;
+        let expecting = this._expecting;
         let meshLength = this.meshes.length;
 
         let sKeys = Object.keys(this.sets);
@@ -306,9 +285,6 @@ export class TexturePacker{
             for (let j = 0; j < sKeys.length; j++) {
                 let tempTexture = new DynamicTexture('temp', tcs, this.scene, true);
                 let tcx = tempTexture.getContext();
-
-                //tempTexture.update(false)
-
                 let offset = this._getFrameOffset(i);
 
                 const updateDt = () => {
@@ -515,7 +491,6 @@ export class TexturePacker{
     * @param dtSize size of the Dynamic Texture for that channel
     * @param dtUnits is 1/dtSize
     * @param update flag to update the input meshes
-    * @returns Void
     */
     private _calculateMeshUVFrames(baseSize: number, padding: number, dtSize: Vector2, dtUnits: Vector2, update: boolean) {
         let meshLength = this.meshes.length;
@@ -591,7 +566,6 @@ export class TexturePacker{
     * Updates a Mesh to the frame data
     * @param mesh that is the target
     * @param frameID or the frame index
-    * @returns void
     */
     private _updateMeshUV(mesh: AbstractMesh, frameID: number): void {
         let frame: TexturePackerFrame = (this.frames as any)[frameID];
@@ -614,10 +588,9 @@ export class TexturePacker{
     }
 
     /**
-    * Updates a Meshs materials to use the texture packer channels
+    * Updates a Meshes materials to use the texture packer channels
     * @param m is the mesh to target
     * @param force all channels on the packer to be set.
-    * @returns void
     */
     private _updateTextureRefrences(m: AbstractMesh, force: boolean = false): void {
         let mat = m.material;
@@ -659,18 +632,76 @@ export class TexturePacker{
     }
 
     /**
-    * Returns the promised then
-    * @param success callback
-    * @param error callback
-    */
-    public then(success = (): void => {}, error = (err : string): void => {}): void {
-        this.promise.then(
-            success, error
-        );
+    * Starts the Async promise to compile the texture packer.
+    */ 
+    public processAsync(success = (): void => {}, error = (err : string): void => {}):void{
+        setTimeout(()=>{
+            this.promise = new Promise ((resolve, reject) => {
+                try {
+                    if (this.meshes.length === 0) {
+                        //Must be a JSON load!
+                        resolve();
+                    }
+                    let done = 0;
+                    const doneCheck = (mat: Material) => {
+                        done++;
+                        //Check Status of all Textures on all meshes, till they are ready.
+                        if (this.options.map) {
+                            for (let j = 0; j < this.options.map.length; j++) {
+                                let index: string = this.options.map[j];
+                                let t: (Texture | DynamicTexture) = (mat as any)[index];
+
+                                if (t !== null) {
+                                    if (!(this.sets as any)[this.options.map[j]]) {
+                                        (this.sets as any)[this.options.map[j]] = true;
+                                    }  
+                                    
+                                    this._expecting++;                                
+                                }
+                            }
+
+                            if (done === this.meshes.length) {
+                                this._createFrames(resolve);
+                            }
+                        }
+                    };
+
+                    for (let i = 0; i < this.meshes.length; i++) {
+
+                        let mesh = this.meshes[i];
+                        let material: Nullable< Material > = mesh.material;
+
+                        if (!material) {
+                            done++;
+                            if (done === this.meshes.length) {
+                                return this._createFrames(resolve);
+                            }
+                            continue;
+                        }
+
+                        material.forceCompilationAsync(mesh).then(() => {
+                            doneCheck((material as Material));
+                        });
+                    }
+                }catch (e) {
+                    return reject(e);
+                }
+            })
+            
+            this.promise.then(
+                ()=>{
+                    success();
+                },
+                (err)=>{                
+                    error(err);
+                }
+            )
+            
+        },0);        
     }
 
     /**
-    * Updates a Meshs materials to use the texture packer channels
+    * Updates a Meshes materials to use the texture packer channels
     * @param m is the mesh to target
     */
     public dispose(): void {
@@ -727,7 +758,7 @@ export class TexturePacker{
     }
 
     /**
-    * Public to load a texturePacker JSON file.
+    * Public method to load a texturePacker JSON file.
     * @param data to load in string format
     * @param success callback for the load promise
     * @param error callback for the load promise
