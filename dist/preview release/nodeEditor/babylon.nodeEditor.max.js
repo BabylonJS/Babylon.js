@@ -54605,7 +54605,7 @@ var GraphFrame = /** @class */ (function () {
             return this._comments;
         },
         set: function (comments) {
-            if (comments.length > 0) {
+            if (comments && comments.length > 0) {
                 this.element.style.gridTemplateRows = "40px 40px calc(100% - 80px)";
                 this._borderElement.style.gridRow = "1 / span 3";
                 this._portContainer.style.gridRow = "3";
@@ -54614,9 +54614,9 @@ var GraphFrame = /** @class */ (function () {
                 this._commentsElement.style.gridColumn = "1";
                 this._commentsElement.style.paddingLeft = "10px";
                 this._commentsElement.style.fontStyle = "italic";
+                this._commentsElement.innerText = comments;
             }
             this._comments = comments;
-            this._commentsElement.innerText = comments;
         },
         enumerable: true,
         configurable: true
