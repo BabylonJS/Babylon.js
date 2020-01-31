@@ -16,7 +16,7 @@ import { TorusBuilder } from '../../Meshes/Builders/torusBuilder';
 import { Ray } from '../../Culling/ray';
 import { PickingInfo } from '../../Collisions/pickingInfo';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-import { UtilityLayerRenderer } from '../../Rendering';
+import { UtilityLayerRenderer } from '../../Rendering/utilityLayerRenderer';
 
 /**
  * Options interface for the pointer selection module
