@@ -636,12 +636,10 @@ export class TexturePacker{
 
     /**
     * Starts the async promise to compile the texture packer.
-    * @param success callback for the load promise
-    * @param error callback for the load promise
+    * @returns Promise<void>
     */
-    public processAsync(success = (): void => {}, error = (err : string): void => {}): void {
-        setTimeout(() => {
-            this.promise = new Promise ((resolve, reject) => {
+    public processAsync(): Promise<void> {
+            return new Promise ((resolve, reject) => {
                 try {
                     if (this.meshes.length === 0) {
                         //Must be a JSON load!
@@ -692,17 +690,6 @@ export class TexturePacker{
                     return reject(e);
                 }
             });
-
-            this.promise.then(
-                () => {
-                    success();
-                },
-                (err) => {
-                    error(err);
-                }
-            );
-
-        }, 0);
     }
 
     /**
@@ -729,6 +716,7 @@ export class TexturePacker{
             options: {},
             frames : []
         };
+
         let sKeys = Object.keys(this.sets);
         let oKeys = Object.keys(this.options);
         let downloadPromise = new Promise ((success) => {
@@ -751,6 +739,7 @@ export class TexturePacker{
                 return;
             }
         });
+
         downloadPromise.then((result) => {
             let data = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(result, null, 4));
             let _a = document.createElement('a');
@@ -764,64 +753,40 @@ export class TexturePacker{
 
     /**
     * Public method to load a texturePacker JSON file.
-    * @param url location of the JSON file
-    * @param success callback for the load promise
-    * @param error callback for the load promise
+    * @param data of the JSON file in string format.
+    * @returns Promise<void>
     */
-    public updateFromJSON(url: string , success = (): void => {}, error = (err : string): void => {}): void {
-        setTimeout(() => {
+    public updateFromJSON(data: string): Promise<void> {
+        return new Promise ((resolve, reject) => {
             try {
-                let xml = new XMLHttpRequest();
-                xml.onreadystatechange = () => {
-                    if (xml.readyState == 4) {
-                        if (xml.status == 200) {
-                            this.promise = new Promise ((resolve, reject) => {
-                            try {
-                                let parsedData: ITexturePackerJSON = JSON.parse(xml.responseText);
-                                this.name = parsedData.name;
-                                let _options = Object.keys(parsedData.options);
+                let parsedData: ITexturePackerJSON = JSON.parse(data);
+                this.name = parsedData.name;
+                let _options = Object.keys(parsedData.options);
 
-                                for (let i = 0; i < _options.length; i++) {
-                                    (this.options as any)[_options[i]] = (parsedData.options as any)[_options[i]];
-                                }
+                for (let i = 0; i < _options.length; i++) {
+                    (this.options as any)[_options[i]] = (parsedData.options as any)[_options[i]];
+                }
 
-                                for (let i = 0; i < parsedData.frames.length; i += 4) {
-                                    let frame: TexturePackerFrame = new TexturePackerFrame(
-                                        i / 4,
-                                        new Vector2(parsedData.frames[i], parsedData.frames[i + 1]),
-                                        new Vector2(parsedData.frames[i + 2], parsedData.frames[i + 3])
-                                    );
-                                this.frames.push(frame);
-                                }
+                for (let i = 0; i < parsedData.frames.length; i += 4) {
+                    let frame: TexturePackerFrame = new TexturePackerFrame(
+                        i / 4,
+                        new Vector2(parsedData.frames[i], parsedData.frames[i + 1]),
+                        new Vector2(parsedData.frames[i + 2], parsedData.frames[i + 3])
+                    );
+                this.frames.push(frame);
+                }
 
-                                let channels = Object.keys(parsedData.sets);
+                let channels = Object.keys(parsedData.sets);
 
-                                for (let i = 0; i < channels.length; i++) {
-                                    let _t = new Texture(parsedData.sets[channels[i]], this.scene, false, false);
-                                    (this.sets as any)[channels[i]] = _t;
-                                }
+                for (let i = 0; i < channels.length; i++) {
+                    let _t = new Texture(parsedData.sets[channels[i]], this.scene, false, false);
+                    (this.sets as any)[channels[i]] = _t;
+                }
 
-                                resolve();
-                            }catch (e) {
-                                return reject(e);
-                            }
-                            });
-                            this.promise.then(
-                                () => {
-                                    success();
-                                },
-                                (err) => {
-                                    error(err);
-                                }
-                            );
-                        }
-                    }
-                };
-                xml.open("GET", url);
-                xml.send();
+                resolve();
             }catch (e) {
-                error(e);
+                return reject(e);
             }
-        }, 0);
+        });
     }
 }
