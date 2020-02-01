@@ -419,6 +419,12 @@ describe('Babylon Scene Loader', function() {
                 origSetRequestHeader.apply(this, args);
             });
 
+            // Simulate default CORS policy on some web servers that reject getResponseHeader calls with `Content-Range`.
+            const origGetResponseHeader = BABYLON.WebRequest.prototype.getResponseHeader;
+            sinon.stub(BABYLON.WebRequest.prototype, "getResponseHeader").callsFake(function(...args) {
+                return (args[0] === "Content-Range") ? null : origGetResponseHeader.apply(this, args);
+            });
+
             BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
                 loader.useRangeRequests = true;
                 promises.push(loader.whenCompleteAsync());
