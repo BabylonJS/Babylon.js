@@ -17,6 +17,9 @@ export class ImageScrollBar extends BaseSlider {
     private _barImageHeight: number = 1;
     private _tempMeasure = new Measure(0, 0, 0, 0);
 
+    /** Number of 90° rotation to apply on the images when in vertical mode */
+    public num90RotationInVerticalMode = 1;
+
     /**
      * Gets or sets the image used to render the background for horizontal bar
      */
@@ -31,10 +34,10 @@ export class ImageScrollBar extends BaseSlider {
 
         this._backgroundBaseImage = value;
 
-        if (this.isVertical) {
+        if (this.isVertical && this.num90RotationInVerticalMode !== 0) {
             if (!value.isLoaded) {
                 value.onImageLoadedObservable.addOnce(() => {
-                    const rotatedValue = value._rotate90(1, true);
+                    const rotatedValue = value._rotate90(this.num90RotationInVerticalMode, true);
                     this._backgroundImage = rotatedValue;
                     if (!rotatedValue.isLoaded) {
                         rotatedValue.onImageLoadedObservable.addOnce(() => {
@@ -44,7 +47,7 @@ export class ImageScrollBar extends BaseSlider {
                     this._markAsDirty();
                 });
             } else {
-                this._backgroundImage = value._rotate90(1, true);
+                this._backgroundImage = value._rotate90(this.num90RotationInVerticalMode, true);
                 this._markAsDirty();
             }
         }
@@ -74,10 +77,10 @@ export class ImageScrollBar extends BaseSlider {
 
         this._thumbBaseImage = value;
 
-        if (this.isVertical) {
+        if (this.isVertical && this.num90RotationInVerticalMode !== 0) {
             if (!value.isLoaded) {
                 value.onImageLoadedObservable.addOnce(() => {
-                    var rotatedValue = value._rotate90(-1, true);
+                    var rotatedValue = value._rotate90(-this.num90RotationInVerticalMode, true);
                     this._thumbImage = rotatedValue;
                     if (!rotatedValue.isLoaded) {
                         rotatedValue.onImageLoadedObservable.addOnce(() => {
@@ -87,7 +90,7 @@ export class ImageScrollBar extends BaseSlider {
                     this._markAsDirty();
                 });
             } else {
-                this._thumbImage = value._rotate90(-1, true);
+                this._thumbImage = value._rotate90(-this.num90RotationInVerticalMode, true);
                 this._markAsDirty();
             }
         }
