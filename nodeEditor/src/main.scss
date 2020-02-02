@@ -7,6 +7,25 @@
     font: 14px "acumin-pro";   
 }
 
+.wait-screen {
+    display: grid;
+    justify-content: center;
+    align-content: center;
+    height: 100%;
+    width: 100%;
+    background: #464646;
+    opacity: 0.95;
+    color:white;
+    font: 24px "acumin-pro";  
+    position: absolute;
+    top: 0;
+    left: 0; 
+
+    &.hidden {
+        visibility: hidden;
+    }
+}
+
 #nodeList {
     grid-row: 1 / span 2;
     grid-column: 1;
