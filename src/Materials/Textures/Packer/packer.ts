@@ -782,7 +782,7 @@ export class TexturePacker{
                     let _t = new Texture(parsedData.sets[channels[i]], this.scene, false, false);
                     (this.sets as any)[channels[i]] = _t;
                 }
-
+                
                 resolve();
             }catch (e) {
                 return reject(e);
