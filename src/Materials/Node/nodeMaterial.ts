@@ -1301,6 +1301,21 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Creates a node material from a snippet saved in a remote file
+     * @param name defines the name of the material to create
+     * @param url defines the url to load from
+     * @param scene defines the hosting scene
+     * @returns a promise that will resolve to the new node material
+     */
+    public static ParseFromFileAsync(name: string, url: string, scene: Scene): Promise<NodeMaterial> {
+        var material = new NodeMaterial(name, scene);
+
+        return new Promise((resolve, reject) => {
+            return material.loadAsync(url).then(() => resolve(material)).catch(reject);
+        });
+    }
+
+    /**
      * Creates a node material from a snippet saved by the node material editor
      * @param snippetId defines the snippet to load
      * @param scene defines the hosting scene

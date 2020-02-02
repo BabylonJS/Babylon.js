@@ -286,6 +286,17 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
             { label: "Strict", value: AbstractMesh.OCCLUSION_TYPE_STRICT },
         ];
 
+        var materialOptions = scene.materials.map((m, i) => {
+            return {
+                label: m.name,
+                value: i
+            }});
+
+        materialOptions.splice(0, 0, {
+            label: "None",
+            value: -1
+        })
+
         return (
             <div className="pane">
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={mesh}
@@ -310,8 +321,22 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     <CheckBoxLineComponent label="Is pickable" target={mesh} propertyName="isPickable" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         mesh.material && (!mesh.material.reservedDataStore || !mesh.material.reservedDataStore.hidden) &&
-                        <TextLineComponent label="Material" value={mesh.material.name} onLink={() => this.onMaterialLink()} />
+                        <TextLineComponent label="Link to material" value={mesh.material.name} onLink={() => this.onMaterialLink()} />
                     }
+                    <OptionsLineComponent label="Active material" options={materialOptions} 
+                            target={mesh} propertyName="material" 
+                            noDirectUpdate={true}
+                            onSelect={(value: number) => {
+                                if (value < 0) {
+                                    mesh.material = null;
+                                } else {
+                                    mesh.material = scene.materials[value];
+                                }
+
+                                this.forceUpdate();
+                            }}
+                            extractValue={() => mesh.material ? scene.materials.indexOf(mesh.material) : -1}
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         mesh.isAnInstance &&
                         <TextLineComponent label="Source" value={(mesh as any).sourceMesh.name} onLink={() => this.onSourceMeshLink()} />

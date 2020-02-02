@@ -15,6 +15,7 @@ interface IOptionsLineComponentProps {
     options: ListLineOption[],
     noDirectUpdate?: boolean,
     onSelect?: (value: number) => void,
+    extractValue?: () => number,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
@@ -24,7 +25,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     constructor(props: IOptionsLineComponentProps) {
         super(props);
 
-        this.state = { value: props.target[props.propertyName] };
+        this.state = { value: this.props.extractValue ? this.props.extractValue() : props.target[props.propertyName] };
     }
 
     shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: { value: number }) {
@@ -33,7 +34,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
             return true;
         }
 
-        const newValue = nextProps.target[nextProps.propertyName];
+        const newValue = nextProps.extractValue ? nextProps.extractValue() : nextProps.target[nextProps.propertyName];
         if (newValue != null && newValue !== nextState.value) {
             nextState.value = newValue;
             return true;
@@ -58,17 +59,21 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         const value = parseInt(valueString);
         this._localChange = true;
 
-        const store = this.state.value;
+        const store = this.props.extractValue ? this.props.extractValue() : this.props.target[this.props.propertyName]
+
         if (!this.props.noDirectUpdate) {
             this.props.target[this.props.propertyName] = value;
         }
         this.setState({ value: value });
-
-        this.raiseOnPropertyChanged(value, store);
-
+        
         if (this.props.onSelect) {
             this.props.onSelect(value);
         }
+
+        const newValue = this.props.extractValue ? this.props.extractValue() : this.props.target[this.props.propertyName]
+
+        this.raiseOnPropertyChanged(newValue, store);
+
     }
 
     render() {
