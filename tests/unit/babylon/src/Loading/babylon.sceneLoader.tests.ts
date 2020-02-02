@@ -414,9 +414,15 @@ describe('Babylon Scene Loader', function() {
 
             const setRequestHeaderCalls = new Array<string>();
             const origSetRequestHeader = BABYLON.WebRequest.prototype.setRequestHeader;
-            sinon.stub(BABYLON.WebRequest.prototype, "setRequestHeader").callsFake(function(...args) {
+            const setRequestHeaderStub = sinon.stub(BABYLON.WebRequest.prototype, "setRequestHeader").callsFake(function(...args) {
                 setRequestHeaderCalls.push(args.join(": "));
                 origSetRequestHeader.apply(this, args);
+            });
+
+            // Simulate default CORS policy on some web servers that reject getResponseHeader calls with `Content-Range`.
+            const origGetResponseHeader = BABYLON.WebRequest.prototype.getResponseHeader;
+            const getResponseHeaderStub = sinon.stub(BABYLON.WebRequest.prototype, "getResponseHeader").callsFake(function(...args) {
+                return (args[0] === "Content-Range") ? null : origGetResponseHeader.apply(this, args);
             });
 
             BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
@@ -426,6 +432,8 @@ describe('Babylon Scene Loader', function() {
 
             promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/", "LevelOfDetail.glb", scene).then(() => {
                 expect(setRequestHeaderCalls, "setRequestHeaderCalls").to.have.ordered.members(expectedSetRequestHeaderCalls);
+                setRequestHeaderStub.restore();
+                getResponseHeaderStub.restore();
             }));
 
             return Promise.all(promises);
