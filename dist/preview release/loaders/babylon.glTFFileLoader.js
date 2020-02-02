@@ -98,7 +98,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -7175,7 +7175,7 @@ var GLTFFileLoader = /** @class */ (function () {
             throw new Error("First chunk format is not JSON");
         }
         // Bail if there are no other chunks.
-        if (dataReader.byteOffset + chunkLength === dataReader.buffer.byteLength) {
+        if (dataReader.byteOffset + chunkLength === length) {
             return dataReader.loadAsync(chunkLength).then(function () {
                 return { json: _this._parseJson(dataReader.readString(chunkLength)), bin: null };
             });
@@ -7205,7 +7205,7 @@ var GLTFFileLoader = /** @class */ (function () {
                         break;
                     }
                 }
-                if (dataReader.byteOffset !== dataReader.buffer.byteLength) {
+                if (dataReader.byteOffset !== length) {
                     return dataReader.loadAsync(8).then(readAsync);
                 }
                 return Promise.resolve(data);

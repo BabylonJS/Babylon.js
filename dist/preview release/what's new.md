@@ -90,6 +90,8 @@
 - Added an optional config option `initialTab` ([ycw](https://github.com/ycw/))
 - Added support for ImportAnimations ([noalak](https://github.com/noalak/))
 - Added support for Cascaded Shadow Maps ([Popov72](https://github.com/Popov72))
+- Added context menu to add `NodeMaterial` ([Deltakosh](https://github.com/deltakosh/))
+- Added option to switch material per mesh ([Deltakosh](https://github.com/deltakosh/))
 
 ### Tools
 

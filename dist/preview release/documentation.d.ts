@@ -57024,6 +57024,14 @@ declare module BABYLON {
          */
         static Parse(source: any, scene: Scene, rootUrl?: string): NodeMaterial;
         /**
+         * Creates a node material from a snippet saved in a remote file
+         * @param name defines the name of the material to create
+         * @param url defines the url to load from
+         * @param scene defines the hosting scene
+         * @returns a promise that will resolve to the new node material
+         */
+        static ParseFromFileAsync(name: string, url: string, scene: Scene): Promise<NodeMaterial>;
+        /**
          * Creates a node material from a snippet saved by the node material editor
          * @param snippetId defines the snippet to load
          * @param scene defines the hosting scene
@@ -72790,6 +72798,8 @@ declare module BABYLON.GUI {
         private _thumbHeight;
         private _barImageHeight;
         private _tempMeasure;
+        /** Number of 90° rotation to apply on the images when in vertical mode */
+        num90RotationInVerticalMode: number;
         /**
          * Gets or sets the image used to render the background for horizontal bar
          */
