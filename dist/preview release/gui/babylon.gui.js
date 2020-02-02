@@ -98,7 +98,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
-  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -11360,6 +11360,8 @@ var ImageScrollBar = /** @class */ (function (_super) {
         _this._thumbHeight = 1;
         _this._barImageHeight = 1;
         _this._tempMeasure = new _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"](0, 0, 0, 0);
+        /** Number of 90° rotation to apply on the images when in vertical mode */
+        _this.num90RotationInVerticalMode = 1;
         return _this;
     }
     Object.defineProperty(ImageScrollBar.prototype, "backgroundImage", {
@@ -11375,10 +11377,10 @@ var ImageScrollBar = /** @class */ (function (_super) {
                 return;
             }
             this._backgroundBaseImage = value;
-            if (this.isVertical) {
+            if (this.isVertical && this.num90RotationInVerticalMode !== 0) {
                 if (!value.isLoaded) {
                     value.onImageLoadedObservable.addOnce(function () {
-                        var rotatedValue = value._rotate90(1, true);
+                        var rotatedValue = value._rotate90(_this.num90RotationInVerticalMode, true);
                         _this._backgroundImage = rotatedValue;
                         if (!rotatedValue.isLoaded) {
                             rotatedValue.onImageLoadedObservable.addOnce(function () {
@@ -11389,7 +11391,7 @@ var ImageScrollBar = /** @class */ (function (_super) {
                     });
                 }
                 else {
-                    this._backgroundImage = value._rotate90(1, true);
+                    this._backgroundImage = value._rotate90(this.num90RotationInVerticalMode, true);
                     this._markAsDirty();
                 }
             }
@@ -11419,10 +11421,10 @@ var ImageScrollBar = /** @class */ (function (_super) {
                 return;
             }
             this._thumbBaseImage = value;
-            if (this.isVertical) {
+            if (this.isVertical && this.num90RotationInVerticalMode !== 0) {
                 if (!value.isLoaded) {
                     value.onImageLoadedObservable.addOnce(function () {
-                        var rotatedValue = value._rotate90(-1, true);
+                        var rotatedValue = value._rotate90(-_this.num90RotationInVerticalMode, true);
                         _this._thumbImage = rotatedValue;
                         if (!rotatedValue.isLoaded) {
                             rotatedValue.onImageLoadedObservable.addOnce(function () {
@@ -11433,7 +11435,7 @@ var ImageScrollBar = /** @class */ (function (_super) {
                     });
                 }
                 else {
-                    this._thumbImage = value._rotate90(-1, true);
+                    this._thumbImage = value._rotate90(-this.num90RotationInVerticalMode, true);
                     this._markAsDirty();
                 }
             }

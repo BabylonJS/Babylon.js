@@ -3088,6 +3088,8 @@ declare module "babylonjs-gui/2D/controls/sliders/imageScrollBar" {
         private _thumbHeight;
         private _barImageHeight;
         private _tempMeasure;
+        /** Number of 90° rotation to apply on the images when in vertical mode */
+        num90RotationInVerticalMode: number;
         /**
          * Gets or sets the image used to render the background for horizontal bar
          */
@@ -7322,6 +7324,8 @@ declare module BABYLON.GUI {
         private _thumbHeight;
         private _barImageHeight;
         private _tempMeasure;
+        /** Number of 90° rotation to apply on the images when in vertical mode */
+        num90RotationInVerticalMode: number;
         /**
          * Gets or sets the image used to render the background for horizontal bar
          */
