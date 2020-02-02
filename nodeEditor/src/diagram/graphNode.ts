@@ -228,7 +228,7 @@ export class GraphNode {
     }
     
     private _refreshFrames() {       
-        if (this._ownerCanvas._frameIsMoving) {
+        if (this._ownerCanvas._frameIsMoving || this._ownerCanvas._isLoading) {
             return;
         }
         
@@ -237,7 +237,11 @@ export class GraphNode {
             frame.syncNode(this);
         }
     }
-    private _refreshLinks() {
+
+    public _refreshLinks() {
+        if (this._ownerCanvas._isLoading) {
+            return;
+        }
         for (var link of this._links) {
             link.update();
         }

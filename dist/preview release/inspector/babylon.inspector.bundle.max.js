@@ -46491,7 +46491,8 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
             { label: "Optimistic", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["AbstractMesh"].OCCLUSION_TYPE_OPTIMISTIC },
             { label: "Strict", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["AbstractMesh"].OCCLUSION_TYPE_STRICT },
         ];
-        var materialOptions = scene.materials.map(function (m, i) {
+        var sortedMaterials = scene.materials.slice(0).sort(function (a, b) { return a.name.localeCompare(b.name); });
+        var materialOptions = sortedMaterials.map(function (m, i) {
             return {
                 label: m.name,
                 value: i
@@ -46523,10 +46524,10 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                             mesh.material = null;
                         }
                         else {
-                            mesh.material = scene.materials[value];
+                            mesh.material = sortedMaterials[value];
                         }
                         _this.forceUpdate();
-                    }, extractValue: function () { return mesh.material ? scene.materials.indexOf(mesh.material) : -1; }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    }, extractValue: function () { return mesh.material ? sortedMaterials.indexOf(mesh.material) : -1; }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 mesh.isAnInstance &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Source", value: mesh.sourceMesh.name, onLink: function () { return _this.onSourceMeshLink(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_13__["ButtonLineComponent"], { label: "Dispose", onClick: function () {
