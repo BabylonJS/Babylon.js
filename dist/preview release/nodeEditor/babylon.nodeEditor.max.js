@@ -5569,7 +5569,7 @@ exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader
 
 
 // module
-exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n\n#nodeList {\n  grid-row: 1 / span 2;\n  grid-column: 1; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 4;\n  cursor: ew-resize; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 3;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  display: grid;\n  grid-template-rows: 1fr 30px auto 30px;\n  grid-template-columns: 100%;\n  height: 100%;\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: 30px;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n  .right-panel #preview-mesh-bar {\n    grid-row: 2;\n    grid-column: 1;\n    display: flex;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-mesh-bar #file-picker {\n      display: none; }\n    .right-panel #preview-mesh-bar #file-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview-config-bar {\n    grid-row: 4;\n    grid-column: 1;\n    display: flex;\n    flex-direction: row-reverse;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-config-bar .button {\n      width: 60px; }\n    .right-panel #preview-config-bar #color-picker {\n      display: none; }\n    .right-panel #preview-config-bar #color-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview {\n    border-top: 1px solid #555555;\n    grid-row: 3;\n    grid-column: 1;\n    width: 100%;\n    display: grid;\n    outline: 0 !important;\n    user-select: none; }\n    .right-panel #preview #preview-canvas {\n      width: 100%;\n      height: 100%;\n      outline: 0 !important;\n      grid-row: 1;\n      grid-column: 1; }\n    .right-panel #preview .waitPanel {\n      width: 100%;\n      height: 100%;\n      grid-row: 1;\n      grid-column: 1;\n      color: white;\n      font-size: 18px;\n      align-content: center;\n      justify-content: center;\n      background: rgba(20, 20, 20, 0.95);\n      z-index: 10;\n      display: grid;\n      transition: opacity 250ms; }\n      .right-panel #preview .waitPanel.hidden {\n        opacity: 0;\n        pointer-events: none; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 3; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
+exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n\n.wait-screen {\n  display: grid;\n  justify-content: center;\n  align-content: center;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  opacity: 0.95;\n  color: white;\n  font: 24px \"acumin-pro\";\n  position: absolute;\n  top: 0;\n  left: 0; }\n  .wait-screen.hidden {\n    visibility: hidden; }\n\n#nodeList {\n  grid-row: 1 / span 2;\n  grid-column: 1; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 4;\n  cursor: ew-resize; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 3;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  display: grid;\n  grid-template-rows: 1fr 30px auto 30px;\n  grid-template-columns: 100%;\n  height: 100%;\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: 30px;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n  .right-panel #preview-mesh-bar {\n    grid-row: 2;\n    grid-column: 1;\n    display: flex;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-mesh-bar #file-picker {\n      display: none; }\n    .right-panel #preview-mesh-bar #file-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview-config-bar {\n    grid-row: 4;\n    grid-column: 1;\n    display: flex;\n    flex-direction: row-reverse;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-config-bar .button {\n      width: 60px; }\n    .right-panel #preview-config-bar #color-picker {\n      display: none; }\n    .right-panel #preview-config-bar #color-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview {\n    border-top: 1px solid #555555;\n    grid-row: 3;\n    grid-column: 1;\n    width: 100%;\n    display: grid;\n    outline: 0 !important;\n    user-select: none; }\n    .right-panel #preview #preview-canvas {\n      width: 100%;\n      height: 100%;\n      outline: 0 !important;\n      grid-row: 1;\n      grid-column: 1; }\n    .right-panel #preview .waitPanel {\n      width: 100%;\n      height: 100%;\n      grid-row: 1;\n      grid-column: 1;\n      color: white;\n      font-size: 18px;\n      align-content: center;\n      justify-content: center;\n      background: rgba(20, 20, 20, 0.95);\n      z-index: 10;\n      display: grid;\n      transition: opacity 250ms; }\n      .right-panel #preview .waitPanel.hidden {\n        opacity: 0;\n        pointer-events: none; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 3; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
 
 // exports
 
@@ -52775,7 +52775,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             _this.forceUpdate();
         });
     };
-    PropertyTabComponent.prototype.componentWillReceiveProps = function () {
+    PropertyTabComponent.prototype.componentWillUnmount = function () {
         this.props.globalState.onBuiltObservable.remove(this._onBuiltObserver);
     };
     PropertyTabComponent.prototype.processInputBlockUpdate = function (ib) {
@@ -53560,6 +53560,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         _this._ctrlKeyIsPressed = false;
         _this._oldY = -1;
         _this._frameIsMoving = false;
+        _this._isLoading = false;
         props.globalState.onSelectionChangedObservable.add(function (selection) {
             if (!selection) {
                 _this._selectedNodes = [];
@@ -55000,7 +55001,7 @@ var GraphNode = /** @class */ (function () {
         return this._links.filter(function (link) { return link.portA.connectionPoint === point || link.portB.connectionPoint === point; });
     };
     GraphNode.prototype._refreshFrames = function () {
-        if (this._ownerCanvas._frameIsMoving) {
+        if (this._ownerCanvas._frameIsMoving || this._ownerCanvas._isLoading) {
             return;
         }
         // Frames
@@ -55010,6 +55011,9 @@ var GraphNode = /** @class */ (function () {
         }
     };
     GraphNode.prototype._refreshLinks = function () {
+        if (this._ownerCanvas._isLoading) {
+            return;
+        }
         for (var _i = 0, _a = this._links; _i < _a.length; _i++) {
             var link = _a[_i];
             link.update();
@@ -56785,6 +56789,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 __webpack_require__(/*! ./main.scss */ "./main.scss");
+;
 var GraphEditor = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GraphEditor, _super);
     function GraphEditor(props) {
@@ -56797,9 +56802,6 @@ var GraphEditor = /** @class */ (function (_super) {
         _this._copiedFrame = null;
         _this._mouseLocationX = 0;
         _this._mouseLocationY = 0;
-        _this.state = {
-            showPreviewPopUp: false
-        };
         _this.handlePopUp = function () {
             _this.setState({
                 showPreviewPopUp: true
@@ -57213,6 +57215,7 @@ var GraphEditor = /** @class */ (function (_super) {
     GraphEditor.prototype.build = function () {
         var _this = this;
         var editorData = this.props.globalState.nodeMaterial.editorData;
+        this._graphCanvas._isLoading = true; // Will help loading large graphes
         if (editorData instanceof Array) {
             editorData = {
                 locations: editorData
@@ -57247,27 +57250,46 @@ var GraphEditor = /** @class */ (function (_super) {
         }
         this.reOrganize(editorData);
     };
+    GraphEditor.prototype.showWaitScreen = function () {
+        var _a;
+        (_a = this.props.globalState.hostDocument.querySelector(".wait-screen")) === null || _a === void 0 ? void 0 : _a.classList.remove("hidden");
+    };
+    GraphEditor.prototype.hideWaitScreen = function () {
+        var _a;
+        (_a = this.props.globalState.hostDocument.querySelector(".wait-screen")) === null || _a === void 0 ? void 0 : _a.classList.add("hidden");
+    };
     GraphEditor.prototype.reOrganize = function (editorData) {
+        var _this = this;
         if (editorData === void 0) { editorData = null; }
-        if (!editorData || !editorData.locations) {
-            this._graphCanvas.distributeGraph();
-        }
-        else {
-            // Locations
-            for (var _i = 0, _a = editorData.locations; _i < _a.length; _i++) {
-                var location = _a[_i];
-                for (var _b = 0, _c = this._graphCanvas.nodes; _b < _c.length; _b++) {
-                    var node = _c[_b];
-                    if (node.block && node.block.uniqueId === location.blockId) {
-                        node.x = location.x;
-                        node.y = location.y;
-                        node.cleanAccumulation();
-                        break;
+        this.showWaitScreen();
+        this._graphCanvas._isLoading = true; // Will help loading large graphes
+        setTimeout(function () {
+            if (!editorData || !editorData.locations) {
+                _this._graphCanvas.distributeGraph();
+            }
+            else {
+                // Locations
+                for (var _i = 0, _a = editorData.locations; _i < _a.length; _i++) {
+                    var location = _a[_i];
+                    for (var _b = 0, _c = _this._graphCanvas.nodes; _b < _c.length; _b++) {
+                        var node = _c[_b];
+                        if (node.block && node.block.uniqueId === location.blockId) {
+                            node.x = location.x;
+                            node.y = location.y;
+                            node.cleanAccumulation();
+                            break;
+                        }
                     }
                 }
+                _this._graphCanvas.processEditorData(editorData);
             }
-            this._graphCanvas.processEditorData(editorData);
-        }
+            _this._graphCanvas._isLoading = false;
+            for (var _d = 0, _e = _this._graphCanvas.nodes; _d < _e.length; _d++) {
+                var node = _e[_d];
+                node._refreshLinks();
+            }
+            _this.hideWaitScreen();
+        });
     };
     GraphEditor.prototype.onPointerDown = function (evt) {
         this._startX = evt.clientX;
@@ -57377,7 +57399,8 @@ var GraphEditor = /** @class */ (function (_super) {
                     !this.state.showPreviewPopUp ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewAreaComponent__WEBPACK_IMPORTED_MODULE_12__["PreviewAreaComponent"], { globalState: this.props.globalState, width: this._rightWidth }) : null),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_log_logComponent__WEBPACK_IMPORTED_MODULE_5__["LogComponent"], { globalState: this.props.globalState })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_messageDialog__WEBPACK_IMPORTED_MODULE_8__["MessageDialogComponent"], { globalState: this.props.globalState }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "blocker" }, "Node Material Editor runs only on desktop")));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "blocker" }, "Node Material Editor runs only on desktop"),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "wait-screen hidden" }, "Processing...please wait")));
     };
     return GraphEditor;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
