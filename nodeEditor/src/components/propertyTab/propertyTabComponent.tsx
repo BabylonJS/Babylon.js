@@ -56,7 +56,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         });
     }
 
-    componentWillReceiveProps() {
+    componentWillUnmount() {
         this.props.globalState.onBuiltObservable.remove(this._onBuiltObserver);
     }
 
