@@ -31,13 +31,11 @@ uniform vec2 vOpacityInfos;
 void main(void) {
 	#include<instancesVertex>
 
-    #ifdef FOG
     vec4 worldPos = finalWorld * vec4(position, 1.0);
-    #endif
 
     #include<fogVertex>
 
-    vec4 cameraSpacePosition = view * finalWorld * vec4(position, 1.0);
+    vec4 cameraSpacePosition = view * worldPos;
     gl_Position = projection * cameraSpacePosition;
 
 #ifdef OPACITY
