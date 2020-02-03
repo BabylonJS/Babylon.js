@@ -200,7 +200,7 @@
                         <div class="option noSubSelect removeOnDiff" id="clearButtonMobile"><img
                                 src="css/img/clearButton.svg">Clear</div>
                         <div class="option noSubSelect removeOnDiff" id="diffButtonMobile"><img
-                                src="css/img/DiffButton.svg">Diff</div>
+                                src="css/img/diffButton.svg">Diff</div>
                         <div class="option noSubSelect displayOnDiff" id="previousButtonMobile"><img
                                 src="css/img/previousButton.svg">Previous</div>
                         <div class="option noSubSelect displayOnDiff" id="nextButtonMobile"><img
@@ -263,9 +263,6 @@
                         <div class="option subSelect removeOnDiff"><img src="css/img/examplesButton.svg">Links / Tools
                             <div class="toDisplaySub displayFooterLinks">
                                 <div class="option link">
-                                    <a target='_new' href="https://www.netlify.com/">Deployed by Netlify</a>
-                                </div>
-                                <div class="option link">
                                     <a target='_new' href="https://forum.babylonjs.com/">Forum</a>
                                 </div>
                                 <div class="option link">
@@ -320,9 +317,6 @@
         <div class="navbarBottom">
             <div id="statusBar"></div>
             <div class="links">
-                <div class='link'>
-                    <a target='_new' href="https://www.netlify.com/">Deployed by Netlify</a>
-                </div>
                 <div class='link'>
                     <a target='_new' href="https://forum.babylonjs.com/">Forum</a>
                 </div>
@@ -386,14 +380,14 @@
             </div>
         </div>
 
-        
+
         <!-- Pep -->
         <script src="js/libs/pep.min.js"></script>
         <!-- For canvas/code separator -->
         <script src="js/libs/split.js"></script>
 
         <!-- DatGUI -->
-        <script src="js/libs/dat.gui.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
         <!-- jszip -->
         <script src="js/libs/jszip.min.js"></script>
         <script src="js/libs/fileSaver.js"></script>
@@ -417,16 +411,20 @@
         <script src="https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
 
         <!-- Extensions -->
-        <script src="https://cdn.jsdelivr.net/gh/BabylonJS/Extensions@master/ClonerSystem/src/babylonx.cloner.js" async>
+        <script
+            src="https://rawcdn.githack.com/BabylonJS/Extensions/f43ab677b4bca0a6ab77132d3f785be300382760/ClonerSystem/src/babylonx.cloner.js"
+            async>
         </script>
         <script
-            src="https://cdn.jsdelivr.net/gh/BabylonJS/Extensions@master/CompoundShader/src/babylonx.CompoundShader.js"
+            src="https://rawcdn.githack.com/BabylonJS/Extensions/785013ec55b210d12263c91f3f0a2ae70cf0bc8a/CompoundShader/src/babylonx.CompoundShader.js"
             async></script>
 
         <!-- Scene Manager -->
-        <script src="https://cdn.jsdelivr.net/gh/MackeyK24/MackeyK24.github.io@master/toolkit/babylon.manager.js">
+        <script
+            src="https://rawcdn.githack.com/MackeyK24/MackeyK24.github.io/14fda491c50cfca6d3e2f6cbc5e6afe22cc455d6/toolkit/babylon.manager.js">
         </script>
-        <script src="https://cdn.jsdelivr.net/gh/MackeyK24/MackeyK24.github.io@master/toolkit/babylon.navmesh.js">
+        <script
+            src="https://rawcdn.githack.com/MackeyK24/MackeyK24.github.io/14fda491c50cfca6d3e2f6cbc5e6afe22cc455d6/toolkit/babylon.navmesh.js">
         </script>
 
         <!-- Monaco -->
