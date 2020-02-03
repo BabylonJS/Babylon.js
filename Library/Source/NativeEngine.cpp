@@ -285,7 +285,7 @@ namespace Babylon
         init.resolution.width = width;
         init.resolution.height = height;
         init.resolution.reset = BGFX_RESET_FLAGS;
-        init.callback = &_bgfxCallback;
+        init.callback = &s_bgfxCallback;
         bgfx::init(init);
         bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
         bgfx::setViewRect(0, 0, 0, init.resolution.width, init.resolution.height);
@@ -1370,7 +1370,7 @@ namespace Babylon
         bgfx::FrameBufferHandle fbh = BGFX_INVALID_HANDLE;
         bgfx::requestScreenShot(fbh, "GetImageData");
 
-        while (_bgfxCallback.m_screenShotBitmap.empty())
+        while (s_bgfxCallback.m_screenShotBitmap.empty())
         {
             bgfx::frame();
         }
@@ -1394,14 +1394,14 @@ namespace Babylon
             for (auto px = x; px < (x + width); px++)
             {
                 // bgfx screenshot is BGRA
-                *bitmap++ = _bgfxCallback.m_screenShotBitmap[(py * sourceWidth + px) * 4 + 2];
-                *bitmap++ = _bgfxCallback.m_screenShotBitmap[(py * sourceWidth + px) * 4 + 1];
-                *bitmap++ = _bgfxCallback.m_screenShotBitmap[(py * sourceWidth + px) * 4 + 0];
-                *bitmap++ = _bgfxCallback.m_screenShotBitmap[(py * sourceWidth + px) * 4 + 3];
+                *bitmap++ = s_bgfxCallback.m_screenShotBitmap[(py * sourceWidth + px) * 4 + 2];
+                *bitmap++ = s_bgfxCallback.m_screenShotBitmap[(py * sourceWidth + px) * 4 + 1];
+                *bitmap++ = s_bgfxCallback.m_screenShotBitmap[(py * sourceWidth + px) * 4 + 0];
+                *bitmap++ = s_bgfxCallback.m_screenShotBitmap[(py * sourceWidth + px) * 4 + 3];
             }
         }
 
-        _bgfxCallback.m_screenShotBitmap.clear();
+        s_bgfxCallback.m_screenShotBitmap.clear();
 
         return Napi::External<ImageData>::New(info.Env(), imageData);
     }
