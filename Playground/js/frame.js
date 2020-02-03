@@ -1,9 +1,8 @@
-﻿
-var engine = null;
+﻿var engine = null;
 var canvas = null;
 var scene = null;
 
-fastEval = function(code) {
+fastEval = function (code) {
     var head = document.getElementsByTagName('head')[0];
     var script = document.createElement('script');
     script.setAttribute('type', 'text/javascript');
@@ -16,11 +15,11 @@ fastEval = function(code) {
     head.appendChild(script);
 }
 
-handleException = function(e) {
+handleException = function (e) {
     console.error(e);
 }
 
-run = function() {
+run = function () {
     var snippetUrl = "https://snippet.babylonjs.com";
     var fpsLabel = document.getElementById("fpsLabel");
     var refreshAnchor = document.getElementById("refresh");
@@ -40,7 +39,7 @@ run = function() {
 
     BABYLON.Engine.ShadersRepository = "/src/Shaders/";
 
-    compileAndRun = function(code) {
+    compileAndRun = function (code) {
         try {
 
             if (!BABYLON.Engine.isSupported()) {
@@ -56,7 +55,10 @@ run = function() {
             canvas = document.getElementById("renderCanvas");
 
             createDefaultEngine = function () {
-                return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+                return new BABYLON.Engine(canvas, true, {
+                    preserveDrawingBuffer: true,
+                    stencil: true
+                });
             }
 
             if (code.indexOf("createEngine") !== -1) {
@@ -118,20 +120,20 @@ run = function() {
                 }
 
                 fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
-            }.bind(this));         
+            }.bind(this));
 
         } catch (e) {
             // showError(e.message);
         }
     };
-    window.addEventListener("resize", function() {
+    window.addEventListener("resize", function () {
         if (engine) {
             engine.resize();
         }
     });
 
     // UI
-    var cleanHash = function() {
+    var cleanHash = function () {
         var splits = decodeURIComponent(location.hash.substr(1)).split("#");
 
         if (splits.length > 2) {
@@ -141,13 +143,13 @@ run = function() {
         location.hash = splits.join("#");
     };
 
-    var checkHash = function() {
+    var checkHash = function () {
         if (location.hash) {
             cleanHash();
 
             try {
                 var xmlHttp = new XMLHttpRequest();
-                xmlHttp.onreadystatechange = function() {
+                xmlHttp.onreadystatechange = function () {
                     if (xmlHttp.readyState === 4) {
                         if (xmlHttp.status === 200) {
                             var snippetCode = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload).code;
@@ -156,7 +158,7 @@ run = function() {
                             var refresh = document.getElementById("refresh");
 
                             if (refresh) {
-                                refresh.addEventListener("click", function() {
+                                refresh.addEventListener("click", function () {
                                     compileAndRun(snippetCode);
                                 });
                             }
