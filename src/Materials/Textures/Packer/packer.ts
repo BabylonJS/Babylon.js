@@ -1,5 +1,4 @@
 import { Engine } from "../../../Engines/engine";
-import { Constants } from "../../../Engines/constants";
 import { AbstractMesh } from "../../../Meshes/abstractMesh";
 import { VertexBuffer } from "../../../Meshes/buffer";
 import { Scene } from "../../../scene";
@@ -42,13 +41,13 @@ export interface ITexturePackerOptions{
     colnum?: number;
 
     /**
-	 * flag to update the input meshes to the new packed texture after compilation. Defaults to true.
-	 */
+    * flag to update the input meshes to the new packed texture after compilation. Defaults to true.
+    */
     updateInputMeshes?: boolean;
 
     /**
-	* boolean flag to dispose all the source textures.  Defaults to true.
-	*/
+    * boolean flag to dispose all the source textures.  Defaults to true.
+    */
     disposeSources?: boolean;
 
     /**
@@ -117,18 +116,18 @@ export interface ITexturePackerJSON{
 export class TexturePacker{
 
     /** Packer Layout Constant 0 */
-    public static readonly LAYOUT_STRIP = Constants.LAYOUT_STRIP;
+    public static readonly LAYOUT_STRIP = 0;
     /** Packer Layout Constant 1 */
-    public static readonly LAYOUT_POWER2 = Constants.LAYOUT_POWER2;
+    public static readonly LAYOUT_POWER2 = 1;
     /** Packer Layout Constant 2 */
-    public static readonly LAYOUT_COLNUM = Constants.LAYOUT_COLNUM;
+    public static readonly LAYOUT_COLNUM = 2;
 
     /** Packer Layout Constant 0 */
-    public static readonly SUBUV_WRAP = Constants.SUBUV_WRAP;
+    public static readonly SUBUV_WRAP = 0;
     /** Packer Layout Constant 1 */
-    public static readonly SUBUV_EXTEND = Constants.SUBUV_EXTEND;
+    public static readonly SUBUV_EXTEND = 1;
     /** Packer Layout Constant 2 */
-    public static readonly SUBUV_COLOR = Constants.SUBUV_COLOR;
+    public static readonly SUBUV_COLOR = 2;
 
     /** The Name of the Texture Package */
     public name: string;
@@ -224,11 +223,6 @@ export class TexturePacker{
         this.sets = {};
         this.frames = [];
 
-        /**
-        * Create the promise and then run through the materials on the meshes.
-        */
-        this.promise = null;
-
         return this;
     }
 
@@ -301,6 +295,7 @@ export class TexturePacker{
                     if (doneCount == expecting) {
                         done();
                         resolve();
+                        return;
                     }
                 };
 
@@ -316,14 +311,14 @@ export class TexturePacker{
 
                     updateDt();
 
-                }else {
+                } else {
 
                     let setTexture = (mat as any)[setName];
                     let img = new Image();
 
                     if (setTexture instanceof DynamicTexture) {
                         img.src = setTexture.getContext().canvas.toDataURL("image/png");
-                    }else {
+                    } else {
                         img.src = setTexture!.url;
                     }
 
@@ -334,6 +329,7 @@ export class TexturePacker{
 
                         tcx.setTransform(1, 0, 0, -1, 0, 0);
                         let cellOffsets = [ 0, 0, 1, 0, 1, 1, 0, 1, -1, 1, -1, 0, -1 - 1, 0, -1, 1, -1];
+
                         switch (this.options.paddingMode){
                             //Wrap Mode
                             case 0:
@@ -516,7 +512,7 @@ export class TexturePacker{
             //Update Output UVs
             if (update) {
                 this._updateMeshUV(m, i);
-                this._updateTextureRefrences(m);
+                this._updateTextureReferences(m);
             }
         }
     }
@@ -592,7 +588,7 @@ export class TexturePacker{
     * @param m is the mesh to target
     * @param force all channels on the packer to be set.
     */
-    private _updateTextureRefrences(m: AbstractMesh, force: boolean = false): void {
+    private _updateTextureReferences(m: AbstractMesh, force: boolean = false): void {
         let mat = m.material;
         let sKeys = Object.keys(this.sets);
 
@@ -612,7 +608,7 @@ export class TexturePacker{
                     _dispose((mat as any)[setName]);
                     (mat as any)[setName] = (this.sets as any)[setName];
                 }
-            }else {
+            } else {
                 if ((mat as any)[setName] !== null) {
                     _dispose((mat as any)[setName]);
                 }
@@ -630,7 +626,7 @@ export class TexturePacker{
     public setMeshToFrame(m: AbstractMesh, frameID: number, updateMaterial: boolean = false): void {
         this._updateMeshUV(m, frameID);
         if (updateMaterial) {
-            this._updateTextureRefrences(m, true);
+            this._updateTextureReferences(m, true);
         }
     }
 
@@ -644,6 +640,7 @@ export class TexturePacker{
                     if (this.meshes.length === 0) {
                         //Must be a JSON load!
                         resolve();
+                        return;
                     }
                     let done = 0;
                     const doneCheck = (mat: Material) => {
@@ -686,15 +683,14 @@ export class TexturePacker{
                             doneCheck((material as Material));
                         });
                     }
-                }catch (e) {
+                } catch (e) {
                     return reject(e);
                 }
             });
     }
 
     /**
-    * Updates a Meshes materials to use the texture packer channels
-    * @param m is the mesh to target
+    * Disposes all textures associated with this packer
     */
     public dispose(): void {
         let sKeys = Object.keys(this.sets);
@@ -735,7 +731,7 @@ export class TexturePacker{
                     (pack.frames as Array<number>).push(_f.scale.x, _f.scale.y, _f.offset.x, _f.offset.y);
                 }
             success(pack);
-            }catch (err) {
+            } catch (err) {
                 return;
             }
         });
@@ -754,10 +750,8 @@ export class TexturePacker{
     /**
     * Public method to load a texturePacker JSON file.
     * @param data of the JSON file in string format.
-    * @returns Promise<void>
     */
-    public updateFromJSON(data: string): Promise<void> {
-        return new Promise ((resolve, reject) => {
+    public updateFromJSON(data: string): void {
             try {
                 let parsedData: ITexturePackerJSON = JSON.parse(data);
                 this.name = parsedData.name;
@@ -782,11 +776,8 @@ export class TexturePacker{
                     let _t = new Texture(parsedData.sets[channels[i]], this.scene, false, false);
                     (this.sets as any)[channels[i]] = _t;
                 }
-                
-                resolve();
-            }catch (e) {
-                return reject(e);
+            } catch (e) {
+
             }
-        });
     }
 }
