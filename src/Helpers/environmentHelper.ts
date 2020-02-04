@@ -11,7 +11,6 @@ import { Texture } from "../Materials/Textures/texture";
 import { MirrorTexture } from "../Materials/Textures/mirrorTexture";
 import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { Constants } from "../Engines/constants";
 
 import "../Meshes/Builders/planeBuilder";

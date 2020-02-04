@@ -7,7 +7,6 @@ import { IShadowLight } from "../../Lights/shadowLight";
 import { Effect } from "../../Materials/effect";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { Constants } from "../../Engines/constants";
 
 import "../../Shaders/shadowMap.fragment";

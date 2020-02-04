@@ -4,7 +4,6 @@ import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTextur
 import { ShadowGenerator } from "./shadowGenerator";
 import { CascadedShadowGenerator } from "./cascadedShadowGenerator";
 import { SceneComponentConstants, ISceneSerializableComponent } from "../../sceneComponent";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { AbstractScene } from "../../abstractScene";
 // Adds the parser to the scene parsers.
 AbstractScene.AddParser(SceneComponentConstants.NAME_SHADOWGENERATOR, (parsedData: any, scene: Scene) => {
