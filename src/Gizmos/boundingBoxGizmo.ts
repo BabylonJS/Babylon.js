@@ -10,7 +10,6 @@ import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";
 import { BoxBuilder } from "../Meshes/Builders/boxBuilder";
 import { LinesBuilder } from "../Meshes/Builders/linesBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";

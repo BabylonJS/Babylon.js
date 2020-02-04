@@ -3,7 +3,6 @@ import { Observer } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene, IDisposable } from "../scene";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { PerfCounter } from '../Misc/perfCounter';
 /**
  * This class can be used to get instrumentation data from a Babylon engine
