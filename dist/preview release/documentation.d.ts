@@ -579,17 +579,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /**
-     * @hidden
-     **/
-    export class _TimeToken {
-        _startTimeQuery: Nullable<WebGLQuery>;
-        _endTimeQuery: Nullable<WebGLQuery>;
-        _timeElapsedQuery: Nullable<WebGLQuery>;
-        _timeElapsedQueryEnded: boolean;
-    }
-}
-declare module BABYLON {
     /** Defines the cross module used constants to avoid circular dependncies */
     export class Constants {
         /** Defines that alpha blending is disabled */
@@ -17992,8 +17981,9 @@ declare module BABYLON {
         /**
          * Parse properties from a JSON object
          * @param serializationObject defines the JSON object
+         * @param scene defines the hosting scene
          */
-        parse(serializationObject: any): void;
+        parse(serializationObject: any, scene: Scene): void;
     }
 }
 declare module BABYLON {
@@ -18677,6 +18667,84 @@ declare module BABYLON {
          * @param serializationObject defines the JSON object
          */
         parse(serializationObject: any): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Particle emitter emitting particles from the inside of a box.
+     * It emits the particles randomly between 2 given directions.
+     */
+    export class MeshParticleEmitter implements IParticleEmitterType {
+        /** Defines the mesh to use as source */
+        mesh?: AbstractMesh | undefined;
+        private _indices;
+        private _positions;
+        private _normals;
+        private _storedNormal;
+        /**
+         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+         */
+        direction1: Vector3;
+        /**
+         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+         */
+        direction2: Vector3;
+        /**
+         * Gets or sets a boolean indicating that particle directions must be built from mesh face normals
+         */
+        useMeshNormalsForDirection: boolean;
+        /**
+         * Creates a new instance MeshParticleEmitter
+         * @param mesh defines the mesh to use as source
+         */
+        constructor(
+        /** Defines the mesh to use as source */
+        mesh?: AbstractMesh | undefined);
+        /**
+         * Called by the particle System when the direction is computed for the created particle.
+         * @param worldMatrix is the world matrix of the particle system
+         * @param directionToUpdate is the direction vector to update with the result
+         * @param particle is the particle we are computed the direction for
+         */
+        startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void;
+        /**
+         * Called by the particle System when the position is computed for the created particle.
+         * @param worldMatrix is the world matrix of the particle system
+         * @param positionToUpdate is the position vector to update with the result
+         * @param particle is the particle we are computed the position for
+         */
+        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+        /**
+         * Clones the current emitter and returns a copy of it
+         * @returns the new emitter
+         */
+        clone(): MeshParticleEmitter;
+        /**
+         * Called by the GPUParticleSystem to setup the update shader
+         * @param effect defines the update shader
+         */
+        applyToShader(effect: Effect): void;
+        /**
+         * Returns a string to use to update the GPU particles update shader
+         * @returns a string containng the defines string
+         */
+        getEffectDefines(): string;
+        /**
+         * Returns the string "BoxParticleEmitter"
+         * @returns a string containing the class name
+         */
+        getClassName(): string;
+        /**
+         * Serializes the particle system to a JSON object.
+         * @returns the JSON object
+         */
+        serialize(): any;
+        /**
+         * Parse properties from a JSON object
+         * @param serializationObject defines the JSON object
+         * @param scene defines the hosting scene
+         */
+        parse(serializationObject: any, scene: Scene): void;
     }
 }
 declare module BABYLON {
@@ -38221,6 +38289,13 @@ declare module BABYLON {
          */
         pinchDeltaPercentage: number;
         /**
+         * When useNaturalPinchZoom is true, multi touch zoom will zoom in such
+         * that any object in the plane at the camera's target point will scale
+         * perfectly with finger motion.
+         * Overrides pinchDeltaPercentage and pinchPrecision.
+         */
+        useNaturalPinchZoom: boolean;
+        /**
          * Defines the pointer panning sensibility or how fast is the camera moving.
          */
         panningSensibility: number;
@@ -38570,6 +38645,15 @@ declare module BABYLON {
          */
         get pinchDeltaPercentage(): number;
         set pinchDeltaPercentage(value: number);
+        /**
+         * Gets or Set the pointer use natural pinch zoom to override the pinch precision
+         * and pinch delta percentage.
+         * When useNaturalPinchZoom is true, multi touch zoom will zoom in such
+         * that any object in the plane at the camera's target point will scale
+         * perfectly with finger motion.
+         */
+        get useNaturalPinchZoom(): boolean;
+        set useNaturalPinchZoom(value: boolean);
         /**
          * Gets or Set the pointer panning sensibility or how fast is the camera moving.
          */
@@ -42654,48 +42738,44 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * WebXR Camera which holds the views for the xrSession
-     * @see https://doc.babylonjs.com/how_to/webxr
+     * @see https://doc.babylonjs.com/how_to/webxr_camera
      */
     export class WebXRCamera extends FreeCamera {
         private _xrSessionManager;
+        private _firstFrame;
+        private _referenceQuaternion;
+        private _referencedPosition;
+        private _xrInvPositionCache;
+        private _xrInvQuaternionCache;
         /**
          * Should position compensation execute on first frame.
          * This is used when copying the position from a native (non XR) camera
          */
         compensateOnFirstFrame: boolean;
-        private _firstFrame;
-        private _referencedPosition;
-        private _referenceQuaternion;
-        private _xrInvPositionCache;
-        private _xrInvQuaternionCache;
-        private _realWorldHeight;
-        /**
-         * Prevent the camera from calculating the real-world height
-         * If you are not using the user's height disable this for better performance
-         */
-        disableRealWorldHeightCalculation: boolean;
-        /**
-         * Return the user's height, unrelated to the current ground.
-         */
-        get realWorldHeight(): number;
         /**
          * Creates a new webXRCamera, this should only be set at the camera after it has been updated by the xrSessionManager
          * @param name the name of the camera
          * @param scene the scene to add the camera to
+         * @param _xrSessionManager a constructed xr session manager
          */
         constructor(name: string, scene: Scene, _xrSessionManager: WebXRSessionManager);
-        private _updateNumberOfRigCameras;
+        /**
+         * Return the user's height, unrelated to the current ground.
+         * This will be the y position of this camera, when ground level is 0.
+         */
+        get realWorldHeight(): number;
+        /** @hidden */
+        _updateForDualEyeDebugging(): void;
         /**
          * Sets this camera's transformation based on a non-vr camera
          * @param otherCamera the non-vr camera to copy the transformation from
          * @param resetToBaseReferenceSpace should XR reset to the base reference space
          */
         setTransformationFromNonVRCamera(otherCamera?: Camera, resetToBaseReferenceSpace?: boolean): void;
-        /** @hidden */
-        _updateForDualEyeDebugging(): void;
+        private _updateFromXRSession;
+        private _updateNumberOfRigCameras;
         private _updateReferenceSpace;
         private _updateReferenceSpaceOffset;
-        private _updateFromXRSession;
     }
 }
 declare module BABYLON {
@@ -43026,12 +43106,12 @@ declare module BABYLON {
          * Observers registered here will be triggered when the state of a button changes
          * State change is either pressed / touched / value
          */
-        onButtonStateChanged: Observable<WebXRControllerComponent>;
+        onButtonStateChangedObservable: Observable<WebXRControllerComponent>;
         /**
          * If axes are available for this component (like a touchpad or thumbstick) the observers will be notified when
          * the axes data changes
          */
-        onAxisValueChanged: Observable<{
+        onAxisValueChangedObservable: Observable<{
             x: number;
             y: number;
         }>;
@@ -44056,7 +44136,7 @@ declare module BABYLON {
     /**
      * Represents an XR controller
      */
-    export class WebXRController {
+    export class WebXRInputSource {
         private _scene;
         /** The underlying input source for the controller  */
         inputSource: XRInputSource;
@@ -44090,7 +44170,7 @@ declare module BABYLON {
          * The object provided as event data is this controller, after associated assets were disposed.
          * uniqueId is still available.
          */
-        onDisposeObservable: Observable<WebXRController>;
+        onDisposeObservable: Observable<WebXRInputSource>;
         private _tmpQuaternion;
         private _tmpVector;
         private _uniqueId;
@@ -44115,10 +44195,11 @@ declare module BABYLON {
          */
         updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace): void;
         /**
-         * Gets a world space ray coming from the controller
+         * Gets a world space ray coming from the pointer or grip
          * @param result the resulting ray
+         * @param gripIfAvailable use the grip mesh instead of the pointer, if available
          */
-        getWorldPointerRayToRef(result: Ray): void;
+        getWorldPointerRayToRef(result: Ray, gripIfAvailable?: boolean): void;
         /**
          * Disposes of the object
          */
@@ -44171,18 +44252,18 @@ declare module BABYLON {
         /**
          * XR controllers being tracked
          */
-        controllers: Array<WebXRController>;
+        controllers: Array<WebXRInputSource>;
         private _frameObserver;
         private _sessionEndedObserver;
         private _sessionInitObserver;
         /**
          * Event when a controller has been connected/added
          */
-        onControllerAddedObservable: Observable<WebXRController>;
+        onControllerAddedObservable: Observable<WebXRInputSource>;
         /**
          * Event when a controller has been removed/disconnected
          */
-        onControllerRemovedObservable: Observable<WebXRController>;
+        onControllerRemovedObservable: Observable<WebXRInputSource>;
         /**
          * Initializes the WebXRInput
          * @param xrSessionManager the xr session manager for this session
@@ -44262,6 +44343,91 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Renders a layer on top of an existing scene
+     */
+    export class UtilityLayerRenderer implements IDisposable {
+        /** the original scene that will be rendered on top of */
+        originalScene: Scene;
+        private _pointerCaptures;
+        private _lastPointerEvents;
+        private static _DefaultUtilityLayer;
+        private static _DefaultKeepDepthUtilityLayer;
+        private _sharedGizmoLight;
+        private _renderCamera;
+        /**
+         * Gets the camera that is used to render the utility layer (when not set, this will be the last active camera)
+         * @returns the camera that is used when rendering the utility layer
+         */
+        getRenderCamera(): Camera;
+        /**
+         * Sets the camera that should be used when rendering the utility layer (If set to null the last active camera will be used)
+         * @param cam the camera that should be used when rendering the utility layer
+         */
+        setRenderCamera(cam: Nullable<Camera>): void;
+        /**
+         * @hidden
+         * Light which used by gizmos to get light shading
+         */
+        _getSharedGizmoLight(): HemisphericLight;
+        /**
+         * If the picking should be done on the utility layer prior to the actual scene (Default: true)
+         */
+        pickUtilitySceneFirst: boolean;
+        /**
+         * A shared utility layer that can be used to overlay objects into a scene (Depth map of the previous scene is cleared before drawing on top of it)
+         */
+        static get DefaultUtilityLayer(): UtilityLayerRenderer;
+        /**
+         * A shared utility layer that can be used to embed objects into a scene (Depth map of the previous scene is not cleared before drawing on top of it)
+         */
+        static get DefaultKeepDepthUtilityLayer(): UtilityLayerRenderer;
+        /**
+         * The scene that is rendered on top of the original scene
+         */
+        utilityLayerScene: Scene;
+        /**
+         *  If the utility layer should automatically be rendered on top of existing scene
+        */
+        shouldRender: boolean;
+        /**
+         * If set to true, only pointer down onPointerObservable events will be blocked when picking is occluded by original scene
+         */
+        onlyCheckPointerDownEvents: boolean;
+        /**
+         * If set to false, only pointerUp, pointerDown and pointerMove will be sent to the utilityLayerScene (false by default)
+         */
+        processAllEvents: boolean;
+        /**
+         * Observable raised when the pointer move from the utility layer scene to the main scene
+         */
+        onPointerOutObservable: Observable<number>;
+        /** Gets or sets a predicate that will be used to indicate utility meshes present in the main scene */
+        mainSceneTrackerPredicate: (mesh: Nullable<AbstractMesh>) => boolean;
+        private _afterRenderObserver;
+        private _sceneDisposeObserver;
+        private _originalPointerObserver;
+        /**
+         * Instantiates a UtilityLayerRenderer
+         * @param originalScene the original scene that will be rendered on top of
+         * @param handleEvents boolean indicating if the utility layer should handle events
+         */
+        constructor(
+        /** the original scene that will be rendered on top of */
+        originalScene: Scene, handleEvents?: boolean);
+        private _notifyObservers;
+        /**
+         * Renders the utility layers scene on top of the original scene
+         */
+        render(): void;
+        /**
+         * Disposes of the renderer
+         */
+        dispose(): void;
+        private _updateCamera;
+    }
+}
+declare module BABYLON {
+    /**
      * Options interface for the pointer selection module
      */
     export interface IWebXRControllerPointerSelectionOptions {
@@ -44296,6 +44462,14 @@ declare module BABYLON {
          * Defaults to 1.
          */
         gazeModePointerMovedFactor?: number;
+        /**
+         * Should meshes created here be added to a utility layer or the main scene
+         */
+        useUtilityLayer?: boolean;
+        /**
+         * if provided, this scene will be used to render meshes.
+         */
+        customUtilityLayerScene?: Scene;
     }
     /**
      * A module that will enable pointer selection for motion controllers of XR Input Sources
@@ -44374,7 +44548,7 @@ declare module BABYLON {
          * @param id the pointer id to search for
          * @returns the controller that correlates to this id or null if not found
          */
-        getXRControllerByPointerId(id: number): Nullable<WebXRController>;
+        getXRControllerByPointerId(id: number): Nullable<WebXRInputSource>;
         protected _onXRFrame(_xrFrame: XRFrame): void;
         private _attachController;
         private _attachScreenRayMode;
@@ -44618,6 +44792,14 @@ declare module BABYLON {
          * If main component is used (no thumbstick), how long should the "long press" take before teleporting
          */
         timeToTeleport?: number;
+        /**
+         * Should meshes created here be added to a utility layer or the main scene
+         */
+        useUtilityLayer?: boolean;
+        /**
+         * if provided, this scene will be used to render meshes.
+         */
+        customUtilityLayerScene?: Scene;
     }
     /**
      * This is a teleportation feature to be used with webxr-enabled motion controllers.
@@ -45494,91 +45676,6 @@ declare module BABYLON {
          * Disposes the component and the associated ressources.
          */
         dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Renders a layer on top of an existing scene
-     */
-    export class UtilityLayerRenderer implements IDisposable {
-        /** the original scene that will be rendered on top of */
-        originalScene: Scene;
-        private _pointerCaptures;
-        private _lastPointerEvents;
-        private static _DefaultUtilityLayer;
-        private static _DefaultKeepDepthUtilityLayer;
-        private _sharedGizmoLight;
-        private _renderCamera;
-        /**
-         * Gets the camera that is used to render the utility layer (when not set, this will be the last active camera)
-         * @returns the camera that is used when rendering the utility layer
-         */
-        getRenderCamera(): Camera;
-        /**
-         * Sets the camera that should be used when rendering the utility layer (If set to null the last active camera will be used)
-         * @param cam the camera that should be used when rendering the utility layer
-         */
-        setRenderCamera(cam: Nullable<Camera>): void;
-        /**
-         * @hidden
-         * Light which used by gizmos to get light shading
-         */
-        _getSharedGizmoLight(): HemisphericLight;
-        /**
-         * If the picking should be done on the utility layer prior to the actual scene (Default: true)
-         */
-        pickUtilitySceneFirst: boolean;
-        /**
-         * A shared utility layer that can be used to overlay objects into a scene (Depth map of the previous scene is cleared before drawing on top of it)
-         */
-        static get DefaultUtilityLayer(): UtilityLayerRenderer;
-        /**
-         * A shared utility layer that can be used to embed objects into a scene (Depth map of the previous scene is not cleared before drawing on top of it)
-         */
-        static get DefaultKeepDepthUtilityLayer(): UtilityLayerRenderer;
-        /**
-         * The scene that is rendered on top of the original scene
-         */
-        utilityLayerScene: Scene;
-        /**
-         *  If the utility layer should automatically be rendered on top of existing scene
-        */
-        shouldRender: boolean;
-        /**
-         * If set to true, only pointer down onPointerObservable events will be blocked when picking is occluded by original scene
-         */
-        onlyCheckPointerDownEvents: boolean;
-        /**
-         * If set to false, only pointerUp, pointerDown and pointerMove will be sent to the utilityLayerScene (false by default)
-         */
-        processAllEvents: boolean;
-        /**
-         * Observable raised when the pointer move from the utility layer scene to the main scene
-         */
-        onPointerOutObservable: Observable<number>;
-        /** Gets or sets a predicate that will be used to indicate utility meshes present in the main scene */
-        mainSceneTrackerPredicate: (mesh: Nullable<AbstractMesh>) => boolean;
-        private _afterRenderObserver;
-        private _sceneDisposeObserver;
-        private _originalPointerObserver;
-        /**
-         * Instantiates a UtilityLayerRenderer
-         * @param originalScene the original scene that will be rendered on top of
-         * @param handleEvents boolean indicating if the utility layer should handle events
-         */
-        constructor(
-        /** the original scene that will be rendered on top of */
-        originalScene: Scene, handleEvents?: boolean);
-        private _notifyObservers;
-        /**
-         * Renders the utility layers scene on top of the original scene
-         */
-        render(): void;
-        /**
-         * Disposes of the renderer
-         */
-        dispose(): void;
-        private _updateCamera;
     }
 }
 declare module BABYLON {
@@ -46710,6 +46807,17 @@ declare module BABYLON {
         _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number): void;
         /** @hidden */
         _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex?: number, lod?: number): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * @hidden
+     **/
+    export class _TimeToken {
+        _startTimeQuery: Nullable<WebGLQuery>;
+        _endTimeQuery: Nullable<WebGLQuery>;
+        _timeElapsedQuery: Nullable<WebGLQuery>;
+        _timeElapsedQueryEnded: boolean;
     }
 }
 declare module BABYLON {
@@ -56915,6 +57023,14 @@ declare module BABYLON {
          * @returns a new node material
          */
         static Parse(source: any, scene: Scene, rootUrl?: string): NodeMaterial;
+        /**
+         * Creates a node material from a snippet saved in a remote file
+         * @param name defines the name of the material to create
+         * @param url defines the url to load from
+         * @param scene defines the hosting scene
+         * @returns a promise that will resolve to the new node material
+         */
+        static ParseFromFileAsync(name: string, url: string, scene: Scene): Promise<NodeMaterial>;
         /**
          * Creates a node material from a snippet saved by the node material editor
          * @param snippetId defines the snippet to load
@@ -68770,7 +68886,7 @@ declare module BABYLON {
          * Manually add a controller (if no xrInput was provided or physics engine was not enabled)
          * @param xrController the controller to add
          */
-        addController(xrController: WebXRController): void;
+        addController(xrController: WebXRInputSource): void;
         private _debugMode;
         /**
          * @hidden
@@ -71236,6 +71352,8 @@ declare module BABYLON.GUI {
         private _sourceTop;
         private _sourceWidth;
         private _sourceHeight;
+        private _svgAttributesComputationCompleted;
+        private _isSVG;
         private _cellWidth;
         private _cellHeight;
         private _cellId;
@@ -71308,6 +71426,10 @@ declare module BABYLON.GUI {
          */
         get sourceHeight(): number;
         set sourceHeight(value: number);
+        /** Indicates if the format of the image is SVG */
+        get isSVG(): boolean;
+        /** Gets the status of the SVG attributes computation (sourceLeft, sourceTop, sourceWidth, sourceHeight) */
+        get svgAttributesComputationCompleted(): boolean;
         /**
          * Gets or sets a boolean indicating if the image can force its container to adapt its size
          * @see http://doc.babylonjs.com/how_to/gui#image
@@ -71318,7 +71440,9 @@ declare module BABYLON.GUI {
         get stretch(): number;
         set stretch(value: number);
         /** @hidden */
-        _rotate90(n: number): Image;
+        _rotate90(n: number, preserveProperties?: boolean): Image;
+        private _handleRotationForSVGImage;
+        private _rotate90SourceProperties;
         /**
          * Gets or sets the internal DOM image used to render the control
          */
@@ -72674,6 +72798,8 @@ declare module BABYLON.GUI {
         private _thumbHeight;
         private _barImageHeight;
         private _tempMeasure;
+        /** Number of 90° rotation to apply on the images when in vertical mode */
+        num90RotationInVerticalMode: number;
         /**
          * Gets or sets the image used to render the background for horizontal bar
          */
@@ -72729,7 +72855,11 @@ declare module BABYLON.GUI {
         private _barColor;
         private _barBackground;
         private _barImage;
+        private _horizontalBarImage;
+        private _verticalBarImage;
         private _barBackgroundImage;
+        private _horizontalBarBackgroundImage;
+        private _verticalBarBackgroundImage;
         private _barSize;
         private _window;
         private _pointerIsOver;
@@ -72741,6 +72871,8 @@ declare module BABYLON.GUI {
         private _thumbLength;
         private _thumbHeight;
         private _barImageHeight;
+        private _horizontalBarImageHeight;
+        private _verticalBarImageHeight;
         /**
          * Gets the horizontal scrollbar
          */
@@ -72825,6 +72957,12 @@ declare module BABYLON.GUI {
         /** Gets or sets the bar image */
         get thumbImage(): Image;
         set thumbImage(value: Image);
+        /** Gets or sets the horizontal bar image */
+        get horizontalThumbImage(): Image;
+        set horizontalThumbImage(value: Image);
+        /** Gets or sets the vertical bar image */
+        get verticalThumbImage(): Image;
+        set verticalThumbImage(value: Image);
         /** Gets or sets the size of the bar */
         get barSize(): number;
         set barSize(value: number);
@@ -72837,12 +72975,24 @@ declare module BABYLON.GUI {
         /** Gets or sets the height of the bar image */
         get barImageHeight(): number;
         set barImageHeight(value: number);
+        /** Gets or sets the height of the horizontal bar image */
+        get horizontalBarImageHeight(): number;
+        set horizontalBarImageHeight(value: number);
+        /** Gets or sets the height of the vertical bar image */
+        get verticalBarImageHeight(): number;
+        set verticalBarImageHeight(value: number);
         /** Gets or sets the bar background */
         get barBackground(): string;
         set barBackground(color: string);
         /** Gets or sets the bar background image */
         get barImage(): Image;
         set barImage(value: Image);
+        /** Gets or sets the horizontal bar background image */
+        get horizontalBarImage(): Image;
+        set horizontalBarImage(value: Image);
+        /** Gets or sets the vertical bar background image */
+        get verticalBarImage(): Image;
+        set verticalBarImage(value: Image);
         private _setWindowPosition;
         /** @hidden */
         private _updateScroller;
@@ -75697,6 +75847,8 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         dispose(): void;
         /** @hidden */
         onReady(): void;
+        /** @hidden */
+        loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>>;
         /** @hidden */
         loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
         /** @hidden */

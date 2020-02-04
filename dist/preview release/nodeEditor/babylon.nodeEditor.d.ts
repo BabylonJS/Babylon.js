@@ -85,6 +85,7 @@ declare module NODEEDITOR {
         name: string;
         isCollapsed: boolean;
         blocks: number[];
+        comments: string;
     }
     export interface IEditorData {
         locations: INodeLocationInfo[];
@@ -138,6 +139,7 @@ declare module NODEEDITOR {
         private _headerTextElement;
         private _headerCollapseElement;
         private _headerCloseElement;
+        private _commentsElement;
         private _portContainer;
         private _outputPortContainer;
         private _inputPortContainer;
@@ -150,6 +152,7 @@ declare module NODEEDITOR {
         private _ports;
         private _controlledPorts;
         private _id;
+        private _comments;
         onExpandStateChanged: BABYLON.Observable<GraphFrame>;
         private readonly CloseSVG;
         private readonly ExpandSVG;
@@ -171,6 +174,8 @@ declare module NODEEDITOR {
         set width(value: number);
         get height(): number;
         set height(value: number);
+        get comments(): string;
+        set comments(comments: string);
         constructor(candidate: BABYLON.Nullable<HTMLDivElement>, canvas: GraphCanvasComponent, doNotCaptureNodes?: boolean);
         refresh(): void;
         addNode(node: GraphNode): void;
@@ -251,6 +256,7 @@ declare module NODEEDITOR {
         private _ctrlKeyIsPressed;
         private _oldY;
         _frameIsMoving: boolean;
+        _isLoading: boolean;
         get gridSize(): number;
         set gridSize(value: number);
         get globalState(): GlobalState;
@@ -982,6 +988,15 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export class DiscardDisplayManager implements IDisplayManager {
+        getHeaderClass(block: BABYLON.NodeMaterialBlock): string;
+        shouldDisplayPortLabels(block: BABYLON.NodeMaterialBlock): boolean;
+        getHeaderText(block: BABYLON.NodeMaterialBlock): string;
+        getBackgroundColor(block: BABYLON.NodeMaterialBlock): string;
+        updatePreviewContent(block: BABYLON.NodeMaterialBlock, contentArea: HTMLDivElement): void;
+    }
+}
+declare module NODEEDITOR {
     export class DisplayLedger {
         static RegisteredControls: {
             [key: string]: any;
@@ -1038,7 +1053,7 @@ declare module NODEEDITOR {
         getPortForConnectionPoint(point: BABYLON.NodeMaterialConnectionPoint): BABYLON.Nullable<NodePort>;
         getLinksForConnectionPoint(point: BABYLON.NodeMaterialConnectionPoint): NodeLink[];
         private _refreshFrames;
-        private _refreshLinks;
+        _refreshLinks(): void;
         refresh(): void;
         private _onDown;
         cleanAccumulation(useCeil?: boolean): void;
@@ -1143,7 +1158,7 @@ declare module NODEEDITOR {
         private _onBuiltObserver;
         constructor(props: IPropertyTabComponentProps);
         componentDidMount(): void;
-        componentWillReceiveProps(): void;
+        componentWillUnmount(): void;
         processInputBlockUpdate(ib: BABYLON.InputBlock): void;
         renderInputBlock(block: BABYLON.InputBlock): JSX.Element | null;
         load(file: File): void;
@@ -1233,9 +1248,9 @@ declare module NODEEDITOR {
     interface IGraphEditorProps {
         globalState: GlobalState;
     }
-    type State = {
+    interface IGraphEditorState {
         showPreviewPopUp: boolean;
-    };
+    }
     interface IInternalPreviewAreaOptions extends BABYLON.IInspectorOptions {
         popup: boolean;
         original: boolean;
@@ -1243,7 +1258,7 @@ declare module NODEEDITOR {
         inspectorWidth?: string;
         embedHostWidth?: string;
     }
-    export class GraphEditor extends React.Component<IGraphEditorProps, State> {
+    export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
         private readonly NodeWidth;
         private _graphCanvas;
         private _startX;
@@ -1259,7 +1274,6 @@ declare module NODEEDITOR {
         private _onWidgetKeyUpPointer;
         private _previewHost;
         private _popUpWindow;
-        readonly state: State;
         /**
          * Creates a node and recursivly creates its parent nodes from it's input
          * @param nodeMaterialBlock
@@ -1274,6 +1288,8 @@ declare module NODEEDITOR {
         zoomToFit(): void;
         buildMaterial(): void;
         build(): void;
+        showWaitScreen(): void;
+        hideWaitScreen(): void;
         reOrganize(editorData?: BABYLON.Nullable<IEditorData>): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;

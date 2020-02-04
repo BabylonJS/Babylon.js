@@ -1954,6 +1954,8 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         onReady(): void;
         /** @hidden */
+        loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>>;
+        /** @hidden */
         loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
         /** @hidden */
         _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;

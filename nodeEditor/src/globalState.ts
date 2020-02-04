@@ -35,7 +35,7 @@ export class GlobalState {
     onAnimationCommandActivated = new Observable<void>();
     onCandidateLinkMoved = new Observable<Nullable<Vector2>>();   
     onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();       
-    onFrameCreated = new Observable<GraphFrame>();   
+    onFrameCreated = new Observable<GraphFrame>();
     onCandidatePortSelected = new Observable<Nullable<NodePort>>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
     onGridSizeChanged = new Observable<void>();

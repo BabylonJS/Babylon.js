@@ -5,7 +5,6 @@ import { Scene, IDisposable } from "../scene";
 import { Quaternion, Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 /**
  * Renders gizmos on top of an existing scene which provide controls for position, rotation, etc.

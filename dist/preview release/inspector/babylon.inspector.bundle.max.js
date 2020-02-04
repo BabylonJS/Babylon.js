@@ -41542,7 +41542,7 @@ var OptionsLineComponent = /** @class */ (function (_super) {
     function OptionsLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._localChange = false;
-        _this.state = { value: props.target[props.propertyName] };
+        _this.state = { value: _this.props.extractValue ? _this.props.extractValue() : props.target[props.propertyName] };
         return _this;
     }
     OptionsLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
@@ -41550,7 +41550,7 @@ var OptionsLineComponent = /** @class */ (function (_super) {
             this._localChange = false;
             return true;
         }
-        var newValue = nextProps.target[nextProps.propertyName];
+        var newValue = nextProps.extractValue ? nextProps.extractValue() : nextProps.target[nextProps.propertyName];
         if (newValue != null && newValue !== nextState.value) {
             nextState.value = newValue;
             return true;
@@ -41571,15 +41571,16 @@ var OptionsLineComponent = /** @class */ (function (_super) {
     OptionsLineComponent.prototype.updateValue = function (valueString) {
         var value = parseInt(valueString);
         this._localChange = true;
-        var store = this.state.value;
+        var store = this.props.extractValue ? this.props.extractValue() : this.props.target[this.props.propertyName];
         if (!this.props.noDirectUpdate) {
             this.props.target[this.props.propertyName] = value;
         }
         this.setState({ value: value });
-        this.raiseOnPropertyChanged(value, store);
         if (this.props.onSelect) {
             this.props.onSelect(value);
         }
+        var newValue = this.props.extractValue ? this.props.extractValue() : this.props.target[this.props.propertyName];
+        this.raiseOnPropertyChanged(newValue, store);
     };
     OptionsLineComponent.prototype.render = function () {
         var _this = this;
@@ -45663,7 +45664,7 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Micro-surface", target: material, propertyName: "microSurface", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Emissive", target: material, propertyName: "emissiveColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Ambient", target: material, propertyName: "ambientColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Use physical light falloff", target: material, propertyName: "usePhysicalLightFalloff ", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Use physical light falloff", target: material, propertyName: "usePhysicalLightFalloff", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "METALLIC WORKFLOW" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Metallic", target: material, propertyName: "metallic", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Metallic F0", target: material, propertyName: "metallicF0Factor", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -46513,6 +46514,17 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
             { label: "Optimistic", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["AbstractMesh"].OCCLUSION_TYPE_OPTIMISTIC },
             { label: "Strict", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["AbstractMesh"].OCCLUSION_TYPE_STRICT },
         ];
+        var sortedMaterials = scene.materials.slice(0).sort(function (a, b) { return a.name.localeCompare(b.name); });
+        var materialOptions = sortedMaterials.map(function (m, i) {
+            return {
+                label: m.name,
+                value: i
+            };
+        });
+        materialOptions.splice(0, 0, {
+            label: "None",
+            value: -1
+        });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__["CustomPropertyGridComponent"], { globalState: this.props.globalState, target: mesh, lockObject: this.props.lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
@@ -46529,7 +46541,16 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Is enabled", isSelected: function () { return mesh.isEnabled(); }, onSelect: function (value) { return mesh.setEnabled(value); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Is pickable", target: mesh, propertyName: "isPickable", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 mesh.material && (!mesh.material.reservedDataStore || !mesh.material.reservedDataStore.hidden) &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Material", value: mesh.material.name, onLink: function () { return _this.onMaterialLink(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Link to material", value: mesh.material.name, onLink: function () { return _this.onMaterialLink(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_12__["OptionsLineComponent"], { label: "Active material", options: materialOptions, target: mesh, propertyName: "material", noDirectUpdate: true, onSelect: function (value) {
+                        if (value < 0) {
+                            mesh.material = null;
+                        }
+                        else {
+                            mesh.material = sortedMaterials[value];
+                        }
+                        _this.forceUpdate();
+                    }, extractValue: function () { return mesh.material ? sortedMaterials.indexOf(mesh.material) : -1; }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 mesh.isAnInstance &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Source", value: mesh.sourceMesh.name, onLink: function () { return _this.onSourceMeshLink(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_13__["ButtonLineComponent"], { label: "Dispose", onClick: function () {
@@ -49677,6 +49698,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 __webpack_require__(/*! ./sceneExplorer.scss */ "./components/sceneExplorer/sceneExplorer.scss");
 var SceneExplorerFilterComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SceneExplorerFilterComponent, _super);
@@ -49898,6 +49920,16 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 _this.props.globalState.onSelectionChangedObservable.notifyObservers(newFreeCamera);
             }
         });
+        var materialsContextMenus = [];
+        materialsContextMenus.push({
+            label: "Add new node material",
+            action: function () {
+                var newNodeMaterial = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["NodeMaterial"]("node material", scene);
+                newNodeMaterial.setToDefault();
+                newNodeMaterial.build();
+                _this.props.globalState.onSelectionChangedObservable.notifyObservers(newNodeMaterial);
+            }
+        });
         var materials = [];
         materials.push.apply(materials, scene.materials);
         if (scene.multiMaterials && scene.multiMaterials.length) {
@@ -49909,7 +49941,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, contextMenuItems: nodeContextMenus, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.rootNodes, label: "Nodes", offset: 1, filter: this.state.filter }),
             scene.skeletons.length > 0 &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.skeletons, label: "Skeletons", offset: 1, filter: this.state.filter }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: materials, label: "Materials", offset: 1, filter: this.state.filter }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: materials, contextMenuItems: materialsContextMenus, label: "Materials", offset: 1, filter: this.state.filter }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: textures, label: "Textures", offset: 1, filter: this.state.filter }),
             postProcessses.length > 0 &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: postProcessses, label: "Post-processes", offset: 1, filter: this.state.filter }),

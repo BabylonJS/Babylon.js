@@ -3363,7 +3363,7 @@ var GLTFFileLoader = /** @class */ (function () {
             throw new Error("First chunk format is not JSON");
         }
         // Bail if there are no other chunks.
-        if (dataReader.byteOffset + chunkLength === dataReader.buffer.byteLength) {
+        if (dataReader.byteOffset + chunkLength === length) {
             return dataReader.loadAsync(chunkLength).then(function () {
                 return { json: _this._parseJson(dataReader.readString(chunkLength)), bin: null };
             });
@@ -3393,7 +3393,7 @@ var GLTFFileLoader = /** @class */ (function () {
                         break;
                     }
                 }
-                if (dataReader.byteOffset !== dataReader.buffer.byteLength) {
+                if (dataReader.byteOffset !== length) {
                     return dataReader.loadAsync(8).then(readAsync);
                 }
                 return Promise.resolve(data);

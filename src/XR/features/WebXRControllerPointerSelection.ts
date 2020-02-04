@@ -3,7 +3,7 @@ import { WebXRSessionManager } from '../webXRSessionManager';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Observer } from '../../Misc/observable';
 import { WebXRInput } from '../webXRInput';
-import { WebXRController } from '../webXRController';
+import { WebXRInputSource } from '../webXRInputSource';
 import { Scene } from '../../scene';
 import { WebXRControllerComponent } from '../motionController/webXRControllerComponent';
 import { Nullable } from '../../types';
@@ -16,6 +16,7 @@ import { TorusBuilder } from '../../Meshes/Builders/torusBuilder';
 import { Ray } from '../../Culling/ray';
 import { PickingInfo } from '../../Collisions/pickingInfo';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
+import { UtilityLayerRenderer } from '../../Rendering/utilityLayerRenderer';
 
 /**
  * Options interface for the pointer selection module
@@ -55,6 +56,16 @@ export interface IWebXRControllerPointerSelectionOptions {
      * Defaults to 1.
      */
     gazeModePointerMovedFactor?: number;
+
+    /**
+     * Should meshes created here be added to a utility layer or the main scene
+     */
+    useUtilityLayer?: boolean;
+
+    /**
+     * if provided, this scene will be used to render meshes.
+     */
+    customUtilityLayerScene?: Scene;
 }
 
 /**
@@ -115,7 +126,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
     private _controllers: {
         [controllerUniqueId: string]: {
-            xrController: WebXRController;
+            xrController: WebXRInputSource;
             selectionComponent?: WebXRControllerComponent;
             onButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
             onFrameObserver?: Nullable<Observer<XRFrame>>;
@@ -183,7 +194,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
      * @param id the pointer id to search for
      * @returns the controller that correlates to this id or null if not found
      */
-    public getXRControllerByPointerId(id: number): Nullable<WebXRController> {
+    public getXRControllerByPointerId(id: number): Nullable<WebXRInputSource> {
         const keys = Object.keys(this._controllers);
 
         for (let i = 0; i < keys.length; ++i) {
@@ -231,7 +242,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         });
     }
 
-    private _attachController = (xrController: WebXRController) => {
+    private _attachController = (xrController: WebXRInputSource) => {
         if (this._controllers[xrController.uniqueId]) {
             // already attached
             return;
@@ -257,7 +268,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         }
     }
 
-    private _attachScreenRayMode(xrController: WebXRController) {
+    private _attachScreenRayMode(xrController: WebXRInputSource) {
         const controllerData = this._controllers[xrController.uniqueId];
         let downTriggered = false;
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
@@ -279,16 +290,17 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         });
     }
 
-    private _attachGazeMode(xrController: WebXRController) {
+    private _attachGazeMode(xrController: WebXRInputSource) {
         const controllerData = this._controllers[xrController.uniqueId];
         // attached when touched, detaches when raised
         const timeToSelect = this._options.timeToSelect || 3000;
+        const sceneToRenderTo = this._options.useUtilityLayer ? (this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene) : this._scene;
         let oldPick = new PickingInfo();
         let discMesh = TorusBuilder.CreateTorus("selection", {
             diameter: 0.0035 * 15,
             thickness: 0.0025 * 6,
             tessellation: 20
-        }, this._scene);
+        }, sceneToRenderTo);
         discMesh.isVisible = false;
         discMesh.isPickable = false;
         discMesh.parent = controllerData.selectionMesh;
@@ -356,7 +368,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
     }
 
-    private _attachTrackedPointerRayMode(xrController: WebXRController) {
+    private _attachTrackedPointerRayMode(xrController: WebXRInputSource) {
         xrController.onMotionControllerInitObservable.add((motionController) => {
             if (this._options.forceGazeMode) {
                 return this._attachGazeMode(xrController);
@@ -388,7 +400,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 }
             });
 
-            controllerData.onButtonChangedObserver = controllerData.selectionComponent.onButtonStateChanged.add((component) => {
+            controllerData.onButtonChangedObserver = controllerData.selectionComponent.onButtonStateChangedObservable.add((component) => {
                 if (component.changes.pressed) {
                     const pressed = component.changes.pressed.current;
                     if (controllerData.pick) {
@@ -409,7 +421,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         if (!controllerData) { return; }
         if (controllerData.selectionComponent) {
             if (controllerData.onButtonChangedObserver) {
-                controllerData.selectionComponent.onButtonStateChanged.remove(controllerData.onButtonChangedObserver);
+                controllerData.selectionComponent.onButtonStateChangedObservable.remove(controllerData.onButtonChangedObserver);
             }
         }
         if (controllerData.onFrameObserver) {
@@ -421,16 +433,17 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         delete this._controllers[xrControllerUniqueId];
     }
 
-    private _generateNewMeshPair(xrController: WebXRController) {
+    private _generateNewMeshPair(xrController: WebXRInputSource) {
+        const sceneToRenderTo = this._options.useUtilityLayer ? (this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene) : this._scene;
         const laserPointer = CylinderBuilder.CreateCylinder("laserPointer", {
             height: 1,
             diameterTop: 0.0002,
             diameterBottom: 0.004,
             tessellation: 20,
             subdivisions: 1
-        }, this._scene);
+        }, sceneToRenderTo);
         laserPointer.parent = xrController.pointer;
-        let laserPointerMaterial = new StandardMaterial("laserPointerMat", this._scene);
+        let laserPointerMaterial = new StandardMaterial("laserPointerMat", sceneToRenderTo);
         laserPointerMaterial.emissiveColor = this.lasterPointerDefaultColor;
         laserPointerMaterial.alpha = 0.7;
         laserPointer.material = laserPointerMaterial;
@@ -443,11 +456,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             diameter: 0.0035 * 3,
             thickness: 0.0025 * 3,
             tessellation: 20
-        }, this._scene);
+        }, sceneToRenderTo);
         selectionMesh.bakeCurrentTransformIntoVertices();
         selectionMesh.isPickable = false;
         selectionMesh.isVisible = false;
-        let targetMat = new StandardMaterial("targetMat", this._scene);
+        let targetMat = new StandardMaterial("targetMat", sceneToRenderTo);
         targetMat.specularColor = Color3.Black();
         targetMat.emissiveColor = this.selectionMeshDefaultColor;
         targetMat.backFaceCulling = false;

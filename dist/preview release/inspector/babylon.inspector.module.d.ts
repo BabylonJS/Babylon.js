@@ -284,6 +284,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/optionsLineCompo
         options: ListLineOption[];
         noDirectUpdate?: boolean;
         onSelect?: (value: number) => void;
+        extractValue?: () => number;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
     export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {
@@ -2639,6 +2640,7 @@ declare module INSPECTOR {
         options: ListLineOption[];
         noDirectUpdate?: boolean;
         onSelect?: (value: number) => void;
+        extractValue?: () => number;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, {

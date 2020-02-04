@@ -3,7 +3,7 @@ import { Nullable } from "../../../types";
 import { Engine } from "../../../Engines/engine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
-import { _TimeToken } from "../../../Instrumentation/timeToken";
+
 /**
  * Implementation of the TGA Texture Loader.
  * @hidden

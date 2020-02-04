@@ -1,6 +1,6 @@
 import { Nullable } from "../../types";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
-import { _TimeToken } from "../../Instrumentation/timeToken";
+
 /**
  * This represents the required contract to create a new type of texture loader.
  */
