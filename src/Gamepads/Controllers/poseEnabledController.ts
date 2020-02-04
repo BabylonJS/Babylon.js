@@ -5,7 +5,6 @@ import { Node } from "../../node";
 import { TransformNode } from "../../Meshes/transformNode";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Ray } from "../../Culling/ray";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { EngineStore } from "../../Engines/engineStore";
 
 import { Gamepad } from "../../Gamepads/gamepad";

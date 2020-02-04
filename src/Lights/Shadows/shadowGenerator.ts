@@ -18,7 +18,6 @@ import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTextur
 
 import { PostProcess } from "../../PostProcesses/postProcess";
 import { BlurPostProcess } from "../../PostProcesses/blurPostProcess";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { Constants } from "../../Engines/constants";
 
 import "../../Shaders/shadowMap.fragment";
