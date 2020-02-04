@@ -52,7 +52,7 @@ namespace Babylon
 
         void* GetNativeWindow() const { return m_nativeWindowPtr; }
     private:
-        void InitializeJavaScriptVariables(uint16_t width, uint16_t height);
+        void InitializeJavaScriptVariables(size_t width, size_t height);
         void BaseThreadProcedure();
         void ThreadProcedure();
 

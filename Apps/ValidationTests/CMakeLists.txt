@@ -51,17 +51,14 @@ target_include_directories(ValidationTests PRIVATE "Source" "." ${TEST_DEPENDENC
 
 target_link_libraries(ValidationTests PRIVATE Library ${ADDITIONAL_LIBRARIES})
 
-foreach(script ${SCRIPTS})
+foreach(script ${SCRIPTS} ${BABYLONJS})
+    get_filename_component(SCRIPT_NAME "${script}" NAME)
     add_custom_command(
-        OUTPUT "${script}"
-        COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_CURRENT_SOURCE_DIR}/${script}" "${CMAKE_CURRENT_BINARY_DIR}/${script}"
-        COMMENT "Copying ${script}"
+        OUTPUT "Scripts/${SCRIPT_NAME}"
+        COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_CURRENT_SOURCE_DIR}/${script}" "${CMAKE_CURRENT_BINARY_DIR}/Scripts/${SCRIPT_NAME}"
+        COMMENT "Copying ${SCRIPT_NAME}"
         MAIN_DEPENDENCY "${CMAKE_CURRENT_SOURCE_DIR}/${script}")
 endforeach()
-
-add_custom_command(TARGET ValidationTests PRE_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory
-                   ${CMAKE_SOURCE_DIR}/Apps/Babylonjs/ "${CMAKE_CURRENT_BINARY_DIR}/Scripts")
 
 foreach(dependency ${BABYLON_NATIVE_DEPENDENCIES})
     add_custom_command(TARGET ValidationTests POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different ${dependency} $<TARGET_FILE_DIR:ValidationTests>)

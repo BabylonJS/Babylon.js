@@ -153,17 +153,14 @@ if(WINDOWS_STORE)
     set_property(SOURCE ${SCRIPTS} ${BABYLONJS} PROPERTY VS_DEPLOYMENT_CONTENT 1)
     set_property(SOURCE ${SCRIPTS} ${BABYLONJS} PROPERTY VS_DEPLOYMENT_LOCATION "Scripts")
 else()
-    foreach(script ${SCRIPTS})
+    foreach(script ${SCRIPTS} ${BABYLONJS})
+        get_filename_component(SCRIPT_NAME "${script}" NAME)
         add_custom_command(
-            OUTPUT "${script}"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_CURRENT_SOURCE_DIR}/${script}" "${CMAKE_CURRENT_BINARY_DIR}/${script}"
-            COMMENT "Copying ${script}"
+            OUTPUT "Scripts/${SCRIPT_NAME}"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_CURRENT_SOURCE_DIR}/${script}" "${CMAKE_CURRENT_BINARY_DIR}/Scripts/${SCRIPT_NAME}"
+            COMMENT "Copying ${SCRIPT_NAME}"
             MAIN_DEPENDENCY "${CMAKE_CURRENT_SOURCE_DIR}/${script}")
     endforeach()
-    
-    add_custom_command(TARGET Playground PRE_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory
-                   ${CMAKE_SOURCE_DIR}/Apps/Babylonjs/ "${CMAKE_CURRENT_BINARY_DIR}/Scripts")
 endif()
 
 foreach(dependency ${BABYLON_NATIVE_DEPENDENCIES})

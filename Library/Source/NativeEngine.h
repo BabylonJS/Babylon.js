@@ -408,7 +408,7 @@ namespace Babylon
         template<int size>
         void SetMatrixN(const Napi::CallbackInfo& info);
 
-        void ImageToTexture(TextureData* const textureData, bimg::ImageContainer& image, bool invertY, bool mipMap) const;
+        void ConvertImageToTexture(TextureData* const textureData, bimg::ImageContainer& image, bool invertY, bool mipMap) const;
         // Scratch vector used for data alignment.
         std::vector<float> m_scratch{};
     };

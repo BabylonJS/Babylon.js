@@ -976,7 +976,7 @@ namespace Babylon
         return data;
     }
 
-    void NativeEngine::ImageToTexture(TextureData* const textureData, bimg::ImageContainer& image, bool invertY, bool mipMap) const
+    void NativeEngine::ConvertImageToTexture(TextureData* const textureData, bimg::ImageContainer& image, bool invertY, bool mipMap) const
     {
         bool useMipMap = false;
 
@@ -985,7 +985,7 @@ namespace Babylon
             FlipYInImageBytes(gsl::make_span(static_cast<uint8_t*>(image.m_data), image.m_size), image.m_height, image.m_size / image.m_height);
         }
 
-        auto imageDataRef{ bgfx::makeRef(image.m_data, image.m_size) };
+        auto imageDataRef{bgfx::makeRef(image.m_data, image.m_size)};
 
         if (mipMap)
         {
@@ -1018,7 +1018,7 @@ namespace Babylon
         textureData->Images.push_back(bimg::imageParse(&m_allocator, buffer.Data(), static_cast<uint32_t>(buffer.ByteLength())));
         auto& image = *textureData->Images.front();
 
-        ImageToTexture(textureData, image, invertY, mipMap);
+        ConvertImageToTexture(textureData, image, invertY, mipMap);
         return Napi::Value::From(info.Env(), bgfx::isValid(textureData->Texture));
     }
 
@@ -1045,11 +1045,8 @@ namespace Babylon
             throw std::exception(); // unsupported format
         }
 
-        if (data)
-        {
-            auto image = bimg::imageAlloc(&m_allocator, (bimg::TextureFormat::Enum)TEXTURE_FORMAT[formatIndex], width, height, 1, 1, false, false, data);
-            ImageToTexture(textureData, *image, invertY, mipMap);
-        }
+        auto image = bimg::imageAlloc(&m_allocator, (bimg::TextureFormat::Enum)TEXTURE_FORMAT[formatIndex], width, height, 1, 1, false, false, data);
+        ConvertImageToTexture(textureData, *image, invertY, mipMap);
     }
 
     Napi::Value NativeEngine::LoadCubeTexture(const Napi::CallbackInfo& info)

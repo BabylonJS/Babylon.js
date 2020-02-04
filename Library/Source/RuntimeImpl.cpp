@@ -196,7 +196,7 @@ namespace Babylon
         return std::scoped_lock{m_taskMutex};
     }
 
-    void RuntimeImpl::InitializeJavaScriptVariables(uint16_t width, uint16_t height)
+    void RuntimeImpl::InitializeJavaScriptVariables(size_t width, size_t height)
     {
         auto& env = *m_env;
         auto global = env.Global();

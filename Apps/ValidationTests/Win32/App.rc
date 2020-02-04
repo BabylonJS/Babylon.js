@@ -27,15 +27,15 @@ LANGUAGE 9, 1
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 
-IDI_TESTAPPWIN32        ICON         "App.ico"
-IDI_SMALL               ICON         "small.ico"
+IDI_VALIDATIONTESTSWIN32 ICON         "App.ico"
+IDI_SMALL                ICON         "small.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
 //
 
-IDC_TESTAPPWIN32 MENU
+IDC_VALIDATIONTESTSWIN32 MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -53,7 +53,7 @@ END
 // Accelerator
 //
 
-IDC_TESTAPPWIN32 ACCELERATORS
+IDC_VALIDATIONTESTSWIN32 ACCELERATORS
 BEGIN
     "?",            IDM_ABOUT,              ASCII,  ALT
     "/",            IDM_ABOUT,              ASCII,  ALT
@@ -130,7 +130,7 @@ END
 
 STRINGTABLE
 BEGIN
-   IDC_TESTAPPWIN32 "TESTAPPWIN32"
+   IDC_VALIDATIONTESTSWIN32 "VALIDATIONTESTSWIN32"
    IDS_APP_TITLE    "ValidationTests"
 END
 
