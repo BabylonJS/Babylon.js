@@ -4,7 +4,6 @@ import { Color3 } from "../../Maths/math.color";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 
-import { _TimeToken } from "../../Instrumentation/timeToken";
 /**
  * The Physically based simple base material of BJS.
  *

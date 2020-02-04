@@ -71,7 +71,7 @@ class MonacoCreator {
 
         this.setupDefinitionWorker(libContent);
 
-        require.config({ paths: { 'vs': 'node_modules/monaco-editor/dev/vs' } });
+        require.config({ paths: { 'vs': '/node_modules/monaco-editor/dev/vs' } });
 
         require(['vs/editor/editor.main'], () => {
             this.setupMonacoCompilationPipeline(libContent);
@@ -89,7 +89,7 @@ class MonacoCreator {
 
         // This worker can be initialized differently.
         // Its main job is to analyze the code and return an array of deprecated functions
-        this.definitionWorker = new Worker('js/definitionWorker.js');
+        this.definitionWorker = new Worker('/js/definitionWorker.js');
         this.definitionWorker.addEventListener('message', ({ data }) => {
             this.deprecatedCandidates = data.result;
             this.analyzeCode();

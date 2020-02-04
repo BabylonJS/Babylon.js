@@ -16,7 +16,6 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PostProcess, PostProcessOptions } from "../PostProcesses/postProcess";
 import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { BlurPostProcess } from "../PostProcesses/blurPostProcess";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
 import { Constants } from "../Engines/constants";

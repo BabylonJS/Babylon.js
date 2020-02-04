@@ -1,5 +1,5 @@
 import { Observable } from "../Misc/observable";
-import { _TimeToken } from "../Instrumentation/timeToken";
+
 /**
  * Represents a gamepad control stick position
  */

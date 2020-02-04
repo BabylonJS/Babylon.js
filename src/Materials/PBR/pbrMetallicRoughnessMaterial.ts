@@ -1,7 +1,6 @@
 import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
 import { Scene } from "../../scene";
 import { Color3 } from "../../Maths/math.color";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseSimpleMaterial } from "./pbrBaseSimpleMaterial";
 import { _TypeStore } from '../../Misc/typeStore';
