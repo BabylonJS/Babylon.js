@@ -728,10 +728,10 @@ class Main {
                                 window.location.href = location.protocol + "//" + location.host + location.pathname + "#" + newPG;
                             } else if (query.indexOf("=") === -1) {
                                 this.loadScript("scripts/" + query + ".js", query);
-                            } else if (query.indexOf('pg=') === -1) {
+                            } else if (query.indexOf('pg=') === -1 && !location.pathname.match(/\/pg\//)) {
                                 this.loadScript(this.parent.settingsPG.DefaultScene, "Basic scene");
                             }
-                        } else {
+                        } else if (!location.pathname.match(/\/pg\//)) {
                             this.loadScript(this.parent.settingsPG.DefaultScene, "Basic scene");
                         }
                     }
@@ -1032,22 +1032,31 @@ class Main {
         location.hash = splits.join("#");
     };
     checkHash() {
+        let pgHash = "";
         if (location.search) {
             var query = this.parseQuery(location.search);
-            this.previousHash = "#" + query.pg + "#" + (query.revision || "0")
             if (query.pg) {
-                this.loadPlayground(query.pg + "#" + (query.revision || "0"));
+                pgHash = "#" + query.pg + "#" + (query.revision || "0")
             }
 
-        }
-        if (location.hash) {
+        } else if (location.hash) {
             if (this.previousHash !== location.hash) {
-                this.cleanHash();
-
-                this.previousHash = location.hash;
-
-                this.loadPlayground(location.hash.substr(1))
+                pgHash = location.hash;
             }
+        } else if (location.pathname) {
+            const pgMatch = location.pathname.match(/\/pg\/(.*)/);
+            const withRevision = location.pathname.match(/\/pg\/(.*)\/revision\/(\d*)/);
+            if (pgMatch || withRevision) {
+                if (withRevision) {
+                    pgHash = "#" + withRevision[1] + "#" + withRevision[2];
+                } else {
+                    pgHash = "#" + pgMatch[1] + "#0";
+                }
+            }
+        }
+        if (pgHash) {
+            this.previousHash = pgHash;
+            this.loadPlayground(pgHash.substr(1))
         }
         window.addEventListener("hashchange", this.checkHash.bind(this));
     };
