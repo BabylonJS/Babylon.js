@@ -1,7 +1,6 @@
 import { Observable } from "../../Misc/observable";
 import { Scene } from "../../scene";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { PoseEnabledController, ExtendedGamepadButton, MutableGamepadButton } from "./poseEnabledController";
 import { StickValues, GamepadButtonChanges } from "../../Gamepads/gamepad";
 import { Nullable } from '../../types';
