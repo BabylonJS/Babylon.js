@@ -4,7 +4,6 @@ import { Matrix } from "../../Maths/math.vector";
 import { Engine } from "../../Engines/engine";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { Constants } from "../../Engines/constants";
 import { _TypeStore } from '../../Misc/typeStore';
 

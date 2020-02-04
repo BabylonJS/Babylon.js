@@ -663,7 +663,7 @@ void main(void) {
                 clearCoatNormalW = normalize(texture2D(clearCoatBumpSampler, vClearCoatBumpUV + uvOffset).xyz  * 2.0 - 1.0);
                 clearCoatNormalW = normalize(mat3(normalMatrix) * clearCoatNormalW);
             #else
-                clearCoatNormalW = perturbNormal(TBN, texture2D(clearCoatBumpSampler, vClearCoatBumpUV + uvOffset).xyz, vClearCoatBumpInfos.y);
+                clearCoatNormalW = perturbNormal(TBNClearCoat, texture2D(clearCoatBumpSampler, vClearCoatBumpUV + uvOffset).xyz, vClearCoatBumpInfos.y);
             #endif
         #endif
 

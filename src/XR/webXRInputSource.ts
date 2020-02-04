@@ -3,7 +3,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Quaternion, Vector3 } from '../Maths/math.vector';
 import { Ray } from '../Culling/ray';
 import { Scene } from '../scene';
-import { WebXRAbstractMotionController } from './motionController/webXRAbstractController';
+import { WebXRAbstractMotionController } from './motionController/webXRAbstractMotionController';
 import { WebXRMotionControllerManager } from './motionController/webXRMotionControllerManager';
 
 let idCount = 0;
@@ -33,7 +33,7 @@ export interface IWebXRControllerOptions {
 /**
  * Represents an XR controller
  */
-export class WebXRController {
+export class WebXRInputSource {
     /**
      * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if thats the case only the pointer from the head will be availible
      */
@@ -66,7 +66,7 @@ export class WebXRController {
      * The object provided as event data is this controller, after associated assets were disposed.
      * uniqueId is still available.
      */
-    public onDisposeObservable = new Observable<WebXRController>();
+    public onDisposeObservable = new Observable<WebXRInputSource>();
 
     private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3();
@@ -159,15 +159,17 @@ export class WebXRController {
     }
 
     /**
-     * Gets a world space ray coming from the controller
+     * Gets a world space ray coming from the pointer or grip
      * @param result the resulting ray
+     * @param gripIfAvailable use the grip mesh instead of the pointer, if available
      */
-    public getWorldPointerRayToRef(result: Ray) {
-        let worldMatrix = this.pointer.computeWorldMatrix();
+    public getWorldPointerRayToRef(result: Ray, gripIfAvailable: boolean = false) {
+        const object = gripIfAvailable && this.grip ? this.grip : this.pointer;
+        let worldMatrix = object.computeWorldMatrix();
         worldMatrix.decompose(undefined, this._tmpQuaternion, undefined);
         this._tmpVector.set(0, 0, 1);
         this._tmpVector.rotateByQuaternionToRef(this._tmpQuaternion, this._tmpVector);
-        result.origin.copyFrom(this.pointer.absolutePosition);
+        result.origin.copyFrom(object.absolutePosition);
         result.direction.copyFrom(this._tmpVector);
         result.length = 1000;
     }

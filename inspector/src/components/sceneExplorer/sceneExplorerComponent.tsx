@@ -18,6 +18,7 @@ import { PointLight } from 'babylonjs/Lights/pointLight';
 import { FreeCamera } from 'babylonjs/Cameras/freeCamera';
 import { DirectionalLight } from 'babylonjs/Lights/directionalLight';
 import { SSAORenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline';
+import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 
 require("./sceneExplorer.scss");
 
@@ -292,6 +293,18 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             }
         });
 
+        
+        let materialsContextMenus: { label: string, action: () => void }[] = [];
+        materialsContextMenus.push({
+            label: "Add new node material",
+            action: () => {
+                let newNodeMaterial = new NodeMaterial("node material", scene);
+                newNodeMaterial.setToDefault();
+                newNodeMaterial.build();
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(newNodeMaterial);
+            }
+        });
+
         let materials = [];
 
         materials.push(...scene.materials);
@@ -312,7 +325,9 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                     scene.skeletons.length > 0 &&
                     <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.skeletons} label="Skeletons" offset={1} filter={this.state.filter} />
                 }
-                <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={materials} label="Materials" offset={1} filter={this.state.filter} />
+                <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={materials} 
+                    contextMenuItems={materialsContextMenus}
+                    label="Materials" offset={1} filter={this.state.filter} />
                 <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={textures} label="Textures" offset={1} filter={this.state.filter} />
                 {
                     postProcessses.length > 0 &&

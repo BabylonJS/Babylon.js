@@ -2,7 +2,7 @@ export * from "./webXRCamera";
 export * from "./webXREnterExitUI";
 export * from "./webXRExperienceHelper";
 export * from "./webXRInput";
-export * from "./webXRController";
+export * from "./webXRInputSource";
 export * from "./webXRManagedOutputCanvas";
 export * from "./webXRTypes";
 export * from "./webXRSessionManager";

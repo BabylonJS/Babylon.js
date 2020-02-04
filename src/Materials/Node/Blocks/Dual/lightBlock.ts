@@ -177,7 +177,7 @@ export class LightBlock extends NodeMaterialBlock {
             if (!defines["LIGHT" + lightIndex]) {
                 break;
             }
-            MaterialHelper.PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, false, uniformBuffers);
+            MaterialHelper.PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffers);
         }
     }
 

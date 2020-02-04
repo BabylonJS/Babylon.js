@@ -5,7 +5,7 @@ import { Material } from "babylonjs/Materials/material";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Mesh } from "babylonjs/Meshes/mesh";
 
-import { INode, IMaterial, IBuffer } from "../glTFLoaderInterfaces";
+import { INode, IMaterial, IBuffer, IScene } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import { IProperty } from 'babylonjs-gltf2interface';
@@ -142,6 +142,15 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     }
 
     /** @hidden */
+    public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
+        const promise = this._loader.loadSceneAsync(context, scene);
+        if (this._bufferLODs.length !== 0) {
+            this._loadBufferLOD(0);
+        }
+        return promise;
+    }
+
+    /** @hidden */
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
         return GLTFLoader.LoadExtensionAsync<IMSFTLOD, TransformNode>(context, node, this.name, (extensionContext, extension) => {
             let firstPromise: Promise<TransformNode>;
@@ -177,10 +186,6 @@ export class MSFT_lod implements IGLTFLoaderExtension {
 
                 if (indexLOD === 0) {
                     firstPromise = promise;
-
-                    if (this._bufferLODs.length !== 0) {
-                        this._loadBufferLOD(0);
-                    }
                 }
                 else {
                     this._nodeIndexLOD = null;
@@ -240,10 +245,6 @@ export class MSFT_lod implements IGLTFLoaderExtension {
 
                 if (indexLOD === 0) {
                     firstPromise = promise;
-
-                    if (this._bufferLODs.length !== 0) {
-                        this._loadBufferLOD(0);
-                    }
                 }
                 else {
                     this._materialIndexLOD = null;

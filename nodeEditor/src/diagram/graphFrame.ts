@@ -25,7 +25,8 @@ export class GraphFrame {
     private _headerElement: HTMLDivElement;    
     private _headerTextElement: HTMLDivElement;        
     private _headerCollapseElement: HTMLDivElement;    
-    private _headerCloseElement: HTMLDivElement;    
+    private _headerCloseElement: HTMLDivElement;
+    private _commentsElement: HTMLDivElement;    
     private _portContainer: HTMLDivElement;    
     private _outputPortContainer: HTMLDivElement;    
     private _inputPortContainer: HTMLDivElement;    
@@ -38,6 +39,7 @@ export class GraphFrame {
     private _ports: NodePort[] = [];
     private _controlledPorts: NodePort[] = [];
     private _id: number;
+    private _comments: string;
 
     public onExpandStateChanged = new Observable<GraphFrame>();
 
@@ -241,6 +243,25 @@ export class GraphFrame {
         this.element.style.height = `${gridAlignedBottom - this._gridAlignedY}px`;
     }
 
+    public get comments(): string {
+        return this._comments;
+    }
+
+    public set comments(comments: string) {
+        if (comments && comments.length > 0) {
+            this.element.style.gridTemplateRows = "40px 40px calc(100% - 80px)";
+            this._borderElement.style.gridRow = "1 / span 3";
+            this._portContainer.style.gridRow = "3";
+            this._commentsElement.style.display = "grid";
+            this._commentsElement.style.gridRow = "2";
+            this._commentsElement.style.gridColumn = "1";
+            this._commentsElement.style.paddingLeft = "10px";
+            this._commentsElement.style.fontStyle = "italic";
+            this._commentsElement.innerText = comments;
+        }
+        this._comments = comments;
+    }
+
     public constructor(candidate: Nullable<HTMLDivElement>, canvas: GraphCanvasComponent, doNotCaptureNodes = false) {
         this._id = GraphFrame._FrameCounter++;
 
@@ -331,8 +352,15 @@ export class GraphFrame {
             } else {
                 this.element.classList.remove("selected");
             }
-        });  
-                
+        }); 
+
+        this._commentsElement = document.createElement('div');
+        this._commentsElement.className = 'frame-comments';
+        this._commentsElement.style.color = 'white';
+        this._commentsElement.style.fontSize = '16px';
+        
+        this.element.appendChild(this._commentsElement);
+
         // Get nodes
         if (!doNotCaptureNodes) {
             this.refresh();
@@ -471,7 +499,8 @@ export class GraphFrame {
             color: this._color.asArray(),
             name: this.name,
             isCollapsed: this.isCollapsed,
-            blocks: this.nodes.map(n => n.block.uniqueId)
+            blocks: this.nodes.map(n => n.block.uniqueId),
+            comments: this._comments
         }
     }
 
@@ -491,6 +520,7 @@ export class GraphFrame {
         newFrame.height = serializationData.height;
         newFrame.name = serializationData.name;
         newFrame.color = Color3.FromArray(serializationData.color);
+        newFrame.comments = serializationData.comments;
 
         if (serializationData.blocks && map) {
             for (var blockId of serializationData.blocks) {

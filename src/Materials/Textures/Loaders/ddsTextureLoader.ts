@@ -3,7 +3,6 @@ import { SphericalPolynomial } from "../../../Maths/sphericalPolynomial";
 import { Engine } from "../../../Engines/engine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
-import { _TimeToken } from "../../../Instrumentation/timeToken";
 import { DDSTools, DDSInfo } from "../../../Misc/dds";
 /**
  * Implementation of the DDS Texture Loader.
