@@ -15,7 +15,6 @@ import { HDRCubeTexture } from "../../Materials/Textures/hdrCubeTexture";
 import { AnimationGroup } from "../../Animations/animationGroup";
 import { Light } from "../../Lights/light";
 import { SceneComponentConstants } from "../../sceneComponent";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { SceneLoader } from "../../Loading/sceneLoader";
 import { AbstractScene } from "../../abstractScene";
 import { AssetContainer } from "../../assetContainer";
