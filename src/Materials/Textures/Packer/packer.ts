@@ -9,6 +9,7 @@ import { Nullable } from "../../../types";
 import { Vector2 } from "../../../Maths/math.vector";
 import { Color3, Color4 } from "../../../Maths/math.color";
 import { TexturePackerFrame } from "./frame";
+import { Logger } from "../../../Misc/logger";
 
 /**
 * Defines the basic options interface of a TexturePacker
@@ -706,16 +707,16 @@ export class TexturePacker{
     * @param quality of the image if downloading as jpeg, Ranges from >0 to 1.
     */
     public download(imageType: string = 'png', quality: number = 1): void {
-        let pack = {
-            name : this.name,
-            sets : {},
-            options: {},
-            frames : []
-        };
+        setTimeout(() => {
+            let pack = {
+                name : this.name,
+                sets : {},
+                options: {},
+                frames : []
+            };
 
-        let sKeys = Object.keys(this.sets);
-        let oKeys = Object.keys(this.options);
-        let downloadPromise = new Promise ((success) => {
+            let sKeys = Object.keys(this.sets);
+            let oKeys = Object.keys(this.options);
             try {
                 for (let i = 0; i < sKeys.length; i++) {
                     let channel: string = sKeys[i];
@@ -730,21 +731,21 @@ export class TexturePacker{
                     let _f = this.frames[i];
                     (pack.frames as Array<number>).push(_f.scale.x, _f.scale.y, _f.offset.x, _f.offset.y);
                 }
-            success(pack);
+
             } catch (err) {
+                Logger.Warn("Unable to download: " + err);
                 return;
             }
-        });
 
-        downloadPromise.then((result) => {
-            let data = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(result, null, 4));
+            let data = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(pack, null, 4));
             let _a = document.createElement('a');
             _a.setAttribute("href", data);
             _a.setAttribute("download", this.name + "_texurePackage.json");
             document.body.appendChild(_a);
             _a.click();
             _a.remove();
-        });
+
+        }, 0);
     }
 
     /**
@@ -752,32 +753,32 @@ export class TexturePacker{
     * @param data of the JSON file in string format.
     */
     public updateFromJSON(data: string): void {
-            try {
-                let parsedData: ITexturePackerJSON = JSON.parse(data);
-                this.name = parsedData.name;
-                let _options = Object.keys(parsedData.options);
+        try {
+            let parsedData: ITexturePackerJSON = JSON.parse(data);
+            this.name = parsedData.name;
+            let _options = Object.keys(parsedData.options);
 
-                for (let i = 0; i < _options.length; i++) {
-                    (this.options as any)[_options[i]] = (parsedData.options as any)[_options[i]];
-                }
-
-                for (let i = 0; i < parsedData.frames.length; i += 4) {
-                    let frame: TexturePackerFrame = new TexturePackerFrame(
-                        i / 4,
-                        new Vector2(parsedData.frames[i], parsedData.frames[i + 1]),
-                        new Vector2(parsedData.frames[i + 2], parsedData.frames[i + 3])
-                    );
-                this.frames.push(frame);
-                }
-
-                let channels = Object.keys(parsedData.sets);
-
-                for (let i = 0; i < channels.length; i++) {
-                    let _t = new Texture(parsedData.sets[channels[i]], this.scene, false, false);
-                    (this.sets as any)[channels[i]] = _t;
-                }
-            } catch (e) {
-
+            for (let i = 0; i < _options.length; i++) {
+                (this.options as any)[_options[i]] = (parsedData.options as any)[_options[i]];
             }
+
+            for (let i = 0; i < parsedData.frames.length; i += 4) {
+                let frame: TexturePackerFrame = new TexturePackerFrame(
+                    i / 4,
+                    new Vector2(parsedData.frames[i], parsedData.frames[i + 1]),
+                    new Vector2(parsedData.frames[i + 2], parsedData.frames[i + 3])
+                );
+            this.frames.push(frame);
+            }
+
+            let channels = Object.keys(parsedData.sets);
+
+            for (let i = 0; i < channels.length; i++) {
+                let _t = new Texture(parsedData.sets[channels[i]], this.scene, false, false);
+                (this.sets as any)[channels[i]] = _t;
+            }
+        } catch (err) {
+            Logger.Warn("Unable to update from JSON: " + err);
+        }
     }
 }
