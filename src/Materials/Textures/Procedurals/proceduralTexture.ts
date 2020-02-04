@@ -7,7 +7,6 @@ import { Color4, Color3 } from '../../../Maths/math.color';
 import { Engine } from "../../../Engines/engine";
 import { VertexBuffer } from "../../../Meshes/buffer";
 import { SceneComponentConstants } from "../../../sceneComponent";
-import { _TimeToken } from "../../../Instrumentation/timeToken";
 
 import { Material } from "../../../Materials/material";
 import { Effect } from "../../../Materials/effect";

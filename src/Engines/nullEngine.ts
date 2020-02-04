@@ -6,7 +6,6 @@ import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetC
 import { VertexBuffer } from "../Meshes/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Effect } from "../Materials/effect";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { Constants } from "./constants";
 import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
