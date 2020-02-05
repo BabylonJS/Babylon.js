@@ -71,7 +71,7 @@ class MonacoCreator {
 
         this.setupDefinitionWorker(libContent);
 
-        require.config({ paths: { 'vs': '/node_modules/monaco-editor/min/vs' } });
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.18.1/min/vs' } });
 
         require(['vs/editor/editor.main'], () => {
             this.setupMonacoCompilationPipeline(libContent);
