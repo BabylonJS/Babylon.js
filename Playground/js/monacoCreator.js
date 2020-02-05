@@ -71,15 +71,15 @@ class MonacoCreator {
 
         this.setupDefinitionWorker(libContent);
 
-        require.config({ paths: { 'vs': '/node_modules/monaco-editor/dev/vs' } });
+        require.config({ paths: { 'vs': '/node_modules/monaco-editor/min/vs' } });
 
         require(['vs/editor/editor.main'], () => {
             this.setupMonacoCompilationPipeline(libContent);
             this.setupMonacoColorProvider();
 
-            require(['vs/language/typescript/languageFeatures'], module => {
-                this.hookMonacoCompletionProvider(module.SuggestAdapter);
-            });
+            // require(['vs/language/typescript/languageFeatures'], module => {
+            //     this.hookMonacoCompletionProvider(module.SuggestAdapter);
+            // });
 
             this.parent.main.run();
         });
