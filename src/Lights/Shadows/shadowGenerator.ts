@@ -26,6 +26,7 @@ import "../../Shaders/depthBoxBlur.fragment";
 import { Observable } from '../../Misc/observable';
 import { _DevTools } from '../../Misc/devTools';
 import { EffectFallbacks } from '../../Materials/effectFallbacks';
+import { RenderingManager } from '../../Rendering/renderingManager';
 
 /**
  * Defines the options associated with the creation of a custom shader for a shadow generator.
@@ -916,6 +917,12 @@ export class ShadowGenerator implements IShadowGenerator {
             this._light._markMeshesAsLightDirty();
             this.recreateShadowMap();
         });
+
+        // Ensures rendering groupids do not erase the depth buffer
+        // or we would lose the shadows information.
+        for (let i = RenderingManager.MIN_RENDERINGGROUPS; i < RenderingManager.MAX_RENDERINGGROUPS; i++) {
+            this._shadowMap.setRenderingAutoClearDepthStencil(i, false);
+        }
     }
 
     protected _initializeBlurRTTAndPostProcesses(): void {
