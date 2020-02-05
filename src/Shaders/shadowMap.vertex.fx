@@ -21,6 +21,10 @@ uniform vec2 depthValues;
 
 varying float vDepthMetric;
 
+#ifdef USEDISTANCE
+varying vec3 vPositionW;
+#endif
+
 #ifdef ALPHATEST
 varying vec2 vUV;
 uniform mat4 diffuseMatrix;
@@ -76,8 +80,13 @@ vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
     worldPos.xyz -= worldNor * normalBias;
 #endif
 
+#ifdef USEDISTANCE
+vPositionW = worldPos.xyz;
+#endif
+
 // Projection.
 gl_Position = viewProjection * worldPos;
+
 
 #ifdef DEPTHTEXTURE
     // Depth texture Linear bias.
@@ -87,7 +96,7 @@ gl_Position = viewProjection * worldPos;
 #ifdef DEPTHCLAMP
     z = gl_Position.z;
     gl_Position.z = 0.0;
-#else
+#elif !defined(USEDISTANCE)
     // Color Texture Linear bias.
     vDepthMetric = ((gl_Position.z + depthValues.x) / (depthValues.y)) + biasAndScale.x;
 #endif
