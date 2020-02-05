@@ -7,6 +7,11 @@
             "referenceImage": "bwpp.png"
         },             
         {
+            "title": "Point light shadows",
+            "playgroundId": "#U2F7P9#4",
+            "referenceImage": "point-light-shadows.png"
+        },             
+        {
             "title": "Node material #0",
             "playgroundId": "#M5VQE9#16",
             "referenceImage": "node-material0.png",
