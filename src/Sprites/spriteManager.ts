@@ -276,7 +276,7 @@ export class SpriteManager implements ISpriteManager {
             let xmlhttp = new XMLHttpRequest();
             xmlhttp.open("GET", jsonUrl, true);
             xmlhttp.onerror = () => {
-                Logger.Error("Unable to Load Sprite JSON Data. Spritesheet managed with constant cell size.");
+                Logger.Error("JSON ERROR: Unable to load JSON file.");
                 this._fromPacked = false;
                 this._packedAndReady = false;
             };
@@ -291,7 +291,7 @@ export class SpriteManager implements ISpriteManager {
                 catch (e) {
                     this._fromPacked = false;
                     this._packedAndReady = false;
-                    throw new Error("Invalid JSON from file. Spritesheet managed with constant cell size.");
+                    throw new Error("Invalid JSON format. Please check documentation for format specifications.");
                 }
             };
             xmlhttp.send();

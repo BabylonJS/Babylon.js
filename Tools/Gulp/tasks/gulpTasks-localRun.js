@@ -28,7 +28,7 @@ gulp.task("webserver", function () {
         middleware: function (connect, opt) {
             return [function (req, res, next) {
                 const baseUrl =  (req.url.indexOf('dist') !== -1 || req.url.indexOf('Tools') !== -1  || req.url.indexOf('temp/') !== -1);
-                if (!baseUrl && req.headers['referer'] && req.headers['referer'].indexOf('/Playground/') && req.url.indexOf('/Playground/') === -1) {
+                if (!baseUrl && req.headers['referer'] && req.headers['referer'].indexOf('/Playground/') !== -1 && req.url.indexOf('/Playground/') === -1) {
                     req.url = "/Playground/" + req.url;
                     res.writeHead(301, {
                         'Location': req.url
