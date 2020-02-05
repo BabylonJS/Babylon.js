@@ -252,7 +252,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
 
         // Reattach camera controls
         if (this.detachCameraControls && this._attachedElement && this._scene.activeCamera && !this._scene.activeCamera.leftCamera) {
-            this._scene.activeCamera.attachControl(this._attachedElement, true);
+            this._scene.activeCamera.attachControl(this._attachedElement, this._scene.activeCamera.inputs ? this._scene.activeCamera.inputs.noPreventDefault : true);
         }
     }
 
