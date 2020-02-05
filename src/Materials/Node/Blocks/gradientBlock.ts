@@ -37,8 +37,8 @@ export class GradientBlock extends NodeMaterialBlock {
      * Gets or sets the list of color steps
      */
     public colorSteps: GradientBlockColorStep[] = [
-        new GradientBlockColorStep(0, Color3.White()),
-        new GradientBlockColorStep(1.0, Color3.Black())
+        new GradientBlockColorStep(0, Color3.Black()),
+        new GradientBlockColorStep(1.0, Color3.White())
     ];
 
     /**
