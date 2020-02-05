@@ -56432,6 +56432,240 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Defines the basic options interface of a TexturePacker Frame
+     */
+    export interface ITexturePackerFrame {
+        /**
+         * The frame ID
+         */
+        id: number;
+        /**
+         * The frames Scale
+         */
+        scale: Vector2;
+        /**
+        * The Frames offset
+        */
+        offset: Vector2;
+    }
+    /**
+     * This is a support class for frame Data on texture packer sets.
+     */
+    export class TexturePackerFrame implements ITexturePackerFrame {
+        /**
+         * The frame ID
+         */
+        id: number;
+        /**
+         * The frames Scale
+         */
+        scale: Vector2;
+        /**
+         * The Frames offset
+         */
+        offset: Vector2;
+        /**
+         * Initializes a texture package frame.
+         * @param id The numerical frame identifier
+         * @param scale Scalar Vector2 for UV frame
+         * @param offset Vector2 for the frame position in UV units.
+         * @returns TexturePackerFrame
+         */
+        constructor(id: number, scale: Vector2, offset: Vector2);
+    }
+}
+declare module BABYLON {
+    /**
+    * Defines the basic options interface of a TexturePacker
+    */
+    export interface ITexturePackerOptions {
+        /**
+        * Custom targets for the channels of a texture packer.  Default is all the channels of the Standard Material
+        */
+        map?: string[];
+        /**
+        * the UV input targets, as a single value for all meshes. Defaults to VertexBuffer.UVKind
+        */
+        uvsIn?: string;
+        /**
+        * the UV output targets, as a single value for all meshes.  Defaults to VertexBuffer.UVKind
+        */
+        uvsOut?: string;
+        /**
+        * number representing the layout style. Defaults to LAYOUT_STRIP
+        */
+        layout?: number;
+        /**
+        * number of columns if using custom column count layout(2).  This defaults to 4.
+        */
+        colnum?: number;
+        /**
+        * flag to update the input meshes to the new packed texture after compilation. Defaults to true.
+        */
+        updateInputMeshes?: boolean;
+        /**
+        * boolean flag to dispose all the source textures.  Defaults to true.
+        */
+        disposeSources?: boolean;
+        /**
+        * Fills the blank cells in a set to the customFillColor.  Defaults to true.
+        */
+        fillBlanks?: boolean;
+        /**
+        * string value representing the context fill style color.  Defaults to 'black'.
+        */
+        customFillColor?: string;
+        /**
+        * Width and Height Value of each Frame in the TexturePacker Sets
+        */
+        frameSize?: number;
+        /**
+        * Ratio of the value to add padding wise to each cell.  Defaults to 0.0115
+        */
+        paddingRatio?: number;
+        /**
+        * Number that declares the fill method for the padding gutter.
+        */
+        paddingMode?: number;
+        /**
+        * If in SUBUV_COLOR padding mode what color to use.
+        */
+        paddingColor?: Color3 | Color4;
+    }
+    /**
+    * Defines the basic interface of a TexturePacker JSON File
+    */
+    export interface ITexturePackerJSON {
+        /**
+        * The frame ID
+        */
+        name: string;
+        /**
+        * The base64 channel data
+        */
+        sets: any;
+        /**
+        * The options of the Packer
+        */
+        options: ITexturePackerOptions;
+        /**
+        * The frame data of the Packer
+        */
+        frames: Array<number>;
+    }
+    /**
+    * This is a support class that generates a series of packed texture sets.
+    * @see https://doc.babylonjs.com/babylon101/materials
+    */
+    export class TexturePacker {
+        /** Packer Layout Constant 0 */
+        static readonly LAYOUT_STRIP: number;
+        /** Packer Layout Constant 1 */
+        static readonly LAYOUT_POWER2: number;
+        /** Packer Layout Constant 2 */
+        static readonly LAYOUT_COLNUM: number;
+        /** Packer Layout Constant 0 */
+        static readonly SUBUV_WRAP: number;
+        /** Packer Layout Constant 1 */
+        static readonly SUBUV_EXTEND: number;
+        /** Packer Layout Constant 2 */
+        static readonly SUBUV_COLOR: number;
+        /** The Name of the Texture Package */
+        name: string;
+        /** The scene scope of the TexturePacker */
+        scene: Scene;
+        /** The Meshes to target */
+        meshes: AbstractMesh[];
+        /** Arguments passed with the Constructor */
+        options: ITexturePackerOptions;
+        /** The promise that is started upon initialization */
+        promise: Nullable<Promise<TexturePacker | string>>;
+        /** The Container object for the channel sets that are generated */
+        sets: object;
+        /** The Container array for the frames that are generated */
+        frames: TexturePackerFrame[];
+        /** The expected number of textures the system is parsing. */
+        private _expecting;
+        /** The padding value from Math.ceil(frameSize * paddingRatio) */
+        private _paddingValue;
+        /**
+        * Initializes a texture package series from an array of meshes or a single mesh.
+        * @param name The name of the package
+        * @param meshes The target meshes to compose the package from
+        * @param options The arguments that texture packer should follow while building.
+        * @param scene The scene which the textures are scoped to.
+        * @returns TexturePacker
+        */
+        constructor(name: string, meshes: AbstractMesh[], options: ITexturePackerOptions, scene: Scene);
+        /**
+        * Starts the package process
+        * @param resolve The promises resolution function
+        * @returns TexturePacker
+        */
+        private _createFrames;
+        /**
+        * Calculates the Size of the Channel Sets
+        * @returns Vector2
+        */
+        private _calculateSize;
+        /**
+        * Calculates the UV data for the frames.
+        * @param baseSize the base frameSize
+        * @param padding the base frame padding
+        * @param dtSize size of the Dynamic Texture for that channel
+        * @param dtUnits is 1/dtSize
+        * @param update flag to update the input meshes
+        */
+        private _calculateMeshUVFrames;
+        /**
+        * Calculates the frames Offset.
+        * @param index of the frame
+        * @returns Vector2
+        */
+        private _getFrameOffset;
+        /**
+        * Updates a Mesh to the frame data
+        * @param mesh that is the target
+        * @param frameID or the frame index
+        */
+        private _updateMeshUV;
+        /**
+        * Updates a Meshes materials to use the texture packer channels
+        * @param m is the mesh to target
+        * @param force all channels on the packer to be set.
+        */
+        private _updateTextureReferences;
+        /**
+        * Public method to set a Mesh to a frame
+        * @param m that is the target
+        * @param frameID or the frame index
+        * @param updateMaterial trigger for if the Meshes attached Material be updated?
+        */
+        setMeshToFrame(m: AbstractMesh, frameID: number, updateMaterial?: boolean): void;
+        /**
+        * Starts the async promise to compile the texture packer.
+        * @returns Promise<void>
+        */
+        processAsync(): Promise<void>;
+        /**
+        * Disposes all textures associated with this packer
+        */
+        dispose(): void;
+        /**
+        * Starts the download process for all the channels converting them to base64 data and embedding it all in a JSON file.
+        * @param imageType is the image type to use.
+        * @param quality of the image if downloading as jpeg, Ranges from >0 to 1.
+        */
+        download(imageType?: string, quality?: number): void;
+        /**
+        * Public method to load a texturePacker JSON file.
+        * @param data of the JSON file in string format.
+        */
+        updateFromJSON(data: string): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Enum used to define the target of a block
      */
     export enum NodeMaterialBlockTargets {
