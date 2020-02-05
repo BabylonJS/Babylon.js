@@ -6,6 +6,7 @@ import { faWindowRestore } from '@fortawesome/free-solid-svg-icons';
 import { PreviewMeshType } from './previewMeshType';
 import { DataStorage } from '../../dataStorage';
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
+import * as ReactDOM from 'react-dom';
 
 interface IPreviewMeshControlComponent {
     globalState: GlobalState;
@@ -37,7 +38,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
             this.props.globalState.onPreviewCommandActivated.notifyObservers();        
             this.forceUpdate();
         }
-        (document.getElementById("file-picker")! as HTMLInputElement).value = "";
+        (ReactDOM.findDOMNode(this.refs["file-picker"]) as HTMLInputElement).value = "";
     }
 
     onPopUp() {
@@ -52,7 +53,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
             { label: "Plane", value: PreviewMeshType.Plane },
             { label: "Shader ball", value: PreviewMeshType.ShaderBall },
             { label: "Sphere", value: PreviewMeshType.Sphere },
-            { label: "Load", value: PreviewMeshType.Custom + 1 }
+            { label: "Load...", value: PreviewMeshType.Custom + 1 }
         ];
 
         if (this.props.globalState.previewMeshType === PreviewMeshType.Custom) {
@@ -70,7 +71,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
                                 if (value !== PreviewMeshType.Custom + 1) {
                                     this.changeMeshType(value);
                                 } else {
-                                    document.getElementById("file-picker")?.click();
+                                    (ReactDOM.findDOMNode(this.refs["file-picker"]) as HTMLElement).click();
                                 }
                             }} />    
                 <div style={{
