@@ -1313,6 +1313,11 @@ export class ShadowGenerator implements IShadowGenerator {
             }
         }
 
+        // Point light
+        if (this._light.needCube()) {
+            defines.push("#define USEDISTANCE");
+        }
+
         this._isReadyCustomDefines(defines, subMesh, useInstances);
 
         // Get correct effect

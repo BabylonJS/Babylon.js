@@ -4,6 +4,11 @@
 
 varying float vDepthMetric;
 
+#ifdef USEDISTANCE
+uniform vec3 lightData;
+varying vec3 vPositionW;
+#endif
+
 #ifdef ALPHATEST
 varying vec2 vUV;
 uniform sampler2D diffuseSampler;
@@ -30,8 +35,14 @@ void main(void)
     float depth = vDepthMetric;
 
 #ifdef DEPTHCLAMP
-    depth = clamp(((z + depthValues.x) / (depthValues.y)) + biasAndScale.x, 0.0, 1.0);
+    #ifdef USEDISTANCE
+        depth = clamp(((length(vPositionW - lightData) + depthValues.x) / (depthValues.y)) + biasAndScale.x, 0.0, 1.0);
+    #else
+        depth = clamp(((z + depthValues.x) / (depthValues.y)) + biasAndScale.x, 0.0, 1.0);
+    #endif
     gl_FragDepth = depth;
+#elif defined(USEDISTANCE)
+    depth = (length(vPositionW - lightData) + depthValues.x) / (depthValues.y) + biasAndScale.x;
 #endif
 
 #ifdef ESM
