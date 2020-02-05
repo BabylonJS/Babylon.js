@@ -327,6 +327,7 @@
 - Fix for bug where NME would crash if frames did not have comments ([Kyle Belfort](https://github.com/belfortk))
 - Fix wrong import of _TimeToken ([Sebavan](https://github.com/sebavan/)
 - Fix shadows not rendered correctly when using point lights ([Popov72](https://github.com/Popov72))
+- Prevent depth buffer clear in shadow maps ([Sebavan](https://github.com/sebavan/)
 
 ## Breaking changes
 
