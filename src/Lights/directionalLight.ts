@@ -231,37 +231,20 @@ export class DirectionalLight extends ShadowLight {
      */
     public transferToEffect(effect: Effect, lightIndex: string): DirectionalLight {
         if (this.computeTransformedInformation()) {
-            if (this.getScene().useRightHandedSystem) {
-                this._uniformBuffer.updateFloat4("vLightData", -this.transformedDirection.x, -this.transformedDirection.y, -this.transformedDirection.z, 1, lightIndex);
-            } else {
-                this._uniformBuffer.updateFloat4("vLightData", this.transformedDirection.x, this.transformedDirection.y, this.transformedDirection.z, 1, lightIndex);
-            }
+            this._uniformBuffer.updateFloat4("vLightData", this.transformedDirection.x, this.transformedDirection.y, this.transformedDirection.z, 1, lightIndex);
             return this;
         }
-        if (this.getScene().useRightHandedSystem) {
-            this._uniformBuffer.updateFloat4("vLightData", -this.direction.x, -this.direction.y, -this.direction.z, 1, lightIndex);
-        } else {
-            this._uniformBuffer.updateFloat4("vLightData", this.direction.x, this.direction.y, this.direction.z, 1, lightIndex);
-        }
-
+        this._uniformBuffer.updateFloat4("vLightData", this.direction.x, this.direction.y, this.direction.z, 1, lightIndex);
         return this;
     }
 
     public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): Light {
         if (this.computeTransformedInformation()) {
-            if (this.getScene().useRightHandedSystem) {
-                effect.setFloat3(lightDataUniformName, -this.transformedDirection.x, -this.transformedDirection.y, -this.transformedDirection.z);
-            } else {
-                effect.setFloat3(lightDataUniformName, this.transformedDirection.x, this.transformedDirection.y, this.transformedDirection.z);
-            }
+            effect.setFloat3(lightDataUniformName, this.transformedDirection.x, this.transformedDirection.y, this.transformedDirection.z);
             return this;
         }
-        if (this.getScene().useRightHandedSystem) {
-            effect.setFloat3(lightDataUniformName, -this.direction.x, -this.direction.y, -this.direction.z);
-        } else {
-            effect.setFloat3(lightDataUniformName, this.direction.x, this.direction.y, this.direction.z);
-        }
 
+        effect.setFloat3(lightDataUniformName, this.direction.x, this.direction.y, this.direction.z);
         return this;
     }
 
