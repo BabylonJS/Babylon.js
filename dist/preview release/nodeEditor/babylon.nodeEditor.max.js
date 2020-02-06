@@ -51816,7 +51816,9 @@ var NodeListComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "panes" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "filter" },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", placeholder: "Filter", onChange: function (evt) { return _this.filterContent(evt.target.value); } })),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", placeholder: "Filter", onFocus: function () { return _this.props.globalState.blockKeyboardEvents = true; }, onBlur: function (evt) {
+                                _this.props.globalState.blockKeyboardEvents = false;
+                            }, onChange: function (evt) { return _this.filterContent(evt.target.value); } })),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "list-container" }, blockMenu)))));
     };
     NodeListComponent._Tooltips = {
@@ -52351,6 +52353,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _previewMeshType__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./previewMeshType */ "./components/preview/previewMeshType.ts");
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../dataStorage */ "./dataStorage.ts");
 /* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react-dom */ "../../node_modules/react-dom/index.js");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_7__);
+
 
 
 
@@ -52381,7 +52386,7 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
             this.props.globalState.onPreviewCommandActivated.notifyObservers();
             this.forceUpdate();
         }
-        document.getElementById("file-picker").value = "";
+        react_dom__WEBPACK_IMPORTED_MODULE_7__["findDOMNode"](this.refs["file-picker"]).value = "";
     };
     PreviewMeshControlComponent.prototype.onPopUp = function () {
         this.props.togglePreviewAreaComponent();
@@ -52394,7 +52399,7 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
             { label: "Plane", value: _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Plane },
             { label: "Shader ball", value: _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].ShaderBall },
             { label: "Sphere", value: _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Sphere },
-            { label: "Load", value: _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Custom + 1 }
+            { label: "Load...", value: _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Custom + 1 }
         ];
         if (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Custom) {
             meshTypeOptions.splice(0, 0, {
@@ -52403,12 +52408,11 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
         }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-mesh-bar" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_6__["OptionsLineComponent"], { label: "", options: meshTypeOptions, target: this.props.globalState, propertyName: "previewMeshType", noDirectUpdate: true, onSelect: function (value) {
-                    var _a;
                     if (value !== _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Custom + 1) {
                         _this.changeMeshType(value);
                     }
                     else {
-                        (_a = document.getElementById("file-picker")) === null || _a === void 0 ? void 0 : _a.click();
+                        react_dom__WEBPACK_IMPORTED_MODULE_7__["findDOMNode"](_this.refs["file-picker"]).click();
                     }
                 } }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: {
