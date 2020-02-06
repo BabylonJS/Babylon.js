@@ -175,7 +175,12 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 <div className="panes">
                     <div className="pane">
                         <div className="filter">
-                            <input type="text" placeholder="Filter" onChange={(evt) => this.filterContent(evt.target.value)} />
+                            <input type="text" placeholder="Filter" 
+                                onFocus={() => this.props.globalState.blockKeyboardEvents = true}
+                                onBlur={evt => {
+                                    this.props.globalState.blockKeyboardEvents = false;
+                                }}
+                                onChange={(evt) => this.filterContent(evt.target.value)} />
                         </div>
                         <div className="list-container">
                             {blockMenu}
