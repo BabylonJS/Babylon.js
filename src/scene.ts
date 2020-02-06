@@ -152,6 +152,10 @@ export class Scene extends AbstractScene implements IAnimatable {
     /** @hidden */
     public readonly _isScene = true;
 
+    
+    /** @hidden */
+    public _blockEntityCollection = false;
+
     /**
      * Gets or sets a boolean that indicates if the scene must clear the render buffer before rendering a frame
      */
@@ -2038,7 +2042,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param recursive if all child meshes should also be added to the scene
      */
     public addMesh(newMesh: AbstractMesh, recursive = false) {
-        this.meshes.push(newMesh);
+        if (!this._blockEntityCollection) {
+            this.meshes.push(newMesh);
+        }
 
         newMesh._resyncLightSources();
 
@@ -2374,6 +2380,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newSkeleton The skeleton to add
      */
     public addSkeleton(newSkeleton: Skeleton): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.skeletons.push(newSkeleton);
         this.onNewSkeletonAddedObservable.notifyObservers(newSkeleton);
     }
@@ -2383,6 +2392,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newParticleSystem The particle system to add
      */
     public addParticleSystem(newParticleSystem: IParticleSystem): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.particleSystems.push(newParticleSystem);
     }
 
@@ -2391,6 +2403,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newAnimation The animation to add
      */
     public addAnimation(newAnimation: Animation): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.animations.push(newAnimation);
     }
 
@@ -2399,6 +2414,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newAnimationGroup The animation group to add
      */
     public addAnimationGroup(newAnimationGroup: AnimationGroup): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.animationGroups.push(newAnimationGroup);
     }
 
@@ -2407,6 +2425,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newMultiMaterial The multi-material to add
      */
     public addMultiMaterial(newMultiMaterial: MultiMaterial): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.multiMaterials.push(newMultiMaterial);
     }
 
@@ -2415,7 +2436,11 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newMaterial The material to add
      */
     public addMaterial(newMaterial: Material): void {
-        newMaterial._indexInSceneMaterialArray = this.materials.length;
+        if (this._blockEntityCollection) {
+            return;
+        }
+
+        newMaterial._indexInSceneMaterialArray = this.materials.length;        
         this.materials.push(newMaterial);
         this.onNewMaterialAddedObservable.notifyObservers(newMaterial);
     }
@@ -2425,6 +2450,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newMorphTargetManager The morph target to add
      */
     public addMorphTargetManager(newMorphTargetManager: MorphTargetManager): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.morphTargetManagers.push(newMorphTargetManager);
     }
 
@@ -2433,6 +2461,10 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newGeometry The geometry to add
      */
     public addGeometry(newGeometry: Geometry): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
+        
         if (this.geometriesByUniqueId) {
             this.geometriesByUniqueId[newGeometry.uniqueId] = this.geometries.length;
         }
