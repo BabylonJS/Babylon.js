@@ -1,5 +1,4 @@
 import { Nullable } from "../types";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { Engine } from "../Engines/engine";
 /**
  * Interface used to present a loading screen while loading a scene

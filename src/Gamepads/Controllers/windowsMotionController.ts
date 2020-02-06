@@ -8,7 +8,6 @@ import { Mesh } from "../../Meshes/mesh";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { TransformNode } from "../../Meshes/transformNode";
 import { Ray } from "../../Culling/ray";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { SceneLoader } from "../../Loading/sceneLoader";
 import { WebVRController } from "./webVRController";
 import { GenericController } from "./genericController";

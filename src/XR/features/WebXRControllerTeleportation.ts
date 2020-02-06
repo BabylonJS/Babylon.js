@@ -22,6 +22,8 @@ import { Curve3 } from '../../Maths/math.path';
 import { LinesBuilder } from '../../Meshes/Builders/linesBuilder';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
 import { Color3 } from '../../Maths/math.color';
+import { Scene } from '../../scene';
+import { UtilityLayerRenderer } from '../../Rendering/utilityLayerRenderer';
 
 /**
  * The options container for the teleportation module
@@ -81,6 +83,15 @@ export interface IWebXRTeleportationOptions {
      * If main component is used (no thumbstick), how long should the "long press" take before teleporting
      */
     timeToTeleport?: number;
+    /**
+     * Should meshes created here be added to a utility layer or the main scene
+     */
+    useUtilityLayer?: boolean;
+
+    /**
+     * if provided, this scene will be used to render meshes.
+     */
+    customUtilityLayerScene?: Scene;
 }
 
 /**
@@ -475,11 +486,11 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     private createDefaultTargetMesh() {
         // set defaults
         this._options.defaultTargetMeshOptions = this._options.defaultTargetMeshOptions || {};
-        const scene = this._xrSessionManager.scene;
-        let teleportationTarget = GroundBuilder.CreateGround("teleportationTarget", { width: 2, height: 2, subdivisions: 2 }, scene);
+        const sceneToRenderTo = this._options.useUtilityLayer ? (this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene) : this._xrSessionManager.scene;
+        let teleportationTarget = GroundBuilder.CreateGround("teleportationTarget", { width: 2, height: 2, subdivisions: 2 }, sceneToRenderTo);
         teleportationTarget.isPickable = false;
         let length = 512;
-        let dynamicTexture = new DynamicTexture("teleportationPlaneDynamicTexture", length, scene, true);
+        let dynamicTexture = new DynamicTexture("teleportationPlaneDynamicTexture", length, sceneToRenderTo, true);
         dynamicTexture.hasAlpha = true;
         let context = dynamicTexture.getContext();
         let centerX = length / 2;
@@ -494,14 +505,14 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         context.stroke();
         context.closePath();
         dynamicTexture.update();
-        const teleportationCircleMaterial = new StandardMaterial("teleportationPlaneMaterial", scene);
+        const teleportationCircleMaterial = new StandardMaterial("teleportationPlaneMaterial", sceneToRenderTo);
         teleportationCircleMaterial.diffuseTexture = dynamicTexture;
         teleportationTarget.material = teleportationCircleMaterial;
         let torus = TorusBuilder.CreateTorus("torusTeleportation", {
             diameter: 0.75,
             thickness: 0.1,
             tessellation: 20
-        }, scene);
+        }, sceneToRenderTo);
         torus.isPickable = false;
         torus.parent = teleportationTarget;
         if (!this._options.defaultTargetMeshOptions.disableAnimation) {
@@ -525,10 +536,10 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             animationInnerCircle.setEasingFunction(easingFunction);
             torus.animations = [];
             torus.animations.push(animationInnerCircle);
-            scene.beginAnimation(torus, 0, 60, true);
+            sceneToRenderTo.beginAnimation(torus, 0, 60, true);
         }
 
-        var cone = CylinderBuilder.CreateCylinder("cone", { diameterTop: 0, tessellation: 4 }, scene);
+        var cone = CylinderBuilder.CreateCylinder("cone", { diameterTop: 0, tessellation: 4 }, sceneToRenderTo);
         cone.isPickable = false;
         cone.scaling.set(0.5, 0.12, 0.2);
 
@@ -541,7 +552,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             torus.material = this._options.defaultTargetMeshOptions.torusArrowMaterial;
             cone.material = this._options.defaultTargetMeshOptions.torusArrowMaterial;
         } else {
-            const torusConeMaterial = new StandardMaterial("torusConsMat", scene);
+            const torusConeMaterial = new StandardMaterial("torusConsMat", sceneToRenderTo);
             torusConeMaterial.disableLighting = !!this._options.defaultTargetMeshOptions.disableLighting;
             if (torusConeMaterial.disableLighting) {
                 torusConeMaterial.emissiveColor = new Color3(0.3, 0.3, 1.0);

@@ -8,7 +8,6 @@ import { Effect } from "../Materials/effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { Texture } from '../Materials/Textures/texture';
 
 Node.AddNodeConstructor("Light_Type_2", (name, scene) => {

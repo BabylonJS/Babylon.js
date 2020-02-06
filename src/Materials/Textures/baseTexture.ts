@@ -5,7 +5,6 @@ import { Scene } from "../../scene";
 import { Matrix } from "../../Maths/math.vector";
 import { EngineStore } from "../../Engines/engineStore";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { Constants } from "../../Engines/constants";
 import { IAnimatable } from '../../Animations/animatable.interface';
 import { GUID } from '../../Misc/guid';
@@ -774,14 +773,16 @@ export class BaseTexture implements IAnimatable {
             else {
                 var onLoadObservable = (texture as any).onLoadObservable as Observable<BaseTexture>;
 
-                let onLoadCallback = () => {
-                    onLoadObservable.removeCallback(onLoadCallback);
-                    if (--numRemaining === 0) {
-                        callback();
-                    }
-                };
+                if (onLoadObservable) {
+                    let onLoadCallback = () => {
+                        onLoadObservable.removeCallback(onLoadCallback);
+                        if (--numRemaining === 0) {
+                            callback();
+                        }
+                    };
 
-                onLoadObservable.add(onLoadCallback);
+                    onLoadObservable.add(onLoadCallback);
+                }
             }
         }
     }

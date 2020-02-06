@@ -30,7 +30,7 @@ interface IGraphEditorProps {
     globalState: GlobalState;
 }
 
-type State = {
+interface IGraphEditorState {
     showPreviewPopUp: boolean;
 };
 
@@ -42,7 +42,7 @@ interface IInternalPreviewAreaOptions extends IInspectorOptions {
     embedHostWidth?: string;
 }
 
-export class GraphEditor extends React.Component<IGraphEditorProps, State> {
+export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditorState> {
     private readonly NodeWidth = 100;
     private _graphCanvas: GraphCanvasComponent;
 
@@ -63,11 +63,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, State> {
 
     private _previewHost: Nullable<HTMLElement>;
     private _popUpWindow: Window;
-
-
-    public readonly state: State = {
-        showPreviewPopUp: false
-    };
 
     /**
      * Creates a node and recursivly creates its parent nodes from it's input
@@ -175,7 +170,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, State> {
         }
 
         this.props.globalState.hostDocument!.addEventListener("keydown", evt => {
-            if (evt.keyCode === 46 && !this.props.globalState.blockKeyboardEvents) { // Delete                
+            if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.globalState.blockKeyboardEvents) { // Delete                
                 let selectedItems = this._graphCanvas.selectedNodes;
 
                 for (var selectedItem of selectedItems) {
@@ -387,7 +382,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, State> {
     }
 
     build() {        
-        let editorData = this.props.globalState.nodeMaterial.editorData;
+        let editorData = this.props.globalState.nodeMaterial.editorData;        
+        this._graphCanvas._isLoading = true; // Will help loading large graphes
 
         if (editorData instanceof Array) {
             editorData = {
@@ -428,24 +424,43 @@ export class GraphEditor extends React.Component<IGraphEditorProps, State> {
         this.reOrganize(editorData);
     }
 
+    showWaitScreen() {
+        this.props.globalState.hostDocument.querySelector(".wait-screen")?.classList.remove("hidden");
+    }
+
+    hideWaitScreen() {
+        this.props.globalState.hostDocument.querySelector(".wait-screen")?.classList.add("hidden");
+    }
+
     reOrganize(editorData: Nullable<IEditorData> = null) {
-        if (!editorData || !editorData.locations) {
-            this._graphCanvas.distributeGraph();
-        } else {
-            // Locations
-            for (var location of editorData.locations) {
-                for (var node of this._graphCanvas.nodes) {
-                    if (node.block && node.block.uniqueId === location.blockId) {
-                        node.x = location.x;
-                        node.y = location.y;
-                        node.cleanAccumulation();
-                        break;
+        this.showWaitScreen();
+        this._graphCanvas._isLoading = true; // Will help loading large graphes
+
+        setTimeout(() => {
+            if (!editorData || !editorData.locations) {
+                this._graphCanvas.distributeGraph();
+            } else {
+                // Locations
+                for (var location of editorData.locations) {
+                    for (var node of this._graphCanvas.nodes) {
+                        if (node.block && node.block.uniqueId === location.blockId) {
+                            node.x = location.x;
+                            node.y = location.y;
+                            node.cleanAccumulation();
+                            break;
+                        }
                     }
                 }
+
+                this._graphCanvas.processEditorData(editorData);
             }
 
-            this._graphCanvas.processEditorData(editorData);
-        }
+            this._graphCanvas._isLoading = false;
+            for (var node of this._graphCanvas.nodes) {
+                node._refreshLinks();
+            }
+            this.hideWaitScreen();
+        });
     }
 
     onPointerDown(evt: React.PointerEvent<HTMLDivElement>) {
@@ -762,7 +777,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, State> {
                         onDragOver={event => {
                             event.preventDefault();
                         }}
-                    >
+                    >                        
                         <GraphCanvasComponent ref={"graphCanvas"} globalState={this.props.globalState}/>
                     </div>
 
@@ -784,6 +799,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, State> {
                 <MessageDialogComponent globalState={this.props.globalState} />
                 <div className="blocker">
                     Node Material Editor runs only on desktop
+                </div>
+                <div className="wait-screen hidden">
+                    Processing...please wait
                 </div>
             </Portal>
         );
