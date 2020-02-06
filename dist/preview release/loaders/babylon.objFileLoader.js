@@ -585,7 +585,6 @@ var OBJFileLoader = /** @class */ (function () {
                     }
                 }
             });
-            container.removeAllFromScene();
             return container;
         });
     };

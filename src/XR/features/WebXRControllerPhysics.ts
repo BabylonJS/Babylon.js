@@ -143,6 +143,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
      * Get the physics impostor of a specific controller.
      * The impostor is not attached to a mesh because a mesh for each controller is not obligatory
      * @param controller the controller or the controller id of which to get the impostor
+     * @returns the impostor or null
      */
     public getImpostorForController(controller: WebXRInputSource | string): Nullable<PhysicsImpostor> {
         let id = typeof controller === "string" ? controller : controller.uniqueId;
@@ -155,6 +156,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
 
     /**
      * Get the headset impostor, if enabled
+     * @returns the impostor
      */
     public getHeadsetImpostor() {
         return this._headsetImpostor;

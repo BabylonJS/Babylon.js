@@ -275,7 +275,6 @@ var STLFileLoader = /** @class */ (function () {
     STLFileLoader.prototype.loadAssetContainer = function (scene, data, rootUrl, onError) {
         var container = new babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_0__["AssetContainer"](scene);
         this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
-        container.removeAllFromScene();
         return container;
     };
     STLFileLoader.prototype._isBinary = function (data) {
