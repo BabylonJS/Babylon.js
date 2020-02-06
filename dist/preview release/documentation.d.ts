@@ -9417,1786 +9417,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Defines the options associated with the creation of a custom shader for a shadow generator.
-     */
-    export interface ICustomShaderOptions {
-        /**
-         * Gets or sets the custom shader name to use
-         */
-        shaderName: string;
-        /**
-         * The list of attribute names used in the shader
-         */
-        attributes?: string[];
-        /**
-         * The list of unifrom names used in the shader
-         */
-        uniforms?: string[];
-        /**
-         * The list of sampler names used in the shader
-         */
-        samplers?: string[];
-        /**
-         * The list of defines used in the shader
-         */
-        defines?: string[];
-    }
-    /**
-     * Interface to implement to create a shadow generator compatible with BJS.
-     */
-    export interface IShadowGenerator {
-        /**
-         * Gets the main RTT containing the shadow map (usually storing depth from the light point of view).
-         * @returns The render target texture if present otherwise, null
-         */
-        getShadowMap(): Nullable<RenderTargetTexture>;
-        /**
-         * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
-         * @param subMesh The submesh we want to render in the shadow map
-         * @param useInstances Defines wether will draw in the map using instances
-         * @returns true if ready otherwise, false
-         */
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        /**
-         * Prepare all the defines in a material relying on a shadow map at the specified light index.
-         * @param defines Defines of the material we want to update
-         * @param lightIndex Index of the light in the enabled light list of the material
-         */
-        prepareDefines(defines: MaterialDefines, lightIndex: number): void;
-        /**
-         * Binds the shadow related information inside of an effect (information like near, far, darkness...
-         * defined in the generator but impacting the effect).
-         * It implies the unifroms available on the materials are the standard BJS ones.
-         * @param lightIndex Index of the light in the enabled light list of the material owning the effect
-         * @param effect The effect we are binfing the information for
-         */
-        bindShadowLight(lightIndex: string, effect: Effect): void;
-        /**
-         * Gets the transformation matrix used to project the meshes into the map from the light point of view.
-         * (eq to shadow prjection matrix * light transform matrix)
-         * @returns The transform matrix used to create the shadow map
-         */
-        getTransformMatrix(): Matrix;
-        /**
-         * Recreates the shadow map dependencies like RTT and post processes. This can be used during the switch between
-         * Cube and 2D textures for instance.
-         */
-        recreateShadowMap(): void;
-        /**
-         * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
-         * @param onCompiled Callback triggered at the and of the effects compilation
-         * @param options Sets of optional options forcing the compilation with different modes
-         */
-        forceCompilation(onCompiled?: (generator: IShadowGenerator) => void, options?: Partial<{
-            useInstances: boolean;
-        }>): void;
-        /**
-         * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
-         * @param options Sets of optional options forcing the compilation with different modes
-         * @returns A promise that resolves when the compilation completes
-         */
-        forceCompilationAsync(options?: Partial<{
-            useInstances: boolean;
-        }>): Promise<void>;
-        /**
-         * Serializes the shadow generator setup to a json object.
-         * @returns The serialized JSON object
-         */
-        serialize(): any;
-        /**
-         * Disposes the Shadow map and related Textures and effects.
-         */
-        dispose(): void;
-    }
-    /**
-     * Default implementation IShadowGenerator.
-     * This is the main object responsible of generating shadows in the framework.
-     * Documentation: https://doc.babylonjs.com/babylon101/shadows
-     */
-    export class ShadowGenerator implements IShadowGenerator {
-        /**
-         * Name of the shadow generator class
-         */
-        static CLASSNAME: string;
-        /**
-         * Shadow generator mode None: no filtering applied.
-         */
-        static readonly FILTER_NONE: number;
-        /**
-         * Shadow generator mode ESM: Exponential Shadow Mapping.
-         * (http://developer.download.nvidia.com/presentations/2008/GDC/GDC08_SoftShadowMapping.pdf)
-         */
-        static readonly FILTER_EXPONENTIALSHADOWMAP: number;
-        /**
-         * Shadow generator mode Poisson Sampling: Percentage Closer Filtering.
-         * (Multiple Tap around evenly distributed around the pixel are used to evaluate the shadow strength)
-         */
-        static readonly FILTER_POISSONSAMPLING: number;
-        /**
-         * Shadow generator mode ESM: Blurred Exponential Shadow Mapping.
-         * (http://developer.download.nvidia.com/presentations/2008/GDC/GDC08_SoftShadowMapping.pdf)
-         */
-        static readonly FILTER_BLUREXPONENTIALSHADOWMAP: number;
-        /**
-         * Shadow generator mode ESM: Exponential Shadow Mapping using the inverse of the exponential preventing
-         * edge artifacts on steep falloff.
-         * (http://developer.download.nvidia.com/presentations/2008/GDC/GDC08_SoftShadowMapping.pdf)
-         */
-        static readonly FILTER_CLOSEEXPONENTIALSHADOWMAP: number;
-        /**
-         * Shadow generator mode ESM: Blurred Exponential Shadow Mapping using the inverse of the exponential preventing
-         * edge artifacts on steep falloff.
-         * (http://developer.download.nvidia.com/presentations/2008/GDC/GDC08_SoftShadowMapping.pdf)
-         */
-        static readonly FILTER_BLURCLOSEEXPONENTIALSHADOWMAP: number;
-        /**
-         * Shadow generator mode PCF: Percentage Closer Filtering
-         * benefits from Webgl 2 shadow samplers. Fallback to Poisson Sampling in Webgl 1
-         * (https://developer.nvidia.com/gpugems/GPUGems/gpugems_ch11.html)
-         */
-        static readonly FILTER_PCF: number;
-        /**
-         * Shadow generator mode PCSS: Percentage Closering Soft Shadow.
-         * benefits from Webgl 2 shadow samplers. Fallback to Poisson Sampling in Webgl 1
-         * Contact Hardening
-         */
-        static readonly FILTER_PCSS: number;
-        /**
-         * Reserved for PCF and PCSS
-         * Highest Quality.
-         *
-         * Execute PCF on a 5*5 kernel improving a lot the shadow aliasing artifacts.
-         *
-         * Execute PCSS with 32 taps blocker search and 64 taps PCF.
-         */
-        static readonly QUALITY_HIGH: number;
-        /**
-         * Reserved for PCF and PCSS
-         * Good tradeoff for quality/perf cross devices
-         *
-         * Execute PCF on a 3*3 kernel.
-         *
-         * Execute PCSS with 16 taps blocker search and 32 taps PCF.
-         */
-        static readonly QUALITY_MEDIUM: number;
-        /**
-         * Reserved for PCF and PCSS
-         * The lowest quality but the fastest.
-         *
-         * Execute PCF on a 1*1 kernel.
-         *
-         * Execute PCSS with 16 taps blocker search and 16 taps PCF.
-         */
-        static readonly QUALITY_LOW: number;
-        /** Gets or sets the custom shader name to use */
-        customShaderOptions: ICustomShaderOptions;
-        /**
-         * Observable triggered before the shadow is rendered. Can be used to update internal effect state
-         */
-        onBeforeShadowMapRenderObservable: Observable<Effect>;
-        /**
-         * Observable triggered after the shadow is rendered. Can be used to restore internal effect state
-         */
-        onAfterShadowMapRenderObservable: Observable<Effect>;
-        /**
-         * Observable triggered before a mesh is rendered in the shadow map.
-         * Can be used to update internal effect state (that you can get from the onBeforeShadowMapRenderObservable)
-         */
-        onBeforeShadowMapRenderMeshObservable: Observable<Mesh>;
-        /**
-         * Observable triggered after a mesh is rendered in the shadow map.
-         * Can be used to update internal effect state (that you can get from the onAfterShadowMapRenderObservable)
-         */
-        onAfterShadowMapRenderMeshObservable: Observable<Mesh>;
-        protected _bias: number;
-        /**
-         * Gets the bias: offset applied on the depth preventing acnea (in light direction).
-         */
-        get bias(): number;
-        /**
-         * Sets the bias: offset applied on the depth preventing acnea (in light direction).
-         */
-        set bias(bias: number);
-        protected _normalBias: number;
-        /**
-         * Gets the normalBias: offset applied on the depth preventing acnea (along side the normal direction and proportinal to the light/normal angle).
-         */
-        get normalBias(): number;
-        /**
-         * Sets the normalBias: offset applied on the depth preventing acnea (along side the normal direction and proportinal to the light/normal angle).
-         */
-        set normalBias(normalBias: number);
-        protected _blurBoxOffset: number;
-        /**
-         * Gets the blur box offset: offset applied during the blur pass.
-         * Only useful if useKernelBlur = false
-         */
-        get blurBoxOffset(): number;
-        /**
-         * Sets the blur box offset: offset applied during the blur pass.
-         * Only useful if useKernelBlur = false
-         */
-        set blurBoxOffset(value: number);
-        protected _blurScale: number;
-        /**
-         * Gets the blur scale: scale of the blurred texture compared to the main shadow map.
-         * 2 means half of the size.
-         */
-        get blurScale(): number;
-        /**
-         * Sets the blur scale: scale of the blurred texture compared to the main shadow map.
-         * 2 means half of the size.
-         */
-        set blurScale(value: number);
-        protected _blurKernel: number;
-        /**
-         * Gets the blur kernel: kernel size of the blur pass.
-         * Only useful if useKernelBlur = true
-         */
-        get blurKernel(): number;
-        /**
-         * Sets the blur kernel: kernel size of the blur pass.
-         * Only useful if useKernelBlur = true
-         */
-        set blurKernel(value: number);
-        protected _useKernelBlur: boolean;
-        /**
-         * Gets whether the blur pass is a kernel blur (if true) or box blur.
-         * Only useful in filtered mode (useBlurExponentialShadowMap...)
-         */
-        get useKernelBlur(): boolean;
-        /**
-         * Sets whether the blur pass is a kernel blur (if true) or box blur.
-         * Only useful in filtered mode (useBlurExponentialShadowMap...)
-         */
-        set useKernelBlur(value: boolean);
-        protected _depthScale: number;
-        /**
-         * Gets the depth scale used in ESM mode.
-         */
-        get depthScale(): number;
-        /**
-         * Sets the depth scale used in ESM mode.
-         * This can override the scale stored on the light.
-         */
-        set depthScale(value: number);
-        protected _validateFilter(filter: number): number;
-        protected _filter: number;
-        /**
-         * Gets the current mode of the shadow generator (normal, PCF, ESM...).
-         * The returned value is a number equal to one of the available mode defined in ShadowMap.FILTER_x like _FILTER_NONE
-         */
-        get filter(): number;
-        /**
-         * Sets the current mode of the shadow generator (normal, PCF, ESM...).
-         * The returned value is a number equal to one of the available mode defined in ShadowMap.FILTER_x like _FILTER_NONE
-         */
-        set filter(value: number);
-        /**
-         * Gets if the current filter is set to Poisson Sampling.
-         */
-        get usePoissonSampling(): boolean;
-        /**
-         * Sets the current filter to Poisson Sampling.
-         */
-        set usePoissonSampling(value: boolean);
-        /**
-         * Gets if the current filter is set to ESM.
-         */
-        get useExponentialShadowMap(): boolean;
-        /**
-         * Sets the current filter is to ESM.
-         */
-        set useExponentialShadowMap(value: boolean);
-        /**
-         * Gets if the current filter is set to filtered ESM.
-         */
-        get useBlurExponentialShadowMap(): boolean;
-        /**
-         * Gets if the current filter is set to filtered  ESM.
-         */
-        set useBlurExponentialShadowMap(value: boolean);
-        /**
-         * Gets if the current filter is set to "close ESM" (using the inverse of the
-         * exponential to prevent steep falloff artifacts).
-         */
-        get useCloseExponentialShadowMap(): boolean;
-        /**
-         * Sets the current filter to "close ESM" (using the inverse of the
-         * exponential to prevent steep falloff artifacts).
-         */
-        set useCloseExponentialShadowMap(value: boolean);
-        /**
-         * Gets if the current filter is set to filtered "close ESM" (using the inverse of the
-         * exponential to prevent steep falloff artifacts).
-         */
-        get useBlurCloseExponentialShadowMap(): boolean;
-        /**
-         * Sets the current filter to filtered "close ESM" (using the inverse of the
-         * exponential to prevent steep falloff artifacts).
-         */
-        set useBlurCloseExponentialShadowMap(value: boolean);
-        /**
-         * Gets if the current filter is set to "PCF" (percentage closer filtering).
-         */
-        get usePercentageCloserFiltering(): boolean;
-        /**
-         * Sets the current filter to "PCF" (percentage closer filtering).
-         */
-        set usePercentageCloserFiltering(value: boolean);
-        protected _filteringQuality: number;
-        /**
-         * Gets the PCF or PCSS Quality.
-         * Only valid if usePercentageCloserFiltering or usePercentageCloserFiltering is true.
-         */
-        get filteringQuality(): number;
-        /**
-         * Sets the PCF or PCSS Quality.
-         * Only valid if usePercentageCloserFiltering or usePercentageCloserFiltering is true.
-         */
-        set filteringQuality(filteringQuality: number);
-        /**
-         * Gets if the current filter is set to "PCSS" (contact hardening).
-         */
-        get useContactHardeningShadow(): boolean;
-        /**
-         * Sets the current filter to "PCSS" (contact hardening).
-         */
-        set useContactHardeningShadow(value: boolean);
-        protected _contactHardeningLightSizeUVRatio: number;
-        /**
-         * Gets the Light Size (in shadow map uv unit) used in PCSS to determine the blocker search area and the penumbra size.
-         * Using a ratio helps keeping shape stability independently of the map size.
-         *
-         * It does not account for the light projection as it was having too much
-         * instability during the light setup or during light position changes.
-         *
-         * Only valid if useContactHardeningShadow is true.
-         */
-        get contactHardeningLightSizeUVRatio(): number;
-        /**
-         * Sets the Light Size (in shadow map uv unit) used in PCSS to determine the blocker search area and the penumbra size.
-         * Using a ratio helps keeping shape stability independently of the map size.
-         *
-         * It does not account for the light projection as it was having too much
-         * instability during the light setup or during light position changes.
-         *
-         * Only valid if useContactHardeningShadow is true.
-         */
-        set contactHardeningLightSizeUVRatio(contactHardeningLightSizeUVRatio: number);
-        protected _darkness: number;
-        /** Gets or sets the actual darkness of a shadow */
-        get darkness(): number;
-        set darkness(value: number);
-        /**
-         * Returns the darkness value (float). This can only decrease the actual darkness of a shadow.
-         * 0 means strongest and 1 would means no shadow.
-         * @returns the darkness.
-         */
-        getDarkness(): number;
-        /**
-         * Sets the darkness value (float). This can only decrease the actual darkness of a shadow.
-         * @param darkness The darkness value 0 means strongest and 1 would means no shadow.
-         * @returns the shadow generator allowing fluent coding.
-         */
-        setDarkness(darkness: number): ShadowGenerator;
-        protected _transparencyShadow: boolean;
-        /** Gets or sets the ability to have transparent shadow  */
-        get transparencyShadow(): boolean;
-        set transparencyShadow(value: boolean);
-        /**
-         * Sets the ability to have transparent shadow (boolean).
-         * @param transparent True if transparent else False
-         * @returns the shadow generator allowing fluent coding
-         */
-        setTransparencyShadow(transparent: boolean): ShadowGenerator;
-        protected _shadowMap: Nullable<RenderTargetTexture>;
-        protected _shadowMap2: Nullable<RenderTargetTexture>;
-        /**
-         * Gets the main RTT containing the shadow map (usually storing depth from the light point of view).
-         * @returns The render target texture if present otherwise, null
-         */
-        getShadowMap(): Nullable<RenderTargetTexture>;
-        /**
-         * Gets the RTT used during rendering (can be a blurred version of the shadow map or the shadow map itself).
-         * @returns The render target texture if the shadow map is present otherwise, null
-         */
-        getShadowMapForRendering(): Nullable<RenderTargetTexture>;
-        /**
-         * Gets the class name of that object
-         * @returns "ShadowGenerator"
-         */
-        getClassName(): string;
-        /**
-         * Helper function to add a mesh and its descendants to the list of shadow casters.
-         * @param mesh Mesh to add
-         * @param includeDescendants boolean indicating if the descendants should be added. Default to true
-         * @returns the Shadow Generator itself
-         */
-        addShadowCaster(mesh: AbstractMesh, includeDescendants?: boolean): ShadowGenerator;
-        /**
-         * Helper function to remove a mesh and its descendants from the list of shadow casters
-         * @param mesh Mesh to remove
-         * @param includeDescendants boolean indicating if the descendants should be removed. Default to true
-         * @returns the Shadow Generator itself
-         */
-        removeShadowCaster(mesh: AbstractMesh, includeDescendants?: boolean): ShadowGenerator;
-        /**
-         * Controls the extent to which the shadows fade out at the edge of the frustum
-         */
-        frustumEdgeFalloff: number;
-        protected _light: IShadowLight;
-        /**
-         * Returns the associated light object.
-         * @returns the light generating the shadow
-         */
-        getLight(): IShadowLight;
-        /**
-         * If true the shadow map is generated by rendering the back face of the mesh instead of the front face.
-         * This can help with self-shadowing as the geometry making up the back of objects is slightly offset.
-         * It might on the other hand introduce peter panning.
-         */
-        forceBackFacesOnly: boolean;
-        protected _scene: Scene;
-        protected _lightDirection: Vector3;
-        protected _effect: Effect;
-        protected _viewMatrix: Matrix;
-        protected _projectionMatrix: Matrix;
-        protected _transformMatrix: Matrix;
-        protected _cachedPosition: Vector3;
-        protected _cachedDirection: Vector3;
-        protected _cachedDefines: string;
-        protected _currentRenderID: number;
-        protected _boxBlurPostprocess: Nullable<PostProcess>;
-        protected _kernelBlurXPostprocess: Nullable<PostProcess>;
-        protected _kernelBlurYPostprocess: Nullable<PostProcess>;
-        protected _blurPostProcesses: PostProcess[];
-        protected _mapSize: number;
-        protected _currentFaceIndex: number;
-        protected _currentFaceIndexCache: number;
-        protected _textureType: number;
-        protected _defaultTextureMatrix: Matrix;
-        protected _storedUniqueId: Nullable<number>;
-        /** @hidden */
-        static _SceneComponentInitialization: (scene: Scene) => void;
-        /**
-         * Creates a ShadowGenerator object.
-         * A ShadowGenerator is the required tool to use the shadows.
-         * Each light casting shadows needs to use its own ShadowGenerator.
-         * Documentation : https://doc.babylonjs.com/babylon101/shadows
-         * @param mapSize The size of the texture what stores the shadows. Example : 1024.
-         * @param light The light object generating the shadows.
-         * @param usefulFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
-         */
-        constructor(mapSize: number, light: IShadowLight, usefulFloatFirst?: boolean);
-        protected _initializeGenerator(): void;
-        protected _createTargetRenderTexture(): void;
-        protected _initializeShadowMap(): void;
-        protected _initializeBlurRTTAndPostProcesses(): void;
-        protected _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void;
-        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect): void;
-        protected _renderSubMeshForShadowMap(subMesh: SubMesh): void;
-        protected _applyFilterValues(): void;
-        /**
-         * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
-         * @param onCompiled Callback triggered at the and of the effects compilation
-         * @param options Sets of optional options forcing the compilation with different modes
-         */
-        forceCompilation(onCompiled?: (generator: IShadowGenerator) => void, options?: Partial<{
-            useInstances: boolean;
-        }>): void;
-        /**
-         * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
-         * @param options Sets of optional options forcing the compilation with different modes
-         * @returns A promise that resolves when the compilation completes
-         */
-        forceCompilationAsync(options?: Partial<{
-            useInstances: boolean;
-        }>): Promise<void>;
-        protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void;
-        /**
-         * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
-         * @param subMesh The submesh we want to render in the shadow map
-         * @param useInstances Defines wether will draw in the map using instances
-         * @returns true if ready otherwise, false
-         */
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        /**
-         * Prepare all the defines in a material relying on a shadow map at the specified light index.
-         * @param defines Defines of the material we want to update
-         * @param lightIndex Index of the light in the enabled light list of the material
-         */
-        prepareDefines(defines: any, lightIndex: number): void;
-        /**
-         * Binds the shadow related information inside of an effect (information like near, far, darkness...
-         * defined in the generator but impacting the effect).
-         * @param lightIndex Index of the light in the enabled light list of the material owning the effect
-         * @param effect The effect we are binfing the information for
-         */
-        bindShadowLight(lightIndex: string, effect: Effect): void;
-        /**
-         * Gets the transformation matrix used to project the meshes into the map from the light point of view.
-         * (eq to shadow prjection matrix * light transform matrix)
-         * @returns The transform matrix used to create the shadow map
-         */
-        getTransformMatrix(): Matrix;
-        /**
-         * Recreates the shadow map dependencies like RTT and post processes. This can be used during the switch between
-         * Cube and 2D textures for instance.
-         */
-        recreateShadowMap(): void;
-        protected _disposeBlurPostProcesses(): void;
-        protected _disposeRTTandPostProcesses(): void;
-        /**
-         * Disposes the ShadowGenerator.
-         * Returns nothing.
-         */
-        dispose(): void;
-        /**
-         * Serializes the shadow generator setup to a json object.
-         * @returns The serialized JSON object
-         */
-        serialize(): any;
-        /**
-         * Parses a serialized ShadowGenerator and returns a new ShadowGenerator.
-         * @param parsedShadowGenerator The JSON object to parse
-         * @param scene The scene to create the shadow map for
-         * @param constr A function that builds a shadow generator or undefined to create an instance of the default shadow generator
-         * @returns The parsed shadow generator
-         */
-        static Parse(parsedShadowGenerator: any, scene: Scene, constr?: (mapSize: number, light: IShadowLight) => ShadowGenerator): ShadowGenerator;
-    }
-}
-declare module BABYLON {
-    /**
-     * Base class of all the lights in Babylon. It groups all the generic information about lights.
-     * Lights are used, as you would expect, to affect how meshes are seen, in terms of both illumination and colour.
-     * All meshes allow light to pass through them unless shadow generation is activated. The default number of lights allowed is four but this can be increased.
-     */
-    export abstract class Light extends Node {
-        /**
-         * Falloff Default: light is falling off following the material specification:
-         * standard material is using standard falloff whereas pbr material can request special falloff per materials.
-         */
-        static readonly FALLOFF_DEFAULT: number;
-        /**
-         * Falloff Physical: light is falling off following the inverse squared distance law.
-         */
-        static readonly FALLOFF_PHYSICAL: number;
-        /**
-         * Falloff gltf: light is falling off as described in the gltf moving to PBR document
-         * to enhance interoperability with other engines.
-         */
-        static readonly FALLOFF_GLTF: number;
-        /**
-         * Falloff Standard: light is falling off like in the standard material
-         * to enhance interoperability with other materials.
-         */
-        static readonly FALLOFF_STANDARD: number;
-        /**
-         * If every light affecting the material is in this lightmapMode,
-         * material.lightmapTexture adds or multiplies
-         * (depends on material.useLightmapAsShadowmap)
-         * after every other light calculations.
-         */
-        static readonly LIGHTMAP_DEFAULT: number;
-        /**
-         * material.lightmapTexture as only diffuse lighting from this light
-         * adds only specular lighting from this light
-         * adds dynamic shadows
-         */
-        static readonly LIGHTMAP_SPECULAR: number;
-        /**
-         * material.lightmapTexture as only lighting
-         * no light calculation from this light
-         * only adds dynamic shadows from this light
-         */
-        static readonly LIGHTMAP_SHADOWSONLY: number;
-        /**
-         * Each light type uses the default quantity according to its type:
-         *      point/spot lights use luminous intensity
-         *      directional lights use illuminance
-         */
-        static readonly INTENSITYMODE_AUTOMATIC: number;
-        /**
-         * lumen (lm)
-         */
-        static readonly INTENSITYMODE_LUMINOUSPOWER: number;
-        /**
-         * candela (lm/sr)
-         */
-        static readonly INTENSITYMODE_LUMINOUSINTENSITY: number;
-        /**
-         * lux (lm/m^2)
-         */
-        static readonly INTENSITYMODE_ILLUMINANCE: number;
-        /**
-         * nit (cd/m^2)
-         */
-        static readonly INTENSITYMODE_LUMINANCE: number;
-        /**
-         * Light type const id of the point light.
-         */
-        static readonly LIGHTTYPEID_POINTLIGHT: number;
-        /**
-         * Light type const id of the directional light.
-         */
-        static readonly LIGHTTYPEID_DIRECTIONALLIGHT: number;
-        /**
-         * Light type const id of the spot light.
-         */
-        static readonly LIGHTTYPEID_SPOTLIGHT: number;
-        /**
-         * Light type const id of the hemispheric light.
-         */
-        static readonly LIGHTTYPEID_HEMISPHERICLIGHT: number;
-        /**
-         * Diffuse gives the basic color to an object.
-         */
-        diffuse: Color3;
-        /**
-         * Specular produces a highlight color on an object.
-         * Note: This is note affecting PBR materials.
-         */
-        specular: Color3;
-        /**
-         * Defines the falloff type for this light. This lets overrriding how punctual light are
-         * falling off base on range or angle.
-         * This can be set to any values in Light.FALLOFF_x.
-         *
-         * Note: This is only useful for PBR Materials at the moment. This could be extended if required to
-         * other types of materials.
-         */
-        falloffType: number;
-        /**
-         * Strength of the light.
-         * Note: By default it is define in the framework own unit.
-         * Note: In PBR materials the intensityMode can be use to chose what unit the intensity is defined in.
-         */
-        intensity: number;
-        private _range;
-        protected _inverseSquaredRange: number;
-        /**
-         * Defines how far from the source the light is impacting in scene units.
-         * Note: Unused in PBR material as the distance light falloff is defined following the inverse squared falloff.
-         */
-        get range(): number;
-        /**
-         * Defines how far from the source the light is impacting in scene units.
-         * Note: Unused in PBR material as the distance light falloff is defined following the inverse squared falloff.
-         */
-        set range(value: number);
-        /**
-         * Cached photometric scale default to 1.0 as the automatic intensity mode defaults to 1.0 for every type
-         * of light.
-         */
-        private _photometricScale;
-        private _intensityMode;
-        /**
-         * Gets the photometric scale used to interpret the intensity.
-         * This is only relevant with PBR Materials where the light intensity can be defined in a physical way.
-         */
-        get intensityMode(): number;
-        /**
-         * Sets the photometric scale used to interpret the intensity.
-         * This is only relevant with PBR Materials where the light intensity can be defined in a physical way.
-         */
-        set intensityMode(value: number);
-        private _radius;
-        /**
-         * Gets the light radius used by PBR Materials to simulate soft area lights.
-         */
-        get radius(): number;
-        /**
-         * sets the light radius used by PBR Materials to simulate soft area lights.
-         */
-        set radius(value: number);
-        private _renderPriority;
-        /**
-         * Defines the rendering priority of the lights. It can help in case of fallback or number of lights
-         * exceeding the number allowed of the materials.
-         */
-        renderPriority: number;
-        private _shadowEnabled;
-        /**
-         * Gets wether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
-         * the current shadow generator.
-         */
-        get shadowEnabled(): boolean;
-        /**
-         * Sets wether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
-         * the current shadow generator.
-         */
-        set shadowEnabled(value: boolean);
-        private _includedOnlyMeshes;
-        /**
-         * Gets the only meshes impacted by this light.
-         */
-        get includedOnlyMeshes(): AbstractMesh[];
-        /**
-         * Sets the only meshes impacted by this light.
-         */
-        set includedOnlyMeshes(value: AbstractMesh[]);
-        private _excludedMeshes;
-        /**
-         * Gets the meshes not impacted by this light.
-         */
-        get excludedMeshes(): AbstractMesh[];
-        /**
-         * Sets the meshes not impacted by this light.
-         */
-        set excludedMeshes(value: AbstractMesh[]);
-        private _excludeWithLayerMask;
-        /**
-         * Gets the layer id use to find what meshes are not impacted by the light.
-         * Inactive if 0
-         */
-        get excludeWithLayerMask(): number;
-        /**
-         * Sets the layer id use to find what meshes are not impacted by the light.
-         * Inactive if 0
-         */
-        set excludeWithLayerMask(value: number);
-        private _includeOnlyWithLayerMask;
-        /**
-         * Gets the layer id use to find what meshes are impacted by the light.
-         * Inactive if 0
-         */
-        get includeOnlyWithLayerMask(): number;
-        /**
-         * Sets the layer id use to find what meshes are impacted by the light.
-         * Inactive if 0
-         */
-        set includeOnlyWithLayerMask(value: number);
-        private _lightmapMode;
-        /**
-         * Gets the lightmap mode of this light (should be one of the constants defined by Light.LIGHTMAP_x)
-         */
-        get lightmapMode(): number;
-        /**
-         * Sets the lightmap mode of this light (should be one of the constants defined by Light.LIGHTMAP_x)
-         */
-        set lightmapMode(value: number);
-        /**
-         * Shadow generator associted to the light.
-         * @hidden Internal use only.
-         */
-        _shadowGenerator: Nullable<IShadowGenerator>;
-        /**
-         * @hidden Internal use only.
-         */
-        _excludedMeshesIds: string[];
-        /**
-         * @hidden Internal use only.
-         */
-        _includedOnlyMeshesIds: string[];
-        /**
-         * The current light unifom buffer.
-         * @hidden Internal use only.
-         */
-        _uniformBuffer: UniformBuffer;
-        /** @hidden */
-        _renderId: number;
-        /**
-         * Creates a Light object in the scene.
-         * Documentation : https://doc.babylonjs.com/babylon101/lights
-         * @param name The firendly name of the light
-         * @param scene The scene the light belongs too
-         */
-        constructor(name: string, scene: Scene);
-        protected abstract _buildUniformLayout(): void;
-        /**
-         * Sets the passed Effect "effect" with the Light information.
-         * @param effect The effect to update
-         * @param lightIndex The index of the light in the effect to update
-         * @returns The light
-         */
-        abstract transferToEffect(effect: Effect, lightIndex: string): Light;
-        /**
-         * Sets the passed Effect "effect" with the Light textures.
-         * @param effect The effect to update
-         * @param lightIndex The index of the light in the effect to update
-         * @returns The light
-         */
-        transferTexturesToEffect(effect: Effect, lightIndex: string): Light;
-        /**
-         * Binds the lights information from the scene to the effect for the given mesh.
-         * @param lightIndex Light index
-         * @param scene The scene where the light belongs to
-         * @param effect The effect we are binding the data to
-         * @param useSpecular Defines if specular is supported
-         * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
-         */
-        _bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel?: boolean): void;
-        /**
-         * Sets the passed Effect "effect" with the Light information.
-         * @param effect The effect to update
-         * @param lightDataUniformName The uniform used to store light data (position or direction)
-         * @returns The light
-         */
-        abstract transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): Light;
-        /**
-         * Returns the string "Light".
-         * @returns the class name
-         */
-        getClassName(): string;
-        /** @hidden */
-        readonly _isLight: boolean;
-        /**
-         * Converts the light information to a readable string for debug purpose.
-         * @param fullDetails Supports for multiple levels of logging within scene loading
-         * @returns the human readable light info
-         */
-        toString(fullDetails?: boolean): string;
-        /** @hidden */
-        protected _syncParentEnabledState(): void;
-        /**
-         * Set the enabled state of this node.
-         * @param value - the new enabled state
-         */
-        setEnabled(value: boolean): void;
-        /**
-         * Returns the Light associated shadow generator if any.
-         * @return the associated shadow generator.
-         */
-        getShadowGenerator(): Nullable<IShadowGenerator>;
-        /**
-         * Returns a Vector3, the absolute light position in the World.
-         * @returns the world space position of the light
-         */
-        getAbsolutePosition(): Vector3;
-        /**
-         * Specifies if the light will affect the passed mesh.
-         * @param mesh The mesh to test against the light
-         * @return true the mesh is affected otherwise, false.
-         */
-        canAffectMesh(mesh: AbstractMesh): boolean;
-        /**
-         * Sort function to order lights for rendering.
-         * @param a First Light object to compare to second.
-         * @param b Second Light object to compare first.
-         * @return -1 to reduce's a's index relative to be, 0 for no change, 1 to increase a's index relative to b.
-         */
-        static CompareLightsPriority(a: Light, b: Light): number;
-        /**
-         * Releases resources associated with this node.
-         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
-         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
-         */
-        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
-        /**
-         * Returns the light type ID (integer).
-         * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
-         */
-        getTypeID(): number;
-        /**
-         * Returns the intensity scaled by the Photometric Scale according to the light type and intensity mode.
-         * @returns the scaled intensity in intensity mode unit
-         */
-        getScaledIntensity(): number;
-        /**
-         * Returns a new Light object, named "name", from the current one.
-         * @param name The name of the cloned light
-         * @returns the new created light
-         */
-        clone(name: string): Nullable<Light>;
-        /**
-         * Serializes the current light into a Serialization object.
-         * @returns the serialized object.
-         */
-        serialize(): any;
-        /**
-         * Creates a new typed light from the passed type (integer) : point light = 0, directional light = 1, spot light = 2, hemispheric light = 3.
-         * This new light is named "name" and added to the passed scene.
-         * @param type Type according to the types available in Light.LIGHTTYPEID_x
-         * @param name The friendly name of the light
-         * @param scene The scene the new light will belong to
-         * @returns the constructor function
-         */
-        static GetConstructorFromName(type: number, name: string, scene: Scene): Nullable<() => Light>;
-        /**
-         * Parses the passed "parsedLight" and returns a new instanced Light from this parsing.
-         * @param parsedLight The JSON representation of the light
-         * @param scene The scene to create the parsed light in
-         * @returns the created light after parsing
-         */
-        static Parse(parsedLight: any, scene: Scene): Nullable<Light>;
-        private _hookArrayForExcluded;
-        private _hookArrayForIncludedOnly;
-        private _resyncMeshes;
-        /**
-         * Forces the meshes to update their light related information in their rendering used effects
-         * @hidden Internal Use Only
-         */
-        _markMeshesAsLightDirty(): void;
-        /**
-         * Recomputes the cached photometric scale if needed.
-         */
-        private _computePhotometricScale;
-        /**
-         * Returns the Photometric Scale according to the light type and intensity mode.
-         */
-        private _getPhotometricScale;
-        /**
-         * Reorder the light in the scene according to their defined priority.
-         * @hidden Internal Use Only
-         */
-        _reorderLightsInScene(): void;
-        /**
-         * Prepares the list of defines specific to the light type.
-         * @param defines the list of defines
-         * @param lightIndex defines the index of the light for the effect
-         */
-        abstract prepareLightSpecificDefines(defines: any, lightIndex: number): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Interface used to define Action
-     */
-    export interface IAction {
-        /**
-       * Trigger for the action
-       */
-        trigger: number;
-        /** Options of the trigger */
-        triggerOptions: any;
-        /**
-         * Gets the trigger parameters
-         * @returns the trigger parameters
-         */
-        getTriggerParameter(): any;
-        /**
-         * Internal only - executes current action event
-         * @hidden
-         */
-        _executeCurrent(evt?: ActionEvent): void;
-        /**
-         * Serialize placeholder for child classes
-         * @param parent of child
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-        /**
-        * Internal only
-        * @hidden
-        */
-        _prepare(): void;
-        /**
-         * Internal only - manager for action
-         * @hidden
-         */
-        _actionManager: AbstractActionManager;
-        /**
-         * Adds action to chain of actions, may be a DoNothingAction
-         * @param action defines the next action to execute
-         * @returns The action passed in
-         * @see https://www.babylonjs-playground.com/#1T30HR#0
-         */
-        then(action: IAction): IAction;
-    }
-    /**
-     * The action to be carried out following a trigger
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#available-actions
-     */
-    export class Action implements IAction {
-        /** the trigger, with or without parameters, for the action */
-        triggerOptions: any;
-        /**
-         * Trigger for the action
-         */
-        trigger: number;
-        /**
-         * Internal only - manager for action
-         * @hidden
-         */
-        _actionManager: ActionManager;
-        private _nextActiveAction;
-        private _child;
-        private _condition?;
-        private _triggerParameter;
-        /**
-        * An event triggered prior to action being executed.
-        */
-        onBeforeExecuteObservable: Observable<Action>;
-        /**
-         * Creates a new Action
-         * @param triggerOptions the trigger, with or without parameters, for the action
-         * @param condition an optional determinant of action
-         */
-        constructor(
-        /** the trigger, with or without parameters, for the action */
-        triggerOptions: any, condition?: Condition);
-        /**
-         * Internal only
-         * @hidden
-         */
-        _prepare(): void;
-        /**
-         * Gets the trigger parameters
-         * @returns the trigger parameters
-         */
-        getTriggerParameter(): any;
-        /**
-         * Internal only - executes current action event
-         * @hidden
-         */
-        _executeCurrent(evt?: ActionEvent): void;
-        /**
-         * Execute placeholder for child classes
-         * @param evt optional action event
-         */
-        execute(evt?: ActionEvent): void;
-        /**
-         * Skips to next active action
-         */
-        skipToNextActiveAction(): void;
-        /**
-         * Adds action to chain of actions, may be a DoNothingAction
-         * @param action defines the next action to execute
-         * @returns The action passed in
-         * @see https://www.babylonjs-playground.com/#1T30HR#0
-         */
-        then(action: Action): Action;
-        /**
-         * Internal only
-         * @hidden
-         */
-        _getProperty(propertyPath: string): string;
-        /**
-         * Internal only
-         * @hidden
-         */
-        _getEffectiveTarget(target: any, propertyPath: string): any;
-        /**
-         * Serialize placeholder for child classes
-         * @param parent of child
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-        /**
-         * Internal only called by serialize
-         * @hidden
-         */
-        protected _serialize(serializedAction: any, parent?: any): any;
-        /**
-         * Internal only
-         * @hidden
-         */
-        static _SerializeValueAsString: (value: any) => string;
-        /**
-         * Internal only
-         * @hidden
-         */
-        static _GetTargetProperty: (target: Node | Scene) => {
-            name: string;
-            targetType: string;
-            value: string;
-        };
-    }
-}
-declare module BABYLON {
-    /**
-     * A Condition applied to an Action
-     */
-    export class Condition {
-        /**
-         * Internal only - manager for action
-         * @hidden
-         */
-        _actionManager: ActionManager;
-        /**
-         * Internal only
-         * @hidden
-         */
-        _evaluationId: number;
-        /**
-         * Internal only
-         * @hidden
-         */
-        _currentResult: boolean;
-        /**
-         * Creates a new Condition
-         * @param actionManager the manager of the action the condition is applied to
-         */
-        constructor(actionManager: ActionManager);
-        /**
-         * Check if the current condition is valid
-         * @returns a boolean
-         */
-        isValid(): boolean;
-        /**
-         * Internal only
-         * @hidden
-         */
-        _getProperty(propertyPath: string): string;
-        /**
-         * Internal only
-         * @hidden
-         */
-        _getEffectiveTarget(target: any, propertyPath: string): any;
-        /**
-         * Serialize placeholder for child classes
-         * @returns the serialized object
-         */
-        serialize(): any;
-        /**
-         * Internal only
-         * @hidden
-         */
-        protected _serialize(serializedCondition: any): any;
-    }
-    /**
-     * Defines specific conditional operators as extensions of Condition
-     */
-    export class ValueCondition extends Condition {
-        /** path to specify the property of the target the conditional operator uses  */
-        propertyPath: string;
-        /** the value compared by the conditional operator against the current value of the property */
-        value: any;
-        /** the conditional operator, default ValueCondition.IsEqual */
-        operator: number;
-        /**
-         * Internal only
-         * @hidden
-         */
-        private static _IsEqual;
-        /**
-         * Internal only
-         * @hidden
-         */
-        private static _IsDifferent;
-        /**
-         * Internal only
-         * @hidden
-         */
-        private static _IsGreater;
-        /**
-         * Internal only
-         * @hidden
-         */
-        private static _IsLesser;
-        /**
-         * returns the number for IsEqual
-         */
-        static get IsEqual(): number;
-        /**
-         * Returns the number for IsDifferent
-         */
-        static get IsDifferent(): number;
-        /**
-         * Returns the number for IsGreater
-         */
-        static get IsGreater(): number;
-        /**
-         * Returns the number for IsLesser
-         */
-        static get IsLesser(): number;
-        /**
-         * Internal only The action manager for the condition
-         * @hidden
-         */
-        _actionManager: ActionManager;
-        /**
-         * Internal only
-         * @hidden
-         */
-        private _target;
-        /**
-         * Internal only
-         * @hidden
-         */
-        private _effectiveTarget;
-        /**
-         * Internal only
-         * @hidden
-         */
-        private _property;
-        /**
-         * Creates a new ValueCondition
-         * @param actionManager manager for the action the condition applies to
-         * @param target for the action
-         * @param propertyPath path to specify the property of the target the conditional operator uses
-         * @param value the value compared by the conditional operator against the current value of the property
-         * @param operator the conditional operator, default ValueCondition.IsEqual
-         */
-        constructor(actionManager: ActionManager, target: any, 
-        /** path to specify the property of the target the conditional operator uses  */
-        propertyPath: string, 
-        /** the value compared by the conditional operator against the current value of the property */
-        value: any, 
-        /** the conditional operator, default ValueCondition.IsEqual */
-        operator?: number);
-        /**
-         * Compares the given value with the property value for the specified conditional operator
-         * @returns the result of the comparison
-         */
-        isValid(): boolean;
-        /**
-         * Serialize the ValueCondition into a JSON compatible object
-         * @returns serialization object
-         */
-        serialize(): any;
-        /**
-         * Gets the name of the conditional operator for the ValueCondition
-         * @param operator the conditional operator
-         * @returns the name
-         */
-        static GetOperatorName(operator: number): string;
-    }
-    /**
-     * Defines a predicate condition as an extension of Condition
-     */
-    export class PredicateCondition extends Condition {
-        /** defines the predicate function used to validate the condition */
-        predicate: () => boolean;
-        /**
-         * Internal only - manager for action
-         * @hidden
-         */
-        _actionManager: ActionManager;
-        /**
-         * Creates a new PredicateCondition
-         * @param actionManager manager for the action the condition applies to
-         * @param predicate defines the predicate function used to validate the condition
-         */
-        constructor(actionManager: ActionManager, 
-        /** defines the predicate function used to validate the condition */
-        predicate: () => boolean);
-        /**
-         * @returns the validity of the predicate condition
-         */
-        isValid(): boolean;
-    }
-    /**
-     * Defines a state condition as an extension of Condition
-     */
-    export class StateCondition extends Condition {
-        /** Value to compare with target state  */
-        value: string;
-        /**
-         * Internal only - manager for action
-         * @hidden
-         */
-        _actionManager: ActionManager;
-        /**
-         * Internal only
-         * @hidden
-         */
-        private _target;
-        /**
-         * Creates a new StateCondition
-         * @param actionManager manager for the action the condition applies to
-         * @param target of the condition
-         * @param value to compare with target state
-         */
-        constructor(actionManager: ActionManager, target: any, 
-        /** Value to compare with target state  */
-        value: string);
-        /**
-         * Gets a boolean indicating if the current condition is met
-         * @returns the validity of the state
-         */
-        isValid(): boolean;
-        /**
-         * Serialize the StateCondition into a JSON compatible object
-         * @returns serialization object
-         */
-        serialize(): any;
-    }
-}
-declare module BABYLON {
-    /**
-     * This defines an action responsible to toggle a boolean once triggered.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    export class SwitchBooleanAction extends Action {
-        /**
-         * The path to the boolean property in the target object
-         */
-        propertyPath: string;
-        private _target;
-        private _effectiveTarget;
-        private _property;
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param target defines the object containing the boolean
-         * @param propertyPath defines the path to the boolean property in the target object
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions: any, target: any, propertyPath: string, condition?: Condition);
-        /** @hidden */
-        _prepare(): void;
-        /**
-         * Execute the action toggle the boolean value.
-         */
-        execute(): void;
-        /**
-         * Serializes the actions and its related information.
-         * @param parent defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-    }
-    /**
-     * This defines an action responsible to set a the state field of the target
-     *  to a desired value once triggered.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    export class SetStateAction extends Action {
-        /**
-         * The value to store in the state field.
-         */
-        value: string;
-        private _target;
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param target defines the object containing the state property
-         * @param value defines the value to store in the state field
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions: any, target: any, value: string, condition?: Condition);
-        /**
-         * Execute the action and store the value on the target state property.
-         */
-        execute(): void;
-        /**
-         * Serializes the actions and its related information.
-         * @param parent defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-    }
-    /**
-     * This defines an action responsible to set a property of the target
-     *  to a desired value once triggered.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    export class SetValueAction extends Action {
-        /**
-         * The path of the property to set in the target.
-         */
-        propertyPath: string;
-        /**
-         * The value to set in the property
-         */
-        value: any;
-        private _target;
-        private _effectiveTarget;
-        private _property;
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param target defines the object containing the property
-         * @param propertyPath defines the path of the property to set in the target
-         * @param value defines the value to set in the property
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, condition?: Condition);
-        /** @hidden */
-        _prepare(): void;
-        /**
-         * Execute the action and set the targetted property to the desired value.
-         */
-        execute(): void;
-        /**
-         * Serializes the actions and its related information.
-         * @param parent defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-    }
-    /**
-     * This defines an action responsible to increment the target value
-     *  to a desired value once triggered.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    export class IncrementValueAction extends Action {
-        /**
-         * The path of the property to increment in the target.
-         */
-        propertyPath: string;
-        /**
-         * The value we should increment the property by.
-         */
-        value: any;
-        private _target;
-        private _effectiveTarget;
-        private _property;
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param target defines the object containing the property
-         * @param propertyPath defines the path of the property to increment in the target
-         * @param value defines the value value we should increment the property by
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, condition?: Condition);
-        /** @hidden */
-        _prepare(): void;
-        /**
-         * Execute the action and increment the target of the value amount.
-         */
-        execute(): void;
-        /**
-         * Serializes the actions and its related information.
-         * @param parent defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-    }
-    /**
-     * This defines an action responsible to start an animation once triggered.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    export class PlayAnimationAction extends Action {
-        /**
-         * Where the animation should start (animation frame)
-         */
-        from: number;
-        /**
-         * Where the animation should stop (animation frame)
-         */
-        to: number;
-        /**
-         * Define if the animation should loop or stop after the first play.
-         */
-        loop?: boolean;
-        private _target;
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param target defines the target animation or animation name
-         * @param from defines from where the animation should start (animation frame)
-         * @param end defines where the animation should stop (animation frame)
-         * @param loop defines if the animation should loop or stop after the first play
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions: any, target: any, from: number, to: number, loop?: boolean, condition?: Condition);
-        /** @hidden */
-        _prepare(): void;
-        /**
-         * Execute the action and play the animation.
-         */
-        execute(): void;
-        /**
-         * Serializes the actions and its related information.
-         * @param parent defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-    }
-    /**
-     * This defines an action responsible to stop an animation once triggered.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    export class StopAnimationAction extends Action {
-        private _target;
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param target defines the target animation or animation name
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions: any, target: any, condition?: Condition);
-        /** @hidden */
-        _prepare(): void;
-        /**
-         * Execute the action and stop the animation.
-         */
-        execute(): void;
-        /**
-         * Serializes the actions and its related information.
-         * @param parent defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-    }
-    /**
-     * This defines an action responsible that does nothing once triggered.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    export class DoNothingAction extends Action {
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions?: any, condition?: Condition);
-        /**
-         * Execute the action and do nothing.
-         */
-        execute(): void;
-        /**
-         * Serializes the actions and its related information.
-         * @param parent defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-    }
-    /**
-     * This defines an action responsible to trigger several actions once triggered.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    export class CombineAction extends Action {
-        /**
-         * The list of aggregated animations to run.
-         */
-        children: Action[];
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param children defines the list of aggregated animations to run
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions: any, children: Action[], condition?: Condition);
-        /** @hidden */
-        _prepare(): void;
-        /**
-         * Execute the action and executes all the aggregated actions.
-         */
-        execute(evt: ActionEvent): void;
-        /**
-         * Serializes the actions and its related information.
-         * @param parent defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-    }
-    /**
-     * This defines an action responsible to run code (external event) once triggered.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    export class ExecuteCodeAction extends Action {
-        /**
-         * The callback function to run.
-         */
-        func: (evt: ActionEvent) => void;
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param func defines the callback function to run
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions: any, func: (evt: ActionEvent) => void, condition?: Condition);
-        /**
-         * Execute the action and run the attached code.
-         */
-        execute(evt: ActionEvent): void;
-    }
-    /**
-     * This defines an action responsible to set the parent property of the target once triggered.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    export class SetParentAction extends Action {
-        private _parent;
-        private _target;
-        /**
-         * Instantiate the action
-         * @param triggerOptions defines the trigger options
-         * @param target defines the target containing the parent property
-         * @param parent defines from where the animation should start (animation frame)
-         * @param condition defines the trigger related conditions
-         */
-        constructor(triggerOptions: any, target: any, parent: any, condition?: Condition);
-        /** @hidden */
-        _prepare(): void;
-        /**
-         * Execute the action and set the parent property.
-         */
-        execute(): void;
-        /**
-         * Serializes the actions and its related information.
-         * @param parent defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(parent: any): any;
-    }
-}
-declare module BABYLON {
-    /**
-     * Action Manager manages all events to be triggered on a given mesh or the global scene.
-     * A single scene can have many Action Managers to handle predefined actions on specific meshes.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
-     */
-    export class ActionManager extends AbstractActionManager {
-        /**
-         * Nothing
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly NothingTrigger: number;
-        /**
-         * On pick
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnPickTrigger: number;
-        /**
-         * On left pick
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnLeftPickTrigger: number;
-        /**
-         * On right pick
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnRightPickTrigger: number;
-        /**
-         * On center pick
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnCenterPickTrigger: number;
-        /**
-         * On pick down
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnPickDownTrigger: number;
-        /**
-         * On double pick
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnDoublePickTrigger: number;
-        /**
-         * On pick up
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnPickUpTrigger: number;
-        /**
-         * On pick out.
-         * This trigger will only be raised if you also declared a OnPickDown
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnPickOutTrigger: number;
-        /**
-         * On long press
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnLongPressTrigger: number;
-        /**
-         * On pointer over
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnPointerOverTrigger: number;
-        /**
-         * On pointer out
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnPointerOutTrigger: number;
-        /**
-         * On every frame
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnEveryFrameTrigger: number;
-        /**
-         * On intersection enter
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnIntersectionEnterTrigger: number;
-        /**
-         * On intersection exit
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnIntersectionExitTrigger: number;
-        /**
-         * On key down
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnKeyDownTrigger: number;
-        /**
-         * On key up
-         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
-         */
-        static readonly OnKeyUpTrigger: number;
-        private _scene;
-        /**
-         * Creates a new action manager
-         * @param scene defines the hosting scene
-         */
-        constructor(scene: Scene);
-        /**
-         * Releases all associated resources
-         */
-        dispose(): void;
-        /**
-         * Gets hosting scene
-         * @returns the hosting scene
-         */
-        getScene(): Scene;
-        /**
-         * Does this action manager handles actions of any of the given triggers
-         * @param triggers defines the triggers to be tested
-         * @return a boolean indicating whether one (or more) of the triggers is handled
-         */
-        hasSpecificTriggers(triggers: number[]): boolean;
-        /**
-         * Does this action manager handles actions of any of the given triggers. This function takes two arguments for
-         * speed.
-         * @param triggerA defines the trigger to be tested
-         * @param triggerB defines the trigger to be tested
-         * @return a boolean indicating whether one (or more) of the triggers is handled
-         */
-        hasSpecificTriggers2(triggerA: number, triggerB: number): boolean;
-        /**
-         * Does this action manager handles actions of a given trigger
-         * @param trigger defines the trigger to be tested
-         * @param parameterPredicate defines an optional predicate to filter triggers by parameter
-         * @return whether the trigger is handled
-         */
-        hasSpecificTrigger(trigger: number, parameterPredicate?: (parameter: any) => boolean): boolean;
-        /**
-         * Does this action manager has pointer triggers
-         */
-        get hasPointerTriggers(): boolean;
-        /**
-         * Does this action manager has pick triggers
-         */
-        get hasPickTriggers(): boolean;
-        /**
-         * Registers an action to this action manager
-         * @param action defines the action to be registered
-         * @return the action amended (prepared) after registration
-         */
-        registerAction(action: IAction): Nullable<IAction>;
-        /**
-         * Unregisters an action to this action manager
-         * @param action defines the action to be unregistered
-         * @return a boolean indicating whether the action has been unregistered
-         */
-        unregisterAction(action: IAction): Boolean;
-        /**
-         * Process a specific trigger
-         * @param trigger defines the trigger to process
-         * @param evt defines the event details to be processed
-         */
-        processTrigger(trigger: number, evt?: IActionEvent): void;
-        /** @hidden */
-        _getEffectiveTarget(target: any, propertyPath: string): any;
-        /** @hidden */
-        _getProperty(propertyPath: string): string;
-        /**
-         * Serialize this manager to a JSON object
-         * @param name defines the property name to store this manager
-         * @returns a JSON representation of this manager
-         */
-        serialize(name: string): any;
-        /**
-         * Creates a new ActionManager from a JSON data
-         * @param parsedActions defines the JSON data to read from
-         * @param object defines the hosting mesh
-         * @param scene defines the hosting scene
-         */
-        static Parse(parsedActions: any, object: Nullable<AbstractMesh>, scene: Scene): void;
-        /**
-         * Get a trigger name by index
-         * @param trigger defines the trigger index
-         * @returns a trigger name
-         */
-        static GetTriggerName(trigger: number): string;
-    }
-}
-declare module BABYLON {
-    /**
      * Class representing a ray with position and direction
      */
     export class Ray {
@@ -11842,778 +10062,311 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /** Interface used by value gradients (color, factor, ...) */
+    export interface IValueGradient {
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        gradient: number;
+    }
+    /** Class used to store color4 gradient */
+    export class ColorGradient implements IValueGradient {
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        gradient: number;
+        /**
+         * Gets or sets first associated color
+         */
+        color1: Color4;
+        /**
+         * Gets or sets second associated color
+         */
+        color2?: Color4;
+        /**
+         * Will get a color picked randomly between color1 and color2.
+         * If color2 is undefined then color1 will be used
+         * @param result defines the target Color4 to store the result in
+         */
+        getColorToRef(result: Color4): void;
+    }
+    /** Class used to store color 3 gradient */
+    export class Color3Gradient implements IValueGradient {
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        gradient: number;
+        /**
+         * Gets or sets the associated color
+         */
+        color: Color3;
+    }
+    /** Class used to store factor gradient */
+    export class FactorGradient implements IValueGradient {
+        /**
+         * Gets or sets the gradient value (between 0 and 1)
+         */
+        gradient: number;
+        /**
+         * Gets or sets first associated factor
+         */
+        factor1: number;
+        /**
+         * Gets or sets second associated factor
+         */
+        factor2?: number;
+        /**
+         * Will get a number picked randomly between factor1 and factor2.
+         * If factor2 is undefined then factor1 will be used
+         * @returns the picked number
+         */
+        getFactor(): number;
+    }
     /**
-     * Class used to represent a sprite
-     * @see http://doc.babylonjs.com/babylon101/sprites
+     * Helper used to simplify some generic gradient tasks
      */
-    export class Sprite {
-        /** defines the name */
-        name: string;
-        /** Gets or sets the current world position */
-        position: Vector3;
-        /** Gets or sets the main color */
-        color: Color4;
-        /** Gets or sets the width */
+    export class GradientHelper {
+        /**
+         * Gets the current gradient from an array of IValueGradient
+         * @param ratio defines the current ratio to get
+         * @param gradients defines the array of IValueGradient
+         * @param updateFunc defines the callback function used to get the final value from the selected gradients
+         */
+        static GetCurrentGradient(ratio: number, gradients: IValueGradient[], updateFunc: (current: IValueGradient, next: IValueGradient, scale: number) => void): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Interface for the size containing width and height
+     */
+    export interface ISize {
+        /**
+         * Width
+         */
         width: number;
-        /** Gets or sets the height */
+        /**
+         * Heighht
+         */
         height: number;
-        /** Gets or sets rotation angle */
-        angle: number;
-        /** Gets or sets the cell index in the sprite sheet */
-        cellIndex: number;
-        /** Gets or sets the cell reference in the sprite sheet, uses sprite's filename when added to sprite sheet */
-        cellRef: string;
-        /** Gets or sets a boolean indicating if UV coordinates should be inverted in U axis */
-        invertU: number;
-        /** Gets or sets a boolean indicating if UV coordinates should be inverted in B axis */
-        invertV: number;
-        /** Gets or sets a boolean indicating that this sprite should be disposed after animation ends */
-        disposeWhenFinishedAnimating: boolean;
-        /** Gets the list of attached animations */
-        animations: Animation[];
-        /** Gets or sets a boolean indicating if the sprite can be picked */
-        isPickable: boolean;
-        /**
-         * Gets or sets the associated action manager
-         */
-        actionManager: Nullable<ActionManager>;
-        private _animationStarted;
-        private _loopAnimation;
-        private _fromIndex;
-        private _toIndex;
-        private _delay;
-        private _direction;
-        private _manager;
-        private _time;
-        private _onAnimationEnd;
-        /**
-         * Gets or sets a boolean indicating if the sprite is visible (renderable). Default is true
-         */
-        isVisible: boolean;
-        /**
-         * Gets or sets the sprite size
-         */
-        get size(): number;
-        set size(value: number);
-        /**
-         * Creates a new Sprite
-         * @param name defines the name
-         * @param manager defines the manager
-         */
-        constructor(
-        /** defines the name */
-        name: string, manager: ISpriteManager);
-        /**
-         * Starts an animation
-         * @param from defines the initial key
-         * @param to defines the end key
-         * @param loop defines if the animation must loop
-         * @param delay defines the start delay (in ms)
-         * @param onAnimationEnd defines a callback to call when animation ends
-         */
-        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
-        /** Stops current animation (if any) */
-        stopAnimation(): void;
-        /** @hidden */
-        _animate(deltaTime: number): void;
-        /** Release associated resources */
-        dispose(): void;
     }
-}
-declare module BABYLON {
     /**
-         * Information about the result of picking within a scene
-         * @see https://doc.babylonjs.com/babylon101/picking_collisions
-         */
-    export class PickingInfo {
-        /** @hidden */
-        _pickingUnavailable: boolean;
-        /**
-         * If the pick collided with an object
-         */
-        hit: boolean;
-        /**
-         * Distance away where the pick collided
-         */
-        distance: number;
-        /**
-         * The location of pick collision
-         */
-        pickedPoint: Nullable<Vector3>;
-        /**
-         * The mesh corresponding the the pick collision
-         */
-        pickedMesh: Nullable<AbstractMesh>;
-        /** (See getTextureCoordinates) The barycentric U coordinate that is used when calculating the texture coordinates of the collision.*/
-        bu: number;
-        /** (See getTextureCoordinates) The barycentric V coordinate that is used when calculating the texture coordinates of the collision.*/
-        bv: number;
-        /** The index of the face on the mesh that was picked, or the index of the Line if the picked Mesh is a LinesMesh */
-        faceId: number;
-        /** Id of the the submesh that was picked */
-        subMeshId: number;
-        /** If a sprite was picked, this will be the sprite the pick collided with */
-        pickedSprite: Nullable<Sprite>;
-        /**
-         * If a mesh was used to do the picking (eg. 6dof controller) this will be populated.
-         */
-        originMesh: Nullable<AbstractMesh>;
-        /**
-         * The ray that was used to perform the picking.
-         */
-        ray: Nullable<Ray>;
-        /**
-         * Gets the normal correspodning to the face the pick collided with
-         * @param useWorldCoordinates If the resulting normal should be relative to the world (default: false)
-         * @param useVerticesNormals If the vertices normals should be used to calculate the normal instead of the normal map
-         * @returns The normal correspodning to the face the pick collided with
-         */
-        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
-        /**
-         * Gets the texture coordinates of where the pick occured
-         * @returns the vector containing the coordnates of the texture
-         */
-        getTextureCoordinates(): Nullable<Vector2>;
-    }
-}
-declare module BABYLON {
-    /**
-     * Gather the list of pointer event types as constants.
+     * Size containing widht and height
      */
-    export class PointerEventTypes {
+    export class Size implements ISize {
         /**
-         * The pointerdown event is fired when a pointer becomes active. For mouse, it is fired when the device transitions from no buttons depressed to at least one button depressed. For touch, it is fired when physical contact is made with the digitizer. For pen, it is fired when the stylus makes physical contact with the digitizer.
+         * Width
          */
-        static readonly POINTERDOWN: number;
+        width: number;
         /**
-         * The pointerup event is fired when a pointer is no longer active.
+         * Height
          */
-        static readonly POINTERUP: number;
+        height: number;
         /**
-         * The pointermove event is fired when a pointer changes coordinates.
+         * Creates a Size object from the given width and height (floats).
+         * @param width width of the new size
+         * @param height height of the new size
          */
-        static readonly POINTERMOVE: number;
+        constructor(width: number, height: number);
         /**
-         * The pointerwheel event is fired when a mouse wheel has been rotated.
+         * Returns a string with the Size width and height
+         * @returns a string with the Size width and height
          */
-        static readonly POINTERWHEEL: number;
+        toString(): string;
         /**
-         * The pointerpick event is fired when a mesh or sprite has been picked by the pointer.
-         */
-        static readonly POINTERPICK: number;
-        /**
-         * The pointertap event is fired when a the object has been touched and released without drag.
-         */
-        static readonly POINTERTAP: number;
-        /**
-         * The pointerdoubletap event is fired when a the object has been touched and released twice without drag.
-         */
-        static readonly POINTERDOUBLETAP: number;
-    }
-    /**
-     * Base class of pointer info types.
-     */
-    export class PointerInfoBase {
-        /**
-         * Defines the type of event (PointerEventTypes)
-         */
-        type: number;
-        /**
-         * Defines the related dom event
-         */
-        event: PointerEvent | MouseWheelEvent;
-        /**
-         * Instantiates the base class of pointers info.
-         * @param type Defines the type of event (PointerEventTypes)
-         * @param event Defines the related dom event
-         */
-        constructor(
-        /**
-         * Defines the type of event (PointerEventTypes)
-         */
-        type: number, 
-        /**
-         * Defines the related dom event
-         */
-        event: PointerEvent | MouseWheelEvent);
-    }
-    /**
-     * This class is used to store pointer related info for the onPrePointerObservable event.
-     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
-     */
-    export class PointerInfoPre extends PointerInfoBase {
-        /**
-         * Ray from a pointer if availible (eg. 6dof controller)
-         */
-        ray: Nullable<Ray>;
-        /**
-         * Defines the local position of the pointer on the canvas.
-         */
-        localPosition: Vector2;
-        /**
-         * Defines whether the engine should skip the next OnPointerObservable associated to this pre.
-         */
-        skipOnPointerObservable: boolean;
-        /**
-         * Instantiates a PointerInfoPre to store pointer related info to the onPrePointerObservable event.
-         * @param type Defines the type of event (PointerEventTypes)
-         * @param event Defines the related dom event
-         * @param localX Defines the local x coordinates of the pointer when the event occured
-         * @param localY Defines the local y coordinates of the pointer when the event occured
-         */
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
-    }
-    /**
-     * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
-     */
-    export class PointerInfo extends PointerInfoBase {
-        /**
-         * Defines the picking info associated to the info (if any)\
-         */
-        pickInfo: Nullable<PickingInfo>;
-        /**
-         * Instantiates a PointerInfo to store pointer related info to the onPointerObservable event.
-         * @param type Defines the type of event (PointerEventTypes)
-         * @param event Defines the related dom event
-         * @param pickInfo Defines the picking info associated to the info (if any)\
-         */
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, 
-        /**
-         * Defines the picking info associated to the info (if any)\
-         */
-        pickInfo: Nullable<PickingInfo>);
-    }
-    /**
-     * Data relating to a touch event on the screen.
-     */
-    export interface PointerTouch {
-        /**
-         * X coordinate of touch.
-         */
-        x: number;
-        /**
-         * Y coordinate of touch.
-         */
-        y: number;
-        /**
-         * Id of touch. Unique for each finger.
-         */
-        pointerId: number;
-        /**
-         * Event type passed from DOM.
-         */
-        type: any;
-    }
-}
-declare module BABYLON {
-    /**
-     * Manage the mouse inputs to control the movement of a free camera.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
-        /**
-         * Define if touch is enabled in the mouse input
-         */
-        touchEnabled: boolean;
-        /**
-         * Defines the camera the input is attached to.
-         */
-        camera: FreeCamera;
-        /**
-         * Defines the buttons associated with the input to handle camera move.
-         */
-        buttons: number[];
-        /**
-         * Defines the pointer angular sensibility  along the X and Y axis or how fast is the camera rotating.
-         */
-        angularSensibility: number;
-        private _pointerInput;
-        private _onMouseMove;
-        private _observer;
-        private previousPosition;
-        /**
-         * Observable for when a pointer move event occurs containing the move offset
-         */
-        onPointerMovedObservable: Observable<{
-            offsetX: number;
-            offsetY: number;
-        }>;
-        /**
-         * @hidden
-         * If the camera should be rotated automatically based on pointer movement
-         */
-        _allowCameraRotation: boolean;
-        /**
-         * Manage the mouse inputs to control the movement of a free camera.
-         * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-         * @param touchEnabled Defines if touch is enabled or not
-         */
-        constructor(
-        /**
-         * Define if touch is enabled in the mouse input
-         */
-        touchEnabled?: boolean);
-        /**
-         * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Called on JS contextmenu event.
-         * Override this method to provide functionality.
-         */
-        protected onContextMenu(evt: PointerEvent): void;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: Nullable<HTMLElement>): void;
-        /**
-         * Gets the class name of the current intput.
-         * @returns the class name
+         * "Size"
+         * @returns the string "Size"
          */
         getClassName(): string;
         /**
-         * Get the friendly name associated with the input class.
-         * @returns the input friendly name
+         * Returns the Size hash code.
+         * @returns a hash code for a unique width and height
          */
-        getSimpleName(): string;
+        getHashCode(): number;
+        /**
+         * Updates the current size from the given one.
+         * @param src the given size
+         */
+        copyFrom(src: Size): void;
+        /**
+         * Updates in place the current Size from the given floats.
+         * @param width width of the new size
+         * @param height height of the new size
+         * @returns the updated Size.
+         */
+        copyFromFloats(width: number, height: number): Size;
+        /**
+         * Updates in place the current Size from the given floats.
+         * @param width width to set
+         * @param height height to set
+         * @returns the updated Size.
+         */
+        set(width: number, height: number): Size;
+        /**
+         * Multiplies the width and height by numbers
+         * @param w factor to multiple the width by
+         * @param h factor to multiple the height by
+         * @returns a new Size set with the multiplication result of the current Size and the given floats.
+         */
+        multiplyByFloats(w: number, h: number): Size;
+        /**
+         * Clones the size
+         * @returns a new Size copied from the given one.
+         */
+        clone(): Size;
+        /**
+         * True if the current Size and the given one width and height are strictly equal.
+         * @param other the other size to compare against
+         * @returns True if the current Size and the given one width and height are strictly equal.
+         */
+        equals(other: Size): boolean;
+        /**
+         * The surface of the Size : width * height (float).
+         */
+        get surface(): number;
+        /**
+         * Create a new size of zero
+         * @returns a new Size set to (0.0, 0.0)
+         */
+        static Zero(): Size;
+        /**
+         * Sums the width and height of two sizes
+         * @param otherSize size to add to this size
+         * @returns a new Size set as the addition result of the current Size and the given one.
+         */
+        add(otherSize: Size): Size;
+        /**
+         * Subtracts the width and height of two
+         * @param otherSize size to subtract to this size
+         * @returns a new Size set as the subtraction result of  the given one from the current Size.
+         */
+        subtract(otherSize: Size): Size;
+        /**
+         * Creates a new Size set at the linear interpolation "amount" between "start" and "end"
+         * @param start starting size to lerp between
+         * @param end end size to lerp between
+         * @param amount amount to lerp between the start and end values
+         * @returns a new Size set at the linear interpolation "amount" between "start" and "end"
+         */
+        static Lerp(start: Size, end: Size, amount: number): Size;
+    }
+}
+declare module BABYLON {
+        interface ThinEngine {
+            /**
+             * Creates a dynamic texture
+             * @param width defines the width of the texture
+             * @param height defines the height of the texture
+             * @param generateMipMaps defines if the engine should generate the mip levels
+             * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+             * @returns the dynamic texture inside an InternalTexture
+             */
+            createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture;
+            /**
+             * Update the content of a dynamic texture
+             * @param texture defines the texture to update
+             * @param canvas defines the canvas containing the source
+             * @param invertY defines if data must be stored with Y axis inverted
+             * @param premulAlpha defines if alpha is stored as premultiplied
+             * @param format defines the format of the data
+             * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
+             */
+            updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement | OffscreenCanvas, invertY: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
+        }
+}
+declare module BABYLON {
+    /**
+     * Helper class used to generate a canvas to manipulate images
+     */
+    export class CanvasGenerator {
+        /**
+         * Create a new canvas (or offscreen canvas depending on the context)
+         * @param width defines the expected width
+         * @param height defines the expected height
+         * @return a new canvas or offscreen canvas
+         */
+        static CreateCanvas(width: number, height: number): HTMLCanvasElement | OffscreenCanvas;
     }
 }
 declare module BABYLON {
     /**
-     * Manage the touch inputs to control the movement of a free camera.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     * A class extending Texture allowing drawing on a texture
+     * @see http://doc.babylonjs.com/how_to/dynamictexture
      */
-    export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
+    export class DynamicTexture extends Texture {
+        private _generateMipMaps;
+        private _canvas;
+        private _context;
+        private _engine;
         /**
-         * Defines the camera the input is attached to.
+         * Creates a DynamicTexture
+         * @param name defines the name of the texture
+         * @param options provides 3 alternatives for width and height of texture, a canvas, object with width and height properties, number for both width and height
+         * @param scene defines the scene where you want the texture
+         * @param generateMipMaps defines the use of MinMaps or not (default is false)
+         * @param samplingMode defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
+         * @param format defines the texture format to use (default is Engine.TEXTUREFORMAT_RGBA)
          */
-        camera: FreeCamera;
+        constructor(name: string, options: any, scene: Scene | null | undefined, generateMipMaps: boolean, samplingMode?: number, format?: number);
         /**
-         * Defines the touch sensibility for rotation.
-         * The higher the faster.
-         */
-        touchAngularSensibility: number;
-        /**
-         * Defines the touch sensibility for move.
-         * The higher the faster.
-         */
-        touchMoveSensibility: number;
-        private _offsetX;
-        private _offsetY;
-        private _pointerPressed;
-        private _pointerInput;
-        private _observer;
-        private _onLostFocus;
-        /**
-         * Attach the input controls to a specific dom element to get the input from.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detach the current controls from the specified dom element.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: Nullable<HTMLElement>): void;
-        /**
-         * Update the current camera state depending on the inputs that have been used this frame.
-         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
-         */
-        checkInputs(): void;
-        /**
-         * Gets the class name of the current intput.
-         * @returns the class name
+         * Get the current class name of the texture useful for serialization or dynamic coding.
+         * @returns "DynamicTexture"
          */
         getClassName(): string;
         /**
-         * Get the friendly name associated with the input class.
-         * @returns the input friendly name
+         * Gets the current state of canRescale
          */
-        getSimpleName(): string;
-    }
-}
-declare module BABYLON {
-    /**
-     * Default Inputs manager for the FreeCamera.
-     * It groups all the default supported inputs for ease of use.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
-     */
-    export class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
+        get canRescale(): boolean;
+        private _recreate;
         /**
-         * @hidden
+         * Scales the texture
+         * @param ratio the scale factor to apply to both width and height
          */
-        _mouseInput: Nullable<FreeCameraMouseInput>;
+        scale(ratio: number): void;
         /**
-         * Instantiates a new FreeCameraInputsManager.
-         * @param camera Defines the camera the inputs belong to
+         * Resizes the texture
+         * @param width the new width
+         * @param height the new height
          */
-        constructor(camera: FreeCamera);
+        scaleTo(width: number, height: number): void;
         /**
-         * Add keyboard input support to the input manager.
-         * @returns the current input manager
+         * Gets the context of the canvas used by the texture
+         * @returns the canvas context of the dynamic texture
          */
-        addKeyboard(): FreeCameraInputsManager;
+        getContext(): CanvasRenderingContext2D;
         /**
-         * Add mouse input support to the input manager.
-         * @param touchEnabled if the FreeCameraMouseInput should support touch (default: true)
-         * @returns the current input manager
-         */
-        addMouse(touchEnabled?: boolean): FreeCameraInputsManager;
-        /**
-         * Removes the mouse input support from the manager
-         * @returns the current input manager
-         */
-        removeMouse(): FreeCameraInputsManager;
-        /**
-         * Add touch input support to the input manager.
-         * @returns the current input manager
-         */
-        addTouch(): FreeCameraInputsManager;
-        /**
-         * Remove all attached input methods from a camera
+         * Clears the texture
          */
         clear(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * This represents a free type of camera. It can be useful in First Person Shooter game for instance.
-     * Please consider using the new UniversalCamera instead as it adds more functionality like the gamepad.
-     * @see http://doc.babylonjs.com/features/cameras#universal-camera
-     */
-    export class FreeCamera extends TargetCamera {
         /**
-         * Define the collision ellipsoid of the camera.
-         * This is helpful to simulate a camera body like the player body around the camera
-         * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#arcrotatecamera
+         * Updates the texture
+         * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
+         * @param premulAlpha defines if alpha is stored as premultiplied (default is false)
          */
-        ellipsoid: Vector3;
+        update(invertY?: boolean, premulAlpha?: boolean): void;
         /**
-         * Define an offset for the position of the ellipsoid around the camera.
-         * This can be helpful to determine the center of the body near the gravity center of the body
-         * instead of its head.
+         * Draws text onto the texture
+         * @param text defines the text to be drawn
+         * @param x defines the placement of the text from the left
+         * @param y defines the placement of the text from the top when invertY is true and from the bottom when false
+         * @param font defines the font to be used with font-style, font-size, font-name
+         * @param color defines the color used for the text
+         * @param clearColor defines the color for the canvas, use null to not overwrite canvas
+         * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
+         * @param update defines whether texture is immediately update (default is true)
          */
-        ellipsoidOffset: Vector3;
+        drawText(text: string, x: number | null | undefined, y: number | null | undefined, font: string, color: string, clearColor: string, invertY?: boolean, update?: boolean): void;
         /**
-         * Enable or disable collisions of the camera with the rest of the scene objects.
+         * Clones the texture
+         * @returns the clone of the texture.
          */
-        checkCollisions: boolean;
+        clone(): DynamicTexture;
         /**
-         * Enable or disable gravity on the camera.
+         * Serializes the dynamic texture.  The scene should be ready before the dynamic texture is serialized
+         * @returns a serialized dynamic texture object
          */
-        applyGravity: boolean;
-        /**
-         * Define the input manager associated to the camera.
-         */
-        inputs: FreeCameraInputsManager;
-        /**
-         * Gets the input sensibility for a mouse input. (default is 2000.0)
-         * Higher values reduce sensitivity.
-         */
-        get angularSensibility(): number;
-        /**
-         * Sets the input sensibility for a mouse input. (default is 2000.0)
-         * Higher values reduce sensitivity.
-         */
-        set angularSensibility(value: number);
-        /**
-         * Gets or Set the list of keyboard keys used to control the forward move of the camera.
-         */
-        get keysUp(): number[];
-        set keysUp(value: number[]);
-        /**
-         * Gets or Set the list of keyboard keys used to control the backward move of the camera.
-         */
-        get keysDown(): number[];
-        set keysDown(value: number[]);
-        /**
-         * Gets or Set the list of keyboard keys used to control the left strafe move of the camera.
-         */
-        get keysLeft(): number[];
-        set keysLeft(value: number[]);
-        /**
-         * Gets or Set the list of keyboard keys used to control the right strafe move of the camera.
-         */
-        get keysRight(): number[];
-        set keysRight(value: number[]);
-        /**
-         * Event raised when the camera collide with a mesh in the scene.
-         */
-        onCollide: (collidedMesh: AbstractMesh) => void;
-        private _collider;
-        private _needMoveForGravity;
-        private _oldPosition;
-        private _diffPosition;
-        private _newPosition;
+        serialize(): any;
         /** @hidden */
-        _localDirection: Vector3;
-        /** @hidden */
-        _transformedDirection: Vector3;
-        /**
-         * Instantiates a Free Camera.
-         * This represents a free type of camera. It can be useful in First Person Shooter game for instance.
-         * Please consider using the new UniversalCamera instead as it adds more functionality like touch to this camera.
-         * @see http://doc.babylonjs.com/features/cameras#universal-camera
-         * @param name Define the name of the camera in the scene
-         * @param position Define the start position of the camera in the scene
-         * @param scene Define the scene the camera belongs to
-         * @param setActiveOnSceneIfNoneActive Defines wheter the camera should be marked as active if not other active cameras have been defined
-         */
-        constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
-        /**
-         * Attached controls to the current camera.
-         * @param element Defines the element the controls should be listened from
-         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detach the current controls from the camera.
-         * The camera will stop reacting to inputs.
-         * @param element Defines the element to stop listening the inputs from
-         */
-        detachControl(element: HTMLElement): void;
-        private _collisionMask;
-        /**
-         * Define a collision mask to limit the list of object the camera can collide with
-         */
-        get collisionMask(): number;
-        set collisionMask(mask: number);
-        /** @hidden */
-        _collideWithWorld(displacement: Vector3): void;
-        private _onCollisionPositionChange;
-        /** @hidden */
-        _checkInputs(): void;
-        /** @hidden */
-        _decideIfNeedsToMove(): boolean;
-        /** @hidden */
-        _updatePosition(): void;
-        /**
-         * Destroy the camera and release the current resources hold by it.
-         */
-        dispose(): void;
-        /**
-         * Gets the current object class name.
-         * @return the class name
-         */
-        getClassName(): string;
-    }
-}
-declare module BABYLON {
-    /**
-     * Represents a gamepad control stick position
-     */
-    export class StickValues {
-        /**
-         * The x component of the control stick
-         */
-        x: number;
-        /**
-         * The y component of the control stick
-         */
-        y: number;
-        /**
-         * Initializes the gamepad x and y control stick values
-         * @param x The x component of the gamepad control stick value
-         * @param y The y component of the gamepad control stick value
-         */
-        constructor(
-        /**
-         * The x component of the control stick
-         */
-        x: number, 
-        /**
-         * The y component of the control stick
-         */
-        y: number);
-    }
-    /**
-     * An interface which manages callbacks for gamepad button changes
-     */
-    export interface GamepadButtonChanges {
-        /**
-         * Called when a gamepad has been changed
-         */
-        changed: boolean;
-        /**
-         * Called when a gamepad press event has been triggered
-         */
-        pressChanged: boolean;
-        /**
-         * Called when a touch event has been triggered
-         */
-        touchChanged: boolean;
-        /**
-         * Called when a value has changed
-         */
-        valueChanged: boolean;
-    }
-    /**
-     * Represents a gamepad
-     */
-    export class Gamepad {
-        /**
-         * The id of the gamepad
-         */
-        id: string;
-        /**
-         * The index of the gamepad
-         */
-        index: number;
-        /**
-         * The browser gamepad
-         */
-        browserGamepad: any;
-        /**
-         * Specifies what type of gamepad this represents
-         */
-        type: number;
-        private _leftStick;
-        private _rightStick;
-        /** @hidden */
-        _isConnected: boolean;
-        private _leftStickAxisX;
-        private _leftStickAxisY;
-        private _rightStickAxisX;
-        private _rightStickAxisY;
-        /**
-         * Triggered when the left control stick has been changed
-         */
-        private _onleftstickchanged;
-        /**
-         * Triggered when the right control stick has been changed
-         */
-        private _onrightstickchanged;
-        /**
-         * Represents a gamepad controller
-         */
-        static GAMEPAD: number;
-        /**
-         * Represents a generic controller
-         */
-        static GENERIC: number;
-        /**
-         * Represents an XBox controller
-         */
-        static XBOX: number;
-        /**
-         * Represents a pose-enabled controller
-         */
-        static POSE_ENABLED: number;
-        /**
-         * Represents an Dual Shock controller
-         */
-        static DUALSHOCK: number;
-        /**
-         * Specifies whether the left control stick should be Y-inverted
-         */
-        protected _invertLeftStickY: boolean;
-        /**
-         * Specifies if the gamepad has been connected
-         */
-        get isConnected(): boolean;
-        /**
-         * Initializes the gamepad
-         * @param id The id of the gamepad
-         * @param index The index of the gamepad
-         * @param browserGamepad The browser gamepad
-         * @param leftStickX The x component of the left joystick
-         * @param leftStickY The y component of the left joystick
-         * @param rightStickX The x component of the right joystick
-         * @param rightStickY The y component of the right joystick
-         */
-        constructor(
-        /**
-         * The id of the gamepad
-         */
-        id: string, 
-        /**
-         * The index of the gamepad
-         */
-        index: number, 
-        /**
-         * The browser gamepad
-         */
-        browserGamepad: any, leftStickX?: number, leftStickY?: number, rightStickX?: number, rightStickY?: number);
-        /**
-         * Callback triggered when the left joystick has changed
-         * @param callback
-         */
-        onleftstickchanged(callback: (values: StickValues) => void): void;
-        /**
-         * Callback triggered when the right joystick has changed
-         * @param callback
-         */
-        onrightstickchanged(callback: (values: StickValues) => void): void;
-        /**
-         * Gets the left joystick
-         */
-        get leftStick(): StickValues;
-        /**
-         * Sets the left joystick values
-         */
-        set leftStick(newValues: StickValues);
-        /**
-         * Gets the right joystick
-         */
-        get rightStick(): StickValues;
-        /**
-         * Sets the right joystick value
-         */
-        set rightStick(newValues: StickValues);
-        /**
-         * Updates the gamepad joystick positions
-         */
-        update(): void;
-        /**
-         * Disposes the gamepad
-         */
-        dispose(): void;
-    }
-    /**
-     * Represents a generic gamepad
-     */
-    export class GenericPad extends Gamepad {
-        private _buttons;
-        private _onbuttondown;
-        private _onbuttonup;
-        /**
-         * Observable triggered when a button has been pressed
-         */
-        onButtonDownObservable: Observable<number>;
-        /**
-         * Observable triggered when a button has been released
-         */
-        onButtonUpObservable: Observable<number>;
-        /**
-         * Callback triggered when a button has been pressed
-         * @param callback Called when a button has been pressed
-         */
-        onbuttondown(callback: (buttonPressed: number) => void): void;
-        /**
-         * Callback triggered when a button has been released
-         * @param callback Called when a button has been released
-         */
-        onbuttonup(callback: (buttonReleased: number) => void): void;
-        /**
-         * Initializes the generic gamepad
-         * @param id The id of the generic gamepad
-         * @param index The index of the generic gamepad
-         * @param browserGamepad The browser gamepad
-         */
-        constructor(id: string, index: number, browserGamepad: any);
-        private _setButtonValue;
-        /**
-         * Updates the generic gamepad
-         */
-        update(): void;
-        /**
-         * Disposes the generic gamepad
-         */
-        dispose(): void;
+        _rebuild(): void;
     }
 }
 declare module BABYLON {
@@ -12905,3644 +10658,6 @@ declare module BABYLON {
          * @returns the R texture
          */
         static CreateRTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number): RawTexture;
-    }
-}
-declare module BABYLON {
-    /**
-     * Interface for the size containing width and height
-     */
-    export interface ISize {
-        /**
-         * Width
-         */
-        width: number;
-        /**
-         * Heighht
-         */
-        height: number;
-    }
-    /**
-     * Size containing widht and height
-     */
-    export class Size implements ISize {
-        /**
-         * Width
-         */
-        width: number;
-        /**
-         * Height
-         */
-        height: number;
-        /**
-         * Creates a Size object from the given width and height (floats).
-         * @param width width of the new size
-         * @param height height of the new size
-         */
-        constructor(width: number, height: number);
-        /**
-         * Returns a string with the Size width and height
-         * @returns a string with the Size width and height
-         */
-        toString(): string;
-        /**
-         * "Size"
-         * @returns the string "Size"
-         */
-        getClassName(): string;
-        /**
-         * Returns the Size hash code.
-         * @returns a hash code for a unique width and height
-         */
-        getHashCode(): number;
-        /**
-         * Updates the current size from the given one.
-         * @param src the given size
-         */
-        copyFrom(src: Size): void;
-        /**
-         * Updates in place the current Size from the given floats.
-         * @param width width of the new size
-         * @param height height of the new size
-         * @returns the updated Size.
-         */
-        copyFromFloats(width: number, height: number): Size;
-        /**
-         * Updates in place the current Size from the given floats.
-         * @param width width to set
-         * @param height height to set
-         * @returns the updated Size.
-         */
-        set(width: number, height: number): Size;
-        /**
-         * Multiplies the width and height by numbers
-         * @param w factor to multiple the width by
-         * @param h factor to multiple the height by
-         * @returns a new Size set with the multiplication result of the current Size and the given floats.
-         */
-        multiplyByFloats(w: number, h: number): Size;
-        /**
-         * Clones the size
-         * @returns a new Size copied from the given one.
-         */
-        clone(): Size;
-        /**
-         * True if the current Size and the given one width and height are strictly equal.
-         * @param other the other size to compare against
-         * @returns True if the current Size and the given one width and height are strictly equal.
-         */
-        equals(other: Size): boolean;
-        /**
-         * The surface of the Size : width * height (float).
-         */
-        get surface(): number;
-        /**
-         * Create a new size of zero
-         * @returns a new Size set to (0.0, 0.0)
-         */
-        static Zero(): Size;
-        /**
-         * Sums the width and height of two sizes
-         * @param otherSize size to add to this size
-         * @returns a new Size set as the addition result of the current Size and the given one.
-         */
-        add(otherSize: Size): Size;
-        /**
-         * Subtracts the width and height of two
-         * @param otherSize size to subtract to this size
-         * @returns a new Size set as the subtraction result of  the given one from the current Size.
-         */
-        subtract(otherSize: Size): Size;
-        /**
-         * Creates a new Size set at the linear interpolation "amount" between "start" and "end"
-         * @param start starting size to lerp between
-         * @param end end size to lerp between
-         * @param amount amount to lerp between the start and end values
-         * @returns a new Size set at the linear interpolation "amount" between "start" and "end"
-         */
-        static Lerp(start: Size, end: Size, amount: number): Size;
-    }
-}
-declare module BABYLON {
-    /**
-     * Defines a runtime animation
-     */
-    export class RuntimeAnimation {
-        private _events;
-        /**
-         * The current frame of the runtime animation
-         */
-        private _currentFrame;
-        /**
-         * The animation used by the runtime animation
-         */
-        private _animation;
-        /**
-         * The target of the runtime animation
-         */
-        private _target;
-        /**
-         * The initiating animatable
-         */
-        private _host;
-        /**
-         * The original value of the runtime animation
-         */
-        private _originalValue;
-        /**
-         * The original blend value of the runtime animation
-         */
-        private _originalBlendValue;
-        /**
-         * The offsets cache of the runtime animation
-         */
-        private _offsetsCache;
-        /**
-         * The high limits cache of the runtime animation
-         */
-        private _highLimitsCache;
-        /**
-         * Specifies if the runtime animation has been stopped
-         */
-        private _stopped;
-        /**
-         * The blending factor of the runtime animation
-         */
-        private _blendingFactor;
-        /**
-         * The BabylonJS scene
-         */
-        private _scene;
-        /**
-         * The current value of the runtime animation
-         */
-        private _currentValue;
-        /** @hidden */
-        _animationState: _IAnimationState;
-        /**
-         * The active target of the runtime animation
-         */
-        private _activeTargets;
-        private _currentActiveTarget;
-        private _directTarget;
-        /**
-         * The target path of the runtime animation
-         */
-        private _targetPath;
-        /**
-         * The weight of the runtime animation
-         */
-        private _weight;
-        /**
-         * The ratio offset of the runtime animation
-         */
-        private _ratioOffset;
-        /**
-         * The previous delay of the runtime animation
-         */
-        private _previousDelay;
-        /**
-         * The previous ratio of the runtime animation
-         */
-        private _previousRatio;
-        private _enableBlending;
-        private _keys;
-        private _minFrame;
-        private _maxFrame;
-        private _minValue;
-        private _maxValue;
-        private _targetIsArray;
-        /**
-         * Gets the current frame of the runtime animation
-         */
-        get currentFrame(): number;
-        /**
-         * Gets the weight of the runtime animation
-         */
-        get weight(): number;
-        /**
-         * Gets the current value of the runtime animation
-         */
-        get currentValue(): any;
-        /**
-         * Gets the target path of the runtime animation
-         */
-        get targetPath(): string;
-        /**
-         * Gets the actual target of the runtime animation
-         */
-        get target(): any;
-        /** @hidden */
-        _onLoop: () => void;
-        /**
-         * Create a new RuntimeAnimation object
-         * @param target defines the target of the animation
-         * @param animation defines the source animation object
-         * @param scene defines the hosting scene
-         * @param host defines the initiating Animatable
-         */
-        constructor(target: any, animation: Animation, scene: Scene, host: Animatable);
-        private _preparePath;
-        /**
-         * Gets the animation from the runtime animation
-         */
-        get animation(): Animation;
-        /**
-         * Resets the runtime animation to the beginning
-         * @param restoreOriginal defines whether to restore the target property to the original value
-         */
-        reset(restoreOriginal?: boolean): void;
-        /**
-         * Specifies if the runtime animation is stopped
-         * @returns Boolean specifying if the runtime animation is stopped
-         */
-        isStopped(): boolean;
-        /**
-         * Disposes of the runtime animation
-         */
-        dispose(): void;
-        /**
-         * Apply the interpolated value to the target
-         * @param currentValue defines the value computed by the animation
-         * @param weight defines the weight to apply to this value (Defaults to 1.0)
-         */
-        setValue(currentValue: any, weight: number): void;
-        private _getOriginalValues;
-        private _setValue;
-        /**
-         * Gets the loop pmode of the runtime animation
-         * @returns Loop Mode
-         */
-        private _getCorrectLoopMode;
-        /**
-         * Move the current animation to a given frame
-         * @param frame defines the frame to move to
-         */
-        goToFrame(frame: number): void;
-        /**
-         * @hidden Internal use only
-         */
-        _prepareForSpeedRatioChange(newSpeedRatio: number): void;
-        /**
-         * Execute the current animation
-         * @param delay defines the delay to add to the current frame
-         * @param from defines the lower bound of the animation range
-         * @param to defines the upper bound of the animation range
-         * @param loop defines if the current animation must loop
-         * @param speedRatio defines the current speed ratio
-         * @param weight defines the weight of the animation (default is -1 so no weight)
-         * @param onLoop optional callback called when animation loops
-         * @returns a boolean indicating if the animation is running
-         */
-        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight?: number): boolean;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to store an actual running animation
-     */
-    export class Animatable {
-        /** defines the target object */
-        target: any;
-        /** defines the starting frame number (default is 0) */
-        fromFrame: number;
-        /** defines the ending frame number (default is 100) */
-        toFrame: number;
-        /** defines if the animation must loop (default is false)  */
-        loopAnimation: boolean;
-        /** defines a callback to call when animation ends if it is not looping */
-        onAnimationEnd?: (() => void) | null | undefined;
-        /** defines a callback to call when animation loops */
-        onAnimationLoop?: (() => void) | null | undefined;
-        private _localDelayOffset;
-        private _pausedDelay;
-        private _runtimeAnimations;
-        private _paused;
-        private _scene;
-        private _speedRatio;
-        private _weight;
-        private _syncRoot;
-        /**
-         * Gets or sets a boolean indicating if the animatable must be disposed and removed at the end of the animation.
-         * This will only apply for non looping animation (default is true)
-         */
-        disposeOnEnd: boolean;
-        /**
-         * Gets a boolean indicating if the animation has started
-         */
-        animationStarted: boolean;
-        /**
-         * Observer raised when the animation ends
-         */
-        onAnimationEndObservable: Observable<Animatable>;
-        /**
-         * Observer raised when the animation loops
-         */
-        onAnimationLoopObservable: Observable<Animatable>;
-        /**
-         * Gets the root Animatable used to synchronize and normalize animations
-         */
-        get syncRoot(): Nullable<Animatable>;
-        /**
-         * Gets the current frame of the first RuntimeAnimation
-         * Used to synchronize Animatables
-         */
-        get masterFrame(): number;
-        /**
-         * Gets or sets the animatable weight (-1.0 by default meaning not weighted)
-         */
-        get weight(): number;
-        set weight(value: number);
-        /**
-         * Gets or sets the speed ratio to apply to the animatable (1.0 by default)
-         */
-        get speedRatio(): number;
-        set speedRatio(value: number);
-        /**
-         * Creates a new Animatable
-         * @param scene defines the hosting scene
-         * @param target defines the target object
-         * @param fromFrame defines the starting frame number (default is 0)
-         * @param toFrame defines the ending frame number (default is 100)
-         * @param loopAnimation defines if the animation must loop (default is false)
-         * @param speedRatio defines the factor to apply to animation speed (default is 1)
-         * @param onAnimationEnd defines a callback to call when animation ends if it is not looping
-         * @param animations defines a group of animation to add to the new Animatable
-         * @param onAnimationLoop defines a callback to call when animation loops
-         */
-        constructor(scene: Scene, 
-        /** defines the target object */
-        target: any, 
-        /** defines the starting frame number (default is 0) */
-        fromFrame?: number, 
-        /** defines the ending frame number (default is 100) */
-        toFrame?: number, 
-        /** defines if the animation must loop (default is false)  */
-        loopAnimation?: boolean, speedRatio?: number, 
-        /** defines a callback to call when animation ends if it is not looping */
-        onAnimationEnd?: (() => void) | null | undefined, animations?: Animation[], 
-        /** defines a callback to call when animation loops */
-        onAnimationLoop?: (() => void) | null | undefined);
-        /**
-         * Synchronize and normalize current Animatable with a source Animatable
-         * This is useful when using animation weights and when animations are not of the same length
-         * @param root defines the root Animatable to synchronize with
-         * @returns the current Animatable
-         */
-        syncWith(root: Animatable): Animatable;
-        /**
-         * Gets the list of runtime animations
-         * @returns an array of RuntimeAnimation
-         */
-        getAnimations(): RuntimeAnimation[];
-        /**
-         * Adds more animations to the current animatable
-         * @param target defines the target of the animations
-         * @param animations defines the new animations to add
-         */
-        appendAnimations(target: any, animations: Animation[]): void;
-        /**
-         * Gets the source animation for a specific property
-         * @param property defines the propertyu to look for
-         * @returns null or the source animation for the given property
-         */
-        getAnimationByTargetProperty(property: string): Nullable<Animation>;
-        /**
-         * Gets the runtime animation for a specific property
-         * @param property defines the propertyu to look for
-         * @returns null or the runtime animation for the given property
-         */
-        getRuntimeAnimationByTargetProperty(property: string): Nullable<RuntimeAnimation>;
-        /**
-         * Resets the animatable to its original state
-         */
-        reset(): void;
-        /**
-         * Allows the animatable to blend with current running animations
-         * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
-         * @param blendingSpeed defines the blending speed to use
-         */
-        enableBlending(blendingSpeed: number): void;
-        /**
-         * Disable animation blending
-         * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
-         */
-        disableBlending(): void;
-        /**
-         * Jump directly to a given frame
-         * @param frame defines the frame to jump to
-         */
-        goToFrame(frame: number): void;
-        /**
-         * Pause the animation
-         */
-        pause(): void;
-        /**
-         * Restart the animation
-         */
-        restart(): void;
-        private _raiseOnAnimationEnd;
-        /**
-         * Stop and delete the current animation
-         * @param animationName defines a string used to only stop some of the runtime animations instead of all
-         * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
-         */
-        stop(animationName?: string, targetMask?: (target: any) => boolean): void;
-        /**
-         * Wait asynchronously for the animation to end
-         * @returns a promise which will be fullfilled when the animation ends
-         */
-        waitAsync(): Promise<Animatable>;
-        /** @hidden */
-        _animate(delay: number): boolean;
-    }
-        interface Scene {
-            /** @hidden */
-            _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation, originalValue: any): void;
-            /** @hidden */
-            _processLateAnimationBindingsForMatrices(holder: {
-                totalWeight: number;
-                animations: RuntimeAnimation[];
-                originalValue: Matrix;
-            }): any;
-            /** @hidden */
-            _processLateAnimationBindingsForQuaternions(holder: {
-                totalWeight: number;
-                animations: RuntimeAnimation[];
-                originalValue: Quaternion;
-            }, refQuaternion: Quaternion): Quaternion;
-            /** @hidden */
-            _processLateAnimationBindings(): void;
-            /**
-             * Will start the animation sequence of a given target
-             * @param target defines the target
-             * @param from defines from which frame should animation start
-             * @param to defines until which frame should animation run.
-             * @param weight defines the weight to apply to the animation (1.0 by default)
-             * @param loop defines if the animation loops
-             * @param speedRatio defines the speed in which to run the animation (1.0 by default)
-             * @param onAnimationEnd defines the function to be executed when the animation ends
-             * @param animatable defines an animatable object. If not provided a new one will be created from the given params
-             * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
-             * @param onAnimationLoop defines the callback to call when an animation loops
-             * @returns the animatable object created for this animation
-             */
-            beginWeightedAnimation(target: any, from: number, to: number, weight: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable;
-            /**
-             * Will start the animation sequence of a given target
-             * @param target defines the target
-             * @param from defines from which frame should animation start
-             * @param to defines until which frame should animation run.
-             * @param loop defines if the animation loops
-             * @param speedRatio defines the speed in which to run the animation (1.0 by default)
-             * @param onAnimationEnd defines the function to be executed when the animation ends
-             * @param animatable defines an animatable object. If not provided a new one will be created from the given params
-             * @param stopCurrent defines if the current animations must be stopped first (true by default)
-             * @param targetMask defines if the target should be animate if animations are present (this is called recursively on descendant animatables regardless of return value)
-             * @param onAnimationLoop defines the callback to call when an animation loops
-             * @returns the animatable object created for this animation
-             */
-            beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable;
-            /**
-             * Will start the animation sequence of a given target and its hierarchy
-             * @param target defines the target
-             * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
-             * @param from defines from which frame should animation start
-             * @param to defines until which frame should animation run.
-             * @param loop defines if the animation loops
-             * @param speedRatio defines the speed in which to run the animation (1.0 by default)
-             * @param onAnimationEnd defines the function to be executed when the animation ends
-             * @param animatable defines an animatable object. If not provided a new one will be created from the given params
-             * @param stopCurrent defines if the current animations must be stopped first (true by default)
-             * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
-             * @param onAnimationLoop defines the callback to call when an animation loops
-             * @returns the list of created animatables
-             */
-            beginHierarchyAnimation(target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable[];
-            /**
-             * Begin a new animation on a given node
-             * @param target defines the target where the animation will take place
-             * @param animations defines the list of animations to start
-             * @param from defines the initial value
-             * @param to defines the final value
-             * @param loop defines if you want animation to loop (off by default)
-             * @param speedRatio defines the speed ratio to apply to all animations
-             * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
-             * @param onAnimationLoop defines the callback to call when an animation loops
-             * @returns the list of created animatables
-             */
-            beginDirectAnimation(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable;
-            /**
-             * Begin a new animation on a given node and its hierarchy
-             * @param target defines the root node where the animation will take place
-             * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
-             * @param animations defines the list of animations to start
-             * @param from defines the initial value
-             * @param to defines the final value
-             * @param loop defines if you want animation to loop (off by default)
-             * @param speedRatio defines the speed ratio to apply to all animations
-             * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
-             * @param onAnimationLoop defines the callback to call when an animation loops
-             * @returns the list of animatables created for all nodes
-             */
-            beginDirectHierarchyAnimation(target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable[];
-            /**
-             * Gets the animatable associated with a specific target
-             * @param target defines the target of the animatable
-             * @returns the required animatable if found
-             */
-            getAnimatableByTarget(target: any): Nullable<Animatable>;
-            /**
-             * Gets all animatables associated with a given target
-             * @param target defines the target to look animatables for
-             * @returns an array of Animatables
-             */
-            getAllAnimatablesByTarget(target: any): Array<Animatable>;
-            /**
-            * Stops and removes all animations that have been applied to the scene
-            */
-            stopAllAnimations(): void;
-            /**
-             * Gets the current delta time used by animation engine
-             */
-            deltaTime: number;
-        }
-        interface Bone {
-            /**
-             * Copy an animation range from another bone
-             * @param source defines the source bone
-             * @param rangeName defines the range name to copy
-             * @param frameOffset defines the frame offset
-             * @param rescaleAsRequired defines if rescaling must be applied if required
-             * @param skelDimensionsRatio defines the scaling ratio
-             * @returns true if operation was successful
-             */
-            copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired: boolean, skelDimensionsRatio: Nullable<Vector3>): boolean;
-        }
-}
-declare module BABYLON {
-    /**
-     * Class used to override all child animations of a given target
-     */
-    export class AnimationPropertiesOverride {
-        /**
-         * Gets or sets a value indicating if animation blending must be used
-         */
-        enableBlending: boolean;
-        /**
-         * Gets or sets the blending speed to use when enableBlending is true
-         */
-        blendingSpeed: number;
-        /**
-         * Gets or sets the default loop mode to use
-         */
-        loopMode: number;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to handle skinning animations
-     * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
-     */
-    export class Skeleton implements IAnimatable {
-        /** defines the skeleton name */
-        name: string;
-        /** defines the skeleton Id */
-        id: string;
-        /**
-         * Defines the list of child bones
-         */
-        bones: Bone[];
-        /**
-         * Defines an estimate of the dimension of the skeleton at rest
-         */
-        dimensionsAtRest: Vector3;
-        /**
-         * Defines a boolean indicating if the root matrix is provided by meshes or by the current skeleton (this is the default value)
-         */
-        needInitialSkinMatrix: boolean;
-        /**
-         * Defines a mesh that override the matrix used to get the world matrix (null by default).
-         */
-        overrideMesh: Nullable<AbstractMesh>;
-        /**
-         * Gets the list of animations attached to this skeleton
-         */
-        animations: Array<Animation>;
-        private _scene;
-        private _isDirty;
-        private _transformMatrices;
-        private _transformMatrixTexture;
-        private _meshesWithPoseMatrix;
-        private _animatables;
-        private _identity;
-        private _synchronizedWithMesh;
-        private _ranges;
-        private _lastAbsoluteTransformsUpdateId;
-        private _canUseTextureForBones;
-        private _uniqueId;
-        /** @hidden */
-        _numBonesWithLinkedTransformNode: number;
-        /** @hidden */
-        _hasWaitingData: Nullable<boolean>;
-        /**
-         * Specifies if the skeleton should be serialized
-         */
-        doNotSerialize: boolean;
-        private _useTextureToStoreBoneMatrices;
-        /**
-         * Gets or sets a boolean indicating that bone matrices should be stored as a texture instead of using shader uniforms (default is true).
-         * Please note that this option is not available if the hardware does not support it
-         */
-        get useTextureToStoreBoneMatrices(): boolean;
-        set useTextureToStoreBoneMatrices(value: boolean);
-        private _animationPropertiesOverride;
-        /**
-         * Gets or sets the animation properties override
-         */
-        get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride>;
-        set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>);
-        /**
-         * List of inspectable custom properties (used by the Inspector)
-         * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
-         */
-        inspectableCustomProperties: IInspectable[];
-        /**
-         * An observable triggered before computing the skeleton's matrices
-         */
-        onBeforeComputeObservable: Observable<Skeleton>;
-        /**
-         * Gets a boolean indicating that the skeleton effectively stores matrices into a texture
-         */
-        get isUsingTextureForMatrices(): boolean;
-        /**
-         * Gets the unique ID of this skeleton
-         */
-        get uniqueId(): number;
-        /**
-         * Creates a new skeleton
-         * @param name defines the skeleton name
-         * @param id defines the skeleton Id
-         * @param scene defines the hosting scene
-         */
-        constructor(
-        /** defines the skeleton name */
-        name: string, 
-        /** defines the skeleton Id */
-        id: string, scene: Scene);
-        /**
-         * Gets the current object class name.
-         * @return the class name
-         */
-        getClassName(): string;
-        /**
-         * Returns an array containing the root bones
-         * @returns an array containing the root bones
-         */
-        getChildren(): Array<Bone>;
-        /**
-         * Gets the list of transform matrices to send to shaders (one matrix per bone)
-         * @param mesh defines the mesh to use to get the root matrix (if needInitialSkinMatrix === true)
-         * @returns a Float32Array containing matrices data
-         */
-        getTransformMatrices(mesh: AbstractMesh): Float32Array;
-        /**
-         * Gets the list of transform matrices to send to shaders inside a texture (one matrix per bone)
-         * @param mesh defines the mesh to use to get the root matrix (if needInitialSkinMatrix === true)
-         * @returns a raw texture containing the data
-         */
-        getTransformMatrixTexture(mesh: AbstractMesh): Nullable<RawTexture>;
-        /**
-         * Gets the current hosting scene
-         * @returns a scene object
-         */
-        getScene(): Scene;
-        /**
-         * Gets a string representing the current skeleton data
-         * @param fullDetails defines a boolean indicating if we want a verbose version
-         * @returns a string representing the current skeleton data
-         */
-        toString(fullDetails?: boolean): string;
-        /**
-        * Get bone's index searching by name
-        * @param name defines bone's name to search for
-        * @return the indice of the bone. Returns -1 if not found
-        */
-        getBoneIndexByName(name: string): number;
-        /**
-         * Creater a new animation range
-         * @param name defines the name of the range
-         * @param from defines the start key
-         * @param to defines the end key
-         */
-        createAnimationRange(name: string, from: number, to: number): void;
-        /**
-         * Delete a specific animation range
-         * @param name defines the name of the range
-         * @param deleteFrames defines if frames must be removed as well
-         */
-        deleteAnimationRange(name: string, deleteFrames?: boolean): void;
-        /**
-         * Gets a specific animation range
-         * @param name defines the name of the range to look for
-         * @returns the requested animation range or null if not found
-         */
-        getAnimationRange(name: string): Nullable<AnimationRange>;
-        /**
-         * Gets the list of all animation ranges defined on this skeleton
-         * @returns an array
-         */
-        getAnimationRanges(): Nullable<AnimationRange>[];
-        /**
-         * Copy animation range from a source skeleton.
-         * This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
-         * @param source defines the source skeleton
-         * @param name defines the name of the range to copy
-         * @param rescaleAsRequired defines if rescaling must be applied if required
-         * @returns true if operation was successful
-         */
-        copyAnimationRange(source: Skeleton, name: string, rescaleAsRequired?: boolean): boolean;
-        /**
-         * Forces the skeleton to go to rest pose
-         */
-        returnToRest(): void;
-        private _getHighestAnimationFrame;
-        /**
-         * Begin a specific animation range
-         * @param name defines the name of the range to start
-         * @param loop defines if looping must be turned on (false by default)
-         * @param speedRatio defines the speed ratio to apply (1 by default)
-         * @param onAnimationEnd defines a callback which will be called when animation will end
-         * @returns a new animatable
-         */
-        beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Nullable<Animatable>;
-        /** @hidden */
-        _markAsDirty(): void;
-        /** @hidden */
-        _registerMeshWithPoseMatrix(mesh: AbstractMesh): void;
-        /** @hidden */
-        _unregisterMeshWithPoseMatrix(mesh: AbstractMesh): void;
-        private _computeTransformMatrices;
-        /**
-         * Build all resources required to render a skeleton
-         */
-        prepare(): void;
-        /**
-         * Gets the list of animatables currently running for this skeleton
-         * @returns an array of animatables
-         */
-        getAnimatables(): IAnimatable[];
-        /**
-         * Clone the current skeleton
-         * @param name defines the name of the new skeleton
-         * @param id defines the id of the new skeleton
-         * @returns the new skeleton
-         */
-        clone(name: string, id?: string): Skeleton;
-        /**
-         * Enable animation blending for this skeleton
-         * @param blendingSpeed defines the blending speed to apply
-         * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
-         */
-        enableBlending(blendingSpeed?: number): void;
-        /**
-         * Releases all resources associated with the current skeleton
-         */
-        dispose(): void;
-        /**
-         * Serialize the skeleton in a JSON object
-         * @returns a JSON object
-         */
-        serialize(): any;
-        /**
-         * Creates a new skeleton from serialized data
-         * @param parsedSkeleton defines the serialized data
-         * @param scene defines the hosting scene
-         * @returns a new skeleton
-         */
-        static Parse(parsedSkeleton: any, scene: Scene): Skeleton;
-        /**
-         * Compute all node absolute transforms
-         * @param forceUpdate defines if computation must be done even if cache is up to date
-         */
-        computeAbsoluteTransforms(forceUpdate?: boolean): void;
-        /**
-         * Gets the root pose matrix
-         * @returns a matrix
-         */
-        getPoseMatrix(): Nullable<Matrix>;
-        /**
-         * Sorts bones per internal index
-         */
-        sortBones(): void;
-        private _sortBones;
-    }
-}
-declare module BABYLON {
-    /**
-     * Class used to store bone information
-     * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
-     */
-    export class Bone extends Node {
-        /**
-         * defines the bone name
-         */
-        name: string;
-        private static _tmpVecs;
-        private static _tmpQuat;
-        private static _tmpMats;
-        /**
-         * Gets the list of child bones
-         */
-        children: Bone[];
-        /** Gets the animations associated with this bone */
-        animations: Animation[];
-        /**
-         * Gets or sets bone length
-         */
-        length: number;
-        /**
-         * @hidden Internal only
-         * Set this value to map this bone to a different index in the transform matrices
-         * Set this value to -1 to exclude the bone from the transform matrices
-         */
-        _index: Nullable<number>;
-        private _skeleton;
-        private _localMatrix;
-        private _restPose;
-        private _baseMatrix;
-        private _absoluteTransform;
-        private _invertedAbsoluteTransform;
-        private _parent;
-        private _scalingDeterminant;
-        private _worldTransform;
-        private _localScaling;
-        private _localRotation;
-        private _localPosition;
-        private _needToDecompose;
-        private _needToCompose;
-        /** @hidden */
-        _linkedTransformNode: Nullable<TransformNode>;
-        /** @hidden */
-        _waitingTransformNodeId: Nullable<string>;
-        /** @hidden */
-        get _matrix(): Matrix;
-        /** @hidden */
-        set _matrix(value: Matrix);
-        /**
-         * Create a new bone
-         * @param name defines the bone name
-         * @param skeleton defines the parent skeleton
-         * @param parentBone defines the parent (can be null if the bone is the root)
-         * @param localMatrix defines the local matrix
-         * @param restPose defines the rest pose matrix
-         * @param baseMatrix defines the base matrix
-         * @param index defines index of the bone in the hiearchy
-         */
-        constructor(
-        /**
-         * defines the bone name
-         */
-        name: string, skeleton: Skeleton, parentBone?: Nullable<Bone>, localMatrix?: Nullable<Matrix>, restPose?: Nullable<Matrix>, baseMatrix?: Nullable<Matrix>, index?: Nullable<number>);
-        /**
-         * Gets the current object class name.
-         * @return the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the parent skeleton
-         * @returns a skeleton
-         */
-        getSkeleton(): Skeleton;
-        /**
-         * Gets parent bone
-         * @returns a bone or null if the bone is the root of the bone hierarchy
-         */
-        getParent(): Nullable<Bone>;
-        /**
-         * Returns an array containing the root bones
-         * @returns an array containing the root bones
-         */
-        getChildren(): Array<Bone>;
-        /**
-         * Gets the node index in matrix array generated for rendering
-         * @returns the node index
-         */
-        getIndex(): number;
-        /**
-         * Sets the parent bone
-         * @param parent defines the parent (can be null if the bone is the root)
-         * @param updateDifferenceMatrix defines if the difference matrix must be updated
-         */
-        setParent(parent: Nullable<Bone>, updateDifferenceMatrix?: boolean): void;
-        /**
-         * Gets the local matrix
-         * @returns a matrix
-         */
-        getLocalMatrix(): Matrix;
-        /**
-         * Gets the base matrix (initial matrix which remains unchanged)
-         * @returns a matrix
-         */
-        getBaseMatrix(): Matrix;
-        /**
-         * Gets the rest pose matrix
-         * @returns a matrix
-         */
-        getRestPose(): Matrix;
-        /**
-         * Gets a matrix used to store world matrix (ie. the matrix sent to shaders)
-         */
-        getWorldMatrix(): Matrix;
-        /**
-         * Sets the local matrix to rest pose matrix
-         */
-        returnToRest(): void;
-        /**
-         * Gets the inverse of the absolute transform matrix.
-         * This matrix will be multiplied by local matrix to get the difference matrix (ie. the difference between original state and current state)
-         * @returns a matrix
-         */
-        getInvertedAbsoluteTransform(): Matrix;
-        /**
-         * Gets the absolute transform matrix (ie base matrix * parent world matrix)
-         * @returns a matrix
-         */
-        getAbsoluteTransform(): Matrix;
-        /**
-         * Links with the given transform node.
-         * The local matrix of this bone is copied from the transform node every frame.
-         * @param transformNode defines the transform node to link to
-         */
-        linkTransformNode(transformNode: Nullable<TransformNode>): void;
-        /**
-         * Gets the node used to drive the bone's transformation
-         * @returns a transform node or null
-         */
-        getTransformNode(): Nullable<TransformNode>;
-        /** Gets or sets current position (in local space) */
-        get position(): Vector3;
-        set position(newPosition: Vector3);
-        /** Gets or sets current rotation (in local space) */
-        get rotation(): Vector3;
-        set rotation(newRotation: Vector3);
-        /** Gets or sets current rotation quaternion (in local space) */
-        get rotationQuaternion(): Quaternion;
-        set rotationQuaternion(newRotation: Quaternion);
-        /** Gets or sets current scaling (in local space) */
-        get scaling(): Vector3;
-        set scaling(newScaling: Vector3);
-        /**
-         * Gets the animation properties override
-         */
-        get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride>;
-        private _decompose;
-        private _compose;
-        /**
-         * Update the base and local matrices
-         * @param matrix defines the new base or local matrix
-         * @param updateDifferenceMatrix defines if the difference matrix must be updated
-         * @param updateLocalMatrix defines if the local matrix should be updated
-         */
-        updateMatrix(matrix: Matrix, updateDifferenceMatrix?: boolean, updateLocalMatrix?: boolean): void;
-        /** @hidden */
-        _updateDifferenceMatrix(rootMatrix?: Matrix, updateChildren?: boolean): void;
-        /**
-         * Flag the bone as dirty (Forcing it to update everything)
-         */
-        markAsDirty(): void;
-        /** @hidden */
-        _markAsDirtyAndCompose(): void;
-        private _markAsDirtyAndDecompose;
-        /**
-         * Translate the bone in local or world space
-         * @param vec The amount to translate the bone
-         * @param space The space that the translation is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
-         */
-        translate(vec: Vector3, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the postion of the bone in local or world space
-         * @param position The position to set the bone
-         * @param space The space that the position is in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         */
-        setPosition(position: Vector3, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the absolute position of the bone (world space)
-         * @param position The position to set the bone
-         * @param mesh The mesh that this bone is attached to
-         */
-        setAbsolutePosition(position: Vector3, mesh?: AbstractMesh): void;
-        /**
-         * Scale the bone on the x, y and z axes (in local space)
-         * @param x The amount to scale the bone on the x axis
-         * @param y The amount to scale the bone on the y axis
-         * @param z The amount to scale the bone on the z axis
-         * @param scaleChildren sets this to true if children of the bone should be scaled as well (false by default)
-         */
-        scale(x: number, y: number, z: number, scaleChildren?: boolean): void;
-        /**
-         * Set the bone scaling in local space
-         * @param scale defines the scaling vector
-         */
-        setScale(scale: Vector3): void;
-        /**
-         * Gets the current scaling in local space
-         * @returns the current scaling vector
-         */
-        getScale(): Vector3;
-        /**
-         * Gets the current scaling in local space and stores it in a target vector
-         * @param result defines the target vector
-         */
-        getScaleToRef(result: Vector3): void;
-        /**
-         * Set the yaw, pitch, and roll of the bone in local or world space
-         * @param yaw The rotation of the bone on the y axis
-         * @param pitch The rotation of the bone on the x axis
-         * @param roll The rotation of the bone on the z axis
-         * @param space The space that the axes of rotation are in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         */
-        setYawPitchRoll(yaw: number, pitch: number, roll: number, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Add a rotation to the bone on an axis in local or world space
-         * @param axis The axis to rotate the bone on
-         * @param amount The amount to rotate the bone
-         * @param space The space that the axis is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
-         */
-        rotate(axis: Vector3, amount: number, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the rotation of the bone to a particular axis angle in local or world space
-         * @param axis The axis to rotate the bone on
-         * @param angle The angle that the bone should be rotated to
-         * @param space The space that the axis is in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         */
-        setAxisAngle(axis: Vector3, angle: number, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the euler rotation of the bone in local of world space
-         * @param rotation The euler rotation that the bone should be set to
-         * @param space The space that the rotation is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
-         */
-        setRotation(rotation: Vector3, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the quaternion rotation of the bone in local of world space
-         * @param quat The quaternion rotation that the bone should be set to
-         * @param space The space that the rotation is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
-         */
-        setRotationQuaternion(quat: Quaternion, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the rotation matrix of the bone in local of world space
-         * @param rotMat The rotation matrix that the bone should be set to
-         * @param space The space that the rotation is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
-         */
-        setRotationMatrix(rotMat: Matrix, space?: Space, mesh?: AbstractMesh): void;
-        private _rotateWithMatrix;
-        private _getNegativeRotationToRef;
-        /**
-         * Get the position of the bone in local or world space
-         * @param space The space that the returned position is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
-         * @returns The position of the bone
-         */
-        getPosition(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Copy the position of the bone to a vector3 in local or world space
-         * @param space The space that the returned position is in
-         * @param mesh The mesh that this bone is attached to. This is only used in world space
-         * @param result The vector3 to copy the position to
-         */
-        getPositionToRef(space: Space | undefined, mesh: Nullable<AbstractMesh>, result: Vector3): void;
-        /**
-         * Get the absolute position of the bone (world space)
-         * @param mesh The mesh that this bone is attached to
-         * @returns The absolute position of the bone
-         */
-        getAbsolutePosition(mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Copy the absolute position of the bone (world space) to the result param
-         * @param mesh The mesh that this bone is attached to
-         * @param result The vector3 to copy the absolute position to
-         */
-        getAbsolutePositionToRef(mesh: AbstractMesh, result: Vector3): void;
-        /**
-         * Compute the absolute transforms of this bone and its children
-         */
-        computeAbsoluteTransforms(): void;
-        /**
-         * Get the world direction from an axis that is in the local space of the bone
-         * @param localAxis The local direction that is used to compute the world direction
-         * @param mesh The mesh that this bone is attached to
-         * @returns The world direction
-         */
-        getDirection(localAxis: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Copy the world direction to a vector3 from an axis that is in the local space of the bone
-         * @param localAxis The local direction that is used to compute the world direction
-         * @param mesh The mesh that this bone is attached to
-         * @param result The vector3 that the world direction will be copied to
-         */
-        getDirectionToRef(localAxis: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
-        /**
-         * Get the euler rotation of the bone in local or world space
-         * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         * @returns The euler rotation
-         */
-        getRotation(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Copy the euler rotation of the bone to a vector3.  The rotation can be in either local or world space
-         * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         * @param result The vector3 that the rotation should be copied to
-         */
-        getRotationToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Vector3): void;
-        /**
-         * Get the quaternion rotation of the bone in either local or world space
-         * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         * @returns The quaternion rotation
-         */
-        getRotationQuaternion(space?: Space, mesh?: Nullable<AbstractMesh>): Quaternion;
-        /**
-         * Copy the quaternion rotation of the bone to a quaternion.  The rotation can be in either local or world space
-         * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         * @param result The quaternion that the rotation should be copied to
-         */
-        getRotationQuaternionToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Quaternion): void;
-        /**
-         * Get the rotation matrix of the bone in local or world space
-         * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         * @returns The rotation matrix
-         */
-        getRotationMatrix(space: Space | undefined, mesh: AbstractMesh): Matrix;
-        /**
-         * Copy the rotation matrix of the bone to a matrix.  The rotation can be in either local or world space
-         * @param space The space that the rotation should be in
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space
-         * @param result The quaternion that the rotation should be copied to
-         */
-        getRotationMatrixToRef(space: Space | undefined, mesh: AbstractMesh, result: Matrix): void;
-        /**
-         * Get the world position of a point that is in the local space of the bone
-         * @param position The local position
-         * @param mesh The mesh that this bone is attached to
-         * @returns The world position
-         */
-        getAbsolutePositionFromLocal(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Get the world position of a point that is in the local space of the bone and copy it to the result param
-         * @param position The local position
-         * @param mesh The mesh that this bone is attached to
-         * @param result The vector3 that the world position should be copied to
-         */
-        getAbsolutePositionFromLocalToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
-        /**
-         * Get the local position of a point that is in world space
-         * @param position The world position
-         * @param mesh The mesh that this bone is attached to
-         * @returns The local position
-         */
-        getLocalPositionFromAbsolute(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Get the local position of a point that is in world space and copy it to the result param
-         * @param position The world position
-         * @param mesh The mesh that this bone is attached to
-         * @param result The vector3 that the local position should be copied to
-         */
-        getLocalPositionFromAbsoluteToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * A TransformNode is an object that is not rendered but can be used as a center of transformation. This can decrease memory usage and increase rendering speed compared to using an empty mesh as a parent and is less complicated than using a pivot matrix.
-     * @see https://doc.babylonjs.com/how_to/transformnode
-     */
-    export class TransformNode extends Node {
-        /**
-         * Object will not rotate to face the camera
-         */
-        static BILLBOARDMODE_NONE: number;
-        /**
-         * Object will rotate to face the camera but only on the x axis
-         */
-        static BILLBOARDMODE_X: number;
-        /**
-         * Object will rotate to face the camera but only on the y axis
-         */
-        static BILLBOARDMODE_Y: number;
-        /**
-         * Object will rotate to face the camera but only on the z axis
-         */
-        static BILLBOARDMODE_Z: number;
-        /**
-         * Object will rotate to face the camera
-         */
-        static BILLBOARDMODE_ALL: number;
-        /**
-         * Object will rotate to face the camera's position instead of orientation
-         */
-        static BILLBOARDMODE_USE_POSITION: number;
-        private _forward;
-        private _forwardInverted;
-        private _up;
-        private _right;
-        private _rightInverted;
-        private _position;
-        private _rotation;
-        private _rotationQuaternion;
-        protected _scaling: Vector3;
-        protected _isDirty: boolean;
-        private _transformToBoneReferal;
-        private _isAbsoluteSynced;
-        private _billboardMode;
-        /**
-        * Gets or sets the billboard mode. Default is 0.
-        *
-        * | Value | Type | Description |
-        * | --- | --- | --- |
-        * | 0 | BILLBOARDMODE_NONE |  |
-        * | 1 | BILLBOARDMODE_X |  |
-        * | 2 | BILLBOARDMODE_Y |  |
-        * | 4 | BILLBOARDMODE_Z |  |
-        * | 7 | BILLBOARDMODE_ALL |  |
-        *
-        */
-        get billboardMode(): number;
-        set billboardMode(value: number);
-        private _preserveParentRotationForBillboard;
-        /**
-         * Gets or sets a boolean indicating that parent rotation should be preserved when using billboards.
-         * This could be useful for glTF objects where parent rotation helps converting from right handed to left handed
-         */
-        get preserveParentRotationForBillboard(): boolean;
-        set preserveParentRotationForBillboard(value: boolean);
-        /**
-         * Multiplication factor on scale x/y/z when computing the world matrix. Eg. for a 1x1x1 cube setting this to 2 will make it a 2x2x2 cube
-         */
-        scalingDeterminant: number;
-        private _infiniteDistance;
-        /**
-         * Gets or sets the distance of the object to max, often used by skybox
-         */
-        get infiniteDistance(): boolean;
-        set infiniteDistance(value: boolean);
-        /**
-         * Gets or sets a boolean indicating that non uniform scaling (when at least one component is different from others) should be ignored.
-         * By default the system will update normals to compensate
-         */
-        ignoreNonUniformScaling: boolean;
-        /**
-         * Gets or sets a boolean indicating that even if rotationQuaternion is defined, you can keep updating rotation property and Babylon.js will just mix both
-         */
-        reIntegrateRotationIntoRotationQuaternion: boolean;
-        /** @hidden */
-        _poseMatrix: Nullable<Matrix>;
-        /** @hidden */
-        _localMatrix: Matrix;
-        private _usePivotMatrix;
-        private _absolutePosition;
-        private _absoluteScaling;
-        private _absoluteRotationQuaternion;
-        private _pivotMatrix;
-        private _pivotMatrixInverse;
-        protected _postMultiplyPivotMatrix: boolean;
-        protected _isWorldMatrixFrozen: boolean;
-        /** @hidden */
-        _indexInSceneTransformNodesArray: number;
-        /**
-        * An event triggered after the world matrix is updated
-        */
-        onAfterWorldMatrixUpdateObservable: Observable<TransformNode>;
-        constructor(name: string, scene?: Nullable<Scene>, isPure?: boolean);
-        /**
-         * Gets a string identifying the name of the class
-         * @returns "TransformNode" string
-         */
-        getClassName(): string;
-        /**
-          * Gets or set the node position (default is (0.0, 0.0, 0.0))
-          */
-        get position(): Vector3;
-        set position(newPosition: Vector3);
-        /**
-          * Gets or sets the rotation property : a Vector3 defining the rotation value in radians around each local axis X, Y, Z  (default is (0.0, 0.0, 0.0)).
-          * If rotation quaternion is set, this Vector3 will be ignored and copy from the quaternion
-          */
-        get rotation(): Vector3;
-        set rotation(newRotation: Vector3);
-        /**
-         * Gets or sets the scaling property : a Vector3 defining the node scaling along each local axis X, Y, Z (default is (0.0, 0.0, 0.0)).
-         */
-        get scaling(): Vector3;
-        set scaling(newScaling: Vector3);
-        /**
-         * Gets or sets the rotation Quaternion property : this a Quaternion object defining the node rotation by using a unit quaternion (undefined by default, but can be null).
-         * If set, only the rotationQuaternion is then used to compute the node rotation (ie. node.rotation will be ignored)
-         */
-        get rotationQuaternion(): Nullable<Quaternion>;
-        set rotationQuaternion(quaternion: Nullable<Quaternion>);
-        /**
-         * The forward direction of that transform in world space.
-         */
-        get forward(): Vector3;
-        /**
-         * The up direction of that transform in world space.
-         */
-        get up(): Vector3;
-        /**
-         * The right direction of that transform in world space.
-         */
-        get right(): Vector3;
-        /**
-         * Copies the parameter passed Matrix into the mesh Pose matrix.
-         * @param matrix the matrix to copy the pose from
-         * @returns this TransformNode.
-         */
-        updatePoseMatrix(matrix: Matrix): TransformNode;
-        /**
-         * Returns the mesh Pose matrix.
-         * @returns the pose matrix
-         */
-        getPoseMatrix(): Matrix;
-        /** @hidden */
-        _isSynchronized(): boolean;
-        /** @hidden */
-        _initCache(): void;
-        /**
-        * Flag the transform node as dirty (Forcing it to update everything)
-        * @param property if set to "rotation" the objects rotationQuaternion will be set to null
-        * @returns this transform node
-        */
-        markAsDirty(property: string): TransformNode;
-        /**
-         * Returns the current mesh absolute position.
-         * Returns a Vector3.
-         */
-        get absolutePosition(): Vector3;
-        /**
-         * Returns the current mesh absolute scaling.
-         * Returns a Vector3.
-         */
-        get absoluteScaling(): Vector3;
-        /**
-         * Returns the current mesh absolute rotation.
-         * Returns a Quaternion.
-         */
-        get absoluteRotationQuaternion(): Quaternion;
-        /**
-         * Sets a new matrix to apply before all other transformation
-         * @param matrix defines the transform matrix
-         * @returns the current TransformNode
-         */
-        setPreTransformMatrix(matrix: Matrix): TransformNode;
-        /**
-         * Sets a new pivot matrix to the current node
-         * @param matrix defines the new pivot matrix to use
-         * @param postMultiplyPivotMatrix defines if the pivot matrix must be cancelled in the world matrix. When this parameter is set to true (default), the inverse of the pivot matrix is also applied at the end to cancel the transformation effect
-         * @returns the current TransformNode
-        */
-        setPivotMatrix(matrix: DeepImmutable<Matrix>, postMultiplyPivotMatrix?: boolean): TransformNode;
-        /**
-         * Returns the mesh pivot matrix.
-         * Default : Identity.
-         * @returns the matrix
-         */
-        getPivotMatrix(): Matrix;
-        /**
-         * Instantiate (when possible) or clone that node with its hierarchy
-         * @param newParent defines the new parent to use for the instance (or clone)
-         * @param options defines options to configure how copy is done
-         * @param onNewNodeCreated defines an option callback to call when a clone or an instance is created
-         * @returns an instance (or a clone) of the current node with its hiearchy
-         */
-        instantiateHierarchy(newParent?: Nullable<TransformNode>, options?: {
-            doNotInstantiate: boolean;
-        }, onNewNodeCreated?: (source: TransformNode, clone: TransformNode) => void): Nullable<TransformNode>;
-        /**
-         * Prevents the World matrix to be computed any longer
-         * @param newWorldMatrix defines an optional matrix to use as world matrix
-         * @returns the TransformNode.
-         */
-        freezeWorldMatrix(newWorldMatrix?: Nullable<Matrix>): TransformNode;
-        /**
-         * Allows back the World matrix computation.
-         * @returns the TransformNode.
-         */
-        unfreezeWorldMatrix(): this;
-        /**
-         * True if the World matrix has been frozen.
-         */
-        get isWorldMatrixFrozen(): boolean;
-        /**
-        * Retuns the mesh absolute position in the World.
-        * @returns a Vector3.
-        */
-        getAbsolutePosition(): Vector3;
-        /**
-         * Sets the mesh absolute position in the World from a Vector3 or an Array(3).
-         * @param absolutePosition the absolute position to set
-         * @returns the TransformNode.
-         */
-        setAbsolutePosition(absolutePosition: Vector3): TransformNode;
-        /**
-         * Sets the mesh position in its local space.
-         * @param vector3 the position to set in localspace
-         * @returns the TransformNode.
-         */
-        setPositionWithLocalVector(vector3: Vector3): TransformNode;
-        /**
-         * Returns the mesh position in the local space from the current World matrix values.
-         * @returns a new Vector3.
-         */
-        getPositionExpressedInLocalSpace(): Vector3;
-        /**
-         * Translates the mesh along the passed Vector3 in its local space.
-         * @param vector3 the distance to translate in localspace
-         * @returns the TransformNode.
-         */
-        locallyTranslate(vector3: Vector3): TransformNode;
-        private static _lookAtVectorCache;
-        /**
-         * Orients a mesh towards a target point. Mesh must be drawn facing user.
-         * @param targetPoint the position (must be in same space as current mesh) to look at
-         * @param yawCor optional yaw (y-axis) correction in radians
-         * @param pitchCor optional pitch (x-axis) correction in radians
-         * @param rollCor optional roll (z-axis) correction in radians
-         * @param space the choosen space of the target
-         * @returns the TransformNode.
-         */
-        lookAt(targetPoint: Vector3, yawCor?: number, pitchCor?: number, rollCor?: number, space?: Space): TransformNode;
-        /**
-          * Returns a new Vector3 that is the localAxis, expressed in the mesh local space, rotated like the mesh.
-          * This Vector3 is expressed in the World space.
-          * @param localAxis axis to rotate
-          * @returns a new Vector3 that is the localAxis, expressed in the mesh local space, rotated like the mesh.
-          */
-        getDirection(localAxis: Vector3): Vector3;
-        /**
-         * Sets the Vector3 "result" as the rotated Vector3 "localAxis" in the same rotation than the mesh.
-         * localAxis is expressed in the mesh local space.
-         * result is computed in the Wordl space from the mesh World matrix.
-         * @param localAxis axis to rotate
-         * @param result the resulting transformnode
-         * @returns this TransformNode.
-         */
-        getDirectionToRef(localAxis: Vector3, result: Vector3): TransformNode;
-        /**
-         * Sets this transform node rotation to the given local axis.
-         * @param localAxis the axis in local space
-         * @param yawCor optional yaw (y-axis) correction in radians
-         * @param pitchCor optional pitch (x-axis) correction in radians
-         * @param rollCor optional roll (z-axis) correction in radians
-         * @returns this TransformNode
-         */
-        setDirection(localAxis: Vector3, yawCor?: number, pitchCor?: number, rollCor?: number): TransformNode;
-        /**
-         * Sets a new pivot point to the current node
-         * @param point defines the new pivot point to use
-         * @param space defines if the point is in world or local space (local by default)
-         * @returns the current TransformNode
-        */
-        setPivotPoint(point: Vector3, space?: Space): TransformNode;
-        /**
-         * Returns a new Vector3 set with the mesh pivot point coordinates in the local space.
-         * @returns the pivot point
-         */
-        getPivotPoint(): Vector3;
-        /**
-         * Sets the passed Vector3 "result" with the coordinates of the mesh pivot point in the local space.
-         * @param result the vector3 to store the result
-         * @returns this TransformNode.
-         */
-        getPivotPointToRef(result: Vector3): TransformNode;
-        /**
-         * Returns a new Vector3 set with the mesh pivot point World coordinates.
-         * @returns a new Vector3 set with the mesh pivot point World coordinates.
-         */
-        getAbsolutePivotPoint(): Vector3;
-        /**
-         * Sets the Vector3 "result" coordinates with the mesh pivot point World coordinates.
-         * @param result vector3 to store the result
-         * @returns this TransformNode.
-         */
-        getAbsolutePivotPointToRef(result: Vector3): TransformNode;
-        /**
-         * Defines the passed node as the parent of the current node.
-         * The node will remain exactly where it is and its position / rotation will be updated accordingly
-         * @see https://doc.babylonjs.com/how_to/parenting
-         * @param node the node ot set as the parent
-         * @returns this TransformNode.
-         */
-        setParent(node: Nullable<Node>): TransformNode;
-        private _nonUniformScaling;
-        /**
-         * True if the scaling property of this object is non uniform eg. (1,2,1)
-         */
-        get nonUniformScaling(): boolean;
-        /** @hidden */
-        _updateNonUniformScalingState(value: boolean): boolean;
-        /**
-         * Attach the current TransformNode to another TransformNode associated with a bone
-         * @param bone Bone affecting the TransformNode
-         * @param affectedTransformNode TransformNode associated with the bone
-         * @returns this object
-         */
-        attachToBone(bone: Bone, affectedTransformNode: TransformNode): TransformNode;
-        /**
-         * Detach the transform node if its associated with a bone
-         * @returns this object
-         */
-        detachFromBone(): TransformNode;
-        private static _rotationAxisCache;
-        /**
-         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in the given space.
-         * space (default LOCAL) can be either Space.LOCAL, either Space.WORLD.
-         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
-         * The passed axis is also normalized.
-         * @param axis the axis to rotate around
-         * @param amount the amount to rotate in radians
-         * @param space Space to rotate in (Default: local)
-         * @returns the TransformNode.
-         */
-        rotate(axis: Vector3, amount: number, space?: Space): TransformNode;
-        /**
-         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in world space.
-         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
-         * The passed axis is also normalized. .
-         * Method is based on http://www.euclideanspace.com/maths/geometry/affine/aroundPoint/index.htm
-         * @param point the point to rotate around
-         * @param axis the axis to rotate around
-         * @param amount the amount to rotate in radians
-         * @returns the TransformNode
-         */
-        rotateAround(point: Vector3, axis: Vector3, amount: number): TransformNode;
-        /**
-         * Translates the mesh along the axis vector for the passed distance in the given space.
-         * space (default LOCAL) can be either Space.LOCAL, either Space.WORLD.
-         * @param axis the axis to translate in
-         * @param distance the distance to translate
-         * @param space Space to rotate in (Default: local)
-         * @returns the TransformNode.
-         */
-        translate(axis: Vector3, distance: number, space?: Space): TransformNode;
-        /**
-         * Adds a rotation step to the mesh current rotation.
-         * x, y, z are Euler angles expressed in radians.
-         * This methods updates the current mesh rotation, either mesh.rotation, either mesh.rotationQuaternion if it's set.
-         * This means this rotation is made in the mesh local space only.
-         * It's useful to set a custom rotation order different from the BJS standard one YXZ.
-         * Example : this rotates the mesh first around its local X axis, then around its local Z axis, finally around its local Y axis.
-         * ```javascript
-         * mesh.addRotation(x1, 0, 0).addRotation(0, 0, z2).addRotation(0, 0, y3);
-         * ```
-         * Note that `addRotation()` accumulates the passed rotation values to the current ones and computes the .rotation or .rotationQuaternion updated values.
-         * Under the hood, only quaternions are used. So it's a little faster is you use .rotationQuaternion because it doesn't need to translate them back to Euler angles.
-         * @param x Rotation to add
-         * @param y Rotation to add
-         * @param z Rotation to add
-         * @returns the TransformNode.
-         */
-        addRotation(x: number, y: number, z: number): TransformNode;
-        /**
-         * @hidden
-         */
-        protected _getEffectiveParent(): Nullable<Node>;
-        /**
-         * Computes the world matrix of the node
-         * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
-         * @returns the world matrix
-         */
-        computeWorldMatrix(force?: boolean): Matrix;
-        /**
-         * Resets this nodeTransform's local matrix to Matrix.Identity().
-         * @param independentOfChildren indicates if all child nodeTransform's world-space transform should be preserved.
-         */
-        resetLocalMatrix(independentOfChildren?: boolean): void;
-        protected _afterComputeWorldMatrix(): void;
-        /**
-        * If you'd like to be called back after the mesh position, rotation or scaling has been updated.
-        * @param func callback function to add
-        *
-        * @returns the TransformNode.
-        */
-        registerAfterWorldMatrixUpdate(func: (mesh: TransformNode) => void): TransformNode;
-        /**
-         * Removes a registered callback function.
-         * @param func callback function to remove
-         * @returns the TransformNode.
-         */
-        unregisterAfterWorldMatrixUpdate(func: (mesh: TransformNode) => void): TransformNode;
-        /**
-         * Gets the position of the current mesh in camera space
-         * @param camera defines the camera to use
-         * @returns a position
-         */
-        getPositionInCameraSpace(camera?: Nullable<Camera>): Vector3;
-        /**
-         * Returns the distance from the mesh to the active camera
-         * @param camera defines the camera to use
-         * @returns the distance
-         */
-        getDistanceToCamera(camera?: Nullable<Camera>): number;
-        /**
-         * Clone the current transform node
-         * @param name Name of the new clone
-         * @param newParent New parent for the clone
-         * @param doNotCloneChildren Do not clone children hierarchy
-         * @returns the new transform node
-         */
-        clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<TransformNode>;
-        /**
-         * Serializes the objects information.
-         * @param currentSerializationObject defines the object to serialize in
-         * @returns the serialized object
-         */
-        serialize(currentSerializationObject?: any): any;
-        /**
-         * Returns a new TransformNode object parsed from the source provided.
-         * @param parsedTransformNode is the source.
-         * @param scene the scne the object belongs to
-         * @param rootUrl is a string, it's the root URL to prefix the `delayLoadingFile` property with
-         * @returns a new TransformNode object parsed from the source provided.
-         */
-        static Parse(parsedTransformNode: any, scene: Scene, rootUrl: string): TransformNode;
-        /**
-         * Get all child-transformNodes of this node
-         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
-         * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
-         * @returns an array of TransformNode
-         */
-        getChildTransformNodes(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): TransformNode[];
-        /**
-         * Releases resources associated with this transform node.
-         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
-         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
-         */
-        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
-        /**
-         * Uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units)
-         * @param includeDescendants Use the hierarchy's bounding box instead of the mesh's bounding box. Default is false
-         * @param ignoreRotation ignore rotation when computing the scale (ie. object will be axis aligned). Default is false
-         * @param predicate predicate that is passed in to getHierarchyBoundingVectors when selecting which object should be included when scaling
-         * @returns the current mesh
-         */
-        normalizeToUnitCube(includeDescendants?: boolean, ignoreRotation?: boolean, predicate?: Nullable<(node: AbstractMesh) => boolean>): TransformNode;
-        private _syncAbsoluteScalingAndRotation;
-    }
-}
-declare module BABYLON {
-    /**
-    * Defines the types of pose enabled controllers that are supported
-    */
-    export enum PoseEnabledControllerType {
-        /**
-         * HTC Vive
-         */
-        VIVE = 0,
-        /**
-         * Oculus Rift
-         */
-        OCULUS = 1,
-        /**
-         * Windows mixed reality
-         */
-        WINDOWS = 2,
-        /**
-         * Samsung gear VR
-         */
-        GEAR_VR = 3,
-        /**
-         * Google Daydream
-         */
-        DAYDREAM = 4,
-        /**
-         * Generic
-         */
-        GENERIC = 5
-    }
-    /**
-     * Defines the MutableGamepadButton interface for the state of a gamepad button
-     */
-    export interface MutableGamepadButton {
-        /**
-         * Value of the button/trigger
-         */
-        value: number;
-        /**
-         * If the button/trigger is currently touched
-         */
-        touched: boolean;
-        /**
-         * If the button/trigger is currently pressed
-         */
-        pressed: boolean;
-    }
-    /**
-     * Defines the ExtendedGamepadButton interface for a gamepad button which includes state provided by a pose controller
-     * @hidden
-     */
-    export interface ExtendedGamepadButton extends GamepadButton {
-        /**
-         * If the button/trigger is currently pressed
-         */
-        readonly pressed: boolean;
-        /**
-         * If the button/trigger is currently touched
-         */
-        readonly touched: boolean;
-        /**
-         * Value of the button/trigger
-         */
-        readonly value: number;
-    }
-    /** @hidden */
-    export interface _GamePadFactory {
-        /**
-         * Returns whether or not the current gamepad can be created for this type of controller.
-         * @param gamepadInfo Defines the gamepad info as received from the controller APIs.
-         * @returns true if it can be created, otherwise false
-         */
-        canCreate(gamepadInfo: any): boolean;
-        /**
-         * Creates a new instance of the Gamepad.
-         * @param gamepadInfo Defines the gamepad info as received from the controller APIs.
-         * @returns the new gamepad instance
-         */
-        create(gamepadInfo: any): Gamepad;
-    }
-    /**
-     * Defines the PoseEnabledControllerHelper object that is used initialize a gamepad as the controller type it is specified as (eg. windows mixed reality controller)
-     */
-    export class PoseEnabledControllerHelper {
-        /** @hidden */
-        static _ControllerFactories: _GamePadFactory[];
-        /** @hidden */
-        static _DefaultControllerFactory: Nullable<(gamepadInfo: any) => Gamepad>;
-        /**
-         * Initializes a gamepad as the controller type it is specified as (eg. windows mixed reality controller)
-         * @param vrGamepad the gamepad to initialized
-         * @returns a vr controller of the type the gamepad identified as
-         */
-        static InitiateController(vrGamepad: any): Gamepad;
-    }
-    /**
-     * Defines the PoseEnabledController object that contains state of a vr capable controller
-     */
-    export class PoseEnabledController extends Gamepad implements PoseControlled {
-        /**
-         * If the controller is used in a webXR session
-         */
-        isXR: boolean;
-        private _deviceRoomPosition;
-        private _deviceRoomRotationQuaternion;
-        /**
-         * The device position in babylon space
-         */
-        devicePosition: Vector3;
-        /**
-         * The device rotation in babylon space
-         */
-        deviceRotationQuaternion: Quaternion;
-        /**
-         * The scale factor of the device in babylon space
-         */
-        deviceScaleFactor: number;
-        /**
-         * (Likely devicePosition should be used instead) The device position in its room space
-         */
-        position: Vector3;
-        /**
-         * (Likely deviceRotationQuaternion should be used instead) The device rotation in its room space
-         */
-        rotationQuaternion: Quaternion;
-        /**
-         * The type of controller (Eg. Windows mixed reality)
-         */
-        controllerType: PoseEnabledControllerType;
-        protected _calculatedPosition: Vector3;
-        private _calculatedRotation;
-        /**
-         * The raw pose from the device
-         */
-        rawPose: DevicePose;
-        private _trackPosition;
-        private _maxRotationDistFromHeadset;
-        private _draggedRoomRotation;
-        /**
-         * @hidden
-         */
-        _disableTrackPosition(fixedPosition: Vector3): void;
-        /**
-         * Internal, the mesh attached to the controller
-         * @hidden
-         */
-        _mesh: Nullable<AbstractMesh>;
-        private _poseControlledCamera;
-        private _leftHandSystemQuaternion;
-        /**
-         * Internal, matrix used to convert room space to babylon space
-         * @hidden
-         */
-        _deviceToWorld: Matrix;
-        /**
-         * Node to be used when casting a ray from the controller
-         * @hidden
-         */
-        _pointingPoseNode: Nullable<TransformNode>;
-        /**
-         * Name of the child mesh that can be used to cast a ray from the controller
-         */
-        static readonly POINTING_POSE: string;
-        /**
-         * Creates a new PoseEnabledController from a gamepad
-         * @param browserGamepad the gamepad that the PoseEnabledController should be created from
-         */
-        constructor(browserGamepad: any);
-        private _workingMatrix;
-        /**
-         * Updates the state of the pose enbaled controller and mesh based on the current position and rotation of the controller
-         */
-        update(): void;
-        /**
-         * Updates only the pose device and mesh without doing any button event checking
-         */
-        protected _updatePoseAndMesh(): void;
-        /**
-         * Updates the state of the pose enbaled controller based on the raw pose data from the device
-         * @param poseData raw pose fromthe device
-         */
-        updateFromDevice(poseData: DevicePose): void;
-        /**
-         * @hidden
-         */
-        _meshAttachedObservable: Observable<AbstractMesh>;
-        /**
-         * Attaches a mesh to the controller
-         * @param mesh the mesh to be attached
-         */
-        attachToMesh(mesh: AbstractMesh): void;
-        /**
-         * Attaches the controllers mesh to a camera
-         * @param camera the camera the mesh should be attached to
-         */
-        attachToPoseControlledCamera(camera: TargetCamera): void;
-        /**
-         * Disposes of the controller
-         */
-        dispose(): void;
-        /**
-         * The mesh that is attached to the controller
-         */
-        get mesh(): Nullable<AbstractMesh>;
-        /**
-         * Gets the ray of the controller in the direction the controller is pointing
-         * @param length the length the resulting ray should be
-         * @returns a ray in the direction the controller is pointing
-         */
-        getForwardRay(length?: number): Ray;
-    }
-}
-declare module BABYLON {
-    /**
-     * Defines the WebVRController object that represents controllers tracked in 3D space
-     */
-    export abstract class WebVRController extends PoseEnabledController {
-        /**
-         * Internal, the default controller model for the controller
-         */
-        protected _defaultModel: Nullable<AbstractMesh>;
-        /**
-         * Fired when the trigger state has changed
-         */
-        onTriggerStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the main button state has changed
-         */
-        onMainButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the secondary button state has changed
-         */
-        onSecondaryButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when the pad state has changed
-         */
-        onPadStateChangedObservable: Observable<ExtendedGamepadButton>;
-        /**
-         * Fired when controllers stick values have changed
-         */
-        onPadValuesChangedObservable: Observable<StickValues>;
-        /**
-         * Array of button availible on the controller
-         */
-        protected _buttons: Array<MutableGamepadButton>;
-        private _onButtonStateChange;
-        /**
-         * Fired when a controller button's state has changed
-         * @param callback the callback containing the button that was modified
-         */
-        onButtonStateChange(callback: (controlledIndex: number, buttonIndex: number, state: ExtendedGamepadButton) => void): void;
-        /**
-         * X and Y axis corresponding to the controllers joystick
-         */
-        pad: StickValues;
-        /**
-         * 'left' or 'right', see https://w3c.github.io/gamepad/extensions.html#gamepadhand-enum
-         */
-        hand: string;
-        /**
-         * The default controller model for the controller
-         */
-        get defaultModel(): Nullable<AbstractMesh>;
-        /**
-         * Creates a new WebVRController from a gamepad
-         * @param vrGamepad the gamepad that the WebVRController should be created from
-         */
-        constructor(vrGamepad: any);
-        /**
-         * Updates the state of the controller and mesh based on the current position and rotation of the controller
-         */
-        update(): void;
-        /**
-         * Function to be called when a button is modified
-         */
-        protected abstract _handleButtonChange(buttonIdx: number, value: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
-        /**
-         * Loads a mesh and attaches it to the controller
-         * @param scene the scene the mesh should be added to
-         * @param meshLoaded callback for when the mesh has been loaded
-         */
-        abstract initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
-        private _setButtonValue;
-        private _changes;
-        private _checkChanges;
-        /**
-         * Disposes of th webVRCOntroller
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * The HemisphericLight simulates the ambient environment light,
-     * so the passed direction is the light reflection direction, not the incoming direction.
-     */
-    export class HemisphericLight extends Light {
-        /**
-         * The groundColor is the light in the opposite direction to the one specified during creation.
-         * You can think of the diffuse and specular light as coming from the centre of the object in the given direction and the groundColor light in the opposite direction.
-         */
-        groundColor: Color3;
-        /**
-         * The light reflection direction, not the incoming direction.
-         */
-        direction: Vector3;
-        /**
-         * Creates a HemisphericLight object in the scene according to the passed direction (Vector3).
-         * The HemisphericLight simulates the ambient environment light, so the passed direction is the light reflection direction, not the incoming direction.
-         * The HemisphericLight can't cast shadows.
-         * Documentation : https://doc.babylonjs.com/babylon101/lights
-         * @param name The friendly name of the light
-         * @param direction The direction of the light reflection
-         * @param scene The scene the light belongs to
-         */
-        constructor(name: string, direction: Vector3, scene: Scene);
-        protected _buildUniformLayout(): void;
-        /**
-         * Returns the string "HemisphericLight".
-         * @return The class name
-         */
-        getClassName(): string;
-        /**
-         * Sets the HemisphericLight direction towards the passed target (Vector3).
-         * Returns the updated direction.
-         * @param target The target the direction should point to
-         * @return The computed direction
-         */
-        setDirectionToTarget(target: Vector3): Vector3;
-        /**
-         * Returns the shadow generator associated to the light.
-         * @returns Always null for hemispheric lights because it does not support shadows.
-         */
-        getShadowGenerator(): Nullable<IShadowGenerator>;
-        /**
-         * Sets the passed Effect object with the HemisphericLight normalized direction and color and the passed name (string).
-         * @param effect The effect to update
-         * @param lightIndex The index of the light in the effect to update
-         * @returns The hemispheric light
-         */
-        transferToEffect(effect: Effect, lightIndex: string): HemisphericLight;
-        transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): this;
-        /**
-         * Computes the world matrix of the node
-         * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
-         * @param useWasUpdatedFlag defines a reserved property
-         * @returns the world matrix
-         */
-        computeWorldMatrix(): Matrix;
-        /**
-         * Returns the integer 3.
-         * @return The light Type id as a constant defines in Light.LIGHTTYPEID_x
-         */
-        getTypeID(): number;
-        /**
-         * Prepares the list of defines specific to the light type.
-         * @param defines the list of defines
-         * @param lightIndex defines the index of the light for the effect
-         */
-        prepareLightSpecificDefines(defines: any, lightIndex: number): void;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export var vrMultiviewToSingleviewPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * Renders to multiple views with a single draw call
-     * @see https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/
-     */
-    export class MultiviewRenderTarget extends RenderTargetTexture {
-        /**
-         * Creates a multiview render target
-         * @param scene scene used with the render target
-         * @param size the size of the render target (used for each view)
-         */
-        constructor(scene: Scene, size?: number | {
-            width: number;
-            height: number;
-        } | {
-            ratio: number;
-        });
-        /**
-         * @hidden
-         * @param faceIndex the face index, if its a cube texture
-         */
-        _bindFrameBuffer(faceIndex?: number): void;
-        /**
-         * Gets the number of views the corresponding to the texture (eg. a MultiviewRenderTarget will have > 1)
-         * @returns the view count
-         */
-        getViewCount(): number;
-    }
-}
-declare module BABYLON {
-    /**
-     * Represents a camera frustum
-     */
-    export class Frustum {
-        /**
-         * Gets the planes representing the frustum
-         * @param transform matrix to be applied to the returned planes
-         * @returns a new array of 6 Frustum planes computed by the given transformation matrix.
-         */
-        static GetPlanes(transform: DeepImmutable<Matrix>): Plane[];
-        /**
-         * Gets the near frustum plane transformed by the transform matrix
-         * @param transform transformation matrix to be applied to the resulting frustum plane
-         * @param frustumPlane the resuling frustum plane
-         */
-        static GetNearPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
-        /**
-         * Gets the far frustum plane transformed by the transform matrix
-         * @param transform transformation matrix to be applied to the resulting frustum plane
-         * @param frustumPlane the resuling frustum plane
-         */
-        static GetFarPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
-        /**
-         * Gets the left frustum plane transformed by the transform matrix
-         * @param transform transformation matrix to be applied to the resulting frustum plane
-         * @param frustumPlane the resuling frustum plane
-         */
-        static GetLeftPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
-        /**
-         * Gets the right frustum plane transformed by the transform matrix
-         * @param transform transformation matrix to be applied to the resulting frustum plane
-         * @param frustumPlane the resuling frustum plane
-         */
-        static GetRightPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
-        /**
-         * Gets the top frustum plane transformed by the transform matrix
-         * @param transform transformation matrix to be applied to the resulting frustum plane
-         * @param frustumPlane the resuling frustum plane
-         */
-        static GetTopPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
-        /**
-         * Gets the bottom frustum plane transformed by the transform matrix
-         * @param transform transformation matrix to be applied to the resulting frustum plane
-         * @param frustumPlane the resuling frustum plane
-         */
-        static GetBottomPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
-        /**
-         * Sets the given array "frustumPlanes" with the 6 Frustum planes computed by the given transformation matrix.
-         * @param transform transformation matrix to be applied to the resulting frustum planes
-         * @param frustumPlanes the resuling frustum planes
-         */
-        static GetPlanesToRef(transform: DeepImmutable<Matrix>, frustumPlanes: Plane[]): void;
-    }
-}
-declare module BABYLON {
-        interface Engine {
-            /**
-             * Creates a new multiview render target
-             * @param width defines the width of the texture
-             * @param height defines the height of the texture
-             * @returns the created multiview texture
-             */
-            createMultiviewRenderTargetTexture(width: number, height: number): InternalTexture;
-            /**
-             * Binds a multiview framebuffer to be drawn to
-             * @param multiviewTexture texture to bind
-             */
-            bindMultiviewFramebuffer(multiviewTexture: InternalTexture): void;
-        }
-        interface Camera {
-            /**
-             * @hidden
-             * For cameras that cannot use multiview images to display directly. (e.g. webVR camera will render to multiview texture, then copy to each eye texture and go from there)
-             */
-            _useMultiviewToSingleView: boolean;
-            /**
-             * @hidden
-             * For cameras that cannot use multiview images to display directly. (e.g. webVR camera will render to multiview texture, then copy to each eye texture and go from there)
-             */
-            _multiviewTexture: Nullable<RenderTargetTexture>;
-            /**
-             * @hidden
-             * ensures the multiview texture of the camera exists and has the specified width/height
-             * @param width height to set on the multiview texture
-             * @param height width to set on the multiview texture
-             */
-            _resizeOrCreateMultiviewTexture(width: number, height: number): void;
-        }
-        interface Scene {
-            /** @hidden */
-            _transformMatrixR: Matrix;
-            /** @hidden */
-            _multiviewSceneUbo: Nullable<UniformBuffer>;
-            /** @hidden */
-            _createMultiviewUbo(): void;
-            /** @hidden */
-            _updateMultiviewUbo(viewR?: Matrix, projectionR?: Matrix): void;
-            /** @hidden */
-            _renderMultiviewToSingleView(camera: Camera): void;
-        }
-}
-declare module BABYLON {
-    /**
-     * VRMultiviewToSingleview used to convert multiview texture arrays to standard textures for scenarios such as webVR
-     * This will not be used for webXR as it supports displaying texture arrays directly
-     */
-    export class VRMultiviewToSingleviewPostProcess extends PostProcess {
-        /**
-         * Initializes a VRMultiviewToSingleview
-         * @param name name of the post process
-         * @param camera camera to be applied to
-         * @param scaleFactor scaling factor to the size of the output texture
-         */
-        constructor(name: string, camera: Camera, scaleFactor: number);
-    }
-}
-declare module BABYLON {
-    /**
-     * Interface used to define additional presentation attributes
-     */
-    export interface IVRPresentationAttributes {
-        /**
-         * Defines a boolean indicating that we want to get 72hz mode on Oculus Browser (default is off eg. 60hz)
-         */
-        highRefreshRate: boolean;
-        /**
-         * Enables foveation in VR to improve perf. 0 none, 1 low, 2 medium, 3 high (Default is 1)
-         */
-        foveationLevel: number;
-    }
-        interface Engine {
-            /** @hidden */
-            _vrDisplay: any;
-            /** @hidden */
-            _vrSupported: boolean;
-            /** @hidden */
-            _oldSize: Size;
-            /** @hidden */
-            _oldHardwareScaleFactor: number;
-            /** @hidden */
-            _vrExclusivePointerMode: boolean;
-            /** @hidden */
-            _webVRInitPromise: Promise<IDisplayChangedEventArgs>;
-            /** @hidden */
-            _onVRDisplayPointerRestricted: () => void;
-            /** @hidden */
-            _onVRDisplayPointerUnrestricted: () => void;
-            /** @hidden */
-            _onVrDisplayConnect: Nullable<(display: any) => void>;
-            /** @hidden */
-            _onVrDisplayDisconnect: Nullable<() => void>;
-            /** @hidden */
-            _onVrDisplayPresentChange: Nullable<() => void>;
-            /**
-             * Observable signaled when VR display mode changes
-             */
-            onVRDisplayChangedObservable: Observable<IDisplayChangedEventArgs>;
-            /**
-             * Observable signaled when VR request present is complete
-             */
-            onVRRequestPresentComplete: Observable<boolean>;
-            /**
-             * Observable signaled when VR request present starts
-             */
-            onVRRequestPresentStart: Observable<Engine>;
-            /**
-             * Gets a boolean indicating that the engine is currently in VR exclusive mode for the pointers
-             * @see https://docs.microsoft.com/en-us/microsoft-edge/webvr/essentials#mouse-input
-             */
-            isInVRExclusivePointerMode: boolean;
-            /**
-             * Gets a boolean indicating if a webVR device was detected
-             * @returns true if a webVR device was detected
-             */
-            isVRDevicePresent(): boolean;
-            /**
-             * Gets the current webVR device
-             * @returns the current webVR device (or null)
-             */
-            getVRDevice(): any;
-            /**
-             * Initializes a webVR display and starts listening to display change events
-             * The onVRDisplayChangedObservable will be notified upon these changes
-             * @returns A promise containing a VRDisplay and if vr is supported
-             */
-            initWebVRAsync(): Promise<IDisplayChangedEventArgs>;
-            /** @hidden */
-            _getVRDisplaysAsync(): Promise<IDisplayChangedEventArgs>;
-            /**
-             * Gets or sets the presentation attributes used to configure VR rendering
-             */
-            vrPresentationAttributes?: IVRPresentationAttributes;
-            /**
-             * Call this function to switch to webVR mode
-             * Will do nothing if webVR is not supported or if there is no webVR device
-             * @param options the webvr options provided to the camera. mainly used for multiview
-             * @see http://doc.babylonjs.com/how_to/webvr_camera
-             */
-            enableVR(options: WebVROptions): void;
-            /** @hidden */
-            _onVRFullScreenTriggered(): void;
-        }
-}
-declare module BABYLON {
-    /**
-     * This is a copy of VRPose. See https://developer.mozilla.org/en-US/docs/Web/API/VRPose
-     * IMPORTANT!! The data is right-hand data.
-     * @export
-     * @interface DevicePose
-     */
-    export interface DevicePose {
-        /**
-         * The position of the device, values in array are [x,y,z].
-         */
-        readonly position: Nullable<Float32Array>;
-        /**
-         * The linearVelocity of the device, values in array are [x,y,z].
-         */
-        readonly linearVelocity: Nullable<Float32Array>;
-        /**
-         * The linearAcceleration of the device, values in array are [x,y,z].
-         */
-        readonly linearAcceleration: Nullable<Float32Array>;
-        /**
-         * The orientation of the device in a quaternion array, values in array are [x,y,z,w].
-         */
-        readonly orientation: Nullable<Float32Array>;
-        /**
-         * The angularVelocity of the device, values in array are [x,y,z].
-         */
-        readonly angularVelocity: Nullable<Float32Array>;
-        /**
-         * The angularAcceleration of the device, values in array are [x,y,z].
-         */
-        readonly angularAcceleration: Nullable<Float32Array>;
-    }
-    /**
-    * Interface representing a pose controlled object in Babylon.
-    * A pose controlled object has both regular pose values as well as pose values
-    * from an external device such as a VR head mounted display
-    */
-    export interface PoseControlled {
-        /**
-         * The position of the object in babylon space.
-         */
-        position: Vector3;
-        /**
-         * The rotation quaternion of the object in babylon space.
-         */
-        rotationQuaternion: Quaternion;
-        /**
-         * The position of the device in babylon space.
-         */
-        devicePosition?: Vector3;
-        /**
-         * The rotation quaternion of the device in babylon space.
-         */
-        deviceRotationQuaternion: Quaternion;
-        /**
-         * The raw pose coming from the device.
-         */
-        rawPose: Nullable<DevicePose>;
-        /**
-         * The scale of the device to be used when translating from device space to babylon space.
-         */
-        deviceScaleFactor: number;
-        /**
-         * Updates the poseControlled values based on the input device pose.
-         * @param poseData the pose data to update the object with
-         */
-        updateFromDevice(poseData: DevicePose): void;
-    }
-    /**
-     * Set of options to customize the webVRCamera
-     */
-    export interface WebVROptions {
-        /**
-         * Sets if the webVR camera should be tracked to the vrDevice. (default: true)
-         */
-        trackPosition?: boolean;
-        /**
-         * Sets the scale of the vrDevice in babylon space. (default: 1)
-         */
-        positionScale?: number;
-        /**
-         * If there are more than one VRDisplays, this will choose the display matching this name. (default: pick first vrDisplay)
-         */
-        displayName?: string;
-        /**
-         * Should the native controller meshes be initialized. (default: true)
-         */
-        controllerMeshes?: boolean;
-        /**
-         * Creating a default HemiLight only on controllers. (default: true)
-         */
-        defaultLightingOnControllers?: boolean;
-        /**
-         * If you don't want to use the default VR button of the helper. (default: false)
-         */
-        useCustomVRButton?: boolean;
-        /**
-         * If you'd like to provide your own button to the VRHelper. (default: standard babylon vr button)
-         */
-        customVRButton?: HTMLButtonElement;
-        /**
-         * To change the length of the ray for gaze/controllers. Will be scaled by positionScale. (default: 100)
-         */
-        rayLength?: number;
-        /**
-         * To change the default offset from the ground to account for user's height in meters. Will be scaled by positionScale. (default: 1.7)
-         */
-        defaultHeight?: number;
-        /**
-         * If multiview should be used if availible (default: false)
-         */
-        useMultiview?: boolean;
-    }
-    /**
-     * This represents a WebVR camera.
-     * The WebVR camera is Babylon's simple interface to interaction with Windows Mixed Reality, HTC Vive and Oculus Rift.
-     * @example http://doc.babylonjs.com/how_to/webvr_camera
-     */
-    export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
-        private webVROptions;
-        /**
-         * @hidden
-         * The vrDisplay tied to the camera. See https://developer.mozilla.org/en-US/docs/Web/API/VRDisplay
-         */
-        _vrDevice: any;
-        /**
-         * The rawPose of the vrDevice.
-         */
-        rawPose: Nullable<DevicePose>;
-        private _onVREnabled;
-        private _specsVersion;
-        private _attached;
-        private _frameData;
-        protected _descendants: Array<Node>;
-        private _deviceRoomPosition;
-        /** @hidden */
-        _deviceRoomRotationQuaternion: Quaternion;
-        private _standingMatrix;
-        /**
-         * Represents device position in babylon space.
-         */
-        devicePosition: Vector3;
-        /**
-         * Represents device rotation in babylon space.
-         */
-        deviceRotationQuaternion: Quaternion;
-        /**
-         * The scale of the device to be used when translating from device space to babylon space.
-         */
-        deviceScaleFactor: number;
-        private _deviceToWorld;
-        private _worldToDevice;
-        /**
-         * References to the webVR controllers for the vrDevice.
-         */
-        controllers: Array<WebVRController>;
-        /**
-         * Emits an event when a controller is attached.
-         */
-        onControllersAttachedObservable: Observable<WebVRController[]>;
-        /**
-         * Emits an event when a controller's mesh has been loaded;
-         */
-        onControllerMeshLoadedObservable: Observable<WebVRController>;
-        /**
-         * Emits an event when the HMD's pose has been updated.
-         */
-        onPoseUpdatedFromDeviceObservable: Observable<any>;
-        private _poseSet;
-        /**
-         * If the rig cameras be used as parent instead of this camera.
-         */
-        rigParenting: boolean;
-        private _lightOnControllers;
-        private _defaultHeight?;
-        /**
-         * Instantiates a WebVRFreeCamera.
-         * @param name The name of the WebVRFreeCamera
-         * @param position The starting anchor position for the camera
-         * @param scene The scene the camera belongs to
-         * @param webVROptions a set of customizable options for the webVRCamera
-         */
-        constructor(name: string, position: Vector3, scene: Scene, webVROptions?: WebVROptions);
-        /**
-         * Gets the device distance from the ground in meters.
-         * @returns the distance in meters from the vrDevice to ground in device space. If standing matrix is not supported for the vrDevice 0 is returned.
-         */
-        deviceDistanceToRoomGround(): number;
-        /**
-         * Enables the standing matrix when supported. This can be used to position the user's view the correct height from the ground.
-         * @param callback will be called when the standing matrix is set. Callback parameter is if the standing matrix is supported.
-         */
-        useStandingMatrix(callback?: (bool: boolean) => void): void;
-        /**
-         * Enables the standing matrix when supported. This can be used to position the user's view the correct height from the ground.
-         * @returns A promise with a boolean set to if the standing matrix is supported.
-         */
-        useStandingMatrixAsync(): Promise<boolean>;
-        /**
-         * Disposes the camera
-         */
-        dispose(): void;
-        /**
-         * Gets a vrController by name.
-         * @param name The name of the controller to retreive
-         * @returns the controller matching the name specified or null if not found
-         */
-        getControllerByName(name: string): Nullable<WebVRController>;
-        private _leftController;
-        /**
-         * The controller corresponding to the users left hand.
-         */
-        get leftController(): Nullable<WebVRController>;
-        private _rightController;
-        /**
-         * The controller corresponding to the users right hand.
-         */
-        get rightController(): Nullable<WebVRController>;
-        /**
-         * Casts a ray forward from the vrCamera's gaze.
-         * @param length Length of the ray (default: 100)
-         * @returns the ray corresponding to the gaze
-         */
-        getForwardRay(length?: number): Ray;
-        /**
-         * @hidden
-         * Updates the camera based on device's frame data
-         */
-        _checkInputs(): void;
-        /**
-         * Updates the poseControlled values based on the input device pose.
-         * @param poseData Pose coming from the device
-         */
-        updateFromDevice(poseData: DevicePose): void;
-        private _htmlElementAttached;
-        private _detachIfAttached;
-        /**
-         * WebVR's attach control will start broadcasting frames to the device.
-         * Note that in certain browsers (chrome for example) this function must be called
-         * within a user-interaction callback. Example:
-         * <pre> scene.onPointerDown = function() { camera.attachControl(canvas); }</pre>
-         *
-         * @param element html element to attach the vrDevice to
-         * @param noPreventDefault prevent the default html element operation when attaching the vrDevice
-         */
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        /**
-         * Detaches the camera from the html element and disables VR
-         *
-         * @param element html element to detach from
-         */
-        detachControl(element: HTMLElement): void;
-        /**
-         * @returns the name of this class
-         */
-        getClassName(): string;
-        /**
-         * Calls resetPose on the vrDisplay
-         * See: https://developer.mozilla.org/en-US/docs/Web/API/VRDisplay/resetPose
-         */
-        resetToCurrentRotation(): void;
-        /**
-         * @hidden
-         * Updates the rig cameras (left and right eye)
-         */
-        _updateRigCameras(): void;
-        private _workingVector;
-        private _oneVector;
-        private _workingMatrix;
-        private updateCacheCalled;
-        private _correctPositionIfNotTrackPosition;
-        /**
-         * @hidden
-         * Updates the cached values of the camera
-         * @param ignoreParentClass ignores updating the parent class's cache (default: false)
-         */
-        _updateCache(ignoreParentClass?: boolean): void;
-        /**
-         * @hidden
-         * Get current device position in babylon world
-         */
-        _computeDevicePosition(): void;
-        /**
-         * Updates the current device position and rotation in the babylon world
-         */
-        update(): void;
-        /**
-         * @hidden
-         * Gets the view matrix of this camera (Always set to identity as left and right eye cameras contain the actual view matrix)
-         * @returns an identity matrix
-         */
-        _getViewMatrix(): Matrix;
-        private _tmpMatrix;
-        /**
-         * This function is called by the two RIG cameras.
-         * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
-         * @hidden
-         */
-        _getWebVRViewMatrix(): Matrix;
-        /** @hidden */
-        _getWebVRProjectionMatrix(): Matrix;
-        private _onGamepadConnectedObserver;
-        private _onGamepadDisconnectedObserver;
-        private _updateCacheWhenTrackingDisabledObserver;
-        /**
-         * Initializes the controllers and their meshes
-         */
-        initControllers(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Size options for a post process
-     */
-    export type PostProcessOptions = {
-        width: number;
-        height: number;
-    };
-    /**
-     * PostProcess can be used to apply a shader to a texture after it has been rendered
-     * See https://doc.babylonjs.com/how_to/how_to_use_postprocesses
-     */
-    export class PostProcess {
-        /** Name of the PostProcess. */
-        name: string;
-        /**
-         * Gets or sets the unique id of the post process
-         */
-        uniqueId: number;
-        /**
-        * Width of the texture to apply the post process on
-        */
-        width: number;
-        /**
-        * Height of the texture to apply the post process on
-        */
-        height: number;
-        /**
-        * Internal, reference to the location where this postprocess was output to. (Typically the texture on the next postprocess in the chain)
-        * @hidden
-        */
-        _outputTexture: Nullable<InternalTexture>;
-        /**
-        * Sampling mode used by the shader
-        * See https://doc.babylonjs.com/classes/3.1/texture
-        */
-        renderTargetSamplingMode: number;
-        /**
-        * Clear color to use when screen clearing
-        */
-        clearColor: Color4;
-        /**
-        * If the buffer needs to be cleared before applying the post process. (default: true)
-        * Should be set to false if shader will overwrite all previous pixels.
-        */
-        autoClear: boolean;
-        /**
-        * Type of alpha mode to use when performing the post process (default: Engine.ALPHA_DISABLE)
-        */
-        alphaMode: number;
-        /**
-        * Sets the setAlphaBlendConstants of the babylon engine
-        */
-        alphaConstants: Color4;
-        /**
-        * Animations to be used for the post processing
-        */
-        animations: Animation[];
-        /**
-         * Enable Pixel Perfect mode where texture is not scaled to be power of 2.
-         * Can only be used on a single postprocess or on the last one of a chain. (default: false)
-         */
-        enablePixelPerfectMode: boolean;
-        /**
-         * Force the postprocess to be applied without taking in account viewport
-         */
-        forceFullscreenViewport: boolean;
-        /**
-         * List of inspectable custom properties (used by the Inspector)
-         * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
-         */
-        inspectableCustomProperties: IInspectable[];
-        /**
-         * Scale mode for the post process (default: Engine.SCALEMODE_FLOOR)
-         *
-         * | Value | Type                                | Description |
-         * | ----- | ----------------------------------- | ----------- |
-         * | 1     | SCALEMODE_FLOOR                     | [engine.scalemode_floor](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_floor) |
-         * | 2     | SCALEMODE_NEAREST                   | [engine.scalemode_nearest](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_nearest) |
-         * | 3     | SCALEMODE_CEILING                   | [engine.scalemode_ceiling](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
-         *
-         */
-        scaleMode: number;
-        /**
-        * Force textures to be a power of two (default: false)
-        */
-        alwaysForcePOT: boolean;
-        private _samples;
-        /**
-        * Number of sample textures (default: 1)
-        */
-        get samples(): number;
-        set samples(n: number);
-        /**
-        * Modify the scale of the post process to be the same as the viewport (default: false)
-        */
-        adaptScaleToCurrentViewport: boolean;
-        private _camera;
-        private _scene;
-        private _engine;
-        private _options;
-        private _reusable;
-        private _textureType;
-        private _textureFormat;
-        /**
-        * Smart array of input and output textures for the post process.
-        * @hidden
-        */
-        _textures: SmartArray<InternalTexture>;
-        /**
-        * The index in _textures that corresponds to the output texture.
-        * @hidden
-        */
-        _currentRenderTextureInd: number;
-        private _effect;
-        private _samplers;
-        private _fragmentUrl;
-        private _vertexUrl;
-        private _parameters;
-        private _scaleRatio;
-        protected _indexParameters: any;
-        private _shareOutputWithPostProcess;
-        private _texelSize;
-        private _forcedOutputTexture;
-        /**
-         * Returns the fragment url or shader name used in the post process.
-         * @returns the fragment url or name in the shader store.
-         */
-        getEffectName(): string;
-        /**
-        * An event triggered when the postprocess is activated.
-        */
-        onActivateObservable: Observable<Camera>;
-        private _onActivateObserver;
-        /**
-        * A function that is added to the onActivateObservable
-        */
-        set onActivate(callback: Nullable<(camera: Camera) => void>);
-        /**
-        * An event triggered when the postprocess changes its size.
-        */
-        onSizeChangedObservable: Observable<PostProcess>;
-        private _onSizeChangedObserver;
-        /**
-        * A function that is added to the onSizeChangedObservable
-        */
-        set onSizeChanged(callback: (postProcess: PostProcess) => void);
-        /**
-        * An event triggered when the postprocess applies its effect.
-        */
-        onApplyObservable: Observable<Effect>;
-        private _onApplyObserver;
-        /**
-        * A function that is added to the onApplyObservable
-        */
-        set onApply(callback: (effect: Effect) => void);
-        /**
-        * An event triggered before rendering the postprocess
-        */
-        onBeforeRenderObservable: Observable<Effect>;
-        private _onBeforeRenderObserver;
-        /**
-        * A function that is added to the onBeforeRenderObservable
-        */
-        set onBeforeRender(callback: (effect: Effect) => void);
-        /**
-        * An event triggered after rendering the postprocess
-        */
-        onAfterRenderObservable: Observable<Effect>;
-        private _onAfterRenderObserver;
-        /**
-        * A function that is added to the onAfterRenderObservable
-        */
-        set onAfterRender(callback: (efect: Effect) => void);
-        /**
-        * The input texture for this post process and the output texture of the previous post process. When added to a pipeline the previous post process will
-        * render it's output into this texture and this texture will be used as textureSampler in the fragment shader of this post process.
-        */
-        get inputTexture(): InternalTexture;
-        set inputTexture(value: InternalTexture);
-        /**
-        * Gets the camera which post process is applied to.
-        * @returns The camera the post process is applied to.
-        */
-        getCamera(): Camera;
-        /**
-        * Gets the texel size of the postprocess.
-        * See https://en.wikipedia.org/wiki/Texel_(graphics)
-        */
-        get texelSize(): Vector2;
-        /**
-         * Creates a new instance PostProcess
-         * @param name The name of the PostProcess.
-         * @param fragmentUrl The url of the fragment shader to be used.
-         * @param parameters Array of the names of uniform non-sampler2D variables that will be passed to the shader.
-         * @param samplers Array of the names of uniform sampler2D variables that will be passed to the shader.
-         * @param options The required width/height ratio to downsize to before computing the render pass. (Use 1.0 for full size)
-         * @param camera The camera to apply the render pass to.
-         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
-         * @param engine The engine which the post process will be applied. (default: current engine)
-         * @param reusable If the post process can be reused on the same frame. (default: false)
-         * @param defines String of defines that will be set when running the fragment shader. (default: null)
-         * @param textureType Type of textures used when performing the post process. (default: 0)
-         * @param vertexUrl The url of the vertex shader to be used. (default: "postprocess")
-         * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
-         * @param blockCompilation If the shader should not be compiled imediatly. (default: false)
-         * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
-         */
-        constructor(
-        /** Name of the PostProcess. */
-        name: string, fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, defines?: Nullable<string>, textureType?: number, vertexUrl?: string, indexParameters?: any, blockCompilation?: boolean, textureFormat?: number);
-        /**
-         * Gets a string idenfifying the name of the class
-         * @returns "PostProcess" string
-         */
-        getClassName(): string;
-        /**
-         * Gets the engine which this post process belongs to.
-         * @returns The engine the post process was enabled with.
-         */
-        getEngine(): Engine;
-        /**
-         * The effect that is created when initializing the post process.
-         * @returns The created effect corresponding the the postprocess.
-         */
-        getEffect(): Effect;
-        /**
-         * To avoid multiple redundant textures for multiple post process, the output the output texture for this post process can be shared with another.
-         * @param postProcess The post process to share the output with.
-         * @returns This post process.
-         */
-        shareOutputWith(postProcess: PostProcess): PostProcess;
-        /**
-         * Reverses the effect of calling shareOutputWith and returns the post process back to its original state.
-         * This should be called if the post process that shares output with this post process is disabled/disposed.
-         */
-        useOwnOutput(): void;
-        /**
-         * Updates the effect with the current post process compile time values and recompiles the shader.
-         * @param defines Define statements that should be added at the beginning of the shader. (default: null)
-         * @param uniforms Set of uniform variables that will be passed to the shader. (default: null)
-         * @param samplers Set of Texture2D variables that will be passed to the shader. (default: null)
-         * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
-         * @param onCompiled Called when the shader has been compiled.
-         * @param onError Called if there is an error when compiling a shader.
-         */
-        updateEffect(defines?: Nullable<string>, uniforms?: Nullable<string[]>, samplers?: Nullable<string[]>, indexParameters?: any, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): void;
-        /**
-         * The post process is reusable if it can be used multiple times within one frame.
-         * @returns If the post process is reusable
-         */
-        isReusable(): boolean;
-        /** invalidate frameBuffer to hint the postprocess to create a depth buffer */
-        markTextureDirty(): void;
-        /**
-         * Activates the post process by intializing the textures to be used when executed. Notifies onActivateObservable.
-         * When this post process is used in a pipeline, this is call will bind the input texture of this post process to the output of the previous.
-         * @param camera The camera that will be used in the post process. This camera will be used when calling onActivateObservable.
-         * @param sourceTexture The source texture to be inspected to get the width and height if not specified in the post process constructor. (default: null)
-         * @param forceDepthStencil If true, a depth and stencil buffer will be generated. (default: false)
-         * @returns The target texture that was bound to be written to.
-         */
-        activate(camera: Nullable<Camera>, sourceTexture?: Nullable<InternalTexture>, forceDepthStencil?: boolean): InternalTexture;
-        /**
-         * If the post process is supported.
-         */
-        get isSupported(): boolean;
-        /**
-         * The aspect ratio of the output texture.
-         */
-        get aspectRatio(): number;
-        /**
-         * Get a value indicating if the post-process is ready to be used
-         * @returns true if the post-process is ready (shader is compiled)
-         */
-        isReady(): boolean;
-        /**
-         * Binds all textures and uniforms to the shader, this will be run on every pass.
-         * @returns the effect corresponding to this post process. Null if not compiled or not ready.
-         */
-        apply(): Nullable<Effect>;
-        private _disposeTextures;
-        /**
-         * Disposes the post process.
-         * @param camera The camera to dispose the post process on.
-         */
-        dispose(camera?: Camera): void;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export var kernelBlurVaryingDeclaration: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var kernelBlurFragment: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var kernelBlurFragment2: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var kernelBlurPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var kernelBlurVertex: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var kernelBlurVertexShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * The Blur Post Process which blurs an image based on a kernel and direction.
-     * Can be used twice in x and y directions to perform a guassian blur in two passes.
-     */
-    export class BlurPostProcess extends PostProcess {
-        /** The direction in which to blur the image. */
-        direction: Vector2;
-        private blockCompilation;
-        protected _kernel: number;
-        protected _idealKernel: number;
-        protected _packedFloat: boolean;
-        private _staticDefines;
-        /**
-         * Sets the length in pixels of the blur sample region
-         */
-        set kernel(v: number);
-        /**
-         * Gets the length in pixels of the blur sample region
-         */
-        get kernel(): number;
-        /**
-         * Sets wether or not the blur needs to unpack/repack floats
-         */
-        set packedFloat(v: boolean);
-        /**
-         * Gets wether or not the blur is unpacking/repacking floats
-         */
-        get packedFloat(): boolean;
-        /**
-         * Creates a new instance BlurPostProcess
-         * @param name The name of the effect.
-         * @param direction The direction in which to blur the image.
-         * @param kernel The size of the kernel to be used when computing the blur. eg. Size of 3 will blur the center pixel by 2 pixels surrounding it.
-         * @param options The required width/height ratio to downsize to before computing the render pass. (Use 1.0 for full size)
-         * @param camera The camera to apply the render pass to.
-         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
-         * @param engine The engine which the post process will be applied. (default: current engine)
-         * @param reusable If the post process can be reused on the same frame. (default: false)
-         * @param textureType Type of textures used when performing the post process. (default: 0)
-         * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
-         */
-        constructor(name: string, 
-        /** The direction in which to blur the image. */
-        direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, defines?: string, blockCompilation?: boolean);
-        /**
-         * Updates the effect with the current post process compile time values and recompiles the shader.
-         * @param defines Define statements that should be added at the beginning of the shader. (default: null)
-         * @param uniforms Set of uniform variables that will be passed to the shader. (default: null)
-         * @param samplers Set of Texture2D variables that will be passed to the shader. (default: null)
-         * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
-         * @param onCompiled Called when the shader has been compiled.
-         * @param onError Called if there is an error when compiling a shader.
-         */
-        updateEffect(defines?: Nullable<string>, uniforms?: Nullable<string[]>, samplers?: Nullable<string[]>, indexParameters?: any, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): void;
-        protected _updateParameters(onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): void;
-        /**
-         * Best kernels are odd numbers that when divided by 2, their integer part is even, so 5, 9 or 13.
-         * Other odd kernels optimize correctly but require proportionally more samples, even kernels are
-         * possible but will produce minor visual artifacts. Since each new kernel requires a new shader we
-         * want to minimize kernel changes, having gaps between physical kernels is helpful in that regard.
-         * The gaps between physical kernels are compensated for in the weighting of the samples
-         * @param idealKernel Ideal blur kernel.
-         * @return Nearest best kernel.
-         */
-        protected _nearestBestKernel(idealKernel: number): number;
-        /**
-         * Calculates the value of a Gaussian distribution with sigma 3 at a given point.
-         * @param x The point on the Gaussian distribution to sample.
-         * @return the value of the Gaussian function at x.
-         */
-        protected _gaussianWeight(x: number): number;
-        /**
-          * Generates a string that can be used as a floating point number in GLSL.
-          * @param x Value to print.
-          * @param decimalFigures Number of decimal places to print the number to (excluding trailing 0s).
-          * @return GLSL float string.
-          */
-        protected _glslFloat(x: number, decimalFigures?: number): string;
-    }
-}
-declare module BABYLON {
-    /**
-     * Mirror texture can be used to simulate the view from a mirror in a scene.
-     * It will dynamically be rendered every frame to adapt to the camera point of view.
-     * You can then easily use it as a reflectionTexture on a flat surface.
-     * In case the surface is not a plane, please consider relying on reflection probes.
-     * @see https://doc.babylonjs.com/how_to/reflect#mirrors
-     */
-    export class MirrorTexture extends RenderTargetTexture {
-        private scene;
-        /**
-         * Define the reflection plane we want to use. The mirrorPlane is usually set to the constructed reflector.
-         * It is possible to directly set the mirrorPlane by directly using a Plane(a, b, c, d) where a, b and c give the plane normal vector (a, b, c) and d is a scalar displacement from the mirrorPlane to the origin. However in all but the very simplest of situations it is more straight forward to set it to the reflector as stated in the doc.
-         * @see https://doc.babylonjs.com/how_to/reflect#mirrors
-         */
-        mirrorPlane: Plane;
-        /**
-         * Define the blur ratio used to blur the reflection if needed.
-         */
-        set blurRatio(value: number);
-        get blurRatio(): number;
-        /**
-         * Define the adaptive blur kernel used to blur the reflection if needed.
-         * This will autocompute the closest best match for the `blurKernel`
-         */
-        set adaptiveBlurKernel(value: number);
-        /**
-         * Define the blur kernel used to blur the reflection if needed.
-         * Please consider using `adaptiveBlurKernel` as it could find the closest best value for you.
-         */
-        set blurKernel(value: number);
-        /**
-         * Define the blur kernel on the X Axis used to blur the reflection if needed.
-         * Please consider using `adaptiveBlurKernel` as it could find the closest best value for you.
-         */
-        set blurKernelX(value: number);
-        get blurKernelX(): number;
-        /**
-         * Define the blur kernel on the Y Axis used to blur the reflection if needed.
-         * Please consider using `adaptiveBlurKernel` as it could find the closest best value for you.
-         */
-        set blurKernelY(value: number);
-        get blurKernelY(): number;
-        private _autoComputeBlurKernel;
-        protected _onRatioRescale(): void;
-        private _updateGammaSpace;
-        private _imageProcessingConfigChangeObserver;
-        private _transformMatrix;
-        private _mirrorMatrix;
-        private _savedViewMatrix;
-        private _blurX;
-        private _blurY;
-        private _adaptiveBlurKernel;
-        private _blurKernelX;
-        private _blurKernelY;
-        private _blurRatio;
-        /**
-         * Instantiates a Mirror Texture.
-         * Mirror texture can be used to simulate the view from a mirror in a scene.
-         * It will dynamically be rendered every frame to adapt to the camera point of view.
-         * You can then easily use it as a reflectionTexture on a flat surface.
-         * In case the surface is not a plane, please consider relying on reflection probes.
-         * @see https://doc.babylonjs.com/how_to/reflect#mirrors
-         * @param name
-         * @param size
-         * @param scene
-         * @param generateMipMaps
-         * @param type
-         * @param samplingMode
-         * @param generateDepthBuffer
-         */
-        constructor(name: string, size: number | {
-            width: number;
-            height: number;
-        } | {
-            ratio: number;
-        }, scene: Scene, generateMipMaps?: boolean, type?: number, samplingMode?: number, generateDepthBuffer?: boolean);
-        private _preparePostProcesses;
-        /**
-         * Clone the mirror texture.
-         * @returns the cloned texture
-         */
-        clone(): MirrorTexture;
-        /**
-         * Serialize the texture to a JSON representation you could use in Parse later on
-         * @returns the serialized JSON representation
-         */
-        serialize(): any;
-        /**
-         * Dispose the texture and release its associated resources.
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
-     * @see http://doc.babylonjs.com/babylon101/materials#texture
-     */
-    export class Texture extends BaseTexture {
-        /**
-         * Gets or sets a general boolean used to indicate that textures containing direct data (buffers) must be saved as part of the serialization process
-         */
-        static SerializeBuffers: boolean;
-        /** @hidden */
-        static _CubeTextureParser: (jsonTexture: any, scene: Scene, rootUrl: string) => CubeTexture;
-        /** @hidden */
-        static _CreateMirror: (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean) => MirrorTexture;
-        /** @hidden */
-        static _CreateRenderTargetTexture: (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean) => RenderTargetTexture;
-        /** nearest is mag = nearest and min = nearest and mip = linear */
-        static readonly NEAREST_SAMPLINGMODE: number;
-        /** nearest is mag = nearest and min = nearest and mip = linear */
-        static readonly NEAREST_NEAREST_MIPLINEAR: number;
-        /** Bilinear is mag = linear and min = linear and mip = nearest */
-        static readonly BILINEAR_SAMPLINGMODE: number;
-        /** Bilinear is mag = linear and min = linear and mip = nearest */
-        static readonly LINEAR_LINEAR_MIPNEAREST: number;
-        /** Trilinear is mag = linear and min = linear and mip = linear */
-        static readonly TRILINEAR_SAMPLINGMODE: number;
-        /** Trilinear is mag = linear and min = linear and mip = linear */
-        static readonly LINEAR_LINEAR_MIPLINEAR: number;
-        /** mag = nearest and min = nearest and mip = nearest */
-        static readonly NEAREST_NEAREST_MIPNEAREST: number;
-        /** mag = nearest and min = linear and mip = nearest */
-        static readonly NEAREST_LINEAR_MIPNEAREST: number;
-        /** mag = nearest and min = linear and mip = linear */
-        static readonly NEAREST_LINEAR_MIPLINEAR: number;
-        /** mag = nearest and min = linear and mip = none */
-        static readonly NEAREST_LINEAR: number;
-        /** mag = nearest and min = nearest and mip = none */
-        static readonly NEAREST_NEAREST: number;
-        /** mag = linear and min = nearest and mip = nearest */
-        static readonly LINEAR_NEAREST_MIPNEAREST: number;
-        /** mag = linear and min = nearest and mip = linear */
-        static readonly LINEAR_NEAREST_MIPLINEAR: number;
-        /** mag = linear and min = linear and mip = none */
-        static readonly LINEAR_LINEAR: number;
-        /** mag = linear and min = nearest and mip = none */
-        static readonly LINEAR_NEAREST: number;
-        /** Explicit coordinates mode */
-        static readonly EXPLICIT_MODE: number;
-        /** Spherical coordinates mode */
-        static readonly SPHERICAL_MODE: number;
-        /** Planar coordinates mode */
-        static readonly PLANAR_MODE: number;
-        /** Cubic coordinates mode */
-        static readonly CUBIC_MODE: number;
-        /** Projection coordinates mode */
-        static readonly PROJECTION_MODE: number;
-        /** Inverse Cubic coordinates mode */
-        static readonly SKYBOX_MODE: number;
-        /** Inverse Cubic coordinates mode */
-        static readonly INVCUBIC_MODE: number;
-        /** Equirectangular coordinates mode */
-        static readonly EQUIRECTANGULAR_MODE: number;
-        /** Equirectangular Fixed coordinates mode */
-        static readonly FIXED_EQUIRECTANGULAR_MODE: number;
-        /** Equirectangular Fixed Mirrored coordinates mode */
-        static readonly FIXED_EQUIRECTANGULAR_MIRRORED_MODE: number;
-        /** Texture is not repeating outside of 0..1 UVs */
-        static readonly CLAMP_ADDRESSMODE: number;
-        /** Texture is repeating outside of 0..1 UVs */
-        static readonly WRAP_ADDRESSMODE: number;
-        /** Texture is repeating and mirrored */
-        static readonly MIRROR_ADDRESSMODE: number;
-        /**
-         * Gets or sets a boolean which defines if the texture url must be build from the serialized URL instead of just using the name and loading them side by side with the scene file
-         */
-        static UseSerializedUrlIfAny: boolean;
-        /**
-         * Define the url of the texture.
-         */
-        url: Nullable<string>;
-        /**
-         * Define an offset on the texture to offset the u coordinates of the UVs
-         * @see http://doc.babylonjs.com/how_to/more_materials#offsetting
-         */
-        uOffset: number;
-        /**
-         * Define an offset on the texture to offset the v coordinates of the UVs
-         * @see http://doc.babylonjs.com/how_to/more_materials#offsetting
-         */
-        vOffset: number;
-        /**
-         * Define an offset on the texture to scale the u coordinates of the UVs
-         * @see http://doc.babylonjs.com/how_to/more_materials#tiling
-         */
-        uScale: number;
-        /**
-         * Define an offset on the texture to scale the v coordinates of the UVs
-         * @see http://doc.babylonjs.com/how_to/more_materials#tiling
-         */
-        vScale: number;
-        /**
-         * Define an offset on the texture to rotate around the u coordinates of the UVs
-         * @see http://doc.babylonjs.com/how_to/more_materials
-         */
-        uAng: number;
-        /**
-         * Define an offset on the texture to rotate around the v coordinates of the UVs
-         * @see http://doc.babylonjs.com/how_to/more_materials
-         */
-        vAng: number;
-        /**
-         * Define an offset on the texture to rotate around the w coordinates of the UVs (in case of 3d texture)
-         * @see http://doc.babylonjs.com/how_to/more_materials
-         */
-        wAng: number;
-        /**
-         * Defines the center of rotation (U)
-         */
-        uRotationCenter: number;
-        /**
-         * Defines the center of rotation (V)
-         */
-        vRotationCenter: number;
-        /**
-         * Defines the center of rotation (W)
-         */
-        wRotationCenter: number;
-        /**
-         * Are mip maps generated for this texture or not.
-         */
-        get noMipmap(): boolean;
-        /**
-         * List of inspectable custom properties (used by the Inspector)
-         * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
-         */
-        inspectableCustomProperties: Nullable<IInspectable[]>;
-        private _noMipmap;
-        /** @hidden */
-        _invertY: boolean;
-        private _rowGenerationMatrix;
-        private _cachedTextureMatrix;
-        private _projectionModeMatrix;
-        private _t0;
-        private _t1;
-        private _t2;
-        private _cachedUOffset;
-        private _cachedVOffset;
-        private _cachedUScale;
-        private _cachedVScale;
-        private _cachedUAng;
-        private _cachedVAng;
-        private _cachedWAng;
-        private _cachedProjectionMatrixId;
-        private _cachedCoordinatesMode;
-        /** @hidden */
-        protected _initialSamplingMode: number;
-        /** @hidden */
-        _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>;
-        private _deleteBuffer;
-        protected _format: Nullable<number>;
-        private _delayedOnLoad;
-        private _delayedOnError;
-        private _mimeType?;
-        /**
-         * Observable triggered once the texture has been loaded.
-         */
-        onLoadObservable: Observable<Texture>;
-        protected _isBlocking: boolean;
-        /**
-         * Is the texture preventing material to render while loading.
-         * If false, a default texture will be used instead of the loading one during the preparation step.
-         */
-        set isBlocking(value: boolean);
-        get isBlocking(): boolean;
-        /**
-         * Get the current sampling mode associated with the texture.
-         */
-        get samplingMode(): number;
-        /**
-         * Gets a boolean indicating if the texture needs to be inverted on the y axis during loading
-         */
-        get invertY(): boolean;
-        /**
-         * Instantiates a new texture.
-         * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
-         * @see http://doc.babylonjs.com/babylon101/materials#texture
-         * @param url defines the url of the picture to load as a texture
-         * @param scene defines the scene or engine the texture will belong to
-         * @param noMipmap defines if the texture will require mip maps or not
-         * @param invertY defines if the texture needs to be inverted on the y axis during loading
-         * @param samplingMode defines the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
-         * @param onLoad defines a callback triggered when the texture has been loaded
-         * @param onError defines a callback triggered when an error occurred during the loading session
-         * @param buffer defines the buffer to load the texture from in case the texture is loaded from a buffer representation
-         * @param deleteBuffer defines if the buffer we are loading the texture from should be deleted after load
-         * @param format defines the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
-         * @param mimeType defines an optional mime type information
-         */
-        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, deleteBuffer?: boolean, format?: number, mimeType?: string);
-        /**
-         * Update the url (and optional buffer) of this texture if url was null during construction.
-         * @param url the url of the texture
-         * @param buffer the buffer of the texture (defaults to null)
-         * @param onLoad callback called when the texture is loaded  (defaults to null)
-         */
-        updateURL(url: string, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>, onLoad?: () => void): void;
-        /**
-         * Finish the loading sequence of a texture flagged as delayed load.
-         * @hidden
-         */
-        delayLoad(): void;
-        private _prepareRowForTextureGeneration;
-        /**
-         * Get the current texture matrix which includes the requested offsetting, tiling and rotation components.
-         * @returns the transform matrix of the texture.
-         */
-        getTextureMatrix(uBase?: number): Matrix;
-        /**
-         * Get the current matrix used to apply reflection. This is useful to rotate an environment texture for instance.
-         * @returns The reflection texture transform
-         */
-        getReflectionTextureMatrix(): Matrix;
-        /**
-         * Clones the texture.
-         * @returns the cloned texture
-         */
-        clone(): Texture;
-        /**
-         * Serialize the texture to a JSON representation we can easily use in the resepective Parse function.
-         * @returns The JSON representation of the texture
-         */
-        serialize(): any;
-        /**
-         * Get the current class name of the texture useful for serialization or dynamic coding.
-         * @returns "Texture"
-         */
-        getClassName(): string;
-        /**
-         * Dispose the texture and release its associated resources.
-         */
-        dispose(): void;
-        /**
-         * Parse the JSON representation of a texture in order to recreate the texture in the given scene.
-         * @param parsedTexture Define the JSON representation of the texture
-         * @param scene Define the scene the parsed texture should be instantiated in
-         * @param rootUrl Define the root url of the parsing sequence in the case of relative dependencies
-         * @returns The parsed texture if successful
-         */
-        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): Nullable<BaseTexture>;
-        /**
-         * Creates a texture from its base 64 representation.
-         * @param data Define the base64 payload without the data: prefix
-         * @param name Define the name of the texture in the scene useful fo caching purpose for instance
-         * @param scene Define the scene the texture should belong to
-         * @param noMipmap Forces the texture to not create mip map information if true
-         * @param invertY define if the texture needs to be inverted on the y axis during loading
-         * @param samplingMode define the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
-         * @param onLoad define a callback triggered when the texture has been loaded
-         * @param onError define a callback triggered when an error occurred during the loading session
-         * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
-         * @returns the created texture
-         */
-        static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<() => void>, format?: number): Texture;
-        /**
-         * Creates a texture from its data: representation. (data: will be added in case only the payload has been passed in)
-         * @param data Define the base64 payload without the data: prefix
-         * @param name Define the name of the texture in the scene useful fo caching purpose for instance
-         * @param buffer define the buffer to load the texture from in case the texture is loaded from a buffer representation
-         * @param scene Define the scene the texture should belong to
-         * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
-         * @param noMipmap Forces the texture to not create mip map information if true
-         * @param invertY define if the texture needs to be inverted on the y axis during loading
-         * @param samplingMode define the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
-         * @param onLoad define a callback triggered when the texture has been loaded
-         * @param onError define a callback triggered when an error occurred during the loading session
-         * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
-         * @returns the created texture
-         */
-        static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer?: boolean, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number): Texture;
-    }
-}
-declare module BABYLON {
-    /**
-     * PostProcessManager is used to manage one or more post processes or post process pipelines
-     * See https://doc.babylonjs.com/how_to/how_to_use_postprocesses
-     */
-    export class PostProcessManager {
-        private _scene;
-        private _indexBuffer;
-        private _vertexBuffers;
-        /**
-         * Creates a new instance PostProcess
-         * @param scene The scene that the post process is associated with.
-         */
-        constructor(scene: Scene);
-        private _prepareBuffers;
-        private _buildIndexBuffer;
-        /**
-         * Rebuilds the vertex buffers of the manager.
-         * @hidden
-         */
-        _rebuild(): void;
-        /**
-         * Prepares a frame to be run through a post process.
-         * @param sourceTexture The input texture to the post procesess. (default: null)
-         * @param postProcesses An array of post processes to be run. (default: null)
-         * @returns True if the post processes were able to be run.
-         * @hidden
-         */
-        _prepareFrame(sourceTexture?: Nullable<InternalTexture>, postProcesses?: Nullable<PostProcess[]>): boolean;
-        /**
-         * Manually render a set of post processes to a texture.
-         * @param postProcesses An array of post processes to be run.
-         * @param targetTexture The target texture to render to.
-         * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight
-         * @param faceIndex defines the face to render to if a cubemap is defined as the target
-         * @param lodLevel defines which lod of the texture to render to
-         */
-        directRender(postProcesses: PostProcess[], targetTexture?: Nullable<InternalTexture>, forceFullscreenViewport?: boolean, faceIndex?: number, lodLevel?: number): void;
-        /**
-         * Finalize the result of the output of the postprocesses.
-         * @param doNotPresent If true the result will not be displayed to the screen.
-         * @param targetTexture The target texture to render to.
-         * @param faceIndex The index of the face to bind the target texture to.
-         * @param postProcesses The array of post processes to render.
-         * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight (default: false)
-         * @hidden
-         */
-        _finalizeFrame(doNotPresent?: boolean, targetTexture?: InternalTexture, faceIndex?: number, postProcesses?: Array<PostProcess>, forceFullscreenViewport?: boolean): void;
-        /**
-         * Disposes of the post process manager.
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON {
-    /** Interface used by value gradients (color, factor, ...) */
-    export interface IValueGradient {
-        /**
-         * Gets or sets the gradient value (between 0 and 1)
-         */
-        gradient: number;
-    }
-    /** Class used to store color4 gradient */
-    export class ColorGradient implements IValueGradient {
-        /**
-         * Gets or sets the gradient value (between 0 and 1)
-         */
-        gradient: number;
-        /**
-         * Gets or sets first associated color
-         */
-        color1: Color4;
-        /**
-         * Gets or sets second associated color
-         */
-        color2?: Color4;
-        /**
-         * Will get a color picked randomly between color1 and color2.
-         * If color2 is undefined then color1 will be used
-         * @param result defines the target Color4 to store the result in
-         */
-        getColorToRef(result: Color4): void;
-    }
-    /** Class used to store color 3 gradient */
-    export class Color3Gradient implements IValueGradient {
-        /**
-         * Gets or sets the gradient value (between 0 and 1)
-         */
-        gradient: number;
-        /**
-         * Gets or sets the associated color
-         */
-        color: Color3;
-    }
-    /** Class used to store factor gradient */
-    export class FactorGradient implements IValueGradient {
-        /**
-         * Gets or sets the gradient value (between 0 and 1)
-         */
-        gradient: number;
-        /**
-         * Gets or sets first associated factor
-         */
-        factor1: number;
-        /**
-         * Gets or sets second associated factor
-         */
-        factor2?: number;
-        /**
-         * Will get a number picked randomly between factor1 and factor2.
-         * If factor2 is undefined then factor1 will be used
-         * @returns the picked number
-         */
-        getFactor(): number;
-    }
-    /**
-     * Helper used to simplify some generic gradient tasks
-     */
-    export class GradientHelper {
-        /**
-         * Gets the current gradient from an array of IValueGradient
-         * @param ratio defines the current ratio to get
-         * @param gradients defines the array of IValueGradient
-         * @param updateFunc defines the callback function used to get the final value from the selected gradients
-         */
-        static GetCurrentGradient(ratio: number, gradients: IValueGradient[], updateFunc: (current: IValueGradient, next: IValueGradient, scale: number) => void): void;
-    }
-}
-declare module BABYLON {
-        interface ThinEngine {
-            /**
-             * Creates a dynamic texture
-             * @param width defines the width of the texture
-             * @param height defines the height of the texture
-             * @param generateMipMaps defines if the engine should generate the mip levels
-             * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
-             * @returns the dynamic texture inside an InternalTexture
-             */
-            createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture;
-            /**
-             * Update the content of a dynamic texture
-             * @param texture defines the texture to update
-             * @param canvas defines the canvas containing the source
-             * @param invertY defines if data must be stored with Y axis inverted
-             * @param premulAlpha defines if alpha is stored as premultiplied
-             * @param format defines the format of the data
-             * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
-             */
-            updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement | OffscreenCanvas, invertY: boolean, premulAlpha?: boolean, format?: number, forceBindTexture?: boolean): void;
-        }
-}
-declare module BABYLON {
-    /**
-     * Helper class used to generate a canvas to manipulate images
-     */
-    export class CanvasGenerator {
-        /**
-         * Create a new canvas (or offscreen canvas depending on the context)
-         * @param width defines the expected width
-         * @param height defines the expected height
-         * @return a new canvas or offscreen canvas
-         */
-        static CreateCanvas(width: number, height: number): HTMLCanvasElement | OffscreenCanvas;
-    }
-}
-declare module BABYLON {
-    /**
-     * A class extending Texture allowing drawing on a texture
-     * @see http://doc.babylonjs.com/how_to/dynamictexture
-     */
-    export class DynamicTexture extends Texture {
-        private _generateMipMaps;
-        private _canvas;
-        private _context;
-        private _engine;
-        /**
-         * Creates a DynamicTexture
-         * @param name defines the name of the texture
-         * @param options provides 3 alternatives for width and height of texture, a canvas, object with width and height properties, number for both width and height
-         * @param scene defines the scene where you want the texture
-         * @param generateMipMaps defines the use of MinMaps or not (default is false)
-         * @param samplingMode defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
-         * @param format defines the texture format to use (default is Engine.TEXTUREFORMAT_RGBA)
-         */
-        constructor(name: string, options: any, scene: Scene | null | undefined, generateMipMaps: boolean, samplingMode?: number, format?: number);
-        /**
-         * Get the current class name of the texture useful for serialization or dynamic coding.
-         * @returns "DynamicTexture"
-         */
-        getClassName(): string;
-        /**
-         * Gets the current state of canRescale
-         */
-        get canRescale(): boolean;
-        private _recreate;
-        /**
-         * Scales the texture
-         * @param ratio the scale factor to apply to both width and height
-         */
-        scale(ratio: number): void;
-        /**
-         * Resizes the texture
-         * @param width the new width
-         * @param height the new height
-         */
-        scaleTo(width: number, height: number): void;
-        /**
-         * Gets the context of the canvas used by the texture
-         * @returns the canvas context of the dynamic texture
-         */
-        getContext(): CanvasRenderingContext2D;
-        /**
-         * Clears the texture
-         */
-        clear(): void;
-        /**
-         * Updates the texture
-         * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
-         * @param premulAlpha defines if alpha is stored as premultiplied (default is false)
-         */
-        update(invertY?: boolean, premulAlpha?: boolean): void;
-        /**
-         * Draws text onto the texture
-         * @param text defines the text to be drawn
-         * @param x defines the placement of the text from the left
-         * @param y defines the placement of the text from the top when invertY is true and from the bottom when false
-         * @param font defines the font to be used with font-style, font-size, font-name
-         * @param color defines the color used for the text
-         * @param clearColor defines the color for the canvas, use null to not overwrite canvas
-         * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
-         * @param update defines whether texture is immediately update (default is true)
-         */
-        drawText(text: string, x: number | null | undefined, y: number | null | undefined, font: string, color: string, clearColor: string, invertY?: boolean, update?: boolean): void;
-        /**
-         * Clones the texture
-         * @returns the clone of the texture.
-         */
-        clone(): DynamicTexture;
-        /**
-         * Serializes the dynamic texture.  The scene should be ready before the dynamic texture is serialized
-         * @returns a serialized dynamic texture object
-         */
-        serialize(): any;
-        /** @hidden */
-        _rebuild(): void;
     }
 }
 declare module BABYLON {
@@ -19316,6 +13431,1582 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * A TransformNode is an object that is not rendered but can be used as a center of transformation. This can decrease memory usage and increase rendering speed compared to using an empty mesh as a parent and is less complicated than using a pivot matrix.
+     * @see https://doc.babylonjs.com/how_to/transformnode
+     */
+    export class TransformNode extends Node {
+        /**
+         * Object will not rotate to face the camera
+         */
+        static BILLBOARDMODE_NONE: number;
+        /**
+         * Object will rotate to face the camera but only on the x axis
+         */
+        static BILLBOARDMODE_X: number;
+        /**
+         * Object will rotate to face the camera but only on the y axis
+         */
+        static BILLBOARDMODE_Y: number;
+        /**
+         * Object will rotate to face the camera but only on the z axis
+         */
+        static BILLBOARDMODE_Z: number;
+        /**
+         * Object will rotate to face the camera
+         */
+        static BILLBOARDMODE_ALL: number;
+        /**
+         * Object will rotate to face the camera's position instead of orientation
+         */
+        static BILLBOARDMODE_USE_POSITION: number;
+        private _forward;
+        private _forwardInverted;
+        private _up;
+        private _right;
+        private _rightInverted;
+        private _position;
+        private _rotation;
+        private _rotationQuaternion;
+        protected _scaling: Vector3;
+        protected _isDirty: boolean;
+        private _transformToBoneReferal;
+        private _isAbsoluteSynced;
+        private _billboardMode;
+        /**
+        * Gets or sets the billboard mode. Default is 0.
+        *
+        * | Value | Type | Description |
+        * | --- | --- | --- |
+        * | 0 | BILLBOARDMODE_NONE |  |
+        * | 1 | BILLBOARDMODE_X |  |
+        * | 2 | BILLBOARDMODE_Y |  |
+        * | 4 | BILLBOARDMODE_Z |  |
+        * | 7 | BILLBOARDMODE_ALL |  |
+        *
+        */
+        get billboardMode(): number;
+        set billboardMode(value: number);
+        private _preserveParentRotationForBillboard;
+        /**
+         * Gets or sets a boolean indicating that parent rotation should be preserved when using billboards.
+         * This could be useful for glTF objects where parent rotation helps converting from right handed to left handed
+         */
+        get preserveParentRotationForBillboard(): boolean;
+        set preserveParentRotationForBillboard(value: boolean);
+        /**
+         * Multiplication factor on scale x/y/z when computing the world matrix. Eg. for a 1x1x1 cube setting this to 2 will make it a 2x2x2 cube
+         */
+        scalingDeterminant: number;
+        private _infiniteDistance;
+        /**
+         * Gets or sets the distance of the object to max, often used by skybox
+         */
+        get infiniteDistance(): boolean;
+        set infiniteDistance(value: boolean);
+        /**
+         * Gets or sets a boolean indicating that non uniform scaling (when at least one component is different from others) should be ignored.
+         * By default the system will update normals to compensate
+         */
+        ignoreNonUniformScaling: boolean;
+        /**
+         * Gets or sets a boolean indicating that even if rotationQuaternion is defined, you can keep updating rotation property and Babylon.js will just mix both
+         */
+        reIntegrateRotationIntoRotationQuaternion: boolean;
+        /** @hidden */
+        _poseMatrix: Nullable<Matrix>;
+        /** @hidden */
+        _localMatrix: Matrix;
+        private _usePivotMatrix;
+        private _absolutePosition;
+        private _absoluteScaling;
+        private _absoluteRotationQuaternion;
+        private _pivotMatrix;
+        private _pivotMatrixInverse;
+        protected _postMultiplyPivotMatrix: boolean;
+        protected _isWorldMatrixFrozen: boolean;
+        /** @hidden */
+        _indexInSceneTransformNodesArray: number;
+        /**
+        * An event triggered after the world matrix is updated
+        */
+        onAfterWorldMatrixUpdateObservable: Observable<TransformNode>;
+        constructor(name: string, scene?: Nullable<Scene>, isPure?: boolean);
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "TransformNode" string
+         */
+        getClassName(): string;
+        /**
+          * Gets or set the node position (default is (0.0, 0.0, 0.0))
+          */
+        get position(): Vector3;
+        set position(newPosition: Vector3);
+        /**
+          * Gets or sets the rotation property : a Vector3 defining the rotation value in radians around each local axis X, Y, Z  (default is (0.0, 0.0, 0.0)).
+          * If rotation quaternion is set, this Vector3 will be ignored and copy from the quaternion
+          */
+        get rotation(): Vector3;
+        set rotation(newRotation: Vector3);
+        /**
+         * Gets or sets the scaling property : a Vector3 defining the node scaling along each local axis X, Y, Z (default is (0.0, 0.0, 0.0)).
+         */
+        get scaling(): Vector3;
+        set scaling(newScaling: Vector3);
+        /**
+         * Gets or sets the rotation Quaternion property : this a Quaternion object defining the node rotation by using a unit quaternion (undefined by default, but can be null).
+         * If set, only the rotationQuaternion is then used to compute the node rotation (ie. node.rotation will be ignored)
+         */
+        get rotationQuaternion(): Nullable<Quaternion>;
+        set rotationQuaternion(quaternion: Nullable<Quaternion>);
+        /**
+         * The forward direction of that transform in world space.
+         */
+        get forward(): Vector3;
+        /**
+         * The up direction of that transform in world space.
+         */
+        get up(): Vector3;
+        /**
+         * The right direction of that transform in world space.
+         */
+        get right(): Vector3;
+        /**
+         * Copies the parameter passed Matrix into the mesh Pose matrix.
+         * @param matrix the matrix to copy the pose from
+         * @returns this TransformNode.
+         */
+        updatePoseMatrix(matrix: Matrix): TransformNode;
+        /**
+         * Returns the mesh Pose matrix.
+         * @returns the pose matrix
+         */
+        getPoseMatrix(): Matrix;
+        /** @hidden */
+        _isSynchronized(): boolean;
+        /** @hidden */
+        _initCache(): void;
+        /**
+        * Flag the transform node as dirty (Forcing it to update everything)
+        * @param property if set to "rotation" the objects rotationQuaternion will be set to null
+        * @returns this transform node
+        */
+        markAsDirty(property: string): TransformNode;
+        /**
+         * Returns the current mesh absolute position.
+         * Returns a Vector3.
+         */
+        get absolutePosition(): Vector3;
+        /**
+         * Returns the current mesh absolute scaling.
+         * Returns a Vector3.
+         */
+        get absoluteScaling(): Vector3;
+        /**
+         * Returns the current mesh absolute rotation.
+         * Returns a Quaternion.
+         */
+        get absoluteRotationQuaternion(): Quaternion;
+        /**
+         * Sets a new matrix to apply before all other transformation
+         * @param matrix defines the transform matrix
+         * @returns the current TransformNode
+         */
+        setPreTransformMatrix(matrix: Matrix): TransformNode;
+        /**
+         * Sets a new pivot matrix to the current node
+         * @param matrix defines the new pivot matrix to use
+         * @param postMultiplyPivotMatrix defines if the pivot matrix must be cancelled in the world matrix. When this parameter is set to true (default), the inverse of the pivot matrix is also applied at the end to cancel the transformation effect
+         * @returns the current TransformNode
+        */
+        setPivotMatrix(matrix: DeepImmutable<Matrix>, postMultiplyPivotMatrix?: boolean): TransformNode;
+        /**
+         * Returns the mesh pivot matrix.
+         * Default : Identity.
+         * @returns the matrix
+         */
+        getPivotMatrix(): Matrix;
+        /**
+         * Instantiate (when possible) or clone that node with its hierarchy
+         * @param newParent defines the new parent to use for the instance (or clone)
+         * @param options defines options to configure how copy is done
+         * @param onNewNodeCreated defines an option callback to call when a clone or an instance is created
+         * @returns an instance (or a clone) of the current node with its hiearchy
+         */
+        instantiateHierarchy(newParent?: Nullable<TransformNode>, options?: {
+            doNotInstantiate: boolean;
+        }, onNewNodeCreated?: (source: TransformNode, clone: TransformNode) => void): Nullable<TransformNode>;
+        /**
+         * Prevents the World matrix to be computed any longer
+         * @param newWorldMatrix defines an optional matrix to use as world matrix
+         * @returns the TransformNode.
+         */
+        freezeWorldMatrix(newWorldMatrix?: Nullable<Matrix>): TransformNode;
+        /**
+         * Allows back the World matrix computation.
+         * @returns the TransformNode.
+         */
+        unfreezeWorldMatrix(): this;
+        /**
+         * True if the World matrix has been frozen.
+         */
+        get isWorldMatrixFrozen(): boolean;
+        /**
+        * Retuns the mesh absolute position in the World.
+        * @returns a Vector3.
+        */
+        getAbsolutePosition(): Vector3;
+        /**
+         * Sets the mesh absolute position in the World from a Vector3 or an Array(3).
+         * @param absolutePosition the absolute position to set
+         * @returns the TransformNode.
+         */
+        setAbsolutePosition(absolutePosition: Vector3): TransformNode;
+        /**
+         * Sets the mesh position in its local space.
+         * @param vector3 the position to set in localspace
+         * @returns the TransformNode.
+         */
+        setPositionWithLocalVector(vector3: Vector3): TransformNode;
+        /**
+         * Returns the mesh position in the local space from the current World matrix values.
+         * @returns a new Vector3.
+         */
+        getPositionExpressedInLocalSpace(): Vector3;
+        /**
+         * Translates the mesh along the passed Vector3 in its local space.
+         * @param vector3 the distance to translate in localspace
+         * @returns the TransformNode.
+         */
+        locallyTranslate(vector3: Vector3): TransformNode;
+        private static _lookAtVectorCache;
+        /**
+         * Orients a mesh towards a target point. Mesh must be drawn facing user.
+         * @param targetPoint the position (must be in same space as current mesh) to look at
+         * @param yawCor optional yaw (y-axis) correction in radians
+         * @param pitchCor optional pitch (x-axis) correction in radians
+         * @param rollCor optional roll (z-axis) correction in radians
+         * @param space the choosen space of the target
+         * @returns the TransformNode.
+         */
+        lookAt(targetPoint: Vector3, yawCor?: number, pitchCor?: number, rollCor?: number, space?: Space): TransformNode;
+        /**
+          * Returns a new Vector3 that is the localAxis, expressed in the mesh local space, rotated like the mesh.
+          * This Vector3 is expressed in the World space.
+          * @param localAxis axis to rotate
+          * @returns a new Vector3 that is the localAxis, expressed in the mesh local space, rotated like the mesh.
+          */
+        getDirection(localAxis: Vector3): Vector3;
+        /**
+         * Sets the Vector3 "result" as the rotated Vector3 "localAxis" in the same rotation than the mesh.
+         * localAxis is expressed in the mesh local space.
+         * result is computed in the Wordl space from the mesh World matrix.
+         * @param localAxis axis to rotate
+         * @param result the resulting transformnode
+         * @returns this TransformNode.
+         */
+        getDirectionToRef(localAxis: Vector3, result: Vector3): TransformNode;
+        /**
+         * Sets this transform node rotation to the given local axis.
+         * @param localAxis the axis in local space
+         * @param yawCor optional yaw (y-axis) correction in radians
+         * @param pitchCor optional pitch (x-axis) correction in radians
+         * @param rollCor optional roll (z-axis) correction in radians
+         * @returns this TransformNode
+         */
+        setDirection(localAxis: Vector3, yawCor?: number, pitchCor?: number, rollCor?: number): TransformNode;
+        /**
+         * Sets a new pivot point to the current node
+         * @param point defines the new pivot point to use
+         * @param space defines if the point is in world or local space (local by default)
+         * @returns the current TransformNode
+        */
+        setPivotPoint(point: Vector3, space?: Space): TransformNode;
+        /**
+         * Returns a new Vector3 set with the mesh pivot point coordinates in the local space.
+         * @returns the pivot point
+         */
+        getPivotPoint(): Vector3;
+        /**
+         * Sets the passed Vector3 "result" with the coordinates of the mesh pivot point in the local space.
+         * @param result the vector3 to store the result
+         * @returns this TransformNode.
+         */
+        getPivotPointToRef(result: Vector3): TransformNode;
+        /**
+         * Returns a new Vector3 set with the mesh pivot point World coordinates.
+         * @returns a new Vector3 set with the mesh pivot point World coordinates.
+         */
+        getAbsolutePivotPoint(): Vector3;
+        /**
+         * Sets the Vector3 "result" coordinates with the mesh pivot point World coordinates.
+         * @param result vector3 to store the result
+         * @returns this TransformNode.
+         */
+        getAbsolutePivotPointToRef(result: Vector3): TransformNode;
+        /**
+         * Defines the passed node as the parent of the current node.
+         * The node will remain exactly where it is and its position / rotation will be updated accordingly
+         * @see https://doc.babylonjs.com/how_to/parenting
+         * @param node the node ot set as the parent
+         * @returns this TransformNode.
+         */
+        setParent(node: Nullable<Node>): TransformNode;
+        private _nonUniformScaling;
+        /**
+         * True if the scaling property of this object is non uniform eg. (1,2,1)
+         */
+        get nonUniformScaling(): boolean;
+        /** @hidden */
+        _updateNonUniformScalingState(value: boolean): boolean;
+        /**
+         * Attach the current TransformNode to another TransformNode associated with a bone
+         * @param bone Bone affecting the TransformNode
+         * @param affectedTransformNode TransformNode associated with the bone
+         * @returns this object
+         */
+        attachToBone(bone: Bone, affectedTransformNode: TransformNode): TransformNode;
+        /**
+         * Detach the transform node if its associated with a bone
+         * @returns this object
+         */
+        detachFromBone(): TransformNode;
+        private static _rotationAxisCache;
+        /**
+         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in the given space.
+         * space (default LOCAL) can be either Space.LOCAL, either Space.WORLD.
+         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
+         * The passed axis is also normalized.
+         * @param axis the axis to rotate around
+         * @param amount the amount to rotate in radians
+         * @param space Space to rotate in (Default: local)
+         * @returns the TransformNode.
+         */
+        rotate(axis: Vector3, amount: number, space?: Space): TransformNode;
+        /**
+         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in world space.
+         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.
+         * The passed axis is also normalized. .
+         * Method is based on http://www.euclideanspace.com/maths/geometry/affine/aroundPoint/index.htm
+         * @param point the point to rotate around
+         * @param axis the axis to rotate around
+         * @param amount the amount to rotate in radians
+         * @returns the TransformNode
+         */
+        rotateAround(point: Vector3, axis: Vector3, amount: number): TransformNode;
+        /**
+         * Translates the mesh along the axis vector for the passed distance in the given space.
+         * space (default LOCAL) can be either Space.LOCAL, either Space.WORLD.
+         * @param axis the axis to translate in
+         * @param distance the distance to translate
+         * @param space Space to rotate in (Default: local)
+         * @returns the TransformNode.
+         */
+        translate(axis: Vector3, distance: number, space?: Space): TransformNode;
+        /**
+         * Adds a rotation step to the mesh current rotation.
+         * x, y, z are Euler angles expressed in radians.
+         * This methods updates the current mesh rotation, either mesh.rotation, either mesh.rotationQuaternion if it's set.
+         * This means this rotation is made in the mesh local space only.
+         * It's useful to set a custom rotation order different from the BJS standard one YXZ.
+         * Example : this rotates the mesh first around its local X axis, then around its local Z axis, finally around its local Y axis.
+         * ```javascript
+         * mesh.addRotation(x1, 0, 0).addRotation(0, 0, z2).addRotation(0, 0, y3);
+         * ```
+         * Note that `addRotation()` accumulates the passed rotation values to the current ones and computes the .rotation or .rotationQuaternion updated values.
+         * Under the hood, only quaternions are used. So it's a little faster is you use .rotationQuaternion because it doesn't need to translate them back to Euler angles.
+         * @param x Rotation to add
+         * @param y Rotation to add
+         * @param z Rotation to add
+         * @returns the TransformNode.
+         */
+        addRotation(x: number, y: number, z: number): TransformNode;
+        /**
+         * @hidden
+         */
+        protected _getEffectiveParent(): Nullable<Node>;
+        /**
+         * Computes the world matrix of the node
+         * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
+         * @returns the world matrix
+         */
+        computeWorldMatrix(force?: boolean): Matrix;
+        /**
+         * Resets this nodeTransform's local matrix to Matrix.Identity().
+         * @param independentOfChildren indicates if all child nodeTransform's world-space transform should be preserved.
+         */
+        resetLocalMatrix(independentOfChildren?: boolean): void;
+        protected _afterComputeWorldMatrix(): void;
+        /**
+        * If you'd like to be called back after the mesh position, rotation or scaling has been updated.
+        * @param func callback function to add
+        *
+        * @returns the TransformNode.
+        */
+        registerAfterWorldMatrixUpdate(func: (mesh: TransformNode) => void): TransformNode;
+        /**
+         * Removes a registered callback function.
+         * @param func callback function to remove
+         * @returns the TransformNode.
+         */
+        unregisterAfterWorldMatrixUpdate(func: (mesh: TransformNode) => void): TransformNode;
+        /**
+         * Gets the position of the current mesh in camera space
+         * @param camera defines the camera to use
+         * @returns a position
+         */
+        getPositionInCameraSpace(camera?: Nullable<Camera>): Vector3;
+        /**
+         * Returns the distance from the mesh to the active camera
+         * @param camera defines the camera to use
+         * @returns the distance
+         */
+        getDistanceToCamera(camera?: Nullable<Camera>): number;
+        /**
+         * Clone the current transform node
+         * @param name Name of the new clone
+         * @param newParent New parent for the clone
+         * @param doNotCloneChildren Do not clone children hierarchy
+         * @returns the new transform node
+         */
+        clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<TransformNode>;
+        /**
+         * Serializes the objects information.
+         * @param currentSerializationObject defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(currentSerializationObject?: any): any;
+        /**
+         * Returns a new TransformNode object parsed from the source provided.
+         * @param parsedTransformNode is the source.
+         * @param scene the scne the object belongs to
+         * @param rootUrl is a string, it's the root URL to prefix the `delayLoadingFile` property with
+         * @returns a new TransformNode object parsed from the source provided.
+         */
+        static Parse(parsedTransformNode: any, scene: Scene, rootUrl: string): TransformNode;
+        /**
+         * Get all child-transformNodes of this node
+         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+         * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+         * @returns an array of TransformNode
+         */
+        getChildTransformNodes(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): TransformNode[];
+        /**
+         * Releases resources associated with this transform node.
+         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
+         */
+        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
+        /**
+         * Uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units)
+         * @param includeDescendants Use the hierarchy's bounding box instead of the mesh's bounding box. Default is false
+         * @param ignoreRotation ignore rotation when computing the scale (ie. object will be axis aligned). Default is false
+         * @param predicate predicate that is passed in to getHierarchyBoundingVectors when selecting which object should be included when scaling
+         * @returns the current mesh
+         */
+        normalizeToUnitCube(includeDescendants?: boolean, ignoreRotation?: boolean, predicate?: Nullable<(node: AbstractMesh) => boolean>): TransformNode;
+        private _syncAbsoluteScalingAndRotation;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to override all child animations of a given target
+     */
+    export class AnimationPropertiesOverride {
+        /**
+         * Gets or sets a value indicating if animation blending must be used
+         */
+        enableBlending: boolean;
+        /**
+         * Gets or sets the blending speed to use when enableBlending is true
+         */
+        blendingSpeed: number;
+        /**
+         * Gets or sets the default loop mode to use
+         */
+        loopMode: number;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store bone information
+     * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
+     */
+    export class Bone extends Node {
+        /**
+         * defines the bone name
+         */
+        name: string;
+        private static _tmpVecs;
+        private static _tmpQuat;
+        private static _tmpMats;
+        /**
+         * Gets the list of child bones
+         */
+        children: Bone[];
+        /** Gets the animations associated with this bone */
+        animations: Animation[];
+        /**
+         * Gets or sets bone length
+         */
+        length: number;
+        /**
+         * @hidden Internal only
+         * Set this value to map this bone to a different index in the transform matrices
+         * Set this value to -1 to exclude the bone from the transform matrices
+         */
+        _index: Nullable<number>;
+        private _skeleton;
+        private _localMatrix;
+        private _restPose;
+        private _baseMatrix;
+        private _absoluteTransform;
+        private _invertedAbsoluteTransform;
+        private _parent;
+        private _scalingDeterminant;
+        private _worldTransform;
+        private _localScaling;
+        private _localRotation;
+        private _localPosition;
+        private _needToDecompose;
+        private _needToCompose;
+        /** @hidden */
+        _linkedTransformNode: Nullable<TransformNode>;
+        /** @hidden */
+        _waitingTransformNodeId: Nullable<string>;
+        /** @hidden */
+        get _matrix(): Matrix;
+        /** @hidden */
+        set _matrix(value: Matrix);
+        /**
+         * Create a new bone
+         * @param name defines the bone name
+         * @param skeleton defines the parent skeleton
+         * @param parentBone defines the parent (can be null if the bone is the root)
+         * @param localMatrix defines the local matrix
+         * @param restPose defines the rest pose matrix
+         * @param baseMatrix defines the base matrix
+         * @param index defines index of the bone in the hiearchy
+         */
+        constructor(
+        /**
+         * defines the bone name
+         */
+        name: string, skeleton: Skeleton, parentBone?: Nullable<Bone>, localMatrix?: Nullable<Matrix>, restPose?: Nullable<Matrix>, baseMatrix?: Nullable<Matrix>, index?: Nullable<number>);
+        /**
+         * Gets the current object class name.
+         * @return the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the parent skeleton
+         * @returns a skeleton
+         */
+        getSkeleton(): Skeleton;
+        /**
+         * Gets parent bone
+         * @returns a bone or null if the bone is the root of the bone hierarchy
+         */
+        getParent(): Nullable<Bone>;
+        /**
+         * Returns an array containing the root bones
+         * @returns an array containing the root bones
+         */
+        getChildren(): Array<Bone>;
+        /**
+         * Gets the node index in matrix array generated for rendering
+         * @returns the node index
+         */
+        getIndex(): number;
+        /**
+         * Sets the parent bone
+         * @param parent defines the parent (can be null if the bone is the root)
+         * @param updateDifferenceMatrix defines if the difference matrix must be updated
+         */
+        setParent(parent: Nullable<Bone>, updateDifferenceMatrix?: boolean): void;
+        /**
+         * Gets the local matrix
+         * @returns a matrix
+         */
+        getLocalMatrix(): Matrix;
+        /**
+         * Gets the base matrix (initial matrix which remains unchanged)
+         * @returns a matrix
+         */
+        getBaseMatrix(): Matrix;
+        /**
+         * Gets the rest pose matrix
+         * @returns a matrix
+         */
+        getRestPose(): Matrix;
+        /**
+         * Gets a matrix used to store world matrix (ie. the matrix sent to shaders)
+         */
+        getWorldMatrix(): Matrix;
+        /**
+         * Sets the local matrix to rest pose matrix
+         */
+        returnToRest(): void;
+        /**
+         * Gets the inverse of the absolute transform matrix.
+         * This matrix will be multiplied by local matrix to get the difference matrix (ie. the difference between original state and current state)
+         * @returns a matrix
+         */
+        getInvertedAbsoluteTransform(): Matrix;
+        /**
+         * Gets the absolute transform matrix (ie base matrix * parent world matrix)
+         * @returns a matrix
+         */
+        getAbsoluteTransform(): Matrix;
+        /**
+         * Links with the given transform node.
+         * The local matrix of this bone is copied from the transform node every frame.
+         * @param transformNode defines the transform node to link to
+         */
+        linkTransformNode(transformNode: Nullable<TransformNode>): void;
+        /**
+         * Gets the node used to drive the bone's transformation
+         * @returns a transform node or null
+         */
+        getTransformNode(): Nullable<TransformNode>;
+        /** Gets or sets current position (in local space) */
+        get position(): Vector3;
+        set position(newPosition: Vector3);
+        /** Gets or sets current rotation (in local space) */
+        get rotation(): Vector3;
+        set rotation(newRotation: Vector3);
+        /** Gets or sets current rotation quaternion (in local space) */
+        get rotationQuaternion(): Quaternion;
+        set rotationQuaternion(newRotation: Quaternion);
+        /** Gets or sets current scaling (in local space) */
+        get scaling(): Vector3;
+        set scaling(newScaling: Vector3);
+        /**
+         * Gets the animation properties override
+         */
+        get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride>;
+        private _decompose;
+        private _compose;
+        /**
+         * Update the base and local matrices
+         * @param matrix defines the new base or local matrix
+         * @param updateDifferenceMatrix defines if the difference matrix must be updated
+         * @param updateLocalMatrix defines if the local matrix should be updated
+         */
+        updateMatrix(matrix: Matrix, updateDifferenceMatrix?: boolean, updateLocalMatrix?: boolean): void;
+        /** @hidden */
+        _updateDifferenceMatrix(rootMatrix?: Matrix, updateChildren?: boolean): void;
+        /**
+         * Flag the bone as dirty (Forcing it to update everything)
+         */
+        markAsDirty(): void;
+        /** @hidden */
+        _markAsDirtyAndCompose(): void;
+        private _markAsDirtyAndDecompose;
+        /**
+         * Translate the bone in local or world space
+         * @param vec The amount to translate the bone
+         * @param space The space that the translation is in
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         */
+        translate(vec: Vector3, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the postion of the bone in local or world space
+         * @param position The position to set the bone
+         * @param space The space that the position is in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         */
+        setPosition(position: Vector3, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the absolute position of the bone (world space)
+         * @param position The position to set the bone
+         * @param mesh The mesh that this bone is attached to
+         */
+        setAbsolutePosition(position: Vector3, mesh?: AbstractMesh): void;
+        /**
+         * Scale the bone on the x, y and z axes (in local space)
+         * @param x The amount to scale the bone on the x axis
+         * @param y The amount to scale the bone on the y axis
+         * @param z The amount to scale the bone on the z axis
+         * @param scaleChildren sets this to true if children of the bone should be scaled as well (false by default)
+         */
+        scale(x: number, y: number, z: number, scaleChildren?: boolean): void;
+        /**
+         * Set the bone scaling in local space
+         * @param scale defines the scaling vector
+         */
+        setScale(scale: Vector3): void;
+        /**
+         * Gets the current scaling in local space
+         * @returns the current scaling vector
+         */
+        getScale(): Vector3;
+        /**
+         * Gets the current scaling in local space and stores it in a target vector
+         * @param result defines the target vector
+         */
+        getScaleToRef(result: Vector3): void;
+        /**
+         * Set the yaw, pitch, and roll of the bone in local or world space
+         * @param yaw The rotation of the bone on the y axis
+         * @param pitch The rotation of the bone on the x axis
+         * @param roll The rotation of the bone on the z axis
+         * @param space The space that the axes of rotation are in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         */
+        setYawPitchRoll(yaw: number, pitch: number, roll: number, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Add a rotation to the bone on an axis in local or world space
+         * @param axis The axis to rotate the bone on
+         * @param amount The amount to rotate the bone
+         * @param space The space that the axis is in
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         */
+        rotate(axis: Vector3, amount: number, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the rotation of the bone to a particular axis angle in local or world space
+         * @param axis The axis to rotate the bone on
+         * @param angle The angle that the bone should be rotated to
+         * @param space The space that the axis is in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         */
+        setAxisAngle(axis: Vector3, angle: number, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the euler rotation of the bone in local of world space
+         * @param rotation The euler rotation that the bone should be set to
+         * @param space The space that the rotation is in
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         */
+        setRotation(rotation: Vector3, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the quaternion rotation of the bone in local of world space
+         * @param quat The quaternion rotation that the bone should be set to
+         * @param space The space that the rotation is in
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         */
+        setRotationQuaternion(quat: Quaternion, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the rotation matrix of the bone in local of world space
+         * @param rotMat The rotation matrix that the bone should be set to
+         * @param space The space that the rotation is in
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         */
+        setRotationMatrix(rotMat: Matrix, space?: Space, mesh?: AbstractMesh): void;
+        private _rotateWithMatrix;
+        private _getNegativeRotationToRef;
+        /**
+         * Get the position of the bone in local or world space
+         * @param space The space that the returned position is in
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         * @returns The position of the bone
+         */
+        getPosition(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Copy the position of the bone to a vector3 in local or world space
+         * @param space The space that the returned position is in
+         * @param mesh The mesh that this bone is attached to. This is only used in world space
+         * @param result The vector3 to copy the position to
+         */
+        getPositionToRef(space: Space | undefined, mesh: Nullable<AbstractMesh>, result: Vector3): void;
+        /**
+         * Get the absolute position of the bone (world space)
+         * @param mesh The mesh that this bone is attached to
+         * @returns The absolute position of the bone
+         */
+        getAbsolutePosition(mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Copy the absolute position of the bone (world space) to the result param
+         * @param mesh The mesh that this bone is attached to
+         * @param result The vector3 to copy the absolute position to
+         */
+        getAbsolutePositionToRef(mesh: AbstractMesh, result: Vector3): void;
+        /**
+         * Compute the absolute transforms of this bone and its children
+         */
+        computeAbsoluteTransforms(): void;
+        /**
+         * Get the world direction from an axis that is in the local space of the bone
+         * @param localAxis The local direction that is used to compute the world direction
+         * @param mesh The mesh that this bone is attached to
+         * @returns The world direction
+         */
+        getDirection(localAxis: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Copy the world direction to a vector3 from an axis that is in the local space of the bone
+         * @param localAxis The local direction that is used to compute the world direction
+         * @param mesh The mesh that this bone is attached to
+         * @param result The vector3 that the world direction will be copied to
+         */
+        getDirectionToRef(localAxis: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        /**
+         * Get the euler rotation of the bone in local or world space
+         * @param space The space that the rotation should be in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @returns The euler rotation
+         */
+        getRotation(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Copy the euler rotation of the bone to a vector3.  The rotation can be in either local or world space
+         * @param space The space that the rotation should be in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @param result The vector3 that the rotation should be copied to
+         */
+        getRotationToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        /**
+         * Get the quaternion rotation of the bone in either local or world space
+         * @param space The space that the rotation should be in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @returns The quaternion rotation
+         */
+        getRotationQuaternion(space?: Space, mesh?: Nullable<AbstractMesh>): Quaternion;
+        /**
+         * Copy the quaternion rotation of the bone to a quaternion.  The rotation can be in either local or world space
+         * @param space The space that the rotation should be in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @param result The quaternion that the rotation should be copied to
+         */
+        getRotationQuaternionToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Quaternion): void;
+        /**
+         * Get the rotation matrix of the bone in local or world space
+         * @param space The space that the rotation should be in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @returns The rotation matrix
+         */
+        getRotationMatrix(space: Space | undefined, mesh: AbstractMesh): Matrix;
+        /**
+         * Copy the rotation matrix of the bone to a matrix.  The rotation can be in either local or world space
+         * @param space The space that the rotation should be in
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space
+         * @param result The quaternion that the rotation should be copied to
+         */
+        getRotationMatrixToRef(space: Space | undefined, mesh: AbstractMesh, result: Matrix): void;
+        /**
+         * Get the world position of a point that is in the local space of the bone
+         * @param position The local position
+         * @param mesh The mesh that this bone is attached to
+         * @returns The world position
+         */
+        getAbsolutePositionFromLocal(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Get the world position of a point that is in the local space of the bone and copy it to the result param
+         * @param position The local position
+         * @param mesh The mesh that this bone is attached to
+         * @param result The vector3 that the world position should be copied to
+         */
+        getAbsolutePositionFromLocalToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        /**
+         * Get the local position of a point that is in world space
+         * @param position The world position
+         * @param mesh The mesh that this bone is attached to
+         * @returns The local position
+         */
+        getLocalPositionFromAbsolute(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Get the local position of a point that is in world space and copy it to the result param
+         * @param position The world position
+         * @param mesh The mesh that this bone is attached to
+         * @param result The vector3 that the local position should be copied to
+         */
+        getLocalPositionFromAbsoluteToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines a runtime animation
+     */
+    export class RuntimeAnimation {
+        private _events;
+        /**
+         * The current frame of the runtime animation
+         */
+        private _currentFrame;
+        /**
+         * The animation used by the runtime animation
+         */
+        private _animation;
+        /**
+         * The target of the runtime animation
+         */
+        private _target;
+        /**
+         * The initiating animatable
+         */
+        private _host;
+        /**
+         * The original value of the runtime animation
+         */
+        private _originalValue;
+        /**
+         * The original blend value of the runtime animation
+         */
+        private _originalBlendValue;
+        /**
+         * The offsets cache of the runtime animation
+         */
+        private _offsetsCache;
+        /**
+         * The high limits cache of the runtime animation
+         */
+        private _highLimitsCache;
+        /**
+         * Specifies if the runtime animation has been stopped
+         */
+        private _stopped;
+        /**
+         * The blending factor of the runtime animation
+         */
+        private _blendingFactor;
+        /**
+         * The BabylonJS scene
+         */
+        private _scene;
+        /**
+         * The current value of the runtime animation
+         */
+        private _currentValue;
+        /** @hidden */
+        _animationState: _IAnimationState;
+        /**
+         * The active target of the runtime animation
+         */
+        private _activeTargets;
+        private _currentActiveTarget;
+        private _directTarget;
+        /**
+         * The target path of the runtime animation
+         */
+        private _targetPath;
+        /**
+         * The weight of the runtime animation
+         */
+        private _weight;
+        /**
+         * The ratio offset of the runtime animation
+         */
+        private _ratioOffset;
+        /**
+         * The previous delay of the runtime animation
+         */
+        private _previousDelay;
+        /**
+         * The previous ratio of the runtime animation
+         */
+        private _previousRatio;
+        private _enableBlending;
+        private _keys;
+        private _minFrame;
+        private _maxFrame;
+        private _minValue;
+        private _maxValue;
+        private _targetIsArray;
+        /**
+         * Gets the current frame of the runtime animation
+         */
+        get currentFrame(): number;
+        /**
+         * Gets the weight of the runtime animation
+         */
+        get weight(): number;
+        /**
+         * Gets the current value of the runtime animation
+         */
+        get currentValue(): any;
+        /**
+         * Gets the target path of the runtime animation
+         */
+        get targetPath(): string;
+        /**
+         * Gets the actual target of the runtime animation
+         */
+        get target(): any;
+        /** @hidden */
+        _onLoop: () => void;
+        /**
+         * Create a new RuntimeAnimation object
+         * @param target defines the target of the animation
+         * @param animation defines the source animation object
+         * @param scene defines the hosting scene
+         * @param host defines the initiating Animatable
+         */
+        constructor(target: any, animation: Animation, scene: Scene, host: Animatable);
+        private _preparePath;
+        /**
+         * Gets the animation from the runtime animation
+         */
+        get animation(): Animation;
+        /**
+         * Resets the runtime animation to the beginning
+         * @param restoreOriginal defines whether to restore the target property to the original value
+         */
+        reset(restoreOriginal?: boolean): void;
+        /**
+         * Specifies if the runtime animation is stopped
+         * @returns Boolean specifying if the runtime animation is stopped
+         */
+        isStopped(): boolean;
+        /**
+         * Disposes of the runtime animation
+         */
+        dispose(): void;
+        /**
+         * Apply the interpolated value to the target
+         * @param currentValue defines the value computed by the animation
+         * @param weight defines the weight to apply to this value (Defaults to 1.0)
+         */
+        setValue(currentValue: any, weight: number): void;
+        private _getOriginalValues;
+        private _setValue;
+        /**
+         * Gets the loop pmode of the runtime animation
+         * @returns Loop Mode
+         */
+        private _getCorrectLoopMode;
+        /**
+         * Move the current animation to a given frame
+         * @param frame defines the frame to move to
+         */
+        goToFrame(frame: number): void;
+        /**
+         * @hidden Internal use only
+         */
+        _prepareForSpeedRatioChange(newSpeedRatio: number): void;
+        /**
+         * Execute the current animation
+         * @param delay defines the delay to add to the current frame
+         * @param from defines the lower bound of the animation range
+         * @param to defines the upper bound of the animation range
+         * @param loop defines if the current animation must loop
+         * @param speedRatio defines the current speed ratio
+         * @param weight defines the weight of the animation (default is -1 so no weight)
+         * @param onLoop optional callback called when animation loops
+         * @returns a boolean indicating if the animation is running
+         */
+        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight?: number): boolean;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to store an actual running animation
+     */
+    export class Animatable {
+        /** defines the target object */
+        target: any;
+        /** defines the starting frame number (default is 0) */
+        fromFrame: number;
+        /** defines the ending frame number (default is 100) */
+        toFrame: number;
+        /** defines if the animation must loop (default is false)  */
+        loopAnimation: boolean;
+        /** defines a callback to call when animation ends if it is not looping */
+        onAnimationEnd?: (() => void) | null | undefined;
+        /** defines a callback to call when animation loops */
+        onAnimationLoop?: (() => void) | null | undefined;
+        private _localDelayOffset;
+        private _pausedDelay;
+        private _runtimeAnimations;
+        private _paused;
+        private _scene;
+        private _speedRatio;
+        private _weight;
+        private _syncRoot;
+        /**
+         * Gets or sets a boolean indicating if the animatable must be disposed and removed at the end of the animation.
+         * This will only apply for non looping animation (default is true)
+         */
+        disposeOnEnd: boolean;
+        /**
+         * Gets a boolean indicating if the animation has started
+         */
+        animationStarted: boolean;
+        /**
+         * Observer raised when the animation ends
+         */
+        onAnimationEndObservable: Observable<Animatable>;
+        /**
+         * Observer raised when the animation loops
+         */
+        onAnimationLoopObservable: Observable<Animatable>;
+        /**
+         * Gets the root Animatable used to synchronize and normalize animations
+         */
+        get syncRoot(): Nullable<Animatable>;
+        /**
+         * Gets the current frame of the first RuntimeAnimation
+         * Used to synchronize Animatables
+         */
+        get masterFrame(): number;
+        /**
+         * Gets or sets the animatable weight (-1.0 by default meaning not weighted)
+         */
+        get weight(): number;
+        set weight(value: number);
+        /**
+         * Gets or sets the speed ratio to apply to the animatable (1.0 by default)
+         */
+        get speedRatio(): number;
+        set speedRatio(value: number);
+        /**
+         * Creates a new Animatable
+         * @param scene defines the hosting scene
+         * @param target defines the target object
+         * @param fromFrame defines the starting frame number (default is 0)
+         * @param toFrame defines the ending frame number (default is 100)
+         * @param loopAnimation defines if the animation must loop (default is false)
+         * @param speedRatio defines the factor to apply to animation speed (default is 1)
+         * @param onAnimationEnd defines a callback to call when animation ends if it is not looping
+         * @param animations defines a group of animation to add to the new Animatable
+         * @param onAnimationLoop defines a callback to call when animation loops
+         */
+        constructor(scene: Scene, 
+        /** defines the target object */
+        target: any, 
+        /** defines the starting frame number (default is 0) */
+        fromFrame?: number, 
+        /** defines the ending frame number (default is 100) */
+        toFrame?: number, 
+        /** defines if the animation must loop (default is false)  */
+        loopAnimation?: boolean, speedRatio?: number, 
+        /** defines a callback to call when animation ends if it is not looping */
+        onAnimationEnd?: (() => void) | null | undefined, animations?: Animation[], 
+        /** defines a callback to call when animation loops */
+        onAnimationLoop?: (() => void) | null | undefined);
+        /**
+         * Synchronize and normalize current Animatable with a source Animatable
+         * This is useful when using animation weights and when animations are not of the same length
+         * @param root defines the root Animatable to synchronize with
+         * @returns the current Animatable
+         */
+        syncWith(root: Animatable): Animatable;
+        /**
+         * Gets the list of runtime animations
+         * @returns an array of RuntimeAnimation
+         */
+        getAnimations(): RuntimeAnimation[];
+        /**
+         * Adds more animations to the current animatable
+         * @param target defines the target of the animations
+         * @param animations defines the new animations to add
+         */
+        appendAnimations(target: any, animations: Animation[]): void;
+        /**
+         * Gets the source animation for a specific property
+         * @param property defines the propertyu to look for
+         * @returns null or the source animation for the given property
+         */
+        getAnimationByTargetProperty(property: string): Nullable<Animation>;
+        /**
+         * Gets the runtime animation for a specific property
+         * @param property defines the propertyu to look for
+         * @returns null or the runtime animation for the given property
+         */
+        getRuntimeAnimationByTargetProperty(property: string): Nullable<RuntimeAnimation>;
+        /**
+         * Resets the animatable to its original state
+         */
+        reset(): void;
+        /**
+         * Allows the animatable to blend with current running animations
+         * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
+         * @param blendingSpeed defines the blending speed to use
+         */
+        enableBlending(blendingSpeed: number): void;
+        /**
+         * Disable animation blending
+         * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
+         */
+        disableBlending(): void;
+        /**
+         * Jump directly to a given frame
+         * @param frame defines the frame to jump to
+         */
+        goToFrame(frame: number): void;
+        /**
+         * Pause the animation
+         */
+        pause(): void;
+        /**
+         * Restart the animation
+         */
+        restart(): void;
+        private _raiseOnAnimationEnd;
+        /**
+         * Stop and delete the current animation
+         * @param animationName defines a string used to only stop some of the runtime animations instead of all
+         * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
+         */
+        stop(animationName?: string, targetMask?: (target: any) => boolean): void;
+        /**
+         * Wait asynchronously for the animation to end
+         * @returns a promise which will be fullfilled when the animation ends
+         */
+        waitAsync(): Promise<Animatable>;
+        /** @hidden */
+        _animate(delay: number): boolean;
+    }
+        interface Scene {
+            /** @hidden */
+            _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation, originalValue: any): void;
+            /** @hidden */
+            _processLateAnimationBindingsForMatrices(holder: {
+                totalWeight: number;
+                animations: RuntimeAnimation[];
+                originalValue: Matrix;
+            }): any;
+            /** @hidden */
+            _processLateAnimationBindingsForQuaternions(holder: {
+                totalWeight: number;
+                animations: RuntimeAnimation[];
+                originalValue: Quaternion;
+            }, refQuaternion: Quaternion): Quaternion;
+            /** @hidden */
+            _processLateAnimationBindings(): void;
+            /**
+             * Will start the animation sequence of a given target
+             * @param target defines the target
+             * @param from defines from which frame should animation start
+             * @param to defines until which frame should animation run.
+             * @param weight defines the weight to apply to the animation (1.0 by default)
+             * @param loop defines if the animation loops
+             * @param speedRatio defines the speed in which to run the animation (1.0 by default)
+             * @param onAnimationEnd defines the function to be executed when the animation ends
+             * @param animatable defines an animatable object. If not provided a new one will be created from the given params
+             * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
+             * @param onAnimationLoop defines the callback to call when an animation loops
+             * @returns the animatable object created for this animation
+             */
+            beginWeightedAnimation(target: any, from: number, to: number, weight: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable;
+            /**
+             * Will start the animation sequence of a given target
+             * @param target defines the target
+             * @param from defines from which frame should animation start
+             * @param to defines until which frame should animation run.
+             * @param loop defines if the animation loops
+             * @param speedRatio defines the speed in which to run the animation (1.0 by default)
+             * @param onAnimationEnd defines the function to be executed when the animation ends
+             * @param animatable defines an animatable object. If not provided a new one will be created from the given params
+             * @param stopCurrent defines if the current animations must be stopped first (true by default)
+             * @param targetMask defines if the target should be animate if animations are present (this is called recursively on descendant animatables regardless of return value)
+             * @param onAnimationLoop defines the callback to call when an animation loops
+             * @returns the animatable object created for this animation
+             */
+            beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable;
+            /**
+             * Will start the animation sequence of a given target and its hierarchy
+             * @param target defines the target
+             * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
+             * @param from defines from which frame should animation start
+             * @param to defines until which frame should animation run.
+             * @param loop defines if the animation loops
+             * @param speedRatio defines the speed in which to run the animation (1.0 by default)
+             * @param onAnimationEnd defines the function to be executed when the animation ends
+             * @param animatable defines an animatable object. If not provided a new one will be created from the given params
+             * @param stopCurrent defines if the current animations must be stopped first (true by default)
+             * @param targetMask defines if the target should be animated if animations are present (this is called recursively on descendant animatables regardless of return value)
+             * @param onAnimationLoop defines the callback to call when an animation loops
+             * @returns the list of created animatables
+             */
+            beginHierarchyAnimation(target: any, directDescendantsOnly: boolean, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean, targetMask?: (target: any) => boolean, onAnimationLoop?: () => void): Animatable[];
+            /**
+             * Begin a new animation on a given node
+             * @param target defines the target where the animation will take place
+             * @param animations defines the list of animations to start
+             * @param from defines the initial value
+             * @param to defines the final value
+             * @param loop defines if you want animation to loop (off by default)
+             * @param speedRatio defines the speed ratio to apply to all animations
+             * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
+             * @param onAnimationLoop defines the callback to call when an animation loops
+             * @returns the list of created animatables
+             */
+            beginDirectAnimation(target: any, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable;
+            /**
+             * Begin a new animation on a given node and its hierarchy
+             * @param target defines the root node where the animation will take place
+             * @param directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
+             * @param animations defines the list of animations to start
+             * @param from defines the initial value
+             * @param to defines the final value
+             * @param loop defines if you want animation to loop (off by default)
+             * @param speedRatio defines the speed ratio to apply to all animations
+             * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
+             * @param onAnimationLoop defines the callback to call when an animation loops
+             * @returns the list of animatables created for all nodes
+             */
+            beginDirectHierarchyAnimation(target: Node, directDescendantsOnly: boolean, animations: Animation[], from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, onAnimationLoop?: () => void): Animatable[];
+            /**
+             * Gets the animatable associated with a specific target
+             * @param target defines the target of the animatable
+             * @returns the required animatable if found
+             */
+            getAnimatableByTarget(target: any): Nullable<Animatable>;
+            /**
+             * Gets all animatables associated with a given target
+             * @param target defines the target to look animatables for
+             * @returns an array of Animatables
+             */
+            getAllAnimatablesByTarget(target: any): Array<Animatable>;
+            /**
+            * Stops and removes all animations that have been applied to the scene
+            */
+            stopAllAnimations(): void;
+            /**
+             * Gets the current delta time used by animation engine
+             */
+            deltaTime: number;
+        }
+        interface Bone {
+            /**
+             * Copy an animation range from another bone
+             * @param source defines the source bone
+             * @param rangeName defines the range name to copy
+             * @param frameOffset defines the frame offset
+             * @param rescaleAsRequired defines if rescaling must be applied if required
+             * @param skelDimensionsRatio defines the scaling ratio
+             * @returns true if operation was successful
+             */
+            copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired: boolean, skelDimensionsRatio: Nullable<Vector3>): boolean;
+        }
+}
+declare module BABYLON {
+    /**
+     * Class used to handle skinning animations
+     * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
+     */
+    export class Skeleton implements IAnimatable {
+        /** defines the skeleton name */
+        name: string;
+        /** defines the skeleton Id */
+        id: string;
+        /**
+         * Defines the list of child bones
+         */
+        bones: Bone[];
+        /**
+         * Defines an estimate of the dimension of the skeleton at rest
+         */
+        dimensionsAtRest: Vector3;
+        /**
+         * Defines a boolean indicating if the root matrix is provided by meshes or by the current skeleton (this is the default value)
+         */
+        needInitialSkinMatrix: boolean;
+        /**
+         * Defines a mesh that override the matrix used to get the world matrix (null by default).
+         */
+        overrideMesh: Nullable<AbstractMesh>;
+        /**
+         * Gets the list of animations attached to this skeleton
+         */
+        animations: Array<Animation>;
+        private _scene;
+        private _isDirty;
+        private _transformMatrices;
+        private _transformMatrixTexture;
+        private _meshesWithPoseMatrix;
+        private _animatables;
+        private _identity;
+        private _synchronizedWithMesh;
+        private _ranges;
+        private _lastAbsoluteTransformsUpdateId;
+        private _canUseTextureForBones;
+        private _uniqueId;
+        /** @hidden */
+        _numBonesWithLinkedTransformNode: number;
+        /** @hidden */
+        _hasWaitingData: Nullable<boolean>;
+        /**
+         * Specifies if the skeleton should be serialized
+         */
+        doNotSerialize: boolean;
+        private _useTextureToStoreBoneMatrices;
+        /**
+         * Gets or sets a boolean indicating that bone matrices should be stored as a texture instead of using shader uniforms (default is true).
+         * Please note that this option is not available if the hardware does not support it
+         */
+        get useTextureToStoreBoneMatrices(): boolean;
+        set useTextureToStoreBoneMatrices(value: boolean);
+        private _animationPropertiesOverride;
+        /**
+         * Gets or sets the animation properties override
+         */
+        get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride>;
+        set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>);
+        /**
+         * List of inspectable custom properties (used by the Inspector)
+         * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+         */
+        inspectableCustomProperties: IInspectable[];
+        /**
+         * An observable triggered before computing the skeleton's matrices
+         */
+        onBeforeComputeObservable: Observable<Skeleton>;
+        /**
+         * Gets a boolean indicating that the skeleton effectively stores matrices into a texture
+         */
+        get isUsingTextureForMatrices(): boolean;
+        /**
+         * Gets the unique ID of this skeleton
+         */
+        get uniqueId(): number;
+        /**
+         * Creates a new skeleton
+         * @param name defines the skeleton name
+         * @param id defines the skeleton Id
+         * @param scene defines the hosting scene
+         */
+        constructor(
+        /** defines the skeleton name */
+        name: string, 
+        /** defines the skeleton Id */
+        id: string, scene: Scene);
+        /**
+         * Gets the current object class name.
+         * @return the class name
+         */
+        getClassName(): string;
+        /**
+         * Returns an array containing the root bones
+         * @returns an array containing the root bones
+         */
+        getChildren(): Array<Bone>;
+        /**
+         * Gets the list of transform matrices to send to shaders (one matrix per bone)
+         * @param mesh defines the mesh to use to get the root matrix (if needInitialSkinMatrix === true)
+         * @returns a Float32Array containing matrices data
+         */
+        getTransformMatrices(mesh: AbstractMesh): Float32Array;
+        /**
+         * Gets the list of transform matrices to send to shaders inside a texture (one matrix per bone)
+         * @param mesh defines the mesh to use to get the root matrix (if needInitialSkinMatrix === true)
+         * @returns a raw texture containing the data
+         */
+        getTransformMatrixTexture(mesh: AbstractMesh): Nullable<RawTexture>;
+        /**
+         * Gets the current hosting scene
+         * @returns a scene object
+         */
+        getScene(): Scene;
+        /**
+         * Gets a string representing the current skeleton data
+         * @param fullDetails defines a boolean indicating if we want a verbose version
+         * @returns a string representing the current skeleton data
+         */
+        toString(fullDetails?: boolean): string;
+        /**
+        * Get bone's index searching by name
+        * @param name defines bone's name to search for
+        * @return the indice of the bone. Returns -1 if not found
+        */
+        getBoneIndexByName(name: string): number;
+        /**
+         * Creater a new animation range
+         * @param name defines the name of the range
+         * @param from defines the start key
+         * @param to defines the end key
+         */
+        createAnimationRange(name: string, from: number, to: number): void;
+        /**
+         * Delete a specific animation range
+         * @param name defines the name of the range
+         * @param deleteFrames defines if frames must be removed as well
+         */
+        deleteAnimationRange(name: string, deleteFrames?: boolean): void;
+        /**
+         * Gets a specific animation range
+         * @param name defines the name of the range to look for
+         * @returns the requested animation range or null if not found
+         */
+        getAnimationRange(name: string): Nullable<AnimationRange>;
+        /**
+         * Gets the list of all animation ranges defined on this skeleton
+         * @returns an array
+         */
+        getAnimationRanges(): Nullable<AnimationRange>[];
+        /**
+         * Copy animation range from a source skeleton.
+         * This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
+         * @param source defines the source skeleton
+         * @param name defines the name of the range to copy
+         * @param rescaleAsRequired defines if rescaling must be applied if required
+         * @returns true if operation was successful
+         */
+        copyAnimationRange(source: Skeleton, name: string, rescaleAsRequired?: boolean): boolean;
+        /**
+         * Forces the skeleton to go to rest pose
+         */
+        returnToRest(): void;
+        private _getHighestAnimationFrame;
+        /**
+         * Begin a specific animation range
+         * @param name defines the name of the range to start
+         * @param loop defines if looping must be turned on (false by default)
+         * @param speedRatio defines the speed ratio to apply (1 by default)
+         * @param onAnimationEnd defines a callback which will be called when animation will end
+         * @returns a new animatable
+         */
+        beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Nullable<Animatable>;
+        /** @hidden */
+        _markAsDirty(): void;
+        /** @hidden */
+        _registerMeshWithPoseMatrix(mesh: AbstractMesh): void;
+        /** @hidden */
+        _unregisterMeshWithPoseMatrix(mesh: AbstractMesh): void;
+        private _computeTransformMatrices;
+        /**
+         * Build all resources required to render a skeleton
+         */
+        prepare(): void;
+        /**
+         * Gets the list of animatables currently running for this skeleton
+         * @returns an array of animatables
+         */
+        getAnimatables(): IAnimatable[];
+        /**
+         * Clone the current skeleton
+         * @param name defines the name of the new skeleton
+         * @param id defines the id of the new skeleton
+         * @returns the new skeleton
+         */
+        clone(name: string, id?: string): Skeleton;
+        /**
+         * Enable animation blending for this skeleton
+         * @param blendingSpeed defines the blending speed to apply
+         * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
+         */
+        enableBlending(blendingSpeed?: number): void;
+        /**
+         * Releases all resources associated with the current skeleton
+         */
+        dispose(): void;
+        /**
+         * Serialize the skeleton in a JSON object
+         * @returns a JSON object
+         */
+        serialize(): any;
+        /**
+         * Creates a new skeleton from serialized data
+         * @param parsedSkeleton defines the serialized data
+         * @param scene defines the hosting scene
+         * @returns a new skeleton
+         */
+        static Parse(parsedSkeleton: any, scene: Scene): Skeleton;
+        /**
+         * Compute all node absolute transforms
+         * @param forceUpdate defines if computation must be done even if cache is up to date
+         */
+        computeAbsoluteTransforms(forceUpdate?: boolean): void;
+        /**
+         * Gets the root pose matrix
+         * @returns a matrix
+         */
+        getPoseMatrix(): Nullable<Matrix>;
+        /**
+         * Sorts bones per internal index
+         */
+        sortBones(): void;
+        private _sortBones;
+    }
+}
+declare module BABYLON {
+    /**
      * Creates an instance based on a source mesh.
      */
     export class InstancedMesh extends AbstractMesh {
@@ -20372,6 +16063,4315 @@ declare module BABYLON {
          * @returns The auto clear setup for the requested rendering group
          */
         getAutoClearDepthStencilSetup(index: number): IRenderingManagerAutoClearSetup;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines the options associated with the creation of a custom shader for a shadow generator.
+     */
+    export interface ICustomShaderOptions {
+        /**
+         * Gets or sets the custom shader name to use
+         */
+        shaderName: string;
+        /**
+         * The list of attribute names used in the shader
+         */
+        attributes?: string[];
+        /**
+         * The list of unifrom names used in the shader
+         */
+        uniforms?: string[];
+        /**
+         * The list of sampler names used in the shader
+         */
+        samplers?: string[];
+        /**
+         * The list of defines used in the shader
+         */
+        defines?: string[];
+    }
+    /**
+     * Interface to implement to create a shadow generator compatible with BJS.
+     */
+    export interface IShadowGenerator {
+        /**
+         * Gets the main RTT containing the shadow map (usually storing depth from the light point of view).
+         * @returns The render target texture if present otherwise, null
+         */
+        getShadowMap(): Nullable<RenderTargetTexture>;
+        /**
+         * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
+         * @param subMesh The submesh we want to render in the shadow map
+         * @param useInstances Defines wether will draw in the map using instances
+         * @returns true if ready otherwise, false
+         */
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        /**
+         * Prepare all the defines in a material relying on a shadow map at the specified light index.
+         * @param defines Defines of the material we want to update
+         * @param lightIndex Index of the light in the enabled light list of the material
+         */
+        prepareDefines(defines: MaterialDefines, lightIndex: number): void;
+        /**
+         * Binds the shadow related information inside of an effect (information like near, far, darkness...
+         * defined in the generator but impacting the effect).
+         * It implies the unifroms available on the materials are the standard BJS ones.
+         * @param lightIndex Index of the light in the enabled light list of the material owning the effect
+         * @param effect The effect we are binfing the information for
+         */
+        bindShadowLight(lightIndex: string, effect: Effect): void;
+        /**
+         * Gets the transformation matrix used to project the meshes into the map from the light point of view.
+         * (eq to shadow prjection matrix * light transform matrix)
+         * @returns The transform matrix used to create the shadow map
+         */
+        getTransformMatrix(): Matrix;
+        /**
+         * Recreates the shadow map dependencies like RTT and post processes. This can be used during the switch between
+         * Cube and 2D textures for instance.
+         */
+        recreateShadowMap(): void;
+        /**
+         * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
+         * @param onCompiled Callback triggered at the and of the effects compilation
+         * @param options Sets of optional options forcing the compilation with different modes
+         */
+        forceCompilation(onCompiled?: (generator: IShadowGenerator) => void, options?: Partial<{
+            useInstances: boolean;
+        }>): void;
+        /**
+         * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
+         * @param options Sets of optional options forcing the compilation with different modes
+         * @returns A promise that resolves when the compilation completes
+         */
+        forceCompilationAsync(options?: Partial<{
+            useInstances: boolean;
+        }>): Promise<void>;
+        /**
+         * Serializes the shadow generator setup to a json object.
+         * @returns The serialized JSON object
+         */
+        serialize(): any;
+        /**
+         * Disposes the Shadow map and related Textures and effects.
+         */
+        dispose(): void;
+    }
+    /**
+     * Default implementation IShadowGenerator.
+     * This is the main object responsible of generating shadows in the framework.
+     * Documentation: https://doc.babylonjs.com/babylon101/shadows
+     */
+    export class ShadowGenerator implements IShadowGenerator {
+        /**
+         * Name of the shadow generator class
+         */
+        static CLASSNAME: string;
+        /**
+         * Shadow generator mode None: no filtering applied.
+         */
+        static readonly FILTER_NONE: number;
+        /**
+         * Shadow generator mode ESM: Exponential Shadow Mapping.
+         * (http://developer.download.nvidia.com/presentations/2008/GDC/GDC08_SoftShadowMapping.pdf)
+         */
+        static readonly FILTER_EXPONENTIALSHADOWMAP: number;
+        /**
+         * Shadow generator mode Poisson Sampling: Percentage Closer Filtering.
+         * (Multiple Tap around evenly distributed around the pixel are used to evaluate the shadow strength)
+         */
+        static readonly FILTER_POISSONSAMPLING: number;
+        /**
+         * Shadow generator mode ESM: Blurred Exponential Shadow Mapping.
+         * (http://developer.download.nvidia.com/presentations/2008/GDC/GDC08_SoftShadowMapping.pdf)
+         */
+        static readonly FILTER_BLUREXPONENTIALSHADOWMAP: number;
+        /**
+         * Shadow generator mode ESM: Exponential Shadow Mapping using the inverse of the exponential preventing
+         * edge artifacts on steep falloff.
+         * (http://developer.download.nvidia.com/presentations/2008/GDC/GDC08_SoftShadowMapping.pdf)
+         */
+        static readonly FILTER_CLOSEEXPONENTIALSHADOWMAP: number;
+        /**
+         * Shadow generator mode ESM: Blurred Exponential Shadow Mapping using the inverse of the exponential preventing
+         * edge artifacts on steep falloff.
+         * (http://developer.download.nvidia.com/presentations/2008/GDC/GDC08_SoftShadowMapping.pdf)
+         */
+        static readonly FILTER_BLURCLOSEEXPONENTIALSHADOWMAP: number;
+        /**
+         * Shadow generator mode PCF: Percentage Closer Filtering
+         * benefits from Webgl 2 shadow samplers. Fallback to Poisson Sampling in Webgl 1
+         * (https://developer.nvidia.com/gpugems/GPUGems/gpugems_ch11.html)
+         */
+        static readonly FILTER_PCF: number;
+        /**
+         * Shadow generator mode PCSS: Percentage Closering Soft Shadow.
+         * benefits from Webgl 2 shadow samplers. Fallback to Poisson Sampling in Webgl 1
+         * Contact Hardening
+         */
+        static readonly FILTER_PCSS: number;
+        /**
+         * Reserved for PCF and PCSS
+         * Highest Quality.
+         *
+         * Execute PCF on a 5*5 kernel improving a lot the shadow aliasing artifacts.
+         *
+         * Execute PCSS with 32 taps blocker search and 64 taps PCF.
+         */
+        static readonly QUALITY_HIGH: number;
+        /**
+         * Reserved for PCF and PCSS
+         * Good tradeoff for quality/perf cross devices
+         *
+         * Execute PCF on a 3*3 kernel.
+         *
+         * Execute PCSS with 16 taps blocker search and 32 taps PCF.
+         */
+        static readonly QUALITY_MEDIUM: number;
+        /**
+         * Reserved for PCF and PCSS
+         * The lowest quality but the fastest.
+         *
+         * Execute PCF on a 1*1 kernel.
+         *
+         * Execute PCSS with 16 taps blocker search and 16 taps PCF.
+         */
+        static readonly QUALITY_LOW: number;
+        /** Gets or sets the custom shader name to use */
+        customShaderOptions: ICustomShaderOptions;
+        /**
+         * Observable triggered before the shadow is rendered. Can be used to update internal effect state
+         */
+        onBeforeShadowMapRenderObservable: Observable<Effect>;
+        /**
+         * Observable triggered after the shadow is rendered. Can be used to restore internal effect state
+         */
+        onAfterShadowMapRenderObservable: Observable<Effect>;
+        /**
+         * Observable triggered before a mesh is rendered in the shadow map.
+         * Can be used to update internal effect state (that you can get from the onBeforeShadowMapRenderObservable)
+         */
+        onBeforeShadowMapRenderMeshObservable: Observable<Mesh>;
+        /**
+         * Observable triggered after a mesh is rendered in the shadow map.
+         * Can be used to update internal effect state (that you can get from the onAfterShadowMapRenderObservable)
+         */
+        onAfterShadowMapRenderMeshObservable: Observable<Mesh>;
+        protected _bias: number;
+        /**
+         * Gets the bias: offset applied on the depth preventing acnea (in light direction).
+         */
+        get bias(): number;
+        /**
+         * Sets the bias: offset applied on the depth preventing acnea (in light direction).
+         */
+        set bias(bias: number);
+        protected _normalBias: number;
+        /**
+         * Gets the normalBias: offset applied on the depth preventing acnea (along side the normal direction and proportinal to the light/normal angle).
+         */
+        get normalBias(): number;
+        /**
+         * Sets the normalBias: offset applied on the depth preventing acnea (along side the normal direction and proportinal to the light/normal angle).
+         */
+        set normalBias(normalBias: number);
+        protected _blurBoxOffset: number;
+        /**
+         * Gets the blur box offset: offset applied during the blur pass.
+         * Only useful if useKernelBlur = false
+         */
+        get blurBoxOffset(): number;
+        /**
+         * Sets the blur box offset: offset applied during the blur pass.
+         * Only useful if useKernelBlur = false
+         */
+        set blurBoxOffset(value: number);
+        protected _blurScale: number;
+        /**
+         * Gets the blur scale: scale of the blurred texture compared to the main shadow map.
+         * 2 means half of the size.
+         */
+        get blurScale(): number;
+        /**
+         * Sets the blur scale: scale of the blurred texture compared to the main shadow map.
+         * 2 means half of the size.
+         */
+        set blurScale(value: number);
+        protected _blurKernel: number;
+        /**
+         * Gets the blur kernel: kernel size of the blur pass.
+         * Only useful if useKernelBlur = true
+         */
+        get blurKernel(): number;
+        /**
+         * Sets the blur kernel: kernel size of the blur pass.
+         * Only useful if useKernelBlur = true
+         */
+        set blurKernel(value: number);
+        protected _useKernelBlur: boolean;
+        /**
+         * Gets whether the blur pass is a kernel blur (if true) or box blur.
+         * Only useful in filtered mode (useBlurExponentialShadowMap...)
+         */
+        get useKernelBlur(): boolean;
+        /**
+         * Sets whether the blur pass is a kernel blur (if true) or box blur.
+         * Only useful in filtered mode (useBlurExponentialShadowMap...)
+         */
+        set useKernelBlur(value: boolean);
+        protected _depthScale: number;
+        /**
+         * Gets the depth scale used in ESM mode.
+         */
+        get depthScale(): number;
+        /**
+         * Sets the depth scale used in ESM mode.
+         * This can override the scale stored on the light.
+         */
+        set depthScale(value: number);
+        protected _validateFilter(filter: number): number;
+        protected _filter: number;
+        /**
+         * Gets the current mode of the shadow generator (normal, PCF, ESM...).
+         * The returned value is a number equal to one of the available mode defined in ShadowMap.FILTER_x like _FILTER_NONE
+         */
+        get filter(): number;
+        /**
+         * Sets the current mode of the shadow generator (normal, PCF, ESM...).
+         * The returned value is a number equal to one of the available mode defined in ShadowMap.FILTER_x like _FILTER_NONE
+         */
+        set filter(value: number);
+        /**
+         * Gets if the current filter is set to Poisson Sampling.
+         */
+        get usePoissonSampling(): boolean;
+        /**
+         * Sets the current filter to Poisson Sampling.
+         */
+        set usePoissonSampling(value: boolean);
+        /**
+         * Gets if the current filter is set to ESM.
+         */
+        get useExponentialShadowMap(): boolean;
+        /**
+         * Sets the current filter is to ESM.
+         */
+        set useExponentialShadowMap(value: boolean);
+        /**
+         * Gets if the current filter is set to filtered ESM.
+         */
+        get useBlurExponentialShadowMap(): boolean;
+        /**
+         * Gets if the current filter is set to filtered  ESM.
+         */
+        set useBlurExponentialShadowMap(value: boolean);
+        /**
+         * Gets if the current filter is set to "close ESM" (using the inverse of the
+         * exponential to prevent steep falloff artifacts).
+         */
+        get useCloseExponentialShadowMap(): boolean;
+        /**
+         * Sets the current filter to "close ESM" (using the inverse of the
+         * exponential to prevent steep falloff artifacts).
+         */
+        set useCloseExponentialShadowMap(value: boolean);
+        /**
+         * Gets if the current filter is set to filtered "close ESM" (using the inverse of the
+         * exponential to prevent steep falloff artifacts).
+         */
+        get useBlurCloseExponentialShadowMap(): boolean;
+        /**
+         * Sets the current filter to filtered "close ESM" (using the inverse of the
+         * exponential to prevent steep falloff artifacts).
+         */
+        set useBlurCloseExponentialShadowMap(value: boolean);
+        /**
+         * Gets if the current filter is set to "PCF" (percentage closer filtering).
+         */
+        get usePercentageCloserFiltering(): boolean;
+        /**
+         * Sets the current filter to "PCF" (percentage closer filtering).
+         */
+        set usePercentageCloserFiltering(value: boolean);
+        protected _filteringQuality: number;
+        /**
+         * Gets the PCF or PCSS Quality.
+         * Only valid if usePercentageCloserFiltering or usePercentageCloserFiltering is true.
+         */
+        get filteringQuality(): number;
+        /**
+         * Sets the PCF or PCSS Quality.
+         * Only valid if usePercentageCloserFiltering or usePercentageCloserFiltering is true.
+         */
+        set filteringQuality(filteringQuality: number);
+        /**
+         * Gets if the current filter is set to "PCSS" (contact hardening).
+         */
+        get useContactHardeningShadow(): boolean;
+        /**
+         * Sets the current filter to "PCSS" (contact hardening).
+         */
+        set useContactHardeningShadow(value: boolean);
+        protected _contactHardeningLightSizeUVRatio: number;
+        /**
+         * Gets the Light Size (in shadow map uv unit) used in PCSS to determine the blocker search area and the penumbra size.
+         * Using a ratio helps keeping shape stability independently of the map size.
+         *
+         * It does not account for the light projection as it was having too much
+         * instability during the light setup or during light position changes.
+         *
+         * Only valid if useContactHardeningShadow is true.
+         */
+        get contactHardeningLightSizeUVRatio(): number;
+        /**
+         * Sets the Light Size (in shadow map uv unit) used in PCSS to determine the blocker search area and the penumbra size.
+         * Using a ratio helps keeping shape stability independently of the map size.
+         *
+         * It does not account for the light projection as it was having too much
+         * instability during the light setup or during light position changes.
+         *
+         * Only valid if useContactHardeningShadow is true.
+         */
+        set contactHardeningLightSizeUVRatio(contactHardeningLightSizeUVRatio: number);
+        protected _darkness: number;
+        /** Gets or sets the actual darkness of a shadow */
+        get darkness(): number;
+        set darkness(value: number);
+        /**
+         * Returns the darkness value (float). This can only decrease the actual darkness of a shadow.
+         * 0 means strongest and 1 would means no shadow.
+         * @returns the darkness.
+         */
+        getDarkness(): number;
+        /**
+         * Sets the darkness value (float). This can only decrease the actual darkness of a shadow.
+         * @param darkness The darkness value 0 means strongest and 1 would means no shadow.
+         * @returns the shadow generator allowing fluent coding.
+         */
+        setDarkness(darkness: number): ShadowGenerator;
+        protected _transparencyShadow: boolean;
+        /** Gets or sets the ability to have transparent shadow  */
+        get transparencyShadow(): boolean;
+        set transparencyShadow(value: boolean);
+        /**
+         * Sets the ability to have transparent shadow (boolean).
+         * @param transparent True if transparent else False
+         * @returns the shadow generator allowing fluent coding
+         */
+        setTransparencyShadow(transparent: boolean): ShadowGenerator;
+        protected _shadowMap: Nullable<RenderTargetTexture>;
+        protected _shadowMap2: Nullable<RenderTargetTexture>;
+        /**
+         * Gets the main RTT containing the shadow map (usually storing depth from the light point of view).
+         * @returns The render target texture if present otherwise, null
+         */
+        getShadowMap(): Nullable<RenderTargetTexture>;
+        /**
+         * Gets the RTT used during rendering (can be a blurred version of the shadow map or the shadow map itself).
+         * @returns The render target texture if the shadow map is present otherwise, null
+         */
+        getShadowMapForRendering(): Nullable<RenderTargetTexture>;
+        /**
+         * Gets the class name of that object
+         * @returns "ShadowGenerator"
+         */
+        getClassName(): string;
+        /**
+         * Helper function to add a mesh and its descendants to the list of shadow casters.
+         * @param mesh Mesh to add
+         * @param includeDescendants boolean indicating if the descendants should be added. Default to true
+         * @returns the Shadow Generator itself
+         */
+        addShadowCaster(mesh: AbstractMesh, includeDescendants?: boolean): ShadowGenerator;
+        /**
+         * Helper function to remove a mesh and its descendants from the list of shadow casters
+         * @param mesh Mesh to remove
+         * @param includeDescendants boolean indicating if the descendants should be removed. Default to true
+         * @returns the Shadow Generator itself
+         */
+        removeShadowCaster(mesh: AbstractMesh, includeDescendants?: boolean): ShadowGenerator;
+        /**
+         * Controls the extent to which the shadows fade out at the edge of the frustum
+         */
+        frustumEdgeFalloff: number;
+        protected _light: IShadowLight;
+        /**
+         * Returns the associated light object.
+         * @returns the light generating the shadow
+         */
+        getLight(): IShadowLight;
+        /**
+         * If true the shadow map is generated by rendering the back face of the mesh instead of the front face.
+         * This can help with self-shadowing as the geometry making up the back of objects is slightly offset.
+         * It might on the other hand introduce peter panning.
+         */
+        forceBackFacesOnly: boolean;
+        protected _scene: Scene;
+        protected _lightDirection: Vector3;
+        protected _effect: Effect;
+        protected _viewMatrix: Matrix;
+        protected _projectionMatrix: Matrix;
+        protected _transformMatrix: Matrix;
+        protected _cachedPosition: Vector3;
+        protected _cachedDirection: Vector3;
+        protected _cachedDefines: string;
+        protected _currentRenderID: number;
+        protected _boxBlurPostprocess: Nullable<PostProcess>;
+        protected _kernelBlurXPostprocess: Nullable<PostProcess>;
+        protected _kernelBlurYPostprocess: Nullable<PostProcess>;
+        protected _blurPostProcesses: PostProcess[];
+        protected _mapSize: number;
+        protected _currentFaceIndex: number;
+        protected _currentFaceIndexCache: number;
+        protected _textureType: number;
+        protected _defaultTextureMatrix: Matrix;
+        protected _storedUniqueId: Nullable<number>;
+        /** @hidden */
+        static _SceneComponentInitialization: (scene: Scene) => void;
+        /**
+         * Creates a ShadowGenerator object.
+         * A ShadowGenerator is the required tool to use the shadows.
+         * Each light casting shadows needs to use its own ShadowGenerator.
+         * Documentation : https://doc.babylonjs.com/babylon101/shadows
+         * @param mapSize The size of the texture what stores the shadows. Example : 1024.
+         * @param light The light object generating the shadows.
+         * @param usefulFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
+         */
+        constructor(mapSize: number, light: IShadowLight, usefulFloatFirst?: boolean);
+        protected _initializeGenerator(): void;
+        protected _createTargetRenderTexture(): void;
+        protected _initializeShadowMap(): void;
+        protected _initializeBlurRTTAndPostProcesses(): void;
+        protected _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void;
+        protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect): void;
+        protected _renderSubMeshForShadowMap(subMesh: SubMesh): void;
+        protected _applyFilterValues(): void;
+        /**
+         * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
+         * @param onCompiled Callback triggered at the and of the effects compilation
+         * @param options Sets of optional options forcing the compilation with different modes
+         */
+        forceCompilation(onCompiled?: (generator: IShadowGenerator) => void, options?: Partial<{
+            useInstances: boolean;
+        }>): void;
+        /**
+         * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
+         * @param options Sets of optional options forcing the compilation with different modes
+         * @returns A promise that resolves when the compilation completes
+         */
+        forceCompilationAsync(options?: Partial<{
+            useInstances: boolean;
+        }>): Promise<void>;
+        protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void;
+        /**
+         * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
+         * @param subMesh The submesh we want to render in the shadow map
+         * @param useInstances Defines wether will draw in the map using instances
+         * @returns true if ready otherwise, false
+         */
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        /**
+         * Prepare all the defines in a material relying on a shadow map at the specified light index.
+         * @param defines Defines of the material we want to update
+         * @param lightIndex Index of the light in the enabled light list of the material
+         */
+        prepareDefines(defines: any, lightIndex: number): void;
+        /**
+         * Binds the shadow related information inside of an effect (information like near, far, darkness...
+         * defined in the generator but impacting the effect).
+         * @param lightIndex Index of the light in the enabled light list of the material owning the effect
+         * @param effect The effect we are binfing the information for
+         */
+        bindShadowLight(lightIndex: string, effect: Effect): void;
+        /**
+         * Gets the transformation matrix used to project the meshes into the map from the light point of view.
+         * (eq to shadow prjection matrix * light transform matrix)
+         * @returns The transform matrix used to create the shadow map
+         */
+        getTransformMatrix(): Matrix;
+        /**
+         * Recreates the shadow map dependencies like RTT and post processes. This can be used during the switch between
+         * Cube and 2D textures for instance.
+         */
+        recreateShadowMap(): void;
+        protected _disposeBlurPostProcesses(): void;
+        protected _disposeRTTandPostProcesses(): void;
+        /**
+         * Disposes the ShadowGenerator.
+         * Returns nothing.
+         */
+        dispose(): void;
+        /**
+         * Serializes the shadow generator setup to a json object.
+         * @returns The serialized JSON object
+         */
+        serialize(): any;
+        /**
+         * Parses a serialized ShadowGenerator and returns a new ShadowGenerator.
+         * @param parsedShadowGenerator The JSON object to parse
+         * @param scene The scene to create the shadow map for
+         * @param constr A function that builds a shadow generator or undefined to create an instance of the default shadow generator
+         * @returns The parsed shadow generator
+         */
+        static Parse(parsedShadowGenerator: any, scene: Scene, constr?: (mapSize: number, light: IShadowLight) => ShadowGenerator): ShadowGenerator;
+    }
+}
+declare module BABYLON {
+    /**
+     * Base class of all the lights in Babylon. It groups all the generic information about lights.
+     * Lights are used, as you would expect, to affect how meshes are seen, in terms of both illumination and colour.
+     * All meshes allow light to pass through them unless shadow generation is activated. The default number of lights allowed is four but this can be increased.
+     */
+    export abstract class Light extends Node {
+        /**
+         * Falloff Default: light is falling off following the material specification:
+         * standard material is using standard falloff whereas pbr material can request special falloff per materials.
+         */
+        static readonly FALLOFF_DEFAULT: number;
+        /**
+         * Falloff Physical: light is falling off following the inverse squared distance law.
+         */
+        static readonly FALLOFF_PHYSICAL: number;
+        /**
+         * Falloff gltf: light is falling off as described in the gltf moving to PBR document
+         * to enhance interoperability with other engines.
+         */
+        static readonly FALLOFF_GLTF: number;
+        /**
+         * Falloff Standard: light is falling off like in the standard material
+         * to enhance interoperability with other materials.
+         */
+        static readonly FALLOFF_STANDARD: number;
+        /**
+         * If every light affecting the material is in this lightmapMode,
+         * material.lightmapTexture adds or multiplies
+         * (depends on material.useLightmapAsShadowmap)
+         * after every other light calculations.
+         */
+        static readonly LIGHTMAP_DEFAULT: number;
+        /**
+         * material.lightmapTexture as only diffuse lighting from this light
+         * adds only specular lighting from this light
+         * adds dynamic shadows
+         */
+        static readonly LIGHTMAP_SPECULAR: number;
+        /**
+         * material.lightmapTexture as only lighting
+         * no light calculation from this light
+         * only adds dynamic shadows from this light
+         */
+        static readonly LIGHTMAP_SHADOWSONLY: number;
+        /**
+         * Each light type uses the default quantity according to its type:
+         *      point/spot lights use luminous intensity
+         *      directional lights use illuminance
+         */
+        static readonly INTENSITYMODE_AUTOMATIC: number;
+        /**
+         * lumen (lm)
+         */
+        static readonly INTENSITYMODE_LUMINOUSPOWER: number;
+        /**
+         * candela (lm/sr)
+         */
+        static readonly INTENSITYMODE_LUMINOUSINTENSITY: number;
+        /**
+         * lux (lm/m^2)
+         */
+        static readonly INTENSITYMODE_ILLUMINANCE: number;
+        /**
+         * nit (cd/m^2)
+         */
+        static readonly INTENSITYMODE_LUMINANCE: number;
+        /**
+         * Light type const id of the point light.
+         */
+        static readonly LIGHTTYPEID_POINTLIGHT: number;
+        /**
+         * Light type const id of the directional light.
+         */
+        static readonly LIGHTTYPEID_DIRECTIONALLIGHT: number;
+        /**
+         * Light type const id of the spot light.
+         */
+        static readonly LIGHTTYPEID_SPOTLIGHT: number;
+        /**
+         * Light type const id of the hemispheric light.
+         */
+        static readonly LIGHTTYPEID_HEMISPHERICLIGHT: number;
+        /**
+         * Diffuse gives the basic color to an object.
+         */
+        diffuse: Color3;
+        /**
+         * Specular produces a highlight color on an object.
+         * Note: This is note affecting PBR materials.
+         */
+        specular: Color3;
+        /**
+         * Defines the falloff type for this light. This lets overrriding how punctual light are
+         * falling off base on range or angle.
+         * This can be set to any values in Light.FALLOFF_x.
+         *
+         * Note: This is only useful for PBR Materials at the moment. This could be extended if required to
+         * other types of materials.
+         */
+        falloffType: number;
+        /**
+         * Strength of the light.
+         * Note: By default it is define in the framework own unit.
+         * Note: In PBR materials the intensityMode can be use to chose what unit the intensity is defined in.
+         */
+        intensity: number;
+        private _range;
+        protected _inverseSquaredRange: number;
+        /**
+         * Defines how far from the source the light is impacting in scene units.
+         * Note: Unused in PBR material as the distance light falloff is defined following the inverse squared falloff.
+         */
+        get range(): number;
+        /**
+         * Defines how far from the source the light is impacting in scene units.
+         * Note: Unused in PBR material as the distance light falloff is defined following the inverse squared falloff.
+         */
+        set range(value: number);
+        /**
+         * Cached photometric scale default to 1.0 as the automatic intensity mode defaults to 1.0 for every type
+         * of light.
+         */
+        private _photometricScale;
+        private _intensityMode;
+        /**
+         * Gets the photometric scale used to interpret the intensity.
+         * This is only relevant with PBR Materials where the light intensity can be defined in a physical way.
+         */
+        get intensityMode(): number;
+        /**
+         * Sets the photometric scale used to interpret the intensity.
+         * This is only relevant with PBR Materials where the light intensity can be defined in a physical way.
+         */
+        set intensityMode(value: number);
+        private _radius;
+        /**
+         * Gets the light radius used by PBR Materials to simulate soft area lights.
+         */
+        get radius(): number;
+        /**
+         * sets the light radius used by PBR Materials to simulate soft area lights.
+         */
+        set radius(value: number);
+        private _renderPriority;
+        /**
+         * Defines the rendering priority of the lights. It can help in case of fallback or number of lights
+         * exceeding the number allowed of the materials.
+         */
+        renderPriority: number;
+        private _shadowEnabled;
+        /**
+         * Gets wether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
+         * the current shadow generator.
+         */
+        get shadowEnabled(): boolean;
+        /**
+         * Sets wether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
+         * the current shadow generator.
+         */
+        set shadowEnabled(value: boolean);
+        private _includedOnlyMeshes;
+        /**
+         * Gets the only meshes impacted by this light.
+         */
+        get includedOnlyMeshes(): AbstractMesh[];
+        /**
+         * Sets the only meshes impacted by this light.
+         */
+        set includedOnlyMeshes(value: AbstractMesh[]);
+        private _excludedMeshes;
+        /**
+         * Gets the meshes not impacted by this light.
+         */
+        get excludedMeshes(): AbstractMesh[];
+        /**
+         * Sets the meshes not impacted by this light.
+         */
+        set excludedMeshes(value: AbstractMesh[]);
+        private _excludeWithLayerMask;
+        /**
+         * Gets the layer id use to find what meshes are not impacted by the light.
+         * Inactive if 0
+         */
+        get excludeWithLayerMask(): number;
+        /**
+         * Sets the layer id use to find what meshes are not impacted by the light.
+         * Inactive if 0
+         */
+        set excludeWithLayerMask(value: number);
+        private _includeOnlyWithLayerMask;
+        /**
+         * Gets the layer id use to find what meshes are impacted by the light.
+         * Inactive if 0
+         */
+        get includeOnlyWithLayerMask(): number;
+        /**
+         * Sets the layer id use to find what meshes are impacted by the light.
+         * Inactive if 0
+         */
+        set includeOnlyWithLayerMask(value: number);
+        private _lightmapMode;
+        /**
+         * Gets the lightmap mode of this light (should be one of the constants defined by Light.LIGHTMAP_x)
+         */
+        get lightmapMode(): number;
+        /**
+         * Sets the lightmap mode of this light (should be one of the constants defined by Light.LIGHTMAP_x)
+         */
+        set lightmapMode(value: number);
+        /**
+         * Shadow generator associted to the light.
+         * @hidden Internal use only.
+         */
+        _shadowGenerator: Nullable<IShadowGenerator>;
+        /**
+         * @hidden Internal use only.
+         */
+        _excludedMeshesIds: string[];
+        /**
+         * @hidden Internal use only.
+         */
+        _includedOnlyMeshesIds: string[];
+        /**
+         * The current light unifom buffer.
+         * @hidden Internal use only.
+         */
+        _uniformBuffer: UniformBuffer;
+        /** @hidden */
+        _renderId: number;
+        /**
+         * Creates a Light object in the scene.
+         * Documentation : https://doc.babylonjs.com/babylon101/lights
+         * @param name The firendly name of the light
+         * @param scene The scene the light belongs too
+         */
+        constructor(name: string, scene: Scene);
+        protected abstract _buildUniformLayout(): void;
+        /**
+         * Sets the passed Effect "effect" with the Light information.
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The light
+         */
+        abstract transferToEffect(effect: Effect, lightIndex: string): Light;
+        /**
+         * Sets the passed Effect "effect" with the Light textures.
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The light
+         */
+        transferTexturesToEffect(effect: Effect, lightIndex: string): Light;
+        /**
+         * Binds the lights information from the scene to the effect for the given mesh.
+         * @param lightIndex Light index
+         * @param scene The scene where the light belongs to
+         * @param effect The effect we are binding the data to
+         * @param useSpecular Defines if specular is supported
+         * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
+         */
+        _bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel?: boolean): void;
+        /**
+         * Sets the passed Effect "effect" with the Light information.
+         * @param effect The effect to update
+         * @param lightDataUniformName The uniform used to store light data (position or direction)
+         * @returns The light
+         */
+        abstract transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): Light;
+        /**
+         * Returns the string "Light".
+         * @returns the class name
+         */
+        getClassName(): string;
+        /** @hidden */
+        readonly _isLight: boolean;
+        /**
+         * Converts the light information to a readable string for debug purpose.
+         * @param fullDetails Supports for multiple levels of logging within scene loading
+         * @returns the human readable light info
+         */
+        toString(fullDetails?: boolean): string;
+        /** @hidden */
+        protected _syncParentEnabledState(): void;
+        /**
+         * Set the enabled state of this node.
+         * @param value - the new enabled state
+         */
+        setEnabled(value: boolean): void;
+        /**
+         * Returns the Light associated shadow generator if any.
+         * @return the associated shadow generator.
+         */
+        getShadowGenerator(): Nullable<IShadowGenerator>;
+        /**
+         * Returns a Vector3, the absolute light position in the World.
+         * @returns the world space position of the light
+         */
+        getAbsolutePosition(): Vector3;
+        /**
+         * Specifies if the light will affect the passed mesh.
+         * @param mesh The mesh to test against the light
+         * @return true the mesh is affected otherwise, false.
+         */
+        canAffectMesh(mesh: AbstractMesh): boolean;
+        /**
+         * Sort function to order lights for rendering.
+         * @param a First Light object to compare to second.
+         * @param b Second Light object to compare first.
+         * @return -1 to reduce's a's index relative to be, 0 for no change, 1 to increase a's index relative to b.
+         */
+        static CompareLightsPriority(a: Light, b: Light): number;
+        /**
+         * Releases resources associated with this node.
+         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
+         */
+        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
+        /**
+         * Returns the light type ID (integer).
+         * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
+         */
+        getTypeID(): number;
+        /**
+         * Returns the intensity scaled by the Photometric Scale according to the light type and intensity mode.
+         * @returns the scaled intensity in intensity mode unit
+         */
+        getScaledIntensity(): number;
+        /**
+         * Returns a new Light object, named "name", from the current one.
+         * @param name The name of the cloned light
+         * @returns the new created light
+         */
+        clone(name: string): Nullable<Light>;
+        /**
+         * Serializes the current light into a Serialization object.
+         * @returns the serialized object.
+         */
+        serialize(): any;
+        /**
+         * Creates a new typed light from the passed type (integer) : point light = 0, directional light = 1, spot light = 2, hemispheric light = 3.
+         * This new light is named "name" and added to the passed scene.
+         * @param type Type according to the types available in Light.LIGHTTYPEID_x
+         * @param name The friendly name of the light
+         * @param scene The scene the new light will belong to
+         * @returns the constructor function
+         */
+        static GetConstructorFromName(type: number, name: string, scene: Scene): Nullable<() => Light>;
+        /**
+         * Parses the passed "parsedLight" and returns a new instanced Light from this parsing.
+         * @param parsedLight The JSON representation of the light
+         * @param scene The scene to create the parsed light in
+         * @returns the created light after parsing
+         */
+        static Parse(parsedLight: any, scene: Scene): Nullable<Light>;
+        private _hookArrayForExcluded;
+        private _hookArrayForIncludedOnly;
+        private _resyncMeshes;
+        /**
+         * Forces the meshes to update their light related information in their rendering used effects
+         * @hidden Internal Use Only
+         */
+        _markMeshesAsLightDirty(): void;
+        /**
+         * Recomputes the cached photometric scale if needed.
+         */
+        private _computePhotometricScale;
+        /**
+         * Returns the Photometric Scale according to the light type and intensity mode.
+         */
+        private _getPhotometricScale;
+        /**
+         * Reorder the light in the scene according to their defined priority.
+         * @hidden Internal Use Only
+         */
+        _reorderLightsInScene(): void;
+        /**
+         * Prepares the list of defines specific to the light type.
+         * @param defines the list of defines
+         * @param lightIndex defines the index of the light for the effect
+         */
+        abstract prepareLightSpecificDefines(defines: any, lightIndex: number): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Interface used to define Action
+     */
+    export interface IAction {
+        /**
+       * Trigger for the action
+       */
+        trigger: number;
+        /** Options of the trigger */
+        triggerOptions: any;
+        /**
+         * Gets the trigger parameters
+         * @returns the trigger parameters
+         */
+        getTriggerParameter(): any;
+        /**
+         * Internal only - executes current action event
+         * @hidden
+         */
+        _executeCurrent(evt?: ActionEvent): void;
+        /**
+         * Serialize placeholder for child classes
+         * @param parent of child
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+        /**
+        * Internal only
+        * @hidden
+        */
+        _prepare(): void;
+        /**
+         * Internal only - manager for action
+         * @hidden
+         */
+        _actionManager: AbstractActionManager;
+        /**
+         * Adds action to chain of actions, may be a DoNothingAction
+         * @param action defines the next action to execute
+         * @returns The action passed in
+         * @see https://www.babylonjs-playground.com/#1T30HR#0
+         */
+        then(action: IAction): IAction;
+    }
+    /**
+     * The action to be carried out following a trigger
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#available-actions
+     */
+    export class Action implements IAction {
+        /** the trigger, with or without parameters, for the action */
+        triggerOptions: any;
+        /**
+         * Trigger for the action
+         */
+        trigger: number;
+        /**
+         * Internal only - manager for action
+         * @hidden
+         */
+        _actionManager: ActionManager;
+        private _nextActiveAction;
+        private _child;
+        private _condition?;
+        private _triggerParameter;
+        /**
+        * An event triggered prior to action being executed.
+        */
+        onBeforeExecuteObservable: Observable<Action>;
+        /**
+         * Creates a new Action
+         * @param triggerOptions the trigger, with or without parameters, for the action
+         * @param condition an optional determinant of action
+         */
+        constructor(
+        /** the trigger, with or without parameters, for the action */
+        triggerOptions: any, condition?: Condition);
+        /**
+         * Internal only
+         * @hidden
+         */
+        _prepare(): void;
+        /**
+         * Gets the trigger parameters
+         * @returns the trigger parameters
+         */
+        getTriggerParameter(): any;
+        /**
+         * Internal only - executes current action event
+         * @hidden
+         */
+        _executeCurrent(evt?: ActionEvent): void;
+        /**
+         * Execute placeholder for child classes
+         * @param evt optional action event
+         */
+        execute(evt?: ActionEvent): void;
+        /**
+         * Skips to next active action
+         */
+        skipToNextActiveAction(): void;
+        /**
+         * Adds action to chain of actions, may be a DoNothingAction
+         * @param action defines the next action to execute
+         * @returns The action passed in
+         * @see https://www.babylonjs-playground.com/#1T30HR#0
+         */
+        then(action: Action): Action;
+        /**
+         * Internal only
+         * @hidden
+         */
+        _getProperty(propertyPath: string): string;
+        /**
+         * Internal only
+         * @hidden
+         */
+        _getEffectiveTarget(target: any, propertyPath: string): any;
+        /**
+         * Serialize placeholder for child classes
+         * @param parent of child
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+        /**
+         * Internal only called by serialize
+         * @hidden
+         */
+        protected _serialize(serializedAction: any, parent?: any): any;
+        /**
+         * Internal only
+         * @hidden
+         */
+        static _SerializeValueAsString: (value: any) => string;
+        /**
+         * Internal only
+         * @hidden
+         */
+        static _GetTargetProperty: (target: Node | Scene) => {
+            name: string;
+            targetType: string;
+            value: string;
+        };
+    }
+}
+declare module BABYLON {
+    /**
+     * A Condition applied to an Action
+     */
+    export class Condition {
+        /**
+         * Internal only - manager for action
+         * @hidden
+         */
+        _actionManager: ActionManager;
+        /**
+         * Internal only
+         * @hidden
+         */
+        _evaluationId: number;
+        /**
+         * Internal only
+         * @hidden
+         */
+        _currentResult: boolean;
+        /**
+         * Creates a new Condition
+         * @param actionManager the manager of the action the condition is applied to
+         */
+        constructor(actionManager: ActionManager);
+        /**
+         * Check if the current condition is valid
+         * @returns a boolean
+         */
+        isValid(): boolean;
+        /**
+         * Internal only
+         * @hidden
+         */
+        _getProperty(propertyPath: string): string;
+        /**
+         * Internal only
+         * @hidden
+         */
+        _getEffectiveTarget(target: any, propertyPath: string): any;
+        /**
+         * Serialize placeholder for child classes
+         * @returns the serialized object
+         */
+        serialize(): any;
+        /**
+         * Internal only
+         * @hidden
+         */
+        protected _serialize(serializedCondition: any): any;
+    }
+    /**
+     * Defines specific conditional operators as extensions of Condition
+     */
+    export class ValueCondition extends Condition {
+        /** path to specify the property of the target the conditional operator uses  */
+        propertyPath: string;
+        /** the value compared by the conditional operator against the current value of the property */
+        value: any;
+        /** the conditional operator, default ValueCondition.IsEqual */
+        operator: number;
+        /**
+         * Internal only
+         * @hidden
+         */
+        private static _IsEqual;
+        /**
+         * Internal only
+         * @hidden
+         */
+        private static _IsDifferent;
+        /**
+         * Internal only
+         * @hidden
+         */
+        private static _IsGreater;
+        /**
+         * Internal only
+         * @hidden
+         */
+        private static _IsLesser;
+        /**
+         * returns the number for IsEqual
+         */
+        static get IsEqual(): number;
+        /**
+         * Returns the number for IsDifferent
+         */
+        static get IsDifferent(): number;
+        /**
+         * Returns the number for IsGreater
+         */
+        static get IsGreater(): number;
+        /**
+         * Returns the number for IsLesser
+         */
+        static get IsLesser(): number;
+        /**
+         * Internal only The action manager for the condition
+         * @hidden
+         */
+        _actionManager: ActionManager;
+        /**
+         * Internal only
+         * @hidden
+         */
+        private _target;
+        /**
+         * Internal only
+         * @hidden
+         */
+        private _effectiveTarget;
+        /**
+         * Internal only
+         * @hidden
+         */
+        private _property;
+        /**
+         * Creates a new ValueCondition
+         * @param actionManager manager for the action the condition applies to
+         * @param target for the action
+         * @param propertyPath path to specify the property of the target the conditional operator uses
+         * @param value the value compared by the conditional operator against the current value of the property
+         * @param operator the conditional operator, default ValueCondition.IsEqual
+         */
+        constructor(actionManager: ActionManager, target: any, 
+        /** path to specify the property of the target the conditional operator uses  */
+        propertyPath: string, 
+        /** the value compared by the conditional operator against the current value of the property */
+        value: any, 
+        /** the conditional operator, default ValueCondition.IsEqual */
+        operator?: number);
+        /**
+         * Compares the given value with the property value for the specified conditional operator
+         * @returns the result of the comparison
+         */
+        isValid(): boolean;
+        /**
+         * Serialize the ValueCondition into a JSON compatible object
+         * @returns serialization object
+         */
+        serialize(): any;
+        /**
+         * Gets the name of the conditional operator for the ValueCondition
+         * @param operator the conditional operator
+         * @returns the name
+         */
+        static GetOperatorName(operator: number): string;
+    }
+    /**
+     * Defines a predicate condition as an extension of Condition
+     */
+    export class PredicateCondition extends Condition {
+        /** defines the predicate function used to validate the condition */
+        predicate: () => boolean;
+        /**
+         * Internal only - manager for action
+         * @hidden
+         */
+        _actionManager: ActionManager;
+        /**
+         * Creates a new PredicateCondition
+         * @param actionManager manager for the action the condition applies to
+         * @param predicate defines the predicate function used to validate the condition
+         */
+        constructor(actionManager: ActionManager, 
+        /** defines the predicate function used to validate the condition */
+        predicate: () => boolean);
+        /**
+         * @returns the validity of the predicate condition
+         */
+        isValid(): boolean;
+    }
+    /**
+     * Defines a state condition as an extension of Condition
+     */
+    export class StateCondition extends Condition {
+        /** Value to compare with target state  */
+        value: string;
+        /**
+         * Internal only - manager for action
+         * @hidden
+         */
+        _actionManager: ActionManager;
+        /**
+         * Internal only
+         * @hidden
+         */
+        private _target;
+        /**
+         * Creates a new StateCondition
+         * @param actionManager manager for the action the condition applies to
+         * @param target of the condition
+         * @param value to compare with target state
+         */
+        constructor(actionManager: ActionManager, target: any, 
+        /** Value to compare with target state  */
+        value: string);
+        /**
+         * Gets a boolean indicating if the current condition is met
+         * @returns the validity of the state
+         */
+        isValid(): boolean;
+        /**
+         * Serialize the StateCondition into a JSON compatible object
+         * @returns serialization object
+         */
+        serialize(): any;
+    }
+}
+declare module BABYLON {
+    /**
+     * This defines an action responsible to toggle a boolean once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    export class SwitchBooleanAction extends Action {
+        /**
+         * The path to the boolean property in the target object
+         */
+        propertyPath: string;
+        private _target;
+        private _effectiveTarget;
+        private _property;
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the object containing the boolean
+         * @param propertyPath defines the path to the boolean property in the target object
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, target: any, propertyPath: string, condition?: Condition);
+        /** @hidden */
+        _prepare(): void;
+        /**
+         * Execute the action toggle the boolean value.
+         */
+        execute(): void;
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+    }
+    /**
+     * This defines an action responsible to set a the state field of the target
+     *  to a desired value once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    export class SetStateAction extends Action {
+        /**
+         * The value to store in the state field.
+         */
+        value: string;
+        private _target;
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the object containing the state property
+         * @param value defines the value to store in the state field
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, target: any, value: string, condition?: Condition);
+        /**
+         * Execute the action and store the value on the target state property.
+         */
+        execute(): void;
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+    }
+    /**
+     * This defines an action responsible to set a property of the target
+     *  to a desired value once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    export class SetValueAction extends Action {
+        /**
+         * The path of the property to set in the target.
+         */
+        propertyPath: string;
+        /**
+         * The value to set in the property
+         */
+        value: any;
+        private _target;
+        private _effectiveTarget;
+        private _property;
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the object containing the property
+         * @param propertyPath defines the path of the property to set in the target
+         * @param value defines the value to set in the property
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, condition?: Condition);
+        /** @hidden */
+        _prepare(): void;
+        /**
+         * Execute the action and set the targetted property to the desired value.
+         */
+        execute(): void;
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+    }
+    /**
+     * This defines an action responsible to increment the target value
+     *  to a desired value once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    export class IncrementValueAction extends Action {
+        /**
+         * The path of the property to increment in the target.
+         */
+        propertyPath: string;
+        /**
+         * The value we should increment the property by.
+         */
+        value: any;
+        private _target;
+        private _effectiveTarget;
+        private _property;
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the object containing the property
+         * @param propertyPath defines the path of the property to increment in the target
+         * @param value defines the value value we should increment the property by
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, target: any, propertyPath: string, value: any, condition?: Condition);
+        /** @hidden */
+        _prepare(): void;
+        /**
+         * Execute the action and increment the target of the value amount.
+         */
+        execute(): void;
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+    }
+    /**
+     * This defines an action responsible to start an animation once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    export class PlayAnimationAction extends Action {
+        /**
+         * Where the animation should start (animation frame)
+         */
+        from: number;
+        /**
+         * Where the animation should stop (animation frame)
+         */
+        to: number;
+        /**
+         * Define if the animation should loop or stop after the first play.
+         */
+        loop?: boolean;
+        private _target;
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the target animation or animation name
+         * @param from defines from where the animation should start (animation frame)
+         * @param end defines where the animation should stop (animation frame)
+         * @param loop defines if the animation should loop or stop after the first play
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, target: any, from: number, to: number, loop?: boolean, condition?: Condition);
+        /** @hidden */
+        _prepare(): void;
+        /**
+         * Execute the action and play the animation.
+         */
+        execute(): void;
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+    }
+    /**
+     * This defines an action responsible to stop an animation once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    export class StopAnimationAction extends Action {
+        private _target;
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the target animation or animation name
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, target: any, condition?: Condition);
+        /** @hidden */
+        _prepare(): void;
+        /**
+         * Execute the action and stop the animation.
+         */
+        execute(): void;
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+    }
+    /**
+     * This defines an action responsible that does nothing once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    export class DoNothingAction extends Action {
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions?: any, condition?: Condition);
+        /**
+         * Execute the action and do nothing.
+         */
+        execute(): void;
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+    }
+    /**
+     * This defines an action responsible to trigger several actions once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    export class CombineAction extends Action {
+        /**
+         * The list of aggregated animations to run.
+         */
+        children: Action[];
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param children defines the list of aggregated animations to run
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, children: Action[], condition?: Condition);
+        /** @hidden */
+        _prepare(): void;
+        /**
+         * Execute the action and executes all the aggregated actions.
+         */
+        execute(evt: ActionEvent): void;
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+    }
+    /**
+     * This defines an action responsible to run code (external event) once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    export class ExecuteCodeAction extends Action {
+        /**
+         * The callback function to run.
+         */
+        func: (evt: ActionEvent) => void;
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param func defines the callback function to run
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, func: (evt: ActionEvent) => void, condition?: Condition);
+        /**
+         * Execute the action and run the attached code.
+         */
+        execute(evt: ActionEvent): void;
+    }
+    /**
+     * This defines an action responsible to set the parent property of the target once triggered.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    export class SetParentAction extends Action {
+        private _parent;
+        private _target;
+        /**
+         * Instantiate the action
+         * @param triggerOptions defines the trigger options
+         * @param target defines the target containing the parent property
+         * @param parent defines from where the animation should start (animation frame)
+         * @param condition defines the trigger related conditions
+         */
+        constructor(triggerOptions: any, target: any, parent: any, condition?: Condition);
+        /** @hidden */
+        _prepare(): void;
+        /**
+         * Execute the action and set the parent property.
+         */
+        execute(): void;
+        /**
+         * Serializes the actions and its related information.
+         * @param parent defines the object to serialize in
+         * @returns the serialized object
+         */
+        serialize(parent: any): any;
+    }
+}
+declare module BABYLON {
+    /**
+     * Action Manager manages all events to be triggered on a given mesh or the global scene.
+     * A single scene can have many Action Managers to handle predefined actions on specific meshes.
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     */
+    export class ActionManager extends AbstractActionManager {
+        /**
+         * Nothing
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly NothingTrigger: number;
+        /**
+         * On pick
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnPickTrigger: number;
+        /**
+         * On left pick
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnLeftPickTrigger: number;
+        /**
+         * On right pick
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnRightPickTrigger: number;
+        /**
+         * On center pick
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnCenterPickTrigger: number;
+        /**
+         * On pick down
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnPickDownTrigger: number;
+        /**
+         * On double pick
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnDoublePickTrigger: number;
+        /**
+         * On pick up
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnPickUpTrigger: number;
+        /**
+         * On pick out.
+         * This trigger will only be raised if you also declared a OnPickDown
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnPickOutTrigger: number;
+        /**
+         * On long press
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnLongPressTrigger: number;
+        /**
+         * On pointer over
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnPointerOverTrigger: number;
+        /**
+         * On pointer out
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnPointerOutTrigger: number;
+        /**
+         * On every frame
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnEveryFrameTrigger: number;
+        /**
+         * On intersection enter
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnIntersectionEnterTrigger: number;
+        /**
+         * On intersection exit
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnIntersectionExitTrigger: number;
+        /**
+         * On key down
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnKeyDownTrigger: number;
+        /**
+         * On key up
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+         */
+        static readonly OnKeyUpTrigger: number;
+        private _scene;
+        /**
+         * Creates a new action manager
+         * @param scene defines the hosting scene
+         */
+        constructor(scene: Scene);
+        /**
+         * Releases all associated resources
+         */
+        dispose(): void;
+        /**
+         * Gets hosting scene
+         * @returns the hosting scene
+         */
+        getScene(): Scene;
+        /**
+         * Does this action manager handles actions of any of the given triggers
+         * @param triggers defines the triggers to be tested
+         * @return a boolean indicating whether one (or more) of the triggers is handled
+         */
+        hasSpecificTriggers(triggers: number[]): boolean;
+        /**
+         * Does this action manager handles actions of any of the given triggers. This function takes two arguments for
+         * speed.
+         * @param triggerA defines the trigger to be tested
+         * @param triggerB defines the trigger to be tested
+         * @return a boolean indicating whether one (or more) of the triggers is handled
+         */
+        hasSpecificTriggers2(triggerA: number, triggerB: number): boolean;
+        /**
+         * Does this action manager handles actions of a given trigger
+         * @param trigger defines the trigger to be tested
+         * @param parameterPredicate defines an optional predicate to filter triggers by parameter
+         * @return whether the trigger is handled
+         */
+        hasSpecificTrigger(trigger: number, parameterPredicate?: (parameter: any) => boolean): boolean;
+        /**
+         * Does this action manager has pointer triggers
+         */
+        get hasPointerTriggers(): boolean;
+        /**
+         * Does this action manager has pick triggers
+         */
+        get hasPickTriggers(): boolean;
+        /**
+         * Registers an action to this action manager
+         * @param action defines the action to be registered
+         * @return the action amended (prepared) after registration
+         */
+        registerAction(action: IAction): Nullable<IAction>;
+        /**
+         * Unregisters an action to this action manager
+         * @param action defines the action to be unregistered
+         * @return a boolean indicating whether the action has been unregistered
+         */
+        unregisterAction(action: IAction): Boolean;
+        /**
+         * Process a specific trigger
+         * @param trigger defines the trigger to process
+         * @param evt defines the event details to be processed
+         */
+        processTrigger(trigger: number, evt?: IActionEvent): void;
+        /** @hidden */
+        _getEffectiveTarget(target: any, propertyPath: string): any;
+        /** @hidden */
+        _getProperty(propertyPath: string): string;
+        /**
+         * Serialize this manager to a JSON object
+         * @param name defines the property name to store this manager
+         * @returns a JSON representation of this manager
+         */
+        serialize(name: string): any;
+        /**
+         * Creates a new ActionManager from a JSON data
+         * @param parsedActions defines the JSON data to read from
+         * @param object defines the hosting mesh
+         * @param scene defines the hosting scene
+         */
+        static Parse(parsedActions: any, object: Nullable<AbstractMesh>, scene: Scene): void;
+        /**
+         * Get a trigger name by index
+         * @param trigger defines the trigger index
+         * @returns a trigger name
+         */
+        static GetTriggerName(trigger: number): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to represent a sprite
+     * @see http://doc.babylonjs.com/babylon101/sprites
+     */
+    export class Sprite {
+        /** defines the name */
+        name: string;
+        /** Gets or sets the current world position */
+        position: Vector3;
+        /** Gets or sets the main color */
+        color: Color4;
+        /** Gets or sets the width */
+        width: number;
+        /** Gets or sets the height */
+        height: number;
+        /** Gets or sets rotation angle */
+        angle: number;
+        /** Gets or sets the cell index in the sprite sheet */
+        cellIndex: number;
+        /** Gets or sets the cell reference in the sprite sheet, uses sprite's filename when added to sprite sheet */
+        cellRef: string;
+        /** Gets or sets a boolean indicating if UV coordinates should be inverted in U axis */
+        invertU: number;
+        /** Gets or sets a boolean indicating if UV coordinates should be inverted in B axis */
+        invertV: number;
+        /** Gets or sets a boolean indicating that this sprite should be disposed after animation ends */
+        disposeWhenFinishedAnimating: boolean;
+        /** Gets the list of attached animations */
+        animations: Animation[];
+        /** Gets or sets a boolean indicating if the sprite can be picked */
+        isPickable: boolean;
+        /**
+         * Gets or sets the associated action manager
+         */
+        actionManager: Nullable<ActionManager>;
+        private _animationStarted;
+        private _loopAnimation;
+        private _fromIndex;
+        private _toIndex;
+        private _delay;
+        private _direction;
+        private _manager;
+        private _time;
+        private _onAnimationEnd;
+        /**
+         * Gets or sets a boolean indicating if the sprite is visible (renderable). Default is true
+         */
+        isVisible: boolean;
+        /**
+         * Gets or sets the sprite size
+         */
+        get size(): number;
+        set size(value: number);
+        /**
+         * Creates a new Sprite
+         * @param name defines the name
+         * @param manager defines the manager
+         */
+        constructor(
+        /** defines the name */
+        name: string, manager: ISpriteManager);
+        /**
+         * Starts an animation
+         * @param from defines the initial key
+         * @param to defines the end key
+         * @param loop defines if the animation must loop
+         * @param delay defines the start delay (in ms)
+         * @param onAnimationEnd defines a callback to call when animation ends
+         */
+        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
+        /** Stops current animation (if any) */
+        stopAnimation(): void;
+        /** @hidden */
+        _animate(deltaTime: number): void;
+        /** Release associated resources */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+         * Information about the result of picking within a scene
+         * @see https://doc.babylonjs.com/babylon101/picking_collisions
+         */
+    export class PickingInfo {
+        /** @hidden */
+        _pickingUnavailable: boolean;
+        /**
+         * If the pick collided with an object
+         */
+        hit: boolean;
+        /**
+         * Distance away where the pick collided
+         */
+        distance: number;
+        /**
+         * The location of pick collision
+         */
+        pickedPoint: Nullable<Vector3>;
+        /**
+         * The mesh corresponding the the pick collision
+         */
+        pickedMesh: Nullable<AbstractMesh>;
+        /** (See getTextureCoordinates) The barycentric U coordinate that is used when calculating the texture coordinates of the collision.*/
+        bu: number;
+        /** (See getTextureCoordinates) The barycentric V coordinate that is used when calculating the texture coordinates of the collision.*/
+        bv: number;
+        /** The index of the face on the mesh that was picked, or the index of the Line if the picked Mesh is a LinesMesh */
+        faceId: number;
+        /** Id of the the submesh that was picked */
+        subMeshId: number;
+        /** If a sprite was picked, this will be the sprite the pick collided with */
+        pickedSprite: Nullable<Sprite>;
+        /**
+         * If a mesh was used to do the picking (eg. 6dof controller) this will be populated.
+         */
+        originMesh: Nullable<AbstractMesh>;
+        /**
+         * The ray that was used to perform the picking.
+         */
+        ray: Nullable<Ray>;
+        /**
+         * Gets the normal correspodning to the face the pick collided with
+         * @param useWorldCoordinates If the resulting normal should be relative to the world (default: false)
+         * @param useVerticesNormals If the vertices normals should be used to calculate the normal instead of the normal map
+         * @returns The normal correspodning to the face the pick collided with
+         */
+        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
+        /**
+         * Gets the texture coordinates of where the pick occured
+         * @returns the vector containing the coordnates of the texture
+         */
+        getTextureCoordinates(): Nullable<Vector2>;
+    }
+}
+declare module BABYLON {
+    /**
+     * Gather the list of pointer event types as constants.
+     */
+    export class PointerEventTypes {
+        /**
+         * The pointerdown event is fired when a pointer becomes active. For mouse, it is fired when the device transitions from no buttons depressed to at least one button depressed. For touch, it is fired when physical contact is made with the digitizer. For pen, it is fired when the stylus makes physical contact with the digitizer.
+         */
+        static readonly POINTERDOWN: number;
+        /**
+         * The pointerup event is fired when a pointer is no longer active.
+         */
+        static readonly POINTERUP: number;
+        /**
+         * The pointermove event is fired when a pointer changes coordinates.
+         */
+        static readonly POINTERMOVE: number;
+        /**
+         * The pointerwheel event is fired when a mouse wheel has been rotated.
+         */
+        static readonly POINTERWHEEL: number;
+        /**
+         * The pointerpick event is fired when a mesh or sprite has been picked by the pointer.
+         */
+        static readonly POINTERPICK: number;
+        /**
+         * The pointertap event is fired when a the object has been touched and released without drag.
+         */
+        static readonly POINTERTAP: number;
+        /**
+         * The pointerdoubletap event is fired when a the object has been touched and released twice without drag.
+         */
+        static readonly POINTERDOUBLETAP: number;
+    }
+    /**
+     * Base class of pointer info types.
+     */
+    export class PointerInfoBase {
+        /**
+         * Defines the type of event (PointerEventTypes)
+         */
+        type: number;
+        /**
+         * Defines the related dom event
+         */
+        event: PointerEvent | MouseWheelEvent;
+        /**
+         * Instantiates the base class of pointers info.
+         * @param type Defines the type of event (PointerEventTypes)
+         * @param event Defines the related dom event
+         */
+        constructor(
+        /**
+         * Defines the type of event (PointerEventTypes)
+         */
+        type: number, 
+        /**
+         * Defines the related dom event
+         */
+        event: PointerEvent | MouseWheelEvent);
+    }
+    /**
+     * This class is used to store pointer related info for the onPrePointerObservable event.
+     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
+     */
+    export class PointerInfoPre extends PointerInfoBase {
+        /**
+         * Ray from a pointer if availible (eg. 6dof controller)
+         */
+        ray: Nullable<Ray>;
+        /**
+         * Defines the local position of the pointer on the canvas.
+         */
+        localPosition: Vector2;
+        /**
+         * Defines whether the engine should skip the next OnPointerObservable associated to this pre.
+         */
+        skipOnPointerObservable: boolean;
+        /**
+         * Instantiates a PointerInfoPre to store pointer related info to the onPrePointerObservable event.
+         * @param type Defines the type of event (PointerEventTypes)
+         * @param event Defines the related dom event
+         * @param localX Defines the local x coordinates of the pointer when the event occured
+         * @param localY Defines the local y coordinates of the pointer when the event occured
+         */
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
+    }
+    /**
+     * This type contains all the data related to a pointer event in Babylon.js.
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
+     */
+    export class PointerInfo extends PointerInfoBase {
+        /**
+         * Defines the picking info associated to the info (if any)\
+         */
+        pickInfo: Nullable<PickingInfo>;
+        /**
+         * Instantiates a PointerInfo to store pointer related info to the onPointerObservable event.
+         * @param type Defines the type of event (PointerEventTypes)
+         * @param event Defines the related dom event
+         * @param pickInfo Defines the picking info associated to the info (if any)\
+         */
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, 
+        /**
+         * Defines the picking info associated to the info (if any)\
+         */
+        pickInfo: Nullable<PickingInfo>);
+    }
+    /**
+     * Data relating to a touch event on the screen.
+     */
+    export interface PointerTouch {
+        /**
+         * X coordinate of touch.
+         */
+        x: number;
+        /**
+         * Y coordinate of touch.
+         */
+        y: number;
+        /**
+         * Id of touch. Unique for each finger.
+         */
+        pointerId: number;
+        /**
+         * Event type passed from DOM.
+         */
+        type: any;
+    }
+}
+declare module BABYLON {
+    /**
+     * Manage the mouse inputs to control the movement of a free camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
+        /**
+         * Define if touch is enabled in the mouse input
+         */
+        touchEnabled: boolean;
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: FreeCamera;
+        /**
+         * Defines the buttons associated with the input to handle camera move.
+         */
+        buttons: number[];
+        /**
+         * Defines the pointer angular sensibility  along the X and Y axis or how fast is the camera rotating.
+         */
+        angularSensibility: number;
+        private _pointerInput;
+        private _onMouseMove;
+        private _observer;
+        private previousPosition;
+        /**
+         * Observable for when a pointer move event occurs containing the move offset
+         */
+        onPointerMovedObservable: Observable<{
+            offsetX: number;
+            offsetY: number;
+        }>;
+        /**
+         * @hidden
+         * If the camera should be rotated automatically based on pointer movement
+         */
+        _allowCameraRotation: boolean;
+        /**
+         * Manage the mouse inputs to control the movement of a free camera.
+         * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+         * @param touchEnabled Defines if touch is enabled or not
+         */
+        constructor(
+        /**
+         * Define if touch is enabled in the mouse input
+         */
+        touchEnabled?: boolean);
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Called on JS contextmenu event.
+         * Override this method to provide functionality.
+         */
+        protected onContextMenu(evt: PointerEvent): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * Manage the touch inputs to control the movement of a free camera.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: FreeCamera;
+        /**
+         * Defines the touch sensibility for rotation.
+         * The higher the faster.
+         */
+        touchAngularSensibility: number;
+        /**
+         * Defines the touch sensibility for move.
+         * The higher the faster.
+         */
+        touchMoveSensibility: number;
+        private _offsetX;
+        private _offsetY;
+        private _pointerPressed;
+        private _pointerInput;
+        private _observer;
+        private _onLostFocus;
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Update the current camera state depending on the inputs that have been used this frame.
+         * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
+         */
+        checkInputs(): void;
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * Default Inputs manager for the FreeCamera.
+     * It groups all the default supported inputs for ease of use.
+     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    export class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
+        /**
+         * @hidden
+         */
+        _mouseInput: Nullable<FreeCameraMouseInput>;
+        /**
+         * Instantiates a new FreeCameraInputsManager.
+         * @param camera Defines the camera the inputs belong to
+         */
+        constructor(camera: FreeCamera);
+        /**
+         * Add keyboard input support to the input manager.
+         * @returns the current input manager
+         */
+        addKeyboard(): FreeCameraInputsManager;
+        /**
+         * Add mouse input support to the input manager.
+         * @param touchEnabled if the FreeCameraMouseInput should support touch (default: true)
+         * @returns the current input manager
+         */
+        addMouse(touchEnabled?: boolean): FreeCameraInputsManager;
+        /**
+         * Removes the mouse input support from the manager
+         * @returns the current input manager
+         */
+        removeMouse(): FreeCameraInputsManager;
+        /**
+         * Add touch input support to the input manager.
+         * @returns the current input manager
+         */
+        addTouch(): FreeCameraInputsManager;
+        /**
+         * Remove all attached input methods from a camera
+         */
+        clear(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * This represents a free type of camera. It can be useful in First Person Shooter game for instance.
+     * Please consider using the new UniversalCamera instead as it adds more functionality like the gamepad.
+     * @see http://doc.babylonjs.com/features/cameras#universal-camera
+     */
+    export class FreeCamera extends TargetCamera {
+        /**
+         * Define the collision ellipsoid of the camera.
+         * This is helpful to simulate a camera body like the player body around the camera
+         * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#arcrotatecamera
+         */
+        ellipsoid: Vector3;
+        /**
+         * Define an offset for the position of the ellipsoid around the camera.
+         * This can be helpful to determine the center of the body near the gravity center of the body
+         * instead of its head.
+         */
+        ellipsoidOffset: Vector3;
+        /**
+         * Enable or disable collisions of the camera with the rest of the scene objects.
+         */
+        checkCollisions: boolean;
+        /**
+         * Enable or disable gravity on the camera.
+         */
+        applyGravity: boolean;
+        /**
+         * Define the input manager associated to the camera.
+         */
+        inputs: FreeCameraInputsManager;
+        /**
+         * Gets the input sensibility for a mouse input. (default is 2000.0)
+         * Higher values reduce sensitivity.
+         */
+        get angularSensibility(): number;
+        /**
+         * Sets the input sensibility for a mouse input. (default is 2000.0)
+         * Higher values reduce sensitivity.
+         */
+        set angularSensibility(value: number);
+        /**
+         * Gets or Set the list of keyboard keys used to control the forward move of the camera.
+         */
+        get keysUp(): number[];
+        set keysUp(value: number[]);
+        /**
+         * Gets or Set the list of keyboard keys used to control the backward move of the camera.
+         */
+        get keysDown(): number[];
+        set keysDown(value: number[]);
+        /**
+         * Gets or Set the list of keyboard keys used to control the left strafe move of the camera.
+         */
+        get keysLeft(): number[];
+        set keysLeft(value: number[]);
+        /**
+         * Gets or Set the list of keyboard keys used to control the right strafe move of the camera.
+         */
+        get keysRight(): number[];
+        set keysRight(value: number[]);
+        /**
+         * Event raised when the camera collide with a mesh in the scene.
+         */
+        onCollide: (collidedMesh: AbstractMesh) => void;
+        private _collider;
+        private _needMoveForGravity;
+        private _oldPosition;
+        private _diffPosition;
+        private _newPosition;
+        /** @hidden */
+        _localDirection: Vector3;
+        /** @hidden */
+        _transformedDirection: Vector3;
+        /**
+         * Instantiates a Free Camera.
+         * This represents a free type of camera. It can be useful in First Person Shooter game for instance.
+         * Please consider using the new UniversalCamera instead as it adds more functionality like touch to this camera.
+         * @see http://doc.babylonjs.com/features/cameras#universal-camera
+         * @param name Define the name of the camera in the scene
+         * @param position Define the start position of the camera in the scene
+         * @param scene Define the scene the camera belongs to
+         * @param setActiveOnSceneIfNoneActive Defines wheter the camera should be marked as active if not other active cameras have been defined
+         */
+        constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive?: boolean);
+        /**
+         * Attached controls to the current camera.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current controls from the camera.
+         * The camera will stop reacting to inputs.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: HTMLElement): void;
+        private _collisionMask;
+        /**
+         * Define a collision mask to limit the list of object the camera can collide with
+         */
+        get collisionMask(): number;
+        set collisionMask(mask: number);
+        /** @hidden */
+        _collideWithWorld(displacement: Vector3): void;
+        private _onCollisionPositionChange;
+        /** @hidden */
+        _checkInputs(): void;
+        /** @hidden */
+        _decideIfNeedsToMove(): boolean;
+        /** @hidden */
+        _updatePosition(): void;
+        /**
+         * Destroy the camera and release the current resources hold by it.
+         */
+        dispose(): void;
+        /**
+         * Gets the current object class name.
+         * @return the class name
+         */
+        getClassName(): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * Represents a gamepad control stick position
+     */
+    export class StickValues {
+        /**
+         * The x component of the control stick
+         */
+        x: number;
+        /**
+         * The y component of the control stick
+         */
+        y: number;
+        /**
+         * Initializes the gamepad x and y control stick values
+         * @param x The x component of the gamepad control stick value
+         * @param y The y component of the gamepad control stick value
+         */
+        constructor(
+        /**
+         * The x component of the control stick
+         */
+        x: number, 
+        /**
+         * The y component of the control stick
+         */
+        y: number);
+    }
+    /**
+     * An interface which manages callbacks for gamepad button changes
+     */
+    export interface GamepadButtonChanges {
+        /**
+         * Called when a gamepad has been changed
+         */
+        changed: boolean;
+        /**
+         * Called when a gamepad press event has been triggered
+         */
+        pressChanged: boolean;
+        /**
+         * Called when a touch event has been triggered
+         */
+        touchChanged: boolean;
+        /**
+         * Called when a value has changed
+         */
+        valueChanged: boolean;
+    }
+    /**
+     * Represents a gamepad
+     */
+    export class Gamepad {
+        /**
+         * The id of the gamepad
+         */
+        id: string;
+        /**
+         * The index of the gamepad
+         */
+        index: number;
+        /**
+         * The browser gamepad
+         */
+        browserGamepad: any;
+        /**
+         * Specifies what type of gamepad this represents
+         */
+        type: number;
+        private _leftStick;
+        private _rightStick;
+        /** @hidden */
+        _isConnected: boolean;
+        private _leftStickAxisX;
+        private _leftStickAxisY;
+        private _rightStickAxisX;
+        private _rightStickAxisY;
+        /**
+         * Triggered when the left control stick has been changed
+         */
+        private _onleftstickchanged;
+        /**
+         * Triggered when the right control stick has been changed
+         */
+        private _onrightstickchanged;
+        /**
+         * Represents a gamepad controller
+         */
+        static GAMEPAD: number;
+        /**
+         * Represents a generic controller
+         */
+        static GENERIC: number;
+        /**
+         * Represents an XBox controller
+         */
+        static XBOX: number;
+        /**
+         * Represents a pose-enabled controller
+         */
+        static POSE_ENABLED: number;
+        /**
+         * Represents an Dual Shock controller
+         */
+        static DUALSHOCK: number;
+        /**
+         * Specifies whether the left control stick should be Y-inverted
+         */
+        protected _invertLeftStickY: boolean;
+        /**
+         * Specifies if the gamepad has been connected
+         */
+        get isConnected(): boolean;
+        /**
+         * Initializes the gamepad
+         * @param id The id of the gamepad
+         * @param index The index of the gamepad
+         * @param browserGamepad The browser gamepad
+         * @param leftStickX The x component of the left joystick
+         * @param leftStickY The y component of the left joystick
+         * @param rightStickX The x component of the right joystick
+         * @param rightStickY The y component of the right joystick
+         */
+        constructor(
+        /**
+         * The id of the gamepad
+         */
+        id: string, 
+        /**
+         * The index of the gamepad
+         */
+        index: number, 
+        /**
+         * The browser gamepad
+         */
+        browserGamepad: any, leftStickX?: number, leftStickY?: number, rightStickX?: number, rightStickY?: number);
+        /**
+         * Callback triggered when the left joystick has changed
+         * @param callback
+         */
+        onleftstickchanged(callback: (values: StickValues) => void): void;
+        /**
+         * Callback triggered when the right joystick has changed
+         * @param callback
+         */
+        onrightstickchanged(callback: (values: StickValues) => void): void;
+        /**
+         * Gets the left joystick
+         */
+        get leftStick(): StickValues;
+        /**
+         * Sets the left joystick values
+         */
+        set leftStick(newValues: StickValues);
+        /**
+         * Gets the right joystick
+         */
+        get rightStick(): StickValues;
+        /**
+         * Sets the right joystick value
+         */
+        set rightStick(newValues: StickValues);
+        /**
+         * Updates the gamepad joystick positions
+         */
+        update(): void;
+        /**
+         * Disposes the gamepad
+         */
+        dispose(): void;
+    }
+    /**
+     * Represents a generic gamepad
+     */
+    export class GenericPad extends Gamepad {
+        private _buttons;
+        private _onbuttondown;
+        private _onbuttonup;
+        /**
+         * Observable triggered when a button has been pressed
+         */
+        onButtonDownObservable: Observable<number>;
+        /**
+         * Observable triggered when a button has been released
+         */
+        onButtonUpObservable: Observable<number>;
+        /**
+         * Callback triggered when a button has been pressed
+         * @param callback Called when a button has been pressed
+         */
+        onbuttondown(callback: (buttonPressed: number) => void): void;
+        /**
+         * Callback triggered when a button has been released
+         * @param callback Called when a button has been released
+         */
+        onbuttonup(callback: (buttonReleased: number) => void): void;
+        /**
+         * Initializes the generic gamepad
+         * @param id The id of the generic gamepad
+         * @param index The index of the generic gamepad
+         * @param browserGamepad The browser gamepad
+         */
+        constructor(id: string, index: number, browserGamepad: any);
+        private _setButtonValue;
+        /**
+         * Updates the generic gamepad
+         */
+        update(): void;
+        /**
+         * Disposes the generic gamepad
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+    * Defines the types of pose enabled controllers that are supported
+    */
+    export enum PoseEnabledControllerType {
+        /**
+         * HTC Vive
+         */
+        VIVE = 0,
+        /**
+         * Oculus Rift
+         */
+        OCULUS = 1,
+        /**
+         * Windows mixed reality
+         */
+        WINDOWS = 2,
+        /**
+         * Samsung gear VR
+         */
+        GEAR_VR = 3,
+        /**
+         * Google Daydream
+         */
+        DAYDREAM = 4,
+        /**
+         * Generic
+         */
+        GENERIC = 5
+    }
+    /**
+     * Defines the MutableGamepadButton interface for the state of a gamepad button
+     */
+    export interface MutableGamepadButton {
+        /**
+         * Value of the button/trigger
+         */
+        value: number;
+        /**
+         * If the button/trigger is currently touched
+         */
+        touched: boolean;
+        /**
+         * If the button/trigger is currently pressed
+         */
+        pressed: boolean;
+    }
+    /**
+     * Defines the ExtendedGamepadButton interface for a gamepad button which includes state provided by a pose controller
+     * @hidden
+     */
+    export interface ExtendedGamepadButton extends GamepadButton {
+        /**
+         * If the button/trigger is currently pressed
+         */
+        readonly pressed: boolean;
+        /**
+         * If the button/trigger is currently touched
+         */
+        readonly touched: boolean;
+        /**
+         * Value of the button/trigger
+         */
+        readonly value: number;
+    }
+    /** @hidden */
+    export interface _GamePadFactory {
+        /**
+         * Returns whether or not the current gamepad can be created for this type of controller.
+         * @param gamepadInfo Defines the gamepad info as received from the controller APIs.
+         * @returns true if it can be created, otherwise false
+         */
+        canCreate(gamepadInfo: any): boolean;
+        /**
+         * Creates a new instance of the Gamepad.
+         * @param gamepadInfo Defines the gamepad info as received from the controller APIs.
+         * @returns the new gamepad instance
+         */
+        create(gamepadInfo: any): Gamepad;
+    }
+    /**
+     * Defines the PoseEnabledControllerHelper object that is used initialize a gamepad as the controller type it is specified as (eg. windows mixed reality controller)
+     */
+    export class PoseEnabledControllerHelper {
+        /** @hidden */
+        static _ControllerFactories: _GamePadFactory[];
+        /** @hidden */
+        static _DefaultControllerFactory: Nullable<(gamepadInfo: any) => Gamepad>;
+        /**
+         * Initializes a gamepad as the controller type it is specified as (eg. windows mixed reality controller)
+         * @param vrGamepad the gamepad to initialized
+         * @returns a vr controller of the type the gamepad identified as
+         */
+        static InitiateController(vrGamepad: any): Gamepad;
+    }
+    /**
+     * Defines the PoseEnabledController object that contains state of a vr capable controller
+     */
+    export class PoseEnabledController extends Gamepad implements PoseControlled {
+        /**
+         * If the controller is used in a webXR session
+         */
+        isXR: boolean;
+        private _deviceRoomPosition;
+        private _deviceRoomRotationQuaternion;
+        /**
+         * The device position in babylon space
+         */
+        devicePosition: Vector3;
+        /**
+         * The device rotation in babylon space
+         */
+        deviceRotationQuaternion: Quaternion;
+        /**
+         * The scale factor of the device in babylon space
+         */
+        deviceScaleFactor: number;
+        /**
+         * (Likely devicePosition should be used instead) The device position in its room space
+         */
+        position: Vector3;
+        /**
+         * (Likely deviceRotationQuaternion should be used instead) The device rotation in its room space
+         */
+        rotationQuaternion: Quaternion;
+        /**
+         * The type of controller (Eg. Windows mixed reality)
+         */
+        controllerType: PoseEnabledControllerType;
+        protected _calculatedPosition: Vector3;
+        private _calculatedRotation;
+        /**
+         * The raw pose from the device
+         */
+        rawPose: DevicePose;
+        private _trackPosition;
+        private _maxRotationDistFromHeadset;
+        private _draggedRoomRotation;
+        /**
+         * @hidden
+         */
+        _disableTrackPosition(fixedPosition: Vector3): void;
+        /**
+         * Internal, the mesh attached to the controller
+         * @hidden
+         */
+        _mesh: Nullable<AbstractMesh>;
+        private _poseControlledCamera;
+        private _leftHandSystemQuaternion;
+        /**
+         * Internal, matrix used to convert room space to babylon space
+         * @hidden
+         */
+        _deviceToWorld: Matrix;
+        /**
+         * Node to be used when casting a ray from the controller
+         * @hidden
+         */
+        _pointingPoseNode: Nullable<TransformNode>;
+        /**
+         * Name of the child mesh that can be used to cast a ray from the controller
+         */
+        static readonly POINTING_POSE: string;
+        /**
+         * Creates a new PoseEnabledController from a gamepad
+         * @param browserGamepad the gamepad that the PoseEnabledController should be created from
+         */
+        constructor(browserGamepad: any);
+        private _workingMatrix;
+        /**
+         * Updates the state of the pose enbaled controller and mesh based on the current position and rotation of the controller
+         */
+        update(): void;
+        /**
+         * Updates only the pose device and mesh without doing any button event checking
+         */
+        protected _updatePoseAndMesh(): void;
+        /**
+         * Updates the state of the pose enbaled controller based on the raw pose data from the device
+         * @param poseData raw pose fromthe device
+         */
+        updateFromDevice(poseData: DevicePose): void;
+        /**
+         * @hidden
+         */
+        _meshAttachedObservable: Observable<AbstractMesh>;
+        /**
+         * Attaches a mesh to the controller
+         * @param mesh the mesh to be attached
+         */
+        attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Attaches the controllers mesh to a camera
+         * @param camera the camera the mesh should be attached to
+         */
+        attachToPoseControlledCamera(camera: TargetCamera): void;
+        /**
+         * Disposes of the controller
+         */
+        dispose(): void;
+        /**
+         * The mesh that is attached to the controller
+         */
+        get mesh(): Nullable<AbstractMesh>;
+        /**
+         * Gets the ray of the controller in the direction the controller is pointing
+         * @param length the length the resulting ray should be
+         * @returns a ray in the direction the controller is pointing
+         */
+        getForwardRay(length?: number): Ray;
+    }
+}
+declare module BABYLON {
+    /**
+     * Defines the WebVRController object that represents controllers tracked in 3D space
+     */
+    export abstract class WebVRController extends PoseEnabledController {
+        /**
+         * Internal, the default controller model for the controller
+         */
+        protected _defaultModel: Nullable<AbstractMesh>;
+        /**
+         * Fired when the trigger state has changed
+         */
+        onTriggerStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the main button state has changed
+         */
+        onMainButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the secondary button state has changed
+         */
+        onSecondaryButtonStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when the pad state has changed
+         */
+        onPadStateChangedObservable: Observable<ExtendedGamepadButton>;
+        /**
+         * Fired when controllers stick values have changed
+         */
+        onPadValuesChangedObservable: Observable<StickValues>;
+        /**
+         * Array of button availible on the controller
+         */
+        protected _buttons: Array<MutableGamepadButton>;
+        private _onButtonStateChange;
+        /**
+         * Fired when a controller button's state has changed
+         * @param callback the callback containing the button that was modified
+         */
+        onButtonStateChange(callback: (controlledIndex: number, buttonIndex: number, state: ExtendedGamepadButton) => void): void;
+        /**
+         * X and Y axis corresponding to the controllers joystick
+         */
+        pad: StickValues;
+        /**
+         * 'left' or 'right', see https://w3c.github.io/gamepad/extensions.html#gamepadhand-enum
+         */
+        hand: string;
+        /**
+         * The default controller model for the controller
+         */
+        get defaultModel(): Nullable<AbstractMesh>;
+        /**
+         * Creates a new WebVRController from a gamepad
+         * @param vrGamepad the gamepad that the WebVRController should be created from
+         */
+        constructor(vrGamepad: any);
+        /**
+         * Updates the state of the controller and mesh based on the current position and rotation of the controller
+         */
+        update(): void;
+        /**
+         * Function to be called when a button is modified
+         */
+        protected abstract _handleButtonChange(buttonIdx: number, value: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+        /**
+         * Loads a mesh and attaches it to the controller
+         * @param scene the scene the mesh should be added to
+         * @param meshLoaded callback for when the mesh has been loaded
+         */
+        abstract initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
+        private _setButtonValue;
+        private _changes;
+        private _checkChanges;
+        /**
+         * Disposes of th webVRCOntroller
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * The HemisphericLight simulates the ambient environment light,
+     * so the passed direction is the light reflection direction, not the incoming direction.
+     */
+    export class HemisphericLight extends Light {
+        /**
+         * The groundColor is the light in the opposite direction to the one specified during creation.
+         * You can think of the diffuse and specular light as coming from the centre of the object in the given direction and the groundColor light in the opposite direction.
+         */
+        groundColor: Color3;
+        /**
+         * The light reflection direction, not the incoming direction.
+         */
+        direction: Vector3;
+        /**
+         * Creates a HemisphericLight object in the scene according to the passed direction (Vector3).
+         * The HemisphericLight simulates the ambient environment light, so the passed direction is the light reflection direction, not the incoming direction.
+         * The HemisphericLight can't cast shadows.
+         * Documentation : https://doc.babylonjs.com/babylon101/lights
+         * @param name The friendly name of the light
+         * @param direction The direction of the light reflection
+         * @param scene The scene the light belongs to
+         */
+        constructor(name: string, direction: Vector3, scene: Scene);
+        protected _buildUniformLayout(): void;
+        /**
+         * Returns the string "HemisphericLight".
+         * @return The class name
+         */
+        getClassName(): string;
+        /**
+         * Sets the HemisphericLight direction towards the passed target (Vector3).
+         * Returns the updated direction.
+         * @param target The target the direction should point to
+         * @return The computed direction
+         */
+        setDirectionToTarget(target: Vector3): Vector3;
+        /**
+         * Returns the shadow generator associated to the light.
+         * @returns Always null for hemispheric lights because it does not support shadows.
+         */
+        getShadowGenerator(): Nullable<IShadowGenerator>;
+        /**
+         * Sets the passed Effect object with the HemisphericLight normalized direction and color and the passed name (string).
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The hemispheric light
+         */
+        transferToEffect(effect: Effect, lightIndex: string): HemisphericLight;
+        transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): this;
+        /**
+         * Computes the world matrix of the node
+         * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
+         * @param useWasUpdatedFlag defines a reserved property
+         * @returns the world matrix
+         */
+        computeWorldMatrix(): Matrix;
+        /**
+         * Returns the integer 3.
+         * @return The light Type id as a constant defines in Light.LIGHTTYPEID_x
+         */
+        getTypeID(): number;
+        /**
+         * Prepares the list of defines specific to the light type.
+         * @param defines the list of defines
+         * @param lightIndex defines the index of the light for the effect
+         */
+        prepareLightSpecificDefines(defines: any, lightIndex: number): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var vrMultiviewToSingleviewPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * Renders to multiple views with a single draw call
+     * @see https://www.khronos.org/registry/webgl/extensions/WEBGL_multiview/
+     */
+    export class MultiviewRenderTarget extends RenderTargetTexture {
+        /**
+         * Creates a multiview render target
+         * @param scene scene used with the render target
+         * @param size the size of the render target (used for each view)
+         */
+        constructor(scene: Scene, size?: number | {
+            width: number;
+            height: number;
+        } | {
+            ratio: number;
+        });
+        /**
+         * @hidden
+         * @param faceIndex the face index, if its a cube texture
+         */
+        _bindFrameBuffer(faceIndex?: number): void;
+        /**
+         * Gets the number of views the corresponding to the texture (eg. a MultiviewRenderTarget will have > 1)
+         * @returns the view count
+         */
+        getViewCount(): number;
+    }
+}
+declare module BABYLON {
+    /**
+     * Represents a camera frustum
+     */
+    export class Frustum {
+        /**
+         * Gets the planes representing the frustum
+         * @param transform matrix to be applied to the returned planes
+         * @returns a new array of 6 Frustum planes computed by the given transformation matrix.
+         */
+        static GetPlanes(transform: DeepImmutable<Matrix>): Plane[];
+        /**
+         * Gets the near frustum plane transformed by the transform matrix
+         * @param transform transformation matrix to be applied to the resulting frustum plane
+         * @param frustumPlane the resuling frustum plane
+         */
+        static GetNearPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
+        /**
+         * Gets the far frustum plane transformed by the transform matrix
+         * @param transform transformation matrix to be applied to the resulting frustum plane
+         * @param frustumPlane the resuling frustum plane
+         */
+        static GetFarPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
+        /**
+         * Gets the left frustum plane transformed by the transform matrix
+         * @param transform transformation matrix to be applied to the resulting frustum plane
+         * @param frustumPlane the resuling frustum plane
+         */
+        static GetLeftPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
+        /**
+         * Gets the right frustum plane transformed by the transform matrix
+         * @param transform transformation matrix to be applied to the resulting frustum plane
+         * @param frustumPlane the resuling frustum plane
+         */
+        static GetRightPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
+        /**
+         * Gets the top frustum plane transformed by the transform matrix
+         * @param transform transformation matrix to be applied to the resulting frustum plane
+         * @param frustumPlane the resuling frustum plane
+         */
+        static GetTopPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
+        /**
+         * Gets the bottom frustum plane transformed by the transform matrix
+         * @param transform transformation matrix to be applied to the resulting frustum plane
+         * @param frustumPlane the resuling frustum plane
+         */
+        static GetBottomPlaneToRef(transform: DeepImmutable<Matrix>, frustumPlane: Plane): void;
+        /**
+         * Sets the given array "frustumPlanes" with the 6 Frustum planes computed by the given transformation matrix.
+         * @param transform transformation matrix to be applied to the resulting frustum planes
+         * @param frustumPlanes the resuling frustum planes
+         */
+        static GetPlanesToRef(transform: DeepImmutable<Matrix>, frustumPlanes: Plane[]): void;
+    }
+}
+declare module BABYLON {
+        interface Engine {
+            /**
+             * Creates a new multiview render target
+             * @param width defines the width of the texture
+             * @param height defines the height of the texture
+             * @returns the created multiview texture
+             */
+            createMultiviewRenderTargetTexture(width: number, height: number): InternalTexture;
+            /**
+             * Binds a multiview framebuffer to be drawn to
+             * @param multiviewTexture texture to bind
+             */
+            bindMultiviewFramebuffer(multiviewTexture: InternalTexture): void;
+        }
+        interface Camera {
+            /**
+             * @hidden
+             * For cameras that cannot use multiview images to display directly. (e.g. webVR camera will render to multiview texture, then copy to each eye texture and go from there)
+             */
+            _useMultiviewToSingleView: boolean;
+            /**
+             * @hidden
+             * For cameras that cannot use multiview images to display directly. (e.g. webVR camera will render to multiview texture, then copy to each eye texture and go from there)
+             */
+            _multiviewTexture: Nullable<RenderTargetTexture>;
+            /**
+             * @hidden
+             * ensures the multiview texture of the camera exists and has the specified width/height
+             * @param width height to set on the multiview texture
+             * @param height width to set on the multiview texture
+             */
+            _resizeOrCreateMultiviewTexture(width: number, height: number): void;
+        }
+        interface Scene {
+            /** @hidden */
+            _transformMatrixR: Matrix;
+            /** @hidden */
+            _multiviewSceneUbo: Nullable<UniformBuffer>;
+            /** @hidden */
+            _createMultiviewUbo(): void;
+            /** @hidden */
+            _updateMultiviewUbo(viewR?: Matrix, projectionR?: Matrix): void;
+            /** @hidden */
+            _renderMultiviewToSingleView(camera: Camera): void;
+        }
+}
+declare module BABYLON {
+    /**
+     * VRMultiviewToSingleview used to convert multiview texture arrays to standard textures for scenarios such as webVR
+     * This will not be used for webXR as it supports displaying texture arrays directly
+     */
+    export class VRMultiviewToSingleviewPostProcess extends PostProcess {
+        /**
+         * Initializes a VRMultiviewToSingleview
+         * @param name name of the post process
+         * @param camera camera to be applied to
+         * @param scaleFactor scaling factor to the size of the output texture
+         */
+        constructor(name: string, camera: Camera, scaleFactor: number);
+    }
+}
+declare module BABYLON {
+    /**
+     * Interface used to define additional presentation attributes
+     */
+    export interface IVRPresentationAttributes {
+        /**
+         * Defines a boolean indicating that we want to get 72hz mode on Oculus Browser (default is off eg. 60hz)
+         */
+        highRefreshRate: boolean;
+        /**
+         * Enables foveation in VR to improve perf. 0 none, 1 low, 2 medium, 3 high (Default is 1)
+         */
+        foveationLevel: number;
+    }
+        interface Engine {
+            /** @hidden */
+            _vrDisplay: any;
+            /** @hidden */
+            _vrSupported: boolean;
+            /** @hidden */
+            _oldSize: Size;
+            /** @hidden */
+            _oldHardwareScaleFactor: number;
+            /** @hidden */
+            _vrExclusivePointerMode: boolean;
+            /** @hidden */
+            _webVRInitPromise: Promise<IDisplayChangedEventArgs>;
+            /** @hidden */
+            _onVRDisplayPointerRestricted: () => void;
+            /** @hidden */
+            _onVRDisplayPointerUnrestricted: () => void;
+            /** @hidden */
+            _onVrDisplayConnect: Nullable<(display: any) => void>;
+            /** @hidden */
+            _onVrDisplayDisconnect: Nullable<() => void>;
+            /** @hidden */
+            _onVrDisplayPresentChange: Nullable<() => void>;
+            /**
+             * Observable signaled when VR display mode changes
+             */
+            onVRDisplayChangedObservable: Observable<IDisplayChangedEventArgs>;
+            /**
+             * Observable signaled when VR request present is complete
+             */
+            onVRRequestPresentComplete: Observable<boolean>;
+            /**
+             * Observable signaled when VR request present starts
+             */
+            onVRRequestPresentStart: Observable<Engine>;
+            /**
+             * Gets a boolean indicating that the engine is currently in VR exclusive mode for the pointers
+             * @see https://docs.microsoft.com/en-us/microsoft-edge/webvr/essentials#mouse-input
+             */
+            isInVRExclusivePointerMode: boolean;
+            /**
+             * Gets a boolean indicating if a webVR device was detected
+             * @returns true if a webVR device was detected
+             */
+            isVRDevicePresent(): boolean;
+            /**
+             * Gets the current webVR device
+             * @returns the current webVR device (or null)
+             */
+            getVRDevice(): any;
+            /**
+             * Initializes a webVR display and starts listening to display change events
+             * The onVRDisplayChangedObservable will be notified upon these changes
+             * @returns A promise containing a VRDisplay and if vr is supported
+             */
+            initWebVRAsync(): Promise<IDisplayChangedEventArgs>;
+            /** @hidden */
+            _getVRDisplaysAsync(): Promise<IDisplayChangedEventArgs>;
+            /**
+             * Gets or sets the presentation attributes used to configure VR rendering
+             */
+            vrPresentationAttributes?: IVRPresentationAttributes;
+            /**
+             * Call this function to switch to webVR mode
+             * Will do nothing if webVR is not supported or if there is no webVR device
+             * @param options the webvr options provided to the camera. mainly used for multiview
+             * @see http://doc.babylonjs.com/how_to/webvr_camera
+             */
+            enableVR(options: WebVROptions): void;
+            /** @hidden */
+            _onVRFullScreenTriggered(): void;
+        }
+}
+declare module BABYLON {
+    /**
+     * This is a copy of VRPose. See https://developer.mozilla.org/en-US/docs/Web/API/VRPose
+     * IMPORTANT!! The data is right-hand data.
+     * @export
+     * @interface DevicePose
+     */
+    export interface DevicePose {
+        /**
+         * The position of the device, values in array are [x,y,z].
+         */
+        readonly position: Nullable<Float32Array>;
+        /**
+         * The linearVelocity of the device, values in array are [x,y,z].
+         */
+        readonly linearVelocity: Nullable<Float32Array>;
+        /**
+         * The linearAcceleration of the device, values in array are [x,y,z].
+         */
+        readonly linearAcceleration: Nullable<Float32Array>;
+        /**
+         * The orientation of the device in a quaternion array, values in array are [x,y,z,w].
+         */
+        readonly orientation: Nullable<Float32Array>;
+        /**
+         * The angularVelocity of the device, values in array are [x,y,z].
+         */
+        readonly angularVelocity: Nullable<Float32Array>;
+        /**
+         * The angularAcceleration of the device, values in array are [x,y,z].
+         */
+        readonly angularAcceleration: Nullable<Float32Array>;
+    }
+    /**
+    * Interface representing a pose controlled object in Babylon.
+    * A pose controlled object has both regular pose values as well as pose values
+    * from an external device such as a VR head mounted display
+    */
+    export interface PoseControlled {
+        /**
+         * The position of the object in babylon space.
+         */
+        position: Vector3;
+        /**
+         * The rotation quaternion of the object in babylon space.
+         */
+        rotationQuaternion: Quaternion;
+        /**
+         * The position of the device in babylon space.
+         */
+        devicePosition?: Vector3;
+        /**
+         * The rotation quaternion of the device in babylon space.
+         */
+        deviceRotationQuaternion: Quaternion;
+        /**
+         * The raw pose coming from the device.
+         */
+        rawPose: Nullable<DevicePose>;
+        /**
+         * The scale of the device to be used when translating from device space to babylon space.
+         */
+        deviceScaleFactor: number;
+        /**
+         * Updates the poseControlled values based on the input device pose.
+         * @param poseData the pose data to update the object with
+         */
+        updateFromDevice(poseData: DevicePose): void;
+    }
+    /**
+     * Set of options to customize the webVRCamera
+     */
+    export interface WebVROptions {
+        /**
+         * Sets if the webVR camera should be tracked to the vrDevice. (default: true)
+         */
+        trackPosition?: boolean;
+        /**
+         * Sets the scale of the vrDevice in babylon space. (default: 1)
+         */
+        positionScale?: number;
+        /**
+         * If there are more than one VRDisplays, this will choose the display matching this name. (default: pick first vrDisplay)
+         */
+        displayName?: string;
+        /**
+         * Should the native controller meshes be initialized. (default: true)
+         */
+        controllerMeshes?: boolean;
+        /**
+         * Creating a default HemiLight only on controllers. (default: true)
+         */
+        defaultLightingOnControllers?: boolean;
+        /**
+         * If you don't want to use the default VR button of the helper. (default: false)
+         */
+        useCustomVRButton?: boolean;
+        /**
+         * If you'd like to provide your own button to the VRHelper. (default: standard babylon vr button)
+         */
+        customVRButton?: HTMLButtonElement;
+        /**
+         * To change the length of the ray for gaze/controllers. Will be scaled by positionScale. (default: 100)
+         */
+        rayLength?: number;
+        /**
+         * To change the default offset from the ground to account for user's height in meters. Will be scaled by positionScale. (default: 1.7)
+         */
+        defaultHeight?: number;
+        /**
+         * If multiview should be used if availible (default: false)
+         */
+        useMultiview?: boolean;
+    }
+    /**
+     * This represents a WebVR camera.
+     * The WebVR camera is Babylon's simple interface to interaction with Windows Mixed Reality, HTC Vive and Oculus Rift.
+     * @example http://doc.babylonjs.com/how_to/webvr_camera
+     */
+    export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
+        private webVROptions;
+        /**
+         * @hidden
+         * The vrDisplay tied to the camera. See https://developer.mozilla.org/en-US/docs/Web/API/VRDisplay
+         */
+        _vrDevice: any;
+        /**
+         * The rawPose of the vrDevice.
+         */
+        rawPose: Nullable<DevicePose>;
+        private _onVREnabled;
+        private _specsVersion;
+        private _attached;
+        private _frameData;
+        protected _descendants: Array<Node>;
+        private _deviceRoomPosition;
+        /** @hidden */
+        _deviceRoomRotationQuaternion: Quaternion;
+        private _standingMatrix;
+        /**
+         * Represents device position in babylon space.
+         */
+        devicePosition: Vector3;
+        /**
+         * Represents device rotation in babylon space.
+         */
+        deviceRotationQuaternion: Quaternion;
+        /**
+         * The scale of the device to be used when translating from device space to babylon space.
+         */
+        deviceScaleFactor: number;
+        private _deviceToWorld;
+        private _worldToDevice;
+        /**
+         * References to the webVR controllers for the vrDevice.
+         */
+        controllers: Array<WebVRController>;
+        /**
+         * Emits an event when a controller is attached.
+         */
+        onControllersAttachedObservable: Observable<WebVRController[]>;
+        /**
+         * Emits an event when a controller's mesh has been loaded;
+         */
+        onControllerMeshLoadedObservable: Observable<WebVRController>;
+        /**
+         * Emits an event when the HMD's pose has been updated.
+         */
+        onPoseUpdatedFromDeviceObservable: Observable<any>;
+        private _poseSet;
+        /**
+         * If the rig cameras be used as parent instead of this camera.
+         */
+        rigParenting: boolean;
+        private _lightOnControllers;
+        private _defaultHeight?;
+        /**
+         * Instantiates a WebVRFreeCamera.
+         * @param name The name of the WebVRFreeCamera
+         * @param position The starting anchor position for the camera
+         * @param scene The scene the camera belongs to
+         * @param webVROptions a set of customizable options for the webVRCamera
+         */
+        constructor(name: string, position: Vector3, scene: Scene, webVROptions?: WebVROptions);
+        /**
+         * Gets the device distance from the ground in meters.
+         * @returns the distance in meters from the vrDevice to ground in device space. If standing matrix is not supported for the vrDevice 0 is returned.
+         */
+        deviceDistanceToRoomGround(): number;
+        /**
+         * Enables the standing matrix when supported. This can be used to position the user's view the correct height from the ground.
+         * @param callback will be called when the standing matrix is set. Callback parameter is if the standing matrix is supported.
+         */
+        useStandingMatrix(callback?: (bool: boolean) => void): void;
+        /**
+         * Enables the standing matrix when supported. This can be used to position the user's view the correct height from the ground.
+         * @returns A promise with a boolean set to if the standing matrix is supported.
+         */
+        useStandingMatrixAsync(): Promise<boolean>;
+        /**
+         * Disposes the camera
+         */
+        dispose(): void;
+        /**
+         * Gets a vrController by name.
+         * @param name The name of the controller to retreive
+         * @returns the controller matching the name specified or null if not found
+         */
+        getControllerByName(name: string): Nullable<WebVRController>;
+        private _leftController;
+        /**
+         * The controller corresponding to the users left hand.
+         */
+        get leftController(): Nullable<WebVRController>;
+        private _rightController;
+        /**
+         * The controller corresponding to the users right hand.
+         */
+        get rightController(): Nullable<WebVRController>;
+        /**
+         * Casts a ray forward from the vrCamera's gaze.
+         * @param length Length of the ray (default: 100)
+         * @returns the ray corresponding to the gaze
+         */
+        getForwardRay(length?: number): Ray;
+        /**
+         * @hidden
+         * Updates the camera based on device's frame data
+         */
+        _checkInputs(): void;
+        /**
+         * Updates the poseControlled values based on the input device pose.
+         * @param poseData Pose coming from the device
+         */
+        updateFromDevice(poseData: DevicePose): void;
+        private _htmlElementAttached;
+        private _detachIfAttached;
+        /**
+         * WebVR's attach control will start broadcasting frames to the device.
+         * Note that in certain browsers (chrome for example) this function must be called
+         * within a user-interaction callback. Example:
+         * <pre> scene.onPointerDown = function() { camera.attachControl(canvas); }</pre>
+         *
+         * @param element html element to attach the vrDevice to
+         * @param noPreventDefault prevent the default html element operation when attaching the vrDevice
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detaches the camera from the html element and disables VR
+         *
+         * @param element html element to detach from
+         */
+        detachControl(element: HTMLElement): void;
+        /**
+         * @returns the name of this class
+         */
+        getClassName(): string;
+        /**
+         * Calls resetPose on the vrDisplay
+         * See: https://developer.mozilla.org/en-US/docs/Web/API/VRDisplay/resetPose
+         */
+        resetToCurrentRotation(): void;
+        /**
+         * @hidden
+         * Updates the rig cameras (left and right eye)
+         */
+        _updateRigCameras(): void;
+        private _workingVector;
+        private _oneVector;
+        private _workingMatrix;
+        private updateCacheCalled;
+        private _correctPositionIfNotTrackPosition;
+        /**
+         * @hidden
+         * Updates the cached values of the camera
+         * @param ignoreParentClass ignores updating the parent class's cache (default: false)
+         */
+        _updateCache(ignoreParentClass?: boolean): void;
+        /**
+         * @hidden
+         * Get current device position in babylon world
+         */
+        _computeDevicePosition(): void;
+        /**
+         * Updates the current device position and rotation in the babylon world
+         */
+        update(): void;
+        /**
+         * @hidden
+         * Gets the view matrix of this camera (Always set to identity as left and right eye cameras contain the actual view matrix)
+         * @returns an identity matrix
+         */
+        _getViewMatrix(): Matrix;
+        private _tmpMatrix;
+        /**
+         * This function is called by the two RIG cameras.
+         * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
+         * @hidden
+         */
+        _getWebVRViewMatrix(): Matrix;
+        /** @hidden */
+        _getWebVRProjectionMatrix(): Matrix;
+        private _onGamepadConnectedObserver;
+        private _onGamepadDisconnectedObserver;
+        private _updateCacheWhenTrackingDisabledObserver;
+        /**
+         * Initializes the controllers and their meshes
+         */
+        initControllers(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Size options for a post process
+     */
+    export type PostProcessOptions = {
+        width: number;
+        height: number;
+    };
+    /**
+     * PostProcess can be used to apply a shader to a texture after it has been rendered
+     * See https://doc.babylonjs.com/how_to/how_to_use_postprocesses
+     */
+    export class PostProcess {
+        /** Name of the PostProcess. */
+        name: string;
+        /**
+         * Gets or sets the unique id of the post process
+         */
+        uniqueId: number;
+        /**
+        * Width of the texture to apply the post process on
+        */
+        width: number;
+        /**
+        * Height of the texture to apply the post process on
+        */
+        height: number;
+        /**
+        * Internal, reference to the location where this postprocess was output to. (Typically the texture on the next postprocess in the chain)
+        * @hidden
+        */
+        _outputTexture: Nullable<InternalTexture>;
+        /**
+        * Sampling mode used by the shader
+        * See https://doc.babylonjs.com/classes/3.1/texture
+        */
+        renderTargetSamplingMode: number;
+        /**
+        * Clear color to use when screen clearing
+        */
+        clearColor: Color4;
+        /**
+        * If the buffer needs to be cleared before applying the post process. (default: true)
+        * Should be set to false if shader will overwrite all previous pixels.
+        */
+        autoClear: boolean;
+        /**
+        * Type of alpha mode to use when performing the post process (default: Engine.ALPHA_DISABLE)
+        */
+        alphaMode: number;
+        /**
+        * Sets the setAlphaBlendConstants of the babylon engine
+        */
+        alphaConstants: Color4;
+        /**
+        * Animations to be used for the post processing
+        */
+        animations: Animation[];
+        /**
+         * Enable Pixel Perfect mode where texture is not scaled to be power of 2.
+         * Can only be used on a single postprocess or on the last one of a chain. (default: false)
+         */
+        enablePixelPerfectMode: boolean;
+        /**
+         * Force the postprocess to be applied without taking in account viewport
+         */
+        forceFullscreenViewport: boolean;
+        /**
+         * List of inspectable custom properties (used by the Inspector)
+         * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+         */
+        inspectableCustomProperties: IInspectable[];
+        /**
+         * Scale mode for the post process (default: Engine.SCALEMODE_FLOOR)
+         *
+         * | Value | Type                                | Description |
+         * | ----- | ----------------------------------- | ----------- |
+         * | 1     | SCALEMODE_FLOOR                     | [engine.scalemode_floor](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_floor) |
+         * | 2     | SCALEMODE_NEAREST                   | [engine.scalemode_nearest](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_nearest) |
+         * | 3     | SCALEMODE_CEILING                   | [engine.scalemode_ceiling](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
+         *
+         */
+        scaleMode: number;
+        /**
+        * Force textures to be a power of two (default: false)
+        */
+        alwaysForcePOT: boolean;
+        private _samples;
+        /**
+        * Number of sample textures (default: 1)
+        */
+        get samples(): number;
+        set samples(n: number);
+        /**
+        * Modify the scale of the post process to be the same as the viewport (default: false)
+        */
+        adaptScaleToCurrentViewport: boolean;
+        private _camera;
+        private _scene;
+        private _engine;
+        private _options;
+        private _reusable;
+        private _textureType;
+        private _textureFormat;
+        /**
+        * Smart array of input and output textures for the post process.
+        * @hidden
+        */
+        _textures: SmartArray<InternalTexture>;
+        /**
+        * The index in _textures that corresponds to the output texture.
+        * @hidden
+        */
+        _currentRenderTextureInd: number;
+        private _effect;
+        private _samplers;
+        private _fragmentUrl;
+        private _vertexUrl;
+        private _parameters;
+        private _scaleRatio;
+        protected _indexParameters: any;
+        private _shareOutputWithPostProcess;
+        private _texelSize;
+        private _forcedOutputTexture;
+        /**
+         * Returns the fragment url or shader name used in the post process.
+         * @returns the fragment url or name in the shader store.
+         */
+        getEffectName(): string;
+        /**
+        * An event triggered when the postprocess is activated.
+        */
+        onActivateObservable: Observable<Camera>;
+        private _onActivateObserver;
+        /**
+        * A function that is added to the onActivateObservable
+        */
+        set onActivate(callback: Nullable<(camera: Camera) => void>);
+        /**
+        * An event triggered when the postprocess changes its size.
+        */
+        onSizeChangedObservable: Observable<PostProcess>;
+        private _onSizeChangedObserver;
+        /**
+        * A function that is added to the onSizeChangedObservable
+        */
+        set onSizeChanged(callback: (postProcess: PostProcess) => void);
+        /**
+        * An event triggered when the postprocess applies its effect.
+        */
+        onApplyObservable: Observable<Effect>;
+        private _onApplyObserver;
+        /**
+        * A function that is added to the onApplyObservable
+        */
+        set onApply(callback: (effect: Effect) => void);
+        /**
+        * An event triggered before rendering the postprocess
+        */
+        onBeforeRenderObservable: Observable<Effect>;
+        private _onBeforeRenderObserver;
+        /**
+        * A function that is added to the onBeforeRenderObservable
+        */
+        set onBeforeRender(callback: (effect: Effect) => void);
+        /**
+        * An event triggered after rendering the postprocess
+        */
+        onAfterRenderObservable: Observable<Effect>;
+        private _onAfterRenderObserver;
+        /**
+        * A function that is added to the onAfterRenderObservable
+        */
+        set onAfterRender(callback: (efect: Effect) => void);
+        /**
+        * The input texture for this post process and the output texture of the previous post process. When added to a pipeline the previous post process will
+        * render it's output into this texture and this texture will be used as textureSampler in the fragment shader of this post process.
+        */
+        get inputTexture(): InternalTexture;
+        set inputTexture(value: InternalTexture);
+        /**
+        * Gets the camera which post process is applied to.
+        * @returns The camera the post process is applied to.
+        */
+        getCamera(): Camera;
+        /**
+        * Gets the texel size of the postprocess.
+        * See https://en.wikipedia.org/wiki/Texel_(graphics)
+        */
+        get texelSize(): Vector2;
+        /**
+         * Creates a new instance PostProcess
+         * @param name The name of the PostProcess.
+         * @param fragmentUrl The url of the fragment shader to be used.
+         * @param parameters Array of the names of uniform non-sampler2D variables that will be passed to the shader.
+         * @param samplers Array of the names of uniform sampler2D variables that will be passed to the shader.
+         * @param options The required width/height ratio to downsize to before computing the render pass. (Use 1.0 for full size)
+         * @param camera The camera to apply the render pass to.
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         * @param defines String of defines that will be set when running the fragment shader. (default: null)
+         * @param textureType Type of textures used when performing the post process. (default: 0)
+         * @param vertexUrl The url of the vertex shader to be used. (default: "postprocess")
+         * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
+         * @param blockCompilation If the shader should not be compiled imediatly. (default: false)
+         * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
+         */
+        constructor(
+        /** Name of the PostProcess. */
+        name: string, fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, defines?: Nullable<string>, textureType?: number, vertexUrl?: string, indexParameters?: any, blockCompilation?: boolean, textureFormat?: number);
+        /**
+         * Gets a string idenfifying the name of the class
+         * @returns "PostProcess" string
+         */
+        getClassName(): string;
+        /**
+         * Gets the engine which this post process belongs to.
+         * @returns The engine the post process was enabled with.
+         */
+        getEngine(): Engine;
+        /**
+         * The effect that is created when initializing the post process.
+         * @returns The created effect corresponding the the postprocess.
+         */
+        getEffect(): Effect;
+        /**
+         * To avoid multiple redundant textures for multiple post process, the output the output texture for this post process can be shared with another.
+         * @param postProcess The post process to share the output with.
+         * @returns This post process.
+         */
+        shareOutputWith(postProcess: PostProcess): PostProcess;
+        /**
+         * Reverses the effect of calling shareOutputWith and returns the post process back to its original state.
+         * This should be called if the post process that shares output with this post process is disabled/disposed.
+         */
+        useOwnOutput(): void;
+        /**
+         * Updates the effect with the current post process compile time values and recompiles the shader.
+         * @param defines Define statements that should be added at the beginning of the shader. (default: null)
+         * @param uniforms Set of uniform variables that will be passed to the shader. (default: null)
+         * @param samplers Set of Texture2D variables that will be passed to the shader. (default: null)
+         * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
+         * @param onCompiled Called when the shader has been compiled.
+         * @param onError Called if there is an error when compiling a shader.
+         */
+        updateEffect(defines?: Nullable<string>, uniforms?: Nullable<string[]>, samplers?: Nullable<string[]>, indexParameters?: any, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): void;
+        /**
+         * The post process is reusable if it can be used multiple times within one frame.
+         * @returns If the post process is reusable
+         */
+        isReusable(): boolean;
+        /** invalidate frameBuffer to hint the postprocess to create a depth buffer */
+        markTextureDirty(): void;
+        /**
+         * Activates the post process by intializing the textures to be used when executed. Notifies onActivateObservable.
+         * When this post process is used in a pipeline, this is call will bind the input texture of this post process to the output of the previous.
+         * @param camera The camera that will be used in the post process. This camera will be used when calling onActivateObservable.
+         * @param sourceTexture The source texture to be inspected to get the width and height if not specified in the post process constructor. (default: null)
+         * @param forceDepthStencil If true, a depth and stencil buffer will be generated. (default: false)
+         * @returns The target texture that was bound to be written to.
+         */
+        activate(camera: Nullable<Camera>, sourceTexture?: Nullable<InternalTexture>, forceDepthStencil?: boolean): InternalTexture;
+        /**
+         * If the post process is supported.
+         */
+        get isSupported(): boolean;
+        /**
+         * The aspect ratio of the output texture.
+         */
+        get aspectRatio(): number;
+        /**
+         * Get a value indicating if the post-process is ready to be used
+         * @returns true if the post-process is ready (shader is compiled)
+         */
+        isReady(): boolean;
+        /**
+         * Binds all textures and uniforms to the shader, this will be run on every pass.
+         * @returns the effect corresponding to this post process. Null if not compiled or not ready.
+         */
+        apply(): Nullable<Effect>;
+        private _disposeTextures;
+        /**
+         * Disposes the post process.
+         * @param camera The camera to dispose the post process on.
+         */
+        dispose(camera?: Camera): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var kernelBlurVaryingDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var kernelBlurFragment: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var kernelBlurFragment2: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var kernelBlurPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var kernelBlurVertex: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var kernelBlurVertexShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * The Blur Post Process which blurs an image based on a kernel and direction.
+     * Can be used twice in x and y directions to perform a guassian blur in two passes.
+     */
+    export class BlurPostProcess extends PostProcess {
+        /** The direction in which to blur the image. */
+        direction: Vector2;
+        private blockCompilation;
+        protected _kernel: number;
+        protected _idealKernel: number;
+        protected _packedFloat: boolean;
+        private _staticDefines;
+        /**
+         * Sets the length in pixels of the blur sample region
+         */
+        set kernel(v: number);
+        /**
+         * Gets the length in pixels of the blur sample region
+         */
+        get kernel(): number;
+        /**
+         * Sets wether or not the blur needs to unpack/repack floats
+         */
+        set packedFloat(v: boolean);
+        /**
+         * Gets wether or not the blur is unpacking/repacking floats
+         */
+        get packedFloat(): boolean;
+        /**
+         * Creates a new instance BlurPostProcess
+         * @param name The name of the effect.
+         * @param direction The direction in which to blur the image.
+         * @param kernel The size of the kernel to be used when computing the blur. eg. Size of 3 will blur the center pixel by 2 pixels surrounding it.
+         * @param options The required width/height ratio to downsize to before computing the render pass. (Use 1.0 for full size)
+         * @param camera The camera to apply the render pass to.
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         * @param textureType Type of textures used when performing the post process. (default: 0)
+         * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
+         */
+        constructor(name: string, 
+        /** The direction in which to blur the image. */
+        direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, defines?: string, blockCompilation?: boolean);
+        /**
+         * Updates the effect with the current post process compile time values and recompiles the shader.
+         * @param defines Define statements that should be added at the beginning of the shader. (default: null)
+         * @param uniforms Set of uniform variables that will be passed to the shader. (default: null)
+         * @param samplers Set of Texture2D variables that will be passed to the shader. (default: null)
+         * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
+         * @param onCompiled Called when the shader has been compiled.
+         * @param onError Called if there is an error when compiling a shader.
+         */
+        updateEffect(defines?: Nullable<string>, uniforms?: Nullable<string[]>, samplers?: Nullable<string[]>, indexParameters?: any, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): void;
+        protected _updateParameters(onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): void;
+        /**
+         * Best kernels are odd numbers that when divided by 2, their integer part is even, so 5, 9 or 13.
+         * Other odd kernels optimize correctly but require proportionally more samples, even kernels are
+         * possible but will produce minor visual artifacts. Since each new kernel requires a new shader we
+         * want to minimize kernel changes, having gaps between physical kernels is helpful in that regard.
+         * The gaps between physical kernels are compensated for in the weighting of the samples
+         * @param idealKernel Ideal blur kernel.
+         * @return Nearest best kernel.
+         */
+        protected _nearestBestKernel(idealKernel: number): number;
+        /**
+         * Calculates the value of a Gaussian distribution with sigma 3 at a given point.
+         * @param x The point on the Gaussian distribution to sample.
+         * @return the value of the Gaussian function at x.
+         */
+        protected _gaussianWeight(x: number): number;
+        /**
+          * Generates a string that can be used as a floating point number in GLSL.
+          * @param x Value to print.
+          * @param decimalFigures Number of decimal places to print the number to (excluding trailing 0s).
+          * @return GLSL float string.
+          */
+        protected _glslFloat(x: number, decimalFigures?: number): string;
+    }
+}
+declare module BABYLON {
+    /**
+     * Mirror texture can be used to simulate the view from a mirror in a scene.
+     * It will dynamically be rendered every frame to adapt to the camera point of view.
+     * You can then easily use it as a reflectionTexture on a flat surface.
+     * In case the surface is not a plane, please consider relying on reflection probes.
+     * @see https://doc.babylonjs.com/how_to/reflect#mirrors
+     */
+    export class MirrorTexture extends RenderTargetTexture {
+        private scene;
+        /**
+         * Define the reflection plane we want to use. The mirrorPlane is usually set to the constructed reflector.
+         * It is possible to directly set the mirrorPlane by directly using a Plane(a, b, c, d) where a, b and c give the plane normal vector (a, b, c) and d is a scalar displacement from the mirrorPlane to the origin. However in all but the very simplest of situations it is more straight forward to set it to the reflector as stated in the doc.
+         * @see https://doc.babylonjs.com/how_to/reflect#mirrors
+         */
+        mirrorPlane: Plane;
+        /**
+         * Define the blur ratio used to blur the reflection if needed.
+         */
+        set blurRatio(value: number);
+        get blurRatio(): number;
+        /**
+         * Define the adaptive blur kernel used to blur the reflection if needed.
+         * This will autocompute the closest best match for the `blurKernel`
+         */
+        set adaptiveBlurKernel(value: number);
+        /**
+         * Define the blur kernel used to blur the reflection if needed.
+         * Please consider using `adaptiveBlurKernel` as it could find the closest best value for you.
+         */
+        set blurKernel(value: number);
+        /**
+         * Define the blur kernel on the X Axis used to blur the reflection if needed.
+         * Please consider using `adaptiveBlurKernel` as it could find the closest best value for you.
+         */
+        set blurKernelX(value: number);
+        get blurKernelX(): number;
+        /**
+         * Define the blur kernel on the Y Axis used to blur the reflection if needed.
+         * Please consider using `adaptiveBlurKernel` as it could find the closest best value for you.
+         */
+        set blurKernelY(value: number);
+        get blurKernelY(): number;
+        private _autoComputeBlurKernel;
+        protected _onRatioRescale(): void;
+        private _updateGammaSpace;
+        private _imageProcessingConfigChangeObserver;
+        private _transformMatrix;
+        private _mirrorMatrix;
+        private _savedViewMatrix;
+        private _blurX;
+        private _blurY;
+        private _adaptiveBlurKernel;
+        private _blurKernelX;
+        private _blurKernelY;
+        private _blurRatio;
+        /**
+         * Instantiates a Mirror Texture.
+         * Mirror texture can be used to simulate the view from a mirror in a scene.
+         * It will dynamically be rendered every frame to adapt to the camera point of view.
+         * You can then easily use it as a reflectionTexture on a flat surface.
+         * In case the surface is not a plane, please consider relying on reflection probes.
+         * @see https://doc.babylonjs.com/how_to/reflect#mirrors
+         * @param name
+         * @param size
+         * @param scene
+         * @param generateMipMaps
+         * @param type
+         * @param samplingMode
+         * @param generateDepthBuffer
+         */
+        constructor(name: string, size: number | {
+            width: number;
+            height: number;
+        } | {
+            ratio: number;
+        }, scene: Scene, generateMipMaps?: boolean, type?: number, samplingMode?: number, generateDepthBuffer?: boolean);
+        private _preparePostProcesses;
+        /**
+         * Clone the mirror texture.
+         * @returns the cloned texture
+         */
+        clone(): MirrorTexture;
+        /**
+         * Serialize the texture to a JSON representation you could use in Parse later on
+         * @returns the serialized JSON representation
+         */
+        serialize(): any;
+        /**
+         * Dispose the texture and release its associated resources.
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
+     * @see http://doc.babylonjs.com/babylon101/materials#texture
+     */
+    export class Texture extends BaseTexture {
+        /**
+         * Gets or sets a general boolean used to indicate that textures containing direct data (buffers) must be saved as part of the serialization process
+         */
+        static SerializeBuffers: boolean;
+        /** @hidden */
+        static _CubeTextureParser: (jsonTexture: any, scene: Scene, rootUrl: string) => CubeTexture;
+        /** @hidden */
+        static _CreateMirror: (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean) => MirrorTexture;
+        /** @hidden */
+        static _CreateRenderTargetTexture: (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean) => RenderTargetTexture;
+        /** nearest is mag = nearest and min = nearest and mip = linear */
+        static readonly NEAREST_SAMPLINGMODE: number;
+        /** nearest is mag = nearest and min = nearest and mip = linear */
+        static readonly NEAREST_NEAREST_MIPLINEAR: number;
+        /** Bilinear is mag = linear and min = linear and mip = nearest */
+        static readonly BILINEAR_SAMPLINGMODE: number;
+        /** Bilinear is mag = linear and min = linear and mip = nearest */
+        static readonly LINEAR_LINEAR_MIPNEAREST: number;
+        /** Trilinear is mag = linear and min = linear and mip = linear */
+        static readonly TRILINEAR_SAMPLINGMODE: number;
+        /** Trilinear is mag = linear and min = linear and mip = linear */
+        static readonly LINEAR_LINEAR_MIPLINEAR: number;
+        /** mag = nearest and min = nearest and mip = nearest */
+        static readonly NEAREST_NEAREST_MIPNEAREST: number;
+        /** mag = nearest and min = linear and mip = nearest */
+        static readonly NEAREST_LINEAR_MIPNEAREST: number;
+        /** mag = nearest and min = linear and mip = linear */
+        static readonly NEAREST_LINEAR_MIPLINEAR: number;
+        /** mag = nearest and min = linear and mip = none */
+        static readonly NEAREST_LINEAR: number;
+        /** mag = nearest and min = nearest and mip = none */
+        static readonly NEAREST_NEAREST: number;
+        /** mag = linear and min = nearest and mip = nearest */
+        static readonly LINEAR_NEAREST_MIPNEAREST: number;
+        /** mag = linear and min = nearest and mip = linear */
+        static readonly LINEAR_NEAREST_MIPLINEAR: number;
+        /** mag = linear and min = linear and mip = none */
+        static readonly LINEAR_LINEAR: number;
+        /** mag = linear and min = nearest and mip = none */
+        static readonly LINEAR_NEAREST: number;
+        /** Explicit coordinates mode */
+        static readonly EXPLICIT_MODE: number;
+        /** Spherical coordinates mode */
+        static readonly SPHERICAL_MODE: number;
+        /** Planar coordinates mode */
+        static readonly PLANAR_MODE: number;
+        /** Cubic coordinates mode */
+        static readonly CUBIC_MODE: number;
+        /** Projection coordinates mode */
+        static readonly PROJECTION_MODE: number;
+        /** Inverse Cubic coordinates mode */
+        static readonly SKYBOX_MODE: number;
+        /** Inverse Cubic coordinates mode */
+        static readonly INVCUBIC_MODE: number;
+        /** Equirectangular coordinates mode */
+        static readonly EQUIRECTANGULAR_MODE: number;
+        /** Equirectangular Fixed coordinates mode */
+        static readonly FIXED_EQUIRECTANGULAR_MODE: number;
+        /** Equirectangular Fixed Mirrored coordinates mode */
+        static readonly FIXED_EQUIRECTANGULAR_MIRRORED_MODE: number;
+        /** Texture is not repeating outside of 0..1 UVs */
+        static readonly CLAMP_ADDRESSMODE: number;
+        /** Texture is repeating outside of 0..1 UVs */
+        static readonly WRAP_ADDRESSMODE: number;
+        /** Texture is repeating and mirrored */
+        static readonly MIRROR_ADDRESSMODE: number;
+        /**
+         * Gets or sets a boolean which defines if the texture url must be build from the serialized URL instead of just using the name and loading them side by side with the scene file
+         */
+        static UseSerializedUrlIfAny: boolean;
+        /**
+         * Define the url of the texture.
+         */
+        url: Nullable<string>;
+        /**
+         * Define an offset on the texture to offset the u coordinates of the UVs
+         * @see http://doc.babylonjs.com/how_to/more_materials#offsetting
+         */
+        uOffset: number;
+        /**
+         * Define an offset on the texture to offset the v coordinates of the UVs
+         * @see http://doc.babylonjs.com/how_to/more_materials#offsetting
+         */
+        vOffset: number;
+        /**
+         * Define an offset on the texture to scale the u coordinates of the UVs
+         * @see http://doc.babylonjs.com/how_to/more_materials#tiling
+         */
+        uScale: number;
+        /**
+         * Define an offset on the texture to scale the v coordinates of the UVs
+         * @see http://doc.babylonjs.com/how_to/more_materials#tiling
+         */
+        vScale: number;
+        /**
+         * Define an offset on the texture to rotate around the u coordinates of the UVs
+         * @see http://doc.babylonjs.com/how_to/more_materials
+         */
+        uAng: number;
+        /**
+         * Define an offset on the texture to rotate around the v coordinates of the UVs
+         * @see http://doc.babylonjs.com/how_to/more_materials
+         */
+        vAng: number;
+        /**
+         * Define an offset on the texture to rotate around the w coordinates of the UVs (in case of 3d texture)
+         * @see http://doc.babylonjs.com/how_to/more_materials
+         */
+        wAng: number;
+        /**
+         * Defines the center of rotation (U)
+         */
+        uRotationCenter: number;
+        /**
+         * Defines the center of rotation (V)
+         */
+        vRotationCenter: number;
+        /**
+         * Defines the center of rotation (W)
+         */
+        wRotationCenter: number;
+        /**
+         * Are mip maps generated for this texture or not.
+         */
+        get noMipmap(): boolean;
+        /**
+         * List of inspectable custom properties (used by the Inspector)
+         * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+         */
+        inspectableCustomProperties: Nullable<IInspectable[]>;
+        private _noMipmap;
+        /** @hidden */
+        _invertY: boolean;
+        private _rowGenerationMatrix;
+        private _cachedTextureMatrix;
+        private _projectionModeMatrix;
+        private _t0;
+        private _t1;
+        private _t2;
+        private _cachedUOffset;
+        private _cachedVOffset;
+        private _cachedUScale;
+        private _cachedVScale;
+        private _cachedUAng;
+        private _cachedVAng;
+        private _cachedWAng;
+        private _cachedProjectionMatrixId;
+        private _cachedCoordinatesMode;
+        /** @hidden */
+        protected _initialSamplingMode: number;
+        /** @hidden */
+        _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>;
+        private _deleteBuffer;
+        protected _format: Nullable<number>;
+        private _delayedOnLoad;
+        private _delayedOnError;
+        private _mimeType?;
+        /**
+         * Observable triggered once the texture has been loaded.
+         */
+        onLoadObservable: Observable<Texture>;
+        protected _isBlocking: boolean;
+        /**
+         * Is the texture preventing material to render while loading.
+         * If false, a default texture will be used instead of the loading one during the preparation step.
+         */
+        set isBlocking(value: boolean);
+        get isBlocking(): boolean;
+        /**
+         * Get the current sampling mode associated with the texture.
+         */
+        get samplingMode(): number;
+        /**
+         * Gets a boolean indicating if the texture needs to be inverted on the y axis during loading
+         */
+        get invertY(): boolean;
+        /**
+         * Instantiates a new texture.
+         * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
+         * @see http://doc.babylonjs.com/babylon101/materials#texture
+         * @param url defines the url of the picture to load as a texture
+         * @param scene defines the scene or engine the texture will belong to
+         * @param noMipmap defines if the texture will require mip maps or not
+         * @param invertY defines if the texture needs to be inverted on the y axis during loading
+         * @param samplingMode defines the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
+         * @param onLoad defines a callback triggered when the texture has been loaded
+         * @param onError defines a callback triggered when an error occurred during the loading session
+         * @param buffer defines the buffer to load the texture from in case the texture is loaded from a buffer representation
+         * @param deleteBuffer defines if the buffer we are loading the texture from should be deleted after load
+         * @param format defines the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
+         * @param mimeType defines an optional mime type information
+         */
+        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, deleteBuffer?: boolean, format?: number, mimeType?: string);
+        /**
+         * Update the url (and optional buffer) of this texture if url was null during construction.
+         * @param url the url of the texture
+         * @param buffer the buffer of the texture (defaults to null)
+         * @param onLoad callback called when the texture is loaded  (defaults to null)
+         */
+        updateURL(url: string, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob>, onLoad?: () => void): void;
+        /**
+         * Finish the loading sequence of a texture flagged as delayed load.
+         * @hidden
+         */
+        delayLoad(): void;
+        private _prepareRowForTextureGeneration;
+        /**
+         * Get the current texture matrix which includes the requested offsetting, tiling and rotation components.
+         * @returns the transform matrix of the texture.
+         */
+        getTextureMatrix(uBase?: number): Matrix;
+        /**
+         * Get the current matrix used to apply reflection. This is useful to rotate an environment texture for instance.
+         * @returns The reflection texture transform
+         */
+        getReflectionTextureMatrix(): Matrix;
+        /**
+         * Clones the texture.
+         * @returns the cloned texture
+         */
+        clone(): Texture;
+        /**
+         * Serialize the texture to a JSON representation we can easily use in the resepective Parse function.
+         * @returns The JSON representation of the texture
+         */
+        serialize(): any;
+        /**
+         * Get the current class name of the texture useful for serialization or dynamic coding.
+         * @returns "Texture"
+         */
+        getClassName(): string;
+        /**
+         * Dispose the texture and release its associated resources.
+         */
+        dispose(): void;
+        /**
+         * Parse the JSON representation of a texture in order to recreate the texture in the given scene.
+         * @param parsedTexture Define the JSON representation of the texture
+         * @param scene Define the scene the parsed texture should be instantiated in
+         * @param rootUrl Define the root url of the parsing sequence in the case of relative dependencies
+         * @returns The parsed texture if successful
+         */
+        static Parse(parsedTexture: any, scene: Scene, rootUrl: string): Nullable<BaseTexture>;
+        /**
+         * Creates a texture from its base 64 representation.
+         * @param data Define the base64 payload without the data: prefix
+         * @param name Define the name of the texture in the scene useful fo caching purpose for instance
+         * @param scene Define the scene the texture should belong to
+         * @param noMipmap Forces the texture to not create mip map information if true
+         * @param invertY define if the texture needs to be inverted on the y axis during loading
+         * @param samplingMode define the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
+         * @param onLoad define a callback triggered when the texture has been loaded
+         * @param onError define a callback triggered when an error occurred during the loading session
+         * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
+         * @returns the created texture
+         */
+        static CreateFromBase64String(data: string, name: string, scene: Scene, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<() => void>, format?: number): Texture;
+        /**
+         * Creates a texture from its data: representation. (data: will be added in case only the payload has been passed in)
+         * @param data Define the base64 payload without the data: prefix
+         * @param name Define the name of the texture in the scene useful fo caching purpose for instance
+         * @param buffer define the buffer to load the texture from in case the texture is loaded from a buffer representation
+         * @param scene Define the scene the texture should belong to
+         * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
+         * @param noMipmap Forces the texture to not create mip map information if true
+         * @param invertY define if the texture needs to be inverted on the y axis during loading
+         * @param samplingMode define the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
+         * @param onLoad define a callback triggered when the texture has been loaded
+         * @param onError define a callback triggered when an error occurred during the loading session
+         * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
+         * @returns the created texture
+         */
+        static LoadFromDataString(name: string, buffer: any, scene: Scene, deleteBuffer?: boolean, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number): Texture;
+    }
+}
+declare module BABYLON {
+    /**
+     * PostProcessManager is used to manage one or more post processes or post process pipelines
+     * See https://doc.babylonjs.com/how_to/how_to_use_postprocesses
+     */
+    export class PostProcessManager {
+        private _scene;
+        private _indexBuffer;
+        private _vertexBuffers;
+        /**
+         * Creates a new instance PostProcess
+         * @param scene The scene that the post process is associated with.
+         */
+        constructor(scene: Scene);
+        private _prepareBuffers;
+        private _buildIndexBuffer;
+        /**
+         * Rebuilds the vertex buffers of the manager.
+         * @hidden
+         */
+        _rebuild(): void;
+        /**
+         * Prepares a frame to be run through a post process.
+         * @param sourceTexture The input texture to the post procesess. (default: null)
+         * @param postProcesses An array of post processes to be run. (default: null)
+         * @returns True if the post processes were able to be run.
+         * @hidden
+         */
+        _prepareFrame(sourceTexture?: Nullable<InternalTexture>, postProcesses?: Nullable<PostProcess[]>): boolean;
+        /**
+         * Manually render a set of post processes to a texture.
+         * @param postProcesses An array of post processes to be run.
+         * @param targetTexture The target texture to render to.
+         * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight
+         * @param faceIndex defines the face to render to if a cubemap is defined as the target
+         * @param lodLevel defines which lod of the texture to render to
+         */
+        directRender(postProcesses: PostProcess[], targetTexture?: Nullable<InternalTexture>, forceFullscreenViewport?: boolean, faceIndex?: number, lodLevel?: number): void;
+        /**
+         * Finalize the result of the output of the postprocesses.
+         * @param doNotPresent If true the result will not be displayed to the screen.
+         * @param targetTexture The target texture to render to.
+         * @param faceIndex The index of the face to bind the target texture to.
+         * @param postProcesses The array of post processes to render.
+         * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight (default: false)
+         * @hidden
+         */
+        _finalizeFrame(doNotPresent?: boolean, targetTexture?: InternalTexture, faceIndex?: number, postProcesses?: Array<PostProcess>, forceFullscreenViewport?: boolean): void;
+        /**
+         * Disposes of the post process manager.
+         */
+        dispose(): void;
     }
 }
 declare module BABYLON {
