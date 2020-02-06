@@ -3,6 +3,7 @@
 #include "NativeWindow.h"
 #include "ShaderCompiler.h"
 #include "RuntimeImpl.h"
+#include "ticketed_collection.h"
 
 #include <napi/napi.h>
 
@@ -245,6 +246,10 @@ namespace Babylon
 
     struct ProgramData final
     {
+        ProgramData() = default;
+        ProgramData(const ProgramData&) = delete;
+        ProgramData(ProgramData&&) = delete;
+
         ~ProgramData()
         {
             bgfx::destroy(Program);
@@ -382,6 +387,7 @@ namespace Babylon
         ShaderCompiler m_shaderCompiler;
 
         ProgramData* m_currentProgram;
+        ticketed_collection<std::unique_ptr<ProgramData>> m_programDataCollection{};
 
         RuntimeImpl& m_runtimeImpl;
 

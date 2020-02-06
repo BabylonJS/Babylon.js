@@ -60,11 +60,9 @@ namespace Babylon
 
         ~napi_env_local()
         {
-            JsErrorCode errorCode = JsDisposeRuntime(m_jsRuntime);
-            if (errorCode != JsErrorCode::JsNoError)
-            {
-                Log(L"Failed to dispose runtime with error code (%u)\n", errorCode);
-            }
+            ThrowIfFailed(JsSetCurrentContext(JS_INVALID_REFERENCE));
+
+            ThrowIfFailed(JsDisposeRuntime(m_jsRuntime));
         }
 
     private:

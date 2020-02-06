@@ -403,23 +403,17 @@ namespace Babylon
                     {
                     });
 
-                constructor = Napi::Persistent(func);
-                constructor.SuppressDestruct();
-
                 env.Global().Set(JS_CLASS_NAME, func);
             }
 
-            static Napi::Object New()
+            static Napi::Object New(const Napi::CallbackInfo& info)
             {
-                return constructor.New({});
+                return info.Env().Global().Get(JS_CLASS_NAME).As<Napi::Function>().New({});
             }
 
             PointerEvent(const Napi::CallbackInfo & info)
                 : Napi::ObjectWrap<PointerEvent>{ info }
             {}
-
-        private:
-            static inline Napi::FunctionReference constructor{};
         };
 
         class XRWebGLLayer : public Napi::ObjectWrap<XRWebGLLayer>

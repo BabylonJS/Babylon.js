@@ -388,6 +388,9 @@ namespace Babylon
 
     NativeEngine::~NativeEngine()
     {
+        // This collection contains bgfx data, so it must be cleared before bgfx::shutdown is called.
+        m_programDataCollection.clear();
+
         bgfx::shutdown();
     }
 
@@ -515,7 +518,7 @@ namespace Babylon
         const auto vertexSource = info[0].As<Napi::String>().Utf8Value();
         const auto fragmentSource = info[1].As<Napi::String>().Utf8Value();
 
-        auto programData = new ProgramData();
+        auto programData = std::make_unique<ProgramData>();
 
         std::vector<uint8_t> vertexBytes{};
         std::vector<uint8_t> fragmentBytes{};
@@ -620,11 +623,10 @@ namespace Babylon
 
         programData->Program = bgfx::createProgram(vertexShader, fragmentShader, true);
 
-        auto finalizer = [](Napi::Env, ProgramData* data) {
-            delete data;
-        };
-
-        return Napi::External<ProgramData>::New(info.Env(), programData, finalizer);
+        auto* rawProgramData = programData.get();
+        auto ticket = m_programDataCollection.insert(std::move(programData));
+        auto finalizer = [ticket = std::move(ticket)](Napi::Env, ProgramData*) {};
+        return Napi::External<ProgramData>::New(info.Env(), rawProgramData, std::move(finalizer));
     }
 
     Napi::Value NativeEngine::GetUniforms(const Napi::CallbackInfo& info)

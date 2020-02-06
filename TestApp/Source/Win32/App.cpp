@@ -83,6 +83,7 @@ namespace
         }
         auto width = static_cast<float>(rect.right - rect.left);
         auto height = static_cast<float>(rect.bottom - rect.top);
+        runtime.reset();
         runtime = std::make_unique<Babylon::RuntimeWin32>(hWnd, rootUrl, width, height);
 
         // issue a resize here because on some platforms (UWP, WIN32) WM_SIZE is received before the runtime construction

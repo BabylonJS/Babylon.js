@@ -51,18 +51,16 @@ namespace Babylon
             m_width = newWidth;
             m_height = newHeight;
 
-            std::scoped_lock lock{m_mutex};
-            for (const auto& callback : m_onResizeCallbacks)
+            m_onResizeCallbacks.apply_to_all([this](auto& callback)
             {
                 callback(m_width, m_height);
-            }
+            });
         }
     }
 
     NativeWindow::OnResizeCallbackTicket NativeWindow::AddOnResizeCallback(OnResizeCallback&& callback)
     {
-        std::scoped_lock lock{m_mutex};
-        return m_onResizeCallbacks.insert(callback, m_mutex);
+        return m_onResizeCallbacks.insert(std::move(callback));
     }
 
     void* NativeWindow::GetWindowPtr() const
