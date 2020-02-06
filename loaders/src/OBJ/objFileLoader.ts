@@ -291,7 +291,6 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                     }
                 }
             });
-            container.removeAllFromScene();
             return container;
         });
     }
