@@ -7672,6 +7672,10 @@ declare module BABYLON {
     export class CubeTexture extends BaseTexture {
         private _delayedOnLoad;
         /**
+         * Observable triggered once the texture has been loaded.
+         */
+        onLoadObservable: Observable<CubeTexture>;
+        /**
          * The url of the texture
          */
         url: string;

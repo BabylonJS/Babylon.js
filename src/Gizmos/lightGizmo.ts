@@ -85,9 +85,13 @@ export class LightGizmo extends Gizmo {
             // Get update position and direction if the light has it
             if ((light as any).position) {
                 this.attachedMesh!.position.copyFrom((light as any).position);
+                this.attachedMesh!.computeWorldMatrix(true);
+                this._cachedPosition.copyFrom(this.attachedMesh!.position);
             }
             if ((light as any).direction) {
                 this.attachedMesh!.setDirection((light as any).direction);
+                this.attachedMesh!.computeWorldMatrix(true);
+                this._cachedForward.copyFrom(this.attachedMesh!.forward);
             }
 
             this._update();
@@ -127,6 +131,8 @@ export class LightGizmo extends Gizmo {
             } else {
                 // update gizmo to match light
                 this.attachedMesh!.position.copyFrom((this._light as any).position);
+                this.attachedMesh!.computeWorldMatrix(true);
+                this._cachedPosition.copyFrom(this.attachedMesh!.position);
             }
 
         }
@@ -139,7 +145,8 @@ export class LightGizmo extends Gizmo {
             } else if (Vector3.DistanceSquared(this.attachedMesh!.forward, (this._light as any).direction) > 0.0001) {
                 // update gizmo to match light
                 this.attachedMesh!.setDirection((this._light as any).direction);
-                this._cachedForward.copyFrom(this._lightMesh.forward);
+                this.attachedMesh!.computeWorldMatrix(true);
+                this._cachedForward.copyFrom(this.attachedMesh!.forward);
             }
         }
         if (!this._light.isEnabled()) {

@@ -328,6 +328,7 @@
 - Fix wrong import of _TimeToken ([Sebavan](https://github.com/sebavan/)
 - Fix shadows not rendered correctly when using point lights ([Popov72](https://github.com/Popov72))
 - Prevent depth buffer clear in shadow maps ([Sebavan](https://github.com/sebavan/)
+- Fix for bug where the light gizmo causes lights to flip orientation ([#7603](https://github.com/BabylonJS/Babylon.js/issues/7603)) ([drigax](https://github.com/drigax))
 
 ## Breaking changes
 

@@ -46514,10 +46514,10 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
             { label: "Optimistic", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["AbstractMesh"].OCCLUSION_TYPE_OPTIMISTIC },
             { label: "Strict", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["AbstractMesh"].OCCLUSION_TYPE_STRICT },
         ];
-        var sortedMaterials = scene.materials.slice(0).sort(function (a, b) { return a.name.localeCompare(b.name); });
+        var sortedMaterials = scene.materials.slice(0).sort(function (a, b) { return (a.name || "no name").localeCompare(b.name || "no name"); });
         var materialOptions = sortedMaterials.map(function (m, i) {
             return {
-                label: m.name,
+                label: m.name || "no name",
                 value: i
             };
         });
@@ -46542,15 +46542,16 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Is pickable", target: mesh, propertyName: "isPickable", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 mesh.material && (!mesh.material.reservedDataStore || !mesh.material.reservedDataStore.hidden) &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Link to material", value: mesh.material.name, onLink: function () { return _this.onMaterialLink(); } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_12__["OptionsLineComponent"], { label: "Active material", options: materialOptions, target: mesh, propertyName: "material", noDirectUpdate: true, onSelect: function (value) {
-                        if (value < 0) {
-                            mesh.material = null;
-                        }
-                        else {
-                            mesh.material = sortedMaterials[value];
-                        }
-                        _this.forceUpdate();
-                    }, extractValue: function () { return mesh.material ? sortedMaterials.indexOf(mesh.material) : -1; }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                !mesh.isAnInstance &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_12__["OptionsLineComponent"], { label: "Active material", options: materialOptions, target: mesh, propertyName: "material", noDirectUpdate: true, onSelect: function (value) {
+                            if (value < 0) {
+                                mesh.material = null;
+                            }
+                            else {
+                                mesh.material = sortedMaterials[value];
+                            }
+                            _this.forceUpdate();
+                        }, extractValue: function () { return mesh.material ? sortedMaterials.indexOf(mesh.material) : -1; }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 mesh.isAnInstance &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Source", value: mesh.sourceMesh.name, onLink: function () { return _this.onSourceMeshLink(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_13__["ButtonLineComponent"], { label: "Dispose", onClick: function () {
