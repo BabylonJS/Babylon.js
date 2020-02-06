@@ -153,6 +153,9 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
         }
     }
 
+    /**
+     * Get the headset impostor, if enabled
+     */
     public getHeadsetImpostor() {
         return this._headsetImpostor;
     }
