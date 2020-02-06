@@ -286,11 +286,11 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
             { label: "Strict", value: AbstractMesh.OCCLUSION_TYPE_STRICT },
         ];
 
-        let sortedMaterials = scene.materials.slice(0).sort((a, b) => a.name.localeCompare(b.name));
+        let sortedMaterials = scene.materials.slice(0).sort((a, b) => (a.name || "no name").localeCompare(b.name || "no name"));
 
         var materialOptions = sortedMaterials.map((m, i) => {
             return {
-                label: m.name,
+                label: m.name || "no name",
                 value: i
             }});
 
@@ -325,7 +325,8 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         mesh.material && (!mesh.material.reservedDataStore || !mesh.material.reservedDataStore.hidden) &&
                         <TextLineComponent label="Link to material" value={mesh.material.name} onLink={() => this.onMaterialLink()} />
                     }
-                    <OptionsLineComponent label="Active material" options={materialOptions} 
+                    {   !mesh.isAnInstance &&
+                        <OptionsLineComponent label="Active material" options={materialOptions} 
                             target={mesh} propertyName="material" 
                             noDirectUpdate={true}
                             onSelect={(value: number) => {
@@ -339,6 +340,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                             }}
                             extractValue={() => mesh.material ? sortedMaterials.indexOf(mesh.material) : -1}
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
                     {
                         mesh.isAnInstance &&
                         <TextLineComponent label="Source" value={(mesh as any).sourceMesh.name} onLink={() => this.onSourceMeshLink()} />
