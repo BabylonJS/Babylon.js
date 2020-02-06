@@ -773,14 +773,16 @@ export class BaseTexture implements IAnimatable {
             else {
                 var onLoadObservable = (texture as any).onLoadObservable as Observable<BaseTexture>;
 
-                let onLoadCallback = () => {
-                    onLoadObservable.removeCallback(onLoadCallback);
-                    if (--numRemaining === 0) {
-                        callback();
-                    }
-                };
+                if (onLoadObservable) {
+                    let onLoadCallback = () => {
+                        onLoadObservable.removeCallback(onLoadCallback);
+                        if (--numRemaining === 0) {
+                            callback();
+                        }
+                    };
 
-                onLoadObservable.add(onLoadCallback);
+                    onLoadObservable.add(onLoadCallback);
+                }
             }
         }
     }
