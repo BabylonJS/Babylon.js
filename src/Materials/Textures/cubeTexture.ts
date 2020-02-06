@@ -5,18 +5,23 @@ import { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { Constants } from "../../Engines/constants";
 import { _TypeStore } from '../../Misc/typeStore';
 
 import "../../Engines/Extensions/engine.cubeTexture";
 import { StringTools } from '../../Misc/stringTools';
+import { Observable } from '../../Misc/observable';
 
 /**
  * Class for creating a cube texture
  */
 export class CubeTexture extends BaseTexture {
     private _delayedOnLoad: Nullable<() => void>;
+
+    /**
+     * Observable triggered once the texture has been loaded.
+     */
+    public onLoadObservable: Observable<CubeTexture> = new Observable<CubeTexture>();
 
     /**
      * The url of the texture
@@ -213,6 +218,13 @@ export class CubeTexture extends BaseTexture {
 
         this._files = files;
 
+        let onLoadProcessing = () => {
+            this.onLoadObservable.notifyObservers(this);
+            if (onLoad) {
+                onLoad();
+            }
+        };
+
         if (!this._texture) {
             if (!scene.useDelayedTextureLoading) {
                 if (prefiltered) {
@@ -221,14 +233,16 @@ export class CubeTexture extends BaseTexture {
                 else {
                     this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError, this._format, forcedExtension, false, lodScale, lodOffset);
                 }
+                this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
+
             } else {
                 this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
             }
-        } else if (onLoad) {
+        } else {
             if (this._texture.isReady) {
-                Tools.SetImmediate(() => onLoad());
+                Tools.SetImmediate(() => onLoadProcessing());
             } else {
-                this._texture.onLoadedObservable.add(onLoad);
+                this._texture.onLoadedObservable.add(() => onLoadProcessing());
             }
         }
     }
@@ -304,6 +318,8 @@ export class CubeTexture extends BaseTexture {
             else {
                 this._texture = scene.getEngine().createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, null, this._format, forcedExtension);
             }
+
+            this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
         }
     }
 

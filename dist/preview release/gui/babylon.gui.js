@@ -6388,6 +6388,8 @@ var Image = /** @class */ (function (_super) {
         _this._sourceTop = 0;
         _this._sourceWidth = 0;
         _this._sourceHeight = 0;
+        _this._svgAttributesComputationCompleted = false;
+        _this._isSVG = false;
         _this._cellWidth = 0;
         _this._cellHeight = 0;
         _this._cellId = -1;
@@ -6585,6 +6587,22 @@ var Image = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Image.prototype, "isSVG", {
+        /** Indicates if the format of the image is SVG */
+        get: function () {
+            return this._isSVG;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Image.prototype, "svgAttributesComputationCompleted", {
+        /** Gets the status of the SVG attributes computation (sourceLeft, sourceTop, sourceWidth, sourceHeight) */
+        get: function () {
+            return this._svgAttributesComputationCompleted;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Image.prototype, "autoScale", {
         /**
          * Gets or sets a boolean indicating if the image can force its container to adapt its size
@@ -6621,7 +6639,8 @@ var Image = /** @class */ (function (_super) {
         configurable: true
     });
     /** @hidden */
-    Image.prototype._rotate90 = function (n) {
+    Image.prototype._rotate90 = function (n, preserveProperties) {
+        if (preserveProperties === void 0) { preserveProperties = false; }
         var canvas = document.createElement('canvas');
         var context = canvas.getContext('2d');
         var width = this._domImage.width;
@@ -6633,7 +6652,58 @@ var Image = /** @class */ (function (_super) {
         context.drawImage(this._domImage, 0, 0, width, height, -width / 2, -height / 2, width, height);
         var dataUrl = canvas.toDataURL("image/jpg");
         var rotatedImage = new Image(this.name + "rotated", dataUrl);
+        if (preserveProperties) {
+            rotatedImage._stretch = this._stretch;
+            rotatedImage._autoScale = this._autoScale;
+            rotatedImage._cellId = this._cellId;
+            rotatedImage._cellWidth = n % 1 ? this._cellHeight : this._cellWidth;
+            rotatedImage._cellHeight = n % 1 ? this._cellWidth : this._cellHeight;
+        }
+        this._handleRotationForSVGImage(this, rotatedImage, n);
         return rotatedImage;
+    };
+    Image.prototype._handleRotationForSVGImage = function (srcImage, dstImage, n) {
+        var _this = this;
+        if (!srcImage._isSVG) {
+            return;
+        }
+        if (srcImage._svgAttributesComputationCompleted) {
+            this._rotate90SourceProperties(srcImage, dstImage, n);
+            this._markAsDirty();
+        }
+        else {
+            srcImage.onSVGAttributesComputedObservable.addOnce(function () {
+                _this._rotate90SourceProperties(srcImage, dstImage, n);
+                _this._markAsDirty();
+            });
+        }
+    };
+    Image.prototype._rotate90SourceProperties = function (srcImage, dstImage, n) {
+        var _a, _b;
+        var srcLeft = srcImage.sourceLeft, srcTop = srcImage.sourceTop, srcWidth = srcImage.domImage.width, srcHeight = srcImage.domImage.height;
+        var dstLeft = srcLeft, dstTop = srcTop, dstWidth = srcImage.sourceWidth, dstHeight = srcImage.sourceHeight;
+        if (n != 0) {
+            var mult = n < 0 ? -1 : 1;
+            n = n % 4;
+            for (var i = 0; i < Math.abs(n); ++i) {
+                dstLeft = -(srcTop - srcHeight / 2) * mult + srcHeight / 2;
+                dstTop = (srcLeft - srcWidth / 2) * mult + srcWidth / 2;
+                _a = [dstHeight, dstWidth], dstWidth = _a[0], dstHeight = _a[1];
+                if (n < 0) {
+                    dstTop -= dstHeight;
+                }
+                else {
+                    dstLeft -= dstWidth;
+                }
+                srcLeft = dstLeft;
+                srcTop = dstTop;
+                _b = [srcHeight, srcWidth], srcWidth = _b[0], srcHeight = _b[1];
+            }
+        }
+        dstImage.sourceLeft = dstLeft;
+        dstImage.sourceTop = dstTop;
+        dstImage.sourceWidth = dstWidth;
+        dstImage.sourceHeight = dstHeight;
     };
     Object.defineProperty(Image.prototype, "domImage", {
         get: function () {
@@ -6744,6 +6814,7 @@ var Image = /** @class */ (function (_super) {
     Image.prototype._svgCheck = function (value) {
         var _this = this;
         if (window.SVGSVGElement && (value.search(/.svg#/gi) !== -1) && (value.indexOf("#") === value.lastIndexOf("#"))) {
+            this._isSVG = true;
             var svgsrc = value.split('#')[0];
             var elemid = value.split('#')[1];
             // check if object alr exist in document
@@ -6819,6 +6890,7 @@ var Image = /** @class */ (function (_super) {
                 this.sourceTop = ((elem_matrix_d * elem_bbox.y + elem_matrix_f) * docheight) / vb_height;
                 this.sourceWidth = (elem_bbox.width * elem_matrix_a) * (docwidth / vb_width);
                 this.sourceHeight = (elem_bbox.height * elem_matrix_d) * (docheight / vb_height);
+                this._svgAttributesComputationCompleted = true;
                 this.onSVGAttributesComputedObservable.notifyObservers(this);
             }
         }
@@ -9190,6 +9262,8 @@ var ScrollViewer = /** @class */ (function (_super) {
         _this._thumbLength = 0.5;
         _this._thumbHeight = 1;
         _this._barImageHeight = 1;
+        _this._horizontalBarImageHeight = 1;
+        _this._verticalBarImageHeight = 1;
         _this._forceHorizontalBar = false;
         _this._forceVerticalBar = false;
         _this._useImageBar = isImageBased ? isImageBased : false;
@@ -9383,8 +9457,9 @@ var ScrollViewer = /** @class */ (function (_super) {
         return "ScrollViewer";
     };
     ScrollViewer.prototype._buildClientSizes = function () {
-        this._window.parentClientWidth = this._currentMeasure.width - (this._verticalBar.isVisible || this.forceVerticalBar ? this._barSize : 0) - 2 * this.thickness;
-        this._window.parentClientHeight = this._currentMeasure.height - (this._horizontalBar.isVisible || this.forceHorizontalBar ? this._barSize : 0) - 2 * this.thickness;
+        var ratio = this.host.idealRatio;
+        this._window.parentClientWidth = this._currentMeasure.width - (this._verticalBar.isVisible || this.forceVerticalBar ? this._barSize * ratio : 0) - 2 * this.thickness;
+        this._window.parentClientHeight = this._currentMeasure.height - (this._horizontalBar.isVisible || this.forceHorizontalBar ? this._barSize * ratio : 0) - 2 * this.thickness;
         this._clientWidth = this._window.parentClientWidth;
         this._clientHeight = this._window.parentClientHeight;
     };
@@ -9463,6 +9538,38 @@ var ScrollViewer = /** @class */ (function (_super) {
             var hb = this._horizontalBar;
             var vb = this._verticalBar;
             hb.thumbImage = value;
+            vb.thumbImage = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ScrollViewer.prototype, "horizontalThumbImage", {
+        /** Gets or sets the horizontal bar image */
+        get: function () {
+            return this._horizontalBarImage;
+        },
+        set: function (value) {
+            if (this._horizontalBarImage === value) {
+                return;
+            }
+            this._horizontalBarImage = value;
+            var hb = this._horizontalBar;
+            hb.thumbImage = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ScrollViewer.prototype, "verticalThumbImage", {
+        /** Gets or sets the vertical bar image */
+        get: function () {
+            return this._verticalBarImage;
+        },
+        set: function (value) {
+            if (this._verticalBarImage === value) {
+                return;
+            }
+            this._verticalBarImage = value;
+            var vb = this._verticalBar;
             vb.thumbImage = value;
         },
         enumerable: true,
@@ -9564,6 +9671,52 @@ var ScrollViewer = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(ScrollViewer.prototype, "horizontalBarImageHeight", {
+        /** Gets or sets the height of the horizontal bar image */
+        get: function () {
+            return this._horizontalBarImageHeight;
+        },
+        set: function (value) {
+            if (this._horizontalBarImageHeight === value) {
+                return;
+            }
+            if (value <= 0) {
+                value = 0.1;
+            }
+            if (value > 1) {
+                value = 1;
+            }
+            this._horizontalBarImageHeight = value;
+            var hb = this._horizontalBar;
+            hb.barImageHeight = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ScrollViewer.prototype, "verticalBarImageHeight", {
+        /** Gets or sets the height of the vertical bar image */
+        get: function () {
+            return this._verticalBarImageHeight;
+        },
+        set: function (value) {
+            if (this._verticalBarImageHeight === value) {
+                return;
+            }
+            if (value <= 0) {
+                value = 0.1;
+            }
+            if (value > 1) {
+                value = 1;
+            }
+            this._verticalBarImageHeight = value;
+            var vb = this._verticalBar;
+            vb.barImageHeight = value;
+            this._markAsDirty();
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(ScrollViewer.prototype, "barBackground", {
         /** Gets or sets the bar background */
         get: function () {
@@ -9595,6 +9748,36 @@ var ScrollViewer = /** @class */ (function (_super) {
             var hb = this._horizontalBar;
             var vb = this._verticalBar;
             hb.backgroundImage = value;
+            vb.backgroundImage = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ScrollViewer.prototype, "horizontalBarImage", {
+        /** Gets or sets the horizontal bar background image */
+        get: function () {
+            return this._horizontalBarBackgroundImage;
+        },
+        set: function (value) {
+            if (this._horizontalBarBackgroundImage === value) {
+            }
+            this._horizontalBarBackgroundImage = value;
+            var hb = this._horizontalBar;
+            hb.backgroundImage = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ScrollViewer.prototype, "verticalBarImage", {
+        /** Gets or sets the vertical bar background image */
+        get: function () {
+            return this._verticalBarBackgroundImage;
+        },
+        set: function (value) {
+            if (this._verticalBarBackgroundImage === value) {
+            }
+            this._verticalBarBackgroundImage = value;
+            var vb = this._verticalBar;
             vb.backgroundImage = value;
         },
         enumerable: true,
@@ -11177,6 +11360,8 @@ var ImageScrollBar = /** @class */ (function (_super) {
         _this._thumbHeight = 1;
         _this._barImageHeight = 1;
         _this._tempMeasure = new _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"](0, 0, 0, 0);
+        /** Number of 90° rotation to apply on the images when in vertical mode */
+        _this.num90RotationInVerticalMode = 1;
         return _this;
     }
     Object.defineProperty(ImageScrollBar.prototype, "backgroundImage", {
@@ -11192,10 +11377,10 @@ var ImageScrollBar = /** @class */ (function (_super) {
                 return;
             }
             this._backgroundBaseImage = value;
-            if (this.isVertical) {
-                if (value && !value.isLoaded) {
+            if (this.isVertical && this.num90RotationInVerticalMode !== 0) {
+                if (!value.isLoaded) {
                     value.onImageLoadedObservable.addOnce(function () {
-                        var rotatedValue = value._rotate90(1);
+                        var rotatedValue = value._rotate90(_this.num90RotationInVerticalMode, true);
                         _this._backgroundImage = rotatedValue;
                         if (!rotatedValue.isLoaded) {
                             rotatedValue.onImageLoadedObservable.addOnce(function () {
@@ -11205,8 +11390,10 @@ var ImageScrollBar = /** @class */ (function (_super) {
                         _this._markAsDirty();
                     });
                 }
-                this._backgroundImage = value._rotate90(1);
-                this._markAsDirty();
+                else {
+                    this._backgroundImage = value._rotate90(this.num90RotationInVerticalMode, true);
+                    this._markAsDirty();
+                }
             }
             else {
                 this._backgroundImage = value;
@@ -11234,10 +11421,10 @@ var ImageScrollBar = /** @class */ (function (_super) {
                 return;
             }
             this._thumbBaseImage = value;
-            if (this.isVertical) {
-                if (value && !value.isLoaded) {
+            if (this.isVertical && this.num90RotationInVerticalMode !== 0) {
+                if (!value.isLoaded) {
                     value.onImageLoadedObservable.addOnce(function () {
-                        var rotatedValue = value._rotate90(-1);
+                        var rotatedValue = value._rotate90(-_this.num90RotationInVerticalMode, true);
                         _this._thumbImage = rotatedValue;
                         if (!rotatedValue.isLoaded) {
                             rotatedValue.onImageLoadedObservable.addOnce(function () {
@@ -11247,8 +11434,10 @@ var ImageScrollBar = /** @class */ (function (_super) {
                         _this._markAsDirty();
                     });
                 }
-                this._thumbImage = value._rotate90(-1);
-                this._markAsDirty();
+                else {
+                    this._thumbImage = value._rotate90(-this.num90RotationInVerticalMode, true);
+                    this._markAsDirty();
+                }
             }
             else {
                 this._thumbImage = value;
@@ -11358,8 +11547,10 @@ var ImageScrollBar = /** @class */ (function (_super) {
         else {
             this._tempMeasure.copyFromFloats(this._currentMeasure.left + thumbPosition, this._currentMeasure.top + this._currentMeasure.height * (1 - this._thumbHeight) * 0.5, this._effectiveThumbThickness, this._currentMeasure.height * this._thumbHeight);
         }
-        this._thumbImage._currentMeasure.copyFrom(this._tempMeasure);
-        this._thumbImage._draw(context);
+        if (this._thumbImage) {
+            this._thumbImage._currentMeasure.copyFrom(this._tempMeasure);
+            this._thumbImage._draw(context);
+        }
         context.restore();
     };
     /** @hidden */

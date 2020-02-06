@@ -71,27 +71,41 @@ class MonacoCreator {
 
         this.setupDefinitionWorker(libContent);
 
-        require.config({ paths: { 'vs': 'node_modules/monaco-editor/dev/vs' } });
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.18.1/min/vs' } });
 
         require(['vs/editor/editor.main'], () => {
             this.setupMonacoCompilationPipeline(libContent);
             this.setupMonacoColorProvider();
 
-            require(['vs/language/typescript/languageFeatures'], module => {
-                this.hookMonacoCompletionProvider(module.SuggestAdapter);
-            });
+            // require(['vs/language/typescript/languageFeatures'], module => {
+            //     this.hookMonacoCompletionProvider(module.SuggestAdapter);
+            // });
 
             this.parent.main.run();
         });
     };
 
     setupDefinitionWorker(libContent) {
-        this.definitionWorker = new Worker('js/definitionWorker.js');
+
+        // This worker can be initialized differently.
+        // Its main job is to analyze the code and return an array of deprecated functions
+        this.definitionWorker = new Worker('/js/definitionWorker.js');
         this.definitionWorker.addEventListener('message', ({ data }) => {
             this.deprecatedCandidates = data.result;
             this.analyzeCode();
         });
         this.definitionWorker.postMessage({ code: libContent });
+        // this.deprecatedCandidates = [
+        //     "FromFloatArray",
+        //     "FromFloatArrayToRef",
+        //     "getStrideSize",
+        //     "getStrideSize",
+        //     "getOffset",
+        //     "rgb",
+        //     "xy",
+        //     "xyz",
+        //     "fieldOfView"
+        //   ];
     }
 
     isDeprecatedEntry(details) {

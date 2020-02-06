@@ -298,6 +298,29 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
+     * Gets or Set the pointer use natural pinch zoom to override the pinch precision
+     * and pinch delta percentage.
+     * When useNaturalPinchZoom is true, multi touch zoom will zoom in such
+     * that any object in the plane at the camera's target point will scale
+     * perfectly with finger motion.
+     */
+    public get useNaturalPinchZoom(): boolean {
+        var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+        if (pointers) {
+            return pointers.useNaturalPinchZoom;
+        }
+
+        return false;
+    }
+
+    public set useNaturalPinchZoom(value: boolean) {
+        var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+        if (pointers) {
+            pointers.useNaturalPinchZoom = value;
+        }
+    }
+
+    /**
      * Gets or Set the pointer panning sensibility or how fast is the camera moving.
      */
     public get panningSensibility(): number {

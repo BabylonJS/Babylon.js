@@ -1,6 +1,7 @@
 import { Vector3, Matrix } from "../../Maths/math.vector";
 import { Effect } from "../../Materials/effect";
 import { Particle } from "../../Particles/particle";
+import { Scene } from '../../scene';
 /**
  * Particle emitter represents a volume emitting particles.
  * This is the responsibility of the implementation to define the volume shape like cone/sphere/box.
@@ -55,6 +56,7 @@ export interface IParticleEmitterType {
     /**
      * Parse properties from a JSON object
      * @param serializationObject defines the JSON object
+     * @param scene defines the hosting scene
      */
-    parse(serializationObject: any): void;
+    parse(serializationObject: any, scene: Scene): void;
 }

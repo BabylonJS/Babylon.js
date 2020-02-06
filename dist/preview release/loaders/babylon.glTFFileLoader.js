@@ -3955,6 +3955,14 @@ var MSFT_lod = /** @class */ (function () {
         }
     };
     /** @hidden */
+    MSFT_lod.prototype.loadSceneAsync = function (context, scene) {
+        var promise = this._loader.loadSceneAsync(context, scene);
+        if (this._bufferLODs.length !== 0) {
+            this._loadBufferLOD(0);
+        }
+        return promise;
+    };
+    /** @hidden */
     MSFT_lod.prototype.loadNodeAsync = function (context, node, assign) {
         var _this = this;
         return _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].LoadExtensionAsync(context, node, this.name, function (extensionContext, extension) {
@@ -3984,9 +3992,6 @@ var MSFT_lod = /** @class */ (function () {
                 });
                 if (indexLOD === 0) {
                     firstPromise = promise;
-                    if (_this._bufferLODs.length !== 0) {
-                        _this._loadBufferLOD(0);
-                    }
                 }
                 else {
                     _this._nodeIndexLOD = null;
@@ -4037,9 +4042,6 @@ var MSFT_lod = /** @class */ (function () {
                 });
                 if (indexLOD === 0) {
                     firstPromise = promise;
-                    if (_this._bufferLODs.length !== 0) {
-                        _this._loadBufferLOD(0);
-                    }
                 }
                 else {
                     _this._materialIndexLOD = null;
@@ -7173,7 +7175,7 @@ var GLTFFileLoader = /** @class */ (function () {
             throw new Error("First chunk format is not JSON");
         }
         // Bail if there are no other chunks.
-        if (dataReader.byteOffset + chunkLength === dataReader.buffer.byteLength) {
+        if (dataReader.byteOffset + chunkLength === length) {
             return dataReader.loadAsync(chunkLength).then(function () {
                 return { json: _this._parseJson(dataReader.readString(chunkLength)), bin: null };
             });
@@ -7203,7 +7205,7 @@ var GLTFFileLoader = /** @class */ (function () {
                         break;
                     }
                 }
-                if (dataReader.byteOffset !== dataReader.buffer.byteLength) {
+                if (dataReader.byteOffset !== length) {
                     return dataReader.loadAsync(8).then(readAsync);
                 }
                 return Promise.resolve(data);

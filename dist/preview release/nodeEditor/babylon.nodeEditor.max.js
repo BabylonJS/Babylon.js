@@ -5601,7 +5601,7 @@ exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader
 
 
 // module
-exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n\n#nodeList {\n  grid-row: 1 / span 2;\n  grid-column: 1; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 4;\n  cursor: ew-resize; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 3;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  display: grid;\n  grid-template-rows: 1fr 30px auto 30px;\n  grid-template-columns: 100%;\n  height: 100%;\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: 30px;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n  .right-panel #preview-mesh-bar {\n    grid-row: 2;\n    grid-column: 1;\n    display: flex;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-mesh-bar #file-picker {\n      display: none; }\n    .right-panel #preview-mesh-bar #file-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview-config-bar {\n    grid-row: 4;\n    grid-column: 1;\n    display: flex;\n    flex-direction: row-reverse;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-config-bar .button {\n      width: 60px; }\n    .right-panel #preview-config-bar #color-picker {\n      display: none; }\n    .right-panel #preview-config-bar #color-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview {\n    border-top: 1px solid #555555;\n    grid-row: 3;\n    grid-column: 1;\n    width: 100%;\n    display: grid;\n    outline: 0 !important;\n    user-select: none; }\n    .right-panel #preview #preview-canvas {\n      width: 100%;\n      height: 100%;\n      outline: 0 !important;\n      grid-row: 1;\n      grid-column: 1; }\n    .right-panel #preview .waitPanel {\n      width: 100%;\n      height: 100%;\n      grid-row: 1;\n      grid-column: 1;\n      color: white;\n      font-size: 18px;\n      align-content: center;\n      justify-content: center;\n      background: rgba(20, 20, 20, 0.95);\n      z-index: 10;\n      display: grid;\n      transition: opacity 250ms; }\n      .right-panel #preview .waitPanel.hidden {\n        opacity: 0;\n        pointer-events: none; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 3; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
+exports.push([module.i, "#node-editor-graph-root {\n  display: grid;\n  grid-template-rows: calc(100% - 120px) 120px;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  font: 14px \"acumin-pro\"; }\n\n.wait-screen {\n  display: grid;\n  justify-content: center;\n  align-content: center;\n  height: 100%;\n  width: 100%;\n  background: #464646;\n  opacity: 0.95;\n  color: white;\n  font: 24px \"acumin-pro\";\n  position: absolute;\n  top: 0;\n  left: 0; }\n  .wait-screen.hidden {\n    visibility: hidden; }\n\n#nodeList {\n  grid-row: 1 / span 2;\n  grid-column: 1; }\n\n#leftGrab {\n  grid-row: 1 / span 2;\n  grid-column: 2;\n  cursor: ew-resize; }\n\n#rightGrab {\n  grid-row: 1 / span 2;\n  grid-column: 4;\n  cursor: ew-resize; }\n\n.diagram-container {\n  grid-row: 1;\n  grid-column: 3;\n  background: #5f5b60;\n  width: 100%;\n  height: 100%; }\n  .diagram-container .diagram {\n    display: none;\n    width: 100%;\n    height: 100%; }\n\n.right-panel {\n  grid-row: 1 / span 2;\n  grid-column: 5;\n  display: grid;\n  grid-template-rows: 1fr 30px auto 30px;\n  grid-template-columns: 100%;\n  height: 100%;\n  overflow-y: auto; }\n  .right-panel #propertyTab {\n    grid-row: 1;\n    grid-column: 1; }\n  .right-panel .button {\n    display: grid;\n    justify-content: center;\n    align-content: center;\n    height: 30px;\n    width: calc(100% / 7);\n    cursor: pointer; }\n    .right-panel .button:hover {\n      background: #337ab7;\n      color: white;\n      opacity: 0.8; }\n    .right-panel .button.selected {\n      background: #337ab7;\n      color: white; }\n    .right-panel .button.align {\n      justify-content: stretch;\n      text-align: center; }\n  .right-panel #preview-mesh-bar {\n    grid-row: 2;\n    grid-column: 1;\n    display: grid;\n    grid-template-columns: auto 1fr 40px;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-mesh-bar #file-picker {\n      display: none; }\n    .right-panel #preview-mesh-bar .listLine {\n      grid-column: 1;\n      height: 30px;\n      display: grid;\n      grid-template-columns: 0px 1fr; }\n      .right-panel #preview-mesh-bar .listLine .label {\n        grid-column: 1;\n        display: flex;\n        align-items: center;\n        font-size: 14px; }\n      .right-panel #preview-mesh-bar .listLine .options {\n        grid-column: 2;\n        display: flex;\n        align-items: center;\n        margin-left: 5px; }\n        .right-panel #preview-mesh-bar .listLine .options select {\n          width: 115px; }\n    .right-panel #preview-mesh-bar .expand {\n      width: 40px;\n      grid-column: 3; }\n  .right-panel #preview-config-bar {\n    grid-row: 4;\n    grid-column: 1;\n    display: flex;\n    flex-direction: row-reverse;\n    color: white;\n    align-items: center;\n    font-size: 18px; }\n    .right-panel #preview-config-bar .button {\n      width: 60px; }\n    .right-panel #preview-config-bar #color-picker {\n      display: none; }\n    .right-panel #preview-config-bar #color-picker-label {\n      width: 100%;\n      background: transparent;\n      cursor: pointer; }\n  .right-panel #preview {\n    border-top: 1px solid #555555;\n    grid-row: 3;\n    grid-column: 1;\n    width: 100%;\n    display: grid;\n    outline: 0 !important;\n    user-select: none; }\n    .right-panel #preview #preview-canvas {\n      width: 100%;\n      height: 100%;\n      outline: 0 !important;\n      grid-row: 1;\n      grid-column: 1; }\n    .right-panel #preview .waitPanel {\n      width: 100%;\n      height: 100%;\n      grid-row: 1;\n      grid-column: 1;\n      color: white;\n      font-size: 18px;\n      align-content: center;\n      justify-content: center;\n      background: rgba(20, 20, 20, 0.95);\n      z-index: 10;\n      display: grid;\n      transition: opacity 250ms; }\n      .right-panel #preview .waitPanel.hidden {\n        opacity: 0;\n        pointer-events: none; }\n\n.blocker {\n  visibility: hidden;\n  position: absolute;\n  width: calc(100% - 40px);\n  height: 100%;\n  top: 0;\n  left: 0;\n  background: rgba(20, 20, 20, 0.95);\n  font-family: \"acumin-pro\";\n  color: white;\n  font-size: 24px;\n  display: grid;\n  align-content: center;\n  justify-content: center;\n  user-select: none;\n  padding: 20px;\n  text-align: center; }\n\n#log-console {\n  grid-row: 2;\n  grid-column: 3; }\n\n.dialog-container {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.6);\n  display: grid;\n  font-family: \"acumin-pro\";\n  top: 0; }\n  .dialog-container .dialog {\n    align-self: center;\n    justify-self: center;\n    min-height: 140px;\n    max-width: 400px;\n    border-radius: 10px;\n    background: white;\n    display: grid;\n    grid-template-columns: 100%;\n    grid-template-rows: calc(100% - 50px) 50px; }\n    .dialog-container .dialog .dialog-message {\n      grid-row: 1;\n      grid-column: 1;\n      margin-top: 20px;\n      padding: 10px;\n      font-size: 18px;\n      color: black; }\n    .dialog-container .dialog .dialog-buttons {\n      grid-row: 2;\n      grid-column: 1;\n      display: grid;\n      grid-template-rows: 100%;\n      grid-template-columns: 100%;\n      color: white; }\n      .dialog-container .dialog .dialog-buttons .dialog-button-ok {\n        cursor: pointer;\n        justify-self: center;\n        background: green;\n        min-width: 80px;\n        justify-content: center;\n        display: grid;\n        align-content: center;\n        align-self: center;\n        height: 35px;\n        border-radius: 10px; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok:hover {\n          opacity: 0.8; }\n        .dialog-container .dialog .dialog-buttons .dialog-button-ok.error {\n          background: red; }\n", ""]);
 
 // exports
 
@@ -51794,7 +51794,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock"],
             Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock", "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
-            Output_Blocks: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
+            Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
@@ -51816,7 +51816,9 @@ var NodeListComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "panes" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "filter" },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", placeholder: "Filter", onChange: function (evt) { return _this.filterContent(evt.target.value); } })),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "text", placeholder: "Filter", onFocus: function () { return _this.props.globalState.blockKeyboardEvents = true; }, onBlur: function (evt) {
+                                _this.props.globalState.blockKeyboardEvents = false;
+                            }, onChange: function (evt) { return _this.filterContent(evt.target.value); } })),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "list-container" }, blockMenu)))));
     };
     NodeListComponent._Tooltips = {
@@ -52350,6 +52352,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
 /* harmony import */ var _previewMeshType__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./previewMeshType */ "./components/preview/previewMeshType.ts");
 /* harmony import */ var _dataStorage__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../dataStorage */ "./dataStorage.ts");
+/* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react-dom */ "../../node_modules/react-dom/index.js");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_7__);
+
+
 
 
 
@@ -52379,31 +52386,40 @@ var PreviewMeshControlComponent = /** @class */ (function (_super) {
             this.props.globalState.onPreviewCommandActivated.notifyObservers();
             this.forceUpdate();
         }
-        document.getElementById("file-picker").value = "";
+        react_dom__WEBPACK_IMPORTED_MODULE_7__["findDOMNode"](this.refs["file-picker"]).value = "";
     };
     PreviewMeshControlComponent.prototype.onPopUp = function () {
         this.props.togglePreviewAreaComponent();
     };
     PreviewMeshControlComponent.prototype.render = function () {
         var _this = this;
+        var meshTypeOptions = [
+            { label: "Cube", value: _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Box },
+            { label: "Cylinder", value: _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Cylinder },
+            { label: "Plane", value: _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Plane },
+            { label: "Shader ball", value: _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].ShaderBall },
+            { label: "Sphere", value: _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Sphere },
+            { label: "Load...", value: _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Custom + 1 }
+        ];
+        if (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Custom) {
+            meshTypeOptions.splice(0, 0, {
+                label: "Custom", value: _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Custom
+            });
+        }
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "preview-mesh-bar" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Preview with a cube", onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Box); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Box ? " selected" : "") },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faCube"] })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Preview with a sphere", onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Sphere); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Sphere ? " selected" : "") },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faCircle"] })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Preview with a torus", onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Torus); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Torus ? " selected" : "") },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faRing"] })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Preview with a cylinder", onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Cylinder); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Cylinder ? " selected" : "") },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faHockeyPuck"] })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Preview with a plane", onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Plane); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Plane ? " selected" : "") },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faSquareFull"] })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Preview with a shader ball", onClick: function () { return _this.changeMeshType(_previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].ShaderBall); }, className: "button" + (this.props.globalState.previewMeshType === _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].ShaderBall ? " selected" : "") },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faDotCircle"] })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "button align", title: "Preview with a custom mesh" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: "file-picker", id: "file-picker-label" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faPlus"] })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_6__["OptionsLineComponent"], { label: "", options: meshTypeOptions, target: this.props.globalState, propertyName: "previewMeshType", noDirectUpdate: true, onSelect: function (value) {
+                    if (value !== _previewMeshType__WEBPACK_IMPORTED_MODULE_4__["PreviewMeshType"].Custom + 1) {
+                        _this.changeMeshType(value);
+                    }
+                    else {
+                        react_dom__WEBPACK_IMPORTED_MODULE_7__["findDOMNode"](_this.refs["file-picker"]).click();
+                    }
+                } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: {
+                    display: "none"
+                }, title: "Preview with a custom mesh" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: "file-picker", id: "file-picker", type: "file", onChange: function (evt) { return _this.useCustomMesh(evt); }, accept: ".gltf, .glb, .babylon, .obj" })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Open preview in new window", id: "preview-new-window", onClick: function () { return _this.onPopUp(); }, className: "button" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { title: "Open preview in new window", id: "preview-new-window", onClick: function () { return _this.onPopUp(); }, className: "button expand" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_2__["FontAwesomeIcon"], { icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__["faWindowRestore"] }))));
     };
     return PreviewMeshControlComponent;
@@ -52798,7 +52814,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             _this.forceUpdate();
         });
     };
-    PropertyTabComponent.prototype.componentWillReceiveProps = function () {
+    PropertyTabComponent.prototype.componentWillUnmount = function () {
         this.props.globalState.onBuiltObservable.remove(this._onBuiltObserver);
     };
     PropertyTabComponent.prototype.processInputBlockUpdate = function (ib) {
@@ -52812,7 +52828,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         switch (block.type) {
             case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialBlockConnectionPointTypes"].Float:
                 var cantDisplaySlider = (isNaN(block.min) || isNaN(block.max) || block.min === block.max);
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: block.name },
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { key: block.uniqueId },
                     block.isBoolean &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { key: block.uniqueId, label: block.name, target: block, propertyName: "value", onValueChanged: function () {
                                 _this.processInputBlockUpdate(block);
@@ -53043,6 +53059,41 @@ var ClampDisplayManager = /** @class */ (function () {
         contentArea.innerHTML = "[" + clampBlock.minimum + ", " + clampBlock.maximum + "]";
     };
     return ClampDisplayManager;
+}());
+
+
+
+/***/ }),
+
+/***/ "./diagram/display/discardDisplayManager.ts":
+/*!**************************************************!*\
+  !*** ./diagram/display/discardDisplayManager.ts ***!
+  \**************************************************/
+/*! exports provided: DiscardDisplayManager */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DiscardDisplayManager", function() { return DiscardDisplayManager; });
+var DiscardDisplayManager = /** @class */ (function () {
+    function DiscardDisplayManager() {
+    }
+    DiscardDisplayManager.prototype.getHeaderClass = function (block) {
+        return "";
+    };
+    DiscardDisplayManager.prototype.shouldDisplayPortLabels = function (block) {
+        return true;
+    };
+    DiscardDisplayManager.prototype.getHeaderText = function (block) {
+        return block.name;
+    };
+    DiscardDisplayManager.prototype.getBackgroundColor = function (block) {
+        return "#540b0b";
+    };
+    DiscardDisplayManager.prototype.updatePreviewContent = function (block, contentArea) {
+        contentArea.classList.add("discard-block");
+    };
+    return DiscardDisplayManager;
 }());
 
 
@@ -53426,6 +53477,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _display_remapDisplayManager__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./display/remapDisplayManager */ "./diagram/display/remapDisplayManager.ts");
 /* harmony import */ var _display_trigonometryDisplayManager__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./display/trigonometryDisplayManager */ "./diagram/display/trigonometryDisplayManager.ts");
 /* harmony import */ var _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./display/textureDisplayManager */ "./diagram/display/textureDisplayManager.ts");
+/* harmony import */ var _display_discardDisplayManager__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./display/discardDisplayManager */ "./diagram/display/discardDisplayManager.ts");
+
 
 
 
@@ -53449,6 +53502,7 @@ DisplayLedger.RegisteredControls["RemapBlock"] = _display_remapDisplayManager__W
 DisplayLedger.RegisteredControls["TrigonometryBlock"] = _display_trigonometryDisplayManager__WEBPACK_IMPORTED_MODULE_5__["TrigonometryDisplayManager"];
 DisplayLedger.RegisteredControls["TextureBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
 DisplayLedger.RegisteredControls["ReflectionTextureBlock"] = _display_textureDisplayManager__WEBPACK_IMPORTED_MODULE_6__["TextureDisplayManager"];
+DisplayLedger.RegisteredControls["DiscardBlock"] = _display_discardDisplayManager__WEBPACK_IMPORTED_MODULE_7__["DiscardDisplayManager"];
 
 
 /***/ }),
@@ -53545,6 +53599,7 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         _this._ctrlKeyIsPressed = false;
         _this._oldY = -1;
         _this._frameIsMoving = false;
+        _this._isLoading = false;
         props.globalState.onSelectionChangedObservable.add(function (selection) {
             if (!selection) {
                 _this._selectedNodes = [];
@@ -54350,6 +54405,11 @@ var GraphFrame = /** @class */ (function () {
                 _this.element.classList.remove("selected");
             }
         });
+        this._commentsElement = document.createElement('div');
+        this._commentsElement.className = 'frame-comments';
+        this._commentsElement.style.color = 'white';
+        this._commentsElement.style.fontSize = '16px';
+        this.element.appendChild(this._commentsElement);
         // Get nodes
         if (!doNotCaptureNodes) {
             this.refresh();
@@ -54557,6 +54617,27 @@ var GraphFrame = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(GraphFrame.prototype, "comments", {
+        get: function () {
+            return this._comments;
+        },
+        set: function (comments) {
+            if (comments && comments.length > 0) {
+                this.element.style.gridTemplateRows = "40px 40px calc(100% - 80px)";
+                this._borderElement.style.gridRow = "1 / span 3";
+                this._portContainer.style.gridRow = "3";
+                this._commentsElement.style.display = "grid";
+                this._commentsElement.style.gridRow = "2";
+                this._commentsElement.style.gridColumn = "1";
+                this._commentsElement.style.paddingLeft = "10px";
+                this._commentsElement.style.fontStyle = "italic";
+                this._commentsElement.innerText = comments;
+            }
+            this._comments = comments;
+        },
+        enumerable: true,
+        configurable: true
+    });
     GraphFrame.prototype.refresh = function () {
         this._nodes = [];
         this._ownerCanvas.globalState.onFrameCreated.notifyObservers(this);
@@ -54662,7 +54743,8 @@ var GraphFrame = /** @class */ (function () {
             color: this._color.asArray(),
             name: this.name,
             isCollapsed: this.isCollapsed,
-            blocks: this.nodes.map(function (n) { return n.block.uniqueId; })
+            blocks: this.nodes.map(function (n) { return n.block.uniqueId; }),
+            comments: this._comments
         };
     };
     GraphFrame.prototype.export = function () {
@@ -54679,6 +54761,7 @@ var GraphFrame = /** @class */ (function () {
         newFrame.height = serializationData.height;
         newFrame.name = serializationData.name;
         newFrame.color = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(serializationData.color);
+        newFrame.comments = serializationData.comments;
         if (serializationData.blocks && map) {
             var _loop_1 = function () {
                 var actualId = map[blockId];
@@ -54957,7 +55040,7 @@ var GraphNode = /** @class */ (function () {
         return this._links.filter(function (link) { return link.portA.connectionPoint === point || link.portB.connectionPoint === point; });
     };
     GraphNode.prototype._refreshFrames = function () {
-        if (this._ownerCanvas._frameIsMoving) {
+        if (this._ownerCanvas._frameIsMoving || this._ownerCanvas._isLoading) {
             return;
         }
         // Frames
@@ -54967,6 +55050,9 @@ var GraphNode = /** @class */ (function () {
         }
     };
     GraphNode.prototype._refreshLinks = function () {
+        if (this._ownerCanvas._isLoading) {
+            return;
+        }
         for (var _i = 0, _a = this._links; _i < _a.length; _i++) {
             var link = _a[_i];
             link.update();
@@ -55529,6 +55615,7 @@ var FramePropertyTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Name", propertyName: "name", target: this.props.frame }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_color3LineComponent__WEBPACK_IMPORTED_MODULE_3__["Color3LineComponent"], { globalState: this.props.globalState, label: "Color", target: this.props.frame, propertyName: "color" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Comments", propertyName: "comments", target: this.props.frame }),
                     !this.props.frame.isCollapsed &&
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Collapse", onClick: function () {
                                 _this.props.frame.isCollapsed = true;
@@ -56741,6 +56828,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 __webpack_require__(/*! ./main.scss */ "./main.scss");
+;
 var GraphEditor = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GraphEditor, _super);
     function GraphEditor(props) {
@@ -56753,9 +56841,6 @@ var GraphEditor = /** @class */ (function (_super) {
         _this._copiedFrame = null;
         _this._mouseLocationX = 0;
         _this._mouseLocationY = 0;
-        _this.state = {
-            showPreviewPopUp: false
-        };
         _this.handlePopUp = function () {
             _this.setState({
                 showPreviewPopUp: true
@@ -56934,7 +57019,7 @@ var GraphEditor = /** @class */ (function (_super) {
             return _this._graphCanvas.findNodeFromBlock(block);
         };
         _this.props.globalState.hostDocument.addEventListener("keydown", function (evt) {
-            if (evt.keyCode === 46 && !_this.props.globalState.blockKeyboardEvents) { // Delete                
+            if ((evt.keyCode === 46 || evt.keyCode === 8) && !_this.props.globalState.blockKeyboardEvents) { // Delete                
                 var selectedItems = _this._graphCanvas.selectedNodes;
                 for (var _i = 0, selectedItems_1 = selectedItems; _i < selectedItems_1.length; _i++) {
                     var selectedItem = selectedItems_1[_i];
@@ -57169,6 +57254,7 @@ var GraphEditor = /** @class */ (function (_super) {
     GraphEditor.prototype.build = function () {
         var _this = this;
         var editorData = this.props.globalState.nodeMaterial.editorData;
+        this._graphCanvas._isLoading = true; // Will help loading large graphes
         if (editorData instanceof Array) {
             editorData = {
                 locations: editorData
@@ -57203,27 +57289,46 @@ var GraphEditor = /** @class */ (function (_super) {
         }
         this.reOrganize(editorData);
     };
+    GraphEditor.prototype.showWaitScreen = function () {
+        var _a;
+        (_a = this.props.globalState.hostDocument.querySelector(".wait-screen")) === null || _a === void 0 ? void 0 : _a.classList.remove("hidden");
+    };
+    GraphEditor.prototype.hideWaitScreen = function () {
+        var _a;
+        (_a = this.props.globalState.hostDocument.querySelector(".wait-screen")) === null || _a === void 0 ? void 0 : _a.classList.add("hidden");
+    };
     GraphEditor.prototype.reOrganize = function (editorData) {
+        var _this = this;
         if (editorData === void 0) { editorData = null; }
-        if (!editorData || !editorData.locations) {
-            this._graphCanvas.distributeGraph();
-        }
-        else {
-            // Locations
-            for (var _i = 0, _a = editorData.locations; _i < _a.length; _i++) {
-                var location = _a[_i];
-                for (var _b = 0, _c = this._graphCanvas.nodes; _b < _c.length; _b++) {
-                    var node = _c[_b];
-                    if (node.block && node.block.uniqueId === location.blockId) {
-                        node.x = location.x;
-                        node.y = location.y;
-                        node.cleanAccumulation();
-                        break;
+        this.showWaitScreen();
+        this._graphCanvas._isLoading = true; // Will help loading large graphes
+        setTimeout(function () {
+            if (!editorData || !editorData.locations) {
+                _this._graphCanvas.distributeGraph();
+            }
+            else {
+                // Locations
+                for (var _i = 0, _a = editorData.locations; _i < _a.length; _i++) {
+                    var location = _a[_i];
+                    for (var _b = 0, _c = _this._graphCanvas.nodes; _b < _c.length; _b++) {
+                        var node = _c[_b];
+                        if (node.block && node.block.uniqueId === location.blockId) {
+                            node.x = location.x;
+                            node.y = location.y;
+                            node.cleanAccumulation();
+                            break;
+                        }
                     }
                 }
+                _this._graphCanvas.processEditorData(editorData);
             }
-            this._graphCanvas.processEditorData(editorData);
-        }
+            _this._graphCanvas._isLoading = false;
+            for (var _d = 0, _e = _this._graphCanvas.nodes; _d < _e.length; _d++) {
+                var node = _e[_d];
+                node._refreshLinks();
+            }
+            _this.hideWaitScreen();
+        });
     };
     GraphEditor.prototype.onPointerDown = function (evt) {
         this._startX = evt.clientX;
@@ -57333,7 +57438,8 @@ var GraphEditor = /** @class */ (function (_super) {
                     !this.state.showPreviewPopUp ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_preview_previewAreaComponent__WEBPACK_IMPORTED_MODULE_12__["PreviewAreaComponent"], { globalState: this.props.globalState, width: this._rightWidth }) : null),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_components_log_logComponent__WEBPACK_IMPORTED_MODULE_5__["LogComponent"], { globalState: this.props.globalState })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_messageDialog__WEBPACK_IMPORTED_MODULE_8__["MessageDialogComponent"], { globalState: this.props.globalState }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "blocker" }, "Node Material Editor runs only on desktop")));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "blocker" }, "Node Material Editor runs only on desktop"),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "wait-screen hidden" }, "Processing...please wait")));
     };
     return GraphEditor;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));

@@ -144,7 +144,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Matrices: ["Matrix", "WorldMatrixBlock", "WorldViewMatrixBlock", "WorldViewProjectionMatrixBlock", "ViewMatrixBlock", "ViewProjectionMatrixBlock", "ProjectionMatrixBlock"],
             Mesh: ["InstancesBlock", "PositionBlock", "UVBlock", "ColorBlock", "NormalBlock", "PerturbNormalBlock", "NormalBlendBlock" , "TangentBlock", "MatrixIndicesBlock", "MatrixWeightsBlock", "WorldPositionBlock", "WorldNormalBlock", "WorldTangentBlock", "FrontFacingBlock"], 
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock"],
-            Output_Blocks: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
+            Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
@@ -175,7 +175,12 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 <div className="panes">
                     <div className="pane">
                         <div className="filter">
-                            <input type="text" placeholder="Filter" onChange={(evt) => this.filterContent(evt.target.value)} />
+                            <input type="text" placeholder="Filter" 
+                                onFocus={() => this.props.globalState.blockKeyboardEvents = true}
+                                onBlur={evt => {
+                                    this.props.globalState.blockKeyboardEvents = false;
+                                }}
+                                onChange={(evt) => this.filterContent(evt.target.value)} />
                         </div>
                         <div className="list-container">
                             {blockMenu}

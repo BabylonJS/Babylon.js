@@ -2,7 +2,6 @@ import { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Mesh } from "../../Meshes/mesh";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { SceneLoader } from "../../Loading/sceneLoader";
 import { GamepadButtonChanges } from "../../Gamepads/gamepad";
 import { WebVRController } from "./webVRController";

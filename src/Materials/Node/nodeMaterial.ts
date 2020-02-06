@@ -1019,31 +1019,31 @@ export class NodeMaterial extends PushMaterial {
 
         this.editorData = null;
 
-        var positionInput = new InputBlock("position");
+        var positionInput = new InputBlock("Position");
         positionInput.setAsAttribute("position");
 
-        var worldInput = new InputBlock("world");
+        var worldInput = new InputBlock("World");
         worldInput.setAsSystemValue(BABYLON.NodeMaterialSystemValues.World);
 
-        var worldPos = new TransformBlock("worldPos");
+        var worldPos = new TransformBlock("WorldPos");
         positionInput.connectTo(worldPos);
         worldInput.connectTo(worldPos);
 
-        var viewProjectionInput = new InputBlock("viewProjection");
+        var viewProjectionInput = new InputBlock("ViewProjection");
         viewProjectionInput.setAsSystemValue(BABYLON.NodeMaterialSystemValues.ViewProjection);
 
-        var worldPosdMultipliedByViewProjection = new TransformBlock("worldPos * viewProjectionTransform");
+        var worldPosdMultipliedByViewProjection = new TransformBlock("WorldPos * ViewProjectionTransform");
         worldPos.connectTo(worldPosdMultipliedByViewProjection);
         viewProjectionInput.connectTo(worldPosdMultipliedByViewProjection);
 
-        var vertexOutput = new VertexOutputBlock("vertexOutput");
+        var vertexOutput = new VertexOutputBlock("VertexOutput");
         worldPosdMultipliedByViewProjection.connectTo(vertexOutput);
 
         // Pixel
         var pixelColor = new InputBlock("color");
         pixelColor.value = new Color4(0.8, 0.8, 0.8, 1);
 
-        var fragmentOutput = new FragmentOutputBlock("fragmentOutput");
+        var fragmentOutput = new FragmentOutputBlock("FragmentOutput");
         pixelColor.connectTo(fragmentOutput);
 
         // Add to nodes
@@ -1298,6 +1298,21 @@ export class NodeMaterial extends PushMaterial {
         nodeMaterial.build();
 
         return nodeMaterial;
+    }
+
+    /**
+     * Creates a node material from a snippet saved in a remote file
+     * @param name defines the name of the material to create
+     * @param url defines the url to load from
+     * @param scene defines the hosting scene
+     * @returns a promise that will resolve to the new node material
+     */
+    public static ParseFromFileAsync(name: string, url: string, scene: Scene): Promise<NodeMaterial> {
+        var material = new NodeMaterial(name, scene);
+
+        return new Promise((resolve, reject) => {
+            return material.loadAsync(url).then(() => resolve(material)).catch(reject);
+        });
     }
 
     /**

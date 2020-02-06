@@ -90,6 +90,8 @@
 - Added an optional config option `initialTab` ([ycw](https://github.com/ycw/))
 - Added support for ImportAnimations ([noalak](https://github.com/noalak/))
 - Added support for Cascaded Shadow Maps ([Popov72](https://github.com/Popov72))
+- Added context menu to add `NodeMaterial` ([Deltakosh](https://github.com/deltakosh/))
+- Added option to switch material per mesh ([Deltakosh](https://github.com/deltakosh/))
 
 ### Tools
 
@@ -207,8 +209,9 @@
 - Selection has gaze mode (which can be forced) and touch-screen support ([#7395](https://github.com/BabylonJS/Babylon.js/issues/7395)) ([RaananW](https://github.com/RaananW/))
 - Laser pointers can be excluded from lighting influence so that they are always visible in both WebXR and WebVR ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
 - Full support for the online motion controller repository ([#7323](https://github.com/BabylonJS/Babylon.js/issues/7323)) ([RaananW](https://github.com/RaananW/))
-- New feature - XR Controller physics impostor for motion controllers ([RaananW](https://github.com/RaananW/))
+- New XR feature - XR Controller physics impostor for motion controllers ([RaananW](https://github.com/RaananW/))
 - Teleportation between different ground levels in WebXR is enabled ([RaananW](https://github.com/RaananW/))
+- Utility Meshes for XR (teleportation ring, selection rays) can now be rendered using a utility layer ([#7563](https://github.com/BabylonJS/Babylon.js/issues/7563)) ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 
@@ -224,6 +227,7 @@
 - Added `_getSVGAttribs` functionality for loading multiple svg icons from an external svg file via icon id. Fixed bug for Chrome. Strip icon id from image url for firefox.([lockphase](https://github.com/lockphase/))
 - Scroll Viewer extended to include the use of images in the scroll bars([JohnK](https://github.com/BabylonJSGuide/))
 - Added `ScrollViewer.freezeControls` property to speed up rendering ([Popov72](https://github.com/Popov72))
+- Added `ImageScrollBar.num90RotationInVerticalMode` property to let the user rotate the pictures when in vertical mode ([Popov72](https://github.com/Popov72))
 
 ### Particles
 
@@ -232,6 +236,7 @@
 - Added the feature "storable particles" and `insertParticlesFromArray()` to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 - Added the support for MultiMaterials to the Solid Particle System ([jerome](https://github.com/jbousquie/))
 - Added support for `CustomParticleEmitter`. [Doc](https://doc.babylonjs.com/babylon101/particles#custom-emitter) ([Deltakosh](https://github.com/deltakosh/))
+- Added support for `MeshParticleEmitter`. [Doc](https://doc.babylonjs.com/babylon101/particles#mesh-emitter) ([Deltakosh](https://github.com/deltakosh/))
 
 ### Navigation Mesh
 
@@ -245,6 +250,11 @@
 
 - Added support for `AnimationGroup` serialization ([Drigax](https://github.com/drigax/))
 - Expanded animation group serialization to include all targeted TransformNodes ([Drigax](https://github.com/drigax/))
+
+### Texture Packer
+
+- Added TexturePacker Class ([Pryme8](https://github.com/Pryme8))
+- Added TexturePackerLoader Class ([Pryme8](https://github.com/Pryme8))
 
 ### Documentation
 
@@ -313,6 +323,13 @@
 - Fixed an issue with isSessionSupported return value being ignored ([#7501](https://github.com/BabylonJS/Babylon.js/issues/7501)) ([RaananW](https://github.com/RaananW/))
 - Added isRigCamera to rig cameras so they can be detected. Used to fix a bug with utility layer and WebXR ([#7517](https://github.com/BabylonJS/Babylon.js/issues/7517)) ([RaananW](https://github.com/RaananW/))
 - Fixed bug in the `ScrollViewer` GUI class when setting a `idealWidth` or `idealHeight` on the ADT ([Popov72](https://github.com/Popov72))
+- Fixed bug in the `Image` GUI class where some properties were lost after a rotation by n x 90° ([Popov72](https://github.com/Popov72))
+- Fixed bug in the `Image` GUI class when rotating a SVG picture ([Popov72](https://github.com/Popov72))
+- Fix for bug where NME would crash if frames did not have comments ([Kyle Belfort](https://github.com/belfortk))
+- Fix wrong import of _TimeToken ([Sebavan](https://github.com/sebavan/)
+- Fix shadows not rendered correctly when using point lights ([Popov72](https://github.com/Popov72))
+- Prevent depth buffer clear in shadow maps ([Sebavan](https://github.com/sebavan/)
+- Fix for bug where the light gizmo causes lights to flip orientation ([#7603](https://github.com/BabylonJS/Babylon.js/issues/7603)) ([drigax](https://github.com/drigax))
 
 ## Breaking changes
 

@@ -5,6 +5,16 @@
             "title": "Black and White post-process",
             "playgroundId": "#N55Q2M#0",
             "referenceImage": "bwpp.png"
+        },           
+        {
+            "title": "Sprite maps",
+            "playgroundId": "#ARLADE#22",
+            "referenceImage": "sprite-maps.png"
+        },              
+        {
+            "title": "Point light shadows",
+            "playgroundId": "#U2F7P9#4",
+            "referenceImage": "point-light-shadows.png"
         },             
         {
             "title": "Node material #0",

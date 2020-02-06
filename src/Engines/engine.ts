@@ -2,7 +2,6 @@ import { Observable } from "../Misc/observable";
 import { Nullable, IndicesArray, DataArray } from "../types";
 import { Scene } from "../scene";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { IAudioEngine } from "../Audio/audioEngine";
 import { IOfflineProvider } from "../Offline/IOfflineProvider";
 import { ILoadingScreen } from "../Loading/loadingScreen";

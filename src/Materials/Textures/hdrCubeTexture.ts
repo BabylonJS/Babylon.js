@@ -4,7 +4,6 @@ import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { HDRTools } from "../../Misc/HighDynamicRange/hdr";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { _TypeStore } from '../../Misc/typeStore';
