@@ -8,6 +8,7 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { SphereBuilder } from "../../Meshes/Builders/sphereBuilder";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { Logger } from '../../Misc/logger';
+import { Nullable } from '../../types';
 
 /**
  * Options for the controller physics feature
@@ -105,6 +106,20 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
             ...this._options.physicsProperties,
             ...newProperties
         };
+    }
+
+    /**
+     * Get the physics impostor of a specific controller.
+     * The impostor is not attached to a mesh because a mesh for each controller is not obligatory
+     * @param controller the controller or the controller id of which to get the impostor
+     */
+    public getImpostorForController(controller: WebXRInputSource | string): Nullable<PhysicsImpostor> {
+        let id = typeof controller === "string" ? controller : controller.uniqueId;
+        if (this._controllers[id]) {
+            return this._controllers[id].impostor;
+        } else {
+            return null;
+        }
     }
 
     /**
