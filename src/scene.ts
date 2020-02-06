@@ -152,7 +152,6 @@ export class Scene extends AbstractScene implements IAnimatable {
     /** @hidden */
     public readonly _isScene = true;
 
-    
     /** @hidden */
     public _blockEntityCollection = false;
 
@@ -2440,7 +2439,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             return;
         }
 
-        newMaterial._indexInSceneMaterialArray = this.materials.length;        
+        newMaterial._indexInSceneMaterialArray = this.materials.length;
         this.materials.push(newMaterial);
         this.onNewMaterialAddedObservable.notifyObservers(newMaterial);
     }
@@ -2464,7 +2463,7 @@ export class Scene extends AbstractScene implements IAnimatable {
         if (this._blockEntityCollection) {
             return;
         }
-        
+
         if (this.geometriesByUniqueId) {
             this.geometriesByUniqueId[newGeometry.uniqueId] = this.geometries.length;
         }
