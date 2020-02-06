@@ -133,6 +133,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         return this._graphCanvas;
     }
 
+    public get hostCanvas() {
+        return this._hostCanvas;
+    }
+
     public get svgCanvas() {
         return this._svgCanvas;
     }
