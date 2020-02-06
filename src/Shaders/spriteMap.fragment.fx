@@ -65,9 +65,9 @@ void main(){
         }
 
         //Get Animation Frame
-        mat4 frameData = getFrameData(frameID + 0.5);	
-        vec2 frameSize = (frameData[0].wz) / spriteMapSize;    
-        vec2 offset = frameData[0].xy * sheetUnits;	
+        mat4 frameData = getFrameData(frameID + 0.5);
+        vec2 frameSize = (frameData[0].wz) / spriteMapSize;
+        vec2 offset = frameData[0].xy * sheetUnits;
         vec2 ratio = frameData[2].xy / frameData[0].wz;
 
         //rotated
