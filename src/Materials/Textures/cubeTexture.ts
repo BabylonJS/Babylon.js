@@ -17,7 +17,7 @@ import { Observable } from '../../Misc/observable';
  */
 export class CubeTexture extends BaseTexture {
     private _delayedOnLoad: Nullable<() => void>;
-    
+
     /**
      * Observable triggered once the texture has been loaded.
      */
@@ -223,7 +223,7 @@ export class CubeTexture extends BaseTexture {
             if (onLoad) {
                 onLoad();
             }
-        }
+        };
 
         if (!this._texture) {
             if (!scene.useDelayedTextureLoading) {
@@ -233,8 +233,8 @@ export class CubeTexture extends BaseTexture {
                 else {
                     this._texture = scene.getEngine().createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError, this._format, forcedExtension, false, lodScale, lodOffset);
                 }
-                this._texture.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
-                
+                this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
+
             } else {
                 this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
             }
@@ -318,6 +318,8 @@ export class CubeTexture extends BaseTexture {
             else {
                 this._texture = scene.getEngine().createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, null, this._format, forcedExtension);
             }
+
+            this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
         }
     }
 
