@@ -56,7 +56,7 @@ export interface ISpriteManager extends IDisposable {
      */
     intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
 
-        /**
+    /**
      * Intersects the sprites with a ray
      * @param ray defines the ray to intersect with
      * @param camera defines the current active camera
@@ -76,6 +76,19 @@ export interface ISpriteManager extends IDisposable {
  * @see http://doc.babylonjs.com/babylon101/sprites
  */
 export class SpriteManager implements ISpriteManager {
+    /** The sprite's color is added to the destination color without alpha affecting the result */
+    public static BLENDMODE_ONEONE = 0;
+    /** Blend current color and the sprite's color using its alpha */
+    public static BLENDMODE_STANDARD = 1;
+    /** Add current color and the sprite's color multiplied by its alpha */
+    public static BLENDMODE_ADD = 2;
+    /** Multiply current color with sprite color */
+    public static BLENDMODE_MULTIPLY = 3;
+    /** Multiply current color with sprite color, then add current
+     * color and the sprite's color multiplied by its alpha
+     */
+    public static BLENDMODE_MULTIPLYADD = 4;
+    
     /** Gets the list of sprites */
     public sprites = new Array<Sprite>();
     /** Gets or sets the rendering group id (0 by default) */
@@ -138,6 +151,29 @@ export class SpriteManager implements ISpriteManager {
 
     public set texture(value: Texture) {
         this._spriteTexture = value;
+    }
+    
+    private _blendMode = Constants.ALPHA_COMBINE;
+    /**
+     * Blend mode use to render the particle, it can be any of
+     * the static BLENDMODE_x properties provided in this class
+     */
+    public get blendMode() { return this._blendMode; }
+    public set blendMode(blendMode: number) {
+        switch (blendMode) {
+            case SpriteManager.BLENDMODE_ADD:
+                this._blendMode = Constants.ALPHA_ADD;
+                break;
+            case SpriteManager.BLENDMODE_ONEONE:
+                this._blendMode = Constants.ALPHA_ONEONE;
+                break;
+            case SpriteManager.BLENDMODE_STANDARD:
+                this._blendMode = Constants.ALPHA_COMBINE;
+                break;
+            case SpriteManager.BLENDMODE_MULTIPLY:
+                this._blendMode = Constants.ALPHA_MULTIPLY;
+                break;
+        }
     }
 
     /**
@@ -571,7 +607,7 @@ export class SpriteManager implements ISpriteManager {
         engine.setColorWrite(true);
         effect.setBool("alphaTest", false);
 
-        engine.setAlphaMode(Constants.ALPHA_COMBINE);
+        engine.setAlphaMode(this._blendMode);
         engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
         engine.setAlphaMode(Constants.ALPHA_DISABLE);
     }
