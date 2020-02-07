@@ -1126,9 +1126,8 @@ export class GLTFLoader implements IGLTFLoader {
 
         this.logOpen(`${context} ${camera.name || ""}`);
 
-        
         this._babylonScene._blockEntityCollection = this._forAssetContainer;
-        const babylonCamera = new FreeCamera(camera.name || `camera${camera.index}`, Vector3.Zero(), this._babylonScene, false);        
+        const babylonCamera = new FreeCamera(camera.name || `camera${camera.index}`, Vector3.Zero(), this._babylonScene, false);
         this._babylonScene._blockEntityCollection = false;
 
         babylonCamera.rotation = new Vector3(0, Math.PI, 0);

@@ -27,7 +27,7 @@ export class MTLFileLoader {
      * @param scene defines the scene the material will be created in
      * @param data defines the mtl data to parse
      * @param rootUrl defines the rooturl to use in order to load relative dependencies
-     * @param forAssetContainer defines if the matetrial should be registered in the scene
+     * @param forAssetContainer defines if the material should be registered in the scene
      */
     public parseMTL(scene: Scene, data: string | ArrayBuffer, rootUrl: string, forAssetContainer: boolean): void {
         if (data instanceof ArrayBuffer) {
@@ -70,9 +70,9 @@ export class MTLFileLoader {
                 }
                 //Create a new material.
                 // value is the name of the material read in the mtl file
-                
+
                 scene._blockEntityCollection = forAssetContainer;
-                material = new StandardMaterial(value, scene);                
+                material = new StandardMaterial(value, scene);
                 scene._blockEntityCollection = false;
             } else if (key === "kd" && material) {
                 // Diffuse color (color under white light) using RGB values

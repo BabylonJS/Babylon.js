@@ -923,7 +923,7 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
         var camera: IGLTFCamera = gltfRuntime.cameras[node.camera];
 
         if (camera) {
-            
+
             gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
             if (camera.type === "orthographic") {
                 var orthoCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene, false);
@@ -952,7 +952,7 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
 
                 lastNode = persCamera;
             }
-            
+
             gltfRuntime.scene._blockEntityCollection = false;
         }
     }
