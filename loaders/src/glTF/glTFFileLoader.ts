@@ -18,6 +18,7 @@ import { Logger } from 'babylonjs/Misc/logger';
 import { DataReader, IDataBuffer } from 'babylonjs/Misc/dataReader';
 import { GLTFValidation } from './glTFValidation';
 import { Light } from 'babylonjs/Lights/light';
+import { TransformNode } from 'babylonjs/Meshes/transformNode';
 
 /**
  * Mode that determines the coordinate system to use.
@@ -116,7 +117,8 @@ export interface IImportMeshAsyncOutput {
     particleSystems: IParticleSystem[], 
     skeletons: Skeleton[], 
     animationGroups: AnimationGroup[], 
-    lights: Light[] 
+    lights: Light[],
+    transformNodes: TransformNode[]
 }
 
 /** @hidden */
@@ -605,6 +607,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                 Array.prototype.push.apply(container.materials, materials);
                 Array.prototype.push.apply(container.textures, textures);
                 Array.prototype.push.apply(container.lights, result.lights);
+                Array.prototype.push.apply(container.transformNodes, result.transformNodes);
                 return container;
             });
         });
