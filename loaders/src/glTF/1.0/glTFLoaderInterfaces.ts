@@ -409,6 +409,8 @@ export interface IGLTFRuntime {
     importMeshesNames?: string[];
 
     dummyNodes: Node[];
+
+    forAssetContainer: boolean;
 }
 
 /** @hidden */

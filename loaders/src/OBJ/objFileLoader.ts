@@ -153,6 +153,8 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     /** @hidden */
     public facePattern5 = /f\s+(((-[\d]{1,}\/-[\d]{1,}\/-[\d]{1,}[\s]?){3,})+)/;
 
+    private _forAssetContainer = false;
+
     private _meshLoadOptions: MeshLoadOptions;
 
     /**
@@ -271,6 +273,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @returns The loaded asset container
      */
     public loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer> {
+        this._forAssetContainer = true;
         return this.importMeshAsync(null, scene, data, rootUrl).then((result) => {
             var container = new AssetContainer(scene);
             result.meshes.forEach((mesh) => container.meshes.push(mesh));
@@ -292,6 +295,8 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 }
             });
             return container;
+        }).finally(() => {
+            this._forAssetContainer = false;
         });
     }
 
@@ -918,7 +923,11 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             //Set the data with VertexBuffer for each mesh
             handledMesh = meshesFromObj[j];
             //Create a Mesh with the name of the obj mesh
+            
+            scene._blockEntityCollection = this._forAssetContainer;
             var babylonMesh = new Mesh(meshesFromObj[j].name, scene);
+            scene._blockEntityCollection = false;
+
             //Push the name of the material to an array
             //This is indispensable for the importMesh function
             materialToUse.push(meshesFromObj[j].materialName);
@@ -957,7 +966,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 this._loadMTL(fileToLoad, rootUrl, (dataLoaded) => {
                     try {
                         //Create materials thanks MTLLoader function
-                        materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl);
+                        materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl, this._forAssetContainer);
                         //Look at each material loaded in the mtl file
                         for (var n = 0; n < materialsFromMTLFile.materials.length; n++) {
                             //Three variables to get all meshes with the same material
