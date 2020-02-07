@@ -36953,6 +36953,7 @@ declare module BABYLON {
      * Container with a set of assets that can be added or removed from a scene.
      */
     export class AssetContainer extends AbstractScene {
+        private _wasAddedToScene;
         /**
          * The scene the AssetContainer belongs to.
          */

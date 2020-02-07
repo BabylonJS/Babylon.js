@@ -98,7 +98,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -1864,7 +1864,9 @@ var GLTFLoader = /** @class */ (function () {
                     meshes: meshes,
                     particleSystems: [],
                     skeletons: skeletons,
-                    animationGroups: []
+                    animationGroups: [],
+                    lights: [],
+                    transformNodes: []
                 });
             }, onProgress, function (message) {
                 reject(new Error(message));
@@ -3209,6 +3211,8 @@ var GLTFFileLoader = /** @class */ (function () {
                 Array.prototype.push.apply(container.animationGroups, result.animationGroups);
                 Array.prototype.push.apply(container.materials, materials);
                 Array.prototype.push.apply(container.textures, textures);
+                Array.prototype.push.apply(container.lights, result.lights);
+                Array.prototype.push.apply(container.transformNodes, result.transformNodes);
                 return container;
             });
         });

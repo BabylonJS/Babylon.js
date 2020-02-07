@@ -46,6 +46,8 @@ declare module "babylonjs-loaders/glTF/glTFFileLoader" {
     import { WebRequest } from "babylonjs/Misc/webRequest";
     import { IFileRequest } from "babylonjs/Misc/fileRequest";
     import { IDataBuffer } from 'babylonjs/Misc/dataReader';
+    import { Light } from 'babylonjs/Lights/light';
+    import { TransformNode } from 'babylonjs/Meshes/transformNode';
     /**
      * Mode that determines the coordinate system to use.
      */
@@ -125,14 +127,18 @@ declare module "babylonjs-loaders/glTF/glTFFileLoader" {
         COMPLETE = 2
     }
     /** @hidden */
+    export interface IImportMeshAsyncOutput {
+        meshes: AbstractMesh[];
+        particleSystems: IParticleSystem[];
+        skeletons: Skeleton[];
+        animationGroups: AnimationGroup[];
+        lights: Light[];
+        transformNodes: TransformNode[];
+    }
+    /** @hidden */
     export interface IGLTFLoader extends IDisposable {
         readonly state: Nullable<GLTFLoaderState>;
-        importMeshAsync: (meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string) => Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: IParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
+        importMeshAsync: (meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string) => Promise<IImportMeshAsyncOutput>;
         loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string) => Promise<void>;
     }
     /**
@@ -864,15 +870,11 @@ declare module "babylonjs-loaders/glTF/1.0/glTFLoaderUtils" {
 declare module "babylonjs-loaders/glTF/1.0/glTFLoader" {
     import { IGLTFRuntime } from "babylonjs-loaders/glTF/1.0/glTFLoaderInterfaces";
     import { Nullable } from "babylonjs/types";
-    import { AnimationGroup } from "babylonjs/Animations/animationGroup";
-    import { Skeleton } from "babylonjs/Bones/skeleton";
-    import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
     import { Material } from "babylonjs/Materials/material";
     import { Texture } from "babylonjs/Materials/Textures/texture";
-    import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { SceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
     import { Scene } from "babylonjs/scene";
-    import { IGLTFLoader, GLTFLoaderState, IGLTFLoaderData } from "babylonjs-loaders/glTF/glTFFileLoader";
+    import { IGLTFLoader, GLTFLoaderState, IGLTFLoaderData, IImportMeshAsyncOutput } from "babylonjs-loaders/glTF/glTFFileLoader";
     /**
     * Implementation of the base glTF spec
     * @hidden
@@ -907,12 +909,7 @@ declare module "babylonjs-loaders/glTF/1.0/glTFLoader" {
         * @param onProgress event that fires when loading progress has occured
         * @returns a promise containg the loaded meshes, particles, skeletons and animations
         */
-        importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: IParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
+        importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<IImportMeshAsyncOutput>;
         private _loadAsync;
         /**
         * Imports all objects from a loaded gltf file and adds them to the scene
@@ -1364,8 +1361,6 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
     import { Nullable } from "babylonjs/types";
     import { Camera } from "babylonjs/Cameras/camera";
     import { AnimationGroup } from "babylonjs/Animations/animationGroup";
-    import { Skeleton } from "babylonjs/Bones/skeleton";
-    import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
     import { Material } from "babylonjs/Materials/material";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { TransformNode } from "babylonjs/Meshes/transformNode";
@@ -1376,9 +1371,10 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
     import { IProperty } from "babylonjs-gltf2interface";
     import { IGLTF, INode, IScene, IMesh, ICamera, IAnimation, IAnimationChannel, IBufferView, IMaterial, ITextureInfo, IImage, IMeshPrimitive, IArrayItem as IArrItem } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
-    import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData } from "babylonjs-loaders/glTF/glTFFileLoader";
+    import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, IImportMeshAsyncOutput } from "babylonjs-loaders/glTF/glTFFileLoader";
     import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { IDataBuffer } from 'babylonjs/Misc/dataReader';
+    import { Light } from 'babylonjs/Lights/light';
     /**
      * Helper class for working with arrays when loading the glTF asset
      */
@@ -1405,6 +1401,8 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
         _completePromises: Promise<any>[];
         /** @hidden */
         _forAssetContainer: boolean;
+        /** Storage */
+        _babylonLights: Light[];
         private _disposed;
         private _parent;
         private _state;
@@ -1462,12 +1460,7 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
         /** @hidden */
         dispose(): void;
         /** @hidden */
-        importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: IParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
+        importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<IImportMeshAsyncOutput>;
         /** @hidden */
         loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
         private _loadAsync;
@@ -1486,6 +1479,7 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
         loadSceneAsync(context: string, scene: IScene): Promise<void>;
         private _forEachPrimitive;
         private _getMeshes;
+        private _getTransformNodes;
         private _getSkeletons;
         private _getAnimationGroups;
         private _startAnimations;
@@ -2701,14 +2695,18 @@ declare module BABYLON {
         COMPLETE = 2
     }
     /** @hidden */
+    export interface IImportMeshAsyncOutput {
+        meshes: AbstractMesh[];
+        particleSystems: IParticleSystem[];
+        skeletons: Skeleton[];
+        animationGroups: AnimationGroup[];
+        lights: Light[];
+        transformNodes: TransformNode[];
+    }
+    /** @hidden */
     export interface IGLTFLoader extends IDisposable {
         readonly state: Nullable<GLTFLoaderState>;
-        importMeshAsync: (meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string) => Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: IParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
+        importMeshAsync: (meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string) => Promise<IImportMeshAsyncOutput>;
         loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string) => Promise<void>;
     }
     /**
@@ -3462,12 +3460,7 @@ declare module BABYLON.GLTF1 {
         * @param onProgress event that fires when loading progress has occured
         * @returns a promise containg the loaded meshes, particles, skeletons and animations
         */
-        importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: IParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
+        importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<IImportMeshAsyncOutput>;
         private _loadAsync;
         /**
         * Imports all objects from a loaded gltf file and adds them to the scene
@@ -3906,6 +3899,8 @@ declare module BABYLON.GLTF2 {
         _completePromises: Promise<any>[];
         /** @hidden */
         _forAssetContainer: boolean;
+        /** Storage */
+        _babylonLights: Light[];
         private _disposed;
         private _parent;
         private _state;
@@ -3963,12 +3958,7 @@ declare module BABYLON.GLTF2 {
         /** @hidden */
         dispose(): void;
         /** @hidden */
-        importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: IParticleSystem[];
-            skeletons: Skeleton[];
-            animationGroups: AnimationGroup[];
-        }>;
+        importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<IImportMeshAsyncOutput>;
         /** @hidden */
         loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
         private _loadAsync;
@@ -3987,6 +3977,7 @@ declare module BABYLON.GLTF2 {
         loadSceneAsync(context: string, scene: IScene): Promise<void>;
         private _forEachPrimitive;
         private _getMeshes;
+        private _getTransformNodes;
         private _getSkeletons;
         private _getAnimationGroups;
         private _startAnimations;

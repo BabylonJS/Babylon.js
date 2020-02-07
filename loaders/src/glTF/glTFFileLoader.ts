@@ -112,13 +112,13 @@ export enum GLTFLoaderState {
 }
 
 /** @hidden */
-export interface IImportMeshAsyncOutput { 
-    meshes: AbstractMesh[], 
-    particleSystems: IParticleSystem[], 
-    skeletons: Skeleton[], 
-    animationGroups: AnimationGroup[], 
-    lights: Light[],
-    transformNodes: TransformNode[]
+export interface IImportMeshAsyncOutput {
+    meshes: AbstractMesh[];
+    particleSystems: IParticleSystem[];
+    skeletons: Skeleton[];
+    animationGroups: AnimationGroup[];
+    lights: Light[];
+    transformNodes: TransformNode[];
 }
 
 /** @hidden */
