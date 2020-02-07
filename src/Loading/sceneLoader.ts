@@ -901,8 +901,6 @@ export class SceneLoader {
             return null;
         }
 
-        scene._blockEntityCollection = true;
-
         const fileInfo = SceneLoader._getFileInfo(rootUrl, sceneFilename);
         if (!fileInfo) {
             return null;
@@ -916,8 +914,6 @@ export class SceneLoader {
         };
 
         var errorHandler = (message: Nullable<string>, exception?: any) => {
-            scene._blockEntityCollection = false;
-
             let errorMessage = "Unable to load assets from " + fileInfo.url + (message ? ": " + message : "");
 
             if (exception && exception.message) {
@@ -944,7 +940,6 @@ export class SceneLoader {
         } : undefined;
 
         var successHandler = (assets: AssetContainer) => {
-            scene._blockEntityCollection = false;
             if (onSuccess) {
                 try {
                     onSuccess(assets);

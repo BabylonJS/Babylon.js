@@ -18,7 +18,10 @@ export class BRDFTextureTools {
             var useDelayedTextureLoading = scene.useDelayedTextureLoading;
             scene.useDelayedTextureLoading = false;
 
+            const previousState = scene._blockEntityCollection;
+            scene._blockEntityCollection = false;
             var texture = Texture.CreateFromBase64String(this._environmentBRDFBase64Texture, "EnvironmentBRDFTexture", scene, true, false, Texture.BILINEAR_SAMPLINGMODE);
+            scene._blockEntityCollection = previousState;
             // BRDF Texture should not be cached here due to pre processing and redundant scene caches.
             var texturesCache = scene.getEngine().getLoadedTexturesCache();
             var index = texturesCache.indexOf(texture.getInternalTexture()!);

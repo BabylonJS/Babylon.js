@@ -854,17 +854,35 @@ class Main {
         xmlHttp.onreadystatechange = function () {
             if (xmlHttp.readyState === 4) {
                 if (xmlHttp.status === 200) {
-                    var baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
                     var snippet = JSON.parse(xmlHttp.responseText);
-                    var newUrl = baseUrl + "#" + snippet.id;
-                    this.currentSnippetToken = snippet.id;
-                    if (snippet.version && snippet.version !== "0") {
-                        newUrl += "#" + snippet.version;
+                    if (location.pathname && location.pathname.indexOf('pg/') !== -1) {
+                        // full path with /pg/??????
+                        if (location.pathname.indexOf('revision') !== -1) {
+                            location.href = location.href.replace(/revision\/(\d+)/, "revision/" + snippet.version);
+                        } else {
+                            location.href = location.href + '/revision/' + snippet.version;
+                        }
+                    } else if (location.search && location.search.indexOf('pg=') !== -1) {
+                        // query string with ?pg=??????
+                        const currentQuery = this.parseQuery(location.search);
+                        if (currentQuery.revision) {
+                            location.href = location.href.replace(/revision=(\d+)/, "revision=" + snippet.version);
+                        } else {
+                            location.href = location.href + '&revision=' + snippet.version;
+                        }
+                    } else {
+                        // default behavior!
+                        var baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
+                        var newUrl = baseUrl + "#" + snippet.id;
+                        this.currentSnippetToken = snippet.id;
+                        if (snippet.version && snippet.version !== "0") {
+                            newUrl += "#" + snippet.version;
+                        }
+                        location.href = newUrl;
+                        // Hide the complete title & co message
+                        this.hideNoMetadata();
+                        compileAndRun(this.parent, this.fpsLabel);
                     }
-                    location.href = newUrl;
-                    // Hide the complete title & co message
-                    this.hideNoMetadata();
-                    compileAndRun(this.parent, this.fpsLabel);
                 } else {
                     this.parent.utils.showError("Unable to save your code. It may be too long.", null);
                 }

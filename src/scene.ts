@@ -2041,9 +2041,11 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param recursive if all child meshes should also be added to the scene
      */
     public addMesh(newMesh: AbstractMesh, recursive = false) {
-        if (!this._blockEntityCollection) {
-            this.meshes.push(newMesh);
+        if (this._blockEntityCollection) {
+            return;
         }
+
+        this.meshes.push(newMesh);
 
         newMesh._resyncLightSources();
 
@@ -2092,6 +2094,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newTransformNode defines the transform node to add
      */
     public addTransformNode(newTransformNode: TransformNode) {
+        if (this._blockEntityCollection) {
+            return;
+        }
         newTransformNode._indexInSceneTransformNodesArray = this.transformNodes.length;
         this.transformNodes.push(newTransformNode);
 
@@ -2334,6 +2339,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newLight The light to add
      */
     public addLight(newLight: Light): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.lights.push(newLight);
         this.sortLightsByPriority();
 
@@ -2341,7 +2349,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             newLight._addToSceneRootNodes();
         }
 
-        // Add light to all meshes (To support if the light is removed and then readded)
+        // Add light to all meshes (To support if the light is removed and then re-added)
         for (var mesh of this.meshes) {
             if (mesh.lightSources.indexOf(newLight) === -1) {
                 mesh.lightSources.push(newLight);
@@ -2366,6 +2374,10 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newCamera The camera to add
      */
     public addCamera(newCamera: Camera): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
+
         this.cameras.push(newCamera);
         this.onNewCameraAddedObservable.notifyObservers(newCamera);
 
@@ -2484,6 +2496,9 @@ export class Scene extends AbstractScene implements IAnimatable {
      * @param newTexture The texture to add
      */
     public addTexture(newTexture: BaseTexture): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
         this.textures.push(newTexture);
         this.onNewTextureAddedObservable.notifyObservers(newTexture);
     }
