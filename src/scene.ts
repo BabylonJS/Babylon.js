@@ -2349,7 +2349,7 @@ export class Scene extends AbstractScene implements IAnimatable {
             newLight._addToSceneRootNodes();
         }
 
-        // Add light to all meshes (To support if the light is removed and then readded)
+        // Add light to all meshes (To support if the light is removed and then re-added)
         for (var mesh of this.meshes) {
             if (mesh.lightSources.indexOf(newLight) === -1) {
                 mesh.lightSources.push(newLight);

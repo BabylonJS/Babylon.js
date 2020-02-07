@@ -9,7 +9,6 @@ import { AnimationGroup } from "babylonjs/Animations/animationGroup";
 import { Animation } from "babylonjs/Animations/animation";
 import { Bone } from "babylonjs/Bones/bone";
 import { Skeleton } from "babylonjs/Bones/skeleton";
-import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
 import { Material } from "babylonjs/Materials/material";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
@@ -27,12 +26,13 @@ import { Scene } from "babylonjs/scene";
 import { IProperty, AccessorType, CameraType, AnimationChannelTargetPath, AnimationSamplerInterpolation, AccessorComponentType, MaterialAlphaMode, TextureMinFilter, TextureWrapMode, TextureMagFilter, MeshPrimitiveMode } from "babylonjs-gltf2interface";
 import { _IAnimationSamplerData, IGLTF, ISampler, INode, IScene, IMesh, IAccessor, ISkin, ICamera, IAnimation, IAnimationChannel, IAnimationSampler, IBuffer, IBufferView, IMaterialPbrMetallicRoughness, IMaterial, ITextureInfo, ITexture, IImage, IMeshPrimitive, IArrayItem as IArrItem, _ISamplerData } from "./glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "./glTFLoaderExtension";
-import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
+import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode, IImportMeshAsyncOutput } from "../glTFFileLoader";
 import { IAnimationKey, AnimationKeyInterpolation } from 'babylonjs/Animations/animationKey';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { IDataBuffer } from 'babylonjs/Misc/dataReader';
 import { LoadFileError } from 'babylonjs/Misc/fileTools';
 import { Logger } from 'babylonjs/Misc/logger';
+import { Light } from 'babylonjs/Lights/light';
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
@@ -101,6 +101,9 @@ export class GLTFLoader implements IGLTFLoader {
 
     /** @hidden */
     public _forAssetContainer = false;
+
+    /** Storage */
+    public _babylonLights: Light[] = [];
 
     private _disposed = false;
     private _parent: GLTFFileLoader;
@@ -228,7 +231,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /** @hidden */
-    public importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
+    public importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<IImportMeshAsyncOutput> {
         return Promise.resolve().then(() => {
             this._babylonScene = scene;
             this._rootUrl = rootUrl;
@@ -265,7 +268,8 @@ export class GLTFLoader implements IGLTFLoader {
                     meshes: this._getMeshes(),
                     particleSystems: [],
                     skeletons: this._getSkeletons(),
-                    animationGroups: this._getAnimationGroups()
+                    animationGroups: this._getAnimationGroups(),
+                    lights: this._babylonLights
                 };
             });
         });
