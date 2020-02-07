@@ -6,7 +6,7 @@
  * - deprecated members marking.
  * - compilation and proper error reporting for both JS and TS.
  * - private/internal member filtering (we should not see members starting with an underscore).
- * - dedicated adornments, like the one used for previwing colors for BABYLON.ColorX types.
+ * - dedicated adornments, like the one used for previewing colors for BABYLON.ColorX types.
  */
 class MonacoCreator {
     constructor(parent) {
