@@ -112,11 +112,7 @@ void main(void) {
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
 #ifdef REFLECTIONMAP_SKYBOX
-	#ifdef REFLECTIONMAP_SKYBOX_TRANSFORMED
-		vPositionUVW = (reflectionMatrix * vec4(positionUpdated, 1.0)).xyz;
-	#else
-		vPositionUVW = positionUpdated;
-	#endif
+	vPositionUVW = positionUpdated;
 #endif 
 
 #define CUSTOM_VERTEX_UPDATE_POSITION
