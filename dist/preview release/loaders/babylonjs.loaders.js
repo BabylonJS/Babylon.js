@@ -801,8 +801,8 @@ var OBJFileLoader = /** @class */ (function () {
     OBJFileLoader.prototype.loadAssetContainerAsync = function (scene, data, rootUrl, onProgress, fileName) {
         var _this = this;
         this._forAssetContainer = true;
-        var container = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["AssetContainer"](scene);
         return this.importMeshAsync(null, scene, data, rootUrl).then(function (result) {
+            var container = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["AssetContainer"](scene);
             result.meshes.forEach(function (mesh) { return container.meshes.push(mesh); });
             result.meshes.forEach(function (mesh) {
                 var material = mesh.material;
@@ -822,9 +822,9 @@ var OBJFileLoader = /** @class */ (function () {
             });
             _this._forAssetContainer = false;
             return container;
-        }).catch(function () {
+        }).catch(function (ex) {
             _this._forAssetContainer = false;
-            return container;
+            throw ex;
         });
     };
     /**
@@ -6317,7 +6317,9 @@ var GLTFLoader = /** @class */ (function () {
         };
         if (node.mesh == undefined) {
             var nodeName = node.name || "node" + node.index;
+            this._babylonScene._blockEntityCollection = this._forAssetContainer;
             node._babylonTransformNode = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["TransformNode"](nodeName, this._babylonScene);
+            this._babylonScene._blockEntityCollection = false;
             loadNode(node._babylonTransformNode);
         }
         else {

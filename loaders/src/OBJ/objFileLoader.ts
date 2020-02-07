@@ -274,7 +274,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      */
     public loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer> {
         this._forAssetContainer = true;
-        
+
         return this.importMeshAsync(null, scene, data, rootUrl).then((result) => {
             var container = new AssetContainer(scene);
             result.meshes.forEach((mesh) => container.meshes.push(mesh));
@@ -297,9 +297,9 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             });
             this._forAssetContainer = false;
             return container;
-        }).catch(ex => {
+        }).catch((ex) => {
             this._forAssetContainer = false;
-            throw ex
+            throw ex;
         });
     }
 
