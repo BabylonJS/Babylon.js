@@ -326,6 +326,9 @@ class MonacoCreator {
         this.jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
         this.jsEditor.setValue(oldCode);
 
+        // We cannot call 'analyzeCode' on every keystroke, that's time consuming
+        // So use a debounced version to prevent over processing.
+        // Be careful to keep the proper context for the effective call (this).
         const analyzeCodeDebounced = this.parent.utils.debounceAsync((async) => this.analyzeCode(), 500);
 
         this.jsEditor.onDidChangeModelContent(function () {
