@@ -182,8 +182,9 @@ var MTLFileLoader = /** @class */ (function () {
      * @param scene defines the scene the material will be created in
      * @param data defines the mtl data to parse
      * @param rootUrl defines the rooturl to use in order to load relative dependencies
+     * @param forAssetContainer defines if the material should be registered in the scene
      */
-    MTLFileLoader.prototype.parseMTL = function (scene, data, rootUrl) {
+    MTLFileLoader.prototype.parseMTL = function (scene, data, rootUrl, forAssetContainer) {
         if (data instanceof ArrayBuffer) {
             return;
         }
@@ -218,7 +219,9 @@ var MTLFileLoader = /** @class */ (function () {
                 }
                 //Create a new material.
                 // value is the name of the material read in the mtl file
+                scene._blockEntityCollection = forAssetContainer;
                 material = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["StandardMaterial"](value, scene);
+                scene._blockEntityCollection = false;
             }
             else if (key === "kd" && material) {
                 // Diffuse color (color under white light) using RGB values
@@ -454,6 +457,7 @@ var OBJFileLoader = /** @class */ (function () {
         // f -vertex/-uvs/-normal -vertex/-uvs/-normal -vertex/-uvs/-normal ...
         /** @hidden */
         this.facePattern5 = /f\s+(((-[\d]{1,}\/-[\d]{1,}\/-[\d]{1,}[\s]?){3,})+)/;
+        this._forAssetContainer = false;
         this._meshLoadOptions = meshLoadOptions || OBJFileLoader.currentMeshLoadOptions;
     }
     Object.defineProperty(OBJFileLoader, "INVERT_TEXTURE_Y", {
@@ -566,8 +570,10 @@ var OBJFileLoader = /** @class */ (function () {
      * @returns The loaded asset container
      */
     OBJFileLoader.prototype.loadAssetContainerAsync = function (scene, data, rootUrl, onProgress, fileName) {
+        var _this = this;
+        this._forAssetContainer = true;
+        var container = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["AssetContainer"](scene);
         return this.importMeshAsync(null, scene, data, rootUrl).then(function (result) {
-            var container = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["AssetContainer"](scene);
             result.meshes.forEach(function (mesh) { return container.meshes.push(mesh); });
             result.meshes.forEach(function (mesh) {
                 var material = mesh.material;
@@ -585,6 +591,10 @@ var OBJFileLoader = /** @class */ (function () {
                     }
                 }
             });
+            _this._forAssetContainer = false;
+            return container;
+        }).catch(function () {
+            _this._forAssetContainer = false;
             return container;
         });
     };
@@ -1118,7 +1128,9 @@ var OBJFileLoader = /** @class */ (function () {
             //Set the data with VertexBuffer for each mesh
             handledMesh = meshesFromObj[j];
             //Create a Mesh with the name of the obj mesh
+            scene._blockEntityCollection = this._forAssetContainer;
             var babylonMesh = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Mesh"](meshesFromObj[j].name, scene);
+            scene._blockEntityCollection = false;
             //Push the name of the material to an array
             //This is indispensable for the importMesh function
             materialToUse.push(meshesFromObj[j].materialName);
@@ -1155,7 +1167,7 @@ var OBJFileLoader = /** @class */ (function () {
                 _this._loadMTL(fileToLoad, rootUrl, function (dataLoaded) {
                     try {
                         //Create materials thanks MTLLoader function
-                        materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl);
+                        materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl, _this._forAssetContainer);
                         //Look at each material loaded in the mtl file
                         for (var n = 0; n < materialsFromMTLFile.materials.length; n++) {
                             //Three variables to get all meshes with the same material
