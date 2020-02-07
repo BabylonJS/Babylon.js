@@ -269,7 +269,8 @@ export class GLTFLoader implements IGLTFLoader {
                     particleSystems: [],
                     skeletons: this._getSkeletons(),
                     animationGroups: this._getAnimationGroups(),
-                    lights: this._babylonLights
+                    lights: this._babylonLights,
+                    transformNodes: this._getTransformNodes()
                 };
             });
         });
@@ -563,6 +564,21 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         return meshes;
+    }
+
+    private _getTransformNodes(): TransformNode[] {
+        const transformNodes = new Array<TransformNode>();
+
+        const nodes = this._gltf.nodes;
+        if (nodes) {
+            for (const node of nodes) {
+                if (node._babylonTransformNode && node._babylonTransformNode.getClassName() === "TransformNode") {
+                    transformNodes.push(node._babylonTransformNode);
+                }
+            }
+        }
+
+        return transformNodes;
     }
 
     private _getSkeletons(): Skeleton[] {
