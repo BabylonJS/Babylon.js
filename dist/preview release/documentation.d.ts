@@ -35096,6 +35096,8 @@ declare module BABYLON {
         cameraToUseForPointers: Nullable<Camera>;
         /** @hidden */
         readonly _isScene: boolean;
+        /** @hidden */
+        _blockEntityCollection: boolean;
         /**
          * Gets or sets a boolean that indicates if the scene must clear the render buffer before rendering a frame
          */
@@ -69064,6 +69066,35 @@ declare module BABYLON {
              */
             restitution?: number;
         };
+        /**
+         * Should the headset get its own impostor
+         */
+        enableHeadsetImpostor?: boolean;
+        /**
+         * Optional parameters for the headset impostor
+         */
+        headsetImpostorParams?: {
+            /**
+             * The type of impostor to create. Default is sphere
+             */
+            impostorType: number;
+            /**
+             * the size of the impostor. Defaults to 10cm
+             */
+            impostorSize?: number | {
+                width: number;
+                height: number;
+                depth: number;
+            };
+            /**
+             * Friction definitions
+             */
+            friction?: number;
+            /**
+             * Restitution
+             */
+            restitution?: number;
+        };
     }
     /**
      * Add physics impostor to your webxr controllers,
@@ -69084,6 +69115,8 @@ declare module BABYLON {
         private _lastTimestamp;
         private _delta;
         private _controllers;
+        private _headsetImpostor?;
+        private _headsetMesh?;
         private _tmpVector;
         private _tmpQuaternion;
         /**
@@ -69106,6 +69139,16 @@ declare module BABYLON {
             friction?: number;
             restitution?: number;
         }): void;
+        /**
+         * Get the physics impostor of a specific controller.
+         * The impostor is not attached to a mesh because a mesh for each controller is not obligatory
+         * @param controller the controller or the controller id of which to get the impostor
+         */
+        getImpostorForController(controller: WebXRInputSource | string): Nullable<PhysicsImpostor>;
+        /**
+         * Get the headset impostor, if enabled
+         */
+        getHeadsetImpostor(): PhysicsImpostor | undefined;
         /**
          * attach this feature
          * Will usually be called by the features manager

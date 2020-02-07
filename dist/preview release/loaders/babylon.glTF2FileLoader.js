@@ -4446,7 +4446,6 @@ var GLTFFileLoader = /** @class */ (function () {
                 Array.prototype.push.apply(container.animationGroups, result.animationGroups);
                 Array.prototype.push.apply(container.materials, materials);
                 Array.prototype.push.apply(container.textures, textures);
-                container.removeAllFromScene();
                 return container;
             });
         });
