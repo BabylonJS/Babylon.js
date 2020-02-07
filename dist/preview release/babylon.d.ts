@@ -26333,7 +26333,6 @@ declare module BABYLON {
         USE_LOCAL_REFLECTIONMAP_CUBIC: boolean;
         REFLECTIONMAP_PROJECTION: boolean;
         REFLECTIONMAP_SKYBOX: boolean;
-        REFLECTIONMAP_SKYBOX_TRANSFORMED: boolean;
         REFLECTIONMAP_EXPLICIT: boolean;
         REFLECTIONMAP_EQUIRECTANGULAR: boolean;
         REFLECTIONMAP_EQUIRECTANGULAR_FIXED: boolean;
@@ -36953,6 +36952,7 @@ declare module BABYLON {
      * Container with a set of assets that can be added or removed from a scene.
      */
     export class AssetContainer extends AbstractScene {
+        private _wasAddedToScene;
         /**
          * The scene the AssetContainer belongs to.
          */
@@ -50807,7 +50807,6 @@ declare module BABYLON {
         USE_LOCAL_REFLECTIONMAP_CUBIC: boolean;
         REFLECTIONMAP_PROJECTION: boolean;
         REFLECTIONMAP_SKYBOX: boolean;
-        REFLECTIONMAP_SKYBOX_TRANSFORMED: boolean;
         REFLECTIONMAP_EXPLICIT: boolean;
         REFLECTIONMAP_EQUIRECTANGULAR: boolean;
         REFLECTIONMAP_EQUIRECTANGULAR_FIXED: boolean;
