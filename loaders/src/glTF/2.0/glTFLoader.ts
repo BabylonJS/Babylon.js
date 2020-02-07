@@ -9,7 +9,6 @@ import { AnimationGroup } from "babylonjs/Animations/animationGroup";
 import { Animation } from "babylonjs/Animations/animation";
 import { Bone } from "babylonjs/Bones/bone";
 import { Skeleton } from "babylonjs/Bones/skeleton";
-import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
 import { Material } from "babylonjs/Materials/material";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
@@ -27,12 +26,13 @@ import { Scene } from "babylonjs/scene";
 import { IProperty, AccessorType, CameraType, AnimationChannelTargetPath, AnimationSamplerInterpolation, AccessorComponentType, MaterialAlphaMode, TextureMinFilter, TextureWrapMode, TextureMagFilter, MeshPrimitiveMode } from "babylonjs-gltf2interface";
 import { _IAnimationSamplerData, IGLTF, ISampler, INode, IScene, IMesh, IAccessor, ISkin, ICamera, IAnimation, IAnimationChannel, IAnimationSampler, IBuffer, IBufferView, IMaterialPbrMetallicRoughness, IMaterial, ITextureInfo, ITexture, IImage, IMeshPrimitive, IArrayItem as IArrItem, _ISamplerData } from "./glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "./glTFLoaderExtension";
-import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
+import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode, IImportMeshAsyncOutput } from "../glTFFileLoader";
 import { IAnimationKey, AnimationKeyInterpolation } from 'babylonjs/Animations/animationKey';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { IDataBuffer } from 'babylonjs/Misc/dataReader';
 import { LoadFileError } from 'babylonjs/Misc/fileTools';
 import { Logger } from 'babylonjs/Misc/logger';
+import { Light } from 'babylonjs/Lights/light';
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
@@ -98,6 +98,12 @@ export class ArrayItem {
 export class GLTFLoader implements IGLTFLoader {
     /** @hidden */
     public _completePromises = new Array<Promise<any>>();
+
+    /** @hidden */
+    public _forAssetContainer = false;
+
+    /** Storage */
+    public _babylonLights: Light[] = [];
 
     private _disposed = false;
     private _parent: GLTFFileLoader;
@@ -225,12 +231,13 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /** @hidden */
-    public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
+    public importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<IImportMeshAsyncOutput> {
         return Promise.resolve().then(() => {
             this._babylonScene = scene;
             this._rootUrl = rootUrl;
             this._fileName = fileName || "scene";
             this._progressCallback = onProgress;
+            this._forAssetContainer = forAssetContainer;
             this._loadData(data);
 
             let nodes: Nullable<Array<number>> = null;
@@ -261,7 +268,9 @@ export class GLTFLoader implements IGLTFLoader {
                     meshes: this._getMeshes(),
                     particleSystems: [],
                     skeletons: this._getSkeletons(),
-                    animationGroups: this._getAnimationGroups()
+                    animationGroups: this._getAnimationGroups(),
+                    lights: this._babylonLights,
+                    transformNodes: this._getTransformNodes()
                 };
             });
         });
@@ -455,7 +464,9 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _createRootNode(): INode {
+        this._babylonScene._blockEntityCollection = this._forAssetContainer;
         this._rootBabylonMesh = new Mesh("__root__", this._babylonScene);
+        this._babylonScene._blockEntityCollection = false;
         this._rootBabylonMesh.setEnabled(false);
 
         const rootNode: INode = {
@@ -553,6 +564,21 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         return meshes;
+    }
+
+    private _getTransformNodes(): TransformNode[] {
+        const transformNodes = new Array<TransformNode>();
+
+        const nodes = this._gltf.nodes;
+        if (nodes) {
+            for (const node of nodes) {
+                if (node._babylonTransformNode && node._babylonTransformNode.getClassName() === "TransformNode") {
+                    transformNodes.push(node._babylonTransformNode);
+                }
+            }
+        }
+
+        return transformNodes;
     }
 
     private _getSkeletons(): Skeleton[] {
@@ -658,7 +684,9 @@ export class GLTFLoader implements IGLTFLoader {
 
         if (node.mesh == undefined) {
             const nodeName = node.name || `node${node.index}`;
+            this._babylonScene._blockEntityCollection = this._forAssetContainer;
             node._babylonTransformNode = new TransformNode(nodeName, this._babylonScene);
+            this._babylonScene._blockEntityCollection = false;
             loadNode(node._babylonTransformNode);
         }
         else {
@@ -755,7 +783,9 @@ export class GLTFLoader implements IGLTFLoader {
         else {
             const promises = new Array<Promise<any>>();
 
+            this._babylonScene._blockEntityCollection = this._forAssetContainer;
             const babylonMesh = new Mesh(name, this._babylonScene);
+            this._babylonScene._blockEntityCollection = false;
             babylonMesh.overrideMaterialSideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
 
             this._createMorphTargets(context, node, mesh, primitive, babylonMesh);
@@ -1012,7 +1042,9 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         const skeletonId = `skeleton${skin.index}`;
+        this._babylonScene._blockEntityCollection = this._forAssetContainer;
         const babylonSkeleton = new Skeleton(skin.name || skeletonId, skeletonId, this._babylonScene);
+        this._babylonScene._blockEntityCollection = false;
 
         // See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins (second implementation note)
         babylonSkeleton.overrideMesh = this._rootBabylonMesh;
@@ -1116,7 +1148,10 @@ export class GLTFLoader implements IGLTFLoader {
 
         this.logOpen(`${context} ${camera.name || ""}`);
 
+        this._babylonScene._blockEntityCollection = this._forAssetContainer;
         const babylonCamera = new FreeCamera(camera.name || `camera${camera.index}`, Vector3.Zero(), this._babylonScene, false);
+        this._babylonScene._blockEntityCollection = false;
+
         babylonCamera.rotation = new Vector3(0, Math.PI, 0);
 
         switch (camera.type) {
@@ -1187,7 +1222,9 @@ export class GLTFLoader implements IGLTFLoader {
             return promise;
         }
 
+        this._babylonScene._blockEntityCollection = this._forAssetContainer;
         const babylonAnimationGroup = new AnimationGroup(animation.name || `animation${animation.index}`, this._babylonScene);
+        this._babylonScene._blockEntityCollection = false;
         animation._babylonAnimationGroup = babylonAnimationGroup;
 
         const promises = new Array<Promise<any>>();
@@ -1687,7 +1724,9 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _createDefaultMaterial(name: string, babylonDrawMode: number): Material {
+        this._babylonScene._blockEntityCollection = this._forAssetContainer;
         const babylonMaterial = new PBRMaterial(name, this._babylonScene);
+        this._babylonScene._blockEntityCollection = false;
         // Moved to mesh so user can change materials on gltf meshes: babylonMaterial.sideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
         babylonMaterial.fillMode = babylonDrawMode;
         babylonMaterial.enableSpecularAntiAliasing = true;
@@ -1894,6 +1933,7 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         const deferred = new Deferred<void>();
+        this._babylonScene._blockEntityCollection = this._forAssetContainer;
         const babylonTexture = new Texture(url, this._babylonScene, samplerData.noMipMaps, false, samplerData.samplingMode, () => {
             if (!this._disposed) {
                 deferred.resolve();
@@ -1903,6 +1943,7 @@ export class GLTFLoader implements IGLTFLoader {
                 deferred.reject(new Error(`${context}: ${(exception && exception.message) ? exception.message : message || "Failed to load texture"}`));
             }
         }, undefined, undefined, undefined, image.mimeType);
+        this._babylonScene._blockEntityCollection = false;
         promises.push(deferred.promise);
 
         if (!url) {
