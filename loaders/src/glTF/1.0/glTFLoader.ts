@@ -246,7 +246,9 @@ var loadAnimations = (gltfRuntime: IGLTFRuntime) => {
             }
 
             if (!modifyKey) {
+                gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
                 babylonAnimation = new Animation(anim, isBone ? "_matrix" : targetPath, 1, animationType, Animation.ANIMATIONLOOPMODE_CYCLE);
+                gltfRuntime.scene._blockEntityCollection = false;
             }
 
             // For each frame
@@ -606,7 +608,9 @@ var importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh, 
 */
 var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], id: string, newMesh: Mesh): Mesh => {
     if (!newMesh) {
+        gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
         newMesh = new Mesh(node.name || "", gltfRuntime.scene);
+        gltfRuntime.scene._blockEntityCollection = false;
         newMesh.id = id;
     }
 
@@ -732,6 +736,7 @@ var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], 
         }
     }
     let material: StandardMaterial | MultiMaterial;
+    gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
     if (subMaterials.length > 1) {
         material = new MultiMaterial("multimat" + id, gltfRuntime.scene);
         (material as MultiMaterial).subMaterials = subMaterials;
@@ -751,6 +756,8 @@ var importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], 
     // Apply geometry
     new Geometry(id, gltfRuntime.scene, vertexData!, false, newMesh);
     newMesh.computeWorldMatrix(true);
+
+    gltfRuntime.scene._blockEntityCollection = false;
 
     // Apply submeshes
     newMesh.subMeshes = [];
@@ -916,6 +923,8 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
         var camera: IGLTFCamera = gltfRuntime.cameras[node.camera];
 
         if (camera) {
+            
+            gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
             if (camera.type === "orthographic") {
                 var orthoCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene, false);
 
@@ -943,6 +952,8 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
 
                 lastNode = persCamera;
             }
+            
+            gltfRuntime.scene._blockEntityCollection = false;
         }
     }
 
@@ -952,7 +963,9 @@ var importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string, parent
             return node.babylonNode;
         }
         else if (lastNode === null) {
+            gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
             var dummy = new Mesh(node.name || "", gltfRuntime.scene);
+            gltfRuntime.scene._blockEntityCollection = false;
             node.babylonNode = dummy;
             lastNode = dummy;
         }
@@ -1238,7 +1251,9 @@ export class GLTFLoaderBase {
 
             importOnlyMeshes: false,
 
-            dummyNodes: []
+            dummyNodes: [],
+
+            forAssetContainer: false
         };
 
         // Parse
@@ -1430,7 +1445,9 @@ export class GLTFLoaderBase {
 
         var technique: IGLTFTechnique = gltfRuntime.techniques[material.technique];
         if (!technique) {
+            gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
             var defaultMaterial = new StandardMaterial(id, gltfRuntime.scene);
+            gltfRuntime.scene._blockEntityCollection = false;
             defaultMaterial.diffuseColor = new Color3(0.5, 0.5, 0.5);
             defaultMaterial.sideOrientation = Material.CounterClockWiseSideOrientation;
             onSuccess(defaultMaterial);
@@ -1605,10 +1622,11 @@ export class GLTFLoader implements IGLTFLoader {
         // do nothing
     }
 
-    private _importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string) => void): boolean {
+    private _importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, forAssetContainer: boolean, onSuccess: (meshes: AbstractMesh[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string) => void): boolean {
         scene.useRightHandedSystem = true;
 
         GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, (gltfRuntime) => {
+            gltfRuntime.forAssetContainer = forAssetContainer;
             gltfRuntime.importOnlyMeshes = true;
 
             if (meshesNames === "") {
@@ -1672,14 +1690,15 @@ export class GLTFLoader implements IGLTFLoader {
     * Imports one or more meshes from a loaded gltf file and adds them to the scene
     * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
     * @param scene the scene the meshes should be added to
+    * @param forAssetContainer defines if the entities must be stored in the scene
     * @param data gltf data containing information of the meshes in a loaded file
     * @param rootUrl root url to load from
     * @param onProgress event that fires when loading progress has occured
     * @returns a promise containg the loaded meshes, particles, skeletons and animations
     */
-    public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
+    public importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
         return new Promise((resolve, reject) => {
-            this._importMeshAsync(meshesNames, scene, data, rootUrl, (meshes, skeletons) => {
+            this._importMeshAsync(meshesNames, scene, data, rootUrl, forAssetContainer, (meshes, skeletons) => {
                 resolve({
                     meshes: meshes,
                     particleSystems: [],
@@ -1692,7 +1711,7 @@ export class GLTFLoader implements IGLTFLoader {
         });
     }
 
-    private _loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string) => void): void {
+    private _loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, forAssetContainer: boolean, onSuccess: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string) => void): void {
         scene.useRightHandedSystem = true;
 
         GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, (gltfRuntime) => {
@@ -1730,7 +1749,7 @@ export class GLTFLoader implements IGLTFLoader {
     */
     public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void> {
         return new Promise((resolve, reject) => {
-            this._loadAsync(scene, data, rootUrl, () => {
+            this._loadAsync(scene, data, rootUrl, false, () => {
                 resolve();
             }, onProgress, (message) => {
                 reject(new Error(message));
