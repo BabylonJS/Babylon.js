@@ -42,6 +42,8 @@ export class InstantiatedEntries {
  * Container with a set of assets that can be added or removed from a scene.
  */
 export class AssetContainer extends AbstractScene {
+    private _wasAddedToScene = false;
+
     /**
      * The scene the AssetContainer belongs to.
      */
@@ -60,6 +62,12 @@ export class AssetContainer extends AbstractScene {
         this["lensFlareSystems"] = [];
         this["proceduralTextures"] = [];
         this["reflectionProbes"] = [];
+
+        scene.onDisposeObservable.add(() => {
+            if (!this._wasAddedToScene) {
+                this.dispose();
+            }
+        });
     }
 
     /**
@@ -221,6 +229,8 @@ export class AssetContainer extends AbstractScene {
      * Adds all the assets from the container to the scene.
      */
     public addAllToScene() {
+        this._wasAddedToScene = true;
+
         this.cameras.forEach((o) => {
             this.scene.addCamera(o);
         });
@@ -277,6 +287,8 @@ export class AssetContainer extends AbstractScene {
      * Removes all the assets in the container from the scene
      */
     public removeAllFromScene() {
+        this._wasAddedToScene = false;
+
         this.cameras.forEach((o) => {
             this.scene.removeCamera(o);
         });
@@ -430,6 +442,7 @@ export class AssetContainer extends AbstractScene {
      * @param keepAssets Set of assets to keep in the scene. (default: empty)
      */
     public moveAllFromScene(keepAssets?: KeepAssets): void {
+        this._wasAddedToScene = false;
 
         if (keepAssets === undefined) {
             keepAssets = new KeepAssets();

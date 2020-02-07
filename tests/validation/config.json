@@ -9,7 +9,8 @@
         {
             "title": "Sprite maps",
             "playgroundId": "#ARLADE#22",
-            "referenceImage": "sprite-maps.png"
+            "referenceImage": "sprite-maps.png",            
+            "excludeFromAutomaticTesting": true
         },              
         {
             "title": "Point light shadows",

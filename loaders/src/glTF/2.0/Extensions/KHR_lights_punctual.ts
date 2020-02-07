@@ -85,6 +85,8 @@ export class KHR_lights implements IGLTFLoaderExtension {
                 const light = ArrayItem.Get(extensionContext, this._lights, extension.light);
                 const name = light.name || babylonMesh.name;
 
+                this._loader.babylonScene._blockEntityCollection = this._loader._forAssetContainer;
+
                 switch (light.type) {
                     case LightType.DIRECTIONAL: {
                         babylonLight = new DirectionalLight(name, Vector3.Backward(), this._loader.babylonScene);
@@ -102,15 +104,19 @@ export class KHR_lights implements IGLTFLoaderExtension {
                         break;
                     }
                     default: {
+                        this._loader.babylonScene._blockEntityCollection = false;
                         throw new Error(`${extensionContext}: Invalid light type (${light.type})`);
                     }
                 }
 
+                this._loader.babylonScene._blockEntityCollection = false;
                 babylonLight.falloffType = Light.FALLOFF_GLTF;
                 babylonLight.diffuse = light.color ? Color3.FromArray(light.color) : Color3.White();
                 babylonLight.intensity = light.intensity == undefined ? 1 : light.intensity;
                 babylonLight.range = light.range == undefined ? Number.MAX_VALUE : light.range;
                 babylonLight.parent = babylonMesh;
+
+                this._loader._babylonLights.push(babylonLight);
 
                 GLTFLoader.AddPointerMetadata(babylonLight, extensionContext);
 
