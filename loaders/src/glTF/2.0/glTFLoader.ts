@@ -664,7 +664,9 @@ export class GLTFLoader implements IGLTFLoader {
 
         if (node.mesh == undefined) {
             const nodeName = node.name || `node${node.index}`;
+            this._babylonScene._blockEntityCollection = this._forAssetContainer;
             node._babylonTransformNode = new TransformNode(nodeName, this._babylonScene);
+            this._babylonScene._blockEntityCollection = false;
             loadNode(node._babylonTransformNode);
         }
         else {
