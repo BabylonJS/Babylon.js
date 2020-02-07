@@ -5,11 +5,9 @@ import { Quaternion, Color3, Vector3, Matrix } from "babylonjs/Maths/math";
 import { Tools } from "babylonjs/Misc/tools";
 import { Camera } from "babylonjs/Cameras/camera";
 import { FreeCamera } from "babylonjs/Cameras/freeCamera";
-import { AnimationGroup } from "babylonjs/Animations/animationGroup";
 import { Animation } from "babylonjs/Animations/animation";
 import { Bone } from "babylonjs/Bones/bone";
 import { Skeleton } from "babylonjs/Bones/skeleton";
-import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
 import { Effect } from "babylonjs/Materials/effect";
 import { Material } from "babylonjs/Materials/material";
 import { MultiMaterial } from "babylonjs/Materials/multiMaterial";
@@ -31,7 +29,7 @@ import { SceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
 import { Scene } from "babylonjs/scene";
 
 import { GLTFUtils } from "./glTFLoaderUtils";
-import { GLTFFileLoader, IGLTFLoader, GLTFLoaderState, IGLTFLoaderData } from "../glTFFileLoader";
+import { GLTFFileLoader, IGLTFLoader, GLTFLoaderState, IGLTFLoaderData, IImportMeshAsyncOutput } from "../glTFFileLoader";
 import { Constants } from 'babylonjs/Engines/constants';
 
 /**
@@ -1696,14 +1694,15 @@ export class GLTFLoader implements IGLTFLoader {
     * @param onProgress event that fires when loading progress has occured
     * @returns a promise containg the loaded meshes, particles, skeletons and animations
     */
-    public importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
+    public importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<IImportMeshAsyncOutput> {
         return new Promise((resolve, reject) => {
             this._importMeshAsync(meshesNames, scene, data, rootUrl, forAssetContainer, (meshes, skeletons) => {
                 resolve({
                     meshes: meshes,
                     particleSystems: [],
                     skeletons: skeletons,
-                    animationGroups: []
+                    animationGroups: [],
+                    lights: []
                 });
             }, onProgress, (message) => {
                 reject(new Error(message));

@@ -116,6 +116,8 @@ export class KHR_lights implements IGLTFLoaderExtension {
                 babylonLight.range = light.range == undefined ? Number.MAX_VALUE : light.range;
                 babylonLight.parent = babylonMesh;
 
+                this._loader._babylonLights.push(babylonLight);
+
                 GLTFLoader.AddPointerMetadata(babylonLight, extensionContext);
 
                 assign(babylonMesh);

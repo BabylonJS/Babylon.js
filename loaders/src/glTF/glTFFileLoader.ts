@@ -17,6 +17,7 @@ import { IFileRequest } from "babylonjs/Misc/fileRequest";
 import { Logger } from 'babylonjs/Misc/logger';
 import { DataReader, IDataBuffer } from 'babylonjs/Misc/dataReader';
 import { GLTFValidation } from './glTFValidation';
+import { Light } from 'babylonjs/Lights/light';
 
 /**
  * Mode that determines the coordinate system to use.
@@ -110,9 +111,18 @@ export enum GLTFLoaderState {
 }
 
 /** @hidden */
+export interface IImportMeshAsyncOutput { 
+    meshes: AbstractMesh[], 
+    particleSystems: IParticleSystem[], 
+    skeletons: Skeleton[], 
+    animationGroups: AnimationGroup[], 
+    lights: Light[] 
+}
+
+/** @hidden */
 export interface IGLTFLoader extends IDisposable {
     readonly state: Nullable<GLTFLoaderState>;
-    importMeshAsync: (meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string) => Promise<{ meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }>;
+    importMeshAsync: (meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string) => Promise<IImportMeshAsyncOutput>;
     loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string) => Promise<void>;
 }
 
@@ -594,6 +604,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                 Array.prototype.push.apply(container.animationGroups, result.animationGroups);
                 Array.prototype.push.apply(container.materials, materials);
                 Array.prototype.push.apply(container.textures, textures);
+                Array.prototype.push.apply(container.lights, result.lights);
                 return container;
             });
         });
