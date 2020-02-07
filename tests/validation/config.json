@@ -287,6 +287,11 @@
             "referenceImage": "softShadows.png"
         },
         {
+            "title": "Soft Shadows (Right Handed)",
+            "playgroundId": "#0YYQ3N#2",
+            "referenceImage": "softShadowsRightHanded.png"
+        },
+        {
             "title": "Fresnel",
             "playgroundId": "#603JUZ#1",
             "referenceImage": "fresnel.png"
@@ -552,13 +557,13 @@
         },
         {
             "title": "GLTF Serializer with Negative World Matrix",
-            "playgroundId": "#KX53VK#27",
+            "playgroundId": "#KX53VK#35",
             "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
             "errorRatio": 1.1
         },
         {
             "title": "GLTF Serializer with Negative World Matrix (Right Handed)",
-            "playgroundId": "#KX53VK#30",
+            "playgroundId": "#KX53VK#36",
             "referenceImage": "glTFSerializerNegativeWorldMatrix_Right.png",
             "errorRatio": 1.1
         },
