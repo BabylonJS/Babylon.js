@@ -1142,16 +1142,27 @@ class Main {
         }
     }
     updateMetadata() {
+        var selection;
+
         if (this.currentSnippetTitle) {
-            document.querySelector('title').innerText = (this.currentSnippetTitle + " | Babylon.js Playground");
+            selection = document.querySelector('title');
+            if(selection){
+                selection.innerText = (this.currentSnippetTitle + " | Babylon.js Playground");
+            }
         }
 
         if (this.currentSnippetDescription) {
-            document.querySelector('meta[name="description"]').setAttribute("content", this.currentSnippetDescription + " - Babylon.js Playground");
+            selection = document.querySelector('meta[name="description"]');
+            if(selection){
+                selection.setAttribute("content", this.currentSnippetDescription + " - Babylon.js Playground");
+            }
         }
 
         if (this.currentSnippetTags) {
-            document.querySelector('meta[name="keywords"]').setAttribute("content", "babylon.js, game engine, webgl, 3d," + this.currentSnippetTags);
+            selection = document.querySelector('meta[name="keywords"]');
+            if(selection){
+                selection.setAttribute("content", "babylon.js, game engine, webgl, 3d," + this.currentSnippetTags);
+            }
         }
     }
     parseQuery(queryString) {
