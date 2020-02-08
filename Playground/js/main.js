@@ -1073,6 +1073,11 @@ class Main {
             }
         }
         if (pgHash) {
+            var match = pgHash.match(/^(#[A-Z\d]*)(%23)([\d]+)$/);
+            if (match){
+                pgHash = match[1]+'#'+match[3];
+                parent.location.hash = pgHash;
+            }
             this.previousHash = pgHash;
             this.loadPlayground(pgHash.substr(1))
         }
