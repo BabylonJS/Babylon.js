@@ -291,7 +291,7 @@ class Main {
             this.parent.menuPG.removeAllOptions();
             this.createNewScript.call(this);
         }.bind(this));
-        // Clear 
+        // Clear
         this.parent.utils.setToMultipleID("clearButton", "click", function () {
             this.parent.menuPG.removeAllOptions();
             this.clear.call(this);
@@ -460,7 +460,7 @@ class Main {
 
     /**
      * Check if we're in the correct language for the selected script
-     * @param {*} xhr 
+     * @param {*} xhr
      */
     checkTypescriptSupport(xhr) {
         // If we're loading TS content and it's JS page
@@ -482,8 +482,8 @@ class Main {
 
     /**
      * Load a script in the database
-     * @param {*} scriptURL 
-     * @param {*} title 
+     * @param {*} scriptURL
+     * @param {*} title
      */
     loadScript(scriptURL, title) {
         var xhr = new XMLHttpRequest();
