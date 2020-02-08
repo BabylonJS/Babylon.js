@@ -9,6 +9,13 @@ import { NodePort } from './nodePort';
 import { SerializationTools } from '../serializationTools';
 import { StringTools } from '../stringTools';
 
+enum ResizingDirection {
+        Right = 'RIGHT',
+        Left = 'LEFT',
+        Top = 'TOP',
+        Bottom = 'BOTTOM',
+}
+
 export class GraphFrame {
     private readonly CollapsedWidth = 200;
     private static _FrameCounter = 0;
@@ -17,34 +24,31 @@ export class GraphFrame {
     private _x = 0;
     private _y = 0;
     private _gridAlignedX = 0;
-    private _gridAlignedY = 0;    
+    private _gridAlignedY = 0;
     private _width: number;
     private _height: number;
-    public element: HTMLDivElement;       
-    private _borderElement: HTMLDivElement;    
-    private _headerElement: HTMLDivElement;    
-    private _headerTextElement: HTMLDivElement;        
-    private _headerCollapseElement: HTMLDivElement;    
+    public element: HTMLDivElement;
+    private _borderElement: HTMLDivElement;
+    private _headerElement: HTMLDivElement;
+    private _headerTextElement: HTMLDivElement;
+    private _headerCollapseElement: HTMLDivElement;
     private _headerCloseElement: HTMLDivElement;
-    private _commentsElement: HTMLDivElement;    
-    private _portContainer: HTMLDivElement;    
-    private _outputPortContainer: HTMLDivElement;    
-    private _inputPortContainer: HTMLDivElement;    
+    private _commentsElement: HTMLDivElement;
+    private _portContainer: HTMLDivElement;
+    private _outputPortContainer: HTMLDivElement;
+    private _inputPortContainer: HTMLDivElement;
     private _nodes: GraphNode[] = [];
     private _ownerCanvas: GraphCanvasComponent;
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame>>>;   
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame>>>;
     private _isCollapsed = false;
     private _ports: NodePort[] = [];
     private _controlledPorts: NodePort[] = [];
     private _id: number;
     private _comments: string;
     private _frameIsResizing: boolean;
-    private _frameIsResizingRightSide = false;
-    private _frameIsResizingBottomSide = false;
-    private _frameIsResizingLeftSide = false;
-    private _frameIsResizingTopSide = false;
+    private _resizingDirection: Nullable<ResizingDirection>;
     private _minFrameHeight = 40;
     private _minFrameWidth = 220;
     private mouseXLimit: Nullable<number>;
@@ -82,7 +86,7 @@ export class GraphFrame {
         // Need to delegate the outside ports to the frame
         if (value) {
             this.element.classList.add("collapsed");
-                        
+
             this._moveFrame((this.width - this.CollapsedWidth) / 2, 0);
 
             for (var node of this._nodes) {
@@ -149,7 +153,7 @@ export class GraphFrame {
             for (var node of this._nodes) {
                 node.isVisible = true;
             }
-                        
+
             this._moveFrame(-(this.width - this.CollapsedWidth) / 2, 0);
         }
 
@@ -516,7 +520,7 @@ export class GraphFrame {
         _this._mouseStartPointX = evt.clientX;
         _this._mouseStartPointY = evt.clientY;
         _this._frameIsResizing = true;
-        _this._frameIsResizingRightSide = true;
+        _this._resizingDirection = ResizingDirection.Right;
         _this.mouseXLimit = evt.clientX - (_this.width - _this._minFrameWidth);
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onRightHandlePointerUp);
         _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onRightHandlePointerMove);
@@ -527,10 +531,10 @@ export class GraphFrame {
         const _this = this;
         if (_this.mouseXLimit){
 
-            if (!_this._frameIsResizingRightSide || _this._mouseStartPointX === null || _this._mouseStartPointY === null || (evt.clientX < _this.mouseXLimit)) {
+            if (_this._resizingDirection !== ResizingDirection.Right || _this._mouseStartPointX === null || _this._mouseStartPointY === null || (evt.clientX < _this.mouseXLimit)) {
                 return;
             }
-            if (_this._frameIsResizingRightSide) {
+            if (_this._resizingDirection === ResizingDirection.Right ) {
                 evt.stopPropagation();
                 const distanceMouseMoved = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
                 _this._expandRight(distanceMouseMoved, evt.clientX);
@@ -551,10 +555,10 @@ export class GraphFrame {
     private _onRightHandlePointerUp = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        if (_this._frameIsResizingRightSide) {
+        if (_this._resizingDirection === 'RIGHT') {
             evt.stopPropagation();
             _this._frameIsResizing = false;
-            _this._frameIsResizingRightSide = false;
+            _this._resizingDirection = null;
             _this._mouseStartPointX = null;
             _this._mouseStartPointY = null;
             _this.mouseXLimit = null;
@@ -572,7 +576,7 @@ export class GraphFrame {
         _this._mouseStartPointX = evt.clientX;
         _this._mouseStartPointY = evt.clientY;
         _this._frameIsResizing = true;
-        _this._frameIsResizingBottomSide = true;
+        _this._resizingDirection = ResizingDirection.Bottom;
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onBottomHandlePointerUp);
         _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onBottomHandlePointerMove);
     }
@@ -580,10 +584,10 @@ export class GraphFrame {
     private _onBottomHandlePointerMove = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        if (!_this._frameIsResizingBottomSide || _this._mouseStartPointX === null || _this._mouseStartPointY === null || (evt.clientY < (_this.y + _this._minFrameHeight))) {
+        if (_this._resizingDirection !== ResizingDirection.Bottom || _this._mouseStartPointX === null || _this._mouseStartPointY === null || (evt.clientY < (_this.y + _this._minFrameHeight))) {
             return;
         }
-        if (_this._frameIsResizingBottomSide ) {
+        if (_this._resizingDirection === ResizingDirection.Bottom) {
             evt.stopPropagation();
             const distanceMouseMoved = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
             _this._expandBottom(distanceMouseMoved);
@@ -599,11 +603,11 @@ export class GraphFrame {
     private _onBottomHandlePointerUp = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        if (_this._frameIsResizingBottomSide) {
+        if (_this._resizingDirection === ResizingDirection.Bottom) {
             evt.stopPropagation();
             _this.height = parseFloat(_this.element.style.height.replace("px", ""));
             _this._frameIsResizing = false;
-            _this._frameIsResizingBottomSide = false;
+            _this._resizingDirection = null;
             _this._mouseStartPointX = null;
             _this._mouseStartPointY = null;
             _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onBottomHandlePointerMove);
@@ -620,7 +624,7 @@ export class GraphFrame {
         _this._mouseStartPointY = evt.clientY;
 
         _this._frameIsResizing = true;
-        _this._frameIsResizingLeftSide = true;
+        _this._resizingDirection = ResizingDirection.Left;
         _this.mouseXLimit = evt.clientX + _this.width - _this._minFrameWidth;
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onLeftHandlePointerUp);
         _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onLeftHandlePointerMove);
@@ -630,10 +634,10 @@ export class GraphFrame {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
         if (_this.mouseXLimit){
-            if (!_this._frameIsResizingLeftSide || _this._mouseStartPointX === null || _this._mouseStartPointY === null || (evt.clientX > _this.mouseXLimit)) {
+            if (_this._resizingDirection !== ResizingDirection.Left  || _this._mouseStartPointX === null || _this._mouseStartPointY === null || (evt.clientX > _this.mouseXLimit)) {
                 return;
             }
-            if (_this._frameIsResizingLeftSide) {
+            if (_this._resizingDirection === ResizingDirection.Left) {
                 evt.stopPropagation();
                 const distanceMouseMoved = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
                 _this._expandLeft(distanceMouseMoved);
@@ -652,12 +656,12 @@ export class GraphFrame {
     private _onLeftHandlePointerUp = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        if (_this._frameIsResizingLeftSide) {
+        if (_this._resizingDirection === ResizingDirection.Left) {
             evt.stopPropagation();
             _this.x = parseFloat(_this.element.style.left!.replace("px", ""));
             _this.width = parseFloat(_this.element.style.width.replace("px", ""));
             _this._frameIsResizing = false;
-            _this._frameIsResizingLeftSide = false;
+            _this._resizingDirection = null;
             _this._mouseStartPointX = null;
             _this._mouseStartPointY = null;
             _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onLeftHandlePointerUp);
@@ -674,7 +678,7 @@ export class GraphFrame {
         _this._mouseStartPointY = evt.clientY;
 
         _this._frameIsResizing = true;
-        _this._frameIsResizingTopSide = true;
+        _this._resizingDirection = ResizingDirection.Top;
         _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onTopHandlePointerUp);
         _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onTopHandlePointerMove);
     }
@@ -682,10 +686,10 @@ export class GraphFrame {
     private _onTopHandlePointerMove = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        if (!_this._frameIsResizingTopSide || _this._mouseStartPointX === null || _this._mouseStartPointY === null || (evt.clientY > (_this.y + _this.height - _this._minFrameHeight))) {
+        if (_this._resizingDirection !== ResizingDirection.Top || _this._mouseStartPointX === null || _this._mouseStartPointY === null || (evt.clientY > (_this.y + _this.height - _this._minFrameHeight))) {
             return;
         }
-        if (_this._frameIsResizingTopSide) {
+        if (_this._resizingDirection === ResizingDirection.Top) {
             evt.stopPropagation();
             const distanceMouseMoved = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
             _this._expandTop(distanceMouseMoved);
@@ -704,12 +708,12 @@ export class GraphFrame {
     private _onTopHandlePointerUp = (evt: PointerEvent) => {
         // tslint:disable-next-line: no-this-assignment
         const _this = this;
-        if (_this._frameIsResizingTopSide) {
+        if (_this._resizingDirection === ResizingDirection.Top) {
             evt.stopPropagation();
             _this.y = parseFloat(_this.element.style.top!.replace("px", ""));
             _this.height = parseFloat(_this.element.style.height.replace("px", ""));
             _this._frameIsResizing = false;
-            _this._frameIsResizingTopSide = false;
+            _this._resizingDirection = null;
             _this._mouseStartPointX = null;
             _this._mouseStartPointY = null;
             _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onTopHandlePointerUp);
