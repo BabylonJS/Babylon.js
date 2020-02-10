@@ -57,12 +57,12 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
                     };
                 } else {
                     // visibility, usually for touchpads
-                    const nameOfMesh = (componentInLayout.type === WebXRControllerComponent.TOUCHPAD && componentInLayout.touchPointNodeName)
+                    const nameOfMesh = (componentInLayout.type === WebXRControllerComponent.TOUCHPAD_TYPE && componentInLayout.touchPointNodeName)
                         ? componentInLayout.touchPointNodeName : visResponse.valueNodeName!;
                     this._buttonMeshMapping[type].states[visualResponseKey] = {
                         valueMesh: this._getChildByName(this.rootMesh!, nameOfMesh)
                     };
-                    if (componentInLayout.type === WebXRControllerComponent.TOUCHPAD && !this._touchDots[visualResponseKey]) {
+                    if (componentInLayout.type === WebXRControllerComponent.TOUCHPAD_TYPE && !this._touchDots[visualResponseKey]) {
                         const dot = SphereBuilder.CreateSphere(visualResponseKey + 'dot', {
                             diameter: 0.0015,
                             segments: 8
