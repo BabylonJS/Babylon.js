@@ -211,6 +211,85 @@
                   border-color: white;
                 }
             }
+            
+            .handle{
+                z-index: 20;
+            }
+
+            .right-handle {
+                grid-area: 1 / 2 / 3 / 2;
+                width: 4px;
+                background-color: transparent;
+                cursor: ew-resize;
+
+                &::after{
+                    content: "";
+                    width: 8px;
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    margin-left: -4px;
+                    cursor: ew-resize;
+                    
+                }
+            }
+
+            .left-handle {
+                grid-area: 1 / 1 / 3 / 1;
+                width: 4px;
+                background-color: transparent;
+                cursor: ew-resize;
+
+                &::before{
+                    content: "";
+                    width: 8px;
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    margin-left: -4px;
+
+                }
+            }
+
+            .top-handle {
+                grid-area: 1 / 1 / 1 / 1;
+                background-color: transparent;
+                height: 4px;
+                cursor: ns-resize;
+
+                &::before{
+                    content: "";
+                    width: 100%;
+                    position: absolute;
+                    top: -4px;
+                    bottom: 100%;
+                    right: 0;
+                    left: 0;
+                    margin-bottom: -8px;
+                    cursor: ns-resize;
+                    height: 8px;
+                }
+            }
+
+            .bottom-handle {
+                grid-area: 3 / 1 / 3 / 1;
+                background-color: transparent;
+                height: 4px;
+                cursor: ns-resize;
+
+                &::after {
+                    content: "";
+                    width: 100%;
+                    position: absolute;
+                    top: 100%;
+                    bottom: 0;
+                    right: 0;
+                    left: 0;
+                    margin-top: -8px;
+                    cursor: ns-resize;
+                    height: 12px;
+                }
+            }
         }
 
         #graph-svg-container {
