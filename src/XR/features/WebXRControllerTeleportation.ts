@@ -107,6 +107,11 @@ export interface IWebXRTeleportationOptions {
      * if provided, this scene will be used to render meshes.
      */
     customUtilityLayerScene?: Scene;
+
+    /**
+     *  use this rendering group id for the meshes (optional)
+     */
+    renderingGroupId?: number;
 }
 
 /**
@@ -412,7 +417,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         // motion controller support
         xrController.onMotionControllerInitObservable.addOnce(() => {
             if (xrController.motionController) {
-                const movementController = xrController.motionController.getComponentOfType(WebXRControllerComponent.THUMBSTICK) || xrController.motionController.getComponentOfType(WebXRControllerComponent.TOUCHPAD);
+                const movementController = xrController.motionController.getComponentOfType(WebXRControllerComponent.THUMBSTICK_TYPE) || xrController.motionController.getComponentOfType(WebXRControllerComponent.TOUCHPAD_TYPE);
                 if (!movementController || this._options.useMainComponentOnly) {
                     // use trigger to move on long press
                     const mainComponent = xrController.motionController.getMainComponent();
@@ -633,6 +638,12 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             torus.material = torusConeMaterial;
             cone.material = torusConeMaterial;
             this._teleportationRingMaterial = torusConeMaterial;
+        }
+
+        if (this._options.renderingGroupId !== undefined) {
+            teleportationTarget.renderingGroupId = this._options.renderingGroupId;
+            torus.renderingGroupId = this._options.renderingGroupId;
+            cone.renderingGroupId = this._options.renderingGroupId;
         }
 
         this._options.teleportationTargetMesh = teleportationTarget;
