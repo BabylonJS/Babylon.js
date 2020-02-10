@@ -164,6 +164,7 @@
 
 - Added interface for argument `size` of screenshot methods ([Dok11](https://github.com/Dok11/))
 - Implementation usage of precision in combination height and width params ([Dok11](https://github.com/Dok11/))
+- Added a parameter to `CreateScreenshotUsingRenderTarget` to render sprites ([Popov72](https://github.com/Popov72))
 
 ### Sounds
 
