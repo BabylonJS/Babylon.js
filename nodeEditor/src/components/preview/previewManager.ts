@@ -191,18 +191,21 @@ export class PreviewManager {
         this._camera.useFramingBehavior = true;
 
         var framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
-        framingBehavior.framingTime = 0;
-        framingBehavior.elevationReturnTime = -1;
 
-        if (this._scene.meshes.length) {
-            var worldExtends = this._scene.getWorldExtends();
-            this._camera.lowerRadiusLimit = null;
-            this._camera.upperRadiusLimit = null;
-            framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
-        }
-
-        this._camera.pinchPrecision = 200 / this._camera.radius;
-        this._camera.upperRadiusLimit = 5 * this._camera.radius;
+        setTimeout(() => { // Let the behavior activate first
+            framingBehavior.framingTime = 0;
+            framingBehavior.elevationReturnTime = -1;
+    
+            if (this._scene.meshes.length) {
+                var worldExtends = this._scene.getWorldExtends();
+                this._camera.lowerRadiusLimit = null;
+                this._camera.upperRadiusLimit = null;
+                framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
+            }
+    
+            this._camera.pinchPrecision = 200 / this._camera.radius;
+            this._camera.upperRadiusLimit = 5 * this._camera.radius;    
+        });
 
         this._camera.wheelDeltaPercentage = 0.01;
         this._camera.pinchDeltaPercentage = 0.01;
