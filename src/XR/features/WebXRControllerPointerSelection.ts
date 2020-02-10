@@ -66,6 +66,11 @@ export interface IWebXRControllerPointerSelectionOptions {
      * if provided, this scene will be used to render meshes.
      */
     customUtilityLayerScene?: Scene;
+
+    /**
+     *  use this rendering group id for the meshes (optional)
+     */
+    renderingGroupId?: number;
 }
 
 /**
@@ -358,6 +363,10 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
             oldPick = controllerData.pick;
         });
+
+        if (this._options.renderingGroupId !== undefined) {
+            discMesh.renderingGroupId = this._options.renderingGroupId;
+        }
         xrController.onDisposeObservable.addOnce(() => {
             if (controllerData.pick && !this._options.disablePointerUpOnTouchOut && downTriggered) {
                 this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
@@ -477,6 +486,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         targetMat.emissiveColor = this.selectionMeshDefaultColor;
         targetMat.backFaceCulling = false;
         selectionMesh.material = targetMat;
+
+        if (this._options.renderingGroupId !== undefined) {
+            laserPointer.renderingGroupId = this._options.renderingGroupId;
+            selectionMesh.renderingGroupId = this._options.renderingGroupId;
+        }
 
         return {
             laserPointer,
