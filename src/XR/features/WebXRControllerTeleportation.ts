@@ -92,6 +92,11 @@ export interface IWebXRTeleportationOptions {
      * if provided, this scene will be used to render meshes.
      */
     customUtilityLayerScene?: Scene;
+
+    /**
+     *  use this rendering group id for the meshes (optional)
+     */
+    renderingGroupId?: number;
 }
 
 /**
@@ -562,6 +567,12 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             torusConeMaterial.alpha = 0.9;
             torus.material = torusConeMaterial;
             cone.material = torusConeMaterial;
+        }
+
+        if (this._options.renderingGroupId !== undefined) {
+            teleportationTarget.renderingGroupId = this._options.renderingGroupId;
+            torus.renderingGroupId = this._options.renderingGroupId;
+            cone.renderingGroupId = this._options.renderingGroupId;
         }
 
         this._options.teleportationTargetMesh = teleportationTarget;
