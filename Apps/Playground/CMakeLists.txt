@@ -1,14 +1,14 @@
 set(SCRIPTS
     "Scripts/experience.js"
     "Scripts/playground_runner.js")
-set(BABYLONJS
-    "../Babylonjs/babylon.glTF2FileLoader.js"
-    "../Babylonjs/babylon.max.js"
-    "../Babylonjs/babylonjs.materials.js")
+set(BABYLONSCRIPTS
+    "../BabylonScripts/babylon.glTF2FileLoader.js"
+    "../BabylonScripts/babylon.max.js"
+    "../BabylonScripts/babylonjs.materials.js")
     
 set(SOURCES
     ${SCRIPTS}
-    ${BABYLONJS}
+    ${BABYLONSCRIPTS}
     "Shared/InputManager.cpp"
     "Shared/InputManager.h")
 if(WIN32 AND NOT WINDOWS_STORE)
@@ -75,8 +75,8 @@ elseif(APPLE)
     endif()
 
     set(ADDITIONAL_LIBRARIES ${ADDITIONAL_LIBRARIES} ${JSCORE_LIBRARY})
-    set(JSSCRIPT "${CMAKE_CURRENT_LIST_DIR}/../Babylonjs/babylon.glTF2FileLoader.js"
-        "${CMAKE_CURRENT_LIST_DIR}/../Babylonjs/babylon.max.js"
+    set(JSSCRIPT "${CMAKE_CURRENT_LIST_DIR}/../BabylonScripts/babylon.glTF2FileLoader.js"
+        "${CMAKE_CURRENT_LIST_DIR}/../BabylonScripts/babylon.max.js"
         "${CMAKE_CURRENT_LIST_DIR}/Scripts/experience.js"
         "${CMAKE_CURRENT_LIST_DIR}/Scripts/playground_runner.js")
     set(RESOURCE_FILES ${STORYBOARD} ${JSSCRIPT})
@@ -150,10 +150,10 @@ if(APPLE)
 endif()
 
 if(WINDOWS_STORE)
-    set_property(SOURCE ${SCRIPTS} ${BABYLONJS} PROPERTY VS_DEPLOYMENT_CONTENT 1)
-    set_property(SOURCE ${SCRIPTS} ${BABYLONJS} PROPERTY VS_DEPLOYMENT_LOCATION "Scripts")
+    set_property(SOURCE ${SCRIPTS} ${BABYLONSCRIPTS} PROPERTY VS_DEPLOYMENT_CONTENT 1)
+    set_property(SOURCE ${SCRIPTS} ${BABYLONSCRIPTS} PROPERTY VS_DEPLOYMENT_LOCATION "Scripts")
 else()
-    foreach(script ${SCRIPTS} ${BABYLONJS})
+    foreach(script ${SCRIPTS} ${BABYLONSCRIPTS})
         get_filename_component(SCRIPT_NAME "${script}" NAME)
         add_custom_command(
             OUTPUT "Scripts/${SCRIPT_NAME}"

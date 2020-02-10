@@ -1,12 +1,12 @@
 set(SCRIPTS "Scripts/validation_native.js")
-set(BABYLONJS 
-    "../Babylonjs/babylon.glTF2FileLoader.js"
-    "../Babylonjs/babylon.max.js"
-    "../Babylonjs/babylonjs.materials.js")
+set(BABYLONSCRIPTS 
+    "../BabylonScripts/babylon.glTF2FileLoader.js"
+    "../BabylonScripts/babylon.max.js"
+    "../BabylonScripts/babylonjs.materials.js")
 
 set(SOURCES
     ${SCRIPTS}
-    ${BABYLONJS}
+    ${BABYLONSCRIPTS}
     "Shared/TestUtils.h")
 if(WIN32 AND NOT WINDOWS_STORE)
     set(SOURCES
@@ -51,7 +51,7 @@ target_include_directories(ValidationTests PRIVATE "Source" "." ${TEST_DEPENDENC
 
 target_link_libraries(ValidationTests PRIVATE Library ${ADDITIONAL_LIBRARIES})
 
-foreach(script ${SCRIPTS} ${BABYLONJS})
+foreach(script ${SCRIPTS} ${BABYLONSCRIPTS})
     get_filename_component(SCRIPT_NAME "${script}" NAME)
     add_custom_command(
         OUTPUT "Scripts/${SCRIPT_NAME}"
