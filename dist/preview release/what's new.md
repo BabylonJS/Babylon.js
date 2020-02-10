@@ -212,6 +212,7 @@
 - New XR feature - XR Controller physics impostor for motion controllers / XR Input sources ([RaananW](https://github.com/RaananW/))
 - Teleportation between different ground levels in WebXR is enabled ([RaananW](https://github.com/RaananW/))
 - Utility Meshes for XR (teleportation ring, selection rays) can now be rendered using a utility layer ([#7563](https://github.com/BabylonJS/Babylon.js/issues/7563)) ([RaananW](https://github.com/RaananW/))
+- Teleportation supports snap-to (anchor) points ([#7441](https://github.com/BabylonJS/Babylon.js/issues/7441)) ([RaananW](https://github.com/RaananW/))
 
 ### Ray
 

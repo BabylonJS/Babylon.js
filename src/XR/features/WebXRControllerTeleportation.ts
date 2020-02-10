@@ -47,6 +47,21 @@ export interface IWebXRTeleportationOptions {
      * When left untouched, the default mesh will be initialized.
      */
     teleportationTargetMesh?: AbstractMesh;
+
+    /**
+     * An array of points to which the teleportation will snap to.
+     * If the teleportation ray is in the proximity of one of those points, it will be corrected to this point.
+     */
+    snapPositions?: Vector3[];
+    /**
+     * How close should the teleportation ray be in order to snap to position.
+     * Default to 0.8 units (meters)
+     */
+    snapToPositionRadius?: number;
+    /**
+     * Should teleportation move only to snap points
+     */
+    snapPointsOnly?: boolean;
     /**
      * Values to configure the default target mesh
      */
@@ -101,7 +116,7 @@ export interface IWebXRTeleportationOptions {
 
 /**
  * This is a teleportation feature to be used with webxr-enabled motion controllers.
- * When enabled and attached, the feature will allow a user to move aroundand rotate in the scene using
+ * When enabled and attached, the feature will allow a user to move around and rotate in the scene using
  * the input of the attached controllers.
  */
 export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
@@ -182,6 +197,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     private _tmpVector = new Vector3();
 
     private _floorMeshes: AbstractMesh[];
+    private _snapToPositions: Vector3[];
 
     private _controllers: {
         [controllerUniqueId: string]: {
@@ -208,16 +224,67 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         super(_xrSessionManager);
         // create default mesh if not provided
         if (!this._options.teleportationTargetMesh) {
-            this.createDefaultTargetMesh();
+            this._createDefaultTargetMesh();
         }
 
         this._floorMeshes = this._options.floorMeshes || [];
+        this._snapToPositions = this._options.snapPositions || [];
 
-        this.setTargetMeshVisibility(false);
+        this._setTargetMeshVisibility(false);
     }
 
     private _selectionFeature: IWebXRFeature;
+    private _snappedToPoint: boolean = false;
+    private _teleportationRingMaterial?: StandardMaterial;
 
+    /**
+     * Get the snapPointsOnly flag
+     */
+    public get snapPointsOnly(): boolean {
+        return !!this._options.snapPointsOnly;
+    }
+
+    /**
+     * Sets the snapPointsOnly flag
+     * @param snapToPoints should teleportation be exclusively to snap points
+     */
+    public set snapPointsOnly(snapToPoints: boolean) {
+        this._options.snapPointsOnly = snapToPoints;
+    }
+
+    /**
+     * Add a new snap-to point to fix teleportation to this position
+     * @param newSnapPoint The new Snap-To point
+     */
+    public addSnapPoint(newSnapPoint: Vector3) {
+        this._snapToPositions.push(newSnapPoint);
+    }
+
+    /**
+     * This function will iterate through the array, searching for this point or equal to it. It will then remove it from the snap-to array
+     * @param snapPointToRemove the point (or a clone of it) to be removed from the array
+     * @returns was the point found and removed or not
+     */
+    public removeSnapPoint(snapPointToRemove: Vector3): boolean {
+        // check if the object is in the array
+        let index = this._snapToPositions.indexOf(snapPointToRemove);
+        // if not found as an object, compare to the points
+        if (index === -1) {
+            for (let i = 0; i < this._snapToPositions.length; ++i) {
+                // equals? index is i, break the loop
+                if (this._snapToPositions[i].equals(snapPointToRemove)) {
+                    index = i;
+                    break;
+                }
+            }
+        }
+        // index is not -1? remove the object
+        if (index !== -1) {
+            this._snapToPositions.splice(index, 1);
+            return true;
+        }
+        return false;
+    }
     /**
      * This function sets a selection feature that will be disabled when
      * the forward ray is shown and will be reattached when hidden.
@@ -252,7 +319,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             this._detachController(controllerId);
         });
 
-        this.setTargetMeshVisibility(false);
+        this._setTargetMeshVisibility(false);
 
         return true;
     }
@@ -291,8 +358,8 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                 });
                 if (pick && pick.pickedPoint) {
                     hitPossible = true;
-                    this.setTargetMeshPosition(pick.pickedPoint);
-                    this.setTargetMeshVisibility(true);
+                    this._setTargetMeshPosition(pick.pickedPoint);
+                    this._setTargetMeshVisibility(true);
                     this._showParabolicPath(pick);
                 } else {
                     if (this.parabolicRayEnabled) {
@@ -312,20 +379,20 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                         });
                         if (pick && pick.pickedPoint) {
                             hitPossible = true;
-                            this.setTargetMeshPosition(pick.pickedPoint);
-                            this.setTargetMeshVisibility(true);
+                            this._setTargetMeshPosition(pick.pickedPoint);
+                            this._setTargetMeshVisibility(true);
                             this._showParabolicPath(pick);
                         }
                     }
                 }
 
                 // if needed, set visible:
-                this.setTargetMeshVisibility(hitPossible);
+                this._setTargetMeshVisibility(hitPossible);
             } else {
-                this.setTargetMeshVisibility(false);
+                this._setTargetMeshVisibility(false);
             }
         } else {
-            this.setTargetMeshVisibility(false);
+            this._setTargetMeshVisibility(false);
         }
     }
 
@@ -403,7 +470,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                             //this._currentTeleportationControllerId = "";
                             //}
                         }
-                        if (axesData.y > 0.7 && !controllerData.teleportationState.forward && this.backwardsMovementEnabled) {
+                        if (axesData.y > 0.7 && !controllerData.teleportationState.forward && this.backwardsMovementEnabled && !this.snapPointsOnly) {
                             // teleport backwards
                             if (!controllerData.teleportationState.backwards) {
                                 controllerData.teleportationState.backwards = true;
@@ -464,6 +531,9 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         const controllerData = this._controllers[controllerId];
         controllerData.teleportationState.forward = false;
         this._currentTeleportationControllerId = "";
+        if (this.snapPointsOnly && !this._snappedToPoint) {
+            return;
+        }
         // do the movement forward here
         if (this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.isVisible) {
             const height = this._options.xrInput.xrCamera.realWorldHeight;
@@ -488,7 +558,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         delete this._controllers[xrControllerUniqueId];
     }
 
-    private createDefaultTargetMesh() {
+    private _createDefaultTargetMesh() {
         // set defaults
         this._options.defaultTargetMeshOptions = this._options.defaultTargetMeshOptions || {};
         const sceneToRenderTo = this._options.useUtilityLayer ? (this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene) : this._xrSessionManager.scene;
@@ -567,6 +637,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             torusConeMaterial.alpha = 0.9;
             torus.material = torusConeMaterial;
             cone.material = torusConeMaterial;
+            this._teleportationRingMaterial = torusConeMaterial;
         }
 
         if (this._options.renderingGroupId !== undefined) {
@@ -578,7 +649,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         this._options.teleportationTargetMesh = teleportationTarget;
     }
 
-    private setTargetMeshVisibility(visible: boolean) {
+    private _setTargetMeshVisibility(visible: boolean) {
         if (!this._options.teleportationTargetMesh) { return; }
         if (this._options.teleportationTargetMesh.isVisible === visible) { return; }
         this._options.teleportationTargetMesh.isVisible = visible;
@@ -598,9 +669,16 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         }
     }
 
-    private setTargetMeshPosition(newPosition: Vector3) {
+    private _setTargetMeshPosition(newPosition: Vector3) {
         if (!this._options.teleportationTargetMesh) { return; }
-        this._options.teleportationTargetMesh.position.copyFrom(newPosition);
+        const snapPosition = this._findClosestSnapPointWithRadius(newPosition);
+        this._snappedToPoint = !!snapPosition;
+        if (this.snapPointsOnly && !this._snappedToPoint && this._teleportationRingMaterial) {
+            this._teleportationRingMaterial.diffuseColor.set(1.0, 0.3, 0.3);
+        } else if (this.snapPointsOnly && this._snappedToPoint && this._teleportationRingMaterial) {
+            this._teleportationRingMaterial.diffuseColor.set(0.3, 0.3, 1.0);
+        }
+        this._options.teleportationTargetMesh.position.copyFrom(snapPosition || newPosition);
         this._options.teleportationTargetMesh.position.y += 0.01;
     }
 
@@ -623,6 +701,22 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
 
         this._quadraticBezierCurve = LinesBuilder.CreateLines("path line", { points: quadraticBezierVectors.getPoints() });
         this._quadraticBezierCurve.isPickable = false;
+    }
+
+    private _findClosestSnapPointWithRadius(realPosition: Vector3, radius: number = this._options.snapToPositionRadius || 0.8) {
+        let closestPoint: Nullable<Vector3> = null;
+        let closestDistance = Number.MAX_VALUE;
+        if (this._snapToPositions.length) {
+            const radiusSquared = radius * radius;
+            this._snapToPositions.forEach((position) => {
+                const dist = Vector3.DistanceSquared(position, realPosition);
+                if (dist <= radiusSquared && dist < closestDistance) {
+                    closestDistance = dist;
+                    closestPoint = position;
+                }
+            });
+        }
+        return closestPoint;
     }
 }
 
