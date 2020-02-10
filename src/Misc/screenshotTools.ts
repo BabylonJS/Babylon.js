@@ -112,8 +112,9 @@ export class ScreenshotTools {
      * @param samples Texture samples (default: 1)
      * @param antialiasing Whether antialiasing should be turned on or not (default: false)
      * @param fileName A name for for the downloaded file.
+     * @param renderSprites Whether the sprites should be rendered or not (default: false)
      */
-    public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): void {
+    public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string, renderSprites: boolean = false): void {
         const { height, width } = ScreenshotTools._getScreenshotSize(engine, camera, size);
         let targetTextureSize = { width, height };
 
@@ -144,6 +145,7 @@ export class ScreenshotTools {
         var texture = new RenderTargetTexture("screenShot", targetTextureSize, scene, false, false, Constants.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE);
         texture.renderList = null;
         texture.samples = samples;
+        texture.renderSprites = renderSprites;
         texture.onAfterRenderObservable.add(() => {
             Tools.DumpFramebuffer(width, height, engine, successCallback, mimeType, fileName);
         });
