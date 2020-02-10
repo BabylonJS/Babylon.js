@@ -333,6 +333,7 @@
 - Prevent depth buffer clear in shadow maps ([Sebavan](https://github.com/sebavan/)
 - Fix for bug where the light gizmo causes lights to flip orientation ([#7603](https://github.com/BabylonJS/Babylon.js/issues/7603)) ([drigax](https://github.com/drigax))
 - Fix for bug where directional lights are inverted when using a right handed scene coordinate system. ([drigax](https://github.com/drigax))
+- Fix subSurface parameters not copied in the PBR clone methods ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
