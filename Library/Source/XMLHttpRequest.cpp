@@ -133,7 +133,7 @@ namespace Babylon
             return m_runtimeImpl.LoadUrlAsync<std::string>(m_url).then(arcana::inline_scheduler, m_runtimeImpl.Cancellation(), [this](const std::string& data)
             {
                 // check UTF-8 BOM encoding
-                if (data.size() >= 3 && data[0] == int8_t(0xEF) && data[1] == int8_t(0xBB) && data[2] == int8_t(0xBF))
+                if (data.size() >= 3 && data[0] == '\xEF' && data[1] == '\xBB' && data[2] == '\xBF')
                 {
                     m_responseText = data.substr(3);
                 }
