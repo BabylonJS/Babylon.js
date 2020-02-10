@@ -326,7 +326,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
             const comparedQuaternion = controllerData.oldRotation || controllerData.impostorMesh!.rotationQuaternion!;
 
             controllerMesh.position.subtractToRef(comparedPosition, this._tmpVector);
-            this._tmpVector.scaleInPlace(this._delta);
+            this._tmpVector.scaleInPlace(1000 / this._delta);
             controllerData.impostor.setLinearVelocity(this._tmpVector);
             if (this._debugMode) {
                 console.log(this._tmpVector, 'linear');
@@ -342,7 +342,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
                     this._tmpVector.scaleInPlace(2);
                 } else {
                     const angle = 2 * Math.atan2(len, this._tmpQuaternion.w);
-                    this._tmpVector.scaleInPlace((angle / (len * this._delta)));
+                    this._tmpVector.scaleInPlace((angle / (len * (this._delta / 1000))));
                 }
                 controllerData.impostor.setAngularVelocity(this._tmpVector);
                 if (this._debugMode) {
