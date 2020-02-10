@@ -258,6 +258,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     /**
      * This function will iterate through the array, searching for this point or equal to it. It will then remove it from the snap-to array
      * @param snapPointToRemove the point (or a clone of it) to be removed from the array
+     * @returns was the point found and removed or not
      */
     public removeSnapPoint(snapPointToRemove: Vector3): boolean {
         // check if the object is in the array
