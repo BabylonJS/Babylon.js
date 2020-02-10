@@ -1190,7 +1190,7 @@ inline External<T> External<T>::New(napi_env env,
                                     Finalizer finalizeCallback) {
   napi_value value;
   details::FinalizeData<T, Finalizer>* finalizeData =
-    new details::FinalizeData<T, Finalizer>({ finalizeCallback, nullptr });
+    new details::FinalizeData<T, Finalizer>({ std::move(finalizeCallback), nullptr });
   napi_status status = napi_create_external(
     env,
     data,

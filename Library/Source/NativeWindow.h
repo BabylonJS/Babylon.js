@@ -1,9 +1,9 @@
 #pragma once
 
+#include "ticketed_collection.h"
+
 #include "napi/napi.h"
 #include "RuntimeImpl.h"
-
-#include <arcana/containers/ticketed_collection.h>
 
 namespace Babylon
 {
@@ -21,7 +21,7 @@ namespace Babylon
         void Resize(size_t newWidth, size_t newHeight);
 
         using OnResizeCallback = std::function<void(size_t, size_t)>;
-        using OnResizeCallbackTicket = arcana::ticketed_collection<OnResizeCallback>::ticket;
+        using OnResizeCallbackTicket = ticketed_collection<OnResizeCallback>::ticket;
         OnResizeCallbackTicket AddOnResizeCallback(OnResizeCallback&& callback);
 
         void* GetWindowPtr() const;
@@ -34,8 +34,7 @@ namespace Babylon
         size_t m_width{};
         size_t m_height{};
 
-        std::mutex m_mutex{};
-        arcana::ticketed_collection<OnResizeCallback> m_onResizeCallbacks{};
+        ticketed_collection<OnResizeCallback> m_onResizeCallbacks{};
 
         static void SetTimeout(const Napi::CallbackInfo& info);
         static Napi::Value DecodeBase64(const Napi::CallbackInfo& info);
