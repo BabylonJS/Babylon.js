@@ -110,6 +110,7 @@
 - Added support for tagging deprecated members (both in editor and for completion) in the playground ([sailro](http://www.github.com/sailro))
 - Added preview area pop up for NME ([Kyle Belfort](https://github.com/belfortk))
 - Added comments to frames in NME ([Kyle Belfort](https://github.com/belfortk))
+- Make frames resizable in NME ([Kyle Belfort](https://github.com/belfortk))
 
 ### Meshes
 
