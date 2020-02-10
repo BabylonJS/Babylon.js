@@ -210,6 +210,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         return null;
     }
 
+    /**
+     * Will get the mesh under a specific pointer.
+     * `scene.meshUnderPointer` will only return one mesh - either left or right.
+     * @param controllerId the controllerId to check
+     */
     public getMeshUnderPointer(controllerId: string): Nullable<AbstractMesh> {
         if (this._controllers[controllerId]) {
             return this._controllers[controllerId].meshUnderPointer;
