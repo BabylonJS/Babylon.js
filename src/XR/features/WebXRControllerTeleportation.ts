@@ -230,6 +230,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
 
     private _selectionFeature: IWebXRFeature;
     private _snappedToPoint: boolean = false;
+    private _teleportationRingMaterial?: StandardMaterial;
 
     /**
      * Get the snapPointsOnly flag
@@ -630,6 +631,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             torusConeMaterial.alpha = 0.9;
             torus.material = torusConeMaterial;
             cone.material = torusConeMaterial;
+            this._teleportationRingMaterial = torusConeMaterial;
         }
 
         this._options.teleportationTargetMesh = teleportationTarget;
@@ -659,6 +661,11 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         if (!this._options.teleportationTargetMesh) { return; }
         const snapPosition = this._findClosestSnapPointWithRadius(newPosition);
         this._snappedToPoint = !!snapPosition;
+        if (this.snapPointsOnly && !this._snappedToPoint && this._teleportationRingMaterial) {
+            this._teleportationRingMaterial.diffuseColor.set(1.0, 0.3, 0.3);
+        } else if (this.snapPointsOnly && this._snappedToPoint && this._teleportationRingMaterial) {
+            this._teleportationRingMaterial.diffuseColor.set(0.3, 0.3, 1.0);
+        }
         this._options.teleportationTargetMesh.position.copyFrom(snapPosition || newPosition);
         this._options.teleportationTargetMesh.position.y += 0.01;
     }
