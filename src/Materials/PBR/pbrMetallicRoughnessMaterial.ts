@@ -91,6 +91,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
         this.anisotropy.copyTo(clone.anisotropy);
         this.brdf.copyTo(clone.brdf);
         this.sheen.copyTo(clone.sheen);
+        this.subSurface.copyTo(clone.subSurface);
 
         return clone;
     }
