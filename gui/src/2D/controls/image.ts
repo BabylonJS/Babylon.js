@@ -486,7 +486,8 @@ export class Image extends Control {
                     var vb = svgDoc.documentElement.getAttribute("viewBox");
                     var docwidth = Number(svgDoc.documentElement.getAttribute("width"));
                     var docheight = Number(svgDoc.documentElement.getAttribute("height"));
-                    if (vb && docwidth && docheight) {
+                    var elem = <SVGGraphicsElement> <unknown> svgDoc.getElementById(elemid);
+                    if (elem && vb && docwidth && docheight) {
                         this._getSVGAttribs(svgExist, elemid);
                         return value;
                     }
