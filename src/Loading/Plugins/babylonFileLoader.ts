@@ -434,7 +434,7 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         }
         if (parsedData.actions !== undefined && parsedData.actions !== null) {
             ActionManager.Parse(parsedData.actions, null, scene);
-        }        
+        }
     } catch (err) {
         let msg = logOperation("loadAssets", parsedData ? parsedData.producer : "Unknown") + log;
         if (onError) {
