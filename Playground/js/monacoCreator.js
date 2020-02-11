@@ -1,5 +1,14 @@
 /**
  * This JS file is for Monaco management
+ * This file is quite technical, please make sure that you understand all parts before making changes.
+ * Please also make sure that the following is still working before submitting a PR:
+ * - autocompletion.
+ * - deprecated members marking.
+ * - compilation and proper error reporting for both JS and TS.
+ * - private/internal member filtering (we should not see members starting with an underscore).
+ * - dedicated adornments, like the one used for previewing colors for BABYLON.ColorX types.
+ * - diff support.
+ * - minimap support.
  */
 class MonacoCreator {
     constructor(parent) {
@@ -71,12 +80,17 @@ class MonacoCreator {
 
         this.setupDefinitionWorker(libContent);
 
+        // WARNING !!! We need the 'dev' version of Monaco, as we use monkey-patching to hook into the suggestion adapter
         require.config({ paths: { 'vs': '/node_modules/monaco-editor/dev/vs' } });
 
         require(['vs/editor/editor.main'], () => {
+            // Setup the Monaco compilation pipeline, so we can reuse it directly for our scrpting needs
             this.setupMonacoCompilationPipeline(libContent);
+            
+            // This is used for a vscode-like color preview for ColorX types
             this.setupMonacoColorProvider();
 
+            // As explained above, we need the 'dev' version of Monaco to access this adapter!
             require(['vs/language/typescript/languageFeatures'], module => {
                 this.hookMonacoCompletionProvider(module.SuggestAdapter);
             });
@@ -85,27 +99,21 @@ class MonacoCreator {
         });
     };
 
+    // > This worker will analyze the syntaxtree and return an array of deprecated functions (but the goal is to do more in the future!)
+    // We need to do this because:
+    // - checking extended properties during completion is time consuming, so we need to prefilter potential candidates
+    // - we don't want to maintain a static list of deprecated members or to instrument this work on the CI
+    // - we have more plans involving syntaxtree analysis
+    // > This worker was carefully crafted to work even if the processing is super fast or super long. 
+    // In both cases the deprecation filter will start working after the worker is done.
+    // We will also need this worker in the future to compute Intellicode scores for completion using dedicated attributes.
     setupDefinitionWorker(libContent) {
-
-        // This worker can be initialized differently.
-        // Its main job is to analyze the code and return an array of deprecated functions
         this.definitionWorker = new Worker('/js/definitionWorker.js');
         this.definitionWorker.addEventListener('message', ({ data }) => {
             this.deprecatedCandidates = data.result;
             this.analyzeCode();
         });
         this.definitionWorker.postMessage({ code: libContent });
-        // this.deprecatedCandidates = [
-        //     "FromFloatArray",
-        //     "FromFloatArrayToRef",
-        //     "getStrideSize",
-        //     "getStrideSize",
-        //     "getOffset",
-        //     "rgb",
-        //     "xy",
-        //     "xyz",
-        //     "fieldOfView"
-        //   ];
     }
 
     isDeprecatedEntry(details) {
@@ -119,8 +127,11 @@ class MonacoCreator {
             && tag.name == "deprecated";
     }
 
+    // This will make sure that all members marked with a deprecated jsdoc attribute will be marked as such in Monaco UI
+    // We use a prefiltered list of deprecated candidates, because the effective call to getCompletionEntryDetails is slow.
+    // @see setupDefinitionWorker
     async analyzeCode() {
-        // if the definition worker is very fast, this can be called out of context
+        // if the definition worker is very fast, this can be called out of context. @see setupDefinitionWorker
         if (!this.jsEditor)
             return;
 
@@ -154,6 +165,7 @@ class MonacoCreator {
                     continue;
 
                 // the following is time consuming on all suggestions, that's why we precompute deprecated candidate names in the definition worker to filter calls
+                // @see setupDefinitionWorker
                 const details = await languageService.getCompletionEntryDetails(uri.toString(), offset, wordInfo.word);
                 if (this.isDeprecatedEntry(details)) {
                     const deprecatedInfo = details.tags.find(this.isDeprecatedTag);
@@ -172,7 +184,10 @@ class MonacoCreator {
 
         monaco.editor.setModelMarkers(model, source, markers);
     }
-
+    
+    // This is our hook in the Monaco suggest adapter, we are called everytime a completion UI is displayed
+    // So we need to be super fast.
+    // We need the 'dev' version of Monaco, as we use monkey-patching to hook into this suggestion adapter
     hookMonacoCompletionProvider(provider) {
         const provideCompletionItems = provider.prototype.provideCompletionItems;
         const owner = this;
@@ -190,6 +205,7 @@ class MonacoCreator {
                 if (owner.deprecatedCandidates.includes(suggestion.label)) {
 
                     // the following is time consuming on all suggestions, that's why we precompute deprecated candidate names in the definition worker to filter calls
+                    // @see setupDefinitionWorker
                     const uri = suggestion.uri;
                     const worker = await this._worker(uri);
                     const model = monaco.editor.getModel(uri);
@@ -211,6 +227,7 @@ class MonacoCreator {
         }
     }
 
+    // Setup both JS and TS compilation pipelines to work with our scripts. 
     setupMonacoCompilationPipeline(libContent) {
         const typescript = monaco.languages.typescript;
 
@@ -240,6 +257,7 @@ class MonacoCreator {
         }
     }
 
+    // Provide an adornment for BABYLON.ColorX types: color preview
     setupMonacoColorProvider() {
         monaco.languages.registerColorProvider(this.monacoMode, {
             provideColorPresentations: (model, colorInfo) => {
@@ -317,6 +335,9 @@ class MonacoCreator {
         this.jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
         this.jsEditor.setValue(oldCode);
 
+        // We cannot call 'analyzeCode' on every keystroke, that's time consuming
+        // So use a debounced version to prevent over processing.
+        // Be careful to keep the proper context for the effective call (this).
         const analyzeCodeDebounced = this.parent.utils.debounceAsync((async) => this.analyzeCode(), 500);
 
         this.jsEditor.onDidChangeModelContent(function () {
