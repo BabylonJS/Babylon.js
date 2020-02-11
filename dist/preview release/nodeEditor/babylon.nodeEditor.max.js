@@ -5582,7 +5582,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "#graph-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro\";\n  user-select: none;\n  overflow: hidden;\n  cursor: move;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #graph-canvas #selection-container {\n    pointer-events: none; }\n    #graph-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #graph-canvas .port {\n    border-radius: 20px;\n    width: 20px;\n    height: 20px;\n    align-self: center; }\n    #graph-canvas .port .img {\n      width: 100%; }\n    #graph-canvas .port:hover, #graph-canvas .port.selected {\n      filter: brightness(2); }\n  #graph-canvas .portLine {\n    height: 24px;\n    display: grid;\n    grid-template-rows: 100%; }\n  #graph-canvas .port-label {\n    align-items: center; }\n  #graph-canvas .inputsContainer {\n    grid-row: 1;\n    grid-column: 1; }\n    #graph-canvas .inputsContainer .portLine {\n      grid-template-columns: 12px calc(100% - 15px); }\n      #graph-canvas .inputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 2; }\n      #graph-canvas .inputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 1;\n        transform: translateX(-12px); }\n  #graph-canvas .outputsContainer {\n    grid-row: 1;\n    grid-column: 2; }\n    #graph-canvas .outputsContainer .portLine {\n      grid-template-columns: calc(100% - 10px) 12px; }\n      #graph-canvas .outputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 1;\n        text-align: right; }\n      #graph-canvas .outputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 2;\n        transform: translateX(2px); }\n  #graph-canvas #graph-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #graph-canvas #graph-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #graph-canvas #graph-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box.collapsed {\n        height: auto !important;\n        width: 200px !important; }\n        #graph-canvas #graph-container .frame-box.collapsed .frame-box-header {\n          font-size: 16px;\n          grid-template-columns: calc(100% - 37px) 30px 7px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-collapse {\n            margin-top: -2px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-close {\n            display: none; }\n      #graph-canvas #graph-container .frame-box .frame-box-border {\n        grid-row: 1 / span 2;\n        grid-column: 1;\n        width: 100%;\n        height: 100%;\n        border: transparent solid 4px;\n        pointer-events: none;\n        box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;\n        align-content: center;\n        overflow: hidden; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button {\n          cursor: pointer;\n          align-self: center;\n          transform-origin: 50% 50%;\n          transform: scale(1);\n          stroke: transparent;\n          fill: white;\n          display: grid; }\n          #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button.down {\n            transform: scale(0.9); }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-collapse {\n          grid-column: 2;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-close {\n          grid-column: 4;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-title {\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          height: 100%;\n          width: 100%;\n          align-self: stretch;\n          align-items: center;\n          margin-top: -2px; }\n      #graph-canvas #graph-container .frame-box .port-container {\n        margin-top: 6px;\n        margin-bottom: 6px;\n        margin-left: 4px;\n        margin-right: 4px;\n        color: white;\n        grid-row: 2;\n        grid-column: 1;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: 50% 50%;\n        z-index: 2; }\n      #graph-canvas #graph-container .frame-box.selected .frame-box-border {\n        border-color: white; }\n    #graph-canvas #graph-container #graph-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 2; }\n      #graph-canvas #graph-container #graph-svg-container .link {\n        stroke-width: 4px; }\n        #graph-canvas #graph-container #graph-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n        #graph-canvas #graph-container #graph-svg-container .link.hidden {\n          display: none; }\n      #graph-canvas #graph-container #graph-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link:hover, #graph-canvas #graph-container #graph-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #graph-canvas #graph-container #graph-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #graph-canvas #graph-container #graph-canvas-container .visual {\n        z-index: 3;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.constant {\n            border-color: #4E5C74;\n            background: #4E5C74; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.inspector {\n            border-color: #396437;\n            background: #396437; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .connections {\n          grid-row: 2;\n          grid-column: 1;\n          display: grid;\n          grid-template-columns: 50% 50%; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .content {\n          min-height: 20px;\n          grid-row: 3;\n          grid-column: 1; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block {\n            grid-row: 2;\n            min-height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px 5px;\n            display: grid;\n            align-content: center; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block.small-font {\n              font-size: 17px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.output-block {\n            min-height: 0px;\n            height: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.clamp-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.gradient-block {\n            grid-row: 2;\n            height: 34px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block {\n            grid-row: 3;\n            height: 140px;\n            width: 140px;\n            overflow: hidden;\n            border-bottom-left-radius: 7px;\n            border: black 4px solid;\n            border-left: 0px;\n            border-bottom: 0px; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img {\n              width: 100%;\n              height: 100%;\n              pointer-events: none; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img.empty {\n                display: none; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.regular-texture-block {\n            margin-top: -115px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.remap-block {\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.trigonometry-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n", ""]);
+exports.push([module.i, "#graph-canvas {\n  width: 100%;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  font: 14px \"acumin-pro\";\n  user-select: none;\n  overflow: hidden;\n  cursor: move;\n  background-image: linear-gradient(to right, #4F4E4F 1px, transparent 1px), linear-gradient(to bottom, #4F4E4F 1px, transparent 1px); }\n  #graph-canvas #selection-container {\n    pointer-events: none; }\n    #graph-canvas #selection-container .selection-box {\n      z-index: 10;\n      position: absolute;\n      background: rgba(72, 72, 196, 0.5);\n      border: blue solid 2px; }\n  #graph-canvas .port {\n    border-radius: 20px;\n    width: 20px;\n    height: 20px;\n    align-self: center; }\n    #graph-canvas .port .img {\n      width: 100%; }\n    #graph-canvas .port:hover, #graph-canvas .port.selected {\n      filter: brightness(2); }\n  #graph-canvas .portLine {\n    height: 24px;\n    display: grid;\n    grid-template-rows: 100%; }\n  #graph-canvas .port-label {\n    align-items: center; }\n  #graph-canvas .inputsContainer {\n    grid-row: 1;\n    grid-column: 1; }\n    #graph-canvas .inputsContainer .portLine {\n      grid-template-columns: 12px calc(100% - 15px); }\n      #graph-canvas .inputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 2; }\n      #graph-canvas .inputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 1;\n        transform: translateX(-12px); }\n  #graph-canvas .outputsContainer {\n    grid-row: 1;\n    grid-column: 2; }\n    #graph-canvas .outputsContainer .portLine {\n      grid-template-columns: calc(100% - 10px) 12px; }\n      #graph-canvas .outputsContainer .portLine .port-label {\n        grid-row: 1;\n        grid-column: 1;\n        text-align: right; }\n      #graph-canvas .outputsContainer .portLine .port {\n        grid-row: 1;\n        grid-column: 2;\n        transform: translateX(2px); }\n  #graph-canvas #graph-container {\n    width: 100%;\n    height: 100%;\n    left: 0;\n    top: 0;\n    transform-origin: left top;\n    display: grid;\n    grid-template-rows: 100%;\n    grid-template-columns: 100%; }\n    #graph-canvas #graph-container #frame-container {\n      overflow: visible;\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n    #graph-canvas #graph-container .frame-box {\n      position: absolute;\n      background: rgba(72, 72, 72, 0.7);\n      display: grid;\n      grid-template-rows: 40px calc(100% - 40px);\n      grid-template-columns: 100%;\n      box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box.collapsed {\n        height: auto !important;\n        width: 200px !important; }\n        #graph-canvas #graph-container .frame-box.collapsed .frame-box-header {\n          font-size: 16px;\n          grid-template-columns: calc(100% - 37px) 30px 7px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-collapse {\n            margin-top: -2px; }\n          #graph-canvas #graph-container .frame-box.collapsed .frame-box-header .frame-box-header-close {\n            display: none; }\n      #graph-canvas #graph-container .frame-box .frame-box-border {\n        grid-row: 1 / span 2;\n        grid-column: 1;\n        width: 100%;\n        height: 100%;\n        border: transparent solid 4px;\n        pointer-events: none;\n        box-sizing: border-box; }\n      #graph-canvas #graph-container .frame-box .frame-box-header {\n        grid-row: 1;\n        grid-column: 1;\n        background: #484848;\n        color: white;\n        font-size: 24px;\n        text-align: center;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: calc(100% - 74px) 30px 7px 30px 7px;\n        align-content: center;\n        overflow: hidden; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button {\n          cursor: pointer;\n          align-self: center;\n          transform-origin: 50% 50%;\n          transform: scale(1);\n          stroke: transparent;\n          fill: white;\n          display: grid; }\n          #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-button.down {\n            transform: scale(0.9); }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-collapse {\n          grid-column: 2;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-close {\n          grid-column: 4;\n          grid-row: 1; }\n        #graph-canvas #graph-container .frame-box .frame-box-header .frame-box-header-title {\n          grid-column: 1;\n          grid-row: 1;\n          display: grid;\n          height: 100%;\n          width: 100%;\n          align-self: stretch;\n          align-items: center;\n          margin-top: -2px; }\n      #graph-canvas #graph-container .frame-box .port-container {\n        margin-top: 6px;\n        margin-bottom: 6px;\n        margin-left: 4px;\n        margin-right: 4px;\n        color: white;\n        grid-row: 2;\n        grid-column: 1;\n        display: grid;\n        grid-template-rows: 100%;\n        grid-template-columns: 50% 50%;\n        z-index: 2; }\n      #graph-canvas #graph-container .frame-box.selected .frame-box-border {\n        border-color: white; }\n      #graph-canvas #graph-container .frame-box .handle {\n        z-index: 20; }\n      #graph-canvas #graph-container .frame-box .right-handle {\n        grid-area: 1 / 2 / 3 / 2;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .right-handle::after {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px;\n          cursor: ew-resize; }\n      #graph-canvas #graph-container .frame-box .left-handle {\n        grid-area: 1 / 1 / 3 / 1;\n        width: 4px;\n        background-color: transparent;\n        cursor: ew-resize; }\n        #graph-canvas #graph-container .frame-box .left-handle::before {\n          content: \"\";\n          width: 8px;\n          position: absolute;\n          top: 0;\n          bottom: 0;\n          margin-left: -4px; }\n      #graph-canvas #graph-container .frame-box .top-handle {\n        grid-area: 1 / 1 / 1 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .top-handle::before {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: -4px;\n          bottom: 100%;\n          right: 0;\n          left: 0;\n          margin-bottom: -8px;\n          cursor: ns-resize;\n          height: 8px; }\n      #graph-canvas #graph-container .frame-box .bottom-handle {\n        grid-area: 3 / 1 / 3 / 1;\n        background-color: transparent;\n        height: 4px;\n        cursor: ns-resize; }\n        #graph-canvas #graph-container .frame-box .bottom-handle::after {\n          content: \"\";\n          width: 100%;\n          position: absolute;\n          top: 100%;\n          bottom: 0;\n          right: 0;\n          left: 0;\n          margin-top: -8px;\n          cursor: ns-resize;\n          height: 12px; }\n    #graph-canvas #graph-container #graph-svg-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%;\n      overflow: visible;\n      pointer-events: none;\n      z-index: 2; }\n      #graph-canvas #graph-container #graph-svg-container .link {\n        stroke-width: 4px; }\n        #graph-canvas #graph-container #graph-svg-container .link.selected {\n          stroke: white !important;\n          stroke-dasharray: 10, 2; }\n        #graph-canvas #graph-container #graph-svg-container .link.hidden {\n          display: none; }\n      #graph-canvas #graph-container #graph-svg-container .selection-link {\n        pointer-events: all;\n        stroke-width: 16px;\n        opacity: 0;\n        transition: opacity 75ms;\n        stroke: transparent;\n        cursor: pointer; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-svg-container .selection-link:hover, #graph-canvas #graph-container #graph-svg-container .selection-link.selected {\n          stroke: white !important;\n          opacity: 0.4; }\n    #graph-canvas #graph-container #graph-canvas-container {\n      grid-row: 1;\n      grid-column: 1;\n      position: relative;\n      width: 100%;\n      height: 100%; }\n      #graph-canvas #graph-container #graph-canvas-container .visual {\n        z-index: 3;\n        width: 200px;\n        position: absolute;\n        left: 0;\n        top: 0;\n        background: gray;\n        border: 4px solid black;\n        border-radius: 12px;\n        display: grid;\n        grid-template-rows: 30px auto;\n        grid-template-columns: 100%;\n        color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.hidden {\n          display: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .comments {\n          position: absolute;\n          top: -50px;\n          width: 200px;\n          height: 45px;\n          overflow: hidden;\n          font-style: italic;\n          opacity: 0.8;\n          display: grid;\n          align-items: flex-end;\n          pointer-events: none; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .selection-border {\n          grid-row: 1 / span 3;\n          grid-column: 1;\n          margin: -4px;\n          transition: border-color 100ms;\n          border: 4px solid black;\n          border-radius: 12px; }\n        #graph-canvas #graph-container #graph-canvas-container .visual.selected .selection-border {\n          border-color: white; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .header {\n          grid-row: 1;\n          grid-column: 1;\n          border: 4px solid black;\n          border-top-right-radius: 7px;\n          border-top-left-radius: 7px;\n          font-size: 16px;\n          text-align: center;\n          margin-top: -1px;\n          margin-left: -1px;\n          margin-right: -1px;\n          white-space: nowrap;\n          text-overflow: ellipsis;\n          overflow: hidden;\n          background: black;\n          color: white; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.constant {\n            border-color: #4E5C74;\n            background: #4E5C74; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .header.inspector {\n            border-color: #396437;\n            background: #396437; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .connections {\n          grid-row: 2;\n          grid-column: 1;\n          display: grid;\n          grid-template-columns: 50% 50%; }\n        #graph-canvas #graph-container #graph-canvas-container .visual .content {\n          min-height: 20px;\n          grid-row: 3;\n          grid-column: 1; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block {\n            grid-row: 2;\n            min-height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px 5px;\n            display: grid;\n            align-content: center; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.input-block.small-font {\n              font-size: 17px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.output-block {\n            min-height: 0px;\n            height: 5px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.clamp-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.gradient-block {\n            grid-row: 2;\n            height: 34px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block {\n            grid-row: 3;\n            height: 140px;\n            width: 140px;\n            overflow: hidden;\n            border-bottom-left-radius: 7px;\n            border: black 4px solid;\n            border-left: 0px;\n            border-bottom: 0px; }\n            #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img {\n              width: 100%;\n              height: 100%;\n              pointer-events: none; }\n              #graph-canvas #graph-container #graph-canvas-container .visual .content.texture-block img.empty {\n                display: none; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.regular-texture-block {\n            margin-top: -115px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.remap-block {\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n          #graph-canvas #graph-container #graph-canvas-container .visual .content.trigonometry-block {\n            grid-row: 2;\n            height: 34px;\n            text-align: center;\n            font-size: 18px;\n            font-weight: bold;\n            margin: 0 10px; }\n", ""]);
 
 // exports
 
@@ -52188,20 +52188,23 @@ var PreviewManager = /** @class */ (function () {
         }
     };
     PreviewManager.prototype._prepareMeshes = function () {
+        var _this = this;
         this._prepareLights();
         // Framing
         this._camera.useFramingBehavior = true;
         var framingBehavior = this._camera.getBehaviorByName("Framing");
-        framingBehavior.framingTime = 0;
-        framingBehavior.elevationReturnTime = -1;
-        if (this._scene.meshes.length) {
-            var worldExtends = this._scene.getWorldExtends();
-            this._camera.lowerRadiusLimit = null;
-            this._camera.upperRadiusLimit = null;
-            framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
-        }
-        this._camera.pinchPrecision = 200 / this._camera.radius;
-        this._camera.upperRadiusLimit = 5 * this._camera.radius;
+        setTimeout(function () {
+            framingBehavior.framingTime = 0;
+            framingBehavior.elevationReturnTime = -1;
+            if (_this._scene.meshes.length) {
+                var worldExtends = _this._scene.getWorldExtends();
+                _this._camera.lowerRadiusLimit = null;
+                _this._camera.upperRadiusLimit = null;
+                framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
+            }
+            _this._camera.pinchPrecision = 200 / _this._camera.radius;
+            _this._camera.upperRadiusLimit = 5 * _this._camera.radius;
+        });
         this._camera.wheelDeltaPercentage = 0.01;
         this._camera.pinchDeltaPercentage = 0.01;
         // Animations
@@ -53760,6 +53763,13 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(GraphCanvasComponent.prototype, "hostCanvas", {
+        get: function () {
+            return this._hostCanvas;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(GraphCanvasComponent.prototype, "svgCanvas", {
         get: function () {
             return this._svgCanvas;
@@ -54309,9 +54319,16 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+var ResizingDirection;
+(function (ResizingDirection) {
+    ResizingDirection[ResizingDirection["Right"] = 0] = "Right";
+    ResizingDirection[ResizingDirection["Left"] = 1] = "Left";
+    ResizingDirection[ResizingDirection["Top"] = 2] = "Top";
+    ResizingDirection[ResizingDirection["Bottom"] = 3] = "Bottom";
+})(ResizingDirection || (ResizingDirection = {}));
 var GraphFrame = /** @class */ (function () {
     function GraphFrame(candidate, canvas, doNotCaptureNodes) {
-        var _this = this;
+        var _this_1 = this;
         if (doNotCaptureNodes === void 0) { doNotCaptureNodes = false; }
         this.CollapsedWidth = 200;
         this._x = 0;
@@ -54324,10 +54341,159 @@ var GraphFrame = /** @class */ (function () {
         this._isCollapsed = false;
         this._ports = [];
         this._controlledPorts = [];
+        this._minFrameHeight = 40;
+        this._minFrameWidth = 220;
         this.onExpandStateChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.CloseSVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 30 30\"><g id=\"Layer_2\" data-name=\"Layer 2\"><path d=\"M16,15l5.85,5.84-1,1L15,15.93,9.15,21.78l-1-1L14,15,8.19,9.12l1-1L15,14l5.84-5.84,1,1Z\"/></g></svg>";
         this.ExpandSVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 30 30\"><g id=\"Layer_2\" data-name=\"Layer 2\"><path d=\"M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-6.75,6.75H11.06V14.44h3.38V11.06h1.12v3.38h3.38v1.12H15.56v3.38H14.44Z\"/></g></svg>";
         this.CollapseSVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 30 30\"><g id=\"Layer_2\" data-name=\"Layer 2\"><path d=\"M22.31,7.69V22.31H7.69V7.69ZM21.19,8.81H8.81V21.19H21.19Zm-2.25,6.75H11.06V14.44h7.88Z\"/></g></svg>";
+        this.initResizing = function (evt) {
+            evt.stopPropagation();
+            _this_1._mouseStartPointX = evt.clientX;
+            _this_1._mouseStartPointY = evt.clientY;
+            _this_1._frameIsResizing = true;
+        };
+        this.cleanUpResizing = function (evt) {
+            evt.stopPropagation();
+            _this_1._frameIsResizing = false;
+            _this_1._resizingDirection = null;
+            _this_1._mouseStartPointX = null;
+            _this_1._mouseStartPointY = null;
+            _this_1.mouseXLimit = null;
+            _this_1.refresh();
+        };
+        this._onRightHandlePointerDown = function (evt) {
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            _this_1.initResizing(evt);
+            _this._resizingDirection = ResizingDirection.Right;
+            _this.mouseXLimit = evt.clientX - (_this.width - _this._minFrameWidth);
+            _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onRightHandlePointerUp);
+            _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onRightHandlePointerMove);
+        };
+        this._onRightHandlePointerMove = function (evt) {
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            if (_this.mouseXLimit) {
+                if (_this._resizingDirection !== ResizingDirection.Right || _this._mouseStartPointX === null || _this._mouseStartPointY === null || (evt.clientX < _this.mouseXLimit)) {
+                    return;
+                }
+                if (_this._resizingDirection === ResizingDirection.Right) {
+                    evt.stopPropagation();
+                    var distanceMouseMoved = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                    _this._expandRight(distanceMouseMoved, evt.clientX);
+                    _this._mouseStartPointX = evt.clientX;
+                }
+            }
+        };
+        this._onRightHandlePointerUp = function (evt) {
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            if (_this._resizingDirection === ResizingDirection.Right) {
+                _this.width = parseFloat(_this.element.style.width.replace("px", ""));
+                _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onRightHandlePointerUp);
+                _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onRightHandlePointerMove);
+                _this_1.cleanUpResizing(evt);
+            }
+        };
+        this._onBottomHandlePointerDown = function (evt) {
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            _this_1.initResizing(evt);
+            _this._resizingDirection = ResizingDirection.Bottom;
+            _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onBottomHandlePointerUp);
+            _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onBottomHandlePointerMove);
+        };
+        this._onBottomHandlePointerMove = function (evt) {
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            if (_this._resizingDirection !== ResizingDirection.Bottom || _this._mouseStartPointX === null || _this._mouseStartPointY === null || (evt.clientY < (_this.y + _this._minFrameHeight))) {
+                return;
+            }
+            if (_this._resizingDirection === ResizingDirection.Bottom) {
+                evt.stopPropagation();
+                var distanceMouseMoved = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                _this._expandBottom(distanceMouseMoved);
+                _this._mouseStartPointY = evt.clientY;
+            }
+        };
+        this._onBottomHandlePointerUp = function (evt) {
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            if (_this._resizingDirection === ResizingDirection.Bottom) {
+                _this.height = parseFloat(_this.element.style.height.replace("px", ""));
+                _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onBottomHandlePointerMove);
+                _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onBottomHandlePointerUp);
+                _this_1.cleanUpResizing(evt);
+            }
+        };
+        this._onLeftHandlePointerDown = function (evt) {
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            _this_1.initResizing(evt);
+            _this._resizingDirection = ResizingDirection.Left;
+            _this.mouseXLimit = evt.clientX + _this.width - _this._minFrameWidth;
+            _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onLeftHandlePointerUp);
+            _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onLeftHandlePointerMove);
+        };
+        this._onLeftHandlePointerMove = function (evt) {
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            if (_this.mouseXLimit) {
+                if (_this._resizingDirection !== ResizingDirection.Left || _this._mouseStartPointX === null || _this._mouseStartPointY === null || (evt.clientX > _this.mouseXLimit)) {
+                    return;
+                }
+                if (_this._resizingDirection === ResizingDirection.Left) {
+                    evt.stopPropagation();
+                    var distanceMouseMoved = (evt.clientX - _this._mouseStartPointX) / _this._ownerCanvas.zoom;
+                    _this._expandLeft(distanceMouseMoved);
+                    _this._mouseStartPointX = evt.clientX;
+                }
+            }
+        };
+        this._onLeftHandlePointerUp = function (evt) {
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            if (_this._resizingDirection === ResizingDirection.Left) {
+                _this.x = parseFloat(_this.element.style.left.replace("px", ""));
+                _this.width = parseFloat(_this.element.style.width.replace("px", ""));
+                _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onLeftHandlePointerUp);
+                _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onLeftHandlePointerMove);
+                _this_1.cleanUpResizing(evt);
+            }
+        };
+        this._onTopHandlePointerDown = function (evt) {
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            _this_1.initResizing(evt);
+            _this._resizingDirection = ResizingDirection.Top;
+            _this._ownerCanvas.hostCanvas.addEventListener("pointerup", _this._onTopHandlePointerUp);
+            _this._ownerCanvas.hostCanvas.addEventListener("pointermove", _this._onTopHandlePointerMove);
+        };
+        this._onTopHandlePointerMove = function (evt) {
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            if (_this._resizingDirection !== ResizingDirection.Top || _this._mouseStartPointX === null || _this._mouseStartPointY === null || (evt.clientY > (_this.y + _this.height - _this._minFrameHeight))) {
+                return;
+            }
+            if (_this._resizingDirection === ResizingDirection.Top) {
+                evt.stopPropagation();
+                var distanceMouseMoved = (evt.clientY - _this._mouseStartPointY) / _this._ownerCanvas.zoom;
+                _this._expandTop(distanceMouseMoved);
+                _this._mouseStartPointY = evt.clientY;
+            }
+        };
+        this._onTopHandlePointerUp = function (evt) {
+            // tslint:disable-next-line: no-this-assignment
+            var _this = _this_1;
+            if (_this._resizingDirection === ResizingDirection.Top) {
+                _this.y = parseFloat(_this.element.style.top.replace("px", ""));
+                _this.height = parseFloat(_this.element.style.height.replace("px", ""));
+                _this._ownerCanvas.hostCanvas.removeEventListener("pointerup", _this._onTopHandlePointerUp);
+                _this._ownerCanvas.hostCanvas.removeEventListener("pointermove", _this._onTopHandlePointerMove);
+                _this_1.cleanUpResizing(evt);
+            }
+        };
         this._id = GraphFrame._FrameCounter++;
         this._ownerCanvas = canvas;
         var root = canvas.frameContainer;
@@ -54337,12 +54503,29 @@ var GraphFrame = /** @class */ (function () {
         this._headerElement = root.ownerDocument.createElement("div");
         this._headerElement.classList.add("frame-box-header");
         this._headerElement.addEventListener("dblclick", function () {
-            _this.isCollapsed = !_this.isCollapsed;
+            _this_1.isCollapsed = !_this_1.isCollapsed;
         });
         this.element.appendChild(this._headerElement);
         this._borderElement = root.ownerDocument.createElement("div");
         this._borderElement.classList.add("frame-box-border");
         this.element.appendChild(this._borderElement);
+        // add resizing side handles
+        var rightHandle = root.ownerDocument.createElement("div");
+        rightHandle.className = "handle right-handle";
+        this.element.appendChild(rightHandle);
+        rightHandle.addEventListener("pointerdown", this._onRightHandlePointerDown);
+        var leftHandle = root.ownerDocument.createElement("div");
+        leftHandle.className = "handle left-handle";
+        this.element.appendChild(leftHandle);
+        leftHandle.addEventListener("pointerdown", this._onLeftHandlePointerDown);
+        var bottomHandle = root.ownerDocument.createElement("div");
+        bottomHandle.className = "handle bottom-handle";
+        this.element.appendChild(bottomHandle);
+        bottomHandle.addEventListener("pointerdown", this._onBottomHandlePointerDown);
+        var topHandle = root.ownerDocument.createElement("div");
+        topHandle.className = "handle top-handle";
+        this.element.appendChild(topHandle);
+        topHandle.addEventListener("pointerdown", this._onTopHandlePointerDown);
         this._headerTextElement = root.ownerDocument.createElement("div");
         this._headerTextElement.classList.add("frame-box-header-title");
         this._headerElement.appendChild(this._headerTextElement);
@@ -54352,13 +54535,13 @@ var GraphFrame = /** @class */ (function () {
         this._headerCollapseElement.title = "Collapse";
         this._headerCollapseElement.ondragstart = function () { return false; };
         this._headerCollapseElement.addEventListener("pointerdown", function (evt) {
-            _this._headerCollapseElement.classList.add("down");
+            _this_1._headerCollapseElement.classList.add("down");
             evt.stopPropagation();
         });
         this._headerCollapseElement.addEventListener("pointerup", function (evt) {
             evt.stopPropagation();
-            _this._headerCollapseElement.classList.remove("down");
-            _this.isCollapsed = !_this.isCollapsed;
+            _this_1._headerCollapseElement.classList.remove("down");
+            _this_1.isCollapsed = !_this_1.isCollapsed;
         });
         this._headerCollapseElement.innerHTML = this.CollapseSVG;
         this._headerElement.appendChild(this._headerCollapseElement);
@@ -54372,7 +54555,7 @@ var GraphFrame = /** @class */ (function () {
         });
         this._headerCloseElement.addEventListener("pointerup", function (evt) {
             evt.stopPropagation();
-            _this.dispose();
+            _this_1.dispose();
         });
         this._headerCloseElement.innerHTML = this.CloseSVG;
         this._headerElement.appendChild(this._headerCloseElement);
@@ -54394,15 +54577,15 @@ var GraphFrame = /** @class */ (function () {
             this.height = parseFloat(candidate.style.height.replace("px", ""));
             this.cleanAccumulation();
         }
-        this._headerTextElement.addEventListener("pointerdown", function (evt) { return _this._onDown(evt); });
-        this._headerTextElement.addEventListener("pointerup", function (evt) { return _this._onUp(evt); });
-        this._headerTextElement.addEventListener("pointermove", function (evt) { return _this._onMove(evt); });
+        this._headerTextElement.addEventListener("pointerdown", function (evt) { return _this_1._onDown(evt); });
+        this._headerTextElement.addEventListener("pointerup", function (evt) { return _this_1._onUp(evt); });
+        this._headerTextElement.addEventListener("pointermove", function (evt) { return _this_1._onMove(evt); });
         this._onSelectionChangedObserver = canvas.globalState.onSelectionChangedObservable.add(function (node) {
-            if (node === _this) {
-                _this.element.classList.add("selected");
+            if (node === _this_1) {
+                _this_1.element.classList.add("selected");
             }
             else {
-                _this.element.classList.remove("selected");
+                _this_1.element.classList.remove("selected");
             }
         });
         this._commentsElement = document.createElement('div');
@@ -54595,8 +54778,9 @@ var GraphFrame = /** @class */ (function () {
             if (this._width === value) {
                 return;
             }
-            this._width = value;
-            var gridAlignedRight = this._ownerCanvas.getGridPositionCeil(value + this._gridAlignedX);
+            var viableWidth = value > this._minFrameWidth ? value : this._minFrameWidth;
+            this._width = viableWidth;
+            var gridAlignedRight = this._ownerCanvas.getGridPositionCeil(viableWidth + this._gridAlignedX);
             this.element.style.width = gridAlignedRight - this._gridAlignedX + "px";
         },
         enumerable: true,
@@ -54715,7 +54899,7 @@ var GraphFrame = /** @class */ (function () {
         }
     };
     GraphFrame.prototype._onMove = function (evt) {
-        if (this._mouseStartPointX === null || this._mouseStartPointY === null || evt.ctrlKey) {
+        if (this._mouseStartPointX === null || this._mouseStartPointY === null || evt.ctrlKey || this._frameIsResizing) {
             return;
         }
         var newX = (evt.clientX - this._mouseStartPointX) / this._ownerCanvas.zoom;
@@ -54724,6 +54908,29 @@ var GraphFrame = /** @class */ (function () {
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;
         evt.stopPropagation();
+    };
+    GraphFrame.prototype._expandRight = function (widthModification, x) {
+        var frameElementWidth = parseFloat(this.element.style.width.replace("px", ""));
+        if ((frameElementWidth + widthModification) > 20) {
+            this._mouseStartPointX = x;
+            this.element.style.width = frameElementWidth + widthModification + "px";
+        }
+    };
+    GraphFrame.prototype._expandBottom = function (heightModification) {
+        var frameElementHeight = parseFloat(this.element.style.height.replace("px", ""));
+        this.element.style.height = frameElementHeight + heightModification + "px";
+    };
+    GraphFrame.prototype._expandLeft = function (widthModification) {
+        var frameElementWidth = parseFloat(this.element.style.width.replace("px", ""));
+        var frameElementLeft = parseFloat(this.element.style.left.replace("px", ""));
+        this.element.style.width = frameElementWidth - widthModification + "px";
+        this.element.style.left = frameElementLeft + widthModification + "px";
+    };
+    GraphFrame.prototype._expandTop = function (heightModification) {
+        var frameElementHeight = parseFloat(this.element.style.height.replace("px", ""));
+        var frameElementTop = parseFloat(this.element.style.top.replace("px", ""));
+        this.element.style.height = frameElementHeight - heightModification + "px";
+        this.element.style.top = frameElementTop + heightModification + "px";
     };
     GraphFrame.prototype.dispose = function () {
         this.isCollapsed = false;
