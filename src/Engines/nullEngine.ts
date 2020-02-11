@@ -82,6 +82,8 @@ export class NullEngine extends Engine {
     public constructor(options: NullEngineOptions = new NullEngineOptions()) {
         super(null);
 
+        Engine.Instances.push(this);
+
         if (options.deterministicLockstep === undefined) {
             options.deterministicLockstep = false;
         }
