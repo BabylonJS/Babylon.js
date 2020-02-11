@@ -122,9 +122,19 @@ export class _Exporter {
     private _nodeMap: { [key: number]: number };
 
     /**
+     * Specifies if the source Babylon scene was left handed, and needed conversion.
+     */
+    public _convertToRightHandedSystem: boolean;
+
+    /**
      * Specifies if a Babylon node should be converted to right-handed on export
      */
     public _convertToRightHandedSystemMap: { [nodeId: number]: boolean };
+
+    /*
+    * Specifies if root Babylon empty nodes that act as a coordinate space transform should be included in export
+    */
+    public _includeCoordinateSystemConversionNodes: boolean = false;
 
     /**
      * Baked animation sample rate
@@ -279,6 +289,7 @@ export class _Exporter {
         this._imageData = {};
         this._options = options || {};
         this._animationSampleRate = options && options.animationSampleRate ? options.animationSampleRate : 1 / 60;
+        this._includeCoordinateSystemConversionNodes = options && options.includeCoordinateSystemConversionNodes ? true : false;
 
         this._glTFMaterialExporter = new _GLTFMaterialExporter(this);
         this._loadExtensions();
@@ -1303,18 +1314,19 @@ export class _Exporter {
     }
 
     /**
-     * Check if the node is used to convert its descendants from right-handed to left-handed
+     * Check if the node is used to convert its descendants from a right handed coordinate system to the Babylon scene's coordinate system.
      * @param node The node to check
      * @returns True if the node is used to convert its descendants from right-handed to left-handed. False otherwise
      */
-    private isNodeConvertingToLeftHanded(node: Node): boolean {
+    private isBabylonCoordinateSystemConvertingNode(node: Node): boolean {
         if (node instanceof TransformNode)
         {
             // Transform
             let matrix = node.getWorldMatrix();
-            let matrixToLeftHanded = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
+            let matrixToLeftHanded = Matrix.Compose( this._convertToRightHandedSystem ? new Vector3(-1, 1, 1) : Vector3.One(), Quaternion.Identity(), Vector3.Zero());
             let matrixProduct = matrix.multiply(matrixToLeftHanded);
             let matrixIdentity = Matrix.IdentityReadOnly;
+
             for (let i = 0; i < 16; i++) {
                 if (Math.abs(matrixProduct.m[i] - matrixIdentity.m[i]) > Epsilon) {
                     return false;
@@ -1327,6 +1339,9 @@ export class _Exporter {
                 return false;
             }
 
+            if (this._includeCoordinateSystemConversionNodes) {
+                return false;
+            }
             return true;
         }
         return false;
@@ -1346,35 +1361,34 @@ export class _Exporter {
         const nodes: Node[] = [...babylonScene.transformNodes, ...babylonScene.meshes, ...babylonScene.lights];
         let rootNodesToLeftHanded: Node[] = [];
 
+        this._convertToRightHandedSystem = !babylonScene.useRightHandedSystem;
         this._convertToRightHandedSystemMap = {};
-
+        
         // Set default values for all nodes
         babylonScene.rootNodes.forEach((rootNode) => {
-            this._convertToRightHandedSystemMap[rootNode.uniqueId] = !babylonScene.useRightHandedSystem;
+            this._convertToRightHandedSystemMap[rootNode.uniqueId] = this._convertToRightHandedSystem;
             rootNode.getDescendants(false).forEach((descendant) => {
-                this._convertToRightHandedSystemMap[descendant.uniqueId] = !babylonScene.useRightHandedSystem;
+                this._convertToRightHandedSystemMap[descendant.uniqueId] = this._convertToRightHandedSystem;
             });
         });
 
-        if (!babylonScene.useRightHandedSystem) {
-            // Check if root nodes converting to left-handed are present
-            babylonScene.rootNodes.forEach((rootNode) => {
-                if (this.isNodeConvertingToLeftHanded(rootNode)) {
-                    rootNodesToLeftHanded.push(rootNode);
+        // Check if root nodes converting to left-handed are present
+        babylonScene.rootNodes.forEach((rootNode) => {
+            if (this.isBabylonCoordinateSystemConvertingNode(rootNode)) {
+                rootNodesToLeftHanded.push(rootNode);
 
-                    // Exclude the node from list of nodes to export
-                    const indexRootNode = nodes.indexOf(rootNode);
-                    if (indexRootNode !== -1) { // should always be true
-                        nodes.splice(indexRootNode, 1);
-                    }
-
-                    // Cancel conversion to right handed system
-                    rootNode.getDescendants(false).forEach((descendant) => {
-                        this._convertToRightHandedSystemMap[descendant.uniqueId] = false;
-                    });
+                // Exclude the node from list of nodes to export
+                const indexRootNode = nodes.indexOf(rootNode);
+                if (indexRootNode !== -1) { // should always be true
+                    nodes.splice(indexRootNode, 1);
                 }
-            });
-        }
+
+                // Cancel conversion to right handed system
+                rootNode.getDescendants(false).forEach((descendant) => {
+                    this._convertToRightHandedSystemMap[descendant.uniqueId] = false;
+                });
+            }
+        });
 
         return this._glTFMaterialExporter._convertMaterialsToGLTFAsync(babylonScene.materials, ImageMimeType.PNG, true).then(() => {
             return this.createNodeMapAndAnimationsAsync(babylonScene, nodes, binaryWriter).then((nodeMap) => {
