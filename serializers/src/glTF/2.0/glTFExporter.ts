@@ -1271,7 +1271,6 @@ export class _Exporter {
                     if (materialIndex != null && Object.keys(meshPrimitive.attributes).length > 0) {
                         let sideOrientation = bufferMesh.overrideMaterialSideOrientation !== null ? bufferMesh.overrideMaterialSideOrientation : babylonMaterial.sideOrientation;
 
-                        // Only reverse the winding if we have a clockwise winding
                         if ((sideOrientation == Material.ClockWiseSideOrientation && this._babylonScene.useRightHandedSystem)
                             || (sideOrientation == Material.ClockWiseSideOrientation && convertToRightHandedSystem && bufferMesh.overrideMaterialSideOrientation !== bufferMesh.material?.sideOrientation)) {
                             let byteOffset = indexBufferViewIndex != null ? this._bufferViews[indexBufferViewIndex].byteOffset : null;
