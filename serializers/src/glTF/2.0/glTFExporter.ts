@@ -1327,7 +1327,7 @@ export class _Exporter {
             }
             // Transform
             let matrix = node.getWorldMatrix();
-            let matrixToLeftHanded = Matrix.Compose( this._convertToRightHandedSystem ? new Vector3(-1, 1, 1) : Vector3.One(), Quaternion.Identity(), Vector3.Zero());
+            let matrixToLeftHanded = Matrix.Compose(this._convertToRightHandedSystem ? new Vector3(-1, 1, 1) : Vector3.One(), Quaternion.Identity(), Vector3.Zero());
             let matrixProduct = matrix.multiply(matrixToLeftHanded);
             let matrixIdentity = Matrix.IdentityReadOnly;
 
