@@ -33830,6 +33830,9 @@ declare module BABYLON {
          * @param buffer defines the webGL buffer to delete
          */
         deleteInstancesBuffer(buffer: WebGLBuffer): void;
+        private _clientWaitAsync;
+        /** @hidden */
+        _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView): Promise<ArrayBufferView> | null;
         /** @hidden */
         _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>): ArrayBufferView;
         dispose(): void;
