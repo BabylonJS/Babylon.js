@@ -133,6 +133,7 @@ export class HDRCubeTexture extends BaseTexture {
 
         this._noMipmap = noMipmap;
         this._size = size;
+        this._generateHarmonics = generateHarmonics;
 
         this._texture = this._getFromCache(url, this._noMipmap);
 
