@@ -1367,7 +1367,7 @@ export class _Exporter {
 
         this._convertToRightHandedSystem = !babylonScene.useRightHandedSystem;
         this._convertToRightHandedSystemMap = {};
-        
+
         // Set default values for all nodes
         babylonScene.rootNodes.forEach((rootNode) => {
             this._convertToRightHandedSystemMap[rootNode.uniqueId] = this._convertToRightHandedSystem;
