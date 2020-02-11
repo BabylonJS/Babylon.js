@@ -151,8 +151,6 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
 
                 const radToDeg = 57.295779513082320876;
 
-                console.log(i.object.position, extendSize);
-
                 if (i === impostor) {
                     var center = impostor.getObjectCenter();
 
@@ -233,7 +231,6 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                 //actually not needed, but hey...
                 i.object.rotationQuaternion = oldQuaternion;
             });
-            console.log(bodyConfig);
             impostor.physicsBody = this.world.add(bodyConfig);
             // set the quaternion, ignoring the previously defined (euler) rotation
             impostor.physicsBody.resetQuaternion(globalQuaternion);
