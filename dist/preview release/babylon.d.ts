@@ -38086,8 +38086,6 @@ declare module BABYLON {
         /**
          * Targets the given mesh and updates zoom level accordingly.
          * @param mesh  The mesh to target.
-         * @param radius Optional. If a cached radius position already exists, overrides default.
-         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
          * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
          * @param onAnimationEnd Callback triggered at the end of the framing animation
          */
@@ -38095,8 +38093,6 @@ declare module BABYLON {
         /**
          * Targets the given mesh with its children and updates zoom level accordingly.
          * @param mesh  The mesh to target.
-         * @param radius Optional. If a cached radius position already exists, overrides default.
-         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
          * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
          * @param onAnimationEnd Callback triggered at the end of the framing animation
          */
@@ -38104,8 +38100,6 @@ declare module BABYLON {
         /**
          * Targets the given meshes with their children and updates zoom level accordingly.
          * @param meshes  The mesh to target.
-         * @param radius Optional. If a cached radius position already exists, overrides default.
-         * @param framingPositionY Position on mesh to center camera focus where 0 corresponds bottom of its bounding box and 1, the top
          * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
          * @param onAnimationEnd Callback triggered at the end of the framing animation
          */

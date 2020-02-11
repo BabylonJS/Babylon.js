@@ -110,6 +110,7 @@
 - Added support for tagging deprecated members (both in editor and for completion) in the playground ([sailro](http://www.github.com/sailro))
 - Added preview area pop up for NME ([Kyle Belfort](https://github.com/belfortk))
 - Added comments to frames in NME ([Kyle Belfort](https://github.com/belfortk))
+- Make frames resizable in NME ([Kyle Belfort](https://github.com/belfortk))
 
 ### Meshes
 
@@ -332,6 +333,7 @@
 - Prevent depth buffer clear in shadow maps ([Sebavan](https://github.com/sebavan/)
 - Fix for bug where the light gizmo causes lights to flip orientation ([#7603](https://github.com/BabylonJS/Babylon.js/issues/7603)) ([drigax](https://github.com/drigax))
 - Fix for bug where directional lights are inverted when using a right handed scene coordinate system. ([drigax](https://github.com/drigax))
+- Fix subSurface parameters not copied in the PBR clone methods ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
