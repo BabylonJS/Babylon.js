@@ -1272,7 +1272,8 @@ export class _Exporter {
                         let sideOrientation = bufferMesh.overrideMaterialSideOrientation !== null ? bufferMesh.overrideMaterialSideOrientation : babylonMaterial.sideOrientation;
 
                         // Only reverse the winding if we have a clockwise winding
-                        if (convertToRightHandedSystem && sideOrientation === Material.ClockWiseSideOrientation) {
+                        if (sideOrientation == Material.ClockWiseSideOrientation 
+                            || (sideOrientation == Material.ClockWiseSideOrientation && convertToRightHandedSystem && bufferMesh.overrideMaterialSideOrientation == bufferMesh.material?.sideOrientation)) {
                             let byteOffset = indexBufferViewIndex != null ? this._bufferViews[indexBufferViewIndex].byteOffset : null;
                             if (byteOffset == null) { byteOffset = 0; }
                             let babylonIndices: Nullable<IndicesArray> = null;
@@ -1321,6 +1322,9 @@ export class _Exporter {
     private isBabylonCoordinateSystemConvertingNode(node: Node): boolean {
         if (node instanceof TransformNode)
         {
+            if (node.name !== "__root__") {
+                return false;
+            }
             // Transform
             let matrix = node.getWorldMatrix();
             let matrixToLeftHanded = Matrix.Compose( this._convertToRightHandedSystem ? new Vector3(-1, 1, 1) : Vector3.One(), Quaternion.Identity(), Vector3.Zero());
