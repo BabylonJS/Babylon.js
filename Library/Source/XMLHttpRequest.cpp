@@ -130,8 +130,19 @@ namespace Babylon
     {
         if (m_responseType.empty() || m_responseType == XMLHttpRequestTypes::ResponseType::Text)
         {
-            return m_runtimeImpl.LoadUrlAsync<std::string>(m_url).then(arcana::inline_scheduler, m_runtimeImpl.Cancellation(), [this](const std::string& data) {
-                m_responseText = std::move(data);
+            return m_runtimeImpl.LoadUrlAsync<std::string>(m_url).then(arcana::inline_scheduler, m_runtimeImpl.Cancellation(), [this](const std::string& data)
+            {
+                // check UTF-8 BOM encoding
+                if (data.size() >= 3 && data[0] == '\xEF' && data[1] == '\xBB' && data[2] == '\xBF')
+                {
+                    m_responseText = data.substr(3);
+                }
+                else
+                {
+                    // UTF8 encoding
+                    m_responseText = std::move(data);
+                }
+
                 m_status = HTTPStatusCode::Ok;
                 SetReadyState(ReadyState::Done);
             });

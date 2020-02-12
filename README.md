@@ -43,7 +43,7 @@ See [this blog entry](https://medium.com/@babylonjs/babylon-native-821f1694fffc)
   ```
   C:\BabylonNative\Build>start BabylonNative.sln
   ```
-- Once the solution opens, right click the TestApp project, click "Set as StartUp Project" and click the play button at the top to run the test app which should render a box
+- Once the solution opens, right click the Playground project, click "Set as StartUp Project" and click the play button at the top to run the test app which should render a box
 
 ### Android / iOS / MacOS
 

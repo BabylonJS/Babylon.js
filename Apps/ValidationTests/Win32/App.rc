@@ -27,15 +27,15 @@ LANGUAGE 9, 1
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 
-IDI_TESTAPPWIN32        ICON         "App.ico"
-IDI_SMALL               ICON         "small.ico"
+IDI_VALIDATIONTESTSWIN32 ICON         "App.ico"
+IDI_SMALL                ICON         "small.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
 //
 
-IDC_TESTAPPWIN32 MENU
+IDC_VALIDATIONTESTSWIN32 MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -53,7 +53,7 @@ END
 // Accelerator
 //
 
-IDC_TESTAPPWIN32 ACCELERATORS
+IDC_VALIDATIONTESTSWIN32 ACCELERATORS
 BEGIN
     "?",            IDM_ABOUT,              ASCII,  ALT
     "/",            IDM_ABOUT,              ASCII,  ALT
@@ -67,11 +67,11 @@ END
 
 IDD_ABOUTBOX DIALOGEX 0, 0, 170, 62
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "About TestApp"
+CAPTION "About ValidationTests"
 FONT 8, "MS Shell Dlg"
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,14,14,21,20
-    LTEXT           "TestApp, Version 1.0",IDC_STATIC,42,14,114,8,SS_NOPREFIX
+    LTEXT           "ValidationTests, Version 1.0",IDC_STATIC,42,14,114,8,SS_NOPREFIX
     LTEXT           "Copyright (c) 2018",IDC_STATIC,42,26,114,8
     DEFPUSHBUTTON   "OK",IDOK,113,41,50,14,WS_GROUP
 END
@@ -130,8 +130,8 @@ END
 
 STRINGTABLE
 BEGIN
-   IDC_TESTAPPWIN32 "TESTAPPWIN32"
-   IDS_APP_TITLE    "TestApp"
+   IDC_VALIDATIONTESTSWIN32 "VALIDATIONTESTSWIN32"
+   IDS_APP_TITLE    "ValidationTests"
 END
 
 #endif

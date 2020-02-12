@@ -28,7 +28,7 @@ jobs:
   - task: Xcode@5
     inputs:
       xcWorkspacePath: 'buildmacOS/BabylonNative.xcodeproj'
-      scheme: 'TestApp'
+      scheme: 'Playground'
       sdk: 'macosx'
       useXcpretty: false
     displayName: 'Build macOS'
@@ -59,7 +59,7 @@ jobs:
   - task: Xcode@5
     inputs:
       xcWorkspacePath: 'buildiOS/BabylonNative.xcodeproj'
-      scheme: 'TestApp'
+      scheme: 'Playground'
       sdk: 'iphoneos'
       useXcpretty: false
     displayName: 'Build iOS'
@@ -197,17 +197,17 @@ jobs:
       tar -xf node_modules/v8-android/dist/lib.unstripped/v8-android/7.5.1/libs.tar
       mkdir Library/Dependencies/v8
       mkdir Library/Dependencies/v8/include
-      mkdir TestApp/Source/Android/app/src/main/jniLibs
+      mkdir Apps/Playground/Android/app/src/main/jniLibs
       cp -r node_modules/v8-android/dist/include Library/Dependencies/v8
-      cp -r arm64-v8a TestApp/Source/Android/app/src/main/jniLibs
-      cp -r armeabi-v7a TestApp/Source/Android/app/src/main/jniLibs
-      cp -r x86 TestApp/Source/Android/app/src/main/jniLibs
-      cp -r x86_64 TestApp/Source/Android/app/src/main/jniLibs
+      cp -r arm64-v8a Apps/Playground/Android/app/src/main/jniLibs
+      cp -r armeabi-v7a Apps/Playground/Android/app/src/main/jniLibs
+      cp -r x86 Apps/Playground/Android/app/src/main/jniLibs
+      cp -r x86_64 Apps/Playground/Android/app/src/main/jniLibs
     displayName: 'Install V8 npm'    
   - task: Gradle@2
     inputs:
-        workingDirectory: 'TestApp/Source/Android'
-        gradleWrapperFile: 'TestApp/Source/Android/gradlew'
+        workingDirectory: 'Apps/Playground/Android'
+        gradleWrapperFile: 'Apps/Playground/Android/gradlew'
         gradleOptions: '-Xmx1536m'
         publishJUnitResults: false
         tasks: 'assembleDebug'

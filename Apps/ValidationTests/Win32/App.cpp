@@ -2,30 +2,31 @@
 //
 
 #include "App.h"
+// NOMINMAX to prevent compilation errors with bgfx
+#define NOMINMAX
 #include <Windows.h>
+#undef NOMINMAX
 #include <Windowsx.h>
 #include <Shlwapi.h>
 #include <filesystem>
 
-#include <Shared/InputManager.h>
+#include <Shared/TestUtils.h>
 
 #include <Babylon/Console.h>
 #include <Babylon/RuntimeWin32.h>
 
 #define MAX_LOADSTRING 100
 
-// Global Variables:
+    // Global Variables:
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 std::unique_ptr<Babylon::RuntimeWin32> runtime{};
-std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 namespace
 {
@@ -49,47 +50,17 @@ namespace
         return { url };
     }
 
-    std::vector<std::string> GetCommandLineArguments()
-    {
-        int argc;
-        auto argv = CommandLineToArgvW(GetCommandLineW(), &argc);
-
-        std::vector<std::string> arguments{};
-        arguments.reserve(argc);
-
-        for (int idx = 1; idx < argc; idx++)
-        {
-            std::wstring hstr{ argv[idx] };
-            int bytesRequired = ::WideCharToMultiByte(CP_UTF8, 0, &hstr[0], static_cast<int>(hstr.size()), nullptr, 0, nullptr, nullptr);
-            arguments.push_back(std::string(bytesRequired, 0));
-            ::WideCharToMultiByte(CP_UTF8, 0, hstr.data(), static_cast<int>(hstr.size()), arguments.back().data(), bytesRequired, nullptr, nullptr);
-        }
-
-        LocalFree(argv);
-
-        return arguments;
-    }
-
     void RefreshBabylon(HWND hWnd)
     {
-        std::vector<std::string> scripts = GetCommandLineArguments();
-        std::string moduleRootUrl = GetUrlFromPath(GetModulePath().parent_path().parent_path());
-        std::string rootUrl{ scripts.empty() ? moduleRootUrl : GetUrlFromPath(std::filesystem::path{ scripts.back() }.parent_path()) };
-
+        std::string rootUrl{ GetUrlFromPath(GetModulePath().parent_path().parent_path()) };
         RECT rect;
         if (!GetWindowRect(hWnd, &rect))
         {
             return;
         }
-        auto width = static_cast<float>(rect.right - rect.left);
-        auto height = static_cast<float>(rect.bottom - rect.top);
-        runtime.reset();
-        runtime = std::make_unique<Babylon::RuntimeWin32>(hWnd, rootUrl, width, height);
-
-        // issue a resize here because on some platforms (UWP, WIN32) WM_SIZE is received before the runtime construction
-        // So the context is created with the right size but the nativeWindow still has the wrong size
-        // depending on how you create your app (runtime created before WM_SIZE is received, this call is not needed)
-        runtime->UpdateSize(width, height);
+        auto width = rect.right - rect.left;
+        auto height = rect.bottom - rect.top;
+        runtime = std::make_unique<Babylon::RuntimeWin32>(hWnd, rootUrl, static_cast<float>(width), static_cast<float>(height));
 
         runtime->Dispatch([](Babylon::Env& env)
         {
@@ -99,26 +70,15 @@ namespace
             });
         });
 
-        inputBuffer = std::make_unique<InputManager::InputBuffer>(*runtime);
-        InputManager::Initialize(*runtime, *inputBuffer);
-
-        runtime->LoadScript(moduleRootUrl + "/Scripts/babylon.max.js");
-        runtime->LoadScript(moduleRootUrl + "/Scripts/babylon.glTF2FileLoader.js");
-        runtime->LoadScript(moduleRootUrl + "/Scripts/babylonjs.materials.js");
-
-        if (scripts.empty())
+        runtime->Dispatch([hWnd](Babylon::Env& env)
         {
-            runtime->LoadScript("Scripts/experience.js");
-        }
-        else
-        {
-            for (const auto& script : scripts)
-            {
-                runtime->LoadScript(GetUrlFromPath(script));
-            }
+            Babylon::TestUtils::CreateInstance(env, hWnd);
+        });
 
-            runtime->LoadScript(moduleRootUrl + "/Scripts/playground_runner.js");
-        }
+        runtime->LoadScript("Scripts/babylon.max.js");
+        runtime->LoadScript("Scripts/babylon.glTF2FileLoader.js");
+        runtime->LoadScript("Scripts/babylonjs.materials.js");
+        runtime->LoadScript("Scripts/validation_native.js");
     }
 }
 
@@ -134,7 +94,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(hInstance, IDC_TESTAPPWIN32, szWindowClass, MAX_LOADSTRING);
+    LoadStringW(hInstance, IDC_VALIDATIONTESTSWIN32, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
 
     // Perform application initialization:
@@ -143,7 +103,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_TESTAPPWIN32));
+    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_VALIDATIONTESTSWIN32));
 
     MSG msg;
 
@@ -176,10 +136,10 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.cbClsExtra     = 0;
     wcex.cbWndExtra     = 0;
     wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_TESTAPPWIN32));
+    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_VALIDATIONTESTSWIN32));
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_TESTAPPWIN32);
+    wcex.lpszMenuName   = 0;
     wcex.lpszClassName  = szWindowClass;
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
@@ -243,23 +203,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             DefWindowProc(hWnd, message, wParam, lParam);
             break;
         }
-        case WM_COMMAND:
-        {
-            int wmId = LOWORD(wParam);
-            // Parse the menu selections:
-            switch (wmId)
-            {
-            case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-                break;
-            case IDM_EXIT:
-                DestroyWindow(hWnd);
-                break;
-            default:
-                return DefWindowProc(hWnd, message, wParam, lParam);
-            }
-            break;
-        }
         case WM_PAINT:
         {
             PAINTSTRUCT ps;
@@ -278,7 +221,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         case WM_DESTROY:
         {
-            inputBuffer.reset();
             runtime.reset();
             PostQuitMessage(0);
             break;
@@ -291,47 +233,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
             break;
         }
-        case WM_MOUSEMOVE:
-        {
-            inputBuffer->SetPointerPosition(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-            break;
-        }
-        case WM_LBUTTONDOWN:
-        {
-            SetCapture(hWnd);
-            inputBuffer->SetPointerDown(true);
-            break;
-        }
-        case WM_LBUTTONUP:
-        {
-            inputBuffer->SetPointerDown(false);
-            ReleaseCapture();
-            break;
-        }
         default:
         {
             return DefWindowProc(hWnd, message, wParam, lParam);
         }
     }
     return 0;
-}
-
-// Message handler for about box.
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    UNREFERENCED_PARAMETER(lParam);
-    switch (message)
-    {
-    case WM_INITDIALOG:
-        return (INT_PTR)TRUE;
-
-    case WM_COMMAND:
-        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-        {
-            EndDialog(hDlg, LOWORD(wParam));
-            return (INT_PTR)TRUE;
-        }
-        break;
-    }
-    return (INT_PTR)FALSE;
 }

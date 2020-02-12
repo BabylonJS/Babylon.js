@@ -13,6 +13,8 @@ namespace Babylon
         static Napi::ObjectReference Create(Napi::Env& env, void* windowPtr, size_t width, size_t height);
         static Napi::FunctionReference GetSetTimeoutFunction(Napi::ObjectReference& nativeWindow);
         static Napi::FunctionReference GetAToBFunction(Napi::ObjectReference& nativeWindow);
+        static Napi::FunctionReference GetAddEventListener(Napi::ObjectReference& nativeWindow);
+        static Napi::FunctionReference GetRemoveEventListener(Napi::ObjectReference& nativeWindow);
 
         NativeWindow(const Napi::CallbackInfo& info);
 
@@ -36,6 +38,8 @@ namespace Babylon
 
         static void SetTimeout(const Napi::CallbackInfo& info);
         static Napi::Value DecodeBase64(const Napi::CallbackInfo& info);
+        static void AddEventListener(const Napi::CallbackInfo& info);
+        static void RemoveEventListener(const Napi::CallbackInfo& info);
 
         void RecursiveWaitOrCall(std::shared_ptr<Napi::FunctionReference> function, std::chrono::system_clock::time_point whenToRun);
     };

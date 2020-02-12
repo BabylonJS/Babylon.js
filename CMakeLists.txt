@@ -27,5 +27,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(Library)
 if(NOT ANDROID)
-add_subdirectory(TestApp)
+    add_subdirectory(Apps/Playground)
+endif()
+
+if(WIN32 AND NOT WINDOWS_STORE)
+    add_subdirectory(Apps/ValidationTests)
 endif()
