@@ -33,12 +33,11 @@ declare module "../../Engines/thinEngine" {
          * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
          * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
          * @param fallback defines texture to use while falling back when (compressed) texture file not found.
-         * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (defualt: empty array)
          * @returns the cube texture as an InternalTexture
          */
         createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean | undefined,
             onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>,
-            format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>, excludeLoaders: Array<IInternalTextureLoader>): InternalTexture;
+            format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>): InternalTexture;
 
         /**
          * Creates a cube texture
@@ -216,7 +215,7 @@ ThinEngine.prototype._setCubeMapTextureParams = function(loadMipmap: boolean): v
     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
 };
 
-ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0, fallback: Nullable<InternalTexture> = null, excludeLoaders: Array<IInternalTextureLoader> = []): InternalTexture {
+ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0, fallback: Nullable<InternalTexture> = null): InternalTexture {
     var gl = this._gl;
 
     var texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Cube);
@@ -233,35 +232,22 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
 
     var lastDot = rootUrl.lastIndexOf('.');
     var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
-    const filteredFormat: Nullable<string> = this.excludedCompressedTextureFormats(rootUrl, this._textureFormatInUse);
 
     let loader: Nullable<IInternalTextureLoader> = null;
     for (let availableLoader of ThinEngine._TextureLoaders) {
-        if (excludeLoaders.indexOf(availableLoader) === -1 && availableLoader.canLoad(extension, filteredFormat, fallback, false, false)) {
+        if (availableLoader.canLoad(extension)) {
             loader = availableLoader;
             break;
         }
     }
 
     let onInternalError = (request?: IWebRequest, exception?: any) => {
-        if (loader) {
-            const fallbackUrl = loader.getFallbackTextureUrl(texture.url, this._textureFormatInUse);
-            Logger.Warn((loader.constructor as any).name + " failed when trying to load " + texture.url + ", falling back to the next supported loader");
-            if (fallbackUrl) {
-                excludeLoaders.push(loader);
-                this.createCubeTexture(fallbackUrl, scene, files, noMipmap, onLoad, onError, format, extension, createPolynomials, lodScale, lodOffset, texture, excludeLoaders);
-                return;
-            }
-        }
-
         if (onError && request) {
             onError(request.status + " " + request.statusText, exception);
         }
     };
 
     if (loader) {
-        rootUrl = loader.transformUrl(rootUrl, filteredFormat);
-
         const onloaddata = (data: ArrayBufferView | ArrayBufferView[]) => {
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
             loader!.loadCubeData(data, texture, createPolynomials, onLoad, onError);
