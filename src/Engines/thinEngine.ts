@@ -3136,15 +3136,15 @@ export class ThinEngine {
     public updateTextureWrappingMode(texture: InternalTexture, wrapU: Nullable<number>, wrapV: Nullable<number> = null, wrapR: Nullable<number> = null): void {
         const target = this._getTextureTarget(texture);
 
-        if (wrapU) {
+        if (wrapU !== null) {
             this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_S, this._getTextureWrapMode(wrapU), texture);
             texture._cachedWrapU = wrapU;
         }
-        if (wrapV) {
+        if (wrapV !== null) {
             this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_T, this._getTextureWrapMode(wrapV), texture);
             texture._cachedWrapV = wrapV;
         }
-        if ((texture.is2DArray || texture.is3D) && wrapR) {
+        if ((texture.is2DArray || texture.is3D) && (wrapR !== null)) {
             this._setTextureParameterInteger(target, this._gl.TEXTURE_WRAP_R, this._getTextureWrapMode(wrapR), texture);
             texture._cachedWrapR = wrapR;
         }
