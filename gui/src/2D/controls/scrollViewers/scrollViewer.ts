@@ -1,7 +1,6 @@
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
-import { PointerInfo, PointerEventTypes } from "babylonjs/Events/pointerEvents";
-
+import { Vector2 } from "babylonjs/Maths/math";
 import { Rectangle } from "../rectangle";
 import { Grid } from "../grid";
 import { Image } from "../image";
@@ -36,7 +35,7 @@ export class ScrollViewer extends Rectangle {
     private _window: _ScrollViewerWindow;
     private _pointerIsOver: Boolean = false;
     private _wheelPrecision: number = 0.05;
-    private _onPointerObserver: Nullable<Observer<PointerInfo>>;
+    private _onPointerObserver: Nullable<Observer<Vector2>>;
     private _clientWidth: number;
     private _clientHeight: number;
     private _useImageBar: Boolean;
@@ -45,7 +44,6 @@ export class ScrollViewer extends Rectangle {
     private _barImageHeight: number = 1;
     private _horizontalBarImageHeight: number = 1;
     private _verticalBarImageHeight: number = 1;
-
     /**
      * Gets the horizontal scrollbar
      */
@@ -654,22 +652,21 @@ export class ScrollViewer extends Rectangle {
             return;
         }
 
-        let scene = this._host.getScene();
-        this._onPointerObserver = scene!.onPointerObservable.add((pi, state) => {
-            if (!this._pointerIsOver || pi.type !== PointerEventTypes.POINTERWHEEL) {
+        this._onPointerObserver = this.onSVWheelObservable.add((pi) => {
+            if (!this._pointerIsOver) {
                 return;
             }
             if (this._verticalBar.isVisible == true) {
-                if ((<MouseWheelEvent>pi.event).deltaY < 0 && this._verticalBar.value > 0) {
+                if (pi.y < 0 && this._verticalBar.value > 0) {
                     this._verticalBar.value -= this._wheelPrecision;
-                } else if ((<MouseWheelEvent>pi.event).deltaY > 0 && this._verticalBar.value < this._verticalBar.maximum) {
+                } else if (pi.y > 0 && this._verticalBar.value < this._verticalBar.maximum) {
                     this._verticalBar.value += this._wheelPrecision;
                 }
             }
             if (this._horizontalBar.isVisible == true) {
-                if ((<MouseWheelEvent>pi.event).deltaX < 0 && this._horizontalBar.value < this._horizontalBar.maximum) {
+                if (pi.x < 0 && this._horizontalBar.value < this._horizontalBar.maximum) {
                     this._horizontalBar.value += this._wheelPrecision;
-                } else if ((<MouseWheelEvent>pi.event).deltaX > 0 && this._horizontalBar.value > 0) {
+                } else if (pi.x > 0 && this._horizontalBar.value > 0) {
                     this._horizontalBar.value -= this._wheelPrecision;
                 }
             }
@@ -690,11 +687,7 @@ export class ScrollViewer extends Rectangle {
 
     /** Releases associated resources */
     public dispose() {
-        let scene = this._host.getScene();
-        if (scene && this._onPointerObserver) {
-            scene.onPointerObservable.remove(this._onPointerObserver);
-            this._onPointerObserver = null;
-        }
+        this._onPointerObserver = null;
         super.dispose();
     }
 }
