@@ -231,6 +231,10 @@ export class Control {
     }
 
     /**
+    * An event triggered when pointer wheel is scrolled
+    */
+    public onSVWheelObservable = new Observable<Vector2>();
+    /**
     * An event triggered when the pointer move over the control.
     */
     public onPointerMoveObservable = new Observable<Vector2>();
@@ -1683,7 +1687,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean {
+    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled) {
             return false;
         }
@@ -1695,7 +1699,7 @@ export class Control {
             return false;
         }
 
-        this._processObservables(type, x, y, pointerId, buttonIndex);
+        this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
 
         return true;
     }
@@ -1797,7 +1801,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number): boolean {
+    public _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled) {
             return false;
         }
@@ -1831,6 +1835,20 @@ export class Control {
             }
             delete this._host._lastControlDown[pointerId];
             return true;
+        }
+
+        if (type === PointerEventTypes.POINTERWHEEL) {
+            if (this._host._lastControlOver[pointerId]) {
+                var control = this._host._lastControlOver[pointerId];
+                while (control.parent && control.parent.getClassName() !== "ScrollViewer") {
+                    control = control.parent;
+                }
+                if (control.parent) {
+                    if (control.parent.getClassName() === "ScrollViewer") {
+                        control.parent.onSVWheelObservable.notifyObservers(new Vector2(deltaX, deltaY));
+                    }
+                }
+            }
         }
 
         return false;
