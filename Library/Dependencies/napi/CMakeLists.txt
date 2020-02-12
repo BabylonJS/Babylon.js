@@ -2,10 +2,14 @@ cmake_minimum_required(VERSION 3.12)
 
 project(napi)
 
-if (ANDROID)
-    set(NAPI_JAVASCRIPT_ENGINE "V8")
+if (WIN32 OR WINDOWS_STORE)
+    set(NAPI_JAVASCRIPT_ENGINE "Chakra" CACHE STRING "JavaScript engine for N-API.")
+elseif (ANDROID)
+    set(NAPI_JAVASCRIPT_ENGINE "V8" CACHE STRING "JavaScript engine for N-API.")
 elseif (APPLE)
-    set(NAPI_JAVASCRIPT_ENGINE "JavaScriptCore")
+    set(NAPI_JAVASCRIPT_ENGINE "JavaScriptCore" CACHE STRING "JavaScript engine for N-API.")
+else()
+    message(FATAL_ERROR "Unable to select N-API JavaScript engine for platform.")
 endif()
 
 set(SUPPORTED_JAVASCRIPT_ENGINES "Chakra" "V8" "JavaScriptCore")
@@ -75,7 +79,7 @@ target_compile_definitions(napi PUBLIC NODE_ADDON_API_DISABLE_DEPRECATED)
 target_compile_definitions(napi PUBLIC NODE_ADDON_API_DISABLE_NODE_SPECIFIC)
 
 if(NAPI_JAVASCRIPT_ENGINE STREQUAL "Chakra")
-    target_compile_definitions(napi PRIVATE USE_EDGEMODE_JSRT)
+    target_compile_definitions(napi PUBLIC USE_EDGEMODE_JSRT)
 endif()
 
 # V8 android build until we figured out how to deal with custom V8 nugget
@@ -86,9 +90,9 @@ endif()
 target_include_directories(napi PUBLIC "include")
 
 if(NAPI_JAVASCRIPT_ENGINE STREQUAL "Chakra")
-    target_link_libraries(napi PRIVATE "chakrart.lib")
+    target_link_libraries(napi PUBLIC "chakrart.lib")
 elseif(NAPI_JAVASCRIPT_ENGINE STREQUAL "V8")
-    target_link_libraries(napi PRIVATE v8)
+    target_link_libraries(napi PUBLIC v8)
 endif()
 
 set(NAPI_DEPENDENCIES ${NAPI_DEPENDENCIES} PARENT_SCOPE)

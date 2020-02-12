@@ -27,9 +27,6 @@ elseif()
     message(FATAL_ERROR "Unrecognized platform for ValidationTests: ${CMAKE_SYSTEM_NAME}")
 endif()
 
-
-set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ValidationTests)
-
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${SOURCES})
 
 target_compile_definitions(ValidationTests PRIVATE UNICODE)

@@ -4,10 +4,14 @@
 #include <memory>
 #include <string>
 
+namespace Napi
+{
+    class Env;
+}
+
 namespace Babylon
 {
     class RuntimeImpl;
-    class Env;
 
     /**
      * This class represents an instance of Babylon Native. It holds and manages all program
@@ -57,7 +61,7 @@ namespace Babylon
          * guaranteed, but not immediacy of execution. This is the correct way to force code to be
          * run in a particular order relative to calls to LoadScript() and Eval().
          */
-        void Dispatch(std::function<void(Env&)> callback);
+        void Dispatch(std::function<void(Napi::Env)> callback);
 
         /**
          * Retrieves the root URL provided at the time the Runtime was created (a default value may

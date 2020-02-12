@@ -27,7 +27,7 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
         CALayerPtr, [[NSString stringWithFormat:@"file://%s", [resourceUrl fileSystemRepresentation]] UTF8String],
         inWidth, inHeight);
     
-    runtime->Dispatch([](Babylon::Env& env)
+    runtime->Dispatch([](Napi::Env env)
     {
         Babylon::Console::CreateInstance(env, [](const char* message, auto)
         {

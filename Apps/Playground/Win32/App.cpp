@@ -92,7 +92,7 @@ namespace
         // depending on how you create your app (runtime created before WM_SIZE is received, this call is not needed)
         runtime->UpdateSize(width, height);
 
-        runtime->Dispatch([](Babylon::Env& env)
+        runtime->Dispatch([](Napi::Env env)
         {
             Babylon::Console::CreateInstance(env, [](const char* message, auto)
             {

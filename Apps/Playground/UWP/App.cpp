@@ -157,7 +157,7 @@ concurrency::task<void> App::RestartRuntimeAsync(Windows::Foundation::Rect bound
     // depending on how you create your app (runtime created before WM_SIZE is received, this call is not needed)
     m_runtime->UpdateSize(width, height);
 
-    m_runtime->Dispatch([](Babylon::Env& env)
+    m_runtime->Dispatch([](Napi::Env env)
     {
         Babylon::Console::CreateInstance(env, [](const char* message, auto)
         {

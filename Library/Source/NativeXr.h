@@ -4,5 +4,5 @@
 
 namespace Babylon
 {
-    void InitializeNativeXr(Env& env);
+    void InitializeNativeXr(Napi::Env env);
 }

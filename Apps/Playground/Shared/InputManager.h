@@ -19,7 +19,7 @@ public:
 
         void SetPointerPosition(int x, int y)
         {
-            m_runtime.Dispatch([x, y, this](const auto&)
+            m_runtime.Dispatch([x, y, this](Napi::Env)
             {
                 m_pointerX = x;
                 m_pointerY = y;
@@ -28,7 +28,7 @@ public:
 
         void SetPointerDown(bool isPointerDown)
         {
-            m_runtime.Dispatch([isPointerDown, this](const auto&)
+            m_runtime.Dispatch([isPointerDown, this](Napi::Env)
             {
                 m_isPointerDown = isPointerDown;
             });
@@ -59,7 +59,7 @@ public:
 
     static void Initialize(Babylon::Runtime& runtime, InputBuffer& inputBuffer)
     {
-        runtime.Dispatch([data = &inputBuffer](auto& env)
+        runtime.Dispatch([data = &inputBuffer](Napi::Env env)
         {
             Napi::HandleScope scope{ env };
 

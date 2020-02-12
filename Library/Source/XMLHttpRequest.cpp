@@ -118,10 +118,10 @@ namespace Babylon
 
     void XMLHttpRequest::Send(const Napi::CallbackInfo& info)
     {
-        auto lock = m_runtimeImpl.AcquireTaskLock();
-
-        m_runtimeImpl.Task = m_runtimeImpl.Task.then(arcana::inline_scheduler, arcana::cancellation::none(), [this] {
-            return SendAsync();
+        m_runtimeImpl.Dispatch(std::function<arcana::task<void, std::exception_ptr>(Napi::Env)>{
+            [this](Napi::Env) {
+                return SendAsync();
+            }
         });
     }
 

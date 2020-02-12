@@ -25,7 +25,7 @@ std::unique_ptr<InputManager::InputBuffer> inputBuffer{};
         (__bridge void*)nativeWindow, [[NSString stringWithFormat:@"file://%s", [resourceUrl fileSystemRepresentation]] UTF8String],
             size.width, size.height);
     
-    runtime->Dispatch([](Babylon::Env& env)
+    runtime->Dispatch([](Napi::Env env)
     {
         Babylon::Console::CreateInstance(env, [](const char* message, auto)
         {

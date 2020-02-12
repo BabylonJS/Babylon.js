@@ -1411,7 +1411,7 @@ namespace Babylon
         // put into a kind of function which requires a copy constructor for all of its captured variables.  Because
         // the Napi::FunctionReference is not copyable, this breaks when trying to capture the callback directly, so we
         // wrap it in a std::shared_ptr to allow the capture to function correctly.
-        m_runtimeImpl.Dispatch([this, callbackPtr = std::make_shared<Napi::FunctionReference>(std::move(callback))](auto&) {
+        m_runtimeImpl.Dispatch([this, callbackPtr = std::make_shared<Napi::FunctionReference>(std::move(callback))](Napi::Env) {
             callbackPtr->Call({});
             EndFrame();
         });
@@ -1426,7 +1426,7 @@ namespace Babylon
 
     void NativeEngine::Dispatch(std::function<void()> function)
     {
-        m_runtimeImpl.Dispatch([function = std::move(function)](auto&) {
+        m_runtimeImpl.Dispatch([function = std::move(function)](Napi::Env) {
             function();
         });
     }

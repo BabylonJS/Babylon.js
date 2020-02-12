@@ -73,7 +73,7 @@ Java_com_android_appviewer_AndroidViewAppActivity_surfaceCreated(JNIEnv* env, jo
 
         runtime = std::make_unique<Babylon::RuntimeAndroid>(window, "file:///data/local/tmp", width, height);
 
-        runtime->Dispatch([](Babylon::Env& env)
+        runtime->Dispatch([](Napi::Env env)
         {
             Babylon::Console::CreateInstance(env, [](const char* message, Babylon::Console::LogLevel level)
             {

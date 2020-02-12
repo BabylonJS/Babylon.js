@@ -62,7 +62,7 @@ namespace
         auto height = rect.bottom - rect.top;
         runtime = std::make_unique<Babylon::RuntimeWin32>(hWnd, rootUrl, static_cast<float>(width), static_cast<float>(height));
 
-        runtime->Dispatch([](Babylon::Env& env)
+        runtime->Dispatch([](Napi::Env env)
         {
             Babylon::Console::CreateInstance(env, [](const char* message, auto)
             {
@@ -70,7 +70,7 @@ namespace
             });
         });
 
-        runtime->Dispatch([hWnd](Babylon::Env& env)
+        runtime->Dispatch([hWnd](Napi::Env env)
         {
             Babylon::TestUtils::CreateInstance(env, hWnd);
         });

@@ -37,7 +37,7 @@ namespace Babylon
         m_impl->Eval(string, url);
     }
 
-    void Runtime::Dispatch(std::function<void(Env&)> func)
+    void Runtime::Dispatch(std::function<void(Napi::Env)> func)
     {
         m_impl->Dispatch(func);
     }

@@ -12,7 +12,6 @@ namespace Napi
 
 namespace Babylon
 {
-    class Env;
     class NativeWindow;
 
     class RuntimeImpl final
@@ -29,7 +28,7 @@ namespace Babylon
         void Resume();
         void LoadScript(const std::string& url);
         void Eval(const std::string& string, const std::string& sourceUrl);
-        void Dispatch(std::function<void(Env&)> callback);
+        void Dispatch(std::function<void(Napi::Env)> callback);
         const std::string& RootUrl() const;
 
         std::string GetAbsoluteUrl(const std::string& url);
@@ -53,6 +52,7 @@ namespace Babylon
         void* GetNativeWindow() const { return m_nativeWindowPtr; }
     private:
         void InitializeJavaScriptVariables(size_t width, size_t height);
+        void RunJavaScript(Napi::Env);
         void BaseThreadProcedure();
         void ThreadProcedure();
 
@@ -77,7 +77,7 @@ namespace Babylon
         // occasionally need access to the env as well; m_env provides this
         // access when the env is available, reverting to nullptr once the env
         // is destroyed.
-        Babylon::Env* m_env{};
+        Napi::Env* m_env{};
         const std::string m_rootUrl{};
     };
 }

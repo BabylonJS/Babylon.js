@@ -80,7 +80,7 @@ namespace Babylon
         auto lock = AcquireTaskLock();
         auto whenAllTask = arcana::when_all(LoadUrlAsync<std::string>(GetAbsoluteUrl(url).data()), Task);
         Task = whenAllTask.then(*m_dispatcher, m_cancelSource, [this, url](const std::tuple<std::string, arcana::void_placeholder>& args) {
-            m_env->Eval(std::get<0>(args).data(), url.data());
+            Napi::Eval(*m_env, std::get<0>(args).data(), url.data());
         });
     }
 
@@ -88,11 +88,11 @@ namespace Babylon
     {
         auto lock = AcquireTaskLock();
         Task = Task.then(*m_dispatcher, m_cancelSource, [this, string, sourceUrl]() {
-            m_env->Eval(string.data(), sourceUrl.data());
+            Napi::Eval(*m_env, string.data(), sourceUrl.data());
         });
     }
 
-    void RuntimeImpl::Dispatch(std::function<void(Env&)> func)
+    void RuntimeImpl::Dispatch(std::function<void(Napi::Env)> func)
     {
         auto lock = AcquireTaskLock();
         Task = Task.then(*m_dispatcher, m_cancelSource, [func = std::move(func), this]() {
@@ -198,7 +198,7 @@ namespace Babylon
 
     void RuntimeImpl::InitializeJavaScriptVariables(size_t width, size_t height)
     {
-        auto& env = *m_env;
+        auto env = *m_env;
         auto global = env.Global();
 
         global.Set(JS_WINDOW_NAME, global);
@@ -223,27 +223,20 @@ namespace Babylon
         global.Set(JS_XML_HTTP_REQUEST_CONSTRUCTOR_NAME, jsXmlHttpRequestConstructor.Value());
     }
 
-    void RuntimeImpl::BaseThreadProcedure()
+    void RuntimeImpl::RunJavaScript(Napi::Env env)
     {
         m_dispatcher->set_affinity(std::this_thread::get_id());
 
-        auto executeOnScriptThread = [this](std::function<void()> action) {
-            Dispatch([action = std::move(action)](auto&) {
-                action();
-            });
-        };
-
-        Env env{ GetModulePath().u8string().data(), std::move(executeOnScriptThread) };
-        auto envReferencesScopeGuard = gsl::finally([this]
+        m_env = &env;
+        auto envScopeGuard = gsl::finally([this, env]
         {
             // Because the dispatcher and task may take references to the N-API environment,
             // they must be cleared before the env itself is destroyed.
             m_dispatcher.reset();
             Task = arcana::task_from_result<std::exception_ptr>();
-        });
 
-        m_env = &env;
-        auto hostScopeGuard = gsl::finally([this] { m_env = nullptr; });
+            m_env = nullptr;
+        });
 
         InitializeJavaScriptVariables(32, 32);
 

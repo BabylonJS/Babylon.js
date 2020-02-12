@@ -2,15 +2,11 @@
 
 #include "napi.h"
 
-namespace Babylon
+namespace Napi
 {
-    class Env : public Napi::Env
-    {
-    public:
-        explicit Env(const char* executablePath, std::function<void(std::function<void()>)> executeOnScriptThread);
-        Env(const Env&) = delete;
-        ~Env();
+    template<typename ...Ts> Napi::Env Attach(Ts... args);
 
-        void Eval(const char* string, const char* sourceUrl);
-    };
+    void Detach(Napi::Env);
+
+    Napi::Value Eval(Napi::Env env, const char* source, const char* sourceUrl);
 }
