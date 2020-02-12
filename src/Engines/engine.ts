@@ -1798,6 +1798,58 @@ export class Engine extends ThinEngine {
         this._gl.deleteBuffer(buffer);
     }
 
+    private _clientWaitAsync(sync: WebGLSync, flags = 0, interval_ms = 10) {
+        let gl = <WebGL2RenderingContext>(this._gl as any);
+        return new Promise((resolve, reject) => {
+            let check = () => {
+                const res = gl.clientWaitSync(sync, flags, 0);
+                if (res == gl.WAIT_FAILED) {
+                reject();
+                return;
+                }
+                if (res == gl.TIMEOUT_EXPIRED) {
+                setTimeout(check, interval_ms);
+                return;
+                }
+                resolve();
+            };
+
+            check();
+        });
+    }
+
+    /** @hidden */
+    public _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView) {
+        if (this._webGLVersion < 2) {
+            throw new Error("_readPixelsAsync only work on WebGL2+");
+        }
+
+        let gl = <WebGL2RenderingContext>(this._gl as any);
+        const buf = gl.createBuffer();
+        gl.bindBuffer(gl.PIXEL_PACK_BUFFER, buf);
+        gl.bufferData(gl.PIXEL_PACK_BUFFER, outputBuffer.byteLength, gl.STREAM_READ);
+        gl.readPixels(x, y, w, h, format, type, 0);
+        gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+
+        const sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+        if (!sync) {
+            return null;
+        }
+
+        gl.flush();
+
+        return this._clientWaitAsync(sync, 0, 10).then(() => {
+            gl.deleteSync(sync);
+
+            gl.bindBuffer(gl.PIXEL_PACK_BUFFER, buf);
+            gl.getBufferSubData(gl.PIXEL_PACK_BUFFER, 0, outputBuffer);
+            gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+            gl.deleteBuffer(buf);
+
+            return outputBuffer;
+        });
+    }
+
     /** @hidden */
     public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null): ArrayBufferView {
         let gl = this._gl;
